@@ -15,7 +15,6 @@ const Leads = () => {
         setLoading(true);
         try {
             const response = await getAllClientEnquires(token);
-            console.log(response)
             setEnquires(response);
         } catch (error) {
             console.error("Error fetching enquires:", error);
@@ -27,11 +26,6 @@ const Leads = () => {
     useEffect(() => {
         fetchEnquires(localStorage.getItem("token"));
     }, [])
-    const clients = [
-        { name: "abhijeet", details: "Lead via Webhooks Name: abhijeet Phone: +9163457...", dateAdded: "Dec 05 - 02:34 PM" },
-        { name: "Abhijeet", details: "Lead via Webhooks Name: Abhijeet Phone: +9195282...", dateAdded: "Dec 05 - 02:32 PM" },
-        { name: "test", details: "Lead via Webhooks Name: test Phone: +91789456123...", dateAdded: "Nov 30 - 10:16 PM" },
-    ];
     return (
         <div>
             <div className="flex mt-4">
