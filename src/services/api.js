@@ -36,7 +36,6 @@ export const getUserProfile = async (token) => {
                 },
             }
         );
-        console.log("api", response?.data)
         return response?.data;
     } catch (error) {
         console.error("Error getting user profile:", error);
@@ -58,7 +57,6 @@ export const fetchUserManagementData = async (token) => {
             }
         );
         const result = await response.json();
-        console.log(result.data)
         return result.data;
     } catch (error) {
         console.error('Error fetching data:', error);

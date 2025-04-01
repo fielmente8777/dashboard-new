@@ -65,6 +65,7 @@ export const DataProvider = ({ children }) => {
                 ndid: localStorage.getItem('ndid'),
                 hid: localStorage.getItem('hid'),
             });
+
             setEmergencyRequestData(response.data.data)
 
         } catch (error) {

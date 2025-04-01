@@ -9,7 +9,6 @@ const Sidebar = () => {
     const [openMenus, setOpenMenus] = useState({});
     const dispatch = useDispatch();
     const { user: hotel, loading, error } = useSelector((state) => state.userProfile);
-    console.log(hotel)
     const token = localStorage.getItem("token");
     useEffect(() => {
         if (token) {

@@ -23,7 +23,6 @@ const Navbar = () => {
     }, [dispatch, token]);
 
 
-    console.log(hotel)
 
 
 
