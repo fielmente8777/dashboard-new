@@ -68,7 +68,24 @@ export const fetchUserManagementData = async (token) => {
 
 export const getApplicants = async (token) => {
     try {
-        const response = await fetch(`${LOCAL_URL}/career/get-applications`, {
+        const response = await fetch(`${BASE_URL}/career/get-applications`, {
+            method: "GET", // or "POST" if you're sending data
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        return result?.Data;
+    } catch (error) {
+        console.error("Error getting applicants:", error);
+        throw error;
+    }
+}
+
+export const getAllClientEnquires = async (token) => {
+    try {
+        const response = await fetch(`${BASE_URL}/eazotel/get-all-contact-queries`, {
             method: "GET", // or "POST" if you're sending data
             headers: {
                 "Content-Type": "application/json",
