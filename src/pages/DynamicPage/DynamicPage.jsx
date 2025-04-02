@@ -8,10 +8,10 @@ import GrmAnalytics from '../Grm/Analytics'
 import EmergencyRequest from '../Grm/EmergencyRequest'
 import Usermanagement from '../UserMgmt/Usermanagement'
 import Feedback from '../Feedback/Feedback'
-import Leads from '../Leads/Leads'
 import TalentAnalytics from '../TalentMgmt/Analytics'
 import Application from '../TalentMgmt/Application'
-import LeadAnalytics from '../Leads/LeadAnalytics'
+import LeadAnalytics from "../Enquiry/LeadAnalytics"
+import Leads from "../Enquiry/Leads"
 const DynamicPage = () => {
 
     const location = useLocation();
@@ -31,13 +31,13 @@ const DynamicPage = () => {
         "/user-management/settings": <Usermanagement />,
 
         // Leads mgmt
-        "/leads-management/leads-analytics": <LeadAnalytics />,
-        "/leads-management/leads": <Leads />,
-        "/leads-management/settings": <Feedback />,
+        "/enquires-management/enquires-analytics": <LeadAnalytics />,
+        "/enquires-management/enquires": <Leads />,
+        "/enquires-management/settings": <Feedback />,
 
         // talent-acquisition/applications
-        "/talent-acquisition/analytics": <TalentAnalytics />,
-        "/talent-acquisition/applications": <Application />,
+        "/human-resources-management/analytics": <TalentAnalytics />,
+        "/human-resources-management/applications": <Application />,
         // Feedback
         "/feedback": <Feedback />,
 

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { getAllClientEnquires } from "../../services/api";
 
 const leadsData = [
     { id: 1, name: "Abhijeet", status: "Closed", email: "abhijeet@example.com", phone: "+9163456789", query: "Booking Inquiry", dateAdded: "2024-03-28T14:34:00" },
@@ -10,10 +11,31 @@ const leadsData = [
 
 const LeadAnalytics = () => {
     const [filteredLeads, setFilteredLeads] = useState(leadsData);
-    const [activeFilter, setActiveFilter] = useState("All Leads");
+    const [activeFilter, setActiveFilter] = useState("All Enquires");
+
+    const [enquires, setEnquires] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [selectedLead, setSelectedLead] = useState(null);
+
+    const fetchEnquires = async (token) => {
+        setLoading(true);
+        try {
+            const response = await getAllClientEnquires(token);
+            setEnquires(response);
+        } catch (error) {
+            console.error("Error fetching enquires:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEnquires(localStorage.getItem("token"));
+    }, [])
 
     const filterLeads = (status) => {
-        if (status === "All Leads") {
+        if (status === "All Enquires") {
             setFilteredLeads(leadsData);
         } else {
             setFilteredLeads(leadsData.filter(lead => lead.status === status));
@@ -30,11 +52,13 @@ const LeadAnalytics = () => {
     };
 
     const analyticsData = [
-        { label: "Today", count: getLeadsByDateRange(1) },
-        { label: "Last 7 Days", count: getLeadsByDateRange(7) },
-        { label: "Last 30 Days", count: getLeadsByDateRange(30) },
-        { label: "Last 6 Months", count: getLeadsByDateRange(180) },
-        { label: "Last 1 Year", count: getLeadsByDateRange(365) },
+        { label: "Total Enquires", count: enquires.length },
+        // { label: "Last 7 Days", count: enquires.length - 3 },
+        // { label: "Last 30 Days", count: enquires.length - 1 },
+        // { label: "Last 7 Days", count: getLeadsByDateRange(7) },
+        // { label: "Last 30 Days", count: getLeadsByDateRange(30) },
+        // { label: "Last 6 Months", count: getLeadsByDateRange(180) },
+        // { label: "Last 1 Year", count: getLeadsByDateRange(365) },
     ];
 
     const statusDistribution = [
@@ -48,7 +72,7 @@ const LeadAnalytics = () => {
 
     return (
         <div className="bg-white p-4">
-            <h2 className="text-sm font-semibold text-[#575757]">Leads Analytics</h2>
+            <h2 className="text-sm font-semibold text-[#575757]">Enquires Analytics</h2>
             {/* <div className="flex space-x-4 mb-4">
                 {["All Leads", "Uncontacted", "Follow Ups", "Converted", "Not Converted"].map(status => (
                     <button key={status}
@@ -59,7 +83,7 @@ const LeadAnalytics = () => {
                 ))}
             </div> */}
 
-            <div className="grid grid-cols-5 gap-4 mb-8 mt-4">
+            <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 mt-4">
                 {analyticsData.map((data) => (
 
                     <div key={data.label} className="bg-zinc-100 text-[#575757] px-4 pt-10 pb-12 rounded-md  text-center">
@@ -73,7 +97,7 @@ const LeadAnalytics = () => {
 
             <div className="grid grid-cols-2 gap-6">
                 <div className="bg-white">
-                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Leads Over Time</h2>
+                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquires Over Time</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={analyticsData}>
                             <XAxis dataKey="label" />
@@ -85,7 +109,7 @@ const LeadAnalytics = () => {
                 </div>
 
                 <div className="bg-white">
-                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Lead Status Distribution</h2>
+                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquires Status Distribution</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={statusDistribution} dataKey="value" nameKey="name" outerRadius={100} label>

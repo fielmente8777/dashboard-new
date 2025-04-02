@@ -36,6 +36,7 @@ export const getUserProfile = async (token) => {
                 },
             }
         );
+
         return response?.data;
     } catch (error) {
         console.error("Error getting user profile:", error);

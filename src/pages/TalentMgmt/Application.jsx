@@ -19,7 +19,8 @@ const Application = () => {
     }, [dispatch, token]);
 
     const [active, setActive] = useState(0)
-    const header = ["All Application", "Shortlisted", "Interview", "Hired", "Offered"]
+    // const header = ["All Application", "Shortlisted", "Interview", "Hired", "Offered"]
+    const header = ["All Application",]
 
 
     return (
@@ -29,7 +30,7 @@ const Application = () => {
                     <button onClick={() => setActive(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-white font-medium text-[#575757]`}>{item}</button>
                 ))}
 
-                <div onClick={() => dispatch(fetchApplicants(localStorage.getItem("token")))} className='flex justify-end items-center text-[#575757] px-3 cursor-pointer'><MdRefresh size={25} /></div>
+                <div onClick={() => dispatch(fetchApplicants(localStorage.getItem("token")))} className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""}`}><MdRefresh size={25} /></div>
             </div>
             <div className="bg-white p-4">
                 <div className="flex justify-between items-center mb-4 gap-2">

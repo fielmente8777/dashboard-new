@@ -1,13 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchApplicants } from '../../redux/slice/TalentSlice';
 
 const Analytics = () => {
+
+    const dispatch = useDispatch();
+
+    const { applicants, loading, error } = useSelector(state => state.applicants);
+
+    const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        if (token) {
+            dispatch(fetchApplicants(token));
+        }
+    }, [dispatch, token]);
+
+
     const [applications] = useState([
+
         { name: "Frontend Developer", count: 3 },
         { name: "UI Developer", count: 3 },
         { name: "Backend Developer", count: 2 },
         { name: "Full Stack Developer", count: 1 },
     ]);
+
+
 
     const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -15,27 +34,27 @@ const Analytics = () => {
         <div className="p-4 bg-white">
             <h2 className="text-sm font-semibold text-[#575757]">Application Analytics</h2>
 
-            <div className="grid font-medium text-[#575757] grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 mt-4">
+            <div className="grid font-medium text-[#575757] grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 mt-4">
                 <div className="bg-zinc-100 px-4 pt-10 pb-12 rounded-md  text-center">
-                    <p className="text-4xl font-bold">9</p>
+                    <p className="text-4xl font-bold">{applicants?.length > 0 ? applicants.length : "0"}</p>
                     <h3 className=" text-[14px] mt-2">Total Applications</h3>
 
                 </div>
-                <div className="bg-zinc-100 p-4 rounded-md  text-center px-4 pt-10 pb-12">
-                    <p className="text-4xl font-bold">9</p>
+                {/* <div className="bg-zinc-100 p-4 rounded-md  text-center px-4 pt-10 pb-12">
+                    <p className="text-4xl font-bold">{"0"}</p>
                     <h3 className=" text-[14px] mt-2">Pending Applications</h3>
 
                 </div>
                 <div className="bg-zinc-100 p-4 rounded-md  text-center px-4 pt-10 pb-12">
-                    <p className="text-4xl font-bold">0</p>
+                    <p className="text-4xl font-bold">{"0"}</p>
                     <h3 className=" text-[14px] mt-2">Shortlisted Candidates</h3>
 
                 </div>
                 <div className="bg-zinc-100 p-4 rounded-md  text-center px-4 pt-10 pb-12">
-                    <p className="text-4xl font-bold">0</p>
+                    <p className="text-4xl font-bold">{"0"}</p>
                     <h3 className=" text-[14px] mt-2">Hired Candidates</h3>
 
-                </div>
+                </div> */}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

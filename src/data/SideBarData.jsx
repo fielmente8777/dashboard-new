@@ -2,7 +2,12 @@ import { IoMdHome } from "react-icons/io";
 import { RiFeedbackFill } from "react-icons/ri";
 import { MdOutlineSos } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi";
-
+import { SiGoogleanalytics } from "react-icons/si";
+import { FaCodePullRequest } from "react-icons/fa6";
+import { MdEmergencyShare } from "react-icons/md";
+import { IoMdSettings } from "react-icons/io";
+import { FaCircleQuestion } from "react-icons/fa6";
+import { FaFilePdf } from "react-icons/fa";
 export const SidebarData = [
     {
         "name": "Dashboard",
@@ -18,114 +23,117 @@ export const SidebarData = [
             {
                 "name": "Analytics",
                 "link": "/grm/analytics",
-                "icon": <IoMdHome size={22} />,
+                "icon": <SiGoogleanalytics size={16} />,
             },
             {
                 "name": "All Requests",
                 "link": "/grm/all-requests",
-                "icon": <IoMdHome size={22} />,
+                "icon": <FaCodePullRequest size={16} />,
             },
             {
                 "name": "Emergency Request",
                 "link": "/grm/emergency-request",
-                "icon": <IoMdHome size={22} />
+                "icon": <MdEmergencyShare size={18} />
             },
 
-            {
-                "name": "Guest Feedback",
-                "link": "/grm/guest-feedback",
-                "icon": <RiFeedbackFill size={20} />
-            },
+            // {
+            //     "name": "Guest Feedback",
+            //     "link": "/grm/guest-feedback",
+            //     "icon": <RiFeedbackFill size={20} />
+            // },
             {
                 "name": "GRM Settings",
                 "link": "/grm/settings",
-                "icon": <IoMdHome size={22} />
+                "icon": <IoMdSettings size={18} />
             },
+        ]
+    },
+
+
+    {
+        "name": "Enquires Management",
+        "link": "/enquires-management",
+        "icon": <HiOutlineUserGroup />,
+        "subLinks": [
+            {
+                "name": "Enquires Analytics",
+                "link": "/enquires-management/enquires-analytics",
+                "icon": <SiGoogleanalytics size={16} />,
+            },
+            {
+                "name": "Enquires",
+                "link": "/enquires-management/enquires",
+                "icon": <FaCircleQuestion size={18} />,
+            },
+            // {
+            //     "name": "Leads Settings",
+            //     "link": "/leads-management/settings",
+            //     "icon": <IoMdHome size={22} />
+            // },
+
+        ]
+    },
+    {
+        "name": "Human Resources Management",
+        "link": "/human-resources-management",
+        "icon": <HiOutlineUserGroup />,
+        "subLinks": [
+            {
+                "name": "Analytics",
+                "link": "/human-resources-management/analytics",
+                "icon": <SiGoogleanalytics size={16} />,
+            },
+            {
+                "name": "Applications",
+                "link": "/human-resources-management/applications",
+                "icon": <FaFilePdf size={18} />,
+            },
+            // {
+            //     "name": "Leads Settings",
+            //     "link": "/leads-management/settings",
+            //     "icon": <IoMdHome size={22} />
+            // },
+
         ]
     },
 
     {
         "name": "User Management",
-        "link": "/user-management",
+        // "link": "/user-management",
+        "link": "/user-management/all-users",
         "icon": <HiOutlineUserGroup />,
-        "subLinks": [
-            {
-                "name": "All Users",
-                "link": "/user-management/all-users",
-                "icon": <IoMdHome size={22} />,
-            },
-            {
-                "name": "User Settings",
-                "link": "/user-management/settings",
-                "icon": <IoMdHome size={22} />
-            },
+        // "subLinks": [
+        //     {
+        //         "name": "All Users",
+        //         "link": "/user-management/all-users",
+        //         "icon": <IoMdHome size={22} />,
+        //     },
+        //     {
+        //         "name": "User Settings",
+        //         "link": "/user-management/settings",
+        //         "icon": <IoMdHome size={22} />
+        //     },
 
-        ]
-    },
-    {
-        "name": "Leads Management",
-        "link": "/leads-management",
-        "icon": <HiOutlineUserGroup />,
-        "subLinks": [
-            {
-                "name": "Leads Analytics",
-                "link": "/leads-management/leads-analytics",
-                "icon": <IoMdHome size={22} />,
-            },
-            {
-                "name": "Leads",
-                "link": "/leads-management/leads",
-                "icon": <IoMdHome size={22} />,
-            },
-            // {
-            //     "name": "Leads Settings",
-            //     "link": "/leads-management/settings",
-            //     "icon": <IoMdHome size={22} />
-            // },
-
-        ]
-    },
-    {
-        "name": "Talent acquisition",
-        "link": "/talent-acquisition",
-        "icon": <HiOutlineUserGroup />,
-        "subLinks": [
-            {
-                "name": "Analytics",
-                "link": "/talent-acquisition/analytics",
-                "icon": <IoMdHome size={22} />,
-            },
-            {
-                "name": "Applications",
-                "link": "/talent-acquisition/applications",
-                "icon": <IoMdHome size={22} />,
-            },
-            // {
-            //     "name": "Leads Settings",
-            //     "link": "/leads-management/settings",
-            //     "icon": <IoMdHome size={22} />
-            // },
-
-        ]
+        // ]
     },
 
-    {
-        "name": "Feedback",
-        "link": "/feedback",
-        "icon": <RiFeedbackFill />
-    },
+    // {
+    //     "name": "Feedback",
+    //     "link": "/feedback",
+    //     "icon": <RiFeedbackFill />
+    // },
 
 
-    {
-        "name": "Reports",
-        "link": "/reports"
-    },
-    {
-        "name": "Analytics",
-        "link": "/analytics"
-    },
-    {
-        "name": "Help",
-        "link": "/help"
-    }
+    // {
+    //     "name": "Reports",
+    //     "link": "/reports"
+    // },
+    // {
+    //     "name": "Analytics",
+    //     "link": "/analytics"
+    // },
+    // {
+    //     "name": "Help",
+    //     "link": "/help"
+    // }
 ];

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { SidebarData } from '../../data/SideBarData';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile } from '../../redux/slice/UserSlice';
 import { Arrow } from '../../icons/icon';
 const Sidebar = () => {
 
+    const location = useLocation()
     const [openMenus, setOpenMenus] = useState({});
     const dispatch = useDispatch();
     const { user: hotel, loading, error } = useSelector((state) => state.userProfile);
@@ -45,7 +46,7 @@ const Sidebar = () => {
     }
 
     return (
-        <div className='flex flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden'>
+        <div className='flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden'>
 
             {!hotel ?
                 <div className='bg-gray-200 p-6 animate-pulse rounded-md mb-4' />
@@ -75,21 +76,21 @@ const Sidebar = () => {
                             <p className=' text-[14px] font-medium text-[#575757]/70 '>
                                 {item.name}
                             </p>
-                            <span className={`${openMenus[index] ? "-rotate-90" : "rotate-90"} ease-linear duration-300 text text-[#575757]/70 mr-1 `}><Arrow /></span>
+                            <span className={`${openMenus[index] ? "rotate-90" : "-rotate-90"} py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}><Arrow /></span>
                         </div>
 
                         :
 
-                        <Link to={item.link} className=' text-[14px] font-medium text-[#575757]/70 '>
+                        <Link to={item.link} className={`${location.pathname === item.link ? "bg-[#0a3a75] text-white px-2 rounded-md" : ""}  text-[14px] py-2 font-medium text-[#575757]/70 `}>
                             {item.name}
                         </Link>
                     }
 
                     {openMenus[index] && item?.subLinks && <hr className='border-b' />}
-                    {openMenus[index] && <div className='py-1'>
+                    {openMenus[index] && <div className='space-y-2'>
                         {item?.subLinks && item.subLinks.map((subLink, index) => (
-                            <div className="flex flex-col py-1 transition-all duration-300 ease-in-out transform scale-95 opacity-0 animate-fadeIn">
-                                <Link to={subLink.link} key={index} className='hover:bg-[#0a3a75]/50 flex gap-1 items-center rounded-sm capitalize hover:text-white py-[6px] px-3 text-[14px] font-medium text-[#575757] transition-all duration-300'>
+                            <div className="flex flex-col transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
+                                <Link to={subLink.link} key={index} className={` ${location.pathname === subLink.link ? "bg-[#0a3a75] text-white px-2" : "hover:bg-[#0a3a75]/10"}  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}>
                                     {subLink.icon}{" "}{subLink.name}
                                 </Link>
                             </div>
