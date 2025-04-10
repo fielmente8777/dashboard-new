@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { fetchUserManagementData } from '../../services/api';
-import { IoClose } from "react-icons/io5";
 import { IoMdCheckmark } from "react-icons/io";
+import { IoClose } from "react-icons/io5";
+import { fetchUserManagementData } from '../../services/api';
 const Usermanagement = () => {
 
     const [userManagementData, setUserManagementData] = useState([]);
@@ -74,16 +74,20 @@ const Usermanagement = () => {
                                     ))
                                 } */}
                                 < td className="px-4 py-3" >
-                                    {user.isAdmin === "true" ? (
-                                        <IoClose className="h-6 w-6 text-green-500" />
+                                    {user.isAdmin? (
+                                        <IoMdCheckmark className="h-6 w-6 text-green-500" />
                                     ) : (
-                                        <IoMdCheckmark className="h-6 w-6 text-red-500" />
+                                        <IoClose className="h-6 w-6 text-red-500" />
                                     )}
 
                                 </td>
                                 <td className="py-2 text-[14px] whitespace-nowrap  text-[#575757] lowercase">{new Date(user.createdAt).toLocaleString("en-GB", {
-                                    day: "2-digit", month: "2-digit", year: "numeric",
-                                    hour: "2-digit", minute: "2-digit", hour12: false
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true
                                 })} </td>
                             </tr>
                         ))}

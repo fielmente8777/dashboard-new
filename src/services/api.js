@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const BASE_URL = "https://nexon.eazotel.com"
-const LOCAL_URL = "http://127.0.0.1:5000"
+// const BASE_URL = "http://127.0.0.1:5000"
 
 export const UserLogin = async (userData) => {
     try {
