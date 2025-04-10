@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { Arrow, Filter, Search } from '../../icons/icon';
+import React, { useEffect, useState } from 'react';
 import { MdRefresh } from 'react-icons/md';
-import { getAllClientEnquires } from '../../services/api';
 import LeadPopup from '../../components/Popup/LeadPopup';
+import { Arrow, Filter, Search } from '../../icons/icon';
+import { getAllClientEnquires } from '../../services/api';
 
 const Leads = () => {
     const [active, setActive] = useState(0)
@@ -66,7 +66,7 @@ const Leads = () => {
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Details</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th>
+                            {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th> */}
                             {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Date Added</th> */}
                         </tr>
                     </thead>
@@ -83,7 +83,7 @@ const Leads = () => {
                                 <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
                                 <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
                                 <td className="py-2 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
-                                <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">Done</td>
+                                {/* <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">Done</td> */}
                                 {/* <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery?.dateAdded ? "" : "Dec 05 - 02:34 PM"}</td> */}
                             </tr>
                         ))}

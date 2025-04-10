@@ -8,10 +8,10 @@ const Login = () => {
 
     const [formData, setFormData] = useState({
         // email: 'reservation@minimalisthotes.com',
-        // email: 'oakclimbingresort@gmail.com',
-        email: '',
+        email: 'oakclimbingresort@gmail.com',
         // email: '',
-        password: ''
+        // email: '',
+        password: 'Eazotel@123',
     });
 
     const dispatch = useDispatch()
