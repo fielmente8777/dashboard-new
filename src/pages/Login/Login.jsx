@@ -7,10 +7,10 @@ const Login = () => {
 
     const [formData, setFormData] = useState({
         // email: 'reservation@minimalisthotes.com',
-        // email: 'oakclimbingresort@gmail.com',
-        email: '',
+        email: 'oakclimbingresort@gmail.com',
         // email: '',
-        password: ''
+        // email: '',
+        password: 'Eazotel@123',
     });
 
     const dispatch = useDispatch()
@@ -27,7 +27,7 @@ const Login = () => {
         const response = await dispatch(loginUser(formData));
         console.log(response);
 
-        if (response.success) {
+        if (response.data.Status == true) {
             const token = response?.data?.Token;
             localStorage.setItem("token", token || "");
 
