@@ -98,3 +98,24 @@ export const getAllClientEnquires = async (token) => {
         throw error;
     }
 }
+
+// export const addUserInUsermanagement = async (token) => {
+//     try {
+//         const response = await fetch(`${BASE_URL}/eazotel/get-all-contact-queries`, {
+//             method: "GET", // or "POST" if you're sending data
+//             headers: {
+//                 "Content-Type": "application/json",
+//                 "Authorization": `Bearer ${token}`
+//             }
+//         });
+//         const result = await response.json();
+//         return result?.Data;
+//     } catch (error) {
+//         console.error("Error getting applicants:", error);
+//         throw error;
+//     }
+// }
+
+
+
+
