@@ -7,7 +7,7 @@ import { getAllClientEnquires } from '../../services/api';
 const Leads = () => {
     const [active, setActive] = useState(0)
     // const header = ["All Enquires", "Uncontacted", "Follow Ups", "Converted", "Not Converted"]
-    const header = ["All Enquires"]
+    const header = ["All Enquires", "Open Queries", "Completed Queries"]
 
     const [enquires, setEnquires] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -29,14 +29,52 @@ const Leads = () => {
     useEffect(() => {
         fetchEnquires(localStorage.getItem("token"));
     }, [])
+    const [searchTerm, setSearchTerm] = useState('');
+    const fetchFilteredClientQuery=async (e)=>{
+        console.log(e)
+        const response = await getAllClientEnquires(localStorage.getItem("token"),e)
+        console.log(response)
+        setEnquires(response);
+    }
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => {
+            const fetchData = async () => {
+                try {
+                    const token = localStorage.getItem("token");
+                    const response = await getAllClientEnquires(token, searchTerm);
+                    setEnquires(response);
+                } catch (error) {
+                    console.error("Failed to fetch client enquiries:", error);
+                }
+            };
+    
+            fetchData();
+        }, 500);
+    
+        return () => clearTimeout(delayDebounce);
+    }, [searchTerm]);
 
+    const handleTabClick = async(index) => {
+        setActive(index);
+        const token = localStorage.getItem("token");
+        if (index === 0) {
+            const response = await getAllClientEnquires(token,searchTerm);
+            setEnquires(response);
+        } else if (index === 1) {
+            const response = await getAllClientEnquires(token, searchTerm, "Open");
+            setEnquires(response);
+        } else if (index === 2) {
+            const response = await getAllClientEnquires(token, searchTerm, "Done");
+            setEnquires(response);
+        }
+    };
 
 
     return (
         <div>
             <div className="flex mt-4">
                 {header.map((item, index) => (
-                    <button onClick={() => setActive(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-white font-medium text-[#575757]`}>{item}</button>
+                    <button onClick={() => handleTabClick(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-white font-medium text-[#575757]`}>{item}</button>
                 ))}
                 <div onClick={() => fetchEnquires(localStorage.getItem("token"))} className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""} `}><MdRefresh size={25} /></div>
             </div>
@@ -50,6 +88,7 @@ const Leads = () => {
                             type="text"
                             placeholder="Search Clients"
                             className=" px-3 pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
@@ -66,7 +105,7 @@ const Leads = () => {
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Details</th>
-                            {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th> */}
+                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th>
                             {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Date Added</th> */}
                         </tr>
                     </thead>
@@ -83,7 +122,7 @@ const Leads = () => {
                                 <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
                                 <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
                                 <td className="py-2 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
-                                {/* <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">Done</td> */}
+                                <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">{enquery.status}</td>
                                 {/* <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery?.dateAdded ? "" : "Dec 05 - 02:34 PM"}</td> */}
                             </tr>
                         ))}

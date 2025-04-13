@@ -82,9 +82,20 @@ export const getApplicants = async (token) => {
     }
 }
 
-export const getAllClientEnquires = async (token) => {
+export const getAllClientEnquires = async (token, name=null, status=null) => {
     try {
-        const response = await fetch(`${BASE_URL}/eazotel/get-all-contact-queries`, {
+        let queryParams = [];
+        if (name) {
+            queryParams.push(`name=${encodeURIComponent(name)}`);
+        }
+
+        if (status) {
+            queryParams.push(`status=${encodeURIComponent(status)}`);
+        }
+
+        const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+        const link = `${BASE_URL}/eazotel/get-all-contact-queries${queryString}`;
+        const response = await fetch(link, {
             method: "GET", // or "POST" if you're sending data
             headers: {
                 "Content-Type": "application/json",
