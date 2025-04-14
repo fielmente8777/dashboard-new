@@ -77,7 +77,7 @@ const Navbar = () => {
     return (
         <div className='h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full'>
 
-            <div className='!text-zinc-700 max-md:border-b-2 text-[18px]  py-1 flex justify-center items-center font-medium'>
+            <div className='!text-zinc-700 max-md:border-b-2 text-[18px] w-[132px] py-1 flex justify-center items-center font-medium'>
                 <img src={Logo} alt='logo' className='h-full w-full -ml-4' />
 
             </div>
