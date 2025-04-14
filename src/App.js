@@ -14,7 +14,7 @@ function App() {
     }
   }, [localStorage.getItem('token')])
   return (
-    <div>
+    <div className="overflow-hidden">
 
       {auth ? (
         <>

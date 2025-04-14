@@ -12,7 +12,7 @@ const Login = () => {
 
     const [formData, setFormData] = useState({
         // email: 'reservation@minimalisthotes.com',
-        email: 'oakclimbingresort@gmail.com',
+        email: '',
         // email: '',
         // email: '',
         password: 'Eazotel@123',
