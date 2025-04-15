@@ -52,7 +52,7 @@ const LeadAnalytics = () => {
     };
 
     const analyticsData = [
-        { label: "Total Enquires", count: enquires.length },
+        { label: "Total Enquiries", count: enquires.length },
         // { label: "Last 7 Days", count: enquires.length - 3 },
         // { label: "Last 30 Days", count: enquires.length - 1 },
         // { label: "Last 7 Days", count: getLeadsByDateRange(7) },
@@ -72,7 +72,7 @@ const LeadAnalytics = () => {
 
     return (
         <div className="bg-white p-4">
-            <h2 className="text-sm font-semibold text-[#575757]">Enquires Analytics</h2>
+            <h2 className="text-sm font-semibold text-[#575757]">Enquiries Analytics</h2>
             {/* <div className="flex space-x-4 mb-4">
                 {["All Leads", "Uncontacted", "Follow Ups", "Converted", "Not Converted"].map(status => (
                     <button key={status}
@@ -97,7 +97,7 @@ const LeadAnalytics = () => {
 
             <div className="grid grid-cols-2 gap-6">
                 <div className="bg-white">
-                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquires Over Time</h2>
+                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquiries Over Time</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={analyticsData}>
                             <XAxis dataKey="label" />
@@ -109,7 +109,7 @@ const LeadAnalytics = () => {
                 </div>
 
                 <div className="bg-white">
-                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquires Status Distribution</h2>
+                    <h2 className="text-sm font-medium mb-2 text-[#575757]">Enquiries Status Distribution</h2>
                     <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                             <Pie data={statusDistribution} dataKey="value" nameKey="name" outerRadius={100} label>

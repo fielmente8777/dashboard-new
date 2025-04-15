@@ -3,11 +3,12 @@ import { MdRefresh } from 'react-icons/md';
 import LeadPopup from '../../components/Popup/LeadPopup';
 import { Arrow, Filter, Search } from '../../icons/icon';
 import { getAllClientEnquires } from '../../services/api';
+import { formatDateTime } from '../../services/formateDate';
 
 const Leads = () => {
     const [active, setActive] = useState(0)
     // const header = ["All Enquires", "Uncontacted", "Follow Ups", "Converted", "Not Converted"]
-    const header = ["All Enquires", "Open Queries", "Completed Queries"]
+    const header = ["All Enquires", "Open Queries", "Contacted", "Converted"]
 
     const [enquires, setEnquires] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -30,9 +31,9 @@ const Leads = () => {
         fetchEnquires(localStorage.getItem("token"));
     }, [])
     const [searchTerm, setSearchTerm] = useState('');
-    const fetchFilteredClientQuery=async (e)=>{
+    const fetchFilteredClientQuery = async (e) => {
         console.log(e)
-        const response = await getAllClientEnquires(localStorage.getItem("token"),e)
+        const response = await getAllClientEnquires(localStorage.getItem("token"), e)
         console.log(response)
         setEnquires(response);
     }
@@ -47,28 +48,34 @@ const Leads = () => {
                     console.error("Failed to fetch client enquiries:", error);
                 }
             };
-    
+
             fetchData();
         }, 500);
-    
+
         return () => clearTimeout(delayDebounce);
     }, [searchTerm]);
 
-    const handleTabClick = async(index) => {
+    const handleTabClick = async (index) => {
         setActive(index);
         const token = localStorage.getItem("token");
         if (index === 0) {
-            const response = await getAllClientEnquires(token,searchTerm);
+            const response = await getAllClientEnquires(token, searchTerm);
             setEnquires(response);
         } else if (index === 1) {
             const response = await getAllClientEnquires(token, searchTerm, "Open");
             setEnquires(response);
         } else if (index === 2) {
-            const response = await getAllClientEnquires(token, searchTerm, "Done");
+            const response = await getAllClientEnquires(token, searchTerm, "Contacted");
+            setEnquires(response);
+        } else if (index === 3) {
+            const response = await getAllClientEnquires(token, searchTerm, "Converted");
             setEnquires(response);
         }
     };
 
+
+
+    console.log(enquires)
 
     return (
         <div>
@@ -103,33 +110,33 @@ const Leads = () => {
                         <tr className="border-b">
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Name</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Details</th>
+                            {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th> */}
+                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize lg:w-[400px]">Details</th>
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th>
-                            {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Date Added</th> */}
+                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Date Added</th>
                         </tr>
                     </thead>
                     <tbody>
                         {enquires.map((enquery, index) => (
-                            <tr key={index} className="border-b cursor-pointer" onClick={() => {
+                            <tr key={index} className="border-b cursor-pointer py-1" onClick={() => {
                                 setSelectedLead(enquery);
                                 setIsPopupOpen(true);
                             }}>
-                                <td className="py-2 text-[14px] text-purple-500 font-semibold flex items-center">
+                                <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
                                     <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
                                     {enquery.Name}
                                 </td>
-                                <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
-                                <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
-                                <td className="py-2 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
+                                <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
+                                {/* <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td> */}
+                                <td className="py-3 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
                                 <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">{enquery.status}</td>
-                                {/* <td className="py-2 text-[14px]  text-[#575757] capitalize">{enquery?.dateAdded ? "" : "Dec 05 - 02:34 PM"}</td> */}
+                                <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>}
             </div>
-            <LeadPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lead={selectedLead} />
+            <LeadPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lead={selectedLead} fetchEnquires={fetchEnquires} handleTabClick={handleTabClick} />
         </div>
     )
 }

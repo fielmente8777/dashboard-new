@@ -51,18 +51,18 @@ export const SidebarData = [
 
 
     {
-        "name": "Enquires Management",
-        "link": "/enquires-management",
+        "name": "Enquiries Management",
+        "link": "/enquiries-management",
         "icon": <HiOutlineUserGroup />,
         "subLinks": [
             {
-                "name": "Enquires Analytics",
-                "link": "/enquires-management/enquires-analytics",
+                "name": "Enquiries Analytics",
+                "link": "/enquiries-management/enquiries-analytics",
                 "icon": <SiGoogleanalytics size={16} />,
             },
             {
-                "name": "Enquires",
-                "link": "/enquires-management/enquires",
+                "name": "Enquiries",
+                "link": "/enquiries-management/enquiries",
                 "icon": <FaCircleQuestion size={18} />,
             },
             // {

@@ -15,7 +15,7 @@ const Login = () => {
         email: '',
         // email: '',
         // email: '',
-        password: 'Eazotel@123',
+        password: '',
     });
 
     const [error, setError] = useState("")

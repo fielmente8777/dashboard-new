@@ -31,9 +31,9 @@ const DynamicPage = () => {
         "/user-management/settings": <Usermanagement />,
 
         // Leads mgmt
-        "/enquires-management/enquires-analytics": <LeadAnalytics />,
-        "/enquires-management/enquires": <Leads />,
-        "/enquires-management/settings": <Feedback />,
+        "/enquiries-management/enquiries-analytics": <LeadAnalytics />,
+        "/enquiries-management/enquiries": <Leads />,
+        "/enquiries-management/settings": <Feedback />,
 
         // talent-acquisition/applications
         "/human-resources-management/analytics": <TalentAnalytics />,

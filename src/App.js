@@ -14,24 +14,31 @@ function App() {
     }
   }, [localStorage.getItem('token')])
   return (
-    <div className="overflow-hidden">
+    <div className="overflow-hidden ">
+      <div className="hidden lg:block">
 
-      {auth ? (
-        <>
-          <Navbar />
-          <Main />
+        {auth ? (
+          <>
+            <Navbar />
+            <Main />
 
-          {/* <Footer /> */}
-        </>
-      ) : (
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      )}
+            {/* <Footer /> */}
+          </>
+        ) : (
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
 
+      </div>
 
       {/* <Footer /> */}
+
+
+      <div className="h-screen lg:hidden w-full flex justify-center items-center">
+        Please open it on desktop view
+      </div>
     </div >
   );
 }

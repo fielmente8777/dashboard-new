@@ -57,10 +57,10 @@ const Sidebar = () => {
                         <p className='text-[#575757]/70 text-[13px]'>{hotel?.Profile?.hoteladdress?.city}{", "}{hotel?.Profile?.hoteladdress?.State}{", "}{hotel?.Profile?.hoteladdress?.country}</p>
                     </div>
 
-                    <div className='rotate-90'>
+                    <div className='-rotate-90'>
                         {/* <IoMdHome size={14} /> */}
                         {/* {"<>"} */}
-                        <span className='rotate-90 text-[#575757]/70'><Arrow /></span>
+                        <span className='-rotate-90 text-[#575757]/70'><Arrow /></span>
                     </div>
 
                 </div>
@@ -76,7 +76,7 @@ const Sidebar = () => {
                             <p className=' text-[14px] font-medium text-[#575757]/70 '>
                                 {item.name}
                             </p>
-                            <span className={`${openMenus[index] ? "rotate-90" : "-rotate-90"} py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}><Arrow /></span>
+                            <span className={`${openMenus[index] ? "-rotate-90" : " rotate-90"} py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}><Arrow /></span>
                         </div>
 
                         :

@@ -82,7 +82,7 @@ const Navbar = () => {
 
             </div>
 
-            <div className='grid grid-cols-4 w-full md:hidden  '>
+            {/* <div className='grid grid-cols-4 w-full md:hidden  '>
                 {SidebarData.map((item, index) => (
                     <div key={index} className='relative'>
                         <Link to={item.link}
@@ -93,7 +93,7 @@ const Navbar = () => {
                         {item?.notification > 0 ? <p className='absolute bg-[#0a3a75] top-3 right-3 h-3 w-3 animate-bounce rounded-full'></p> : ''}
                     </div>
                 ))}
-            </div>
+            </div> */}
 
 
 

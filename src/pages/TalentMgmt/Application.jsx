@@ -4,6 +4,7 @@ import { MdRefresh } from "react-icons/md";
 import { Link } from "react-router-dom"
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchApplicants } from '../../redux/slice/TalentSlice';
+import { formatDateTime } from '../../services/formateDate';
 const Application = () => {
 
     const dispatch = useDispatch();
@@ -61,7 +62,7 @@ const Application = () => {
                                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Name</th>
                                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
                                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Resume</th>
-                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Status</th>
+                                {/* <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Status</th> */}
                                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Job Title</th>
                                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Applied Date</th>
                             </tr>
@@ -69,15 +70,15 @@ const Application = () => {
                         <tbody>
                             {applicants?.map((applicant, index) => (
                                 <tr key={index} className="border-b">
-                                    <td className="py-2 text-purple-500 text-[14px] font-semibold flex items-center">
+                                    <td className="py-3 text-purple-500 text-[14px] font-semibold flex items-center">
                                         <span className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-2"></span>
                                         {applicant.name}
                                     </td>
-                                    <td className="py-2 text-[14px] text-[#575757] capitalize">{applicant?.contact}</td>
-                                    <td className="py-2 text-[14px]  text-blue-600"><Link to={applicant?.resume_url} target='_blank'>{applicant?.resume_url.slice(0, 33)}...</Link></td>
-                                    <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">{applicant?.status}</td>
-                                    <td className="py-2 text-[14px]  text-[#575757] capitalize">{applicant?.jobtitle}</td>
-                                    <td className="py-2 text-[14px]  text-[#575757] capitalize">{applicant?.created_at}</td>
+                                    <td className="py-3 text-[14px] text-[#575757] capitalize">{applicant?.contact}</td>
+                                    <td className="py-3 text-[14px]  text-blue-600"><Link to={applicant?.resume_url} target='_blank'>{applicant?.resume_url.slice(0, 33)}...</Link></td>
+                                    {/* <td className="py-3 text-[14px] font-medium  text-[#575757] capitalize">{applicant?.status}</td> */}
+                                    <td className="py-3 text-[14px]  text-[#575757] capitalize">{applicant?.jobtitle}</td>
+                                    <td className="py-3 text-[14px]  text-[#575757] capitalize">{formatDateTime(applicant?.created_at)}</td>
                                 </tr>
                             ))}
                         </tbody>
