@@ -47,7 +47,25 @@ const Login = () => {
         const response = await dispatch(loginUser(formData));
         console.log(response);
         let timerInterval;
-        if (response.data.Status) {
+        if (response.success == false) {
+            Swal.fire({
+                title: "Logged Failed",
+                html: "Navigating you to Login <b></b>",
+                timer: 700,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector("b");
+                    timerInterval = setInterval(() => {
+                        timer.textContent = `${Swal.getTimerLeft()}`;
+                    }, 1000);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
+            })
+        }
+        else if (response.data.Status) {
             const token = response?.data?.Token;
             localStorage.setItem("token", token || "");
 
@@ -88,9 +106,7 @@ const Login = () => {
                 willClose: () => {
                     clearInterval(timerInterval);
                 }
-            }).then((result) => {
-
-            });
+            })
         }
     };
     const [showPassword, setShowPassword] = useState(false);

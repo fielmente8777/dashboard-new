@@ -10,7 +10,7 @@ const Analytics = () => {
     const location = useLocation();
     const { totalRequests, pendingRequests,
         inProgressRequests,
-        completedRequests, setHomeNotifications, editButton, setEditButton } = useContext(DataContext);
+        completedRequests, setHomeNotifications, editButton, setEditButton, cancelledRequests } = useContext(DataContext);
 
 
 
@@ -38,13 +38,17 @@ const Analytics = () => {
     }, [editButton]);
 
     return (
-        <div className='flex flex-col gap-5 '>
+
+        <div className='bg-white p-4 '>
+            <h2 className="text-sm font-semibold text-[#575757]">Request Analytics</h2>
+
             <button onClick={play} className='hidden'>Boop!</button>
-            <div className='grid grid-cols-2 gap-4 '>
+            <div className='grid grid-cols-5 gap-4 mt-4 '>
                 <DataCard count={totalRequests ? totalRequests : "0"} heading={"Total Requests"} />
                 <DataCard count={pendingRequests ? pendingRequests : "0"} heading={"Pending"} />
                 <DataCard count={inProgressRequests ? inProgressRequests : "0"} heading={"In Progress"} />
                 <DataCard count={completedRequests ? completedRequests : "0"} heading={"Completed"} />
+                <DataCard count={cancelledRequests ? cancelledRequests : "0"} heading={"Cancelled"} />
             </div>
         </div>
     )

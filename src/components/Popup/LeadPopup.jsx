@@ -5,11 +5,11 @@ import { Arrow } from "../../icons/icon";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires, handleTabClick }) => {
+const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires, handleTabClick, activeIndex }) => {
     if (!lead) return null;
 
 
-    console.log(lead)
+    // console.log(lead)
     const handleDelete = async (id, email) => {
         const confirmation = await Swal.fire({
             title: "Are you sure?",
@@ -24,7 +24,7 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
 
         if (confirmation.isConfirmed) {
             try {
-                const response = await axios.post("http://127.0.0.1:5000/eazotel/delete-contact-query", {
+                const response = await axios.post("https://nexon.eazotel.com/eazotel/delete-contact-query", {
                     "token": localStorage.getItem('token'),
                     "id": id
                 })
@@ -58,7 +58,7 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
     const handleQueryStatus = async (status) => {
         try {
 
-            const response = await axios.post("http://127.0.0.1:5000/eazotel/edit-contact-query", {
+            const response = await axios.post("https://nexon.eazotel.com/eazotel/edit-contact-query", {
 
                 "token": localStorage.getItem("token"),
                 "Contact": lead.Contact,
@@ -88,9 +88,9 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
             }).then(() => {
                 if (result.Status) {
 
-                    // lead.status === "Open" ? handleTabClick(1) : lead.status === "Uncontacted" ? handleTabClick(2) : lead.status === "Converted" ? handleTabClick(3) : handleTabClick()
+                    handleTabClick(activeIndex)
 
-                    fetchEnquires(localStorage.getItem('token'));
+                    // fetchEnquires(localStorage.getItem('token'));
                 }
             });
 
@@ -173,10 +173,10 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
                                 onChange={(e) => handleQueryStatus(e.target.value)}
                                 value={lead.status || ""}
                             >
-                                <option value="" disabled>Select Status</option>
-                                <option value="Converted">Converted</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="Open">Open</option>
+                                <option value="" disabled className="text-white bg-white">Select Status</option>
+                                <option value="Converted" className="bg-white text-black">Converted</option>
+                                <option value="Contacted" className="bg-white  text-black">Contacted</option>
+                                <option value="Open" className="bg-white  text-black">Open</option>
                             </select>
                         </div>
                         {lead.Contact &&

@@ -7,13 +7,13 @@ import { formatDateTime } from '../../services/formateDate';
 
 const Leads = () => {
     const [active, setActive] = useState(0)
-    // const header = ["All Enquires", "Uncontacted", "Follow Ups", "Converted", "Not Converted"]
     const header = ["All Enquires", "Open Queries", "Contacted", "Converted"]
-
     const [enquires, setEnquires] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedLead, setSelectedLead] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
 
     const fetchEnquires = async (token) => {
         setLoading(true);
@@ -30,13 +30,12 @@ const Leads = () => {
     useEffect(() => {
         fetchEnquires(localStorage.getItem("token"));
     }, [])
-    const [searchTerm, setSearchTerm] = useState('');
-    const fetchFilteredClientQuery = async (e) => {
-        console.log(e)
-        const response = await getAllClientEnquires(localStorage.getItem("token"), e)
-        console.log(response)
-        setEnquires(response);
-    }
+    // const fetchFilteredClientQuery = async (e) => {
+    //     console.log(e)
+    //     const response = await getAllClientEnquires(localStorage.getItem("token"), e)
+    //     console.log(response)
+    //     setEnquires(response);
+    // }
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             const fetchData = async () => {
@@ -56,26 +55,34 @@ const Leads = () => {
     }, [searchTerm]);
 
     const handleTabClick = async (index) => {
+        setLoading(true)
         setActive(index);
         const token = localStorage.getItem("token");
-        if (index === 0) {
-            const response = await getAllClientEnquires(token, searchTerm);
-            setEnquires(response);
-        } else if (index === 1) {
-            const response = await getAllClientEnquires(token, searchTerm, "Open");
-            setEnquires(response);
-        } else if (index === 2) {
-            const response = await getAllClientEnquires(token, searchTerm, "Contacted");
-            setEnquires(response);
-        } else if (index === 3) {
-            const response = await getAllClientEnquires(token, searchTerm, "Converted");
-            setEnquires(response);
+        try {
+            if (index === 0) {
+                const response = await getAllClientEnquires(token, searchTerm);
+                setEnquires(response);
+            } else if (index === 1) {
+                const response = await getAllClientEnquires(token, searchTerm, "Open");
+                setEnquires(response);
+            } else if (index === 2) {
+                const response = await getAllClientEnquires(token, searchTerm, "Contacted");
+                setEnquires(response);
+            } else if (index === 3) {
+                const response = await getAllClientEnquires(token, searchTerm, "Converted");
+                setEnquires(response);
+            }
+        } catch (error) {
+            throw error;
         }
+        finally {
+            setLoading(false)
+        }
+
     };
 
 
 
-    console.log(enquires)
 
     return (
         <div>
@@ -105,7 +112,7 @@ const Leads = () => {
                     </button>
                 </div>
 
-                {enquires && <table className="w-full text-left">
+                {!loading ? <table className="w-full text-left">
                     <thead>
                         <tr className="border-b">
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Name</th>
@@ -116,27 +123,46 @@ const Leads = () => {
                             <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Date Added</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {enquires.map((enquery, index) => (
-                            <tr key={index} className="border-b cursor-pointer py-1" onClick={() => {
-                                setSelectedLead(enquery);
-                                setIsPopupOpen(true);
-                            }}>
-                                <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
-                                    <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
-                                    {enquery.Name}
-                                </td>
-                                <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
-                                {/* <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td> */}
-                                <td className="py-3 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
-                                <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">{enquery.status}</td>
-                                <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
-                            </tr>
+                    {enquires &&
+                        <tbody>
+                            {enquires.map((enquery, index) => (
+                                <tr key={index} className="border-b cursor-pointer py-1" onClick={() => {
+                                    setSelectedLead(enquery);
+                                    setIsPopupOpen(true);
+                                }}>
+                                    <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
+                                        <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
+                                        {enquery.Name}
+                                    </td>
+                                    <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery.Contact}</td>
+                                    {/* <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td> */}
+                                    <td className="py-3 text-[14px] text-[#575757] ">{enquery.Message.slice(0, 30)} {enquery.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
+                                    <td className="py-2 text-[14px] font-medium  text-[#575757] capitalize">{enquery.status}</td>
+                                    <td className="py-3 text-[14px]  text-[#575757] capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    }
+
+                </table>
+                    :
+                    <div className='space-y-2'>
+                        {[1, 2, 3, 4, 5, 6, 7].map(index => (
+                            <div key={index}>
+                                <p className='py-5 animate-pulse bg-gray-100'></p>
+                            </div>
                         ))}
-                    </tbody>
-                </table>}
+                    </div>
+                }
             </div>
-            <LeadPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lead={selectedLead} fetchEnquires={fetchEnquires} handleTabClick={handleTabClick} />
+            <LeadPopup
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+                lead={selectedLead}
+                fetchEnquires={fetchEnquires}
+                handleTabClick={handleTabClick}
+                activeIndex={active}
+            />
         </div>
     )
 }

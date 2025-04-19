@@ -12,10 +12,11 @@ export const DataProvider = ({ children }) => {
     const [emergencyRequests, setEmergencyRequests] = useState();
     const [emergencyRequestData, setEmergencyRequestData] = useState([])
     const [requestData, setRequestsData] = useState([]);
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [pendingRequests, setPendingRequests] = useState('');
     const [inProgressRequests, setInProgressRequests] = useState('');
     const [completedRequests, setCompletedRequests] = useState('');
+    const [cancelledRequests, setCancelledRequests] = useState('');
     const [homeNotifications, setHomeNotifications] = useState([]);
     const [emergencyNotifications, setEmergencyNotifications] = useState([]);
 
@@ -33,16 +34,17 @@ export const DataProvider = ({ children }) => {
 
 
     const getAllRequest = async () => {
+        setLoading(true)
         try {
             const response = await axios.post(`${host}/api/getrequest`, {
                 ndid: localStorage.getItem('ndid'),
                 hid: localStorage.getItem('hid'),
             })
 
-            if (response.status === 404) {
-                setLoading(false)
-                return;
-            }
+            // if (response.status === 404) {
+            //     setLoading(false)
+            //     return;
+            // }
 
             if (!response?.data) {
                 console.log("data not found")
@@ -52,11 +54,13 @@ export const DataProvider = ({ children }) => {
                 howManyPendingRequest(response.data?.data)
                 howManyInProgressRequest(response.data?.data)
                 howManyCompletedRequest(response.data?.data)
+                howManyCancelledRequest(response.data?.data)
             }
-            setLoading(false)
         } catch (error) {
-            setLoading(false)
             return {}
+        }
+        finally {
+            setLoading(false)
         }
     }
     const getEmergencyRequest = async () => {
@@ -87,6 +91,10 @@ export const DataProvider = ({ children }) => {
     const howManyCompletedRequest = (data) => {
         const completedRequests = data?.filter(request => request.status === 'Completed').length;
         setCompletedRequests(completedRequests)
+    }
+    const howManyCancelledRequest = (data) => {
+        const cancelledRequests = data?.filter(request => request.status === 'Cancelled').length;
+        setCancelledRequests(cancelledRequests)
     }
 
 
@@ -142,6 +150,7 @@ export const DataProvider = ({ children }) => {
                 pendingRequests, setPendingRequests,
                 inProgressRequests, setInProgressRequests,
                 completedRequests, setCompletedRequests,
+                cancelledRequests, setCancelledRequests,
                 getAllRequest,
                 howManyPendingRequest,
                 howManyInProgressRequest,

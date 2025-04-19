@@ -49,7 +49,7 @@ const Sidebar = () => {
         <div className='flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden'>
 
             {!hotel ?
-                <div className='bg-gray-200 p-6 animate-pulse rounded-md mb-4' />
+                <div className='bg-gray-100 p-6 animate-pulse rounded-md mb-4' />
                 :
                 <div className='border cursor-pointer rounded-md px-2 py-1 flex items-center justify-between mb-4'>
                     <div className=''>

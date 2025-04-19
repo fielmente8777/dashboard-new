@@ -8,7 +8,7 @@ const styles = {
 const AllRequest = () => {
 
     return (
-        <div>
+        <div className=''>
             <Request />
         </div>
     )
