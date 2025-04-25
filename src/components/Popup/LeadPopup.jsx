@@ -115,7 +115,7 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
             <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm w-[60%] ">
 
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-medium text-[#575757] capitalize">{lead.Name}</h2>
+                    <h2 className="text-xl font-medium text-[#575757] capitalize">{lead?.Name}</h2>
                     <button onClick={onClose} className="text-[#575757]/70 text-2xl hover:text-[#575757]">&times;</button>
                 </div>
                 {/* <div className="bg-purple-500 text-white px-4 py-2 font-medium uppercase rounded-sm w-max mb-4">Uncontacted</div> */}
@@ -127,12 +127,12 @@ const LeadPopup = ({ hotelName = "Eazotel", isOpen, onClose, lead, fetchEnquires
                             <div>
                                 <p className=" font-medium text-[#575757]">Mobile Number:</p>
                                 <p className="text-[#575757]/70">
-                                    {lead.Contact}
+                                    {lead?.Contact}
                                 </p>
                             </div>
                             <div>
                                 <p className=" font-medium text-[#575757]">Email Address:</p>
-                                <p className="text-[#575757]/70">{lead.Email}</p>
+                                <p className="text-[#575757]/70">{lead?.Email}</p>
                             </div>
 
                             {/* <div>
