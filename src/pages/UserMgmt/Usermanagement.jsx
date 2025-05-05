@@ -8,6 +8,7 @@ import UserMgmtPopup from './UserMgmtPopup';
 import Swal from 'sweetalert2';
 import { FaEdit } from 'react-icons/fa';
 import EditUserPopup from './EditUserPopup';
+import ColumnResizer from "react-table-column-resizer";
 
 const accessRoles = ["bookingEngine", "channelManager", "cms", "foodManager",
     "frontDesk", "gatewayManager", "reservationDesk", "seoManager", "socialMedia", "themes", "PMS", "GRM", "HRM",];
@@ -188,6 +189,32 @@ const Usermanagement = () => {
                     </table>
                 </div >
             </div >
+
+
+
+            <div className='border-2 border-red-500'>
+                <table class="column_resize_table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <ColumnResizer className="columnResizer" minWidth={0} />
+                            </th>
+
+                            <th>2</th>
+                            <th>1</th>
+                            <ColumnResizer className="columnResizer" minWidth={0} />
+                            <th>2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>3</td>
+                            <td />
+                            <td>4</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
 
 

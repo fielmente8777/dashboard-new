@@ -12,12 +12,39 @@ import TalentAnalytics from '../TalentMgmt/Analytics'
 import Application from '../TalentMgmt/Application'
 import LeadAnalytics from "../Enquiry/LeadAnalytics"
 import Leads from "../Enquiry/Leads"
+
+import Privacy from '../CMS/Privacy'
+import Tandc from '../CMS/Tandc'
+import Cancellationrefund from '../CMS/Cancellationrefund'
+import Experience from '../CMS/Experience'
+import Gallery from '../CMS/Gallery'
+import Profile from '../CMS/Profile'
+import Faq from '../CMS/Faq'
+import Offers from '../CMS/Offers'
+import Events from '../CMS/Events'
+import Development from '../CMS/Development'
+
 const DynamicPage = () => {
 
     const location = useLocation();
 
     const routeComponents = {
         "/": <Dashboard />,
+
+
+        // CMS
+        "/cms/privacy-policy": <Privacy />,
+        "/cms/terms-and-conditions": <Tandc />,
+        "/cms/cancellation-and-refund-policy": <Cancellationrefund />,
+        "/cms/experiences": <Experience />,
+        "/cms/gallery": <Gallery />,
+        "/cms/profile-and-links": <Profile />,
+        "/cms/work-and-celebrate": <Faq />,
+        "/cms/cafes": <Faq />,
+        "/cms/faq": <Faq />,
+        "/cms/offers": <Offers />,
+        "/cms/events": <Events />,
+        "/cms/development": <Development />,
 
         // grm route
         "/grm/analytics": <GrmAnalytics />,

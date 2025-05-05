@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MdRefresh } from 'react-icons/md';
 import LeadPopup from '../../components/Popup/LeadPopup';
-import { Arrow, Filter, Search } from '../../icons/icon';
+import { Search } from '../../icons/icon';
 import { getAllClientEnquires } from '../../services/api';
 import { formatDateTime } from '../../services/formateDate';
-import FilterPopup from '../../components/Popup/FilterPopup';
+// import FilterPopup from '../../components/Popup/FilterPopup';
 
 const Leads = () => {
     const [active, setActive] = useState(0)
@@ -141,39 +141,40 @@ const Leads = () => {
                     </button> */}
                 </div>
 
-                {!loading ? <table className="w-full text-left">
-                    <thead>
-                        <tr className="border-b">
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Name</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize lg:w-[400px]">Details</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th>
-                            <th className="py-2 text-[14px] font-medium text-[#575757] capitalize resize">Date Added</th>
-                        </tr>
-                    </thead>
-                    {filteredEnquires &&
-                        <tbody>
-                            {filteredEnquires.map((enquery, index) => (
-                                <tr key={index} className={`border-b cursor-pointer py-1 ${enquery?.status === "Open" ? " text-purple-500" : "text-[#575757]"}`} onClick={() => {
-                                    setSelectedLead(enquery);
-                                    setIsPopupOpen(true);
-                                }}>
-                                    <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
-                                        <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
-                                        {enquery.Name}
-                                    </td>
-                                    <td className="py-3 text-[14px]   capitalize">{enquery?.Contact}</td>
-                                    <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
-                                    <td className="py-3 text-[14px]  "><span className='font-medium text-[14px]'>Lead Via {enquery?.created_from}:</span> {enquery?.Message.slice(0, 25)} {enquery?.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
-                                    <td className="py-2 text-[14px] font-medium   capitalize">{enquery?.status}</td>
-                                    <td className="py-3 text-[14px] whitespace-nowrap   capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
-                                </tr>
-                            )).reverse()}
-                        </tbody>
-                    }
+                {!loading ?
+                    <table className="w-full text-left ">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Name</th>
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Contact</th>
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">Email</th>
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize lg:w-[400px]">Details</th>
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">status</th>
+                                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize resize">Date Added</th>
+                            </tr>
+                        </thead>
+                        {filteredEnquires &&
+                            <tbody>
+                                {filteredEnquires.map((enquery, index) => (
+                                    <tr key={index} className={`border-b cursor-pointer py-1 ${enquery?.status === "Open" ? " text-purple-500" : "text-[#575757]"}`} onClick={() => {
+                                        setSelectedLead(enquery);
+                                        setIsPopupOpen(true);
+                                    }}>
+                                        <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
+                                            <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
+                                            {enquery.Name}
+                                        </td>
+                                        <td className="py-3 text-[14px]   capitalize">{enquery?.Contact}</td>
+                                        <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
+                                        <td className="py-3 text-[14px]  "><span className='font-medium text-[14px]'>Lead Via {enquery?.created_from}:</span> {enquery?.Message.slice(0, 25)} {enquery?.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
+                                        <td className="py-2 text-[14px] font-medium   capitalize">{enquery?.status}</td>
+                                        <td className="py-3 text-[14px] whitespace-nowrap   capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
+                                    </tr>
+                                )).reverse()}
+                            </tbody>
+                        }
 
-                </table>
+                    </table>
                     :
                     <div className='space-y-2'>
                         {[1, 2, 3, 4, 5, 6, 7].map(index => (

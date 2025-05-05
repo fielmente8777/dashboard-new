@@ -82,7 +82,7 @@ export const getApplicants = async (token) => {
     }
 }
 
-export const getAllClientEnquires = async (token, name=null, status=null) => {
+export const getAllClientEnquires = async (token, name = null, status = null) => {
     try {
         let queryParams = [];
         if (name) {
@@ -110,6 +110,93 @@ export const getAllClientEnquires = async (token, name=null, status=null) => {
     }
 }
 
+export const GetwebsiteDetails = async (token) => {
+    try {
+        // const link = `${BASE_URL}/cms/get/website/sparvhospitality`;
+        // const response = await fetch(link, {
+        //     method: "GET", // or "POST" if you're sending data
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "Authorization": `Bearer ${token}`
+        //     }
+        // });
+        const response = await fetch(
+            `${BASE_URL}/cms/get/navbar?id=${localStorage.getItem("token")}`,
+            {
+                method: "GET",
+                headers: {
+                    Accept: "application/json, text/plain, /",
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        const result = await response.json();
+        // console.log(result)
+        return result?.WebsiteData || result?.Details;
+    } catch (error) {
+        console.error("Error getting applicants:", error);
+        throw error;
+    }
+}
+
+
+export const DeleteImage = async (selectedCategory, Image, token) => {
+
+    try {
+        const response = await fetch(`${BASE_URL}/cms/edit/Gallery/image`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                token: token,
+                operation: "delete",
+                category: selectedCategory,
+                imageurl: Image,
+            }),
+        });
+        const result = await response.json();
+
+        console.log(result)
+        return result?.WebsiteData;
+
+    } catch (error) {
+        console.error("Error getting applicants:", error);
+        throw error;
+    }
+};
+
+
+
+
+export const UploadingImageS3 = async (base64String) => {
+
+    try {
+        const response = await fetch(`https://nexon.eazotel.com/upload/file/image`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                token: window.localStorage.getItem("token"),
+                image: base64String,
+            }),
+        });
+
+        const result = await response.json();
+
+        return result?.Image || null;
+    } catch (error) {
+        console.error("Error uploading image:", error);
+        throw error;
+    }
+    // Replace 'YOUR_BACKEND_API_URL' with the actual URL of your backend API
+
+}
+
+
+
+
 // export const addUserInUsermanagement = async (token) => {
 //     try {
 //         const response = await fetch(`${BASE_URL}/eazotel/get-all-contact-queries`, {
@@ -126,7 +213,5 @@ export const getAllClientEnquires = async (token, name=null, status=null) => {
 //         throw error;
 //     }
 // }
-
-
 
 

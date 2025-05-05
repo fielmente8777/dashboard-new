@@ -16,6 +16,75 @@ export const SidebarData = [
     },
 
     {
+        "name": "Content Management system",
+        "link": "/content-management-system",
+        "icon": <MdOutlineSos size={26} />,
+        "subLinks": [
+            {
+                "name": "Profile and Links",
+                "link": "/cms/profile-and-links",
+                "icon": <SiGoogleanalytics size={16} />,
+            },
+            // {
+            //     "name": "Work and Celebrate",
+            //     "link": "/cms/work-and-celebrate",
+            //     "icon": <FaCodePullRequest size={16} />,
+            // },
+            // {
+            //     "name": "Cafes",
+            //     "link": "/cms/cafes",
+            //     "icon": <MdEmergencyShare size={18} />
+            // },
+
+            // {
+            //     "name": "Guest Feedback",
+            //     "link": "/cms/guest-feedback",
+            //     "icon": <RiFeedbackFill size={20} />
+            // },
+            // {
+            //     "name": "Experiences",
+            //     "link": "/cms/experiences",
+            //     "icon": <IoMdSettings size={18} />
+            // },
+            {
+                "name": "Gallery",
+                "link": "/cms/gallery",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Offers",
+                "link": "/cms/offers",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Events",
+                "link": "/cms/events",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Faq",
+                "link": "/cms/faq",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Privacy Policy",
+                "link": "/cms/privacy-policy",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Terms & Conditions",
+                "link": "/cms/terms-and-conditions",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
+                "name": "Cancellation and refund Policy",
+                "link": "/cms/cancellation-and-refund-policy",
+                "icon": <IoMdSettings size={18} />
+            }
+        ]
+    },
+
+    {
         "name": "Guest Request Management",
         "link": "/guest-request-management",
         "icon": <MdOutlineSos size={26} />,
