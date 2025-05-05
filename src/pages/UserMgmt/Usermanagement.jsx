@@ -189,35 +189,6 @@ const Usermanagement = () => {
                     </table>
                 </div >
             </div >
-
-
-
-            <div className='border-2 border-red-500'>
-                <table class="column_resize_table">
-                    <thead>
-                        <tr>
-                            <th>
-                                <ColumnResizer className="columnResizer" minWidth={0} />
-                            </th>
-
-                            <th>2</th>
-                            <th>1</th>
-                            <ColumnResizer className="columnResizer" minWidth={0} />
-                            <th>2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>3</td>
-                            <td />
-                            <td>4</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-
-
             <UserMgmtPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} fetchData={fetchData} />
             <EditUserPopup editData={editUserData} setEditUserData={setEditUserData} isEditPopupOpen={isEditPopupOpen} onClose={() => setIsEditPopupOpen(false)} fetchData={fetchData} />
         </>

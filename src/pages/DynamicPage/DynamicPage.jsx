@@ -23,6 +23,7 @@ import Faq from '../CMS/Faq'
 import Offers from '../CMS/Offers'
 import Events from '../CMS/Events'
 import Development from '../CMS/Development'
+import Blogs from '../CMS/Blogs'
 
 const DynamicPage = () => {
 
@@ -36,15 +37,16 @@ const DynamicPage = () => {
         "/cms/privacy-policy": <Privacy />,
         "/cms/terms-and-conditions": <Tandc />,
         "/cms/cancellation-and-refund-policy": <Cancellationrefund />,
-        "/cms/experiences": <Experience />,
+        // "/cms/experiences": <Experience />,
         "/cms/gallery": <Gallery />,
         "/cms/profile-and-links": <Profile />,
-        "/cms/work-and-celebrate": <Faq />,
-        "/cms/cafes": <Faq />,
+        // "/cms/work-and-celebrate": <Faq />,
+        // "/cms/cafes": <Faq />,
         "/cms/faq": <Faq />,
         "/cms/offers": <Offers />,
         "/cms/events": <Events />,
-        "/cms/development": <Development />,
+        "/cms/blogs": <Blogs />,
+        // "/cms/development": <Development />,
 
         // grm route
         "/grm/analytics": <GrmAnalytics />,

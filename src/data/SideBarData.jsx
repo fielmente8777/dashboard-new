@@ -62,6 +62,11 @@ export const SidebarData = [
                 "icon": <IoMdSettings size={18} />
             },
             {
+                "name": "Blogs",
+                "link": "/cms/blogs",
+                "icon": <IoMdSettings size={18} />
+            },
+            {
                 "name": "Faq",
                 "link": "/cms/faq",
                 "icon": <IoMdSettings size={18} />
