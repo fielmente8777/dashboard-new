@@ -217,9 +217,9 @@ const Profile = () => {
 
     return (
         <>
-            {!websiteLinksData === "None" ||
-                !websiteReviewsData === "None" ||
-                !websiteFooterData === "None" ? (
+            {websiteLinksData === "None" ||
+                websiteReviewsData === "None" ||
+                websiteFooterData === "None" ? (
                 <div className="flex items-center justify-center w-[80vw] h-[70vh]">
                     {/* <HashLoader color="#E65502" /> */}
                     jhklm
