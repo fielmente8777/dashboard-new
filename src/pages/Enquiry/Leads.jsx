@@ -160,13 +160,13 @@ const Leads = () => {
                                         setSelectedLead(enquery);
                                         setIsPopupOpen(true);
                                     }}>
-                                        <td className="py-3 text-[14px] text-purple-500 font-semibold flex items-center">
-                                            <span className="w-1.5 h-1.5 text-[14px] bg-purple-500 rounded-full mr-2"></span>
-                                            {enquery.Name}
+                                        <td className="py-3 text-[14px]  font-semibold flex items-center">
+                                            <span className="w-1.5 h-1.5 text-[14px]  rounded-full mr-2"></span>
+                                            {enquery.Name.slice(0, 15)}
                                         </td>
                                         <td className="py-3 text-[14px]   capitalize">{enquery?.Contact}</td>
                                         <td className="py-2 text-[14px]  text-[#575757]  md:w-[13rem] lg:w-[20rem]">{enquery.Email}</td>
-                                        <td className="py-3 text-[14px]  "><span className='font-medium text-[14px]'>Lead Via {enquery?.created_from}:</span> {enquery?.Message.slice(0, 25)} {enquery?.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
+                                        <td className="py-3 text-[14px]  "><span className='font-medium text-[14px]'>Lead from <span className='capitalize'>{enquery?.created_from}</span>:</span> {enquery?.Message.slice(0, 25)} {enquery?.Message.length > 30 ? <span className="text-blue-600">...read more</span> : ""}</td>
                                         <td className="py-2 text-[14px] font-medium   capitalize">{enquery?.status}</td>
                                         <td className="py-3 text-[14px] whitespace-nowrap   capitalize">{enquery?.Created_at ? formatDateTime(enquery?.Created_at) : "Dec 05 - 02:34 PM"}</td>
                                     </tr>

@@ -3,14 +3,18 @@ import { DeleteImage, GetwebsiteDetails } from '../../services/api';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { MdDeleteOutline } from 'react-icons/md';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchWebsiteData } from '../../redux/slice/websiteDataSlice';
 
 const Analytics = () => {
-    const [openIndex, setOpenIndex] = useState(null);
-    const [websitedata, setWebsitedata] = useState({});
+
+    const dispatch = useDispatch();
+    const { websiteData, loading, error } = useSelector(state => state.websiteData)
+
+    // const [websitedata, setWebsitedata] = useState({});
     const [websiteoffersdata, setwebsiteoffersdata] = useState([]);
     const [activeIndex, setActiveIndex] = useState(null);
-    const [loading, setLoading] = useState(false);
-
+    // const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
         hotel: "",
@@ -23,28 +27,35 @@ const Analytics = () => {
 
     const [inclusionInput, setInclusionInput] = useState('');
 
+
+    const token = localStorage.getItem("token");
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const token = localStorage.getItem("token");
-                const data = await GetwebsiteDetails(token);
-                setWebsitedata(data);
-                setwebsiteoffersdata(data?.Offers || []);
-            } catch (error) {
-                console.error("Error fetching website details:", error);
-            }
-            finally {
-                setLoading(false);
-            }
-        };
+        if (localStorage.getItem("token")) {
+            dispatch(fetchWebsiteData(token))
+        }
+    }, [dispatch, token])
 
-        fetchData();
-    }, []);
 
-    // const toggleAccordion = (index) => {
-    //     setOpenIndex(openIndex === index ? null : index);
-    // };
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         setLoading(true);
+    //         try {
+    //             const token = localStorage.getItem("token");
+    //             const data = await GetwebsiteDetails(token);
+    //             setWebsitedata(data);
+    //             setwebsiteoffersdata(data?.Offers || []);
+    //         } catch (error) {
+    //             console.error("Error fetching website details:", error);
+    //         }
+    //         finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, []);
+
+
 
     const addInclusion = () => {
         if (inclusionInput.trim() !== '') {
@@ -62,11 +73,6 @@ const Analytics = () => {
             addInclusion();
         }
     };
-
-    // const handleFileChange = (e) => {
-    //     const file = e.target.files[0];
-    //     setFormData({ ...formData, image: file });
-    // };
 
 
     const uploadImage = (e) => {
@@ -197,18 +203,16 @@ const Analytics = () => {
             }
         });
     }
-    // const updatedOffers = websiteoffersdata.filter((offer, i) => i !== indexToDelete);
-    // setwebsiteoffersdata(updatedOffers);
-    // console.log(formData);/
-    // console.log(websiteoffersdata);
 
+
+    console.log("data from redux", websiteData)
     return (
         <div className='bg-white p-4'>
             <div>
                 <h2 className="text-sm font-semibold text-[#575757]">Offers</h2>
             </div>
             <hr className='mt-2' />
-            {
+            {/* {
                 loading ?
                     <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-5'>
                         {[1, 2, 3].map((item, index) => (
@@ -217,10 +221,9 @@ const Analytics = () => {
                     </div>
                     :
                     <div className='grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-5'>
-                        {websiteoffersdata?.map((item, index) => (
+                        {websiteoffersdata[0]?.image && websiteoffersdata?.map((item, index) => (
                             <div key={index} className={`flex flex-col relative gap-2 ${activeIndex === index ? "bg-white z-10" : ""}`} onMouseEnter={() => setActiveIndex(true)} onMouseLeave={() => setActiveIndex(false)}>
 
-                                {/* <button className='absolute top-5 right-5 bg-red-600 px-2 py-1 rounded-sm text-white' onClick={() => handleDelete(index)}>Delete</button> */}
                                 <MdDeleteOutline size={28} onClick={() => handleDelete(index)}
                                     className="absolute top-3 right-3 cursor-pointer bg-white p-1 text-red-600 rounded-full text-md"
                                 />
@@ -249,7 +252,7 @@ const Analytics = () => {
                             </div>
                         ))}
                     </div>
-            }
+            } */}
 
 
 

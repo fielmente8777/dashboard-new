@@ -8,7 +8,6 @@ import UserMgmtPopup from './UserMgmtPopup';
 import Swal from 'sweetalert2';
 import { FaEdit } from 'react-icons/fa';
 import EditUserPopup from './EditUserPopup';
-import ColumnResizer from "react-table-column-resizer";
 
 const accessRoles = ["bookingEngine", "channelManager", "cms", "foodManager",
     "frontDesk", "gatewayManager", "reservationDesk", "seoManager", "socialMedia", "themes", "PMS", "GRM", "HRM",];

@@ -3,6 +3,7 @@ import axios from "axios";
 const BASE_URL = "https://nexon.eazotel.com"
 // const BASE_URL = "http://127.0.0.1:5000"
 
+
 export const UserLogin = async (userData) => {
     try {
         const response = await axios.post(`${BASE_URL}/eazotel/ceateuser`,
@@ -121,7 +122,7 @@ export const GetwebsiteDetails = async (token) => {
         //     }
         // });
         const response = await fetch(
-            `${BASE_URL}/cms/get/navbar?id=${localStorage.getItem("token")}`,
+            `${BASE_URL}/cms/get/navbar?id=${token}`,
             {
                 method: "GET",
                 headers: {
@@ -131,7 +132,7 @@ export const GetwebsiteDetails = async (token) => {
             }
         );
         const result = await response.json();
-        // console.log(result)
+        console.log(result.Details)
         return result?.WebsiteData || result?.Details;
     } catch (error) {
         console.error("Error getting applicants:", error);

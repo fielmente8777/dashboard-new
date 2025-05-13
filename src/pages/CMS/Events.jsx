@@ -46,7 +46,9 @@ const Events = () => {
     const uploadImage = async (e) => {
         e.preventDefault();
         const imageInput = document.getElementById("file");
+        console.log(imageInput)
         const file = imageInput.files[0];
+        console.log(file)
         if (!file) {
             Swal.fire({
                 icon: 'error',
@@ -202,7 +204,7 @@ const Events = () => {
     //     }
     // };
 
-    // console.log(websiteEventsData)
+    console.log(websiteEventsData)
 
     return (
         <div className='bg-white  p-4'>
@@ -222,7 +224,7 @@ const Events = () => {
                         </div>
                         :
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                            {websiteEventsData?.map((item, index) => (
+                            {websiteEventsData[0]?.Image && websiteEventsData?.map((item, index) => (
                                 <div key={index} className="bg-white rounded-lg p-4 mb-4 relative">
                                     <div>
                                         <span className='absolute top-2 right-2 bg-white'>
