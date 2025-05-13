@@ -4,8 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        'color-1': '#D1B14E',
-        'color-2': '#040404',
+        primary: "#0A3A75",
+        "color-1": "#D1B14E",
+        "color-2": "#040404",
       },
       animation: {
         fadeIn: "fadeIn 0.3s ease-in-out forwards",

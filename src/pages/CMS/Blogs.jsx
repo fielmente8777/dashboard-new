@@ -6,7 +6,7 @@ import { FileUploader } from "react-drag-drop-files";
 const fileTypes = ["JPG", "PNG", "GIF", "JPEG", "WEBP"];
 const Blogs = () => {
   const editor = useRef(null);
-  const [editable, setEditable] = useState("None");
+  //   const [editable, setEditable] = useState("None");
   const [websiteBlogsData, setWebsiteBlogsData] = useState([]);
   const [blogText, setBlogText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,19 +20,6 @@ const Blogs = () => {
 
   const [selectedImage, setSelectedImage] = useState("");
   const [base64String, setBase64String] = useState(null);
-
-  // "https://eazotel-client-webp-image.s3.ap-south-1.amazonaws.com/minimalist/events/eventnew.png"
-
-  // const handleImageSelection = (event) => {
-  //     const file = event.target.files[0];
-  //     if (file) {
-  //         const reader = new FileReader();
-  //         reader.onloadend = () => {
-  //             setSelectedImage(reader.result);
-  //         };
-  //         reader.readAsDataURL(file);
-  //     }
-  // }
 
   const fetchData = async () => {
     setLoading(true);
@@ -53,10 +40,6 @@ const Blogs = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const autoGenerateSlug = (text) => {
     const slug = text
       .toLowerCase()
@@ -67,12 +50,6 @@ const Blogs = () => {
 
     setFormData({ ...formData, slug: slug });
   };
-
-  useEffect(() => {
-    if (formData.heading) {
-      autoGenerateSlug(formData.heading);
-    }
-  }, [formData.heading]);
 
   const handleChange = (file) => {
     const reader = new FileReader();
@@ -118,6 +95,7 @@ const Blogs = () => {
   //     reader.readAsDataURL(file);
   // }
 
+  //   add blog function call
   const addBlog = async () => {
     if (!formData.heading || !formData.slug || !blogText || !selectedImage) {
       Swal.fire({
@@ -138,7 +116,7 @@ const Blogs = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          Heading: "New Blog",
+          Heading: formData?.heading,
           Slug: formData.slug,
           Text: blogText,
           Image: Url,
@@ -167,10 +145,16 @@ const Blogs = () => {
     // setTermsAndCondition(updatedTerms); // Update the state with the modified array
   };
 
-  console.log(websiteBlogsData);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  console.log(selectedImage);
-  console.log(base64String);
+  useEffect(() => {
+    if (formData.heading) {
+      autoGenerateSlug(formData.heading);
+    }
+  }, [formData.heading]);
+
   return (
     <div className="bg-white  p-4">
       <div className="">
@@ -316,7 +300,7 @@ const Blogs = () => {
       <div>
         <button
           onClick={addBlog}
-          className="py-2 px-5 text-sm text-white bg-[#575757] font-semibold mt-4"
+          className="py-2 px-5 text-sm text-white bg-primary rounded-sm font-semibold mt-4"
         >
           Add Blog
         </button>
@@ -335,3 +319,16 @@ const Blogs = () => {
 };
 
 export default Blogs;
+
+// "https://eazotel-client-webp-image.s3.ap-south-1.amazonaws.com/minimalist/events/eventnew.png"
+
+// const handleImageSelection = (event) => {
+//     const file = event.target.files[0];
+//     if (file) {
+//         const reader = new FileReader();
+//         reader.onloadend = () => {
+//             setSelectedImage(reader.result);
+//         };
+//         reader.readAsDataURL(file);
+//     }
+// }
