@@ -58,7 +58,6 @@ const Analytics = () => {
     fetchData();
   }, []);
 
-  console.log(websiteoffersdata);
 
   const addInclusion = () => {
     if (inclusionInput.trim() !== "") {
@@ -80,9 +79,7 @@ const Analytics = () => {
   const uploadImage = async (e) => {
     e.preventDefault();
     const imageInput = document.getElementById("file");
-    console.log(imageInput);
     const file = imageInput.files[0];
-    console.log(file);
     if (!file) {
       Swal.fire({
         icon: "error",
@@ -93,7 +90,7 @@ const Analytics = () => {
       return;
     }
 
-    // console.log(file)
+
 
     const reader = new FileReader();
     reader.onloadend = async () => {
@@ -101,38 +98,10 @@ const Analytics = () => {
 
       setBase64String(base64String);
 
-      // console.log(base64String)
-
-      // const Url = await UploadingImageS3(base64String);
-      // console.log(Url)
-      // setFormData({ ...formData, image: Url });
     };
     reader.readAsDataURL(file);
   };
 
-  // const UploadingImageS3 = (base64String) => {
-  //   // Replace 'YOUR_BACKEND_API_URL' with the actual URL of your backend API
-  //   fetch(`https://nexon.eazotel.com/upload/file/image`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       token: window.localStorage.getItem("token"),
-  //       image: base64String,
-  //     }),
-  //   })
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       // console.log("Response from backend:", data);
-  //       setFormData({ ...formData, image: data?.Image });
-  //       // handleDeleteImage(selectedCategory, data.Image, "append")
-  //       // Handle the backend response as needed
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error:", error);
-  //     });
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -222,7 +191,6 @@ const Analytics = () => {
     });
   };
 
-  //   console.log("data from redux", websiteData);
   return (
     <div className="bg-white p-4">
       <div>
@@ -230,20 +198,19 @@ const Analytics = () => {
       </div>
       <hr className="mt-2" />
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
           {[1, 2, 3].map((item, index) => (
             <div key={index} className="h-[60dvh] animate-pulse bg-gray-100" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
           {websiteoffersdata[0]?.image &&
             websiteoffersdata?.map((item, index) => (
               <div
                 key={index}
-                className={`flex flex-col relative gap-2 ${
-                  activeIndex === index ? "bg-white z-10" : ""
-                }`}
+                className={`flex flex-col relative gap-2 ${activeIndex === index ? "bg-white z-10" : ""
+                  }`}
                 onMouseEnter={() => setActiveIndex(true)}
                 onMouseLeave={() => setActiveIndex(false)}
               >

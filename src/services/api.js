@@ -132,7 +132,6 @@ export const GetwebsiteDetails = async (token) => {
             }
         );
         const result = await response.json();
-        console.log(result.Details)
         return result?.WebsiteData || result?.Details;
     } catch (error) {
         console.error("Error getting applicants:", error);
@@ -158,7 +157,6 @@ export const DeleteImage = async (selectedCategory, Image, token) => {
         });
         const result = await response.json();
 
-        console.log(result)
         return result?.WebsiteData;
 
     } catch (error) {

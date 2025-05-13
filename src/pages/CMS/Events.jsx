@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { GetwebsiteDetails, UploadingImageS3 } from "../../services/api";
-import { MdDelete, MdDeleteOutline } from "react-icons/md";
+import { MdDeleteOutline } from "react-icons/md";
 import axios from "axios";
 import Swal from "sweetalert2";
 // import TimePick from '../../components/TimePicker';
 
 const Events = () => {
-  const [openIndex, setOpenIndex] = useState(null);
   const [websitedata, setWebsitedata] = useState({});
   const [websiteEventsData, setWebsiteEventsData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -57,19 +56,12 @@ const Events = () => {
       return;
     }
 
-    // console.log(file)
 
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(",")[1];
 
       setBase64String(base64String);
-
-      // console.log(base64String)
-
-      // const Url = await UploadingImageS3(base64String);
-      // console.log(Url)
-      // setFormData({ ...formData, image: Url });
     };
     reader.readAsDataURL(file);
   };
@@ -80,28 +72,36 @@ const Events = () => {
     const Url = await UploadingImageS3(base64String);
 
     const newEvent = {
+      token: localStorage.getItem("token"),
       Heading: formData.heading,
       Text: formData.text,
       Image: Url,
-      date: formData.date,
-      time: formData.time,
+      Date: formData.date,
+      Time: formData.time,
       Location: formData.location,
       BookingUrl: formData.bookingUrl,
       operation: "append",
     };
-    setWebsiteEventsData((prev) => [...prev, newEvent]);
 
     try {
-      await axios.post(
-        "https://nexon.eazotel.com/cms/operation/Events",
+      const response = await axios.post(
+        "http://127.0.0.1:5000/cms/operation/Events",
+        // "https://nexon.eazotel.com/cms/operation/Events",
         newEvent
       );
+
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "Offer added successfully!",
-        confirmButtonText: "OK",
-      });
+        timer: 600,
+        showConfirmButton: false,
+      })
+        .then(() => {
+          if (response?.data?.Status) {
+            fetchData();
+          }
+        });
       // update UI
       setFormData({
         heading: "",
@@ -138,83 +138,48 @@ const Events = () => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetchData();
-        // Call the API to delete the offer
-        // const token = localStorage.getItem("token");
-        // const updatedData = {
-        //     token: token,
-        //     offer: websiteoffersdata.filter((_, i) => i !== indexToDelete),
-        // };
+    })
+      .then(async (result) => {
+        if (result.isConfirmed) {
 
-        // axios.post("https://nexon.eazotel.com/cms/edit/offers", updatedData)
-        //     .then(() => {
-        //         // DeleteImage(selectedCategory, data[indexToDelete].Image, token)
-        //         setwebsiteoffersdata(updatedData?.offer); // update UI
-        //         Swal.fire(
-        //             'Deleted!',
-        //             'Your offer has been deleted.',
-        //             'success'
-        //         );
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error deleting offer:", error);
-        //         Swal.fire(
-        //             'Error!',
-        //             'Failed to delete offer. Please try again.',
-        //             'error'
-        //         );
-        //     });
-      }
-    });
+          const token = localStorage.getItem("token");
+
+          try {
+            const response = await axios.post("http://127.0.0.1:5000/cms/operation/Events",
+              {
+                token: token,
+                operation: "pop",
+                index: indexToDelete,
+              })
+            if (response?.data?.Status) {
+              Swal.fire({
+                icon: "success",
+                title: "Deleted!",
+                text: result.Message || "Event has been deleted.",
+                timer: 600,
+                showConfirmButton: false,
+              }).then(() => {
+                if (response?.data?.Status) {
+                  fetchData();
+                }
+              });
+            }
+          } catch (error) {
+            Swal.fire({
+              icon: "error",
+              title: "Error!",
+              text: "Failed to delete event. Please try again.",
+              timer: 600,
+              showConfirmButton: false,
+            });
+          }
+
+        }
+      });
   };
   useEffect(() => {
     fetchData();
   }, []);
-
-  // const handleSubmit = async (e) => {
-  //     e.preventDefault();
-
-  //     const token = localStorage.getItem("token");
-
-  //     const updatedData = {
-  //         token: token,
-  //         offer: [...websiteoffersdata, formData],
-  //     };
-
-  //     try {
-  //         await axios.post("https://nexon.eazotel.com/cms/edit/offers", updatedData);
-  //         Swal.fire({
-  //             icon: 'success',
-  //             title: 'Success',
-  //             text: 'Offer added successfully!',
-  //             confirmButtonText: 'OK',
-  //         });
-  //         setwebsiteoffersdata(updatedData.offer); // update UI
-  //         setFormData({
-  //             name: "",
-  //             hotel: "",
-  //             description: "",
-  //             valid: "",
-  //             inclusion: [],
-  //             details: "",
-  //             image: "",
-  //         });
-  //         setInclusionInput('')
-  //     } catch (error) {
-  //         console.error("Error adding offer:", error);
-  //         Swal.fire({
-  //             icon: 'error',
-  //             title: 'Error',
-  //             text: 'Failed to add offer. Please try again.',
-  //             confirmButtonText: 'OK',
-  //         });
-  //     }
-  //     finally {
-  //         setFormData({ ...formData, image: "" });
-  //     }
-  // };
 
   return (
     <div className="bg-white  p-4">
@@ -224,7 +189,7 @@ const Events = () => {
 
       <div className="flex flex-col gap-4">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
             {[1, 2, 3].map((item, index) => (
               <div
                 key={index}
@@ -233,7 +198,7 @@ const Events = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
             {websiteEventsData[0]?.Image &&
               websiteEventsData?.map((item, index) => (
                 <div
