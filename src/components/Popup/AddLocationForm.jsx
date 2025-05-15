@@ -19,8 +19,10 @@ const AddLocationForm = () => {
     e.preventDefault();
 
     const { data } = await axios.post(
-      "https://nexon.eazotel.com/multilocation/addlocations/dashboard",
+      // "https://nexon.eazotel.com/multilocation/addlocations/dashboard",
+      "http://127.0.0.1:5000/multilocation/addlocations/dashboard",
       {
+        token: localStorage.getItem("token"),
         local: local,
         city: selectedCity,
         state: selectedState,

@@ -118,26 +118,24 @@ const Leads = () => {
           <button
             onClick={() => handleTabClick(index)}
             key={index}
-            className={`text-[14px] ${
-              active === index
-                ? "border-b-2 border-[#575757]"
-                : "border-b-2 border-transparent"
-            } px-4 py-3 bg-white font-medium text-[#575757]`}
+            className={`text-[14px] ${active === index
+              ? "border-b-2 border-[#575757]"
+              : "border-b-2 border-transparent"
+              } px-4 py-3 bg-white font-medium text-[#575757]`}
           >
             {item}
           </button>
         ))}
         <div
           onClick={() => fetchEnquires(localStorage.getItem("token"))}
-          className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
-            loading ? "animate-spin" : ""
-          } `}
+          className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
+            } `}
         >
           <MdRefresh size={25} />
         </div>
       </div>
       <div className="bg-white p-4">
-        {/* <div className="flex justify-between items-center mb-4 gap-2">
+        <div className="flex justify-between items-center mb-4 gap-2">
           <div className="w-full relative">
             <span className="absolute top-3.5 left-2">
               <Search />
@@ -149,8 +147,8 @@ const Leads = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div> */}
-        {/* 
+        </div>
+
         {!loading ? (
           <table className="w-full text-left ">
             <thead>
@@ -181,11 +179,10 @@ const Leads = () => {
                   .map((enquery, index) => (
                     <tr
                       key={index}
-                      className={`border-b cursor-pointer py-1 ${
-                        enquery?.status === "Open"
-                          ? " text-purple-500"
-                          : "text-[#575757]"
-                      }`}
+                      className={`border-b cursor-pointer py-1 ${enquery?.status === "Open"
+                        ? " text-purple-500"
+                        : "text-[#575757]"
+                        }`}
                       onClick={() => {
                         setSelectedLead(enquery);
                         setIsPopupOpen(true);
@@ -238,17 +235,17 @@ const Leads = () => {
               </div>
             ))}
           </div>
-        )} */}
+        )}
       </div>
       {/* <FilterPopup open={open} setOpen={setOpen} /> */}
-      {/* <LeadPopup
-                isOpen={isPopupOpen}
-                onClose={() => setIsPopupOpen(false)}
-                lead={selectedLead}
-                fetchEnquires={fetchEnquires}
-                handleTabClick={handleTabClick}
-                activeIndex={active}
-            /> */}
+      <LeadPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        lead={selectedLead}
+        fetchEnquires={fetchEnquires}
+        handleTabClick={handleTabClick}
+        activeIndex={active}
+      />
     </div>
   );
 };
