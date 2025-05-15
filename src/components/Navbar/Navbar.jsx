@@ -1,88 +1,79 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Link, useLocation } from 'react-router-dom';
-import DataContext from '../../context/DataContext';
+import { Link, useLocation } from "react-router-dom";
+import DataContext from "../../context/DataContext";
 import { IoMdHome } from "react-icons/io";
 import { RiFeedbackFill } from "react-icons/ri";
 import { MdOutlineSos } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserProfile } from '../../redux/slice/UserSlice';
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "../../redux/slice/UserSlice";
 
-import Logo from "../../assets/companylogo.b.png"
+import Logo from "../../assets/companylogo.b.png";
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const {
+    user: hotel,
+    loading,
+    error,
+  } = useSelector((state) => state.userProfile);
 
-
-    const dispatch = useDispatch();
-    const { user: hotel, loading, error } = useSelector((state) => state.userProfile);
-
-    const token = localStorage.getItem("token");
-    useEffect(() => {
-        if (token) {
-            dispatch(fetchUserProfile(token));
-        }
-    }, [dispatch, token]);
-
-
-
-
-
-
-    const navigate = useNavigate()
-    const location = useLocation();
-    const { setAuth, homeNotifications, emergencyNotifications } = useContext(DataContext)
-
-    const SidebarData = [
-        {
-            "name": "Home",
-            "link": "/",
-            "icon": <IoMdHome size={24} />,
-            "notification": homeNotifications.length
-        },
-        {
-            "name": "Emergency Request",
-            "link": "/emergency-request",
-            "icon": <MdOutlineSos size={26} />,
-            "notification": emergencyNotifications.length
-        },
-        {
-            "name": "User Management",
-            "link": "/user-management",
-            "icon": <HiOutlineUserGroup />,
-            "notification": 0
-        },
-        {
-            "name": "Feedback",
-            "link": "/feedback",
-            "icon": <RiFeedbackFill />,
-            "notification": 0
-        },
-    ];
-
-
-    const handleLogout = () => {
-        localStorage.clear();
-        setAuth(false)
-
-        // setTimeout(() => {
-        navigate("/login")
-        // }, 1000)
+  const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchUserProfile(token));
     }
+  }, [dispatch, token]);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { setAuth, homeNotifications, emergencyNotifications } =
+    useContext(DataContext);
 
+  const SidebarData = [
+    {
+      name: "Home",
+      link: "/",
+      icon: <IoMdHome size={24} />,
+      notification: homeNotifications.length,
+    },
+    {
+      name: "Emergency Request",
+      link: "/emergency-request",
+      icon: <MdOutlineSos size={26} />,
+      notification: emergencyNotifications.length,
+    },
+    {
+      name: "User Management",
+      link: "/user-management",
+      icon: <HiOutlineUserGroup />,
+      notification: 0,
+    },
+    {
+      name: "Feedback",
+      link: "/feedback",
+      icon: <RiFeedbackFill />,
+      notification: 0,
+    },
+  ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("ndid");
+    setAuth(false);
+    // setTimeout(() => {
+    navigate("/login");
+    // }, 1000)
+  };
 
+  return (
+    <div className="h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full">
+      <div className="!text-zinc-700 max-md:border-b-2 text-[18px] w-[132px] py-1 flex justify-center items-center font-medium">
+        <img src={Logo} alt="logo" className="h-full w-full -ml-4" />
+      </div>
 
-    return (
-        <div className='h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full'>
-
-            <div className='!text-zinc-700 max-md:border-b-2 text-[18px] w-[132px] py-1 flex justify-center items-center font-medium'>
-                <img src={Logo} alt='logo' className='h-full w-full -ml-4' />
-
-            </div>
-
-            {/* <div className='grid grid-cols-4 w-full md:hidden  '>
+      {/* <div className='grid grid-cols-4 w-full md:hidden  '>
                 {SidebarData.map((item, index) => (
                     <div key={index} className='relative'>
                         <Link to={item.link}
@@ -95,24 +86,24 @@ const Navbar = () => {
                 ))}
             </div> */}
 
-
-
-
-
-            <div className='flex gap-5 max-md:hidden'>
-                <button onClick={handleLogout}>Logout</button>
-                <div className='flex items-center'>
-                    <Link to={hotel?.Data?.websiteLink} target='_blank' className='  font-medium transition-all py-[6px] duration-150 bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-3 flex items-center rounded-md text-[14px]'>
-                        Visit Website
-                    </Link>
-                </div>
-
-                <div className='block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90'>
-                    <GiHamburgerMenu size={20} />
-                </div>
-            </div>
+      <div className="flex gap-5 max-md:hidden">
+        <button onClick={handleLogout}>Logout</button>
+        <div className="flex items-center">
+          <Link
+            to={hotel?.Data?.websiteLink}
+            target="_blank"
+            className="  font-medium transition-all py-[6px] duration-150 bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-3 flex items-center rounded-md text-[14px]"
+          >
+            Visit Website
+          </Link>
         </div>
-    )
-}
 
-export default Navbar
+        <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
+          <GiHamburgerMenu size={20} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Navbar;

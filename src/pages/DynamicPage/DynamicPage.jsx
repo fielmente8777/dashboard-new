@@ -22,52 +22,59 @@ import Privacy from "../CMS/Privacy";
 import Profile from "../CMS/Profile";
 import Tandc from "../CMS/Tandc";
 import { BASE_PATH } from "../../data/constant";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const DynamicPage = () => {
   const location = useLocation();
-  
+  const hid = handleLocalStorage("hid");
   const routeComponents = {
     // Dashboard
-    [`${BASE_PATH}/`]: <Dashboard />,
+    [`${BASE_PATH}/${hid}`]: <Dashboard />,
 
     // CMS
-    [`${BASE_PATH}/cms/privacy-policy`]: <Privacy />,
-    [`${BASE_PATH}/cms/terms-and-conditions`]: <Tandc />,
-    [`${BASE_PATH}/cms/cancellation-and-refund-policy`]: <Cancellationrefund />,
-    [`${BASE_PATH}/cms/gallery`]: <Gallery />,
-    [`${BASE_PATH}/cms/profile-and-links`]: <Profile />,
-    [`${BASE_PATH}/cms/faq`]: <Faq />,
-    [`${BASE_PATH}/cms/offers`]: <Offers />,
-    [`${BASE_PATH}/cms/events`]: <Events />,
-    [`${BASE_PATH}/cms/blogs`]: <Blogs />,
+    [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
+    [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,
+    [`${BASE_PATH}/${hid}/cms/cancellation-and-refund-policy`]: (
+      <Cancellationrefund />
+    ),
+    [`${BASE_PATH}/${hid}/cms/gallery`]: <Gallery />,
+    [`${BASE_PATH}/${hid}/cms/profile-and-links`]: <Profile />,
+    [`${BASE_PATH}/${hid}/cms/faq`]: <Faq />,
+    [`${BASE_PATH}/${hid}/cms/offers`]: <Offers />,
+    [`${BASE_PATH}/${hid}/cms/events`]: <Events />,
+    [`${BASE_PATH}/${hid}/cms/blogs`]: <Blogs />,
 
     // GRM
-    [`${BASE_PATH}/grm/analytics`]: <GrmAnalytics />,
-    [`${BASE_PATH}/grm/all-requests`]: <AllRequest />,
-    [`${BASE_PATH}/grm/emergency-request`]: <EmergencyRequest />,
-    [`${BASE_PATH}/grm/settings`]: <Settings />,
-    [`${BASE_PATH}/grm/guest-feedback`]: <GrmFeedback />,
+    [`${BASE_PATH}/${hid}/grm/analytics`]: <GrmAnalytics />,
+    [`${BASE_PATH}/${hid}/grm/all-requests`]: <AllRequest />,
+    [`${BASE_PATH}/${hid}/grm/emergency-request`]: <EmergencyRequest />,
+    [`${BASE_PATH}/${hid}/grm/settings`]: <Settings />,
+    [`${BASE_PATH}/${hid}/grm/guest-feedback`]: <GrmFeedback />,
 
     // User Management
-    [`${BASE_PATH}/user-management/all-users`]: <Usermanagement />,
-    [`${BASE_PATH}/user-management/settings`]: <Usermanagement />,
+    [`${BASE_PATH}/${hid}/user-management/all-users`]: <Usermanagement />,
+    [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
 
     // Enquiries Management
-    [`${BASE_PATH}/enquiries-management/enquiries-analytics`]: (
+    [`${BASE_PATH}/${hid}/enquiries-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
-    [`${BASE_PATH}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/enquiries-management/settings`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
 
     // Human Resources Management
-    [`${BASE_PATH}/human-resources-management/analytics`]: <TalentAnalytics />,
-    [`${BASE_PATH}/human-resources-management/applications`]: <Application />,
+    [`${BASE_PATH}/${hid}/human-resources-management/analytics`]: (
+      <TalentAnalytics />
+    ),
+    [`${BASE_PATH}/${hid}/human-resources-management/applications`]: (
+      <Application />
+    ),
 
     // Feedback, Reports, Analytics, Help
-    [`${BASE_PATH}/feedback`]: <Feedback />,
-    [`${BASE_PATH}/reports`]: <Feedback />,
-    [`${BASE_PATH}/analytics`]: <Feedback />,
-    [`${BASE_PATH}/help`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/feedback`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/reports`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/help`]: <Feedback />,
   };
 
   return (

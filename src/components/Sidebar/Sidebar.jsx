@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
 import { CiLocationOn } from "react-icons/ci";
 import { MdAddBusiness } from "react-icons/md";
 import AddLocationForm from "../Popup/AddLocationForm";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_PATH } from "../../data/constant";
+import { setHid } from "../../redux/slice/UserSlice";
 const Sidebar = () => {
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
+  const [isOpenForm, setIsOpenForm] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({});
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const { user: hotel } = useSelector((state) => state.userProfile);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // handle toggle dropdown
   const toggleMenu = (index) => {
@@ -22,9 +29,19 @@ const Sidebar = () => {
   };
 
   // handle select location
-  const handleSelectLocation = (e, location) => {
+  const handleSelectLocation = (e, location, hid) => {
     e.stopPropagation();
-    setCurrentLocation(location);
+    try {
+      setCurrentLocation(location);
+      dispatch(setHid(hid));
+      navigate(`${BASE_PATH}/${hid}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleClose = () => {
+    setIsOpenForm(false);
   };
 
   // const CountryCode = {
@@ -42,7 +59,7 @@ const Sidebar = () => {
         ...Locations[0],
       });
     }
-  }, []);
+  }, [hotel]);
 
   return (
     <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden">
@@ -88,7 +105,7 @@ const Sidebar = () => {
                         className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
                           isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
                         }`}
-                        onClick={(e) => handleSelectLocation(e, value)}
+                        onClick={(e) => handleSelectLocation(e, value, key)}
                       >
                         <h2 className="text-[14px] font-medium">
                           {hotel?.Profile?.hotelName || "Eazotel"}
@@ -109,7 +126,13 @@ const Sidebar = () => {
                   })}
               </div>
 
-              <button className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsOpenForm(true);
+                }}
+                className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full"
+              >
                 <MdAddBusiness size={22} /> Add New Location
               </button>
             </div>
@@ -179,7 +202,7 @@ const Sidebar = () => {
         </div>
       ))}
 
-      <AddLocationForm isOpen={true} />
+      <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
     </div>
   );
 };
