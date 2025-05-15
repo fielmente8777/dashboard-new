@@ -4,15 +4,16 @@ import { Link, useLocation } from "react-router-dom";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
 import { CiLocationOn } from "react-icons/ci";
+import { MdAddBusiness } from "react-icons/md";
+import AddLocationForm from "../Popup/AddLocationForm";
 const Sidebar = () => {
-  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
-
+  const [currentLocation, setCurrentLocation] = useState({});
+  const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const { user: hotel } = useSelector((state) => state.userProfile);
 
-  const [currentLocation, setCurrentLocation] = useState({});
-
+  // handle toggle dropdown
   const toggleMenu = (index) => {
     setOpenMenus((prev) => ({
       ...prev,
@@ -20,18 +21,19 @@ const Sidebar = () => {
     }));
   };
 
+  // handle select location
   const handleSelectLocation = (e, location) => {
     e.stopPropagation();
     setCurrentLocation(location);
   };
 
-  const CountryCode = {
-    india: "IN",
-    unitedState: "US",
-    unitedKingdom: "UK",
-    dubai: "UAE",
-    australia: "AUS",
-  };
+  // const CountryCode = {
+  //   india: "IN",
+  //   unitedState: "US",
+  //   unitedKingdom: "UK",
+  //   dubai: "UAE",
+  //   australia: "AUS",
+  // };
 
   useEffect(() => {
     if (hotel && hotel?.Profile?.hotels) {
@@ -40,9 +42,7 @@ const Sidebar = () => {
         ...Locations[0],
       });
     }
-  }, [hotel]);
-
-  console.log(hotel?.Profile);
+  }, []);
 
   return (
     <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden">
@@ -68,7 +68,7 @@ const Sidebar = () => {
             </p>
 
             <div
-              className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out"
+              className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2"
               style={{
                 maxHeight: isDropDownOpen ? "300px" : "0px",
                 overflow: "hidden",
@@ -86,7 +86,7 @@ const Sidebar = () => {
                       <div
                         key={key}
                         className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                          isCurrentLocation ? "bg-gray-100" : "bg-gray-50"
+                          isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
                         }`}
                         onClick={(e) => handleSelectLocation(e, value)}
                       >
@@ -108,6 +108,10 @@ const Sidebar = () => {
                     );
                   })}
               </div>
+
+              <button className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full">
+                <MdAddBusiness size={22} /> Add New Location
+              </button>
             </div>
           </div>
 
@@ -174,6 +178,8 @@ const Sidebar = () => {
           )}
         </div>
       ))}
+
+      <AddLocationForm isOpen={true} />
     </div>
   );
 };
