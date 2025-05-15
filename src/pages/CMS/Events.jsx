@@ -56,7 +56,6 @@ const Events = () => {
       return;
     }
 
-
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(",")[1];
@@ -96,12 +95,11 @@ const Events = () => {
         text: "Offer added successfully!",
         timer: 600,
         showConfirmButton: false,
-      })
-        .then(() => {
-          if (response?.data?.Status) {
-            fetchData();
-          }
-        });
+      }).then(() => {
+        if (response?.data?.Status) {
+          fetchData();
+        }
+      });
       // update UI
       setFormData({
         heading: "",
@@ -138,48 +136,49 @@ const Events = () => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    })
-      .then(async (result) => {
-        if (result.isConfirmed) {
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const token = localStorage.getItem("token");
 
-          const token = localStorage.getItem("token");
-
-          try {
-            const response = await axios.post("http://127.0.0.1:5000/cms/operation/Events",
-              {
-                token: token,
-                operation: "pop",
-                index: indexToDelete,
-              })
-            if (response?.data?.Status) {
-              Swal.fire({
-                icon: "success",
-                title: "Deleted!",
-                text: result.Message || "Event has been deleted.",
-                timer: 600,
-                showConfirmButton: false,
-              }).then(() => {
-                if (response?.data?.Status) {
-                  fetchData();
-                }
-              });
+        try {
+          const response = await axios.post(
+            "http://127.0.0.1:5000/cms/operation/Events",
+            {
+              token: token,
+              operation: "pop",
+              index: indexToDelete,
             }
-          } catch (error) {
+          );
+          if (response?.data?.Status) {
             Swal.fire({
-              icon: "error",
-              title: "Error!",
-              text: "Failed to delete event. Please try again.",
+              icon: "success",
+              title: "Deleted!",
+              text: result.Message || "Event has been deleted.",
               timer: 600,
               showConfirmButton: false,
+            }).then(() => {
+              if (response?.data?.Status) {
+                fetchData();
+              }
             });
           }
-
+        } catch (error) {
+          Swal.fire({
+            icon: "error",
+            title: "Error!",
+            text: "Failed to delete event. Please try again.",
+            timer: 600,
+            showConfirmButton: false,
+          });
         }
-      });
+      }
+    });
   };
   useEffect(() => {
     fetchData();
   }, []);
+
+  console.log(websiteEventsData);
 
   return (
     <div className="bg-white  p-4">
