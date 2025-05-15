@@ -1,49 +1,65 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getUserProfile } from "../../services/api";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const initialState = {
-    user: null,
-    loading: false,
-    error: null,
+  user: null,
+  hid: handleLocalStorage("hid") || null,
+  loading: false,
+  error: null,
 };
 
 const userProfileSlice = createSlice({
-    name: "userProfile",
-    initialState,
-    reducers: {
-        getUserProfileRequest: (state) => {
-            state.loading = true;
-            state.error = null;
-        },
-        getUserProfileSuccess: (state, action) => {
-            state.loading = false;
-            state.user = action.payload;
-        },
-        getUserProfileFailure: (state, action) => {
-            state.loading = false;
-            state.error = action.payload;
-        },
+  name: "userProfile",
+  initialState,
+  reducers: {
+    getUserProfileRequest: (state) => {
+      state.loading = true;
+      state.error = null;
     },
+    getUserProfileSuccess: (state, action) => {
+      state.loading = false;
+      state.user = {
+        ...action.payload,
+        hid: "detail",
+      };
+    },
+    getUserProfileFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+
+    setHid: (state, action) => {
+      console.log(action);
+      state.loading = false;
+      state.hid = action.payload;
+      handleLocalStorage("hid", action?.payload);
+    },
+  },
 });
 
-export const { getUserProfileRequest, getUserProfileSuccess, getUserProfileFailure } = userProfileSlice.actions;
+export const {
+  getUserProfileRequest,
+  getUserProfileSuccess,
+  getUserProfileFailure,
+  setHid,
+} = userProfileSlice.actions;
 
 export default userProfileSlice.reducer;
 
 // Thunk function to fetch user profile
 export const fetchUserProfile = (token) => async (dispatch) => {
-    dispatch(getUserProfileRequest());
-    try {
-        const data = await getUserProfile(token);
-        dispatch(getUserProfileSuccess(data));
-        return { success: true, response: data };
-    } catch (error) {
-        dispatch(getUserProfileFailure(error.message));
-        return { success: false, error: error.message };
-    }
+  dispatch(getUserProfileRequest());
+  try {
+    const data = await getUserProfile(token);
+    console.log(data);
+    dispatch(getUserProfileSuccess(data));
+    return { success: true, response: data };
+  } catch (error) {
+    dispatch(getUserProfileFailure(error.message));
+    return { success: false, error: error.message };
+  }
 };
-
-
 
 // import { createSlice } from "@reduxjs/toolkit";
 // import { getUserProfile } from "../../services/api";

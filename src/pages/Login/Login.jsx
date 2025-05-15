@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Banner from "../../assets/HotelVhNPHJ.png";
 import Logo from "../../assets/companylogo.b.png";
@@ -15,9 +15,9 @@ const Login = () => {
     password: "",
   });
 
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [error] = useState("");
-
   const dispatch = useDispatch();
 
   const handleChange = (e) => {
@@ -29,6 +29,8 @@ const Login = () => {
     e.preventDefault();
     // Dispatch login action
     const response = await dispatch(loginUser(formData));
+    console.log(response);
+
     // console.log(response);
     let timerInterval;
     if (response.success == false) {
@@ -69,7 +71,7 @@ const Login = () => {
         },
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.timer) {
-          window.location.href = "/";
+          navigate("/");
         }
       });
     } else {
