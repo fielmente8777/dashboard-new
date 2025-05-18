@@ -1,6 +1,5 @@
 // utils/handleLocalStorage.js
 function handleLocalStorage(key, value) {
-  console.log(key, value);
   if (typeof window === "undefined") return null;
   if (value === undefined) {
     // Get item

@@ -9,16 +9,20 @@ import AddLocationForm from "../Popup/AddLocationForm";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { BASE_PATH } from "../../data/constant";
 import { setHid } from "../../redux/slice/UserSlice";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+import Swal from "sweetalert2";
 const Sidebar = () => {
-  const location = useLocation();
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState({});
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-  const { user: hotel } = useSelector((state) => state.userProfile);
+  const [currentLocation, setCurrentLocation] = useState({});
+
+  const { user: hotel, loading } = useSelector((state) => state.userProfile);
+  const { hid } = useSelector((state) => state.userProfile);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const pathLocation = useLocation();
 
   // handle toggle dropdown
   const toggleMenu = (index) => {
@@ -32,9 +36,39 @@ const Sidebar = () => {
   const handleSelectLocation = (e, location, hid) => {
     e.stopPropagation();
     try {
-      setCurrentLocation(location);
       dispatch(setHid(hid));
-      navigate(`${BASE_PATH}/${hid}`);
+      dispatch(fetchWebsiteData(handleLocalStorage("token"), hid));
+
+      const navigatePath = pathLocation?.pathname
+        ?.split("/")
+        .filter(Boolean)
+        .slice(3)
+        .join("/");
+
+      let timerInterval = null;
+      Swal.fire({
+        title: `Switching Location ${location?.state}, ${location?.country}`,
+        html: `Redirecting to Location ${location?.city} <b></b>`,
+        timer: 1200,
+        timerProgressBar: true,
+
+        didOpen: () => {
+          Swal.showLoading();
+          const timer = Swal.getPopup().querySelector("b");
+          timerInterval = setInterval(() => {
+            timer.textContent = `${Swal.getTimerLeft()}`;
+          }, 1000);
+        },
+        willClose: () => {
+          clearInterval(timerInterval);
+        },
+      }).then((result) => {
+        if (result.dismiss === Swal.DismissReason.timer) {
+          // navigate("/");
+        }
+      });
+
+      navigate(`${BASE_PATH}/${hid}/${navigatePath}`);
     } catch (error) {
       console.log(error);
     }
@@ -44,27 +78,20 @@ const Sidebar = () => {
     setIsOpenForm(false);
   };
 
-  // const CountryCode = {
-  //   india: "IN",
-  //   unitedState: "US",
-  //   unitedKingdom: "UK",
-  //   dubai: "UAE",
-  //   australia: "AUS",
-  // };
-
   useEffect(() => {
-    if (hotel && hotel?.Profile?.hotels) {
-      const Locations = Object.values(hotel?.Profile?.hotels);
-      setCurrentLocation({
-        ...Locations[0],
-      });
+    if (hid && hotel) {
+      const currentLoaction = hotel?.Profile?.hotels[hid];
+      setCurrentLocation(currentLoaction);
     }
-  }, [hotel]);
+  }, [hid, hotel]);
 
   return (
     <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden">
-      {!hotel ? (
-        <div className="bg-gray-100 p-6 animate-pulse rounded-md mb-4" />
+      {loading ? (
+        <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4">
+          <div className="bg-gray-200 animate-pulse h-2 w-24" />
+          <div className="bg-gray-200 animate-pulse h-2" />
+        </div>
       ) : (
         <div
           className="relative border cursor-pointer rounded-md px-2 py-1 flex items-center justify-between mb-4"
@@ -102,8 +129,9 @@ const Sidebar = () => {
                     return (
                       <div
                         key={key + 1}
-                        className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                          }`}
+                        className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
+                          isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                        }`}
                         onClick={(e) => handleSelectLocation(e, value, key)}
                       >
                         <h2 className="text-[14px] font-medium">
@@ -156,8 +184,9 @@ const Sidebar = () => {
                 {item.name}
               </p>
               <span
-                className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
-                  } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                className={`${
+                  openMenus[index] ? "-rotate-90" : " rotate-90"
+                } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
               >
                 <Arrow />
               </span>
@@ -165,10 +194,11 @@ const Sidebar = () => {
           ) : (
             <Link
               to={item.link}
-              className={`${location.pathname === item.link
+              className={`${
+                pathLocation.pathname === item.link
                   ? "bg-[#0a3a75] text-white px-2 rounded-md"
                   : ""
-                }  text-[14px] py-2 font-medium text-[#575757]/70 `}
+              }  text-[14px] py-2 font-medium text-[#575757]/70 `}
             >
               {item.name}
             </Link>
@@ -184,10 +214,11 @@ const Sidebar = () => {
                     <Link
                       to={subLink.link}
                       key={index}
-                      className={` ${location.pathname === subLink.link
+                      className={` ${
+                        pathLocation.pathname === subLink.link
                           ? "bg-[#0a3a75] text-white px-2"
                           : "hover:bg-[#0a3a75]/10"
-                        }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
+                      }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
                     >
                       {subLink.icon} {subLink.name}
                     </Link>

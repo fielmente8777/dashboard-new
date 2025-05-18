@@ -1,6 +1,8 @@
 import React, { useContext, useEffect } from "react";
 import DataContext from "../../context/DataContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const Dashboard = () => {
   // const navigate = useNavigate();
@@ -57,6 +59,8 @@ const Dashboard = () => {
   //         setHomeNotifications([]);
   //     }
   // }, [])
+
+  const { user } = useSelector((state) => state?.userProfile);
 
   return <div className="flex flex-col gap-5">Hello there!</div>;
 };

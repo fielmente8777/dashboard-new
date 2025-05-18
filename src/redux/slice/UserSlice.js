@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getUserProfile } from "../../services/api";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { getUserProfile } from "../../services/api/profile.api";
 
 const initialState = {
   user: null,
@@ -30,7 +30,6 @@ const userProfileSlice = createSlice({
     },
 
     setHid: (state, action) => {
-      console.log(action);
       state.loading = false;
       state.hid = action.payload;
       handleLocalStorage("hid", action?.payload);
@@ -42,6 +41,7 @@ export const {
   getUserProfileRequest,
   getUserProfileSuccess,
   getUserProfileFailure,
+  setCurrentLocation,
   setHid,
 } = userProfileSlice.actions;
 
@@ -52,7 +52,6 @@ export const fetchUserProfile = (token) => async (dispatch) => {
   dispatch(getUserProfileRequest());
   try {
     const data = await getUserProfile(token);
-    console.log(data);
     dispatch(getUserProfileSuccess(data));
     return { success: true, response: data };
   } catch (error) {

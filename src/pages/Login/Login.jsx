@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import Banner from "../../assets/HotelVhNPHJ.png";
 import Logo from "../../assets/companylogo.b.png";
 import { loginUser } from "../../redux/slice/LoginSlice";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 const Login = () => {
   const [formData, setFormData] = useState({
     // email: 'reservation@minimalisthotes.com',
@@ -29,11 +30,9 @@ const Login = () => {
     e.preventDefault();
     // Dispatch login action
     const response = await dispatch(loginUser(formData));
-    console.log(response);
-
     // console.log(response);
     let timerInterval;
-    if (response.success == false) {
+    if (response.success === false) {
       Swal.fire({
         title: "Logged Failed",
         html: "Navigating you to Login <b></b>",
@@ -52,8 +51,7 @@ const Login = () => {
       });
     } else if (response.data.Status) {
       const token = response?.data?.Token;
-      localStorage.setItem("token", token || "");
-
+      handleLocalStorage("token", token || "");
       Swal.fire({
         title: "Logged in Successfully",
         html: "We will redirect you to the dashboard <b></b>",

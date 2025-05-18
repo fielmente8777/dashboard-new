@@ -2,17 +2,23 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, setHid } from "../redux/slice/UserSlice";
 import handleLocalStorage from "../utils/handleLocalStorage";
+import {
+  fetchCurrentLocationWebsiteData,
+  fetchWebsiteData,
+} from "../redux/slice/websiteDataSlice";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
   const token = handleLocalStorage("token");
+  const hid = handleLocalStorage("hid");
   const { user: hotel } = useSelector((state) => state.userProfile);
 
   useEffect(() => {
     if (token) {
       dispatch(fetchUserProfile(token));
+      dispatch(fetchWebsiteData(token, hid));
     }
-  }, [dispatch, token]);
+  }, [token, hid]);
 
   useEffect(() => {
     if (hotel?.Data?.ndid) {
@@ -25,12 +31,10 @@ const GlobalDataProvider = () => {
         if (!handleLocalStorage("hid")) {
           dispatch(setHid(hotelKeys[0]));
         }
-        // localStorage.setItem("hid", hotelKeys[0]);
       }
     }
-  }, [hotel]);
+  }, [dispatch, hotel]);
 
-  // useEffect(() => {}, []);
   return null;
 };
 

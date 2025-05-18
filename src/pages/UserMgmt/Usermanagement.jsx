@@ -109,6 +109,7 @@ const Usermanagement = () => {
     });
     setIsEditPopupOpen(true);
   };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -124,6 +125,7 @@ const Usermanagement = () => {
           Add New user
         </button>
       </div>
+
       <div className="flex flex-col justify-center  bg-white  text-white overflow-hidden">
         <div className="px-4 overflow-x-auto">
           <table className="w-full text-left bg-white ">
@@ -155,7 +157,7 @@ const Usermanagement = () => {
               </tr>
             </thead>
 
-            <tbody className="">
+            <tbody>
               {userManagementData?.map((user, index) => (
                 <tr
                   key={index}
@@ -240,11 +242,15 @@ const Usermanagement = () => {
           </table>
         </div>
       </div>
+
+      {/* render user management popup for user deails */}
       <UserMgmtPopup
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         fetchData={fetchData}
       />
+
+      {/* render edit user popup for editing  */}
       <EditUserPopup
         editData={editUserData}
         setEditUserData={setEditUserData}

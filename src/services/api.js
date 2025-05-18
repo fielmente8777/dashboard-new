@@ -1,47 +1,7 @@
 import axios from "axios";
+import { BASE_URL } from "../data/constant";
 
-const BASE_URL = "https://nexon.eazotel.com";
-// const BASE_URL = "http://127.0.0.1:5000"
-
-export const UserLogin = async (userData) => {
-  try {
-    const response = await axios.post(
-      `${BASE_URL}/eazotel/ceateuser`,
-      {
-        register: "false",
-        emailId: userData.email,
-        userName: "",
-        accesskey: userData.password,
-      },
-      {
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return response?.data;
-  } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
-  }
-};
-
-export const getUserProfile = async (token) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/eazotel/getuser/${token}`, {
-      headers: {
-        Accept: "application/json, text/plain, */*",
-        "Content-Type": "application/json",
-      },
-    });
-
-    return response?.data;
-  } catch (error) {
-    console.error("Error getting user profile:", error);
-    throw error;
-  }
-};
+// const BASE_URL = "https://nexon.eazotel.com";
 
 export const fetchUserManagementData = async (token) => {
   try {

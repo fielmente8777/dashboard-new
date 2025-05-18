@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { GetwebsiteDetails, UploadingImageS3 } from "../../services/api";
-import { MdDeleteOutline } from "react-icons/md";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { MdDeleteOutline } from "react-icons/md";
 import Swal from "sweetalert2";
+import { UploadingImageS3 } from "../../services/api";
+import { useDispatch, useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import { fetchCurrentLocationWebsiteData } from "../../redux/slice/websiteDataSlice";
 // import TimePick from '../../components/TimePicker';
 
 const Events = () => {
@@ -21,24 +24,13 @@ const Events = () => {
     bookingUrl: "",
   });
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const data = await GetwebsiteDetails(token); // Assuming this is an async function
-      setWebsitedata(data);
-      setWebsiteEventsData(data?.Events || []);
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to fetch website details. Please try again.",
-        confirmButtonText: "OK",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const dispatch = useDispatch();
+
+  const { currentLoactionWebsiteData } = useSelector(
+    (state) => state?.hotelsWebsiteData
+  );
+
+  console.log(currentLoactionWebsiteData);
 
   const uploadImage = async (e) => {
     e.preventDefault();
@@ -97,7 +89,7 @@ const Events = () => {
         showConfirmButton: false,
       }).then(() => {
         if (response?.data?.Status) {
-          fetchData();
+          // fetchData();
         }
       });
       // update UI
@@ -158,7 +150,7 @@ const Events = () => {
               showConfirmButton: false,
             }).then(() => {
               if (response?.data?.Status) {
-                fetchData();
+                // fetchData();
               }
             });
           }
@@ -174,11 +166,6 @@ const Events = () => {
       }
     });
   };
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  console.log(websiteEventsData);
 
   return (
     <div className="bg-white  p-4">
