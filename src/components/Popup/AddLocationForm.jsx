@@ -25,6 +25,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
         title: "Warning",
         text: "Please fill in all fields.",
       });
+      return;
     }
 
     try {
@@ -41,24 +42,28 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
         }
       );
 
-      // console.log(data)
       if (data.Status) {
         Swal.fire({
           icon: "success",
           title: "Success",
           text: data?.Message || "Hotel added successfully.",
-        })
+        });
         // alert(data.message);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data?.Message || "Something went wrong.",
+        });
       }
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: error?.Message || "Getting some rrror.",
-      })
-    }
-    finally {
-      handleClose()
+      });
+    } finally {
+      handleClose();
     }
   };
 

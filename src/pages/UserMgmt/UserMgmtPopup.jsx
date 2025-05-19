@@ -1,20 +1,39 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
+import { IoMdExit } from "react-icons/io";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
-import { IoMdExit } from "react-icons/io";
+import { CreateUser } from "../../services/api/userManagement.api";
 
-const roles = [
+export const accessRoles = [
   "CMS",
   "Social Media",
-  "Frontdesk",
-  "SEO Manager",
-  "Themes Manager",
+  "Front Desk",
+  "Seo Manager",
+  "Theme Manager",
   "Booking Engine",
   "Reservation Desk",
   "Channel Manager",
   "Food Manager",
   "Gateway Manager",
+  "GRM",
+  "HRM",
 ];
+
+export const accessScopeMap = {
+  CMS: "cms",
+  "Booking Engine": "bookingEngine",
+  "Front Desk": "frontDesk",
+  "Social Media": "socialMedia",
+  "Reservation Desk": "reservationDesk",
+  Frontdesk: "frontDesk",
+  "Channel Manager": "channelManager",
+  "Seo Manager": "seoManager",
+  "Food Manager": "foodManager",
+  "Theme Manager": "themes",
+  "Gateway Manager": "gatewayManager",
+  HRM: "humanResourceManagement",
+  GRM: "guestRequestManagement",
+};
 
 const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
   const { user } = useSelector((state) => state?.userProfile);
@@ -33,10 +52,10 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
     setCurrentLocation(disPlayLocation);
 
     // If not already added
-    if (!selectedLocations.find((l) => l.location === loc)) {
+    if (!selectedLocations.find((l) => l.hid === loc)) {
       setSelectedLocations((prev) => [
         ...prev,
-        { location: loc, disPlayLocation, roles: [] },
+        { hid: loc, disPlayLocation, accessScope: [] },
       ]);
     }
   };
@@ -44,12 +63,12 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
   const toggleRole = (location, role) => {
     setSelectedLocations((prev) =>
       prev.map((entry) =>
-        entry.location === location
+        entry.hid === location
           ? {
               ...entry,
-              roles: entry.roles.includes(role)
-                ? entry.roles.filter((r) => r !== role)
-                : [...entry.roles, role],
+              accessScope: entry.accessScope.includes(role)
+                ? entry.accessScope.filter((r) => r !== role)
+                : [...entry.accessScope, role],
             }
           : entry
       )
@@ -67,7 +86,52 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
   const handleSubmit = async () => {
     const { name, email, password } = form;
 
-    console.log(selectedLocations);
+    const allPermissions = {
+      cms: "false",
+      bookingEngine: "false",
+      socialMedia: "false",
+      reservationDesk: "false",
+      frontDesk: "false",
+      channelManager: "false",
+      seoManager: "false",
+      foodManager: "false",
+      themes: "false",
+      gatewayManager: "false",
+      humanResourceManagement: "false",
+      guestRequestManagement: "false",
+      enquiriesManagement: "false",
+    };
+
+    const accessScopeMap = {
+      CMS: "cms",
+      "Booking Engine": "bookingEngine",
+      "Social Media": "socialMedia",
+      "Reservation Desk": "reservationDesk",
+      Frontdesk: "frontDesk",
+      "Channel Manager": "channelManager",
+      "SEO Manager": "seoManager",
+      "Food Manager": "foodManager",
+      Themes: "themes",
+      "Gateway Manager": "gatewayManager",
+      "Human Resource Management": "humanResourceManagement",
+      "Guest Request Management": "guestRequestManagement",
+      "Enquiries Management": "enquiriesManagement",
+    };
+
+    const processedLocations = selectedLocations.map((location) => {
+      const accessScope = { ...allPermissions };
+
+      location.accessScope.forEach((scope) => {
+        const key = accessScopeMap[scope];
+        if (key) accessScope[key] = "true";
+      });
+
+      return {
+        hid: location.hid,
+        disPlayLocation: location.disPlayLocation,
+        accessScope,
+      };
+    });
 
     if (!name || !email || !password || selectedLocations.length === 0) {
       Swal.fire({
@@ -78,61 +142,32 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
       return;
     }
 
-    const accessScope = {};
-    roles.forEach((role) => {
-      accessScope[role] = selectedLocations.some((entry) =>
-        entry.roles.includes(role)
-      );
-    });
-
-    console.log(accessScope);
+    const formData = {
+      emailId: email,
+      displayName: name,
+      userName: name,
+      role: "admin",
+      access_id: password,
+      isAdmin: false,
+      assigned_location: processedLocations,
+    };
 
     try {
-      //   const response = await fetch(
-      //     `https://nexon.eazotel.com/user/create/${localStorage.getItem(
-      //       "token"
-      //     )}`,
-      //     {
-      //       method: "POST",
-      //       headers: {
-      //         Accept: "application/json, text/plain, */*",
-      //         "Content-Type": "application/json",
-      //       },
-      //       body: JSON.stringify({
-      //         emailId: email,
-      //         displayName: name,
-      //         userName: name,
-      //         access_id: password,
-      //         isAdmin: false,
-      //         accessScope: Object.fromEntries(
-      //           Object.entries(accessScope).map(([k, v]) => [k, v.toString()])
-      //         ),
-      //         locationRoles: selectedLocations,
-      //       }),
-      //     }
-      //   );
-      //   const result = await response.json();
-      //   if (result?.Status) {
-      //     Swal.fire({
-      //       icon: "success",
-      //       title: "User Added",
-      //       text: result.Message || "User has been successfully added!",
-      //       timer: 600,
-      //       showConfirmButton: false,
-      //     }).then(() => {
-      //       fetchData?.();
-      //     });
-      //     setForm({ name: "", email: "", password: "" });
-      //     setSelectedLocations([]);
-      //     setCurrentLocation("");
-      //     onClose();
-      //   } else {
-      //     Swal.fire({
-      //       icon: "error",
-      //       title: "User Exists",
-      //       text: "A user with this email already exists!",
-      //     });
-      //   }
+      const result = await CreateUser(formData);
+      if (result?.Status) {
+        Swal.fire({
+          icon: "success",
+          title: "Created Successfully",
+          text: result?.Message,
+        });
+        fetchData();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result?.Message,
+        });
+      }
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -141,15 +176,6 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
       });
     }
   };
-
-  //   useEffect(() => {
-  //     if (
-  //       user?.Profile?.hotels &&
-  //       Object.keys(user?.Profile?.hotels)?.length === 1
-  //     ) {
-  //       console.log("aaya");
-  //     }
-  //   }, []);
 
   return (
     <div
@@ -228,7 +254,7 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
                       className="px-8 text-primary font-medium disabled:text-gray-400"
                       value={`${key}-${value?.city}`}
                       disabled={selectedLocations.some(
-                        (loc) => loc.location === value.city
+                        (loc) => loc.hid === key
                       )} // Disable if already selected
                     >
                       {value.city}
@@ -264,13 +290,13 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {roles.map((role) => (
+                {accessRoles?.map((role) => (
                   <label key={role} className="flex gap-2 items-center">
                     <input
                       type="checkbox"
                       className="accent-lime-700"
-                      checked={locEntry.roles.includes(role)}
-                      onChange={() => toggleRole(locEntry.location, role)}
+                      checked={locEntry.accessScope.includes(role)}
+                      onChange={() => toggleRole(locEntry.hid, role)}
                     />
                     {role}
                   </label>

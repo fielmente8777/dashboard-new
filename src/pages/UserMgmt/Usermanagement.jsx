@@ -7,22 +7,7 @@ import Swal from "sweetalert2";
 import { fetchUserManagementData } from "../../services/api";
 import EditUserPopup from "./EditUserPopup";
 import UserMgmtPopup from "./UserMgmtPopup";
-
-const accessRoles = [
-  "bookingEngine",
-  "channelManager",
-  "cms",
-  "foodManager",
-  "frontDesk",
-  "gatewayManager",
-  "reservationDesk",
-  "seoManager",
-  "socialMedia",
-  "themes",
-  "PMS",
-  "GRM",
-  "HRM",
-];
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const Usermanagement = () => {
   const [userManagementData, setUserManagementData] = useState([]);
@@ -34,6 +19,7 @@ const Usermanagement = () => {
   const fetchData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
+    console.log(usersData);
     setUserManagementData(usersData);
   };
 
@@ -120,124 +106,110 @@ const Usermanagement = () => {
       <div className="flex justify-end items-center">
         <button
           onClick={() => setIsPopupOpen(true)}
-          className="border-b-2 border-transparent hover:border-b-2 hover:border-[#575757] transition-all duration-300 px-4 py-3 bg-white font-medium text-[#575757]"
+          className="border transition-all duration-300 px-4 py-2 shadow-md font-medium text-sm border-primary text-gray-800 hover:bg-primary/90 hover:text-white rounded-md"
         >
-          Add New user
+          Add New User
         </button>
       </div>
 
-      <div className="flex flex-col justify-center  bg-white  text-white overflow-hidden">
-        <div className="px-4 overflow-x-auto">
-          <table className="w-full text-left bg-white ">
+      <div className="flex flex-col justify-center text-white overflow-hidden mt-4">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left bg-slate-800 text-white/90 rounded-sm shadow-md shadow-black/20">
             <thead>
               <tr className="border-b whitespace-nowrap">
-                <th className="py-3 text-[14px] font-medium text-[#575757] capitalize">
+                <th className="py-3 px-4 text-[14px] font-medium  capitalize">
                   Name
                 </th>
-                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">
+                <th className="py-2 px-4 text-[14px] font-medium  capitalize">
                   Email
                 </th>
-                {accessRoles?.slice(0, 4).map((role) => (
+                {/* {accessRoles?.slice(0, 4).map((role) => (
                   <th
                     key={role}
                     className="py-2 px-2 text-[14px] text-center font-medium text-[#575757] capitalize"
                   >
                     {role}
                   </th>
-                ))}
-                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">
+                ))} */}
+                <th className="py-2 px-4 text-[14px] font-medium  capitalize">
                   Admin
                 </th>
-                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize whitespace-nowrap">
+                <th className="py-2 px-4 text-[14px] font-medium  capitalize whitespace-nowrap">
                   Date Added
                 </th>
-                <th className="py-2 text-[14px] font-medium text-[#575757] capitalize whitespace-nowrap">
+                <th className="py-2 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
                   Action
                 </th>
               </tr>
             </thead>
 
-            <tbody>
-              {userManagementData?.map((user, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
-                >
-                  <td className="py-2 text-[14px] font-medium text-[#575757] capitalize">
-                    {user.displayName}
-                  </td>
-                  <td className="py-2 text-[14px]  text-[#575757] lowercase">
-                    {user.emailId}
-                  </td>
+            <tbody className="bg-gray-500">
+              {userManagementData &&
+                userManagementData
+                  ?.filter(
+                    (data) =>
+                      data?.isAdmin === true ||
+                      data?.assigned_location?.some(
+                        (location) =>
+                          String(location?.hid) ===
+                          String(handleLocalStorage("hid"))
+                      )
+                  )
+                  .map((user, index) => (
+                    <tr
+                      key={index}
+                      className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                    >
+                      <td className="py-2 px-4 text-[14px] font-medium text-[#575757] capitalize">
+                        {user.displayName}
+                      </td>
+                      <td className="py-2 px-4 text-[14px] text-[#575757] lowercase">
+                        {user.emailId}
+                      </td>
 
-                  {user.accessScope &&
-                    Object.entries(user.accessScope)
-                      .slice(0, 4)
-                      .map(([role, hasAccess]) => (
-                        <td key={role} className="text-center">
-                          <div className="flex justify-center">
-                            {hasAccess ? (
-                              <IoMdCheckmark className="h-6 w-6 text-green-500" />
-                            ) : (
-                              <IoClose className="h-6 w-6 text-red-500" />
-                            )}
-                          </div>
-                        </td>
-                      ))}
-                  {/* {
-                                    accessRoles.slice(0, 4).map((role) => (
-                                        <td key={role} className="text-center">
-                                            <div className='flex justify-center'>
-                                                {user.accessScope[role] !== "true" ? (
-                                                    <IoClose className="h-6 w-6 text-green-500" />
-                                                ) : (
-                                                    <IoMdCheckmark className="h-6 w-6 text-red-500" />
-                                                )}
-                                            </div>
-                                        </td>
-                                    ))
-                                } */}
-                  <td className="px-4 py-3">
-                    {user.isAdmin ? (
-                      <IoMdCheckmark className="h-6 w-6 text-green-500" />
-                    ) : (
-                      <IoClose className="h-6 w-6 text-red-500" />
-                    )}
-                  </td>
-                  <td className="py-2 text-[14px] whitespace-nowrap  text-[#575757] lowercase">
-                    {new Date(user.createdAt).toLocaleString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}{" "}
-                  </td>
+                      <td className="py-3 px-4 text-[#575757] text-start">
+                        {user?.role || "-"}
+                      </td>
 
-                  <td>
-                    {/* {isAdmin ? <button className='btn me-2' onClick={() => { editUserData(user) }}>edit</button> : ""} */}
-                    {user.isAdmin ? (
-                      ""
-                    ) : (
-                      <span className="flex items-center gap-3">
-                        {" "}
-                        <MdDeleteOutline
-                          size={20}
-                          onClick={() => deleteUserFromManagement(user.emailId)}
-                          className="text-red-500 mt-[2px]"
-                        />{" "}
-                        <FaEdit
-                          onClick={() => {
-                            handleEditUserData(user);
-                          }}
-                          className="text-black"
-                        />
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                      <td className="py-2 px-4 text-[14px] whitespace-nowrap  text-[#575757] lowercase">
+                        {new Date(user.createdAt).toLocaleString("en-GB", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}{" "}
+                      </td>
+
+                      <td className="text-gray-500">
+                        {/* {isAdmin ? <button className='btn me-2' onClick={() => { editUserData(user) }}>edit</button> : ""} */}
+                        {user.isAdmin ? (
+                          <span className="ml-4">-</span>
+                        ) : (
+                          <span
+                            className="flex items-center gap-3"
+                            title="Preview & Edit"
+                          >
+                            {" "}
+                            <MdDeleteOutline
+                              size={20}
+                              onClick={() =>
+                                deleteUserFromManagement(user.emailId)
+                              }
+                              className="text-red-500 mt-[2px]"
+                            />{" "}
+                            <FaEdit
+                              onClick={() => {
+                                handleEditUserData(user);
+                              }}
+                              className="text-black"
+                            />
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

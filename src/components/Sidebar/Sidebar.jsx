@@ -112,10 +112,10 @@ const Sidebar = () => {
             </p>
 
             <div
-              className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2"
+              className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2 hide-scrollbar"
               style={{
                 maxHeight: isDropDownOpen ? "300px" : "0px",
-                overflow: "hidden",
+                overflow: isDropDownOpen ? "auto" : "hidden",
               }}
             >
               <div className="space-y-2 mt-3 w-full">
