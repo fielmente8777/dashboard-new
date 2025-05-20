@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile, setHid } from "../redux/slice/UserSlice";
-import handleLocalStorage from "../utils/handleLocalStorage";
 import {
-  fetchCurrentLocationWebsiteData,
-  fetchWebsiteData,
-} from "../redux/slice/websiteDataSlice";
+  fetchAuthUserProfile,
+  fetchUserProfile,
+  setHid,
+} from "../redux/slice/UserSlice";
+import { fetchWebsiteData } from "../redux/slice/websiteDataSlice";
+import handleLocalStorage from "../utils/handleLocalStorage";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ const GlobalDataProvider = () => {
     if (token) {
       dispatch(fetchUserProfile(token));
       dispatch(fetchWebsiteData(token, hid));
+      dispatch(fetchAuthUserProfile(token));
     }
   }, [token, hid]);
 

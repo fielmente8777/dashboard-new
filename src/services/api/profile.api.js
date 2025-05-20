@@ -17,3 +17,20 @@ export const getUserProfile = async (token) => {
     throw error;
   }
 };
+
+export const getAuthUserProfile = async (token) => {
+  if (token)
+    try {
+      if (token) {
+        const response = await axios.get(`${BASE_URL}/user/user-details`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        return response?.data;
+      }
+    } catch (error) {
+      console.error("Error getting user profile:", error);
+    }
+};

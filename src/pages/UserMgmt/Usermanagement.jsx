@@ -19,7 +19,6 @@ const Usermanagement = () => {
   const fetchData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
-    console.log(usersData);
     setUserManagementData(usersData);
   };
 

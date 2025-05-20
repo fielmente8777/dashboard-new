@@ -1,9 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import handleLocalStorage from "../../utils/handleLocalStorage";
-import { getUserProfile } from "../../services/api/profile.api";
+import {
+  getAuthUserProfile,
+  getUserProfile,
+} from "../../services/api/profile.api";
 
 const initialState = {
   user: null,
+  authUser: null,
   hid: handleLocalStorage("hid") || null,
   loading: false,
   error: null,
@@ -17,6 +21,10 @@ const userProfileSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
+    setAuthUserProfile: (state, action) => {
+      state.loading = true;
+      state.authUser = action.payload?.User;
+    },
     getUserProfileSuccess: (state, action) => {
       state.loading = false;
       state.user = {
@@ -28,7 +36,6 @@ const userProfileSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-
     setHid: (state, action) => {
       state.loading = false;
       state.hid = action.payload;
@@ -42,6 +49,7 @@ export const {
   getUserProfileSuccess,
   getUserProfileFailure,
   setCurrentLocation,
+  setAuthUserProfile,
   setHid,
 } = userProfileSlice.actions;
 
@@ -57,6 +65,22 @@ export const fetchUserProfile = (token) => async (dispatch) => {
   } catch (error) {
     dispatch(getUserProfileFailure(error.message));
     return { success: false, error: error.message };
+  }
+};
+
+export const fetchAuthUserProfile = (token) => async (dispatch) => {
+  dispatch(getUserProfileRequest());
+  if (token) {
+    try {
+      if (token) {
+        const data = await getAuthUserProfile(token);
+        dispatch(setAuthUserProfile(data));
+        return { success: true, response: data };
+      }
+    } catch (error) {
+      dispatch(getUserProfileFailure(error.message));
+      return { success: false, error: error.message };
+    }
   }
 };
 

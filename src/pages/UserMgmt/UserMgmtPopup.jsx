@@ -24,6 +24,7 @@ export const accessScopeMap = {
   "Booking Engine": "bookingEngine",
   "Front Desk": "frontDesk",
   "Social Media": "socialMedia",
+  "Enquire Management": "enquiriesManagement",
   "Reservation Desk": "reservationDesk",
   Frontdesk: "frontDesk",
   "Channel Manager": "channelManager",

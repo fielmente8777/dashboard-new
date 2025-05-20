@@ -15,6 +15,7 @@ export const SidebarData = [
   {
     name: "Content Management system",
     link: `content-management-system`,
+    key: "CMS",
     icon: <MdOutlineSos size={26} />,
     subLinks: [
       {
@@ -68,6 +69,7 @@ export const SidebarData = [
   {
     name: "Guest Request Management",
     link: `guest-request-management`,
+    key: "GRM",
     icon: <MdOutlineSos size={26} />,
     subLinks: [
       {
@@ -96,6 +98,7 @@ export const SidebarData = [
   {
     name: "Enquiries Management",
     link: `enquiries-management`,
+    key: "Enquire Management",
     icon: <HiOutlineUserGroup />,
     subLinks: [
       {
@@ -114,6 +117,7 @@ export const SidebarData = [
   {
     name: "Human Resources Management",
     link: `human-resources-management`,
+    key: "HRM",
     icon: <HiOutlineUserGroup />,
     subLinks: [
       {
@@ -135,3 +139,16 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
 ];
+
+// "CMS",
+//   "Social Media",
+//   "Front Desk",
+//   "Seo Manager",
+//   "Theme Manager",
+//   "Booking Engine",
+//   "Reservation Desk",
+//   "Channel Manager",
+//   "Food Manager",
+//   "Gateway Manager",
+//   "GRM",
+//   "HRM",

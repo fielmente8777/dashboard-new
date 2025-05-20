@@ -11,13 +11,18 @@ import { BASE_PATH } from "../../data/constant";
 import { setHid } from "../../redux/slice/UserSlice";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 import Swal from "sweetalert2";
+import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
 const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({});
 
-  const { user: hotel, loading } = useSelector((state) => state.userProfile);
+  const {
+    user: hotel,
+    authUser,
+    loading,
+  } = useSelector((state) => state.userProfile);
   const { hid } = useSelector((state) => state.userProfile);
 
   const dispatch = useDispatch();
@@ -118,50 +123,96 @@ const Sidebar = () => {
                 overflow: isDropDownOpen ? "auto" : "hidden",
               }}
             >
-              <div className="space-y-2 mt-3 w-full">
-                {hotel?.Profile?.hotels &&
-                  Object.entries(hotel?.Profile?.hotels).map(([key, value]) => {
-                    const isCurrentLocation =
-                      value?.city === currentLocation?.city &&
-                      value?.state === currentLocation?.state &&
-                      value?.country === currentLocation?.country;
+              {authUser?.isAdmin ? (
+                <div className="space-y-2 mt-3 w-full">
+                  {hotel?.Profile?.hotels &&
+                    Object.entries(hotel?.Profile?.hotels).map(
+                      ([key, value]) => {
+                        const isCurrentLocation =
+                          value?.city === currentLocation?.city &&
+                          value?.state === currentLocation?.state &&
+                          value?.country === currentLocation?.country;
 
-                    return (
-                      <div
-                        key={key + 1}
-                        className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                          isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                        }`}
-                        onClick={(e) => handleSelectLocation(e, value, key)}
-                      >
-                        <h2 className="text-[14px] font-medium">
-                          {hotel?.Profile?.hotelName || "Eazotel"}
-                        </h2>
+                        return (
+                          <div
+                            key={key + 1}
+                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
+                              isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                            }`}
+                            onClick={(e) => handleSelectLocation(e, value, key)}
+                          >
+                            <h2 className="text-[14px] font-medium">
+                              {hotel?.Profile?.hotelName || "Eazotel"}
+                            </h2>
 
-                        <p className="text-xs text-gray-500 flex items-center">
-                          <CiLocationOn />
-                          <span>
-                            {value?.city}
-                            {", "}
-                            {value.state}
-                            {", "}
-                            {value?.country}
-                          </span>
-                        </p>
-                      </div>
-                    );
+                            <p className="text-xs text-gray-500 flex items-center">
+                              <CiLocationOn />
+                              <span>
+                                {value?.city}
+                                {", "}
+                                {value.state}
+                                {", "}
+                                {value?.country}
+                              </span>
+                            </p>
+                          </div>
+                        );
+                      }
+                    )}
+                </div>
+              ) : (
+                <div className="space-y-2 mt-3 w-full">
+                  {authUser?.assigned_location?.map((location, index) => {
+                    if (hotel?.Profile?.hotels[location?.hid]) {
+                      const value = hotel?.Profile?.hotels[location?.hid];
+
+                      const isCurrentLocation =
+                        value?.city === currentLocation?.city &&
+                        value?.state === currentLocation?.state &&
+                        value?.country === currentLocation?.country;
+
+                      return (
+                        <div
+                          key={index + 1}
+                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
+                            isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                          }`}
+                          onClick={(e) =>
+                            handleSelectLocation(e, value, location?.hid)
+                          }
+                        >
+                          <h2 className="text-[14px] font-medium">
+                            {hotel?.Profile?.hotelName || "Eazotel"}
+                          </h2>
+
+                          <p className="text-xs text-gray-500 flex items-center">
+                            <CiLocationOn />
+                            <span>
+                              {value?.city}
+                              {", "}
+                              {value.state}
+                              {", "}
+                              {value?.country}
+                            </span>
+                          </p>
+                        </div>
+                      );
+                    }
                   })}
-              </div>
+                </div>
+              )}
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsOpenForm(true);
-                }}
-                className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full"
-              >
-                <MdAddBusiness size={22} /> Add New Location
-              </button>
+              {authUser?.isAdmin && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsOpenForm(true);
+                  }}
+                  className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full"
+                >
+                  <MdAddBusiness size={22} /> Add New Location
+                </button>
+              )}
             </div>
           </div>
 
@@ -173,61 +224,140 @@ const Sidebar = () => {
         </div>
       )}
 
-      {SidebarData?.map((item, index) => (
-        <div key={index} className="flex flex-col gap-1">
-          {item?.subLinks ? (
-            <div
-              onClick={() => toggleMenu(index)}
-              className="flex justify-between items-center cursor-pointer"
-            >
-              <p className=" text-[14px] font-medium text-[#575757]/70 ">
-                {item.name}
-              </p>
-              <span
-                className={`${
-                  openMenus[index] ? "-rotate-90" : " rotate-90"
-                } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
-              >
-                <Arrow />
-              </span>
-            </div>
-          ) : (
-            <Link
-              to={item.link}
-              className={`${
-                pathLocation.pathname === item.link
-                  ? "bg-[#0a3a75] text-white px-2 rounded-md"
-                  : ""
-              }  text-[14px] py-2 font-medium text-[#575757]/70 `}
-            >
-              {item.name}
-            </Link>
-          )}
+      {SidebarData?.map((item, index) => {
+        if (authUser?.isAdmin) {
+          const key = item?.key;
+          if (key && !authUser?.accessScope[accessScopeMap[key]]) return null;
+          return (
+            <div key={index} className="flex flex-col gap-1">
+              {item?.subLinks ? (
+                <div
+                  onClick={() => toggleMenu(index)}
+                  className="flex justify-between items-center cursor-pointer"
+                >
+                  <p className=" text-[14px] font-medium text-[#575757]/70 ">
+                    {item.name}
+                  </p>
+                  <span
+                    className={`${
+                      openMenus[index] ? "-rotate-90" : " rotate-90"
+                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                  >
+                    <Arrow />
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  to={item.link}
+                  className={`${
+                    pathLocation.pathname === item.link
+                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
+                      : ""
+                  }  text-[14px] py-2 font-medium text-[#575757]/70 `}
+                >
+                  {item.name}
+                </Link>
+              )}
 
-          {openMenus[index] && item?.subLinks && <hr className="border-b" />}
+              {openMenus[index] && item?.subLinks && (
+                <hr className="border-b" />
+              )}
 
-          {openMenus[index] && (
-            <div className="space-y-2">
-              {item?.subLinks &&
-                item.subLinks.map((subLink, index) => (
-                  <div className="flex flex-col transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
-                    <Link
-                      to={subLink.link}
-                      key={index}
-                      className={` ${
-                        pathLocation.pathname === subLink.link
-                          ? "bg-[#0a3a75] text-white px-2"
-                          : "hover:bg-[#0a3a75]/10"
-                      }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
-                    >
-                      {subLink.icon} {subLink.name}
-                    </Link>
-                  </div>
-                ))}
+              {openMenus[index] && (
+                <div className="space-y-2">
+                  {item?.subLinks &&
+                    item.subLinks.map((subLink, index) => (
+                      <div className="flex flex-col transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
+                        <Link
+                          to={subLink.link}
+                          key={index}
+                          className={` ${
+                            pathLocation.pathname === subLink.link
+                              ? "bg-[#0a3a75] text-white px-2"
+                              : "hover:bg-[#0a3a75]/10"
+                          }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
+                        >
+                          {subLink.icon} {subLink.name}
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      ))}
+          );
+        } else {
+          const currentLocationAccessScope =
+            authUser?.assigned_location?.filter(
+              (location) => location?.hid === String(handleLocalStorage("hid"))
+            )[0];
+
+          const key = item?.key;
+          if (
+            key &&
+            currentLocationAccessScope &&
+            !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+          )
+            return null;
+
+          return (
+            <div key={index} className="flex flex-col gap-1">
+              {item?.subLinks ? (
+                <div
+                  onClick={() => toggleMenu(index)}
+                  className="flex justify-between items-center cursor-pointer"
+                >
+                  <p className=" text-[14px] font-medium text-[#575757]/70 ">
+                    {item.name}
+                  </p>
+                  <span
+                    className={`${
+                      openMenus[index] ? "-rotate-90" : " rotate-90"
+                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                  >
+                    <Arrow />
+                  </span>
+                </div>
+              ) : (
+                <Link
+                  to={item.link}
+                  className={`${
+                    pathLocation.pathname === item.link
+                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
+                      : ""
+                  }  text-[14px] py-2 font-medium text-[#575757]/70 `}
+                >
+                  {item.name}
+                </Link>
+              )}
+
+              {openMenus[index] && item?.subLinks && (
+                <hr className="border-b" />
+              )}
+
+              {openMenus[index] && (
+                <div className="space-y-2">
+                  {item?.subLinks &&
+                    item.subLinks.map((subLink, index) => (
+                      <div className="flex flex-col transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
+                        <Link
+                          to={subLink.link}
+                          key={index}
+                          className={` ${
+                            pathLocation.pathname === subLink.link
+                              ? "bg-[#0a3a75] text-white px-2"
+                              : "hover:bg-[#0a3a75]/10"
+                          }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
+                        >
+                          {subLink.icon} {subLink.name}
+                        </Link>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+      })}
 
       <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
     </div>
