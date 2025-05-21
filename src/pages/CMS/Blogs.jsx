@@ -3,13 +3,12 @@ import Swal from "sweetalert2";
 import { GetwebsiteDetails, UploadingImageS3 } from "../../services/api";
 import JoditEditor from "jodit-react";
 import { FileUploader } from "react-drag-drop-files";
+import { useSelector } from "react-redux";
 const fileTypes = ["JPG", "PNG", "GIF", "JPEG", "WEBP"];
 const Blogs = () => {
   const editor = useRef(null);
   //   const [editable, setEditable] = useState("None");
-  const [websiteBlogsData, setWebsiteBlogsData] = useState([]);
   const [blogText, setBlogText] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     heading: "",
@@ -21,24 +20,11 @@ const Blogs = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [base64String, setBase64String] = useState(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const data = await GetwebsiteDetails(token); // Assuming this is an async function
-      console.log(data.Blogs);
-      setWebsiteBlogsData(data.Blogs || []);
-    } catch (error) {
-      // Swal.fire({
-      //     icon: 'error',
-      //     title: 'Error',
-      //     text: 'Failed to fetch website details. Please try again.',
-      //     confirmButtonText: 'OK',
-      // });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { currentLoactionWebsiteData, loading } = useSelector(
+    (state) => state?.hotelsWebsiteData
+  );
+
+  console.log(currentLoactionWebsiteData);
 
   const autoGenerateSlug = (text) => {
     const slug = text
@@ -146,10 +132,6 @@ const Blogs = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     if (formData.heading) {
       autoGenerateSlug(formData.heading);
     }
@@ -182,22 +164,27 @@ const Blogs = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
-          {websiteBlogsData?.map((blog, index) => (
-            <div key={index} className="bg-gray-100  rounded-md p-4">
-              <h3 className="text-lg font-semibold text-[#575757]">
-                {blog.Heading}
-              </h3>
-              <p className="text-sm text-gray-600 mt-2">{blog.Text}</p>
-              <a
-                href={blog?.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline mt-2 block"
-              >
-                Read More
-              </a>
-            </div>
-          ))}
+          {currentLoactionWebsiteData &&
+          currentLoactionWebsiteData?.Details?.Blogs?.length > 0 ? (
+            currentLoactionWebsiteData?.Details?.Blogs?.map((blog, index) => (
+              <div key={index} className="bg-gray-100  rounded-md p-4">
+                <h3 className="text-lg font-semibold text-[#575757]">
+                  {blog.Heading}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">{blog.Text}</p>
+                <a
+                  href={blog?.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline mt-2 block"
+                >
+                  Read More
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-500 text-2xl">No Blogs Found!❌</p>
+          )}
         </div>
       )}
 

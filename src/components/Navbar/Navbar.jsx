@@ -8,7 +8,7 @@ import { MdOutlineSos } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile } from "../../redux/slice/UserSlice";
+import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 
 import Logo from "../../assets/companylogo.b.png";
 const Navbar = () => {
@@ -59,9 +59,9 @@ const Navbar = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("ndid");
+    localStorage.clear();
     setAuth(false);
+    dispatch(setHid(null));
     // setTimeout(() => {
     navigate("/login");
     // }, 1000)

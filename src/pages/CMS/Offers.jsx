@@ -19,7 +19,6 @@ const Analytics = () => {
   const [websitedata, setWebsitedata] = useState({});
   const [websiteoffersdata, setwebsiteoffersdata] = useState([]);
   const [activeIndex, setActiveIndex] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     hotel: "",
@@ -30,34 +29,12 @@ const Analytics = () => {
     image: "",
   });
   const [base64String, setBase64String] = useState("");
-
   const [inclusionInput, setInclusionInput] = useState("");
-
   const token = localStorage.getItem("token");
-  //   useEffect(() => {
-  //     if (localStorage.getItem("token")) {
-  //       dispatch(fetchWebsiteData(token));
-  //     }
-  //   }, [dispatch, token]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const data = await GetwebsiteDetails(token);
-        setWebsitedata(data);
-        setwebsiteoffersdata(data?.Offers || []);
-      } catch (error) {
-        console.error("Error fetching website details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+  const { currentLoactionWebsiteData, loading } = useSelector(
+    (state) => state?.hotelsWebsiteData
+  );
 
   const addInclusion = () => {
     if (inclusionInput.trim() !== "") {
@@ -90,18 +67,14 @@ const Analytics = () => {
       return;
     }
 
-
-
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(",")[1];
 
       setBase64String(base64String);
-
     };
     reader.readAsDataURL(file);
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -205,12 +178,13 @@ const Analytics = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
-          {websiteoffersdata[0]?.image &&
-            websiteoffersdata?.map((item, index) => (
+          {currentLoactionWebsiteData?.Details?.Offers[0]?.image &&
+            currentLoactionWebsiteData?.Details?.Offers?.map((item, index) => (
               <div
                 key={index}
-                className={`flex flex-col relative gap-2 ${activeIndex === index ? "bg-white z-10" : ""
-                  }`}
+                className={`flex flex-col relative gap-2 ${
+                  activeIndex === index ? "bg-white z-10" : ""
+                }`}
                 onMouseEnter={() => setActiveIndex(true)}
                 onMouseLeave={() => setActiveIndex(false)}
               >

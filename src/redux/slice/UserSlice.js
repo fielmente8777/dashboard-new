@@ -39,7 +39,9 @@ const userProfileSlice = createSlice({
     setHid: (state, action) => {
       state.loading = false;
       state.hid = action.payload;
-      handleLocalStorage("hid", action?.payload);
+      if (action?.payload) {
+        handleLocalStorage("hid", action?.payload);
+      }
     },
   },
 });

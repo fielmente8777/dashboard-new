@@ -3,6 +3,8 @@ import { MdAddBusiness } from "react-icons/md";
 import axios from "axios";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Swal from "sweetalert2";
+import { useDispatch } from "react-redux";
+import { fetchUserProfile } from "../../redux/slice/UserSlice";
 
 const AddLocationForm = ({ isOpen, handleClose }) => {
   const [countries, setCountries] = useState([]);
@@ -16,6 +18,8 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
   const [loadingCities, setLoadingCities] = useState(false);
   const [local, setLocal] = useState("");
   const [pin, setPinCode] = useState("");
+
+  const dispatch = useDispatch();
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -48,6 +52,8 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
           title: "Success",
           text: data?.Message || "Hotel added successfully.",
         });
+        dispatch(fetchUserProfile(handleLocalStorage("token")));
+
         // alert(data.message);
       } else {
         Swal.fire({

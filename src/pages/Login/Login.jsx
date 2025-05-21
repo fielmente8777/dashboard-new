@@ -30,7 +30,6 @@ const Login = () => {
     e.preventDefault();
     // Dispatch login action
     const response = await dispatch(loginUser(formData));
-    console.log(response);
     let timerInterval;
     if (response.success === false) {
       Swal.fire({

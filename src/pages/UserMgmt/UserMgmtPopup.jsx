@@ -77,8 +77,9 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
   };
   // Remove location function
   const removeLocation = (location) => {
+    console.log(location);
     setSelectedLocations((prev) =>
-      prev.filter((entry) => entry.location !== location)
+      prev.filter((entry) => entry.hid !== location)
     );
     // Also reset currentLocation if it matches removed one
     if (currentLocation === location) setCurrentLocation("");
@@ -101,22 +102,6 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
       humanResourceManagement: "false",
       guestRequestManagement: "false",
       enquiriesManagement: "false",
-    };
-
-    const accessScopeMap = {
-      CMS: "cms",
-      "Booking Engine": "bookingEngine",
-      "Social Media": "socialMedia",
-      "Reservation Desk": "reservationDesk",
-      Frontdesk: "frontDesk",
-      "Channel Manager": "channelManager",
-      "SEO Manager": "seoManager",
-      "Food Manager": "foodManager",
-      Themes: "themes",
-      "Gateway Manager": "gatewayManager",
-      "Human Resource Management": "humanResourceManagement",
-      "Guest Request Management": "guestRequestManagement",
-      "Enquiries Management": "enquiriesManagement",
     };
 
     const processedLocations = selectedLocations.map((location) => {
@@ -180,12 +165,12 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
+      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
         isOpen ? "opacity-100 visible" : "opacity-0 invisible"
       }`}
     >
-      <div className="bg-white grid grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
-        <div className="col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
+      <div className="bg-white grid md:grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
+        <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
           <div className="sticky top-0">
             <div className="max-h-96">
               <img
@@ -197,7 +182,7 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
           </div>
         </div>
 
-        <div className="col-span-5 space-y-8">
+        <div className="md:col-span-5 space-y-8">
           {/* Header */}
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
             <h2 className="text-xl text-primary font-bold">Create New User</h2>
@@ -273,7 +258,7 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
             >
               {/* Remove icon */}
               <button
-                onClick={() => removeLocation(locEntry.location)}
+                onClick={() => removeLocation(locEntry.hid)}
                 className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-2xl"
                 title="Remove Location"
               >

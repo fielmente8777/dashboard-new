@@ -5,8 +5,6 @@ import { useSelector } from "react-redux";
 
 const Analytics = () => {
   const [openIndex, setOpenIndex] = useState(null);
-  const [websitedata, setWebsitedata] = useState({});
-  const [websitefaqdata, setWebsitefaqdata] = useState([]);
 
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -15,120 +13,121 @@ const Analytics = () => {
     (state) => state?.hotelsWebsiteData
   );
 
-  // const deleteFaq = async (que, ans) => {
-  //   const confirmation = await Swal.fire({
-  //     title: "Are you sure?",
-  //     text: `Do you really want to delete this ${que}? This action cannot be undone.`,
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     confirmButtonColor: "#d33",
-  //     cancelButtonColor: "#3085d6",
-  //     confirmButtonText: "Yes, delete it!",
-  //     cancelButtonText: "Cancel",
-  //   });
-  //   if (confirmation.isConfirmed) {
-  //     try {
-  //       const response = await fetch(
-  //         `https://nexon.eazotel.com/cms/operation/Faq`,
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //           body: JSON.stringify({
-  //             token: localStorage.getItem("token"),
-  //             operation: "remove",
-  //             question: que,
-  //             answer: ans,
-  //             index: "0",
-  //           }),
-  //         }
-  //       );
-  //       const data = await response.json();
-  //       console.log(data);
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "Deleted!",
-  //         text: data.Message || "User has been deleted successfully.",
-  //         timer: 600,
-  //         showConfirmButton: false,
-  //       });
-  //       // .then(() => {
-  //       //     if (data.Status) {
-  //       //         fetchData();
-  //       //     }
-  //       // });
-  //       fetchData();
-  //       console.log("FAQ deleted successfully:", data);
-  //     } catch (error) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error",
-  //         text: "Faq API error. Please try again.",
-  //       });
-  //     }
-  //   }
-  // };
+  console.log(currentLoactionWebsiteData);
 
-  // const addFaq = async () => {
-  //   console.log("question", question, "answer", answer);
-  //   if (question === "" || answer === "") {
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Error",
-  //       text: "Please fill in all fields.",
-  //     });
-  //     return;
-  //   }
+  const deleteFaq = async (que, ans) => {
+    const confirmation = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you really want to delete this ${que}? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await fetch(
+          `https://nexon.eazotel.com/cms/operation/Faq`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: localStorage.getItem("token"),
+              operation: "remove",
+              question: que,
+              answer: ans,
+              index: "0",
+            }),
+          }
+        );
+        const data = await response.json();
+        console.log(data);
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: data.Message || "User has been deleted successfully.",
+          timer: 600,
+          showConfirmButton: false,
+        });
+        // .then(() => {
+        //     if (data.Status) {
+        //         fetchData();
+        //     }
+        // });
 
-  //   let obj = {
-  //     token: localStorage.getItem("token"),
-  //     operation: "append",
-  //     question: question,
-  //     answer: answer,
-  //     index: 0,
-  //   };
+        console.log("FAQ deleted successfully:", data);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Faq API error. Please try again.",
+        });
+      }
+    }
+  };
 
-  //   try {
-  //     obj["token"] = localStorage.getItem("token");
-  //     const url = `https://nexon.eazotel.com/cms/operation/Faq`;
-  //     const response = await fetch(url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(obj),
-  //     });
-  //     const resp = await response.json();
-  //     console.log(resp);
-  //     if (resp.Status === true) {
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "Success",
-  //         text: resp.Message || "FAQ added successfully.",
-  //       }).then(() => {
-  //         fetchData();
-  //         setAnswer("");
-  //         setQuestion("");
-  //       });
-  //       return true;
-  //     } else {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error",
-  //         text: resp.Message || "Failed to add FAQ.",
-  //       });
-  //       return false;
-  //     }
-  //   } catch {
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Error",
-  //       text: "An error occurred while adding the FAQ.",
-  //     });
-  //     return false;
-  //   }
-  // };
+  const addFaq = async () => {
+    console.log("question", question, "answer", answer);
+    if (question === "" || answer === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please fill in all fields.",
+      });
+      return;
+    }
+
+    let obj = {
+      token: localStorage.getItem("token"),
+      operation: "append",
+      question: question,
+      answer: answer,
+      index: 0,
+    };
+
+    try {
+      obj["token"] = localStorage.getItem("token");
+      const url = `https://nexon.eazotel.com/cms/operation/Faq`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      });
+      const resp = await response.json();
+      console.log(resp);
+      if (resp.Status === true) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: resp.Message || "FAQ added successfully.",
+        }).then(() => {
+          setAnswer("");
+          setQuestion("");
+        });
+        return true;
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: resp.Message || "Failed to add FAQ.",
+        });
+        return false;
+      }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while adding the FAQ.",
+      });
+      return false;
+    }
+  };
 
   const toggleAccordion = (index) => {
     setOpenIndex(openIndex === index ? null : index);

@@ -1,17 +1,12 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MdDeleteOutline } from "react-icons/md";
+import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { UploadingImageS3 } from "../../services/api";
-import { useDispatch, useSelector } from "react-redux";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { fetchCurrentLocationWebsiteData } from "../../redux/slice/websiteDataSlice";
 // import TimePick from '../../components/TimePicker';
 
 const Events = () => {
-  const [websitedata, setWebsitedata] = useState({});
-  const [websiteEventsData, setWebsiteEventsData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [addEventLoader, setAddEventLoader] = useState(false);
   const [base64String, setBase64String] = useState("");
   const [formData, setFormData] = useState({
@@ -24,13 +19,9 @@ const Events = () => {
     bookingUrl: "",
   });
 
-  const dispatch = useDispatch();
-
-  const { currentLoactionWebsiteData } = useSelector(
+  const { currentLoactionWebsiteData, loading } = useSelector(
     (state) => state?.hotelsWebsiteData
   );
-
-  console.log(currentLoactionWebsiteData);
 
   const uploadImage = async (e) => {
     e.preventDefault();
@@ -185,41 +176,41 @@ const Events = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-            {websiteEventsData[0]?.Image &&
-              websiteEventsData?.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-4 mb-4 relative"
-                >
-                  <div>
-                    <span className="absolute top-2 right-2 bg-white">
-                      <MdDeleteOutline
-                        size={28}
-                        onClick={() => handleDelete(index)}
-                        className="absolute top-3 right-3 cursor-pointer bg-white p-1 text-red-600 rounded-full text-md"
-                      />
-                    </span>
-                    <img
-                      src={item?.Image}
-                      alt={item?.title}
-                      className="w-full h-[60vh] object-cover mb-4"
+            {currentLoactionWebsiteData?.Details?.Events?.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-lg p-4 mb-4 relative"
+              >
+                <div>
+                  <span className="absolute top-2 right-2 bg-white">
+                    <MdDeleteOutline
+                      size={28}
+                      onClick={() => handleDelete(index)}
+                      className="absolute top-3 right-3 cursor-pointer bg-white p-1 text-red-600 rounded-full text-md"
                     />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-[#575757] mb-2">
-                      {item?.Heading}
-                    </h3>
-                    <p className="text-sm text-[#575757]/70 mb-2 ">
-                      {item?.Text}
-                    </p>
-                    <p className="text-sm text-[#575757] font-semibold">
-                      {item?.date}
-                    </p>
-                    <p className="text-sm text-[#575757]">{item?.time}</p>
-                    {/*  <p className="text-sm text-gray-600">{item?.location}</p> */}
-                  </div>
+                  </span>
+                  <img
+                    src={item?.Image}
+                    alt={item?.title}
+                    className="w-full h-[60vh] object-cover mb-4"
+                  />
                 </div>
-              ))}
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#575757] mb-2">
+                    {item?.Heading}
+                  </h3>
+                  <p className="text-sm text-[#575757]/70 mb-2 ">
+                    {item?.Text}
+                  </p>
+                  <p className="text-sm text-[#575757] font-semibold">
+                    {item?.date}
+                  </p>
+                  <p className="text-sm text-[#575757]">{item?.time}</p>
+                  {/*  <p className="text-sm text-gray-600">{item?.location}</p> */}
+                </div>
+              </div>
+            ))}
 
             {addEventLoader && (
               <div className="h-[75dvh] animate-pulse bg-gray-100 mt-4" />

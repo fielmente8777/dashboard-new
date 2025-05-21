@@ -8,14 +8,15 @@ import { fetchUserManagementData } from "../../services/api";
 import EditUserPopup from "./EditUserPopup";
 import UserMgmtPopup from "./UserMgmtPopup";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { useSelector } from "react-redux";
 
 const Usermanagement = () => {
   const [userManagementData, setUserManagementData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
-  const [isHover, setIsHover] = useState();
   const [editUserData, setEditUserData] = useState({});
 
+  const { authUser } = useSelector((state) => state.userProfile);
   const fetchData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
@@ -102,17 +103,22 @@ const Usermanagement = () => {
   if (!userManagementData) return <div>Loading...</div>;
   return (
     <>
-      <div className="flex justify-end items-center">
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          className="border transition-all duration-300 px-4 py-2 shadow-md font-medium text-sm border-primary text-gray-800 hover:bg-primary/90 hover:text-white rounded-md"
-        >
-          Add New User
-        </button>
+      <div className="flex justify-between items-center">
+        <h2 className="bg-gray-200 text-primary w-fit py-1 px-3 rounded-sm text-sm font-medium">
+          User Management
+        </h2>
+        {authUser?.isAdmin && (
+          <button
+            onClick={() => setIsPopupOpen(true)}
+            className="border transition-all duration-300 px-4 py-2 shadow-md font-medium text-sm border-primary text-gray-800 hover:bg-primary/90 hover:text-white rounded-md"
+          >
+            Add New User
+          </button>
+        )}
       </div>
 
-      <div className="flex flex-col justify-center text-white overflow-hidden mt-4">
-        <div className="overflow-x-auto">
+      <div className="flex flex-col justify-center text-white overflow-hidden mt-6">
+        <div className="overflow-x-auto space-y-6">
           <table className="w-full text-left bg-slate-800 text-white/90 rounded-sm shadow-md shadow-black/20">
             <thead>
               <tr className="border-b whitespace-nowrap">
@@ -165,11 +171,9 @@ const Usermanagement = () => {
                       <td className="py-2 px-4 text-[14px] text-[#575757] lowercase">
                         {user.emailId}
                       </td>
-
                       <td className="py-3 px-4 text-[#575757] text-start">
                         {user?.role || "-"}
                       </td>
-
                       <td className="py-2 px-4 text-[14px] whitespace-nowrap  text-[#575757] lowercase">
                         {new Date(user.createdAt).toLocaleString("en-GB", {
                           day: "2-digit",
@@ -180,12 +184,11 @@ const Usermanagement = () => {
                           hour12: true,
                         })}{" "}
                       </td>
-
                       <td className="text-gray-500">
                         {/* {isAdmin ? <button className='btn me-2' onClick={() => { editUserData(user) }}>edit</button> : ""} */}
                         {user.isAdmin ? (
                           <span className="ml-4">-</span>
-                        ) : (
+                        ) : authUser?.isAdmin ? (
                           <span
                             className="flex items-center gap-3"
                             title="Preview & Edit"
@@ -205,6 +208,8 @@ const Usermanagement = () => {
                               className="text-black"
                             />
                           </span>
+                        ) : (
+                          <span className="ml-4">-</span>
                         )}
                       </td>
                     </tr>

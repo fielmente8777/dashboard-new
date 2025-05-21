@@ -21,9 +21,9 @@ const Sidebar = () => {
   const {
     user: hotel,
     authUser,
+    hid,
     loading,
   } = useSelector((state) => state.userProfile);
-  const { hid } = useSelector((state) => state.userProfile);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -85,8 +85,14 @@ const Sidebar = () => {
 
   useEffect(() => {
     if (hid && hotel) {
-      const currentLoaction = hotel?.Profile?.hotels[hid];
-      setCurrentLocation(currentLoaction);
+      if (authUser?.isAdmin) {
+        const currentLoaction = hotel?.Profile?.hotels[hid];
+        setCurrentLocation(currentLoaction);
+      } else {
+        const assignedLocation = authUser?.assigned_location[0];
+        const currentLoaction = hotel?.Profile?.hotels[assignedLocation?.hid];
+        setCurrentLocation(currentLoaction);
+      }
     }
   }, [hid, hotel]);
 
