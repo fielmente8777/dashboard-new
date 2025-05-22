@@ -45,6 +45,7 @@ const LeadGenForm = () => {
         body: JSON.stringify({
           // Replace this with the data you want to send
           hId: handleLocalStorage("hid"),
+          title: "Onboarding Form",
         }),
       });
 
@@ -52,7 +53,7 @@ const LeadGenForm = () => {
         throw new Error("Failed to create form");
       }
 
-      dispatch(fetchLeadGenForm(handleLocalStorage("token")));
+      dispatch(fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"),));
 
       // adjust according to response structure
     } catch (err) {
@@ -137,9 +138,8 @@ const LeadGenForm = () => {
           </h2>
 
           <div
-            className={`grid grid-cols-1 md:grid-cols-${
-              editField ? "3" : "2"
-            } gap-10`}
+            className={`grid grid-cols-1 md:grid-cols-${editField ? "3" : "2"
+              } gap-10`}
           >
             {/* LEFT: Preview */}
             <div className="col-span space-y-4">

@@ -74,6 +74,7 @@ const Sidebar = () => {
       });
 
       navigate(`${BASE_PATH}/${hid}/${navigatePath}`);
+      setIsDropDownOpen(false);
     } catch (error) {
       console.log(error);
     }
@@ -115,24 +116,24 @@ const Sidebar = () => {
   }, [hid, hotel]);
 
   return (
-    <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden">
+    <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden ">
       {loading ? (
-        <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4">
+        <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
           <div className="bg-gray-200 animate-pulse h-2 w-24" />
           <div className="bg-gray-200 animate-pulse h-2" />
         </div>
       ) : (
         <div
-          className="relative border cursor-pointer rounded-md px-2 py-1 flex items-center justify-between mb-4"
+          className="relative bg-[#0a3a75] border cursor-pointer rounded-md px-3 py-1 flex items-center justify-between mb-4"
           onClick={() => {
             setIsDropDownOpen(!isDropDownOpen);
           }}
         >
           <div className="w-full">
-            <p className="text-[14px] capitalize text-[#575757] font-medium">
+            <p className="text-[16px] capitalize text-white font-medium">
               {hotel?.Profile?.hotelName || "Eazotel"}
             </p>
-            <p className="text-[#575757]/70 text-[13px]">
+            <p className="text-white/90 text-[15px]">
               {currentLocation?.city}
               {", "}
               {currentLocation?.state}
@@ -160,16 +161,15 @@ const Sidebar = () => {
                         return (
                           <div
                             key={key + 1}
-                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                              isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                            }`}
+                            className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                              }`}
                             onClick={(e) => handleSelectLocation(e, value, key)}
                           >
-                            <h2 className="text-[14px] font-medium">
+                            <h2 className="text-[16px] font-medium">
                               {hotel?.Profile?.hotelName || "Eazotel"}
                             </h2>
 
-                            <p className="text-xs text-gray-500 flex items-center">
+                            <p className="text-sm gap-1 text-gray-500 flex items-center">
                               <CiLocationOn />
                               <span>
                                 {value?.city}
@@ -185,7 +185,7 @@ const Sidebar = () => {
                     )}
                 </div>
               ) : (
-                <div className="space-y-2 mt-3 w-full">
+                <div className="space-y-2 mt-3 w-full ">
                   {authUser?.assigned_location?.map((location, index) => {
                     if (hotel?.Profile?.hotels[location?.hid]) {
                       const value = hotel?.Profile?.hotels[location?.hid];
@@ -198,14 +198,13 @@ const Sidebar = () => {
                       return (
                         <div
                           key={index + 1}
-                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                            isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                          }`}
+                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                            }`}
                           onClick={(e) =>
                             handleSelectLocation(e, value, location?.hid)
                           }
                         >
-                          <h2 className="text-[14px] font-medium">
+                          <h2 className="text-[16px] font-medium">
                             {hotel?.Profile?.hotelName || "Eazotel"}
                           </h2>
 
@@ -229,7 +228,7 @@ const Sidebar = () => {
               {authUser?.isAdmin && (
                 <button
                   onClick={(e) => handleAddNewLocation(e)}
-                  className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full"
+                  className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"
                 >
                   <MdAddBusiness size={22} /> Add New Location
                 </button>
@@ -238,7 +237,7 @@ const Sidebar = () => {
           </div>
 
           <div className="-rotate-90 absolute top-5 right-2">
-            <span className="-rotate-90 text-[#575757]/70">
+            <span className="-rotate-90 text-white">
               <Arrow />
             </span>
           </div>
@@ -256,13 +255,12 @@ const Sidebar = () => {
                   onClick={() => toggleMenu(index)}
                   className="flex justify-between items-center cursor-pointer"
                 >
-                  <p className=" text-[14px] font-medium text-[#575757]/70 ">
+                  <p className=" text-[16px] font-medium text-[#575757]/70 ">
                     {item.name}
                   </p>
                   <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                    className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
+                      } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
                   >
                     <Arrow />
                   </span>
@@ -270,11 +268,10 @@ const Sidebar = () => {
               ) : (
                 <Link
                   to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
-                      : ""
-                  }  text-[14px] py-2 font-medium text-[#575757]/70 `}
+                  className={`${pathLocation.pathname === item.link
+                    ? "bg-[#0a3a75] text-white px-2 rounded-md"
+                    : ""
+                    }  text-[16px] py-2 font-medium text-[#575757]/70 `}
                 >
                   {item.name}
                 </Link>
@@ -292,13 +289,13 @@ const Sidebar = () => {
                         <Link
                           to={subLink.link}
                           key={index}
-                          className={` ${
-                            pathLocation.pathname === subLink.link
-                              ? "bg-[#0a3a75] text-white px-2"
-                              : "hover:bg-[#0a3a75]/10"
-                          }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
+                          className={` ${pathLocation.pathname === "/dashboard/client/" + hid + "/" + subLink.link
+                            ? "bg-[#0a3a75] text-white px-2"
+                            : "hover:bg-[#0a3a75]/10"
+                            }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
                         >
                           {subLink.icon} {subLink.name}
+                          {/* {hid}{subLink.link} */}
                         </Link>
                       </div>
                     ))}
@@ -327,13 +324,12 @@ const Sidebar = () => {
                   onClick={() => toggleMenu(index)}
                   className="flex justify-between items-center cursor-pointer"
                 >
-                  <p className=" text-[14px] font-medium text-[#575757]/70 ">
+                  <p className=" text-[16px] font-medium text-[#575757]/70 ">
                     {item.name}
                   </p>
                   <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                    className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
+                      } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
                   >
                     <Arrow />
                   </span>
@@ -341,13 +337,13 @@ const Sidebar = () => {
               ) : (
                 <Link
                   to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
-                      : ""
-                  }  text-[14px] py-2 font-medium text-[#575757]/70 `}
+                  className={`${pathLocation.pathname === item.link
+                    ? "bg-[#0a3a75] text-white px-2 rounded-md"
+                    : ""
+                    }  text-[16px] py-2 font-medium text-[#575757]/70 `}
                 >
                   {item.name}
+                  {/* {item.link} */}
                 </Link>
               )}
 
@@ -359,17 +355,17 @@ const Sidebar = () => {
                 <div className="space-y-2">
                   {item?.subLinks &&
                     item.subLinks.map((subLink, index) => (
-                      <div className="flex flex-col transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
+                      <div className="flex flex-col border-red-700 border-2 transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
                         <Link
                           to={subLink.link}
                           key={index}
-                          className={` ${
-                            pathLocation.pathname === subLink.link
-                              ? "bg-[#0a3a75] text-white px-2"
-                              : "hover:bg-[#0a3a75]/10"
-                          }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[14px] font-medium text-[#575757] transition-all duration-100`}
+                          className={` ${pathLocation.pathname === "/dashboard/client/" + hid + "/" + subLink.link
+                            ? "bg-[#0a3a75] text-white px-2"
+                            : "hover:bg-[#0a3a75]/10"
+                            }  flex gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
                         >
                           {subLink.icon} {subLink.name}
+                          {/* {subLink.link} */}
                         </Link>
                       </div>
                     ))}

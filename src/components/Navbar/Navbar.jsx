@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 
 import Logo from "../../assets/companylogo.b.png";
+import { FaHamburger } from "react-icons/fa";
 const Navbar = () => {
   const dispatch = useDispatch();
   const {
@@ -71,7 +72,10 @@ const Navbar = () => {
 
   return (
     <div className="h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full">
-      <div className="!text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
+
+      <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
+        <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
+
         <img src={Logo} alt="logo" className="h-full w-full -ml-4" />
       </div>
 

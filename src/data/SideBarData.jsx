@@ -134,22 +134,23 @@ export const SidebarData = [
   },
 
   {
+    name: "Leads Form",
+    icon: <MdOutlineSos size={26} />,
+    subLinks: [
+      {
+        name: "Lead Gen Form",
+        link: `lead-form/lead-gen-form`,
+        // icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
+  },
+  {
     name: "User Management",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup />,
   },
 
-  {
-    name: "Meta Leads",
-    icon: <MdOutlineSos size={26} />,
-    subLinks: [
-      {
-        name: "Lead Gen Form",
-        link: `meta-leads/lead-gen-form`,
-        // icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
+
 ];
 
 // "CMS",

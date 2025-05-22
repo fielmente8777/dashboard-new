@@ -9,13 +9,12 @@ import DynamicPage from "../DynamicPage/DynamicPage.jsx";
 const Main = () => {
   return (
     <div className="">
-      <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-10 lg:grid-cols-10  xl:grid-cols-10 gap-4">
-        <div className="w-full max-sm:hidden col-span-3 lg:col-span-3 xl:col-span-2 bg-white sm:overflow-hidden rounded-sm border">
-          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
-          <div className="h-[92vh] p-4 overflow-y-scroll scrollbar-hidden">
+      <div className="grid !bg-red-900 grid-cols-1 sm:grid-cols-3 md:grid-cols-10 lg:grid-cols-10  xl:grid-cols-10 gap-4">
+        {/* <div className="w-full max-sm:hidden col-span-3 lg:col-span-3 xl:col-span-2  sm:overflow-hidden rounded-sm border">
+          <div className="h-[92vh] border-2 border-red-900 p-4 overflow-y-scroll scrollbar-hidden !bg-[#0a3a75] z-10">
             <Sidebar />
           </div>
-        </div>
+        </div> */}
 
         {/* {!loading ? */}
 

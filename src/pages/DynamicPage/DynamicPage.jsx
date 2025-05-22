@@ -78,7 +78,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/help`]: <Feedback />,
 
     // Feedback, Reports, Analytics, Help
-    [`${BASE_PATH}/${hid}/meta-leads/lead-gen-form`]: <LeadGenForm />,
+    [`${BASE_PATH}/${hid}/lead-form/lead-gen-form`]: <LeadGenForm />,
   };
 
   return (

@@ -48,7 +48,7 @@ export const {
 export default leadGenFormSlice.reducer;
 
 // Thunk function to fetch user profile
-export const fetchLeadGenForm = (token) => async (dispatch) => {
+export const fetchLeadGenForm = (token, hId) => async (dispatch) => {
   dispatch(setLeadGenFormStart());
   try {
     const data = await getLeadGenFromData(token);
