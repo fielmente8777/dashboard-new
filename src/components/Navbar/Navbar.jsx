@@ -19,6 +19,8 @@ const Navbar = () => {
     error,
   } = useSelector((state) => state.userProfile);
 
+  console.log(hotel);
+
   const token = localStorage.getItem("token");
   useEffect(() => {
     if (token) {

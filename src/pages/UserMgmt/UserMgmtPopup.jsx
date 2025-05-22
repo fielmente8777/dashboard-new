@@ -15,6 +15,8 @@ export const accessRoles = [
   "Channel Manager",
   "Food Manager",
   "Gateway Manager",
+  "Enquiries Management",
+  "Meta Leads",
   "GRM",
   "HRM",
 ];
@@ -24,7 +26,7 @@ export const accessScopeMap = {
   "Booking Engine": "bookingEngine",
   "Front Desk": "frontDesk",
   "Social Media": "socialMedia",
-  "Enquire Management": "enquiriesManagement",
+  "Enquiries Management": "enquiriesManagement",
   "Reservation Desk": "reservationDesk",
   Frontdesk: "frontDesk",
   "Channel Manager": "channelManager",
@@ -32,11 +34,13 @@ export const accessScopeMap = {
   "Food Manager": "foodManager",
   "Theme Manager": "themes",
   "Gateway Manager": "gatewayManager",
+  "Meta Leads": "leadgenform",
   HRM: "humanResourceManagement",
   GRM: "guestRequestManagement",
 };
 
-const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
+const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
+  console.log(accessScope);
   const { user } = useSelector((state) => state?.userProfile);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [selectedLocations, setSelectedLocations] = useState([]);
@@ -276,17 +280,20 @@ const UserMgmtPopup = ({ isOpen, onClose, fetchData }) => {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {accessRoles?.map((role) => (
-                  <label key={role} className="flex gap-2 items-center">
-                    <input
-                      type="checkbox"
-                      className="accent-lime-700"
-                      checked={locEntry.accessScope.includes(role)}
-                      onChange={() => toggleRole(locEntry.hid, role)}
-                    />
-                    {role}
-                  </label>
-                ))}
+                {accessRoles?.map((role) => {
+                  if (accessScope[accessScopeMap[role]])
+                    return (
+                      <label key={role} className="flex gap-2 items-center">
+                        <input
+                          type="checkbox"
+                          className="accent-lime-700"
+                          checked={locEntry.accessScope.includes(role)}
+                          onChange={() => toggleRole(locEntry.hid, role)}
+                        />
+                        {role}
+                      </label>
+                    );
+                })}
               </div>
             </div>
           ))}

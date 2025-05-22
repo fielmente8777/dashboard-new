@@ -83,6 +83,24 @@ const Sidebar = () => {
     setIsOpenForm(false);
   };
 
+  const handleAddNewLocation = (e) => {
+    e.stopPropagation();
+
+    if (hotel?.Profile?.multilocation === undefined) {
+      setIsOpenForm(true);
+      return;
+    }
+
+    if (!hotel?.Profile?.multilocation) {
+      Swal.fire({
+        icon: "warning",
+        title: "Oops...",
+        text: `You can't add new location. Please upgrade your plan.`,
+      });
+      return;
+    }
+  };
+
   useEffect(() => {
     if (hid && hotel) {
       if (authUser?.isAdmin) {
@@ -210,10 +228,7 @@ const Sidebar = () => {
 
               {authUser?.isAdmin && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsOpenForm(true);
-                  }}
+                  onClick={(e) => handleAddNewLocation(e)}
                   className="bg-gray-200 rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-xs font-semibold justify-center py-2 w-full"
                 >
                   <MdAddBusiness size={22} /> Add New Location

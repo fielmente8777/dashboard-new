@@ -17,6 +17,7 @@ const Usermanagement = () => {
   const [editUserData, setEditUserData] = useState({});
 
   const { authUser } = useSelector((state) => state.userProfile);
+
   const fetchData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
@@ -224,6 +225,7 @@ const Usermanagement = () => {
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         fetchData={fetchData}
+        accessScope={authUser?.accessScope}
       />
 
       {/* render edit user popup for editing  */}
@@ -233,6 +235,7 @@ const Usermanagement = () => {
         isEditPopupOpen={isEditPopupOpen}
         onClose={() => setIsEditPopupOpen(false)}
         fetchData={fetchData}
+        accessScope={authUser?.accessScope}
       />
     </>
   );

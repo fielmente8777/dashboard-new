@@ -98,7 +98,7 @@ export const SidebarData = [
   {
     name: "Enquiries Management",
     link: `enquiries-management`,
-    key: "Enquire Management",
+    key: "Enquiries Management",
     icon: <HiOutlineUserGroup />,
     subLinks: [
       {
@@ -137,6 +137,18 @@ export const SidebarData = [
     name: "User Management",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Meta Leads",
+    icon: <MdOutlineSos size={26} />,
+    subLinks: [
+      {
+        name: "Lead Gen Form",
+        link: `meta-leads/lead-gen-form`,
+        // icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
   },
 ];
 

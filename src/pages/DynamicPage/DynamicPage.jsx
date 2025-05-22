@@ -23,6 +23,7 @@ import Profile from "../CMS/Profile";
 import Tandc from "../CMS/Tandc";
 import { BASE_PATH } from "../../data/constant";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import LeadGenForm from "../MetaLeads/LeadGenForm";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -75,6 +76,9 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/reports`]: <Feedback />,
     [`${BASE_PATH}/${hid}/analytics`]: <Feedback />,
     [`${BASE_PATH}/${hid}/help`]: <Feedback />,
+
+    // Feedback, Reports, Analytics, Help
+    [`${BASE_PATH}/${hid}/meta-leads/lead-gen-form`]: <LeadGenForm />,
   };
 
   return (

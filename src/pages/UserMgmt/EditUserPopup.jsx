@@ -10,6 +10,7 @@ const EditUserPopup = ({
   editData,
   setEditUserData,
   isEditPopupOpen,
+  accessScope,
   onClose,
   fetchData,
 }) => {
@@ -88,8 +89,6 @@ const EditUserPopup = ({
       assigned_location: selectedLocations,
     };
 
-    console.log(formData);
-
     try {
       const result = await UpdateUser(formData);
 
@@ -127,8 +126,6 @@ const EditUserPopup = ({
       });
     }
   };
-
-  console.log(selectedLocations);
 
   return (
     <div
@@ -261,21 +258,26 @@ const EditUserPopup = ({
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {accessRoles.map((role) => (
-                    <label key={role} className="flex gap-2 items-center">
-                      <input
-                        type="checkbox"
-                        className="accent-lime-700"
-                        // checked={
-                        //   locEntry.assigned_location[accessScopeMap[role]] ===
-                        //   true
-                        // }
-                        checked={locEntry?.accessScope[accessScopeMap[role]]}
-                        onChange={() => toggleRole(locEntry.hid, role)}
-                      />
-                      {role}
-                    </label>
-                  ))}
+                  {accessRoles.map((role) => {
+                    if (accessScope[accessScopeMap[role]])
+                      return (
+                        <label key={role} className="flex gap-2 items-center">
+                          <input
+                            type="checkbox"
+                            className="accent-lime-700"
+                            // checked={
+                            //   locEntry.assigned_location[accessScopeMap[role]] ===
+                            //   true
+                            // }
+                            checked={
+                              locEntry?.accessScope[accessScopeMap[role]]
+                            }
+                            onChange={() => toggleRole(locEntry.hid, role)}
+                          />
+                          {role}
+                        </label>
+                      );
+                  })}
                 </div>
               </div>
             ))}
