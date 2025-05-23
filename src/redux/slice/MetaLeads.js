@@ -18,18 +18,20 @@ const leadGenFormSlice = createSlice({
     },
     setLeadGenFormData: (state, action) => {
       const { Data } = action?.payload;
-      if (Object.keys(Data)?.length === 0) {
-        state.data = null;
-        state.loading = false;
-        return;
-      } else {
-        const fileterData = Data?.details?.filter(
-          (item) => String(item?.hId) === String(handleLocalStorage("hid"))
-        )[0];
+      state.data = Data;
+      state.loading = false;
+      // if (Object.keys(Data)?.length === 0) {
+      //   state.data = null;
+      //   state.loading = false;
+      //   return;
+      // } else {
+      //   const fileterData = Data?.details?.filter(
+      //     (item) => String(item?.hId) === String(handleLocalStorage("hid"))
+      //   )[0];
 
-        state.data = fileterData;
-        state.loading = false;
-      }
+      //   state.data = fileterData;
+      //   state.loading = false;
+      // }
     },
     setLeadGenFormError: (state, action) => {
       state.loading = false;
@@ -51,7 +53,8 @@ export default leadGenFormSlice.reducer;
 export const fetchLeadGenForm = (token, hId) => async (dispatch) => {
   dispatch(setLeadGenFormStart());
   try {
-    const data = await getLeadGenFromData(token);
+    const data = await getLeadGenFromData(token, hId);
+    console.log(data);
     dispatch(setLeadGenFormData(data));
     return { success: true, response: data };
   } catch (error) {
