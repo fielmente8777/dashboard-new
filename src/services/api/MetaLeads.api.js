@@ -36,6 +36,30 @@ export const getLeadGenFromFields = async (token) => {
   }
 };
 
+export const UpdateLeadGenForm = async (token, formData) => {
+  console.log(formData);
+  try {
+    const response = await fetch(
+      `${BASE_URL}/leadgen/edit-lead-gen-form?form_id=${encodeURIComponent(
+        formData?.form_id
+      )}`,
+      {
+        method: "POST", // or "POST" if you're sending data
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
 export const deleteLeadGenForm = async (token, form_id) => {
   try {
     const response = await fetch(
