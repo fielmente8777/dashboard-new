@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const AppsPopup = ({ open, setOpen }) => {
 
@@ -37,9 +37,6 @@ const AppsPopup = ({ open, setOpen }) => {
     const filteredOther = otherServices.filter(service =>
         service.name.toLowerCase().includes(search.toLowerCase())
     );
-
-
-
 
 
 
