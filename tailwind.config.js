@@ -1,3 +1,5 @@
+import { transform } from "html2canvas/dist/types/css/property-descriptors/transform";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -9,12 +11,12 @@ export default {
         "color-2": "#040404",
       },
       animation: {
-        fadeIn: "fadeIn 0.3s ease-in-out forwards",
+        topDown: "topDown 0.2s ease-in-out forwards",
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: 0, transform: "scale(0.95)" },
-          "100%": { opacity: 1, transform: "scale(1)" },
+        topDown: {
+          "0%": { transform: "translateY(-30px)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 },
         },
       },
     },

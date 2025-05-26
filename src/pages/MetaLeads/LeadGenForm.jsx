@@ -4,7 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { BASE_URL } from "../../data/constant";
 import { fetchLeadGenForm } from "../../redux/slice/MetaLeads";
 import handleLocalStorage from "../../utils/handleLocalStorage";
-import { MdEditNote, MdDeleteForever } from "react-icons/md";
+import { MdEditNote, MdDeleteForever, MdOutlineEdit } from "react-icons/md";
+import { TbEditOff } from "react-icons/tb";
+
+import { BiSolidEditAlt } from "react-icons/bi";
 import { HiPlusSm } from "react-icons/hi";
 import {
   deleteLeadGenForm,
@@ -14,6 +17,8 @@ import {
 } from "../../services/api/MetaLeads.api";
 import { IoMdEye, IoIosEyeOff } from "react-icons/io";
 import Swal from "sweetalert2";
+import { UploadingImageS3 } from "../../services/api/s3Image.api";
+import Modal from "../../components/Modal/Modal";
 
 const LeadGenForm = () => {
   const [loading, setLoading] = useState(false);
@@ -35,13 +40,22 @@ const LeadGenForm = () => {
     options: [], // only used for 'select' or 'checkbox' types — can remove if not needed initially
   });
 
+  const [isBannerContentEdit, setIsBannerContentEdit] = useState(false);
+  const [isSelectedField, setIsSelectedField] = useState(false);
+  const [isNewFormOpen, setisNewFormOpen] = useState(false);
   const [formData, setFormData] = useState(null);
   const [editField, setEditField] = useState(null);
-  const [isSelectedField, setIsSelectedField] = useState(false);
   const [editFieldsData, setEditFieldsData] = useState([]);
   const [index, setIndex] = useState(null);
+
+  const [base64Image, setBase64Image] = useState(null);
+  const [base64CoverImage, setBase64CoverImage] = useState(null);
   const [previewImageLogo, setPreviewImageLogo] = useState(null);
+  const [previewImageCover, setPreviewImageCover] = useState(null);
+
   const fileInputRef = useRef(null);
+  const fileInputRefCoverImage = useRef(null);
+  const bannerHeadingRef = useRef(null);
 
   const dispatch = useDispatch();
   const { data: LeadGenFormData } = useSelector((state) => state?.metaLeads);
@@ -49,6 +63,7 @@ const LeadGenForm = () => {
   // handleCreateLeadGenForm
   const handleCreate = async () => {
     setLoading(true);
+    setisNewFormOpen(false);
     try {
       const res = await fetch(`${BASE_URL}/leadgen/create-lead-gen-form`, {
         method: "POST",
@@ -67,9 +82,16 @@ const LeadGenForm = () => {
         throw new Error("Failed to create form");
       }
 
+      setTitle("");
       dispatch(
         fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"))
       );
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Form Created Successfully",
+        confirmButtonText: "OK",
+      });
 
       // adjust according to response structure
     } catch (err) {
@@ -184,19 +206,12 @@ const LeadGenForm = () => {
     });
   };
 
-  const handlePublishChanges = async (e) => {
-    const response = await UpdateLeadGenForm(
-      handleLocalStorage("token"),
-      formData
-    );
-  };
-
-  const handleFileChange = (e) => {
+  const handleFileChangeLogoImage = async (e) => {
     e.preventDefault();
-    const imageInput = document.getElementById("file");
-    console.log(imageInput);
-    const file = imageInput.files[0];
-    console.log(file);
+    setIsSelectedField(true);
+    const file = e.target.files[0];
+    setPreviewImageLogo(URL.createObjectURL(file));
+
     if (!file) {
       Swal.fire({
         icon: "error",
@@ -210,10 +225,66 @@ const LeadGenForm = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(",")[1];
-      console.log(base64String);
-      // setBase64String(base64String);
+      setBase64Image(base64String);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFileChangeCoverImage = async (e) => {
+    e.preventDefault();
+    setIsSelectedField(true);
+    const file = e.target.files[0];
+    setPreviewImageCover(URL.createObjectURL(file));
+
+    if (!file) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please select an image file.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result.split(",")[1];
+      setBase64Image(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePublishChanges = async (e) => {
+    // const imageUrl = await UploadingImageS3(base64Image);
+    // console.log(imageUrl);
+    try {
+      const response = await UpdateLeadGenForm(
+        handleLocalStorage("token"),
+        formData
+      );
+      if (response?.Status) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Form Updated Successfully",
+          confirmButtonText: "OK",
+        });
+        setFormData(null);
+        dispatch(
+          fetchLeadGenForm(
+            handleLocalStorage("token"),
+            handleLocalStorage("hid")
+          )
+        );
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong",
+        confirmButtonText: "OK",
+      });
+    }
   };
 
   const fetchFormFields = async () => {
@@ -248,25 +319,13 @@ const LeadGenForm = () => {
 
         <div className="col-span-3 flex justify-end items-start">
           <button
-            onClick={handleCreate}
+            onClick={() => setisNewFormOpen(true)}
             className=" bg-primary/90 text-white px-4 py-2 rounded w-fit"
           >
-            {loading ? (
-              "Creating..."
-            ) : (
-              <span className="flex items-center">
-                <HiPlusSm size={22} /> New Form
-              </span>
-            )}
+            <span className="flex items-center">
+              <HiPlusSm size={22} /> New Form
+            </span>
           </button>
-
-          <input
-            type="text"
-            value={title}
-            className="border outline-none"
-            placeholder="title"
-            onChange={(e) => setTitle(e.target.value)}
-          />
         </div>
       </div>
 
@@ -445,38 +504,103 @@ const LeadGenForm = () => {
               >
                 <div className="relative max-w-[450px] mx-auto space-y-4 z-10 h-full overflow-y-auto scrollbar-hidden">
                   <div
-                    className="flex justify-between items-center border p-4 h-36 rounded-lg space-y-2 bg-cover bg-center bg-no-repeat"
+                    className="relative flex items-center border h-36 rounded-lg bg-cover bg-center bg-no-repeat"
                     style={{
-                      backgroundImage: `url(${formData?.form_cms?.banner_image_url})`,
+                      backgroundImage: `url(${
+                        previewImageCover ||
+                        formData?.form_cms?.banner_image_url
+                      })`,
                     }}
                   >
-                    <div className="text-white">
-                      <h2 className="text-xl font-bold capitalize">
-                        {formData?.title}
-                      </h2>
-                      <p>{formData?.description}</p>
+                    <div className="px-4 grid grid-cols-12 items-center z-40 relative">
+                      <div className="text-white col-span-7">
+                        <div className="flex flex-col items-center">
+                          <input
+                            ref={bannerHeadingRef}
+                            value={formData?.title}
+                            onChange={(e) => {
+                              setFormData({
+                                ...formData,
+                                title: e.target.value,
+                              });
+                            }}
+                            readOnly={!isBannerContentEdit}
+                            className="text-xl w-full font-bold capitalize bg-transparent outline-none text-white"
+                          />
+                          <input
+                            readOnly={!isBannerContentEdit}
+                            value={formData?.description}
+                            onChange={(e) => {
+                              setFormData({
+                                ...formData,
+                                description: e.target.value,
+                              });
+                            }}
+                            className="w-full text-sm font-normal capitalize bg-transparent outline-none text-white"
+                          />
+                        </div>
+
+                        <div
+                          className="cursor-pointer mt-2"
+                          onClick={() => {
+                            setIsSelectedField(true);
+                            setIsBannerContentEdit(!isBannerContentEdit);
+                            bannerHeadingRef?.current?.focus();
+                          }}
+                        >
+                          {isBannerContentEdit ? (
+                            <TbEditOff size={22} />
+                          ) : (
+                            <MdOutlineEdit size={22} />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-span-5 flex flex-col items-end space-y-2">
+                        <div
+                          className=" w-20 h-20 border border-gray-400 rounded-full p-1 cursor-pointer"
+                          style={{
+                            backgroundColor: formData?.form_cms?.bg_color,
+                          }}
+                          onClick={() => fileInputRef?.current?.click()}
+                        >
+                          <img
+                            src={
+                              previewImageLogo || formData?.form_cms?.logo_url
+                            }
+                            alt="Logo"
+                            className="w-full h-full object-cover rounded-full"
+                          />
+
+                          <input
+                            type="file"
+                            onChange={handleFileChangeLogoImage}
+                            ref={fileInputRef}
+                            hidden
+                          />
+                        </div>
+
+                        <div
+                          className=""
+                          onClick={() => {
+                            fileInputRefCoverImage?.current?.click();
+                          }}
+                        >
+                          <button className="flex font-medium rounded-md text-primary bg-gray-200 text-xs px-2 py-1">
+                            Edit Cover
+                          </button>
+
+                          <input
+                            type="file"
+                            ref={fileInputRefCoverImage}
+                            hidden
+                            onChange={handleFileChangeCoverImage}
+                          />
+                        </div>
+                      </div>
                     </div>
 
-                    <div
-                      className="w-20 h-20 border border-gray-400 rounded-full p-1 cursor-pointer"
-                      style={{
-                        backgroundColor: formData?.form_cms?.bg_color,
-                      }}
-                      onClick={() => fileInputRef?.current?.click()}
-                    >
-                      <img
-                        src={formData?.form_cms?.logo_url}
-                        alt="Logo"
-                        className="w-full h-full object-cover rounded-full"
-                      />
-
-                      <input
-                        type="file"
-                        onChange={handleFileChange}
-                        ref={fileInputRef}
-                        hidden
-                      />
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/10 rounded-md" />
                   </div>
 
                   <form className="space-y-4 border border-primary/25 rounded-sm p-3 bg-white/80">
@@ -687,6 +811,28 @@ const LeadGenForm = () => {
           </div>
         </div>
       )}
+
+      <Modal
+        isOpen={isNewFormOpen}
+        onConfirm={handleCreate}
+        onCancel={() => setisNewFormOpen(false)}
+        title={"Create Lead Gen Form"}
+        labels={{
+          confirm: "Submit",
+          cancel: "Cancel",
+        }}
+        render={() => (
+          <div>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Please Enter Form Name"
+              className="outline-none border border-primary/40 bg-transparent p-2 rounded-sm w-full"
+            />
+          </div>
+        )}
+      />
     </div>
   );
 };
