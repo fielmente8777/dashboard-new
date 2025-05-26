@@ -13,6 +13,7 @@ import {
   UpdateLeadGenForm,
 } from "../../services/api/MetaLeads.api";
 import { IoMdEye, IoIosEyeOff } from "react-icons/io";
+import Swal from "sweetalert2";
 
 const LeadGenForm = () => {
   const [loading, setLoading] = useState(false);
@@ -190,7 +191,30 @@ const LeadGenForm = () => {
     );
   };
 
-  const handleFileChange = (e) => {};
+  const handleFileChange = (e) => {
+    e.preventDefault();
+    const imageInput = document.getElementById("file");
+    console.log(imageInput);
+    const file = imageInput.files[0];
+    console.log(file);
+    if (!file) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please select an image file.",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result.split(",")[1];
+      console.log(base64String);
+      // setBase64String(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const fetchFormFields = async () => {
     const formFields = await getLeadGenFromFields(handleLocalStorage("token"));
@@ -206,7 +230,6 @@ const LeadGenForm = () => {
     fetchFormFields();
   }, []);
 
-  console.log(formData);
   // for rendering col span if editField exist or true
   const colSpan = editField ? "col-span-6" : "col-span-9";
 
