@@ -1,4 +1,5 @@
 import { BASE_URL } from "../../data/constant";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 // handle api for uploading image to s3 bucket**
 export const UploadingImageS3 = async (base64String) => {
@@ -11,7 +12,7 @@ export const UploadingImageS3 = async (base64String) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          token: window.localStorage.getItem("token"),
+          token: handleLocalStorage("token"),
           image: base64String,
         }),
       }
