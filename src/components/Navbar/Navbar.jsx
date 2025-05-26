@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Link, useLocation } from "react-router-dom";
 import DataContext from "../../context/DataContext";
@@ -9,9 +9,11 @@ import { HiOutlineUserGroup } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
+import { PiDotsNine } from "react-icons/pi";
 
 import Logo from "../../assets/companylogo.b.png";
 import { FaHamburger } from "react-icons/fa";
+import AppsPopup from "../Popup/AppsPopup";
 const Navbar = () => {
   const dispatch = useDispatch();
   const {
@@ -33,6 +35,7 @@ const Navbar = () => {
   const location = useLocation();
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
+  const [open, setOpen] = useState(false);
 
   const SidebarData = [
     {
@@ -107,7 +110,15 @@ const Navbar = () => {
         <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
           <GiHamburgerMenu size={20} />
         </div>
+        <div className="flex text-zinc-700 items-center">
+          <div onClick={() => setOpen(true)} className="border-2 rounded-md cursor-pointer">
+            <PiDotsNine size={34} />
+          </div>
+        </div>
       </div>
+
+
+      <AppsPopup open={open} setOpen={setOpen} />
     </div>
   );
 };
