@@ -42,7 +42,6 @@ const Events = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result.split(",")[1];
-
       setBase64String(base64String);
     };
     reader.readAsDataURL(file);
