@@ -19,6 +19,8 @@ import { IoMdEye, IoIosEyeOff } from "react-icons/io";
 import Swal from "sweetalert2";
 import { UploadingImageS3 } from "../../services/api/s3Image.api";
 import Modal from "../../components/Modal/Modal";
+import { FaCopy } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const LeadGenForm = () => {
   const [loading, setLoading] = useState(false);
@@ -97,6 +99,7 @@ const LeadGenForm = () => {
     } catch (err) {
       console.error("Error fetching form", err);
     } finally {
+      setTitle("");
       setLoading(false);
     }
   };
@@ -309,12 +312,12 @@ const LeadGenForm = () => {
       <div className=" grid grid-cols-8 gap-6">
         <div className="space-y-1 col-span-5">
           <h2 className="font-semibold text-lg">Forms</h2>
-          <p>
+          {/* <p>
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Iusto
             voluptatum quam labore quia sint quod? Ex doloribus molestiae
             adipisci neque iste eveniet id nesciunt, commodi maiores blanditiis
             fuga expedita esse.
-          </p>
+          </p> */}
         </div>
 
         <div className="col-span-3 flex justify-end items-start">
@@ -333,8 +336,12 @@ const LeadGenForm = () => {
         <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm">
           <thead>
             <tr className="border-b whitespace-nowrap">
+              {/* <th className="w-1"></th> */}
               <th className="py-3 px-4 text-[16px] font-medium  capitalize">
                 Form Title
+              </th>
+              <th className="py-3 px-4 text-[16px] font-medium  capitalize">
+                Form Url
               </th>
 
               <th className="py-2 px-4 text-[16px] font-medium  capitalize">
@@ -357,8 +364,21 @@ const LeadGenForm = () => {
                 key={index}
                 className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
               >
+                {/* <td>
+                  <input type="checkbox" className="ml-4 text-md" />
+                </td> */}
                 <td className="text-gray-500 px-4 py-3">
-                  {formDetails?.title}
+                  {formDetails?.title.slice(0, 20)}
+                </td>
+                <td className="text-gray-500 flex gap-2 items-center px-4 py-3">
+                  {/* <span><FaCopy onClick={() => { console.log("fhff") }} /></span> */}
+                  <Link to={formDetails?.form_url} target="_blank" className="text-blue-600 hover:underline">
+                    {formDetails?.form_url?.split("/")
+                      .slice(0, 5)
+                      .join("/")}
+                  </Link>
+
+
                 </td>
                 <td className="text-gray-500 px-4">{formDetails?.status}</td>
                 <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757]">
@@ -506,10 +526,9 @@ const LeadGenForm = () => {
                   <div
                     className="relative flex items-center border h-36 rounded-lg bg-cover bg-center bg-no-repeat"
                     style={{
-                      backgroundImage: `url(${
-                        previewImageCover ||
+                      backgroundImage: `url(${previewImageCover ||
                         formData?.form_cms?.banner_image_url
-                      })`,
+                        })`,
                     }}
                   >
                     <div className="px-4 grid grid-cols-12 items-center z-40 relative">
@@ -826,10 +845,22 @@ const LeadGenForm = () => {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length > 60) {
+                  Swal.fire({
+                    icon: "warning",
+                    title: "Warning",
+                    text: "Title cannot exceed 60 characters.",
+                    confirmButtonText: "OK",
+                  });
+                  return;
+                }
+                setTitle(e.target.value)
+              }}
               placeholder="Please Enter Form Name"
               className="outline-none border border-primary/40 bg-transparent p-2 rounded-sm w-full"
             />
+            <span className="flex justify-end text-xs text-gray-500">{title.length}/60</span>
           </div>
         )}
       />
@@ -866,9 +897,8 @@ export const FormField = ({
     case "textarea":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${
-            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-          }`}
+          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+            }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -916,9 +946,8 @@ export const FormField = ({
     case "phone":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${
-            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-          }`}
+          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+            }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -939,11 +968,10 @@ export const FormField = ({
               </button>
 
               <button
-                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${
-                  isVisible
-                    ? "hover:bg-[#618ae4] hover:text-white  "
-                    : "bg-gray-300 cursor-not-allowed"
-                }`}
+                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${isVisible
+                  ? "hover:bg-[#618ae4] hover:text-white  "
+                  : "bg-gray-300 cursor-not-allowed"
+                  }`}
                 title="Edit"
                 disabled={!isVisible}
                 onClick={(e) => editField(e, field, index)}
@@ -959,11 +987,10 @@ export const FormField = ({
                 onClick={(e) => deleteField(e, field)}
                 className={`text-sm size-6 
                    rounded-full border border-gray-300 flex items-center justify-center 
-                    ${
-                      isVisible
-                        ? "hover:bg-red-500 hover:text-white"
-                        : "bg-gray-300 cursor-not-allowed"
-                    }
+                    ${isVisible
+                    ? "hover:bg-red-500 hover:text-white"
+                    : "bg-gray-300 cursor-not-allowed"
+                  }
                     duration-300 shadow-xl `}
                 title="Delete"
                 disabled={!isVisible}

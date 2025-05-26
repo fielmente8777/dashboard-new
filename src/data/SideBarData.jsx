@@ -136,6 +136,7 @@ export const SidebarData = [
   {
     name: "Leads Form",
     icon: <MdOutlineSos size={26} />,
+    Key: "",
     subLinks: [
       {
         name: "Lead Gen Form",
@@ -146,6 +147,7 @@ export const SidebarData = [
   },
   {
     name: "User Management",
+    Key: "",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup />,
   },
@@ -165,3 +167,15 @@ export const SidebarData = [
 //   "Gateway Manager",
 //   "GRM",
 //   "HRM",
+
+// New added
+
+
+// "analyticsandreporting": false,
+//     "conversationaltool": false,
+//     "eazobot": false,
+//     "emailmarketing": false,
+//     "leadgenform": false,
+//     "smsmarketing": false,
+//     "usermanagement": false,
+//     "whatsappmarketing": false

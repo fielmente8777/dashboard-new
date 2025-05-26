@@ -163,9 +163,8 @@ const Sidebar = () => {
                         return (
                           <div
                             key={key + 1}
-                            className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${
-                              isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                            }`}
+                            className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                              }`}
                             onClick={(e) => handleSelectLocation(e, value, key)}
                           >
                             <h2 className="text-[16px] font-medium">
@@ -201,9 +200,8 @@ const Sidebar = () => {
                       return (
                         <div
                           key={index + 1}
-                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                            isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                          }`}
+                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                            }`}
                           onClick={(e) =>
                             handleSelectLocation(e, value, location?.hid)
                           }
@@ -261,11 +259,11 @@ const Sidebar = () => {
                 >
                   <p className=" text-[16px] font-medium text-[#575757]/70 ">
                     {item.name}
+
                   </p>
                   <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                    className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
+                      } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
                   >
                     <Arrow />
                   </span>
@@ -273,11 +271,10 @@ const Sidebar = () => {
               ) : (
                 <Link
                   to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
-                      : ""
-                  }  text-[16px] py-2 font-medium text-[#575757]/70 `}
+                  className={`${pathLocation.pathname === item.link
+                    ? "bg-[#0a3a75] text-white px-2 rounded-md"
+                    : ""
+                    }  text-[16px] py-2 font-medium text-[#575757]/70 `}
                 >
                   {item.name}
                 </Link>
@@ -297,16 +294,15 @@ const Sidebar = () => {
                           <Link
                             to={subLink.link}
                             key={index}
-                            className={` ${
-                              subLink?.link ===
+                            className={` ${subLink?.link ===
                               pathLocation?.pathname
                                 ?.split("/")
                                 .slice(4)
                                 .join("/")
                                 .toString()
-                                ? "bg-[#0a3a75] text-white px-2"
-                                : "hover:bg-[#0a3a75]/10"
-                            }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                              ? "bg-[#0a3a75] text-white px-2"
+                              : "hover:bg-[#0a3a75]/10"
+                              }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
                           >
                             {subLink.icon} {subLink.name}
                             {/* {hid}{subLink.link} */}
@@ -343,9 +339,8 @@ const Sidebar = () => {
                     {item.name}
                   </p>
                   <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                    className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
+                      } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
                   >
                     <Arrow />
                   </span>
@@ -353,14 +348,13 @@ const Sidebar = () => {
               ) : (
                 <Link
                   to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-black px-2 rounded-md"
-                      : ""
-                  }  text-[16px] py-2 font-medium text-[#575757]/70 `}
+                  className={`${pathLocation.pathname === item.link
+                    ? "bg-[#0a3a75] text-black px-2 rounded-md"
+                    : ""
+                    }  text-[16px] py-2 font-medium text-[#575757]/70 `}
                 >
                   {item.name}
-                  {item.link}
+                  {/* {item.link} */}
                 </Link>
               )}
 
@@ -372,22 +366,20 @@ const Sidebar = () => {
                 <div className="space-y-2">
                   {item?.subLinks &&
                     item.subLinks.map((subLink, index) => (
-                      <div className="flex flex-col border-red-700 border-2 transition-all duration-100 transform scale-95 opacity-0 animate-fadeIn">
+                      <div className="flex flex-col">
                         <Link
                           to={subLink.link}
                           key={index}
-                          className={` ${
-                            pathLocation.pathname ===
+                          className={` ${subLink?.link ===
                             pathLocation?.pathname
                               ?.split("/")
                               .slice(4)
                               .join("/")
-                              ? "bg-[#0a3a75] text-white px-2"
-                              : "hover:bg-[#0a3a75]/10"
-                          }  flex  gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
+                            ? "bg-[#0a3a75] text-white px-2"
+                            : "hover:bg-[#0a3a75]/10"
+                            }  flex  gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
                         >
                           {subLink.icon} {subLink.name}
-                          {/* {subLink.link} */}
                         </Link>
                       </div>
                     ))}
