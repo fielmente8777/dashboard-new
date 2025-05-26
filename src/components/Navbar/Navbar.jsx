@@ -75,7 +75,6 @@ const Navbar = () => {
 
   return (
     <div className="h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full">
-
       <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
         <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
 
@@ -111,12 +110,14 @@ const Navbar = () => {
           <GiHamburgerMenu size={20} />
         </div>
         <div className="flex text-zinc-700 items-center">
-          <div onClick={() => setOpen(true)} className="border-2 rounded-md cursor-pointer">
+          <div
+            onClick={() => setOpen(true)}
+            className="border-2 rounded-md cursor-pointer"
+          >
             <PiDotsNine size={34} />
           </div>
         </div>
       </div>
-
 
       <AppsPopup open={open} setOpen={setOpen} />
     </div>
