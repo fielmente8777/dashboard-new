@@ -135,8 +135,9 @@ export const SidebarData = [
 
   {
     name: "Leads Form",
+    key: "Leads Form",
     icon: <MdOutlineSos size={26} />,
-    Key: "",
+    key: "",
     subLinks: [
       {
         name: "Lead Gen Form",
@@ -145,14 +146,104 @@ export const SidebarData = [
       },
     ],
   },
+
   {
     name: "User Management",
-    Key: "",
+    key: "User Management",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup />,
   },
 
+  {
+    name: "Analytics & Reporting",
+    key: "Analytics Reporting",
+    link: `analytics-and-reporting`,
+    icon: <HiOutlineUserGroup />,
+  },
 
+  {
+    name: "Conversational Tool",
+    key: "Conversational Tool",
+    link: `conversational-tool`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Social Media",
+    key: "Social Media",
+    link: `social-media`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Eazobot",
+    key: "Eazobot",
+    link: `eazobot`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Email Marketing",
+    key: "Email Marketing",
+    link: `email-marketing`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "SMS Marketing",
+    key: "SMS Marketing",
+    link: `sms-marketing`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "WhatsApp Marketing",
+    key: "WhatsApp Marketing",
+    link: `whatsapp-marketing`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Booking Engine",
+    key: "Booking Engine",
+    link: `booking-engine`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "FrontDesk",
+    key: "FrontDesk",
+    link: `frontdesk`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "SEO Manager",
+    key: "SEO Manager",
+    link: `seo-manager`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Themes Manager",
+    key: "Themes Manager",
+    link: `themes-manager`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Channel Manager",
+    key: "Channel Manager",
+    link: `channel-manager`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Payment Gateway",
+    key: "Payment Gateway",
+    link: `payment-gateway`,
+    icon: <HiOutlineUserGroup />,
+  },
 ];
 
 // "CMS",
@@ -169,7 +260,6 @@ export const SidebarData = [
 //   "HRM",
 
 // New added
-
 
 // "analyticsandreporting": false,
 //     "conversationaltool": false,

@@ -1,30 +1,21 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Link, useLocation } from "react-router-dom";
-import DataContext from "../../context/DataContext";
-import { IoMdHome } from "react-icons/io";
-import { RiFeedbackFill } from "react-icons/ri";
-import { MdOutlineSos } from "react-icons/md";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
+import { IoMdHome } from "react-icons/io";
+import { MdOutlineSos } from "react-icons/md";
 import { PiDotsNine } from "react-icons/pi";
-
+import { RiFeedbackFill } from "react-icons/ri";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import DataContext from "../../context/DataContext";
+import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import Logo from "../../assets/companylogo.b.png";
-import { FaHamburger } from "react-icons/fa";
 import AppsPopup from "../Popup/AppsPopup";
 const Navbar = () => {
   const dispatch = useDispatch();
-  const {
-    user: hotel,
-    loading,
-    error,
-  } = useSelector((state) => state.userProfile);
-
-  console.log(hotel);
-
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
+
   useEffect(() => {
     if (token) {
       dispatch(fetchUserProfile(token));
@@ -33,6 +24,7 @@ const Navbar = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
   const [open, setOpen] = useState(false);
@@ -77,7 +69,6 @@ const Navbar = () => {
     <div className="h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-between  top-0 w-full">
       <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
         <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
-
         <img src={Logo} alt="logo" className="h-full w-full -ml-4" />
       </div>
 
@@ -119,7 +110,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      <AppsPopup open={open} setOpen={setOpen} />
+      <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
     </div>
   );
 };

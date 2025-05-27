@@ -24,6 +24,16 @@ import Tandc from "../CMS/Tandc";
 import { BASE_PATH } from "../../data/constant";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import LeadGenForm from "../MetaLeads/LeadGenForm";
+import Eazobot from "../Eazobot/Eazobot";
+import ConversationalTool from "../ConversationalTool/ConversationalTool";
+import EmailMarketing from "../Marketing/EmailMarketing";
+import WhatsappMarketing from "../Marketing/WhatsappMarketing";
+import BookingEngine from "../BookingEngine/BookingEngine";
+import ThemesManager from "../Manager/ThemesManager";
+import ChannelManager from "../Manager/ChannelManager";
+import PaymentGateway from "../Gateways/PaymentGateway";
+import SocialMedia from "../Social/SocialMedia";
+import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -79,6 +89,17 @@ const DynamicPage = () => {
 
     // Feedback, Reports, Analytics, Help
     [`${BASE_PATH}/${hid}/lead-form/lead-gen-form`]: <LeadGenForm />,
+    [`${BASE_PATH}/${hid}/eazobot`]: <Eazobot />,
+    [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
+    [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
+    [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
+    [`${BASE_PATH}/${hid}/themes-manager`]: <ThemesManager />,
+    [`${BASE_PATH}/${hid}/channel-manager`]: <ChannelManager />,
+    [`${BASE_PATH}/${hid}/payment-gateway`]: <PaymentGateway />,
+    [`${BASE_PATH}/${hid}/social-media`]: <SocialMedia />,
+    [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
   };
 
   return (

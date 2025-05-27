@@ -17,6 +17,20 @@ export const accessRoles = [
   "Gateway Manager",
   "Enquiries Management",
   "Meta Leads",
+  "Analyticsand Reporting",
+  "Conversational Tool",
+  "Eazobot",
+  "Email Marketing",
+  "Lead Gen Form",
+  "SMS Marketing",
+  "User Management",
+  "WhatsApp Marketing",
+  "FrontDesk",
+  "Booking Engine",
+  "Channel Manager",
+  "Themes Manager",
+  "SEO Manager",
+  "Payment Gateway",
   "GRM",
   "HRM",
 ];
@@ -32,15 +46,22 @@ export const accessScopeMap = {
   "Channel Manager": "channelManager",
   "Seo Manager": "seoManager",
   "Food Manager": "foodManager",
-  "Theme Manager": "themes",
-  "Gateway Manager": "gatewayManager",
-  "Meta Leads": "leadgenform",
+  "Themes Manager": "themes",
+  "Payment Gateway": "gatewayManager",
+  "Leads Form": "leadgenform",
   HRM: "humanResourceManagement",
   GRM: "guestRequestManagement",
+  "Analytics Reporting": "analyticsandreporting",
+  "Conversational Tool": "conversationaltool",
+  Eazobot: "eazobot",
+  "Email Marketing": "emailmarketing",
+  "Lead Gen Form": "leadgenform",
+  "SMS Marketing": "smsmarketing",
+  "User Management": "usermanagement",
+  "WhatsApp Marketing": "whatsappmarketing",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
-  console.log(accessScope);
   const { user } = useSelector((state) => state?.userProfile);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [selectedLocations, setSelectedLocations] = useState([]);
