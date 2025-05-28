@@ -137,7 +137,7 @@ export const SidebarData = [
     name: "Leads Form",
     key: "Leads Form",
     icon: <MdOutlineSos size={26} />,
-    key: "",
+    key: "Leads Form",
     subLinks: [
       {
         name: "Lead Gen Form",

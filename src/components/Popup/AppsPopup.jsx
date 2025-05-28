@@ -7,7 +7,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
   const [search, setSearch] = useState("");
 
   const peoplePlusServices = [
-    { name: "Website Enquiries", icon: "🌐", key: "", link: "" },
+    { name: "Website Enquiries", icon: "🌐", key: "Enquiries Management", link: "enquiries-management/enquiries-analytics" },
     {
       name: "Lead Gen Form",
       icon: "📝",
@@ -20,6 +20,12 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       icon: "💬",
       key: "Conversational Tool",
       link: "conversational-tool",
+    },
+    {
+      name: "Leads Management",
+      icon: "📝",
+      key: "Leads Management",
+      link: "leads-management",
     },
     { name: "GRM", icon: "📊", key: "GRM", link: "grm/analytics" }, // Assuming GRM relates to reporting or analytics
   ];
@@ -148,7 +154,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
               placeholder="Search Services"
               className="bg-white py-4 w-full px-5 outline-none border shadow-sm "
             />
-            <div className="max-w-md mx-auto p-4 pb-14 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
+            <div className="max-w-md mx-auto p-4 pb-20 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
               <div>
                 <h2 className="font-semibold mb-2">Premium Services</h2>
                 <div className="grid grid-cols-2 gap-4 mb-6">
