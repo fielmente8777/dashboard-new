@@ -40,6 +40,7 @@ const Navigation = () => {
           });
         })}
       </Route>
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

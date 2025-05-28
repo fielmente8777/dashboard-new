@@ -1,22 +1,35 @@
-import { FaFilePdf } from "react-icons/fa";
-import { FaCircleQuestion, FaCodePullRequest } from "react-icons/fa6";
+import { FaFilePdf, FaWhatsappSquare } from "react-icons/fa";
+import {
+  FaCircleQuestion,
+  FaCodePullRequest,
+  FaCommentSms,
+} from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoMdHome, IoMdSettings } from "react-icons/io";
+import { IoMdSettings } from "react-icons/io";
 import { MdEmergencyShare, MdOutlineSos } from "react-icons/md";
 import { SiGoogleanalytics } from "react-icons/si";
+import { MdDashboard } from "react-icons/md";
+import { SiPayloadcms } from "react-icons/si";
+import { MdAnalytics } from "react-icons/md";
+import { MdLeaderboard } from "react-icons/md";
+import { GrResources } from "react-icons/gr";
+import { FaRobot } from "react-icons/fa6";
+import { MdMarkEmailUnread } from "react-icons/md";
+import { SiGoogleearthengine } from "react-icons/si";
+import { TbSeo } from "react-icons/tb";
 
 export const SidebarData = [
   {
     name: "Dashboard",
     link: ``,
-    icon: <IoMdHome size={24} />,
+    icon: <MdDashboard size={24} />,
   },
 
   {
     name: "Content Management system",
-    link: `content-management-system`,
+    link: ``,
     key: "CMS",
-    icon: <MdOutlineSos size={26} />,
+    icon: <SiPayloadcms size={24} />,
     subLinks: [
       {
         name: "Profile and Links",
@@ -99,7 +112,7 @@ export const SidebarData = [
     name: "Enquiries Management",
     link: `enquiries-management`,
     key: "Enquiries Management",
-    icon: <HiOutlineUserGroup />,
+    icon: <MdAnalytics size={24} />,
     subLinks: [
       {
         name: "Enquiries Analytics",
@@ -118,7 +131,7 @@ export const SidebarData = [
     name: "Human Resources Management",
     link: `human-resources-management`,
     key: "HRM",
-    icon: <HiOutlineUserGroup />,
+    icon: <GrResources size={24} />,
     subLinks: [
       {
         name: "Analytics",
@@ -136,7 +149,7 @@ export const SidebarData = [
   {
     name: "Leads Form",
     key: "Leads Form",
-    icon: <MdOutlineSos size={26} />,
+    icon: <MdLeaderboard size={24} />,
     key: "",
     subLinks: [
       {
@@ -151,7 +164,7 @@ export const SidebarData = [
     name: "User Management",
     key: "User Management",
     link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup />,
+    icon: <HiOutlineUserGroup size={22} />,
   },
 
   {
@@ -179,35 +192,35 @@ export const SidebarData = [
     name: "Eazobot",
     key: "Eazobot",
     link: `eazobot`,
-    icon: <HiOutlineUserGroup />,
+    icon: <FaRobot size={24} />,
   },
 
   {
     name: "Email Marketing",
     key: "Email Marketing",
     link: `email-marketing`,
-    icon: <HiOutlineUserGroup />,
+    icon: <MdMarkEmailUnread size={24} />,
   },
 
   {
     name: "SMS Marketing",
     key: "SMS Marketing",
     link: `sms-marketing`,
-    icon: <HiOutlineUserGroup />,
+    icon: <FaCommentSms size={24} />,
   },
 
   {
     name: "WhatsApp Marketing",
     key: "WhatsApp Marketing",
     link: `whatsapp-marketing`,
-    icon: <HiOutlineUserGroup />,
+    icon: <FaWhatsappSquare size={24} />,
   },
 
   {
     name: "Booking Engine",
     key: "Booking Engine",
     link: `booking-engine`,
-    icon: <HiOutlineUserGroup />,
+    icon: <SiGoogleearthengine size={24} />,
   },
 
   {
@@ -221,7 +234,7 @@ export const SidebarData = [
     name: "SEO Manager",
     key: "SEO Manager",
     link: `seo-manager`,
-    icon: <HiOutlineUserGroup />,
+    icon: <TbSeo size={24} />,
   },
 
   {

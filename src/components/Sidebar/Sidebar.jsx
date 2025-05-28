@@ -12,12 +12,17 @@ import { setHid } from "../../redux/slice/UserSlice";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 import Swal from "sweetalert2";
 import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
+import { FaAlignRight } from "react-icons/fa";
+import Logo from "../../assets/companylogo.b.png";
+import { open, toggleSideBar } from "../../redux/slice/SidebarToggle";
+import { IoClose } from "react-icons/io5";
+import { FiLogOut } from "react-icons/fi";
+
 const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({});
-
   const {
     user: hotel,
     authUser,
@@ -25,11 +30,13 @@ const Sidebar = () => {
     loading,
   } = useSelector((state) => state.userProfile);
 
+  const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
+
+  const { isOpen } = useSelector((state) => state.toggle);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const pathLocation = useLocation();
-
-  console.log(pathLocation?.pathname?.split("/")?.slice(4)?.join("/"));
 
   // handle toggle dropdown
   const toggleMenu = (index) => {
@@ -118,43 +125,111 @@ const Sidebar = () => {
   }, [hid, hotel]);
 
   return (
-    <div className="flex overflow-x-hidden flex-col gap-2 w-full mb-10 overflow-y-scroll scrollbar-hidden ">
-      {loading ? (
-        <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
-          <div className="bg-gray-200 animate-pulse h-2 w-24" />
-          <div className="bg-gray-200 animate-pulse h-2" />
-        </div>
-      ) : (
-        <div
-          className="relative bg-[#0a3a75] border cursor-pointer rounded-md px-3 py-1 flex items-center justify-between mb-4"
+    <div className="p-3 flex flex-col h-[91.8vh] overflow-hidden shadow-md bg-gray-100">
+      <div className="flex justify-between items-center mb-4">
+        {isOpen && (
+          <div>
+            {/* <img src={Logo} alt="logo" className="h-8 object-contain" /> */}
+            <h2 className="font-medium">Dashboard</h2>
+          </div>
+        )}
+
+        <span
+          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${
+            !isOpen && "ml-2 rotate-180"
+          }`}
           onClick={() => {
-            setIsDropDownOpen(!isDropDownOpen);
+            dispatch(toggleSideBar());
           }}
         >
-          <div className="w-full">
-            <p className="text-[16px] capitalize text-white font-medium">
-              {hotel?.Profile?.hotelName || "Eazotel"}
-            </p>
-            <p className="text-white/90 text-[15px]">
-              {currentLocation?.city}
-              {", "}
-              {currentLocation?.state}
-              {", "}
-              {currentLocation?.country}
-            </p>
+          <FaAlignRight />
+        </span>
+      </div>
 
-            <div
-              className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2 hide-scrollbar"
-              style={{
-                maxHeight: isDropDownOpen ? "300px" : "0px",
-                overflow: isDropDownOpen ? "auto" : "hidden",
-              }}
-            >
-              {authUser?.isAdmin ? (
-                <div className="space-y-2 mt-3 w-full">
-                  {hotel?.Profile?.hotels &&
-                    Object.entries(hotel?.Profile?.hotels).map(
-                      ([key, value]) => {
+      <div
+        className={`${
+          isOpen ? "w-full" : "w-0 opacity-0 hidden"
+        } duration-200 text-nowrap`}
+      >
+        {loading ? (
+          <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
+            <div className="bg-gray-200 animate-pulse h-2 w-24" />
+            <div className="bg-gray-200 animate-pulse h-2" />
+          </div>
+        ) : (
+          <div
+            className="relative bg-[#0a3a75] border cursor-pointer rounded-md px-3 py-1 flex items-center justify-between mb-4"
+            onClick={() => {
+              setIsDropDownOpen(!isDropDownOpen);
+            }}
+          >
+            <div className="w-full">
+              <p className="text-[16px] capitalize text-white font-medium">
+                {hotel?.Profile?.hotelName || "Eazotel"}
+              </p>
+
+              <p className="text-white/90 text-[15px]">
+                {currentLocation?.city}
+                {", "}
+                {currentLocation?.state}
+                {", "}
+                {currentLocation?.country}
+              </p>
+
+              <div
+                className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2 hide-scrollbar"
+                style={{
+                  maxHeight: isDropDownOpen ? "300px" : "0px",
+                  overflow: isDropDownOpen ? "auto" : "hidden",
+                }}
+              >
+                {authUser?.isAdmin ? (
+                  <div className="space-y-2 mt-3 w-full">
+                    {hotel?.Profile?.hotels &&
+                      Object.entries(hotel?.Profile?.hotels).map(
+                        ([key, value]) => {
+                          const isCurrentLocation =
+                            value?.city === currentLocation?.city &&
+                            value?.state === currentLocation?.state &&
+                            value?.country === currentLocation?.country;
+
+                          return (
+                            <div
+                              key={key + 1}
+                              className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${
+                                isCurrentLocation
+                                  ? "bg-[#ebf0f7]"
+                                  : "bg-gray-50"
+                              }`}
+                              onClick={(e) =>
+                                handleSelectLocation(e, value, key)
+                              }
+                            >
+                              <h2 className="text-[16px] font-medium">
+                                {hotel?.Profile?.hotelName || "Eazotel"}
+                              </h2>
+
+                              <p className="text-sm gap-1 text-gray-500 flex items-center">
+                                <CiLocationOn />
+                                <span>
+                                  {value?.city}
+                                  {", "}
+                                  {value.state}
+                                  {", "}
+                                  {value?.country}
+                                </span>
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
+                  </div>
+                ) : (
+                  <div className="space-y-2 mt-3 w-full ">
+                    {authUser?.assigned_location?.map((location, index) => {
+                      if (hotel?.Profile?.hotels[location?.hid]) {
+                        const value = hotel?.Profile?.hotels[location?.hid];
+
                         const isCurrentLocation =
                           value?.city === currentLocation?.city &&
                           value?.state === currentLocation?.state &&
@@ -162,17 +237,19 @@ const Sidebar = () => {
 
                         return (
                           <div
-                            key={key + 1}
-                            className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${
+                            key={index + 1}
+                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
                               isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
                             }`}
-                            onClick={(e) => handleSelectLocation(e, value, key)}
+                            onClick={(e) =>
+                              handleSelectLocation(e, value, location?.hid)
+                            }
                           >
                             <h2 className="text-[16px] font-medium">
                               {hotel?.Profile?.hotelName || "Eazotel"}
                             </h2>
 
-                            <p className="text-sm gap-1 text-gray-500 flex items-center">
+                            <p className="text-xs text-gray-500 flex items-center">
                               <CiLocationOn />
                               <span>
                                 {value?.city}
@@ -185,114 +262,203 @@ const Sidebar = () => {
                           </div>
                         );
                       }
-                    )}
-                </div>
-              ) : (
-                <div className="space-y-2 mt-3 w-full ">
-                  {authUser?.assigned_location?.map((location, index) => {
-                    if (hotel?.Profile?.hotels[location?.hid]) {
-                      const value = hotel?.Profile?.hotels[location?.hid];
+                    })}
+                  </div>
+                )}
 
-                      const isCurrentLocation =
-                        value?.city === currentLocation?.city &&
-                        value?.state === currentLocation?.state &&
-                        value?.country === currentLocation?.country;
+                {authUser?.isAdmin && (
+                  <button
+                    onClick={(e) => handleAddNewLocation(e)}
+                    className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"
+                  >
+                    <MdAddBusiness size={22} /> Add New Location
+                  </button>
+                )}
+              </div>
+            </div>
 
-                      return (
-                        <div
-                          key={index + 1}
-                          className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                            isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
-                          }`}
-                          onClick={(e) =>
-                            handleSelectLocation(e, value, location?.hid)
-                          }
-                        >
-                          <h2 className="text-[16px] font-medium">
-                            {hotel?.Profile?.hotelName || "Eazotel"}
-                          </h2>
-
-                          <p className="text-xs text-gray-500 flex items-center">
-                            <CiLocationOn />
-                            <span>
-                              {value?.city}
-                              {", "}
-                              {value.state}
-                              {", "}
-                              {value?.country}
-                            </span>
-                          </p>
-                        </div>
-                      );
-                    }
-                  })}
-                </div>
-              )}
-
-              {authUser?.isAdmin && (
-                <button
-                  onClick={(e) => handleAddNewLocation(e)}
-                  className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"
-                >
-                  <MdAddBusiness size={22} /> Add New Location
-                </button>
-              )}
+            <div className="-rotate-90 absolute top-5 right-2">
+              <span className="-rotate-90 text-white">
+                <Arrow />
+              </span>
             </div>
           </div>
+        )}
+      </div>
 
-          <div className="-rotate-90 absolute top-5 right-2">
-            <span className="-rotate-90 text-white">
-              <Arrow />
-            </span>
-          </div>
-        </div>
-      )}
-
-      {SidebarData?.map((item, index) => {
-        if (authUser?.isAdmin) {
-          const key = item.key;
-          if (key && !authUser?.accessScope[accessScopeMap[key]]) return null;
-          return (
-            <div key={index} className="flex flex-col">
-              {item?.subLinks ? (
-                <div
-                  onClick={() => toggleMenu(index)}
-                  className="flex justify-between items-center cursor-pointer"
-                >
-                  <p className=" text-[16px] font-medium text-[#575757]/70 ">
-                    {item.name}
-                  </p>
-                  <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+      <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
+        {SidebarData?.map((item, index) => {
+          if (authUser?.isAdmin) {
+            const key = item.key;
+            if (key && !authUser?.accessScope[accessScopeMap[key]]) return null;
+            return (
+              <div key={index} className="flex flex-col">
+                {item?.subLinks ? (
+                  <div
+                    onClick={() => {
+                      navigate(item?.subLinks[0]?.link);
+                      setSidebarActiveIndex(0);
+                      toggleMenu(index);
+                      dispatch(open());
+                    }}
+                    className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
+                      pathLocation?.pathname
+                        ?.split("/")
+                        .slice(4)
+                        .join("/")
+                        .toString() === item?.subLinks[sidebarActiveIndex]?.link
+                        ? " text-white rounded-sm bg-primary"
+                        : "text-primary"
+                    }`}
                   >
-                    <Arrow />
-                  </span>
-                </div>
-              ) : (
-                <Link
-                  to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-white px-2 rounded-md"
-                      : ""
-                  }  text-[16px] py-1 font-medium text-[#575757]/70 `}
-                >
-                  {item.name}
-                </Link>
-              )}
+                    <div className={`flex gap-2 items-center`}>
+                      <span>{item?.icon}</span>
 
-              {openMenus[index] && item?.subLinks && (
-                <hr className="border-b" />
-              )}
+                      <p
+                        className={`font-medium text-nowrap ${
+                          isOpen ? "block" : "hidden"
+                        }  duration-300 overflow-hidden`}
+                      >
+                        {item.name}
+                      </p>
+                    </div>
 
-              {openMenus[index] && (
-                <div className="space-y-2">
-                  {item?.subLinks &&
-                    item.subLinks.map((subLink, index) => {
-                      console.log(item?.link);
-                      return (
+                    {isOpen && (
+                      <span
+                        className={`${
+                          openMenus[index] ? "-rotate-90" : " rotate-90"
+                        } ${
+                          pathLocation?.pathname
+                            ?.split("/")
+                            .slice(4)
+                            .join("/")
+                            .toString() ===
+                          item?.subLinks[sidebarActiveIndex]?.link
+                            ? " text-white"
+                            : ""
+                        } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                      >
+                        <Arrow />
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className={`flex gap-2 items-center py-3 px-2  ${
+                      pathLocation?.pathname
+                        ?.split("/")
+                        .slice(4)
+                        .join("/")
+                        .toString() === item?.link
+                        ? "bg-[#0a3a75] text-white rounded-sm"
+                        : "text-primary"
+                    } `}
+                  >
+                    <Link to={item.link} className={`flex gap-1 font-medium`}>
+                      {item?.icon}
+                    </Link>
+
+                    {isOpen && (
+                      <Link
+                        to={item.link}
+                        className={`flex gap-1 font-medium text-nowrap`}
+                      >
+                        {item.name}
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {openMenus[index] && item?.subLinks && (
+                  <hr className="border-b" />
+                )}
+
+                {isOpen && openMenus[index] && (
+                  <div className="space-y-2 mt-2">
+                    {item?.subLinks &&
+                      item.subLinks.map((subLink, index) => {
+                        return (
+                          <div className="flex flex-col">
+                            <Link
+                              onClick={() => setSidebarActiveIndex(index)}
+                              to={subLink.link}
+                              key={index}
+                              className={` ${
+                                subLink?.link ===
+                                pathLocation?.pathname
+                                  ?.split("/")
+                                  .slice(4)
+                                  .join("/")
+                                  .toString()
+                                  ? "bg-[#DBEAFE] text-gray-700 px-2"
+                                  : "hover:bg-[#0a3a75]/10"
+                              }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                            >
+                              {subLink.icon} {subLink.name}
+                              {/* {hid}{subLink.link} */}
+                            </Link>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            );
+          } else {
+            const currentLocationAccessScope =
+              authUser?.assigned_location?.filter(
+                (location) =>
+                  location?.hid === String(handleLocalStorage("hid"))
+              )[0];
+
+            const key = item?.key;
+            if (
+              key &&
+              currentLocationAccessScope &&
+              !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+            )
+              return null;
+
+            return (
+              <div key={index} className="flex flex-col gap-1">
+                {item?.subLinks ? (
+                  <div
+                    onClick={() => toggleMenu(index)}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <p className=" text-[16px] font-medium text-[#575757]/70 ">
+                      {item.name}
+                    </p>
+                    <span
+                      className={`${
+                        openMenus[index] ? "-rotate-90" : " rotate-90"
+                      } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
+                    >
+                      <Arrow />
+                    </span>
+                  </div>
+                ) : (
+                  <Link
+                    to={item.link}
+                    className={`${
+                      pathLocation.pathname === item.link
+                        ? "bg-[#0a3a75] text-black px-2 rounded-md"
+                        : ""
+                    }  text-[16px] py-2 font-medium text-[#575757]/70 `}
+                  >
+                    {item.name}
+                    {/* {item.link} */}
+                  </Link>
+                )}
+
+                {openMenus[index] && item?.subLinks && (
+                  <hr className="border-b" />
+                )}
+
+                {openMenus[index] && (
+                  <div className="space-y-2">
+                    {item?.subLinks &&
+                      item.subLinks.map((subLink, index) => (
                         <div className="flex flex-col">
                           <Link
                             to={subLink.link}
@@ -303,101 +469,35 @@ const Sidebar = () => {
                                 ?.split("/")
                                 .slice(4)
                                 .join("/")
-                                .toString()
                                 ? "bg-[#0a3a75] text-white px-2"
                                 : "hover:bg-[#0a3a75]/10"
-                            }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                            }  flex  gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
                           >
                             {subLink.icon} {subLink.name}
-                            {/* {hid}{subLink.link} */}
                           </Link>
                         </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          );
-        } else {
-          const currentLocationAccessScope =
-            authUser?.assigned_location?.filter(
-              (location) => location?.hid === String(handleLocalStorage("hid"))
-            )[0];
+                      ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+        })}
+        <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
+      </div>
 
-          const key = item?.key;
-          if (
-            key &&
-            currentLocationAccessScope &&
-            !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
-          )
-            return null;
-
-          return (
-            <div key={index} className="flex flex-col gap-1">
-              {item?.subLinks ? (
-                <div
-                  onClick={() => toggleMenu(index)}
-                  className="flex justify-between items-center cursor-pointer"
-                >
-                  <p className=" text-[16px] font-medium text-[#575757]/70 ">
-                    {item.name}
-                  </p>
-                  <span
-                    className={`${
-                      openMenus[index] ? "-rotate-90" : " rotate-90"
-                    } py-2 ease-linear duration-300 text text-[#575757]/70 mr-1 `}
-                  >
-                    <Arrow />
-                  </span>
-                </div>
-              ) : (
-                <Link
-                  to={item.link}
-                  className={`${
-                    pathLocation.pathname === item.link
-                      ? "bg-[#0a3a75] text-black px-2 rounded-md"
-                      : ""
-                  }  text-[16px] py-2 font-medium text-[#575757]/70 `}
-                >
-                  {item.name}
-                  {/* {item.link} */}
-                </Link>
-              )}
-
-              {openMenus[index] && item?.subLinks && (
-                <hr className="border-b" />
-              )}
-
-              {openMenus[index] && (
-                <div className="space-y-2">
-                  {item?.subLinks &&
-                    item.subLinks.map((subLink, index) => (
-                      <div className="flex flex-col">
-                        <Link
-                          to={subLink.link}
-                          key={index}
-                          className={` ${
-                            subLink?.link ===
-                            pathLocation?.pathname
-                              ?.split("/")
-                              .slice(4)
-                              .join("/")
-                              ? "bg-[#0a3a75] text-white px-2"
-                              : "hover:bg-[#0a3a75]/10"
-                          }  flex  gap-1 items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757] transition-all duration-100`}
-                        >
-                          {subLink.icon} {subLink.name}
-                        </Link>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          );
-        }
-      })}
-
-      <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
+      <div className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white">
+        <FiLogOut size={20} />
+        {isOpen && (
+          <button
+            className={`${
+              !isOpen ? "w-0" : "w-f"
+            } font-medium text-nowrap overflow-hidden`}
+          >
+            Logout
+          </button>
+        )}
+      </div>
     </div>
   );
 };
