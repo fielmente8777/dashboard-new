@@ -123,7 +123,7 @@ const Usermanagement = () => {
           <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
             <thead>
               <tr className="border-b whitespace-nowrap">
-                <th className="py-3 px-4 text-[16px] font-medium  capitalize">
+                <th className="py-3 px-4 text-[16px] font-medium capitalize">
                   Name
                 </th>
                 <th className="py-2 px-4 text-[16px] font-medium  capitalize">

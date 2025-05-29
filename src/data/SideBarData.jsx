@@ -17,7 +17,7 @@ import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
 import { TbSeo } from "react-icons/tb";
-import { TiSocialSkype } from "react-icons/ti";
+// import { TiSocialSkype } from "react-icons/ti";
 import { RiWechatChannelsLine } from "react-icons/ri";
 export const SidebarData = [
   {
@@ -186,7 +186,7 @@ export const SidebarData = [
     name: "Social Media",
     key: "Social Media",
     link: `social-media`,
-    icon: <TiSocialSkype size={24} />,
+    // icon: <TiSocialSkype size={24} />,
   },
 
   {
