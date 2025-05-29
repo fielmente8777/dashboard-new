@@ -62,7 +62,20 @@ const Dashboard = () => {
 
   const { user } = useSelector((state) => state?.userProfile);
 
-  return <div className="flex flex-col gap-5">Hello there!</div>;
+  return (
+
+    <div className="flex flex-col gap-5 hide-scrollbar">
+      <div className="grid grid-cols-3 gap-5 bg-white p-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((item) => (
+          <div key={item} className="bg-[#f3f4f6] p-4 rounded-md flex flex-col justify-center items-center px-4 pt-10 pb-12 h-[20rem]">
+            <p className="text-4xl font-bold">{item}</p>
+            <h3 className="text-[14px] mt-2">Item {item}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
 };
 
 export default Dashboard;

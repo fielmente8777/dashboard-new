@@ -20,7 +20,7 @@ const Main = () => {
 
         <div className="sm:col-span-2 md:col-span-7 lg:col-span-7 xl:col-span-8 overflow-y-scroll scrollbar-hidden pr-4 sm:overflow-y-auto rounded-sm bg-[#f8f8fb]">
           {/* <div className="w-[75%] overflow-y-scroll scrollbar-hidden pr-4 sm:overflow-y-auto rounded-sm mt-[3.4rem] bg-[#f8f8fb]"> */}
-          <div className="h-[92vh] py-4 overflow-auto">
+          <div className="h-[92vh] py-4 overflow-auto ">
             <Breadcrumb />
             <Routes>
               {SidebarData.flatMap((item, index) => [
