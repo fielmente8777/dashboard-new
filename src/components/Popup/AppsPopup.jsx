@@ -7,7 +7,12 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
   const [search, setSearch] = useState("");
 
   const peoplePlusServices = [
-    { name: "Website Enquiries", icon: "🌐", key: "Enquiries Management", link: "enquiries-management/enquiries-analytics" },
+    {
+      name: "Website Enquiries",
+      icon: "🌐",
+      key: "Enquiries Management",
+      link: "enquiries-management/enquiries-analytics",
+    },
     {
       name: "Lead Gen Form",
       icon: "📝",
@@ -118,8 +123,6 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
     setOpen(false);
     navigate(service.link);
   };
-
-  console.log(authUser);
 
   // 🔍 Filtered results
   const filteredPremium = peoplePlusServices.filter((service) =>

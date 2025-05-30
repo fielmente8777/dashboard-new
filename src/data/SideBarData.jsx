@@ -87,11 +87,6 @@ export const SidebarData = [
     icon: <MdOutlineSos size={26} />,
     subLinks: [
       {
-        name: "Analytics",
-        link: `grm/analytics`,
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
         name: "All Requests",
         link: `grm/all-requests`,
         icon: <FaCodePullRequest size={16} />,
@@ -116,11 +111,6 @@ export const SidebarData = [
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
         name: "Enquiries",
         link: `enquiries-management/enquiries`,
         icon: <FaCircleQuestion size={18} />,
@@ -135,11 +125,6 @@ export const SidebarData = [
     icon: <GrResources size={24} />,
     subLinks: [
       {
-        name: "Analytics",
-        link: `human-resources-management/analytics`,
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
         name: "Applications",
         link: `human-resources-management/applications`,
         icon: <FaFilePdf size={18} />,
@@ -151,7 +136,7 @@ export const SidebarData = [
     name: "Leads Form",
     key: "Leads Form",
     icon: <MdLeaderboard size={24} />,
-    key: "",
+    key: "Leads Form",
     subLinks: [
       {
         name: "Lead Gen Form",
@@ -171,8 +156,28 @@ export const SidebarData = [
   {
     name: "Analytics & Reporting",
     key: "Analytics Reporting",
-    link: `analytics-and-reporting`,
+    link: ``,
     icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "HRM Analytics",
+        link: `human-resources-management/analytics`,
+        key: "HRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Enquiries Analytics",
+        link: `enquiries-management/enquiries-analytics`,
+        key: "Enquiries Management",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GRM Analytics",
+        link: `grm/analytics`,
+        key: "GRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
   },
 
   {

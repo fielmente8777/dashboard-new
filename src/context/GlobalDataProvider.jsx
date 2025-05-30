@@ -12,7 +12,7 @@ const GlobalDataProvider = () => {
   const dispatch = useDispatch();
   const token = handleLocalStorage("token");
   const hid = handleLocalStorage("hid");
-  const { user: hotel } = useSelector((state) => state.userProfile);
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
 
   useEffect(() => {
     if (token) {
@@ -29,10 +29,15 @@ const GlobalDataProvider = () => {
 
     if (hotel?.Profile?.hotels) {
       const hotelKeys = Object.keys(hotel.Profile.hotels);
-      if (hotelKeys.length > 0) {
-        if (!handleLocalStorage("hid")) {
-          dispatch(setHid(hotelKeys[0]));
+      if (authUser.isAdmin) {
+        if (hotelKeys.length > 0) {
+          if (!handleLocalStorage("hid")) {
+            dispatch(setHid(hotelKeys[0]));
+          }
         }
+      } else {
+        console.log(authUser);
+        dispatch(setHid(authUser?.assigned_location[0]?.hid));
       }
     }
   }, [dispatch, hotel]);

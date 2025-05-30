@@ -17,7 +17,7 @@ export const accessRoles = [
   "Gateway Manager",
   "Enquiries Management",
   "Meta Leads",
-  "Analyticsand Reporting",
+  "Analytics Reporting",
   "Conversational Tool",
   "Eazobot",
   "Email Marketing",
@@ -26,8 +26,6 @@ export const accessRoles = [
   "User Management",
   "WhatsApp Marketing",
   "FrontDesk",
-  "Booking Engine",
-  "Channel Manager",
   "Themes Manager",
   "SEO Manager",
   "Payment Gateway",
@@ -90,15 +88,16 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       prev.map((entry) =>
         entry.hid === location
           ? {
-            ...entry,
-            accessScope: entry.accessScope.includes(role)
-              ? entry.accessScope.filter((r) => r !== role)
-              : [...entry.accessScope, role],
-          }
+              ...entry,
+              accessScope: entry.accessScope.includes(role)
+                ? entry.accessScope.filter((r) => r !== role)
+                : [...entry.accessScope, role],
+            }
           : entry
       )
     );
   };
+
   // Remove location function
   const removeLocation = (location) => {
     console.log(location);
@@ -113,19 +112,27 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
     const { name, email, password } = form;
 
     const allPermissions = {
-      cms: "false",
-      bookingEngine: "false",
-      socialMedia: "false",
-      reservationDesk: "false",
-      frontDesk: "false",
-      channelManager: "false",
-      seoManager: "false",
-      foodManager: "false",
-      themes: "false",
-      gatewayManager: "false",
-      humanResourceManagement: "false",
-      guestRequestManagement: "false",
-      enquiriesManagement: "false",
+      analyticsandreporting: false,
+      bookingEngine: false,
+      channelManager: false,
+      cms: false,
+      conversationaltool: false,
+      eazobot: false,
+      emailmarketing: false,
+      enquiriesManagement: false,
+      foodManager: false,
+      frontDesk: false,
+      gatewayManager: false,
+      guestRequestManagement: false,
+      humanResourceManagement: false,
+      leadgenform: false,
+      reservationDesk: false,
+      seoManager: false,
+      smsmarketing: false,
+      socialMedia: false,
+      themes: false,
+      usermanagement: false,
+      whatsappmarketing: false,
     };
 
     const processedLocations = selectedLocations.map((location) => {
@@ -189,8 +196,9 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
   return (
     <div
-      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
     >
       <div className="bg-white grid md:grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
         <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
@@ -312,6 +320,8 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
                         {role}
                       </label>
                     );
+
+                  return null;
                 })}
               </div>
             </div>
