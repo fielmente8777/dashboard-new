@@ -11,13 +11,14 @@ const isAuthenticated = () => {
 };
 
 export default function ProtectedRoute() {
-  const hid = handleLocalStorage("hid");
   const { ndid } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
+    const hid = handleLocalStorage("hid");
     if (hid) {
       if (ndid !== String(handleLocalStorage("hid"))) navigate("/login");
+      return;
     }
   }, [ndid]);
   return isAuthenticated() ? (

@@ -154,6 +154,7 @@ const Leads = () => {
           <MdRefresh size={25} />
         </div>
       </div>
+
       <div className="bg-white p-4">
         <div className="flex justify-between items-center mb-4 gap-2">
           <div className="w-full relative">

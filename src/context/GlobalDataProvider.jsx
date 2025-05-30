@@ -7,10 +7,11 @@ import {
 } from "../redux/slice/UserSlice";
 import { fetchWebsiteData } from "../redux/slice/websiteDataSlice";
 import handleLocalStorage from "../utils/handleLocalStorage";
+import { getCookie } from "../utils/handleCookies";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
-  const token = handleLocalStorage("token");
+  const token = getCookie("token");
   const hid = handleLocalStorage("hid");
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
 
