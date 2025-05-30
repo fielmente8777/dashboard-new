@@ -7,6 +7,7 @@ import Banner from "../../assets/HotelVhNPHJ.png";
 import Logo from "../../assets/companylogo.b.png";
 import { loginUser } from "../../redux/slice/LoginSlice";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { setCookie } from "../../utils/handleCookies";
 const Login = () => {
   const [formData, setFormData] = useState({
     // email: 'reservation@minimalisthotes.com',
@@ -51,6 +52,7 @@ const Login = () => {
     } else if (response.data.Status) {
       const token = response?.data?.Token;
       handleLocalStorage("token", token || "");
+      setCookie("token", token || "");
       Swal.fire({
         title: "Logged in Successfully",
         html: "We will redirect you to the dashboard <b></b>",

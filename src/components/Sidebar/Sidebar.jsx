@@ -422,7 +422,7 @@ const Sidebar = () => {
                     )}
 
                     {isOpen && openMenus[index] && (
-                      <div className="space-y-2 mt-2">
+                      <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
                         {item?.subLinks &&
                           item.subLinks.map((subLink, index) => {
                             if (
@@ -606,11 +606,13 @@ const Sidebar = () => {
         <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
       </div>
 
-      <div className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white">
+      <div
+        className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white cursor-pointer"
+        onClick={handleLogout}
+      >
         <FiLogOut size={20} />
         {isOpen && (
           <button
-            onClick={handleLogout}
             className={`${
               !isOpen ? "w-0" : "w-f"
             } font-medium text-nowrap overflow-hidden`}
