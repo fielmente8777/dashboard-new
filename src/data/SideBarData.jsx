@@ -17,7 +17,7 @@ import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
 import { TbSeo } from "react-icons/tb";
-// import { TiSocialSkype } from "react-icons/ti";
+import { TiSocialSkype } from "react-icons/ti";
 import { RiWechatChannelsLine } from "react-icons/ri";
 export const SidebarData = [
   {
@@ -119,66 +119,26 @@ export const SidebarData = [
   },
 
   {
-    name: "Human Resources Management",
-    link: `human-resources-management`,
-    key: "HRM",
-    icon: <GrResources size={24} />,
-    subLinks: [
-      {
-        name: "Applications",
-        link: `human-resources-management/applications`,
-        icon: <FaFilePdf size={18} />,
-      },
-    ],
-  },
-
-  {
-    name: "Leads Form",
+    name: "Lead Gen Form",
     key: "Leads Form",
     icon: <MdLeaderboard size={24} />,
+    link: `lead-form/lead-gen-form`,
     key: "Leads Form",
-    subLinks: [
-      {
-        name: "Lead Gen Form",
-        link: `lead-form/lead-gen-form`,
-        icon: <SiGoogleforms size={16} />,
-      },
-    ],
+    // subLinks: [
+    //   {
+    //     name: "My Form",
+    //     link: `lead-form/lead-gen-form`,
+    //     icon: <SiGoogleforms size={16} />,
+    //   },
+    // ],
   },
 
-  {
-    name: "User Management",
-    key: "User Management",
-    link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
 
-  {
-    name: "Analytics & Reporting",
-    key: "Analytics Reporting",
-    link: ``,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "HRM Analytics",
-        link: `human-resources-management/analytics`,
-        key: "HRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        key: "Enquiries Management",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GRM Analytics",
-        link: `grm/analytics`,
-        key: "GRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
+
+
+
+
+
 
   {
     name: "Conversational Tool",
@@ -191,7 +151,7 @@ export const SidebarData = [
     name: "Social Media",
     key: "Social Media",
     link: `social-media`,
-    // icon: <TiSocialSkype size={24} />,
+    icon: <TiSocialSkype size={24} />,
   },
 
   {
@@ -262,6 +222,52 @@ export const SidebarData = [
     key: "Payment Gateway",
     link: `payment-gateway`,
     icon: <MdPayment size={22} />,
+  },
+  {
+    name: "Human Resources Management",
+    link: `human-resources-management`,
+    key: "HRM",
+    icon: <GrResources size={24} />,
+    subLinks: [
+      {
+        name: "Applications",
+        link: `human-resources-management/applications`,
+        icon: <FaFilePdf size={18} />,
+      },
+    ],
+  },
+  {
+    name: "User Management",
+    key: "User Management",
+    link: `user-management/all-users`,
+    icon: <HiOutlineUserGroup size={22} />,
+  },
+
+  {
+    name: "Analytics & Reporting",
+    key: "Analytics Reporting",
+    link: ``,
+    icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "HRM Analytics",
+        link: `human-resources-management/analytics`,
+        key: "HRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Enquiries Analytics",
+        link: `enquiries-management/enquiries-analytics`,
+        key: "Enquiries Management",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GRM Analytics",
+        link: `grm/analytics`,
+        key: "GRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
   },
 ];
 
