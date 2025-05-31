@@ -19,6 +19,17 @@ import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
 import { TbSeo } from "react-icons/tb";
 // import { TiSocialSkype } from "react-icons/ti";
 import { RiWechatChannelsLine } from "react-icons/ri";
+import { CgProfile } from "react-icons/cg";
+import { RiFolderUserFill } from "react-icons/ri";
+import { RiGalleryFill } from "react-icons/ri";
+import { BiSolidOffer } from "react-icons/bi";
+import { MdEventSeat } from "react-icons/md";
+import { FaBloggerB } from "react-icons/fa";
+import { FaQuestion } from "react-icons/fa";
+import { MdPrivacyTip } from "react-icons/md";
+import { MdPolicy } from "react-icons/md";
+import { MdOutlineFreeCancellation } from "react-icons/md";
+
 export const SidebarData = [
   {
     name: "Dashboard",
@@ -35,47 +46,47 @@ export const SidebarData = [
       {
         name: "Profile and Links",
         link: `cms/profile-and-links`,
-        icon: <SiGoogleanalytics size={16} />,
+        icon: <RiFolderUserFill size={22} />,
       },
       {
         name: "Gallery",
         link: `cms/gallery`,
-        icon: <IoMdSettings size={18} />,
+        icon: <RiGalleryFill size={22} />,
       },
       {
         name: "Offers",
         link: `cms/offers`,
-        icon: <IoMdSettings size={18} />,
+        icon: <BiSolidOffer size={22} />,
       },
       {
         name: "Events",
         link: `cms/events`,
-        icon: <IoMdSettings size={18} />,
+        icon: <MdEventSeat size={22} />,
       },
       {
         name: "Blogs",
         link: `cms/blogs`,
-        icon: <IoMdSettings size={18} />,
+        icon: <FaBloggerB size={22} />,
       },
       {
         name: "Faq",
         link: `cms/faq`,
-        icon: <IoMdSettings size={18} />,
+        icon: <FaQuestion size={22} />,
       },
       {
         name: "Privacy Policy",
         link: `cms/privacy-policy`,
-        icon: <IoMdSettings size={18} />,
+        icon: <MdPrivacyTip size={22} />,
       },
       {
         name: "Terms & Conditions",
         link: `cms/terms-and-conditions`,
-        icon: <IoMdSettings size={18} />,
+        icon: <MdPolicy size={22} />,
       },
       {
         name: "Cancellation and refund Policy",
         link: `cms/cancellation-and-refund-policy`,
-        icon: <IoMdSettings size={18} />,
+        icon: <MdOutlineFreeCancellation size={22} />,
       },
     ],
   },

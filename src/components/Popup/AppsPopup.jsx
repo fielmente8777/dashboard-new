@@ -11,7 +11,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       name: "Website Enquiries",
       icon: "🌐",
       key: "Enquiries Management",
-      link: "enquiries-management/enquiries-analytics",
+      link: "enquiries-management/enquiries",
     },
     {
       name: "Lead Gen Form",
@@ -46,7 +46,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       name: "Human Resource",
       icon: "👥",
       key: "HRM",
-      link: `human-resources-management/analytics`,
+      link: `human-resources-management/applications`,
     },
     {
       name: "Payment Gateway",
@@ -101,6 +101,23 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       icon: "📈",
       key: "Analytics Reporting",
       link: "analytics-and-reporting",
+      allAnalyticsLinsk: [
+        {
+          name: "HRM Analytics",
+          link: `human-resources-management/analytics`,
+          key: "HRM",
+        },
+        {
+          name: "Enquiries Analytics",
+          link: `enquiries-management/enquiries-analytics`,
+          key: "Enquiries Management",
+        },
+        {
+          name: "GRM Analytics",
+          link: `grm/analytics`,
+          key: "GRM",
+        },
+      ],
     },
   ];
 
@@ -108,6 +125,19 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
 
   const handleOpenService = (service) => {
     const key = service.key;
+
+    if (service?.name === "Analytics & Reporting") {
+      const filteredAnyalytics = service?.allAnalyticsLinsk.filter(
+        (item) => authUser?.accessScope[accessScopeMap[item.key]]
+      );
+
+      if (filteredAnyalytics.length > 0) {
+        service = filteredAnyalytics[0];
+        setOpen(false);
+        navigate(service.link);
+        return;
+      }
+    }
 
     if (!authUser.accessScope[accessScopeMap[key]]) {
       Swal.fire({

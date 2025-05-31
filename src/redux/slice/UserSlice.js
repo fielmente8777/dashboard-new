@@ -10,6 +10,7 @@ const initialState = {
   authUser: null,
   hid: handleLocalStorage("hid") || null,
   loading: false,
+  isAuthLoading: false,
   error: null,
 };
 
@@ -18,11 +19,12 @@ const userProfileSlice = createSlice({
   initialState,
   reducers: {
     getUserProfileRequest: (state) => {
+      state.isAuthLoading = true;
       state.loading = true;
       state.error = null;
     },
     setAuthUserProfile: (state, action) => {
-      state.loading = true;
+      state.isAuthLoading = false;
       state.authUser = action.payload?.User;
     },
     getUserProfileSuccess: (state, action) => {

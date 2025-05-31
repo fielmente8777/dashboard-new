@@ -25,6 +25,7 @@ import { Link } from "react-router-dom";
 const LeadGenForm = () => {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
+  const [titleError, setTitleError] = useState(null);
   const [fields, setFields] = useState([]);
   const [newField, setNewField] = useState({
     field_label: "", // corresponds to "Name"
@@ -63,9 +64,13 @@ const LeadGenForm = () => {
   const { data: LeadGenFormData } = useSelector((state) => state?.metaLeads);
 
   // handleCreateLeadGenForm
-  const handleCreate = async () => {
+
+  const handleCreateFormSubmit = async (e) => {
     setLoading(true);
-    setisNewFormOpen(false);
+    if (!title) {
+      setTitleError("Title is required");
+      return;
+    }
     try {
       const res = await fetch(`${BASE_URL}/leadgen/create-lead-gen-form`, {
         method: "POST",
@@ -83,7 +88,7 @@ const LeadGenForm = () => {
       if (!res.ok) {
         throw new Error("Failed to create form");
       }
-
+      setisNewFormOpen(false);
       setTitle("");
       dispatch(
         fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"))
@@ -105,12 +110,23 @@ const LeadGenForm = () => {
   };
 
   const handleDelete = async (form_id) => {
-    const token = handleLocalStorage("token");
-    const response = await deleteLeadGenForm(token, form_id);
-    console.log(response);
-    dispatch(
-      fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"))
-    );
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (!result.isConfirmed) return;
+      const token = handleLocalStorage("token");
+      const response = await deleteLeadGenForm(token, form_id);
+      console.log(response);
+      dispatch(
+        fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"))
+      );
+    });
   };
 
   // handle function for add field dymacially
@@ -372,13 +388,13 @@ const LeadGenForm = () => {
                 </td>
                 <td className="text-gray-500 flex gap-2 items-center px-4 py-3">
                   {/* <span><FaCopy onClick={() => { console.log("fhff") }} /></span> */}
-                  <Link to={formDetails?.form_url} target="_blank" className="text-blue-600 hover:underline">
-                    {formDetails?.form_url?.split("/")
-                      .slice(0, 5)
-                      .join("/")}
+                  <Link
+                    to={formDetails?.form_url}
+                    target="_blank"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {formDetails?.form_url?.split("/").slice(0, 5).join("/")}
                   </Link>
-
-
                 </td>
                 <td className="text-gray-500 px-4">{formDetails?.status}</td>
                 <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757]">
@@ -526,9 +542,10 @@ const LeadGenForm = () => {
                   <div
                     className="relative flex items-center border h-36 rounded-lg bg-cover bg-center bg-no-repeat"
                     style={{
-                      backgroundImage: `url(${previewImageCover ||
+                      backgroundImage: `url(${
+                        previewImageCover ||
                         formData?.form_cms?.banner_image_url
-                        })`,
+                      })`,
                     }}
                   >
                     <div className="px-4 grid grid-cols-12 items-center z-40 relative">
@@ -833,18 +850,22 @@ const LeadGenForm = () => {
 
       <Modal
         isOpen={isNewFormOpen}
-        onConfirm={handleCreate}
-        onCancel={() => setisNewFormOpen(false)}
+        onConfirm={handleCreateFormSubmit}
+        onCancel={() => {
+          setisNewFormOpen(false);
+          setTitleError(null);
+        }}
         title={"Create Lead Gen Form"}
         labels={{
           confirm: "Submit",
           cancel: "Cancel",
         }}
         render={() => (
-          <div>
+          <form>
             <input
               type="text"
               value={title}
+              required
               onChange={(e) => {
                 if (e.target.value.length > 60) {
                   Swal.fire({
@@ -855,13 +876,21 @@ const LeadGenForm = () => {
                   });
                   return;
                 }
-                setTitle(e.target.value)
+                setTitle(e.target.value);
               }}
               placeholder="Please Enter Form Name"
               className="outline-none border border-primary/40 bg-transparent p-2 rounded-sm w-full"
             />
-            <span className="flex justify-end text-xs text-gray-500">{title.length}/60</span>
-          </div>
+            <div className="flex items-center justify-between">
+              <p className="text-red-500 text-sm ml-2 font-normal">
+                {titleError}
+              </p>
+
+              <span className="flex justify-end text-xs text-gray-500">
+                {title.length}/60
+              </span>
+            </div>
+          </form>
         )}
       />
     </div>
@@ -897,8 +926,9 @@ export const FormField = ({
     case "textarea":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-            }`}
+          className={`space-y-2 scale-[1] duration-300  ${
+            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+          }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -946,8 +976,9 @@ export const FormField = ({
     case "phone":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-            }`}
+          className={`space-y-2 scale-[1] duration-300  ${
+            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+          }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -968,10 +999,11 @@ export const FormField = ({
               </button>
 
               <button
-                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${isVisible
-                  ? "hover:bg-[#618ae4] hover:text-white  "
-                  : "bg-gray-300 cursor-not-allowed"
-                  }`}
+                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${
+                  isVisible
+                    ? "hover:bg-[#618ae4] hover:text-white  "
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
                 title="Edit"
                 disabled={!isVisible}
                 onClick={(e) => editField(e, field, index)}
@@ -987,10 +1019,11 @@ export const FormField = ({
                 onClick={(e) => deleteField(e, field)}
                 className={`text-sm size-6 
                    rounded-full border border-gray-300 flex items-center justify-center 
-                    ${isVisible
-                    ? "hover:bg-red-500 hover:text-white"
-                    : "bg-gray-300 cursor-not-allowed"
-                  }
+                    ${
+                      isVisible
+                        ? "hover:bg-red-500 hover:text-white"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }
                     duration-300 shadow-xl `}
                 title="Delete"
                 disabled={!isVisible}

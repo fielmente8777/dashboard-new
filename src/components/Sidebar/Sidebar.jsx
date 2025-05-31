@@ -18,6 +18,7 @@ import { open, toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { IoClose } from "react-icons/io5";
 import { FiLogOut } from "react-icons/fi";
 import DataContext from "../../context/DataContext";
+import { removeCookie } from "../../utils/handleCookies";
 
 const Sidebar = () => {
   const [openMenus, setOpenMenus] = useState({});
@@ -29,11 +30,11 @@ const Sidebar = () => {
     authUser,
     hid,
     loading,
+    isAuthLoading,
   } = useSelector((state) => state.userProfile);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
   const { setAuth } = useContext(DataContext);
-
   const { isOpen } = useSelector((state) => state.toggle);
 
   const dispatch = useDispatch();
@@ -114,7 +115,8 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
-    if (hid && hotel) {
+    if (authUser) {
+      const hid = handleLocalStorage("hid");
       if (authUser?.isAdmin) {
         const currentLoaction = hotel?.Profile?.hotels[hid];
         setCurrentLocation(currentLoaction);
@@ -124,10 +126,11 @@ const Sidebar = () => {
         setCurrentLocation(currentLoaction);
       }
     }
-  }, [hid, hotel]);
+  }, [hid, hotel, authUser]);
 
   const handleLogout = () => {
     localStorage.clear();
+    removeCookie("token");
     setAuth(false);
     dispatch(setHid(null));
     // setTimeout(() => {
@@ -151,8 +154,8 @@ const Sidebar = () => {
 
         return {
           ...item,
-          subLinks: item?.subLinks?.filter((sub) =>
-            console.log(assignedLocation?.accessScope[sub.key])
+          subLinks: item?.subLinks?.filter(
+            (sub) => (sub) => authUser?.accessScope[accessScopeMap[sub.key]]
           ),
         };
       }
@@ -207,13 +210,17 @@ const Sidebar = () => {
                 {hotel?.Profile?.hotelName || "Eazotel"}
               </p>
 
-              <p className="text-white/90 text-[15px]">
-                {currentLocation?.city}
-                {", "}
-                {currentLocation?.state}
-                {", "}
-                {currentLocation?.country}
-              </p>
+              {currentLocation?.city &&
+                currentLocation?.state &&
+                currentLocation?.country && (
+                  <p className="text-white/90 text-[15px]">
+                    {currentLocation?.city}
+                    {", "}
+                    {currentLocation?.state}
+                    {", "}
+                    {currentLocation?.country}
+                  </p>
+                )}
 
               <div
                 className="rounded-sm w-full mx-auto duration-200 transition-all ease-in-out space-y-2 pb-2 hide-scrollbar"
@@ -326,7 +333,7 @@ const Sidebar = () => {
       </div>
 
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
-        {loading
+        {isAuthLoading
           ? Array.from({ length: 10 }).map((_, index) => (
               <div className="animate-pulse h-10 bg-gray-200" />
             ))
