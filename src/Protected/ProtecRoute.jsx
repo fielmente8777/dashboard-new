@@ -2,7 +2,7 @@ import { Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import handleLocalStorage from "../utils/handleLocalStorage";
 import { useEffect } from "react";
-import { getCookie } from "../utils/handleCookies";
+import { getCookie, removeCookie } from "../utils/handleCookies";
 
 const isAuthenticated = () => {
   const isToken = getCookie("token");
@@ -16,9 +16,13 @@ export default function ProtectedRoute() {
 
   useEffect(() => {
     const hid = handleLocalStorage("hid");
-    if (hid) {
-      if (ndid !== String(handleLocalStorage("hid"))) navigate("/login");
-      return;
+    if (hid && ndid) {
+      if (ndid !== String(handleLocalStorage("hid"))) {
+        localStorage.clear();
+        removeCookie("token");
+        navigate("/login");
+        return;
+      }
     }
   }, [ndid]);
   return isAuthenticated() ? (

@@ -8,18 +8,27 @@ import {
 import { fetchWebsiteData } from "../redux/slice/websiteDataSlice";
 import handleLocalStorage from "../utils/handleLocalStorage";
 import { getCookie } from "../utils/handleCookies";
+import { useNavigate } from "react-router-dom";
+import { BASE_PATH } from "../data/constant";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const token = getCookie("token");
-  const hid = handleLocalStorage("hid");
-  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+  const HID = handleLocalStorage("hid");
+  const {
+    user: hotel,
+    hid,
+    authUser,
+  } = useSelector((state) => state.userProfile);
 
   useEffect(() => {
     if (token) {
-      dispatch(fetchWebsiteData(token, hid));
+      dispatch(fetchWebsiteData(token, HID));
       dispatch(fetchAuthUserProfile(token));
       dispatch(fetchUserProfile(token));
+
+      if (hid) navigate(`${BASE_PATH}/${hid}`);
     }
   }, [token, hid]);
 
@@ -32,15 +41,13 @@ const GlobalDataProvider = () => {
       const hotelKeys = Object.keys(hotel.Profile.hotels);
       if (authUser?.isAdmin) {
         if (hotelKeys.length > 0) {
-          if (!handleLocalStorage("hid")) {
-            dispatch(setHid(hotelKeys[0]));
-          }
+          dispatch(setHid(hotelKeys[0]));
         }
       } else {
         dispatch(setHid(authUser?.assigned_location[0]?.hid));
       }
     }
-  }, [dispatch, hotel]);
+  }, [hotel]);
 
   return null;
 };

@@ -8,7 +8,6 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div>
-      <Navbar />
       <div className="flex gap-4">
         <div
           className={`${
@@ -22,6 +21,7 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <div className="flex-1 overflow-y-scroll scrollbar-hidden pr-4 sm:overflow-y-auto rounded-sm bg-[#f8f8fb]">
+          <Navbar />
           <div className="h-[92vh] py-4 overflow-auto">
             <Breadcrumb />
             {children}

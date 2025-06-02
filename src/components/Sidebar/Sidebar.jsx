@@ -167,12 +167,18 @@ const Sidebar = () => {
   });
 
   return (
-    <div className="p-3 flex flex-col h-[91.8vh] overflow-hidden shadow-md bg-gray-100">
+    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-gray-100">
       <div className="flex justify-between items-center mb-4">
         {isOpen && (
           <div>
             {/* <img src={Logo} alt="logo" className="h-8 object-contain" /> */}
-            <h2 className="font-medium">Dashboard</h2>
+            <div className="w-28 h-10 -ml-2">
+              <img
+                src={Logo}
+                alt="logo"
+                className="h-full w-full object-contain"
+              />
+            </div>
           </div>
         )}
 
