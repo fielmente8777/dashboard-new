@@ -29,6 +29,7 @@ import { FaQuestion } from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
 import { MdPolicy } from "react-icons/md";
 import { MdOutlineFreeCancellation } from "react-icons/md";
+import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 
 export const SidebarData = [
   {
@@ -92,6 +93,48 @@ export const SidebarData = [
   },
 
   {
+    name: "Booking Engine",
+    key: "Booking Engine",
+    link: `booking-engine`,
+    icon: <SiGoogleearthengine size={20} />,
+    subLinks: [
+      {
+        name: "Bookings",
+        link: `booking-engine/all-bookings`,
+        icon: <FaCodePullRequest size={16} />,
+      },
+      {
+        name: "Rooms & Inventory",
+        link: `booking-engine/rooms-and-inventory`,
+        icon: <MdOutlineInventory size={18} />,
+      },
+      {
+        name: "Rooms Setup",
+        link: `booking-engine/rooms-setup`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Content Manager",
+        link: `booking-engine/content-manager`,
+        icon: <FaCodePullRequest size={16} />,
+      },
+    ]
+  },
+  {
+    name: "Enquiries Management",
+    link: `enquiries-management`,
+    key: "Enquiries Management",
+    icon: <MdAnalytics size={24} />,
+    subLinks: [
+      {
+        name: "Enquiries",
+        link: `enquiries-management/enquiries`,
+        icon: <FaCircleQuestion size={18} />,
+      },
+    ],
+  },
+
+  {
     name: "Guest Request Management",
     link: `guest-request-management`,
     key: "GRM",
@@ -115,19 +158,6 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "Enquiries Management",
-    link: `enquiries-management`,
-    key: "Enquiries Management",
-    icon: <MdAnalytics size={24} />,
-    subLinks: [
-      {
-        name: "Enquiries",
-        link: `enquiries-management/enquiries`,
-        icon: <FaCircleQuestion size={18} />,
-      },
-    ],
-  },
 
   {
     name: "Human Resources Management",
@@ -233,12 +263,7 @@ export const SidebarData = [
     icon: <FaWhatsappSquare size={24} />,
   },
 
-  {
-    name: "Booking Engine",
-    key: "Booking Engine",
-    link: `booking-engine`,
-    icon: <SiGoogleearthengine size={20} />,
-  },
+
 
   {
     name: "FrontDesk",
