@@ -1,16 +1,28 @@
-import React from "react";
+// import "../../Style/BookingEngine.css";
 
 const BookingEngine = () => {
-  return (
-    <div>
-      <div className="w-full h-[560px]">
-        <img
-          src="https://img.freepik.com/free-vector/eye-catching-coming-soon-web-page-background-with-megaphone-design_1017-50903.jpg"
-          className="w-full h-full object-contain"
-        />
-      </div>
-    </div>
-  );
+  return <div>BookingEngine</div>;
 };
 
 export default BookingEngine;
+
+// function BookingEngine() {
+//   const { fetchBookingDatatData } = useContext(AuthContext);
+//   useEffect(() => {
+//     fetchBookingDatatData();
+//   }, []);
+
+//   return (
+//     <>
+//       <div className="BookingHead">
+//         <DashBackBtn />
+//         {/* <h2 className="text-center">Booking Engine</h2><br /> */}
+//       </div>
+//       <div className="py-4">
+//         <BookingTab />
+//       </div>
+//     </>
+//   );
+// }
+
+// export default BookingEngine;

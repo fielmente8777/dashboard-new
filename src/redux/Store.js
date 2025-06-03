@@ -5,6 +5,7 @@ import applicantsReducer from "./slice/TalentSlice.js";
 import websiteDataReducer from "./slice/websiteDataSlice.js";
 import leadGenFormReduces from "./slice/MetaLeads.js";
 import toggleReducer from "./slice/SidebarToggle.js";
+import bookingEngineReducer from "./slice/bookingEngine.js";
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -13,6 +14,7 @@ const store = configureStore({
     hotelsWebsiteData: websiteDataReducer,
     metaLeads: leadGenFormReduces, // Add website data slice to the store
     toggle: toggleReducer,
+    bookingEngine: bookingEngineReducer,
   },
 });
 

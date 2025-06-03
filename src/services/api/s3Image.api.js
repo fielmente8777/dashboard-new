@@ -4,21 +4,20 @@ import handleLocalStorage from "../../utils/handleLocalStorage";
 // handle api for uploading image to s3 bucket**
 export const UploadingImageS3 = async (base64String) => {
   try {
-    const response = await fetch(
-      `https://nexon.eazotel.com/upload/file/image`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: handleLocalStorage("token"),
-          image: base64String,
-        }),
-      }
-    );
+    console.log("aaya");
+    const response = await fetch(`${BASE_URL}/upload/file/image`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token: handleLocalStorage("token"),
+        image: base64String,
+      }),
+    });
 
     const result = await response.json();
+    console.log(result);
 
     return result?.Image || null;
   } catch (error) {

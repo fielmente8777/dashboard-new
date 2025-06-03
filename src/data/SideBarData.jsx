@@ -118,8 +118,9 @@ export const SidebarData = [
         link: `booking-engine/content-manager`,
         icon: <FaCodePullRequest size={16} />,
       },
-    ]
+    ],
   },
+
   {
     name: "Enquiries Management",
     link: `enquiries-management`,
@@ -157,7 +158,6 @@ export const SidebarData = [
       },
     ],
   },
-
 
   {
     name: "Human Resources Management",
@@ -262,8 +262,6 @@ export const SidebarData = [
     link: `whatsapp-marketing`,
     icon: <FaWhatsappSquare size={24} />,
   },
-
-
 
   {
     name: "FrontDesk",

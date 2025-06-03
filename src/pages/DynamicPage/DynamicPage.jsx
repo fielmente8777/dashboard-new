@@ -28,12 +28,13 @@ import Eazobot from "../Eazobot/Eazobot";
 import ConversationalTool from "../ConversationalTool/ConversationalTool";
 import EmailMarketing from "../Marketing/EmailMarketing";
 import WhatsappMarketing from "../Marketing/WhatsappMarketing";
-import BookingEngine from "../BookingEngine/BookingEngine";
 import ThemesManager from "../Manager/ThemesManager";
 import ChannelManager from "../Manager/ChannelManager";
 import PaymentGateway from "../Gateways/PaymentGateway";
 import SocialMedia from "../Social/SocialMedia";
 import AnalyticsReporting from "../Analytics/AnalyticsReporting";
+import BookingEngine from "../BookingEngine/BookingEngine";
+import BookingSetup from "../BookingEngine/BookingSetup";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -54,6 +55,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/cms/offers`]: <Offers />,
     [`${BASE_PATH}/${hid}/cms/events`]: <Events />,
     [`${BASE_PATH}/${hid}/cms/blogs`]: <Blogs />,
+
+    // Bookin Engine
+    [`${BASE_PATH}/${hid}/booking-engine/all-bookings`]: <BookingEngine />,
+    [`${BASE_PATH}/${hid}/booking-engine/rooms-setup`]: <BookingSetup />,
 
     // GRM
     [`${BASE_PATH}/${hid}/grm/analytics`]: <GrmAnalytics />,
