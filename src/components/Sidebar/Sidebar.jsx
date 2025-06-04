@@ -354,6 +354,7 @@ const Sidebar = () => {
           : maniuplateSideBarData?.map((item, index) => {
               if (authUser?.isAdmin) {
                 const key = item.key;
+
                 if (key && !authUser?.accessScope[accessScopeMap[key]])
                   return null;
                 return (

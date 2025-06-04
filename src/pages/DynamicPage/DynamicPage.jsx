@@ -35,6 +35,7 @@ import SocialMedia from "../Social/SocialMedia";
 import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 import BookingEngine from "../BookingEngine/BookingEngine";
 import BookingSetup from "../BookingEngine/BookingSetup";
+import ReservationDesk from "../ReservationDesk/ReservationDesk";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -55,6 +56,12 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/cms/offers`]: <Offers />,
     [`${BASE_PATH}/${hid}/cms/events`]: <Events />,
     [`${BASE_PATH}/${hid}/cms/blogs`]: <Blogs />,
+
+
+    // Reservation Desk 
+
+    [`${BASE_PATH}/${hid}/reservation-desk`]: <ReservationDesk />,
+
 
     // Bookin Engine
     [`${BASE_PATH}/${hid}/booking-engine/all-bookings`]: <BookingEngine />,
