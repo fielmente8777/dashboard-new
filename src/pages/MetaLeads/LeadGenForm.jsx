@@ -62,7 +62,11 @@ const LeadGenForm = () => {
   const bannerHeadingRef = useRef(null);
 
   const dispatch = useDispatch();
-  const { data: LeadGenFormData } = useSelector((state) => state?.metaLeads);
+  const { data: LeadGenFormData, loading: isLeadGenFormLoading } = useSelector(
+    (state) => state?.metaLeads
+  );
+
+  console.log(isLeadGenFormLoading);
 
   // handleCreateLeadGenForm
 
@@ -209,13 +213,19 @@ const LeadGenForm = () => {
   // toggle the visibility for input fields
   const toggleVisibility = (e, lable) => {
     e.preventDefault();
-
+    setIsSelectedField(true);
     setFormData({
       ...formData,
       form_fields: formData.form_fields?.map((f) =>
         f.field_label === lable ? { ...f, status: !f.status } : f
       ),
     });
+
+    setEditFieldsData([
+      ...formData.form_fields?.map((f) =>
+        f.field_label === lable ? { ...f, status: !f.status } : f
+      ),
+    ]);
   };
 
   const handleUpdateChanges = async (e) => {
@@ -331,6 +341,7 @@ const LeadGenForm = () => {
 
   return (
     <div className="flex flex-col gap-4 p-4 overflow-hidden bg-white">
+      {/* heading content  */}
       <div className=" grid grid-cols-8 gap-6">
         <div className="space-y-1 col-span-5">
           <h2 className="font-semibold text-lg">Forms</h2>
@@ -354,6 +365,7 @@ const LeadGenForm = () => {
         </div>
       </div>
 
+      {/* table  */}
       <div>
         <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm">
           <thead>
@@ -381,39 +393,40 @@ const LeadGenForm = () => {
           </thead>
 
           <tbody className="bg-gray-500">
-            {LeadGenFormData?.map((formDetails, index) => (
-              <tr
-                key={index}
-                className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
-              >
-                {/* <td>
+            {LeadGenFormData?.length > 0 &&
+              LeadGenFormData?.map((formDetails, index) => (
+                <tr
+                  key={index}
+                  className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                >
+                  {/* <td>
                   <input type="checkbox" className="ml-4 text-md" />
                 </td> */}
-                <td className="text-gray-500 px-4 py-3">
-                  {formDetails?.title.slice(0, 20)}
-                </td>
-                <td className="text-gray-500 flex gap-2 items-center px-4 py-3">
-                  {/* <span><FaCopy onClick={() => { console.log("fhff") }} /></span> */}
-                  <Link
-                    to={formDetails?.form_url}
-                    target="_blank"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {formDetails?.form_url?.split("/").slice(0, 5).join("/")}
-                  </Link>
-                </td>
-                <td className="text-gray-500 px-4">{formDetails?.status}</td>
-                <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757]">
-                  {new Date(formDetails.created_at).toLocaleString("en-Ca", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </td>
+                  <td className="text-gray-500 px-4 py-3">
+                    {formDetails?.title.slice(0, 20)}
+                  </td>
+                  <td className="text-gray-500 flex gap-2 items-center px-4 py-3">
+                    {/* <span><FaCopy onClick={() => { console.log("fhff") }} /></span> */}
+                    <Link
+                      to={formDetails?.form_url}
+                      target="_blank"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {formDetails?.form_url?.split("/").slice(0, 5).join("/")}
+                    </Link>
+                  </td>
+                  <td className="text-gray-500 px-4">{formDetails?.status}</td>
+                  <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757]">
+                    {new Date(formDetails.created_at).toLocaleString("en-Ca", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </td>
 
-                <td>
-                  <div className="flex items-center gap-2">
-                    {/* <button
+                  <td>
+                    <div className="flex items-center gap-2">
+                      {/* <button
                       onClick={(e) => toggleVisibility(e, f.field_label)}
                       className="text-sm size-6 rounded-sm border border-gray-200 flex items-center justify-center hover:bg-[#A81681] hover:text-white duration-300 shadow-xl text-primary"
                       title="Visibility"
@@ -425,27 +438,41 @@ const LeadGenForm = () => {
                       )}
                     </button> */}
 
-                    <button
-                      className="text-sm size-6 rounded-sm border border-gray-200 flex items-center justify-center hover:bg-[#618ae4] hover:text-white duration-300 shadow-xl text-primary"
-                      title="Edit"
-                      onClick={(e) => handleEditForm(e, formDetails)}
-                    >
-                      <MdEditNote size={15} />
-                    </button>
+                      <button
+                        className="text-sm size-6 rounded-sm border border-gray-200 flex items-center justify-center hover:bg-[#618ae4] hover:text-white duration-300 shadow-xl text-primary"
+                        title="Edit"
+                        onClick={(e) => handleEditForm(e, formDetails)}
+                      >
+                        <MdEditNote size={15} />
+                      </button>
 
-                    <button
-                      onClick={() => handleDelete(formDetails.form_id)}
-                      className="text-sm size-6 rounded-sm border border-gray-200 flex items-center justify-center hover:bg-red-500 duration-300 hover:text-white shadow-xl text-primary"
-                      title="Delete"
-                    >
-                      <MdDeleteForever size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      <button
+                        onClick={() => handleDelete(formDetails.form_id)}
+                        className="text-sm size-6 rounded-sm border border-gray-200 flex items-center justify-center hover:bg-red-500 duration-300 hover:text-white shadow-xl text-primary"
+                        title="Delete"
+                      >
+                        <MdDeleteForever size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
+
+        {/* {LeadGenFormData?.length === 0 && (
+          <div className="flex justify-center items-center mt-2 font-medium text-gray-500 border-b pb-2">
+            <span>No Data Found!</span>
+          </div>
+        )} */}
+
+        {/* <div className="space-y-2">
+          {[1, 2, 3, 4, 5, 6, 7].map((index) => (
+            <div key={index}>
+              <p className="py-5 animate-pulse bg-gray-100"></p>
+            </div>
+          ))}
+        </div> */}
       </div>
 
       {formData && (
@@ -730,7 +757,7 @@ const LeadGenForm = () => {
                       />
                     </div>
 
-                    <div className="space-y-1">
+                    {/* <div className="space-y-1">
                       <label
                         htmlFor=""
                         className="font-medium text-primary text-sm"
@@ -756,7 +783,7 @@ const LeadGenForm = () => {
                         }}
                         className="border p-2 w-full outline-none border-primary/30 focus:border-primary/40 rounded-md"
                       />
-                    </div>
+                    </div> */}
 
                     <div className="space-y-1">
                       <label className="font-medium text-primary text-sm">

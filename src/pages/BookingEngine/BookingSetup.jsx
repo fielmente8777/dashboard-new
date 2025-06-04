@@ -69,34 +69,37 @@ const BookingSetup = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    let uploadedImageResponses = [];
-    console.log(images);
-    if (images?.length > 0) {
-      for (const img of images) {
-        try {
-          const base64String = await readFileAsDataURL(img);
-          const uploadResponse = await uploadToS3(base64String);
-          uploadedImageResponses.push(uploadResponse); // you can update this logic depending on what the API returns
-        } catch (error) {
-          console.error("Error reading/uploading file:", error);
-        }
-      }
-    }
-
-    console.log(uploadedImageResponses);
+    // let uploadedImageResponses = [];
+    // console.log(images);
+    // if (images?.length > 0) {
+    //   for (const img of images) {
+    //     try {
+    //       const base64String = await readFileAsDataURL(img);
+    //       const uploadResponse = await uploadToS3(base64String);
+    //       uploadedImageResponses.push(uploadResponse); // you can update this logic depending on what the API returns
+    //     } catch (error) {
+    //       console.error("Error reading/uploading file:", error);
+    //     }
+    //   }
+    // }
 
     const newRoomData = {
       roomType: formData?.roomType,
-      hId: handleLocalStorage("hid"),
+      hId: String(handleLocalStorage("hid")),
       roomName: formData?.roomName,
       roomDescription: formData?.roomDescription,
       child: formData?.child,
       adult: formData?.adult,
       noOfRooms: formData?.noOfRooms,
       price: formData?.price,
-      roomImage: images,
+      roomImage: [],
       roomFacilities: selectedFacilities,
       roomSubheading: formData?.roomSubheading,
+      isWeekendFormat: "false",
+      changedPrice: {
+        weekend: formData?.price,
+        weekday: formData?.price,
+      },
     };
 
     const response = await addRoom(newRoomData);

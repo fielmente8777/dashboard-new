@@ -253,14 +253,15 @@ const Sidebar = () => {
                           return (
                             <div
                               key={key + 1}
-                              className={`cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2 ${
+                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${
                                 isCurrentLocation
-                                  ? "bg-[#ebf0f7]"
-                                  : "bg-gray-50"
+                                  ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                                  : "bg-gray-200 cursor-pointer"
                               }`}
-                              onClick={(e) =>
-                                handleSelectLocation(e, value, key)
-                              }
+                              onClick={(e) => {
+                                if (!isCurrentLocation)
+                                  handleSelectLocation(e, value, key);
+                              }}
                             >
                               <h2 className="text-[16px] font-medium">
                                 {hotel?.Profile?.hotelName || "Eazotel"}
@@ -295,11 +296,14 @@ const Sidebar = () => {
                           <div
                             key={index + 1}
                             className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                              isCurrentLocation ? "bg-[#ebf0f7]" : "bg-gray-50"
+                              isCurrentLocation
+                                ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                                : "bg-gray-200 cursor-pointer"
                             }`}
-                            onClick={(e) =>
-                              handleSelectLocation(e, value, location?.hid)
-                            }
+                            onClick={(e) => {
+                              if (!isCurrentLocation)
+                                handleSelectLocation(e, value, location?.hid);
+                            }}
                           >
                             <h2 className="text-[16px] font-medium">
                               {hotel?.Profile?.hotelName || "Eazotel"}

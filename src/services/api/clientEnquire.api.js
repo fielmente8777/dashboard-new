@@ -1,11 +1,12 @@
 import { BASE_URL } from "../../data/constant";
 
 // handle api for getting all client enquires
-export const getAllClientEnquires = async (
+export const getAllClientEnquires = async ({
   token,
   name = null,
-  status = null
-) => {
+  status = null,
+  hid,
+}) => {
   try {
     let queryParams = [];
     if (name) {
@@ -17,8 +18,9 @@ export const getAllClientEnquires = async (
     }
 
     const queryString =
-      queryParams.length > 0 ? `?${queryParams.join("&")}` : "";
-    const link = `${BASE_URL}/eazotel/get-all-contact-queries${queryString}`;
+      queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
+    const link = `${BASE_URL}/eazotel/get-all-contact-queries?hId=${hid}${queryString}`;
+    console.log(link);
     const response = await fetch(link, {
       method: "GET", // or "POST" if you're sending data
       headers: {

@@ -5,7 +5,6 @@ import Sidebar from "../components/Sidebar/Sidebar";
 
 export default function DashboardLayout({ children }) {
   const { isOpen } = useSelector((state) => state.toggle);
-
   return (
     <div>
       <div className="flex gap-4 overflow-hidden h-screen">

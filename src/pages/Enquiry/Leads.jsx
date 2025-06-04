@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import LeadPopup from "../../components/Popup/LeadPopup";
 import { Search } from "../../icons/icon";
-import { getAllClientEnquires } from "../../services/api";
 import { formatDateTime } from "../../services/formateDate";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 // import FilterPopup from '../../components/Popup/FilterPopup';
 
 export const extractBookingInfo = (input) => {
@@ -39,7 +40,11 @@ const Leads = () => {
   const fetchEnquires = async (token) => {
     setLoading(true);
     try {
-      const response = await getAllClientEnquires(token);
+      const hid = handleLocalStorage("hid");
+      const response = await getAllClientEnquires({
+        token,
+        hid,
+      });
       setEnquires(response);
     } catch (error) {
       console.error("Error fetching enquires:", error);

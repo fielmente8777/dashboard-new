@@ -36,11 +36,12 @@ export const getApplicants = async (token) => {
   }
 };
 
-export const getAllClientEnquires = async (
+export const getAllClientEnquires = async ({
   token,
   name = null,
-  status = null
-) => {
+  status = null,
+  hid,
+}) => {
   try {
     let queryParams = [];
     if (name) {
