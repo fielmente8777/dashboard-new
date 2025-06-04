@@ -50,6 +50,7 @@ const LeadGenForm = () => {
   const [editField, setEditField] = useState(null);
   const [editFieldsData, setEditFieldsData] = useState([]);
   const [index, setIndex] = useState(null);
+  const [isLocalUpdate, setIsLocalUpdate] = useState(false);
 
   const [base64Image, setBase64Image] = useState(null);
   const [base64CoverImage, setBase64CoverImage] = useState(null);
@@ -219,10 +220,12 @@ const LeadGenForm = () => {
 
   const handleUpdateChanges = async (e) => {
     e.preventDefault();
-    setFormData({
-      ...formData,
-      form_fields: editFieldsData,
-    });
+    if (isLocalUpdate) {
+      setFormData({
+        ...formData,
+        form_fields: editFieldsData,
+      });
+    }
   };
 
   const handleFileChangeLogoImage = async (e) => {
@@ -289,6 +292,9 @@ const LeadGenForm = () => {
           confirmButtonText: "OK",
         });
         setFormData(null);
+        setEditField(null);
+        setIsLocalUpdate(false);
+        setEditFieldsData([]);
         dispatch(
           fetchLeadGenForm(
             handleLocalStorage("token"),
@@ -685,6 +691,7 @@ const LeadGenForm = () => {
                         name="label"
                         value={editFieldsData[index]?.field_label}
                         onChange={(e) => {
+                          setIsLocalUpdate(true);
                           setEditFieldsData((prevFields) => {
                             const updatedFields = [...prevFields];
                             updatedFields[index] = {
@@ -710,6 +717,7 @@ const LeadGenForm = () => {
                         value={editFieldsData[index]?.field_placeholder}
                         onChange={(e) => {
                           setEditFieldsData((prevFields) => {
+                            setIsLocalUpdate(true);
                             const updatedFields = [...prevFields];
                             updatedFields[index] = {
                               ...updatedFields[index],
@@ -737,6 +745,7 @@ const LeadGenForm = () => {
                         value={editFieldsData[index]?.index}
                         onChange={(e) => {
                           setEditFieldsData((prevFields) => {
+                            setIsLocalUpdate(true);
                             const updatedFields = [...prevFields];
                             updatedFields[index] = {
                               ...updatedFields[index],
@@ -760,6 +769,7 @@ const LeadGenForm = () => {
                         name="placeholder"
                         value={editFieldsData[index]?.step}
                         onChange={(e) => {
+                          setIsLocalUpdate(true);
                           setEditFieldsData((prevFields) => {
                             const updatedFields = [...prevFields];
                             updatedFields[index] = {
@@ -827,8 +837,11 @@ const LeadGenForm = () => {
                     </label>
 
                     <button
+                      disabled={!isLocalUpdate}
                       onClick={handleUpdateChanges}
-                      className="relative inline-flex items-center justify-center px-6 py-2 mt-4 text-white font-semibold rounded-sm bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg overflow-hidden transition-all duration-300 group"
+                      className={`relative inline-flex items-center justify-center px-6 py-2 mt-4 text-white font-semibold rounded-sm bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg overflow-hidden transition-all duration-300 group ${
+                        !isLocalUpdate && "opacity-40"
+                      }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                       <span className="relative z-10">Update Chagnges</span>
@@ -840,7 +853,12 @@ const LeadGenForm = () => {
 
             <div
               className="absolute right-2 top-0 size-8 rounded-sm bg-gray-600 flex justify-center items-center text-white font-semibold cursor-pointer"
-              onClick={() => setFormData(null)}
+              onClick={() => {
+                setFormData(null);
+                setEditField(null);
+                setIsLocalUpdate(false);
+                setEditFieldsData([]);
+              }}
             >
               <span>X</span>
             </div>

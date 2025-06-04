@@ -28,9 +28,9 @@ const GlobalDataProvider = () => {
       dispatch(fetchAuthUserProfile(token));
       dispatch(fetchUserProfile(token));
 
-      if (hid) navigate(`${BASE_PATH}/${hid}`);
+      if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
     }
-  }, [token, hid]);
+  }, [token]);
 
   useEffect(() => {
     if (hotel?.Data?.ndid) {
@@ -48,6 +48,10 @@ const GlobalDataProvider = () => {
       }
     }
   }, [hotel]);
+
+  useEffect(() => {
+    if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
+  }, [hid]);
 
   return null;
 };

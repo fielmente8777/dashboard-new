@@ -99,6 +99,11 @@ const Sidebar = () => {
   const handleAddNewLocation = (e) => {
     e.stopPropagation();
 
+    if (hotel?.Profile?.multilocation) {
+      setIsOpenForm(true);
+      return;
+    }
+
     if (hotel?.Profile?.multilocation === undefined) {
       setIsOpenForm(true);
       return;
@@ -281,7 +286,6 @@ const Sidebar = () => {
                     {authUser?.assigned_location?.map((location, index) => {
                       if (hotel?.Profile?.hotels[location?.hid]) {
                         const value = hotel?.Profile?.hotels[location?.hid];
-
                         const isCurrentLocation =
                           value?.city === currentLocation?.city &&
                           value?.state === currentLocation?.state &&
