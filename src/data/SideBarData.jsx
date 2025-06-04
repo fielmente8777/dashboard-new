@@ -1,9 +1,5 @@
 import { FaFilePdf, FaWhatsappSquare, FaThemeco } from "react-icons/fa";
-import {
-  FaCircleQuestion,
-  FaCodePullRequest,
-  FaCommentSms,
-} from "react-icons/fa6";
+import { FaCircleQuestion, FaCodePullRequest, FaCommentSms } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
 import { MdEmergencyShare, MdOutlineSos } from "react-icons/md";
@@ -17,7 +13,7 @@ import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
 import { TbSeo } from "react-icons/tb";
-// import { TiSocialSkype } from "react-icons/ti";
+import { TiSocialSkype } from "react-icons/ti";
 import { RiWechatChannelsLine } from "react-icons/ri";
 import { CgProfile } from "react-icons/cg";
 import { RiFolderUserFill } from "react-icons/ri";
@@ -119,6 +115,19 @@ export const SidebarData = [
         icon: <FaCodePullRequest size={16} />,
       },
     ],
+  },
+  {
+    name: "Reservation Desk",
+    link: `reservation-desk`,
+    key: "Reservation Desk",
+    icon: <MdAnalytics size={24} />,
+    // subLinks: [
+    //   {
+    //     name: "Enquiries",
+    //     link: `enquiries-management/enquiries`,
+    //     icon: <FaCircleQuestion size={18} />,
+    //   },
+    // ],
   },
 
   {
@@ -232,7 +241,7 @@ export const SidebarData = [
     name: "Social Media",
     key: "Social Media",
     link: `social-media`,
-    // icon: <TiSocialSkype size={24} />,
+    icon: <TiSocialSkype size={24} />,
   },
 
   {
