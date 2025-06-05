@@ -190,12 +190,7 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "User Management",
-    key: "User Management",
-    link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
+
 
   {
     name: "Analytics & Reporting",
@@ -222,6 +217,12 @@ export const SidebarData = [
         icon: <SiGoogleanalytics size={16} />,
       },
     ],
+  },
+  {
+    name: "User Management",
+    key: "User Management",
+    link: `user-management/all-users`,
+    icon: <HiOutlineUserGroup size={22} />,
   },
 
   {

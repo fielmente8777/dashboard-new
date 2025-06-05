@@ -87,7 +87,7 @@ const LeadAnalytics = () => {
 
   const colors = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
-  console.log(enquires);
+  // console.log(enquires);
 
   return (
     <div className="bg-white p-4">

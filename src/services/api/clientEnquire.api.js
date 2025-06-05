@@ -20,7 +20,7 @@ export const getAllClientEnquires = async ({
     const queryString =
       queryParams.length > 0 ? `&${queryParams.join("&")}` : "";
     const link = `${BASE_URL}/eazotel/get-all-contact-queries?hId=${hid}${queryString}`;
-    console.log(link);
+    // console.log(link);
     const response = await fetch(link, {
       method: "GET", // or "POST" if you're sending data
       headers: {
