@@ -27,7 +27,6 @@ const GlobalDataProvider = () => {
       dispatch(fetchWebsiteData(token, HID));
       dispatch(fetchAuthUserProfile(token));
       dispatch(fetchUserProfile(token));
-
       if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
     }
   }, [token]);

@@ -1,5 +1,3 @@
-import React from "react";
-
 const Loader = ({ size = 20, color = "#000" }) => {
   return (
     <div
