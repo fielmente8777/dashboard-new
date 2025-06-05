@@ -21,9 +21,183 @@ const ReservationDesk = () => {
     fetchBookingsData();
   }, []);
 
+
+
+
+  const [filters, setFilters] = useState({
+    dateType: 'booking',
+    fromDate: '',
+    toDate: '',
+    bookingId: '',
+    guestName: '',
+    contact: '',
+    bookingStatus: 'all',
+    paymentStatus: 'all',
+  });
+
+  const resetFilters = () => {
+    setFilters({
+      dateType: 'booking',
+      fromDate: '',
+      toDate: '',
+      bookingId: '',
+      guestName: '',
+      contact: '',
+      bookingStatus: 'all',
+      paymentStatus: 'all',
+    });
+  };
+
+  const handleChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const applyFilters = () => {
+
+    console.log('Applying filters:', filters);
+    // Implement actual filter logic or API calls here
+  };
+
   console.log(bookingData);
   return (
     <div className="bg-white p-4">
+
+      <h2 className="text-xl font-semibold mb-4">🔍 Filter Bookings</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Date Type Selection */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">📅 Date Type</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-1">
+              <input type="radio" name="dateType" value="booking" checked={filters.dateType === 'booking'} onChange={handleChange} />
+              Booking
+            </label>
+            <label className="flex items-center gap-1">
+              <input type="radio" name="dateType" value="checkin" checked={filters.dateType === 'checkin'} onChange={handleChange} />
+              Check-in
+            </label>
+            <label className="flex items-center gap-1">
+              <input type="radio" name="dateType" value="checkout" checked={filters.dateType === 'checkout'} onChange={handleChange} />
+              Check-out
+            </label>
+          </div>
+        </div>
+
+        {/* Date Pickers */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col flex-1">
+            <label className="text-sm font-medium mb-1">📆 From</label>
+            <input
+              type="date"
+              name="fromDate"
+              value={filters.fromDate}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2"
+            />
+          </div>
+          <div className="flex flex-col flex-1">
+            <label className="text-sm font-medium mb-1">To</label>
+            <input
+              type="date"
+              name="toDate"
+              value={filters.toDate}
+              onChange={handleChange}
+              className="border rounded-lg px-3 py-2"
+            />
+          </div>
+        </div>
+
+        {/* Booking ID */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">🔢 Booking ID</label>
+          <input
+            type="text"
+            name="bookingId"
+            value={filters.bookingId}
+            onChange={handleChange}
+            placeholder="Enter booking ID"
+            className="border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        {/* Guest Name */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">🧑 Guest Name</label>
+          <input
+            type="text"
+            name="guestName"
+            value={filters.guestName}
+            onChange={handleChange}
+            placeholder="Enter guest name"
+            className="border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        {/* Contact */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">📞 Email / Phone</label>
+          <input
+            type="text"
+            name="contact"
+            value={filters.contact}
+            onChange={handleChange}
+            placeholder="Enter email or phone"
+            className="border rounded-lg px-3 py-2"
+          />
+        </div>
+
+        {/* Booking Status */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">📌 Booking Status</label>
+          <select
+            name="bookingStatus"
+            value={filters.bookingStatus}
+            onChange={handleChange}
+            className="border rounded-lg px-3 py-2"
+          >
+            <option value="all">All</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+
+        {/* Payment Status */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1">💰 Payment Status</label>
+          <select
+            name="paymentStatus"
+            value={filters.paymentStatus}
+            onChange={handleChange}
+            className="border rounded-lg px-3 py-2"
+          >
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div className="flex justify-end gap-4 mt-6">
+        <button
+          onClick={resetFilters}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg"
+        >
+          🔄 Reset Filters
+        </button>
+        <button
+          onClick={applyFilters}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
+        >
+          🔍 Apply Filters
+        </button>
+      </div>
+
+
+
       {/* <h1>ReservationDesk</h1> */}
 
       <div>
@@ -98,14 +272,14 @@ const ReservationDesk = () => {
                 >
                   <td
                     className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
-                    // onClick={() => handleInfoPopup(row)}
+                  // onClick={() => handleInfoPopup(row)}
                   >
                     {" "}
                     <a>{row?.bookingId}</a>{" "}
                   </td>
                   <td
                     className="py-3 px-4 text-[14px]  text-[#575757]"
-                    // onClick={() => handleInfoPopupII(row)}
+                  // onClick={() => handleInfoPopupII(row)}
                   >
                     {row?.guestInfo?.guestName}
                   </td>
@@ -169,13 +343,13 @@ const ReservationDesk = () => {
                     ) : (
                       <button
                         className="btn btn-primary"
-                        // onClick={() => {
-                        //     BookingCehckinStatus(
-                        //         row.bookingId,
-                        //         "true",
-                        //         "false"
-                        //     );
-                        // }}
+                      // onClick={() => {
+                      //     BookingCehckinStatus(
+                      //         row.bookingId,
+                      //         "true",
+                      //         "false"
+                      //     );
+                      // }}
                       >
                         Check In
                       </button>
@@ -192,13 +366,13 @@ const ReservationDesk = () => {
                     ) : (
                       <button
                         className="btn btn-primary"
-                        // onClick={() => {
-                        //     BookingCehckinStatus(
-                        //         row.bookingId,
-                        //         "true",
-                        //         "true"
-                        //     );
-                        // }}
+                      // onClick={() => {
+                      //     BookingCehckinStatus(
+                      //         row.bookingId,
+                      //         "true",
+                      //         "true"
+                      //     );
+                      // }}
                       >
                         Check Out
                       </button>
