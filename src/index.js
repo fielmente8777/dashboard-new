@@ -14,7 +14,7 @@ root.render(
     <DataProvider>
       <BrowserRouter>
         <GlobalDataProvider />
-        <Whatsapp whatsAppNumber={"9528295631"} />
+        <Whatsapp whatsAppNumber={"+919501868775"} />
         <App />
       </BrowserRouter>
     </DataProvider>
