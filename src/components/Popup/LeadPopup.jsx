@@ -5,6 +5,11 @@ import { Arrow } from "../../icons/icon";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { extractBookingInfo } from "../../pages/Enquiry/Leads";
+import { MdMailOutline } from "react-icons/md";
+import { MdMail } from "react-icons/md";
+import { FaPhoneFlip } from "react-icons/fa6";
+import { FaPhone } from "react-icons/fa6";
+import { FaUser } from "react-icons/fa";
 
 const LeadPopup = ({
   hotelName = "Eazotel",
@@ -138,56 +143,86 @@ const LeadPopup = ({
         <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
           <div>
             <h1 className="font-medium text-[#575757]">Customer Info</h1>
-            <div className=" grid gap-4 shadow-sm p-4 rounded-sm mt-2 text-base bg-white">
-              <div>
-                <p className=" font-medium text-[#575757]">Mobile Number:</p>
-                <p className="text-[#575757]/70">{lead?.Contact}</p>
-              </div>
-
-              <div>
-                <p className=" font-medium text-[#575757]">Email Address:</p>
-                <p className="text-[#575757]/70">{lead?.Email}</p>
-              </div>
-
-              <div className="flex flex-col gap-2 text-[#575757]">
-                <div className="flex items-center gap-1">
-                  <span className="font-medium text-[#575757]">
-                    Check In :{" "}
-                  </span>
-                  <p>
-                    {lead?.check_in
-                      ? lead?.check_in
-                      : extractBookingInfo(lead?.Message).checkIn
-                      ? extractBookingInfo(lead?.Message).checkIn
-                      : "-"}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[#575757] font-semibold">
-                    Check Out :
-                  </span>
-                  <p>
-                    {lead?.check_out
-                      ? lead?.check_out
-                      : extractBookingInfo(lead?.Message).checkOut
-                      ? extractBookingInfo(lead?.Message).checkOut
-                      : "-"}
-                  </p>
-                </div>
-
+            <div className=" grid gap-4 shadow-sm p-4 rounded-sm mt-2 text-base bg-white divide-y">
+              <div className="flex items-center gap-2 justify-between">
                 <div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[#575757] font-semibold">
-                      Number of Guests :
-                    </span>
-                    <p>
-                      {lead?.number_of_guest
-                        ? lead?.number_of_guest
-                        : extractBookingInfo(lead?.Message).guests
-                        ? extractBookingInfo(lead?.Message).guests
-                        : "-"}
-                    </p>
+                  <p className=" font-medium text-[#575757]">Mobile Number:</p>
+                  <Link
+                    to={`tel:${lead?.Contact}`}
+                    className="text-[#575757]/70"
+                  >
+                    {lead?.Contact}
+                  </Link>
+                </div>
+
+                <Link to={`tel:${lead?.Contact}`} className="text-primary">
+                  <FaPhone size={18} />
+                </Link>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-2">
+                <div>
+                  <p className=" font-medium text-[#575757]"> Email Address:</p>
+                  <Link
+                    to={`mailto:${lead?.Email}`}
+                    className="text-[#575757]/70 flex items-center gap-1 "
+                  >
+                    {lead?.Email}
+                  </Link>
+                </div>
+
+                <Link to={`mailto:${lead?.Email}`} className="text-primary">
+                  <MdMail size={22} />
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-2 text-[#575757] pt-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-[#575757]">
+                        Check In :{" "}
+                      </span>
+                      <p>
+                        {lead?.check_in
+                          ? lead?.check_in
+                          : extractBookingInfo(lead?.Message).checkIn
+                          ? extractBookingInfo(lead?.Message).checkIn
+                          : "-"}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#575757] font-semibold">
+                        Check Out :
+                      </span>
+                      <p>
+                        {lead?.check_out
+                          ? lead?.check_out
+                          : extractBookingInfo(lead?.Message).checkOut
+                          ? extractBookingInfo(lead?.Message).checkOut
+                          : "-"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[#575757] font-semibold">
+                          Number of Guests :
+                        </span>
+                        <p>
+                          {lead?.number_of_guest
+                            ? lead?.number_of_guest
+                            : extractBookingInfo(lead?.Message).guests
+                            ? extractBookingInfo(lead?.Message).guests
+                            : "-"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-primary">
+                    <FaUser size={22} />
                   </div>
                 </div>
               </div>
@@ -215,18 +250,9 @@ const LeadPopup = ({
           </div>
         </div>
 
-        <div className="flex justify-between mt-4">
-          <div className="flex gap-5">
+        <div className="grid grid-cols-2 items-center mt-3">
+          <div className="flex justify-between gap-5">
             <div className=" gap-4">
-              {/* <button
-                                className="py-2 px-3 gap-2 w-[150px] bg-green-600 justify-between rounded-sm flex items-center capitalize text-base font-medium text-white">
-
-                                Status
-                                <div className="-rotate-90">
-                                    <Arrow size={20} className="-rotate-90" />
-                                </div>
-                            </button> */}
-
               <select
                 className="py-2 px-3 gap-2 w-[150px] bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
                 onChange={(e) => handleQueryStatus(e.target.value)}
@@ -246,6 +272,7 @@ const LeadPopup = ({
                 </option>
               </select>
             </div>
+
             {lead.Contact && (
               <div>
                 <Link
@@ -259,7 +286,7 @@ const LeadPopup = ({
             )}
           </div>
 
-          <div className="flex gap-5">
+          <div className="flex justify-end items-center gap-5">
             <button
               className="bg-red-900 hover:bg-red-900/90 text-white px-4 py-2 rounded-sm"
               onClick={() => handleDelete(lead._id, lead.Email)}
