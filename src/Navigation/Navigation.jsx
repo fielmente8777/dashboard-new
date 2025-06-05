@@ -6,6 +6,7 @@ import Dashboard from "../pages/Home/Dashboard";
 import Login from "../pages/Login/Login";
 import ProtectedRoute from "../Protected/ProtecRoute";
 import RootRoute from "./RootRoute";
+import Whatsapp from "../components/Contacts/WhtasApp";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";

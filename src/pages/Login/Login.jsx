@@ -159,9 +159,17 @@ const Login = () => {
 
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
                     {showPassword ? (
-                      <AiOutlineEye size={20} onClick={togglePassword} className="text-gray-400" />
+                      <AiOutlineEye
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
                     ) : (
-                      <HiOutlineEyeOff size={20} onClick={togglePassword} className="text-gray-400" />
+                      <HiOutlineEyeOff
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
                     )}
                   </div>
                 </div>
@@ -191,7 +199,6 @@ const Login = () => {
           </form>
         </div>
       </div>
-      <Whatsapp whatsAppNumber={"9528295631"} />
     </div>
   );
 };

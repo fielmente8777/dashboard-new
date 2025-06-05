@@ -129,7 +129,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
   return (
     <div>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <form
             onSubmit={handleFormSubmit}
             className="relative max-w-xl w-full mx-auto bg-white/95 py-7 px-5 rounded-lg space-y-6"

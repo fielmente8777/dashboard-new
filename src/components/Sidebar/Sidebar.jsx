@@ -157,10 +157,12 @@ const Sidebar = () => {
           (loc) => loc.hid === String(handleLocalStorage("hid"))
         )[0];
 
+        console.log(assignedLocation);
+
         return {
           ...item,
           subLinks: item?.subLinks?.filter(
-            (sub) => (sub) => authUser?.accessScope[accessScopeMap[sub.key]]
+            (sub) => assignedLocation?.accessScope[accessScopeMap[sub.key]]
           ),
         };
       }
@@ -170,6 +172,8 @@ const Sidebar = () => {
       ...item,
     };
   });
+
+  console.log(maniuplateSideBarData);
 
   return (
     <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-gray-100">
@@ -591,7 +595,7 @@ const Sidebar = () => {
                           item.subLinks.map((subLink, index) => {
                             if (
                               subLink?.key &&
-                              !authUser?.accessScope[
+                              !currentLocationAccessScope?.accessScope[
                                 accessScopeMap[subLink?.key]
                               ]
                             )
