@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { MdRefresh } from "react-icons/md";
 import LeadPopup from "../../components/Popup/LeadPopup";
-import { Search } from "../../icons/icon";
+import { Arrow, Filter, Search } from "../../icons/icon";
 import { formatDateTime } from "../../services/formateDate";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
-// import FilterPopup from '../../components/Popup/FilterPopup';
+import FilterPopup from "../../components/Popup/FilterPopup";
 
 export const extractBookingInfo = (input) => {
   const parts = input.split(",");
@@ -102,26 +102,31 @@ const Leads = () => {
     setLoading(true);
     setActive(index);
     const token = localStorage.getItem("token");
+    const hid = handleLocalStorage("hid");
     try {
       if (index === 0) {
-        const response = await getAllClientEnquires(token, searchTerm);
+        const response = await getAllClientEnquires({ token, hid });
         setEnquires(response);
       } else if (index === 1) {
-        const response = await getAllClientEnquires(token, searchTerm, "Open");
+        const response = await getAllClientEnquires({
+          token,
+          hid,
+          status: "Open",
+        });
         setEnquires(response);
       } else if (index === 2) {
-        const response = await getAllClientEnquires(
+        const response = await getAllClientEnquires({
           token,
-          searchTerm,
-          "Contacted"
-        );
+          hid,
+          status: "Contacted",
+        });
         setEnquires(response);
       } else if (index === 3) {
-        const response = await getAllClientEnquires(
+        const response = await getAllClientEnquires({
           token,
-          searchTerm,
-          "Converted"
-        );
+          hid,
+          status: "Converted",
+        });
         setEnquires(response);
       }
     } catch (error) {
@@ -171,6 +176,20 @@ const Leads = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
+          {/* <div>
+            <button
+              onClick={() => setOpen(!open)}
+              className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <Filter className="w-2 h-2" /> Filter
+              </span>
+              <span className="text-[#575757] text-[14px] font-semibold rotate-180">
+                <Arrow />
+              </span>
+            </button>
+          </div> */}
         </div>
 
         {!loading ? (
@@ -288,7 +307,7 @@ const Leads = () => {
               ) : (
                 <tr className="bg-white text-gray-600 text-center border">
                   <td colSpan={6} className="py-2">
-                    No data found!
+                    Data not found!
                   </td>
                 </tr>
               )}
@@ -304,6 +323,7 @@ const Leads = () => {
           </div>
         )}
       </div>
+
       {/* <FilterPopup open={open} setOpen={setOpen} /> */}
       <LeadPopup
         isOpen={isPopupOpen}
@@ -318,13 +338,3 @@ const Leads = () => {
 };
 
 export default Leads;
-
-/* <button onClick={() => setOpen(!open)} className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between">
-                        <span className="flex items-center gap-2"><Filter className="w-2 h-2" /> Filter</span>
-                        <span className="text-[#575757] text-[14px] font-semibold rotate-180"><Arrow /></span>
-                    </button> */
-
-/* <button onClick={() => setOpen(!open)} className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between">
-                        <span className="flex items-center gap-2"><Filter className="w-2 h-2" /> Filter</span>
-                        <span className="text-[#575757] text-[14px] font-semibold rotate-180"><Arrow /></span>
-                    </button> */

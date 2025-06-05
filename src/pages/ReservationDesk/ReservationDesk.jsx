@@ -23,29 +23,27 @@ const ReservationDesk = () => {
     fetchBookingsData();
   }, []);
 
-
-
   const [filters, setFilters] = useState({
-    dateType: 'booking',
-    fromDate: '',
-    toDate: '',
-    bookingId: '',
-    guestName: '',
-    contact: '',
-    bookingStatus: 'all',
-    paymentStatus: 'all',
+    dateType: "booking",
+    fromDate: "",
+    toDate: "",
+    bookingId: "",
+    guestName: "",
+    contact: "",
+    bookingStatus: "all",
+    paymentStatus: "all",
   });
 
   const resetFilters = () => {
     setFilters({
-      dateType: 'booking',
-      fromDate: '',
-      toDate: '',
-      bookingId: '',
-      guestName: '',
-      contact: '',
-      bookingStatus: 'all',
-      paymentStatus: 'all',
+      dateType: "booking",
+      fromDate: "",
+      toDate: "",
+      bookingId: "",
+      guestName: "",
+      contact: "",
+      bookingStatus: "all",
+      paymentStatus: "all",
     });
   };
 
@@ -54,17 +52,12 @@ const ReservationDesk = () => {
   };
 
   const applyFilters = () => {
-    console.log('Applying filters:', filters);
+    console.log("Applying filters:", filters);
     // Implement actual filter logic or API calls here
   };
 
-
-
-
   return (
     <div className="bg-white p-4">
-
-
       <h2 className="text-xl font-semibold mb-4">🔍 Filter Bookings</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -73,15 +66,33 @@ const ReservationDesk = () => {
           <label className="text-sm font-medium mb-1">📅 Date Type</label>
           <div className="flex gap-4">
             <label className="flex items-center gap-1">
-              <input type="radio" name="dateType" value="booking" checked={filters.dateType === 'booking'} onChange={handleChange} />
+              <input
+                type="radio"
+                name="dateType"
+                value="booking"
+                checked={filters.dateType === "booking"}
+                onChange={handleChange}
+              />
               Booking
             </label>
             <label className="flex items-center gap-1">
-              <input type="radio" name="dateType" value="checkin" checked={filters.dateType === 'checkin'} onChange={handleChange} />
+              <input
+                type="radio"
+                name="dateType"
+                value="checkin"
+                checked={filters.dateType === "checkin"}
+                onChange={handleChange}
+              />
               Check-in
             </label>
             <label className="flex items-center gap-1">
-              <input type="radio" name="dateType" value="checkout" checked={filters.dateType === 'checkout'} onChange={handleChange} />
+              <input
+                type="radio"
+                name="dateType"
+                value="checkout"
+                checked={filters.dateType === "checkout"}
+                onChange={handleChange}
+              />
               Check-out
             </label>
           </div>
@@ -270,14 +281,14 @@ const ReservationDesk = () => {
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
-                      // onClick={() => handleInfoPopup(row)}
+                        // onClick={() => handleInfoPopup(row)}
                       >
                         {" "}
                         <a>{row?.bookingId}</a>{" "}
                       </td>
                       <td
                         className="py-3 px-4 text-[14px]  text-[#575757]"
-                      // onClick={() => handleInfoPopupII(row)}
+                        // onClick={() => handleInfoPopupII(row)}
                       >
                         {row?.guestInfo?.guestName}
                       </td>
@@ -341,13 +352,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                          // onClick={() => {
-                          //     BookingCehckinStatus(
-                          //         row.bookingId,
-                          //         "true",
-                          //         "false"
-                          //     );
-                          // }}
+                            // onClick={() => {
+                            //     BookingCehckinStatus(
+                            //         row.bookingId,
+                            //         "true",
+                            //         "false"
+                            //     );
+                            // }}
                           >
                             Check In
                           </button>
@@ -364,13 +375,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                          // onClick={() => {
-                          //     BookingCehckinStatus(
-                          //         row.bookingId,
-                          //         "true",
-                          //         "true"
-                          //     );
-                          // }}
+                            // onClick={() => {
+                            //     BookingCehckinStatus(
+                            //         row.bookingId,
+                            //         "true",
+                            //         "true"
+                            //     );
+                            // }}
                           >
                             Check Out
                           </button>

@@ -46,6 +46,7 @@ const Profile = () => {
   }
 
   function handleChnageDataAccounts(value, fieldName) {
+    console.log(value, fieldName);
     setwebsiteFooterData({
       ...websiteFooterData,
       [fieldName]: value,
@@ -194,6 +195,23 @@ const Profile = () => {
       });
   };
 
+  useEffect(() => {
+    if (currentLoactionWebsiteData) {
+      console.log(currentLoactionWebsiteData);
+      setwebsiteFooterData({
+        ...currentLoactionWebsiteData?.Details?.Footer,
+      });
+
+      setwebsiteLinksData({
+        ...currentLoactionWebsiteData?.Details?.Links,
+      });
+
+      setwebsiteReviewsData({
+        ...currentLoactionWebsiteData?.Details?.Reviews,
+      });
+    }
+  }, [currentLoactionWebsiteData]);
+
   return (
     <>
       {loading ? (
@@ -258,7 +276,7 @@ const Profile = () => {
                     </label>
                     <input
                       type="text"
-                      value={currentLoactionWebsiteData?.Details.Footer[key]}
+                      value={websiteFooterData && websiteFooterData[key]}
                       onChange={(e) =>
                         handleChnageDataAccounts(e.target.value, key)
                       }
@@ -271,8 +289,6 @@ const Profile = () => {
             </div>
             {/* Left Section */}
             <div className="md:w-5/12 flex flex-col gap-5">
-              {/* Profile Image and Button */}
-
               {/* Social Links */}
               <div className="border border-gray-300 rounded-lg p-4 bg-white space-y-4">
                 {[
@@ -297,7 +313,7 @@ const Profile = () => {
                     </label>
                     <input
                       type="text"
-                      value={currentLoactionWebsiteData?.Details?.Links[key]}
+                      value={websiteLinksData && websiteLinksData[key]}
                       onChange={(e) =>
                         handleChangeSocialAccount(e.target.value, key)
                       }
@@ -343,7 +359,7 @@ const Profile = () => {
                     </label>
                     <input
                       type="text"
-                      value={currentLoactionWebsiteData?.Details?.Reviews[key]}
+                      value={websiteReviewsData && websiteReviewsData[key]}
                       onChange={(e) =>
                         handleChnageInbuiltCodes(e.target.value, key)
                       }

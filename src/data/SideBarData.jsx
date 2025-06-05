@@ -1,5 +1,9 @@
 import { FaFilePdf, FaWhatsappSquare, FaThemeco } from "react-icons/fa";
-import { FaCircleQuestion, FaCodePullRequest, FaCommentSms } from "react-icons/fa6";
+import {
+  FaCircleQuestion,
+  FaCodePullRequest,
+  FaCommentSms,
+} from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
 import { MdEmergencyShare, MdOutlineSos } from "react-icons/md";
@@ -95,11 +99,6 @@ export const SidebarData = [
     icon: <SiGoogleearthengine size={20} />,
     subLinks: [
       {
-        name: "Bookings",
-        link: `booking-engine/all-bookings`,
-        icon: <FaCodePullRequest size={16} />,
-      },
-      {
         name: "Rooms & Inventory",
         link: `booking-engine/rooms-and-inventory`,
         icon: <MdOutlineInventory size={18} />,
@@ -108,11 +107,6 @@ export const SidebarData = [
         name: "Rooms Setup",
         link: `booking-engine/rooms-setup`,
         icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Content Manager",
-        link: `booking-engine/content-manager`,
-        icon: <FaCodePullRequest size={16} />,
       },
     ],
   },
