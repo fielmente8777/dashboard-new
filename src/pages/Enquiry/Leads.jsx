@@ -5,6 +5,7 @@ import { Search } from "../../icons/icon";
 import { formatDateTime } from "../../services/formateDate";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
+import ResizableTable from "../../components/Table/ResizableTable";
 // import FilterPopup from '../../components/Popup/FilterPopup';
 
 export const extractBookingInfo = (input) => {
@@ -134,6 +135,57 @@ const Leads = () => {
   console.log(enquires);
   // console.log(filteredEnquires,)
 
+  const tableColumns = [
+    {
+      key: "Name",
+      title: "Name",
+      initialWidth: 150,
+      render: (row) => row.Name.slice(0, 15),
+      bodyCellClassName: "font-semibold",
+    },
+    {
+      key: "Contact",
+      title: "Contact",
+      initialWidth: 120,
+    },
+    {
+      key: "Email",
+      title: "Email",
+      initialWidth: 200,
+      bodyCellClassName: "text-[#575757]",
+    },
+    {
+      key: "check_in",
+      title: "Check In",
+      initialWidth: 120,
+      render: (row) =>
+        row.check_in ||
+        extractBookingInfo(row?.Message).checkIn || (
+          <span className="text-center">-</span>
+        ),
+      bodyCellClassName: "text-[#575757]",
+    },
+    {
+      key: "check_out",
+      title: "Check Out",
+      initialWidth: 120,
+      render: (row) =>
+        row.check_out ||
+        extractBookingInfo(row?.Message).checkOut || (
+          <span className="">-</span>
+        ),
+      bodyCellClassName: "text-[#575757]",
+    },
+    {
+      key: "Created_at",
+      title: "Date Added",
+      initialWidth: 150,
+      sortable: true,
+      render: (row) => (row?.Created_at ? formatDateTime(row?.Created_at) : ""),
+      bodyCellClassName: "whitespace-nowrap capitalize",
+    },
+  ];
+  const searchFields = ["Name", "Contact", "Email", "Message"];
   return (
     <div>
       <div className="flex mt-4">
@@ -176,120 +228,138 @@ const Leads = () => {
         </div>
 
         {!loading ? (
-          <div className="overflow-auto">
-            <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Name
-                  </th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Contact
-                  </th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Email
-                  </th>
-                  {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Details
-                  </th> */}
+          // <div className="overflow-auto">
+          //   <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
+          //     <thead>
+          //       <tr className="border-b">
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Name
+          //         </th>
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Contact
+          //         </th>
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Email
+          //         </th>
+          //         {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Details
+          //         </th> */}
 
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Check In
-                  </th>
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Check In
+          //         </th>
 
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Check Out
-                  </th>
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           Check Out
+          //         </th>
 
-                  {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    status
-                  </th> */}
+          //         {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
+          //           status
+          //         </th> */}
 
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize resize">
-                    Date Added
-                  </th>
-                </tr>
-              </thead>
+          //         <th className="py-3 px-4 text-[14px] font-medium capitalize resize">
+          //           Date Added
+          //         </th>
+          //       </tr>
+          //     </thead>
 
-              {filteredEnquires && (
-                <tbody>
-                  {filteredEnquires
-                    .map((enquery, index) => (
-                      <tr
-                        key={index}
-                        className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
-                          enquery?.status === "Open"
-                            ? " text-purple-500"
-                            : "text-[#575757]"
-                        }`}
-                        onClick={() => {
-                          setSelectedLead(enquery);
-                          setIsPopupOpen(true);
-                        }}
-                      >
-                        <td className="py-3 px-2 text-[14px] font-semibold">
-                          {enquery.Name.slice(0, 15)}
-                        </td>
+          //     {filteredEnquires && (
+          //       <tbody>
+          //         {filteredEnquires
+          //           .map((enquery, index) => (
+          //             <tr
+          //               key={index}
+          //               className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+          //                 enquery?.status === "Open"
+          //                   ? " text-purple-500"
+          //                   : "text-[#575757]"
+          //               }`}
+          //               onClick={() => {
+          //                 setSelectedLead(enquery);
+          //                 setIsPopupOpen(true);
+          //               }}
+          //             >
+          //               <td className="py-3 px-2 text-[14px] font-semibold ">
+          //                 {enquery.Name.slice(0, 15)}
+          //               </td>
 
-                        <td className="py-3 px-2 text-[14px] capitalize">
-                          {enquery?.Contact}
-                        </td>
+          //               <td className="py-3 px-2 text-[14px] capitalize">
+          //                 {enquery?.Contact}
+          //               </td>
 
-                        <td className="py-3 px-2 text-[14px] w-10   text-[#575757]">
-                          {enquery.Email}
-                        </td>
+          //               <td className="py-3 px-2 text-[14px] w-10   text-[#575757]">
+          //                 {enquery.Email}
+          //               </td>
 
-                        {/* <td className="py-3 px-2 text-[14px]  ">
-                          <span className="font-medium text-[14px]">
-                            <span className="capitalize">
-                              {enquery?.created_from}
-                            </span>
-                            :
-                          </span>{" "}
-                          {enquery?.Message.slice(0, 25)}{" "}
-                          {enquery?.Message.length > 30 ? (
-                            <span className="text-blue-600">...read more</span>
-                          ) : (
-                            ""
-                          )}
-                        </td> */}
+          //               {/* <td className="py-3 px-2 text-[14px]  ">
+          //                 <span className="font-medium text-[14px]">
+          //                   <span className="capitalize">
+          //                     {enquery?.created_from}
+          //                   </span>
+          //                   :
+          //                 </span>{" "}
+          //                 {enquery?.Message.slice(0, 25)}{" "}
+          //                 {enquery?.Message.length > 30 ? (
+          //                   <span className="text-blue-600">...read more</span>
+          //                 ) : (
+          //                   ""
+          //                 )}
+          //               </td> */}
 
-                        <td className="py-3 px-2 text-[14px]  text-[#575757]">
-                          {enquery.check_in ? (
-                            enquery.check_in
-                          ) : extractBookingInfo(enquery?.Message).checkIn ? (
-                            extractBookingInfo(enquery?.Message).checkIn
-                          ) : (
-                            <span className="text-center">-</span>
-                          )}
-                        </td>
+          //               <td className="py-3 px-2 text-[14px]  text-[#575757]">
+          //                 {enquery.check_in ? (
+          //                   enquery.check_in
+          //                 ) : extractBookingInfo(enquery?.Message).checkIn ? (
+          //                   extractBookingInfo(enquery?.Message).checkIn
+          //                 ) : (
+          //                   <span className="text-center">-</span>
+          //                 )}
+          //               </td>
 
-                        <td className="py-3 px-2 text-[14px]  text-[#575757]">
-                          {enquery.check_out ? (
-                            enquery.check_out
-                          ) : extractBookingInfo(enquery?.Message).checkOut ? (
-                            extractBookingInfo(enquery?.Message).checkOut
-                          ) : (
-                            <span className="">-</span>
-                          )}
-                        </td>
+          //               <td className="py-3 px-2 text-[14px]  text-[#575757]">
+          //                 {enquery.check_out ? (
+          //                   enquery.check_out
+          //                 ) : extractBookingInfo(enquery?.Message).checkOut ? (
+          //                   extractBookingInfo(enquery?.Message).checkOut
+          //                 ) : (
+          //                   <span className="">-</span>
+          //                 )}
+          //               </td>
 
-                        {/* <td className="py-3 px-2 text-[14px] font-medium capitalize">
-                          {enquery?.status}
-                        </td> */}
+          //               {/* <td className="py-3 px-2 text-[14px] font-medium capitalize">
+          //                 {enquery?.status}
+          //               </td> */}
 
-                        <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
-                          {enquery?.Created_at
-                            ? formatDateTime(enquery?.Created_at)
-                            : ""}
-                        </td>
-                      </tr>
-                    ))
-                    .reverse()}
-                </tbody>
-              )}
-            </table>
-          </div>
+          //               <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
+          //                 {enquery?.Created_at
+          //                   ? formatDateTime(enquery?.Created_at)
+          //                   : ""}
+          //               </td>
+          //             </tr>
+          //           ))
+          //           .reverse()}
+          //       </tbody>
+          //     )}
+          //   </table>
+          // </div>
+          <ResizableTable
+            columns={tableColumns}
+            data={enquires}
+            onRowClick={(row) => {
+              setSelectedLead(row);
+              setIsPopupOpen(true);
+            }}
+            loading={loading}
+            searchTerm={searchTerm}
+            searchFields={searchFields}
+            containerClassName="bg-white"
+            headerRowClassName="border-b bg-[#0a3a75] text-white/90"
+            bodyRowClassName={(row) =>
+              `py-1 border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                row?.status === "Open" ? "text-purple-500" : "text-[#575757]"
+              }`
+            }
+          />
         ) : (
           <div className="space-y-2">
             {[1, 2, 3, 4, 5, 6, 7].map((index) => (
