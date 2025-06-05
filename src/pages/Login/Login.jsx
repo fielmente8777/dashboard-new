@@ -107,7 +107,7 @@ const Login = () => {
 
   return (
     <div className="w-full h-screen flex items-center justify-center md:px-6">
-      <div className="max-w-6xl w-full border-2 p-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
+      <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
         <div>
           <div className="w-full">
             <img
@@ -147,7 +147,7 @@ const Login = () => {
                   Password
                 </label>
 
-                <div className="w-full relative border">
+                <div className="w-full relative">
                   <input
                     name="password"
                     type={showPassword ? "text" : "password"}
@@ -159,9 +159,9 @@ const Login = () => {
 
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
                     {showPassword ? (
-                      <AiOutlineEye size={20} onClick={togglePassword} />
+                      <AiOutlineEye size={20} onClick={togglePassword} className="text-gray-400" />
                     ) : (
-                      <HiOutlineEyeOff size={20} onClick={togglePassword} />
+                      <HiOutlineEyeOff size={20} onClick={togglePassword} className="text-gray-400" />
                     )}
                   </div>
                 </div>
@@ -191,6 +191,7 @@ const Login = () => {
           </form>
         </div>
       </div>
+      <Whatsapp whatsAppNumber={"9528295631"} />
     </div>
   );
 };
