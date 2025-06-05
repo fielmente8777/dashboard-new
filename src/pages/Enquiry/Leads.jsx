@@ -135,7 +135,7 @@ const Leads = () => {
       setLoading(false);
     }
   };
-  // console.log(filteredEnquires,)
+  console.log(filteredEnquires);
 
   return (
     <div>
@@ -197,6 +197,13 @@ const Leads = () => {
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize resize">
+                    Date Added
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Source
+                  </th>
+
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">
                     Name
                   </th>
@@ -221,10 +228,6 @@ const Leads = () => {
                   {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
                     status
                   </th> */}
-
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize resize">
-                    Date Added
-                  </th>
                 </tr>
               </thead>
 
@@ -244,6 +247,16 @@ const Leads = () => {
                           setIsPopupOpen(true);
                         }}
                       >
+                        <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
+                          {enquery?.Created_at
+                            ? formatDateTime(enquery?.Created_at)
+                            : ""}
+                        </td>
+                        <td className="py-3 px-2 text-[14px] font-semibold">
+                          {enquery.created_from.toLowerCase() === "chatbot"
+                            ? "Eazobot"
+                            : enquery.created_from}
+                        </td>
                         <td className="py-3 px-2 text-[14px] font-semibold">
                           {enquery.Name.slice(0, 15)}
                         </td>
@@ -294,12 +307,6 @@ const Leads = () => {
                         {/* <td className="py-3 px-2 text-[14px] font-medium capitalize">
                           {enquery?.status}
                         </td> */}
-
-                        <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
-                          {enquery?.Created_at
-                            ? formatDateTime(enquery?.Created_at)
-                            : ""}
-                        </td>
                       </tr>
                     ))
                     .reverse()}
