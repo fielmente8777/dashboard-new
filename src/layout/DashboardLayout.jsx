@@ -21,7 +21,7 @@ export default function DashboardLayout({ children }) {
 
         <div className="flex-1 overflow-y-scroll scrollbar-hidden sm:overflow-y-auto rounded-sm bg-[#f8f8fb]">
           <Navbar />
-          <div className="py-4 overflow-auto">
+          <div className="py-4 pr-4 overflow-auto">
             <Breadcrumb />
             {children}
           </div>
