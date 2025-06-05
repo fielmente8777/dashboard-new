@@ -130,8 +130,6 @@ const Leads = () => {
       setLoading(false);
     }
   };
-
-  console.log(enquires);
   // console.log(filteredEnquires,)
 
   return (
@@ -211,7 +209,7 @@ const Leads = () => {
                 </tr>
               </thead>
 
-              {filteredEnquires && (
+              {filteredEnquires?.length > 0 ? (
                 <tbody>
                   {filteredEnquires
                     .map((enquery, index) => (
@@ -287,6 +285,12 @@ const Leads = () => {
                     ))
                     .reverse()}
                 </tbody>
+              ) : (
+                <tr className="bg-white text-gray-600 text-center border">
+                  <td colSpan={6} className="py-2">
+                    No data found!
+                  </td>
+                </tr>
               )}
             </table>
           </div>

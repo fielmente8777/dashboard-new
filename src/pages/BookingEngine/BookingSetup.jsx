@@ -113,7 +113,7 @@ const BookingSetup = () => {
   }, []);
 
   return (
-    <div className="bg-white p-4">
+    <div className="bg-white">
       <div className="flex gap-2 items-center divide-x divixe-gray-200 font-medium">
         {Tabs?.map((item, index) => (
           <button
@@ -269,7 +269,7 @@ const BookingSetup = () => {
           </div>
 
           {/* Facilities */}
-          <div className="rounded-sm p-4">
+          <div className="rounded-sm">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Facilities
             </label>
