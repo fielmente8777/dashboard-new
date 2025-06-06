@@ -1,13 +1,27 @@
 import React from "react";
 import { useEffect } from "react";
 import handleLocalStorage from "../../utils/handleLocalStorage";
-import { getBookingsData } from "../../services/api/reservationDesk";
+import {
+  filterBookingData,
+  getBookingsData,
+} from "../../services/api/reservationDesk";
 import { useState } from "react";
 import { formatDateTime } from "../../services/formateDate";
 
 const ReservationDesk = () => {
   const [bookingData, setBookingsData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [filters, setFilters] = useState({
+    dateType: "booking",
+    fromDate: "",
+    toDate: "",
+    bookingId: "",
+    guestName: "",
+    contact: "",
+    bookingStatus: "all",
+    paymentStatus: "all",
+  });
 
   const fetchBookingsData = async () => {
     setIsLoading(true);
@@ -22,17 +36,6 @@ const ReservationDesk = () => {
   useEffect(() => {
     fetchBookingsData();
   }, []);
-
-  const [filters, setFilters] = useState({
-    dateType: "booking",
-    fromDate: "",
-    toDate: "",
-    bookingId: "",
-    guestName: "",
-    contact: "",
-    bookingStatus: "all",
-    paymentStatus: "all",
-  });
 
   const resetFilters = () => {
     setFilters({
@@ -51,20 +54,41 @@ const ReservationDesk = () => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  const applyFilters = () => {
+  const applyFilters = async () => {
     console.log("Applying filters:", filters);
-    // Implement actual filter logic or API calls here
+    const filterData = {};
+    const filteredBookings = await filterBookingData(filterData);
+
+    console.log(filteredBookings);
   };
 
   return (
     <div className="bg-white p-4">
-      <h2 className="text-xl font-semibold mb-4">🔍 Filter Bookings</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold">🔍 Filter Bookings</h2>
+        {/* Buttons */}
+        <div className="flex items-center gap-4">
+          <button
+            onClick={resetFilters}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg"
+          >
+            🔄 Reset Filters
+          </button>
+          <button
+            onClick={applyFilters}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
+          >
+            🔍 Apply Filters
+          </button>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* filters fields  */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
         {/* Date Type Selection */}
         <div className="flex flex-col">
           <label className="text-sm font-medium mb-1">📅 Date Type</label>
-          <div className="flex gap-4">
+          <div className="flex gap-4 ml-1">
             <label className="flex items-center gap-1">
               <input
                 type="radio"
@@ -194,22 +218,8 @@ const ReservationDesk = () => {
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex justify-end gap-4 mt-6">
-        <button
-          onClick={resetFilters}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg"
-        >
-          🔄 Reset Filters
-        </button>
-        <button
-          onClick={applyFilters}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
-        >
-          🔍 Apply Filters
-        </button>
-      </div>
-      <div>
+      {/* render table */}
+      <div className="mt-10 overflow-auto">
         {/* <div
           className="tble-head d-flex"
           style={{ border: "1px solid gray", borderRadius: "8px" }}

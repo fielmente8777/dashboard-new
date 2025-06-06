@@ -8,6 +8,7 @@ import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import FilterPopup from "../../components/Popup/FilterPopup";
 
 export const extractBookingInfo = (input) => {
+  if (!input) return null;
   const parts = input.split(",");
   const booking = {
     checkIn: "",
@@ -135,7 +136,6 @@ const Leads = () => {
       setLoading(false);
     }
   };
-  console.log(filteredEnquires);
 
   return (
     <div>
@@ -287,8 +287,8 @@ const Leads = () => {
                         <td className="py-3 px-2 text-[14px]  text-[#575757]">
                           {enquery.check_in ? (
                             enquery.check_in
-                          ) : extractBookingInfo(enquery?.Message).checkIn ? (
-                            extractBookingInfo(enquery?.Message).checkIn
+                          ) : extractBookingInfo(enquery?.Message)?.checkIn ? (
+                            extractBookingInfo(enquery?.Message)?.checkIn
                           ) : (
                             <span className="text-center">-</span>
                           )}
@@ -297,8 +297,8 @@ const Leads = () => {
                         <td className="py-3 px-2 text-[14px]  text-[#575757]">
                           {enquery.check_out ? (
                             enquery.check_out
-                          ) : extractBookingInfo(enquery?.Message).checkOut ? (
-                            extractBookingInfo(enquery?.Message).checkOut
+                          ) : extractBookingInfo(enquery?.Message)?.checkOut ? (
+                            extractBookingInfo(enquery?.Message)?.checkOut
                           ) : (
                             <span className="">-</span>
                           )}

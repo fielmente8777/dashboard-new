@@ -3,7 +3,6 @@ import { BASE_URL } from "../../data/constant";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 
 // handle auth api for login and register both**
-
 export const getAllRomms = async (token, hid) => {
   try {
     const response = await axios.get(`${BASE_URL}/room/${token}/${hid}`);
