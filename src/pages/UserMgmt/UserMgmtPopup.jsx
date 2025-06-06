@@ -88,11 +88,11 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       prev.map((entry) =>
         entry.hid === location
           ? {
-            ...entry,
-            accessScope: entry.accessScope.includes(role)
-              ? entry.accessScope.filter((r) => r !== role)
-              : [...entry.accessScope, role],
-          }
+              ...entry,
+              accessScope: entry.accessScope.includes(role)
+                ? entry.accessScope.filter((r) => r !== role)
+                : [...entry.accessScope, role],
+            }
           : entry
       )
     );
@@ -171,12 +171,16 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
     try {
       const result = await CreateUser(formData);
+      console.log(result);
       if (result?.Status) {
         Swal.fire({
           icon: "success",
           title: "Created Successfully",
           text: result?.Message,
         });
+        setForm({ name: "", email: "", password: "" });
+        setSelectedLocations([]);
+        onClose();
         fetchData();
       } else {
         Swal.fire({
@@ -196,8 +200,9 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
   return (
     <div
-      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
     >
       <div className="bg-white grid md:grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
         <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
@@ -218,9 +223,9 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             <h2 className="text-xl text-primary font-bold">Create New User</h2>
             <button
               onClick={onClose}
-              className="text-2xl font-bold text-gray-400 hover:bg-transparent size-10 rounded-full border border-slate-900 hover:text-red-700 bg-blue-900 flex items-center justify-center hover:rotate-180 duration-300"
+              className="text-2xl font-bold hover:bg-transparent size-10 rounded-full border border-slate-900 bg-blue-900 flex items-center justify-center hover:rotate-180 duration-300 hover:text-primary text-white"
             >
-              <span className="text-white hover:text-primary">
+              <span className="">
                 <IoMdExit size={22} />
               </span>
             </button>
