@@ -1,5 +1,5 @@
 import React from 'react'
-import CommanHeader from '../../components/Navbar/CommanHeader'
+// import CommanHeader from '../../components/Navbar/CommanHeader'
 import { GiCheckMark } from 'react-icons/gi'
 
 const Website = () => {
