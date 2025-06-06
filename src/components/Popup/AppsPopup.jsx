@@ -68,10 +68,10 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       link: "google-listing",
     },
     {
-      name: "Google Map Iteration",
+      name: "Google Map Itrations",
       icon: "🗺️",
-      key: "Google Map Iteration",
-      link: "google-map-iteration",
+      key: "Google Map Itrations",
+      link: "google-map-itrations",
     },
     {
       name: "Influencer Marketing",
@@ -130,10 +130,10 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       link: "custom-website",
     },
     {
-      name: "SEO Manager",
+      name: "SEO",
       icon: "🔍",
-      key: "SEO Manager",
-      link: "seo-manager",
+      key: "SEO",
+      link: "seo",
     },
 
     {

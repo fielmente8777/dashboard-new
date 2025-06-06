@@ -45,6 +45,11 @@ import GSTFiling from "../Accounting/GSTFiling";
 import PerformanceMarketing from "../PerformanceMarketing/PerformanceMarketing";
 import PublicRelation from "../Social/PublicRelation";
 import RoomsAndInventory from "../BookingEngine/RoomsAndInventory";
+import Linktree from "../Linktree/Linktree";
+import GoogleMapItiration from "../GoogleListing/GoogleMapItiration";
+import GMBProfile from "../GoogleListing/GMBProfile";
+import InfluencerMarketing from "../Social/InfluencerMarketing";
+import Seo from "../SEO/Seo";
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -139,6 +144,27 @@ const DynamicPage = () => {
     // performance marketing
     [`${BASE_PATH}/${hid}/performance-marketing`]: <PerformanceMarketing />,
     [`${BASE_PATH}/${hid}/pr`]: <PublicRelation />,
+
+
+    // link tree setup
+    [`${BASE_PATH}/${hid}/linktree-setup`]: <Linktree />,
+
+
+    // google listing 
+    [`${BASE_PATH}/${hid}/google-listing`]: <GMBProfile />,
+    [`${BASE_PATH}/${hid}/google-map-itrations`]: <GoogleMapItiration />,
+
+    // influencer Marketing
+    [`${BASE_PATH}/${hid}/influencer-marketing`]: <InfluencerMarketing />,
+
+    // seo
+    [`${BASE_PATH}/${hid}/seo`]: <ChannelManager />,
+
+    // sms
+    [`${BASE_PATH}/${hid}/sms-marketing`]: <ChannelManager />,
+
+    // pms
+    [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
   };
 
   return (

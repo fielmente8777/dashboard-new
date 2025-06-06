@@ -317,10 +317,10 @@ export const SidebarData = [
     link: "google-listing",
   },
   {
-    name: "Google Map Iteration",
+    name: "Google Map Itrations",
     icon: <FaRobot size={24} />,
-    key: "Google Map Iteration",
-    link: "google-map-iteration",
+    key: "Google Map Itrations",
+    link: "google-map-itrations",
   },
   {
     name: "Influencer Marketing",
@@ -358,9 +358,9 @@ export const SidebarData = [
   },
 
   {
-    name: "SEO Manager",
-    key: "SEO Manager",
-    link: `seo-manager`,
+    name: "SEO",
+    key: "SEO",
+    link: `seo`,
     icon: <TbSeo size={24} />,
   },
 
