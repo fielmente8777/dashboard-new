@@ -113,17 +113,16 @@ const BookingSetup = () => {
   }, []);
 
   return (
-    <div className="bg-white">
-      <div className="flex gap-2 items-center divide-x divixe-gray-200 font-medium">
+    <div className="bg-white p-4">
+      <div className="flex items-center divide-x divixe-gray-200 font-medium">
         {Tabs?.map((item, index) => (
           <button
             onClick={() => setActiveTab(item)}
             key={index}
-            className={`px-4 py-1 text-primary rounded-sm ${
-              activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
-                ? "bg-primary text-white duration-500"
-                : "bg-white"
-            }`}
+            className={`px-4 py-1 text-primary rounded-sm ${activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
+              ? "bg-primary text-white duration-500"
+              : "bg-white"
+              }`}
           >
             {item}
           </button>
@@ -132,7 +131,7 @@ const BookingSetup = () => {
 
       {activeTab.toLocaleLowerCase() === "all rooms" && (
         <div className="mt-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
             {allRooms?.map((item) => (
               <RoomsCard {...item} />
             ))}
@@ -279,11 +278,10 @@ const BookingSetup = () => {
                   type="button"
                   key={i}
                   onClick={() => handleFacilityToggle(facility)}
-                  className={`px-3 py-1 rounded-full text-sm border ${
-                    selectedFacilities.includes(facility)
-                      ? "bg-primary/90 text-white"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
+                    ? "bg-primary/90 text-white"
+                    : "bg-gray-100 text-gray-700"
+                    }`}
                 >
                   {facility}
                 </button>

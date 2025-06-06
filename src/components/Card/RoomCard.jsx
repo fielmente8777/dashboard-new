@@ -33,16 +33,16 @@ const RoomsCard = ({
             className="object-cover h-full w-full"
           />
 
-          <div className="absolute inset-0 flex items-center z-40">
+          <div className="absolute inset-0 flex items-center z-10">
             <div className="w-full flex justify-between px-5">
               <div
-                className="size-6 bg-white cursor-pointer rounded-full flex items-center justify-center"
+                className="size-7 bg-white cursor-pointer rounded-full flex items-center justify-center hover:scale-95 hover:bg-primary hover:text-white duration-150"
                 onClick={() => handleImagePrev()}
               >
                 <MdOutlineNavigateBefore />
               </div>
               <div
-                className="size-6 bg-white cursor-pointer rounded-full flex items-center justify-center"
+                className="size-7 bg-white cursor-pointer rounded-full flex items-center justify-center  hover:scale-95 hover:bg-primary hover:text-white duration-150"
                 onClick={() => handleImageNext()}
               >
                 <MdOutlineNavigateNext />
@@ -50,7 +50,7 @@ const RoomsCard = ({
             </div>
           </div>
 
-          <div className="absolute w-fit right-1 top-1 bg-white/80 px-2 text-sm rounded-full font-medium tracking-widest z-30">
+          <div className="absolute w-fit right-1 top-1 bg-white/80 px-2 text-sm rounded-full font-medium tracking-widest z-10">
             <h2>{roomTypeName}</h2>
           </div>
 

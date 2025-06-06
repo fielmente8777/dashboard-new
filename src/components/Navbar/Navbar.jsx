@@ -11,6 +11,7 @@ import DataContext from "../../context/DataContext";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import Logo from "../../assets/companylogo.b.png";
 import AppsPopup from "../Popup/AppsPopup";
+import { RxDashboard } from "react-icons/rx";
 const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
@@ -65,6 +66,7 @@ const Navbar = () => {
     // }, 1000)
   };
 
+
   return (
     <div className="h-[8vh] bg-white border-b flex flex-col md:flex-row md:px-4 justify-end  top-0 w-full">
       {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -87,7 +89,7 @@ const Navbar = () => {
 
       <div className="flex gap-5 max-md:hidden">
         {/* <button onClick={handleLogout}>Logout</button> */}
-        <div className="flex items-center">
+        {/* <div className="flex items-center">
           <Link
             to={hotel?.Data?.websiteLink}
             target="_blank"
@@ -95,7 +97,7 @@ const Navbar = () => {
           >
             Visit Website
           </Link>
-        </div>
+        </div> */}
 
         <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
           <GiHamburgerMenu size={20} />
@@ -103,9 +105,9 @@ const Navbar = () => {
         <div className="flex text-zinc-700 items-center">
           <div
             onClick={() => setOpen(true)}
-            className="border-2 rounded-md cursor-pointer"
+            className="flex gap-2 py-2 text-white bg-gradient-to-r from-primary to-[#fd5c01]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md hover:scale-95"
           >
-            <PiDotsNine size={34} />
+            <RxDashboard size={22} /> <p className="text-md font-semibold">Marketplace</p>
           </div>
         </div>
       </div>

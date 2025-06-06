@@ -3,6 +3,7 @@ import React from "react";
 const SocialMedia = () => {
   return (
     <div>
+      m,n,nnm,m,m
       <div className="w-full h-[560px]">
         <img
           src="https://img.freepik.com/free-vector/eye-catching-coming-soon-web-page-background-with-megaphone-design_1017-50903.jpg"

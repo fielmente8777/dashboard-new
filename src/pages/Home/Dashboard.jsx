@@ -3,6 +3,7 @@ import DataContext from "../../context/DataContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import CommanHeader from "../../components/Navbar/CommanHeader";
 
 const Dashboard = () => {
   // const navigate = useNavigate();
@@ -64,6 +65,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-5 hide-scrollbar">
+      {/* <CommanHeader serviceName={"Influencer Marketing"} buttonName={"Mark as interested"} /> */}
       {/* <div className="grid grid-cols-3 gap-5 bg-white p-4">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((item) => (
           <div key={item} className="bg-[#f3f4f6] p-4 rounded-md flex flex-col justify-center items-center px-4 pt-10 pb-12 h-[20rem]">

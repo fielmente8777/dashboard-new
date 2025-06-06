@@ -36,7 +36,14 @@ import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 import BookingEngine from "../BookingEngine/BookingEngine";
 import BookingSetup from "../BookingEngine/BookingSetup";
 import ReservationDesk from "../ReservationDesk/ReservationDesk";
-
+import Website from "../CustomWebsite/Website";
+import OTAListing from "../OTA/OTAListing";
+import OTAOptimization from "../OTA/OTAOptimization";
+import OTAManagement from "../OTA/OTAManagement";
+import Accounting from "../Accounting/Accounting";
+import GSTFiling from "../Accounting/GSTFiling"
+import PerformanceMarketing from "../PerformanceMarketing/PerformanceMarketing"
+import PublicRelation from "../Social/PublicRelation"
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -112,6 +119,32 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/payment-gateway`]: <PaymentGateway />,
     [`${BASE_PATH}/${hid}/social-media`]: <SocialMedia />,
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
+
+
+
+
+    // Marketplace services
+
+    [`${BASE_PATH}/${hid}/custom-website`]: <Website />,
+
+    // OTA
+    [`${BASE_PATH}/${hid}/ota-listing`]: <OTAListing />,
+    [`${BASE_PATH}/${hid}/ota-optimization`]: <OTAOptimization />,
+    [`${BASE_PATH}/${hid}/ota-management`]: <OTAManagement />,
+
+
+
+    // Accounting
+
+    [`${BASE_PATH}/${hid}/accounting`]: <Accounting />,
+    [`${BASE_PATH}/${hid}/gst-filing`]: <GSTFiling />,
+
+
+    // performance marketing
+    [`${BASE_PATH}/${hid}/performance-marketing`]: <PerformanceMarketing />,
+    [`${BASE_PATH}/${hid}/pr`]: <PublicRelation />,
+
+
   };
 
   return (
