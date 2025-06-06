@@ -30,3 +30,16 @@ export const addRoom = async (formData, hid) => {
     throw error;
   }
 };
+
+export const getPriceAndInventory = async (token, hid) => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/inventory/getinventory/all/${token}/${hid}`
+    );
+    const result = res.data;
+    return result;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
