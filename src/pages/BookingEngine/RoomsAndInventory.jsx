@@ -6,8 +6,18 @@ import { GiBackwardTime } from "react-icons/gi";
 import { IoSync } from "react-icons/io5";
 import AuthContext from "../../context/DataContext";
 import { BASE_URL, room_type_name } from "../../data/constant";
-import { getPriceAndInventory } from "../../services/api/bookingEngine";
+import {
+  bulkUpdateInventory,
+  bulkUpdatePrice,
+  dateRangeInventory,
+  dateRangePrice,
+  getPriceAndInventory,
+  inventoryManage,
+  priceManage,
+} from "../../services/api/bookingEngine";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import Loader from "../../components/Loader";
+import { formatDate } from "../../utils/formateData";
 // import { inventoryGetApi, priceGetApi } from '../../Api-helpers/Api';
 
 const RoomsAndInventory = () => {
@@ -103,8 +113,7 @@ const RoomsAndInventory = () => {
 
   const [inventoryData, setInventoryData] = useState(inventoryDatas.Inventory);
   const [InventoryBulkupdate, setInventoryBulkupdate] = useState({});
-
-  // console.log(inventoryData);
+  const [isBulkUpdateLoading, setIsBulkUpdateLoading] = useState(false);
 
   const x = Object.keys(inventoryData);
   if (x.length !== 0) {
@@ -206,14 +215,24 @@ const RoomsAndInventory = () => {
   };
 
   const GetDataForDate = (date, key) => {
+    if (key === "prev") {
+      console.log("daaa", date);
+      const currentDate = new Date(date);
+      currentDate.setDate(currentDate.getDate() - 7); // go 7 days back
+      const formattedDate = formatDate(currentDate);
+      FetchDateRangePrice(formattedDate, key);
+      FetchDateRangeInventory(formattedDate, key);
+      setDate(formattedDate.toString());
+      return;
+    }
+
+    setDate(date);
     FetchDateRangePrice(date, key);
     FetchDateRangeInventory(date, key);
   };
 
   const bulkupdateFunction = () => {
-    // alert("Bulk Update")
     if (showPrice) {
-      // console.log(PriceBulkupdate)
       BulkUpdatePrice(PriceBulkupdate);
     }
     if (showInventory) {
@@ -222,148 +241,129 @@ const RoomsAndInventory = () => {
   };
 
   const FetchInventoryManage = async () => {
-    const response = await fetch(
-      `${BASE_URL}/inventory/getinventory/all/${localStorage.getItem(
-        "token"
-      )}/${localStorage.getItem("hid")}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json, text/plain, /",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const json = await response.json();
-    // console.log(json)
-    if (json.Status) {
-      setinventoryDatas(json);
-      setInventoryData(json.Inventory);
-      setnextDate(json.next);
-      setprevDate(json.prev);
+    const token = handleLocalStorage("token");
+    const hid = String(handleLocalStorage("hid"));
+    const response = await inventoryManage(token, hid);
+    if (response.Status) {
+      setinventoryDatas(response);
+      setInventoryData(response.Inventory);
+      setnextDate(response.next);
+      setprevDate(response.prev);
     }
   };
 
   const FetchPriceManage = async () => {
-    const response = await fetch(
-      `${BASE_URL}/price/getprice/all/${localStorage.getItem(
-        "token"
-      )}/${localStorage.getItem("hid")}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json, text/plain, /",
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const token = handleLocalStorage("token");
+    const hid = String(handleLocalStorage("hid"));
+    const response = await priceManage(token, hid);
 
-    const json = await response.json();
-    // console.log(json)
-    if (json.Status) {
-      setpriceDatas(json);
-      setPriceData(json.Prices);
+    if (response.Status) {
+      setpriceDatas(response);
+      setPriceData(response.Prices);
     }
   };
 
   const FetchDateRangePrice = async (date, operation) => {
-    const response = await fetch(
-      `${baseUrl}/price/getprice/all/nextprev/${localStorage.getItem(
-        "engineUserToken"
-      )}`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, /",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          operation: operation,
-          hId: localStorage.getItem("locationid"),
-          date: date,
-        }),
-      }
-    );
-    const json1 = await response.json();
-    console.log(json1);
-    if (json1.Status) {
-      setpriceDatas(json1);
-      setPriceData(json1.Prices);
-      setDate(date);
-      setnextDate(json1.next);
-      setprevDate(json1.prev);
+    const token = handleLocalStorage("token");
+    const hid = String(handleLocalStorage("hid"));
+    const dateRangePriceData = {
+      operation: operation,
+      hId: hid,
+      date: date,
+    };
+    const response = await dateRangePrice(token, dateRangePriceData);
+    // const response = await fetch(
+    //   `${baseUrl}/price/getprice/all/nextprev/${localStorage.getItem(
+    //     "engineUserToken"
+    //   )}`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       Accept: "application/json, text/plain, /",
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       operation: operation,
+    //       hId: localStorage.getItem("locationid"),
+    //       date: date,
+    //     }),
+    //   }
+    // );
+    // const json1 = await response.json();
+    // console.log(json1);
+    if (response.Status) {
+      setpriceDatas(response);
+      setPriceData(response.Prices);
+      setnextDate(response.next);
+      setprevDate(response.prev);
     }
   };
 
   const FetchDateRangeInventory = async (date, operation) => {
-    const response = await fetch(
-      `${baseUrl}/inventory/getinventory/all/nextprev/${localStorage.getItem(
-        "engineUserToken"
-      )}/${localStorage.getItem("locationid")}`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, /",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          date: date,
-          operation: operation,
-        }),
-      }
+    const token = handleLocalStorage("token");
+    const hid = String(handleLocalStorage("hid"));
+    const dateRangeInventoryData = {
+      date: date,
+      operation: operation,
+    };
+
+    const response = await dateRangeInventory(
+      token,
+      hid,
+      dateRangeInventoryData
     );
-    const json1 = await response.json();
-    console.log(json1);
-    if (json1.Status) {
-      setinventoryDatas(json1);
-      setInventoryData(json1.Inventory);
+    // const response = await fetch(
+    //   `${baseUrl}/inventory/getinventory/all/nextprev/${localStorage.getItem(
+    //     "engineUserToken"
+    //   )}/${localStorage.getItem("locationid")}`,
+    //   {
+    //     method: "POST",
+    //     headers: {
+    //       Accept: "application/json, text/plain, /",
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       date: date,
+    //       operation: operation,
+    //     }),
+    //   }
+    // );
+    // const json1 = await response.json();
+    if (response.Status) {
+      setinventoryDatas(response);
+      setInventoryData(response.Inventory);
     }
   };
 
   const BulkUpdatePrice = async (bulkupdateData) => {
-    const response = await fetch(`${BASE_URL}/price/update/bulkprice`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json, text/plain, /",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token: localStorage.getItem("token"),
-        hId: localStorage.getItem("hid"),
-        bulkprice: bulkupdateData,
-      }),
-    });
-    const json1 = await response.json();
-    console.log(json1);
-    if (json1.Status) {
+    setIsBulkUpdateLoading(true);
+    const updatedBulkPriceData = {
+      token: handleLocalStorage("token"),
+      hId: String(handleLocalStorage("hid")),
+      bulkprice: bulkupdateData,
+    };
+    const response = await bulkUpdatePrice(updatedBulkPriceData);
+    if (response.Status) {
       FetchInventoryManage();
       FetchPriceManage();
     }
+    setIsBulkUpdateLoading(false);
   };
 
   const BulkUpdateInventory = async (bulkupdateData) => {
-    const response = await fetch(
-      `${BASE_URL}/inventory/update/bulk/inventory`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, /",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: localStorage.getItem("token"),
-          hId: localStorage.getItem("hid"),
-          bulkinventory: bulkupdateData,
-        }),
-      }
-    );
-    const json1 = await response.json();
-    console.log(json1);
-    if (json1.Status) {
+    setIsBulkUpdateLoading(true);
+    const updatedBulkInventoryData = {
+      token: handleLocalStorage("token"),
+      hId: String(handleLocalStorage("hid")),
+      bulkinventory: bulkupdateData,
+    };
+    const response = await bulkUpdateInventory(updatedBulkInventoryData);
+
+    if (response.Status) {
       FetchInventoryManage();
       FetchPriceManage();
     }
+    setIsBulkUpdateLoading(false);
   };
 
   const getInventoryApi = async () => {
@@ -373,11 +373,18 @@ const RoomsAndInventory = () => {
     setInventory(result);
   };
 
-  useEffect(() => {
-    getInventoryApi();
-  }, []);
+  const isPreviousDisabled =
+    prevDate ===
+    formatDate(
+      new Date().toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+    );
 
   useEffect(() => {
+    getInventoryApi();
     FetchInventoryManage();
     FetchPriceManage();
   }, []);
@@ -394,18 +401,19 @@ const RoomsAndInventory = () => {
             type="button"
             className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
               showInventory === true
-                ? "border-t border-b border-orange-600 bg-orange-600 text-white"
-                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+                ? "border-t border-b  bg-primary  text-white"
+                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
             }`}
           >
             Inventory
           </button>
+
           <button
             onClick={handlePriceClick}
             type="button"
             className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
               showPrice
-                ? "border border-orange-600 bg-orange-600 text-white"
+                ? "border bg-primary text-white"
                 : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
             } `}
           >
@@ -425,11 +433,11 @@ const RoomsAndInventory = () => {
                 scope="col"
                 class="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-gray-200"
               >
-                <button className="px-4 text-sm font-medium  rounded-lg   text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 text-sm font-medium  rounded-lg text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
                   <IoSync size={20} />
                   Sync
                 </button>
-                <button className="px-4 text-sm font-medium  rounded-lg   text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 text-sm font-medium  rounded-lg  text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
                   <GiBackwardTime size={20} />
                   Logs
                 </button>
@@ -443,10 +451,16 @@ const RoomsAndInventory = () => {
                   <div className="w-[33.33%] max-md:hidden"></div>
                   <div className="w-[33.33%] max-md:w-[66.66%] flex gap-4 md:justify-center items-center">
                     <button
+                      disabled={isPreviousDisabled}
                       onClick={(e) => {
-                        GetDataForDate(prevDate, "prev");
+                        if (!isPreviousDisabled)
+                          GetDataForDate(prevDate, "prev");
                       }}
-                      className="me-1 p-2 bg-white border hover:bg-orange-600 hover:text-white rounded-full "
+                      className={`${
+                        isPreviousDisabled
+                          ? "cursor-not-allowed opacity-65"
+                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
+                      } me-1 p-2 bg-white border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>
@@ -463,7 +477,7 @@ const RoomsAndInventory = () => {
                       onClick={(e) => {
                         GetDataForDate(nextDate, "next");
                       }}
-                      className="ms-1 p-2 bg-white border hover:bg-orange-600 hover:text-white rounded-full "
+                      className="ms-1 p-2 bg-white border text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white rounded-full "
                     >
                       <FaArrowRight />
                     </button>
@@ -473,9 +487,10 @@ const RoomsAndInventory = () => {
                       onClick={() => {
                         bulkupdateFunction();
                       }}
-                      className="px-4 py-2 text-sm font-medium  rounded-lg   text-gray-900 bg-white border hover:bg-orange-600 hover:text-white flex items-center gap-1"
+                      className="px-4 py-2 text-sm font-medium  rounded-lg  text-gray-900 bg-white border hover:bg-orange-600 duration-300 hover:text-white flex items-center gap-1"
                     >
-                      Bulk Update
+                      Bulk Update{" "}
+                      {isBulkUpdateLoading && <Loader color="#262524" />}
                     </button>
                   </div>
                 </div>
@@ -538,7 +553,7 @@ const RoomsAndInventory = () => {
                           key={date}
                           className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
                         >
-                          <span className="bg-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
+                          <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
                           <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
                             <input
                               type="text"
@@ -589,7 +604,7 @@ const RoomsAndInventory = () => {
                           key={date}
                           className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
                         >
-                          <span className="bg-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
+                          <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
                           <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
                             <input
                               type="text"
@@ -631,3 +646,16 @@ const RoomsAndInventory = () => {
 };
 
 export default RoomsAndInventory;
+
+// const response = await fetch(
+//   `${BASE_URL}/price/getprice/all/${localStorage.getItem(
+//     "token"
+//   )}/${localStorage.getItem("hid")}`,
+//   {
+//     method: "GET",
+//     headers: {
+//       Accept: "application/json, text/plain, /",
+//       "Content-Type": "application/json",
+//     },
+//   }
+// );

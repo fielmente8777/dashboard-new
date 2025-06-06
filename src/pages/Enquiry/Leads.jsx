@@ -253,7 +253,7 @@ const Leads = () => {
                             : ""}
                         </td>
                         <td className="py-3 px-2 text-[14px] font-semibold">
-                          {enquery.created_from.toLowerCase() === "chatbot"
+                          {enquery.created_from?.toLowerCase() === "chatbot"
                             ? "Eazobot"
                             : enquery.created_from}
                         </td>
