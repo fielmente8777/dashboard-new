@@ -30,6 +30,11 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+.cardShadow {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+
 .sc-Qotzb {
   max-width: 100% !important;
   height: 40vh !important;

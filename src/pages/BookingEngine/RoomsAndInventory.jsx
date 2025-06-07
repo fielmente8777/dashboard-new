@@ -244,11 +244,11 @@ const RoomsAndInventory = () => {
     const token = handleLocalStorage("token");
     const hid = String(handleLocalStorage("hid"));
     const response = await inventoryManage(token, hid);
-    if (response.Status) {
+    if (response?.Status) {
       setinventoryDatas(response);
-      setInventoryData(response.Inventory);
-      setnextDate(response.next);
-      setprevDate(response.prev);
+      setInventoryData(response?.Inventory);
+      setnextDate(response?.next);
+      setprevDate(response?.prev);
     }
   };
 
@@ -257,9 +257,9 @@ const RoomsAndInventory = () => {
     const hid = String(handleLocalStorage("hid"));
     const response = await priceManage(token, hid);
 
-    if (response.Status) {
+    if (response?.Status) {
       setpriceDatas(response);
-      setPriceData(response.Prices);
+      setPriceData(response?.Prices);
     }
   };
 
@@ -399,11 +399,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handleInventoryClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
-              showInventory === true
-                ? "border-t border-b  bg-primary  text-white"
-                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
-            }`}
+            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${showInventory === true
+              ? "border-t border-b  bg-primary  text-white"
+              : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
+              }`}
           >
             Inventory
           </button>
@@ -411,11 +410,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handlePriceClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
-              showPrice
-                ? "border bg-primary text-white"
-                : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
-            } `}
+            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${showPrice
+              ? "border bg-primary text-white"
+              : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+              } `}
           >
             Price
           </button>
@@ -456,11 +454,10 @@ const RoomsAndInventory = () => {
                         if (!isPreviousDisabled)
                           GetDataForDate(prevDate, "prev");
                       }}
-                      className={`${
-                        isPreviousDisabled
-                          ? "cursor-not-allowed opacity-65"
-                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                      } me-1 p-2 bg-white border rounded-full `}
+                      className={`${isPreviousDisabled
+                        ? "cursor-not-allowed opacity-65"
+                        : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
+                        } me-1 p-2 bg-white border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>
@@ -502,13 +499,13 @@ const RoomsAndInventory = () => {
             <tr class="bg-white border-b border-gray-300 flex-grow">
               <th
                 scope="row"
-                class="px-4 py-4 font-medium text-zinc-700 bg-gray-200 whitespace-nowrap w-[16rem]"
+                class="px-4 py-4 font-medium text-gray-600 bg-gray-200 whitespace-nowrap w-[16rem]"
               >
-                <span className="text-[2rem] font-bold">Rooms</span>
+                <span className="text-2xl font-bold">Rooms</span>
               </th>
 
               <td class="w-full flex justify-between">
-                {dates.map((date) => (
+                {dates?.map((date) => (
                   <div className="flex flex-col  w-full text-center border-r border-gray-300">
                     <span>{getMonthInWords(date)}</span>
                     <span>{getYearFromDate(date)}</span>
@@ -523,14 +520,14 @@ const RoomsAndInventory = () => {
 
             {showInventory && (
               <>
-                {Object.keys(inventoryData).map((item, itemIndex) => (
+                {Object?.keys(inventoryData)?.map((item, itemIndex) => (
                   <tr
                     key={itemIndex}
                     className="bg-white border-t border-gray-300"
                   >
-                    <th className="px-4 font-medium text-zinc-700 bg-gray-200 w-[16rem] py-2">
+                    <th className="px-4 font-medium text-gray-600 bg-gray-200 w-[16rem] py-2">
                       <div className="gap-4 flex flex-col">
-                        <span className="font-extrabold text-1xl uppercase">
+                        <span className="font-bold text-md uppercase">
                           {room_type_name[item]}
                         </span>
                         <div>
@@ -548,7 +545,7 @@ const RoomsAndInventory = () => {
                     </th>
 
                     <td class="w-full flex">
-                      {dates.map((date) => (
+                      {dates?.map((date) => (
                         <div
                           key={date}
                           className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
@@ -574,7 +571,7 @@ const RoomsAndInventory = () => {
 
             {showPrice && (
               <>
-                {Object.keys(priceData).map((item, itemIndex) => (
+                {Object?.keys(priceData)?.map((item, itemIndex) => (
                   <tr
                     key={itemIndex}
                     className="bg-white border-t border-gray-300"
@@ -587,7 +584,7 @@ const RoomsAndInventory = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <CiCirclePlus fontSize={20} fontWeight={500} />
-                            <span className="text-bold">Inventory</span>
+                            <span className="text-bold">Price</span>
                           </div>
                           <div className="ms-7">
                             <span className="font-light border-b-2 border-gray-400">
@@ -599,7 +596,7 @@ const RoomsAndInventory = () => {
                     </th>
 
                     <td class="w-full flex">
-                      {dates.map((date) => (
+                      {dates?.map((date) => (
                         <div
                           key={date}
                           className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"

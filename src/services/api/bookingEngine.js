@@ -36,7 +36,7 @@ export const getPriceAndInventory = async (token, hid) => {
     const res = await axios.get(
       `${BASE_URL}/inventory/getinventory/all/${token}/${hid}`
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -49,7 +49,7 @@ export const inventoryManage = async (token, hid) => {
     const res = await axios.get(
       `${BASE_URL}/inventory/getinventory/all/${token}/${hid}`
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -62,7 +62,7 @@ export const priceManage = async (token, hid) => {
     const res = await axios.get(
       `${BASE_URL}/price/getprice/all/${token}/${hid}`
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -82,7 +82,7 @@ export const bulkUpdateInventory = async (data) => {
         },
       }
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -98,7 +98,7 @@ export const bulkUpdatePrice = async (data) => {
         "Content-Type": "application/json",
       },
     });
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -118,7 +118,7 @@ export const dateRangeInventory = async (token, hid, data) => {
         },
       }
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -138,7 +138,7 @@ export const dateRangePrice = async (token, data) => {
         },
       }
     );
-    const result = res.data;
+    const result = res?.data;
     return result;
   } catch (error) {
     console.error("Error creating user:", error);
