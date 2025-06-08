@@ -59,7 +59,7 @@ const Website = () => {
     return (
         <div >
             {/* <CommanHeader serviceName={"Custom website"} buttonName={"Mark as interested"} /> */}
-            <section id="pricing" className="py-20 px-4 bg-gray-50">
+            <section id="pricing" className="py-10 px-4 bg-gray-50">
                 <div className="container mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gray-600">Our Custom Website Pricing</h2>
@@ -70,7 +70,7 @@ const Website = () => {
 
                     <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
                         {pricingPlans.map((plan, index) => (
-                            <div key={index} className={`bg-white rounded-3xl p-8 shadow-lg relative ${plan.popular ? 'ring-4 ring-primary transform scale-105' : ''
+                            <div key={index} className={`bg-white rounded-3xl p-8  shadow-lg relative ${plan.popular ? 'ring-4 ring-primary transform scale-105' : 'cardShadow'
                                 }`}>
                                 {plan.popular && (
                                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">

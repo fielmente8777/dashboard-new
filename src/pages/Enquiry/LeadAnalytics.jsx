@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { getDataInRange } from "../../utils/getDataInRange";
 
 const LeadAnalytics = () => {
   const [filteredLeads, setFilteredLeads] = useState();
@@ -52,20 +53,12 @@ const LeadAnalytics = () => {
   //     setActiveFilter(status);
   // };
 
-  const getLeadsByDateRange = (days) => {
-    const today = new Date();
-    return enquires?.filter((lead) => {
-      const leadDate = new Date(lead.Created_at);
-      return (today - leadDate) / (1000 * 60 * 60 * 24) <= days;
-    }).length;
-  };
-
   const analyticsData = [
     { label: "Total Enquiries", count: enquires?.length },
-    { label: "Last 7 Days", count: getLeadsByDateRange(7) },
-    { label: "Last 30 Days", count: getLeadsByDateRange(30) },
-    { label: "Last 6 Months", count: getLeadsByDateRange(180) },
-    { label: "Last 1 Year", count: getLeadsByDateRange(365) },
+    { label: "Last 7 Days", count: getDataInRange(enquires, 7) },
+    { label: "Last 30 Days", count: getDataInRange(enquires, 30) },
+    { label: "Last 6 Months", count: getDataInRange(enquires, 180) },
+    { label: "Last 1 Year", count: getDataInRange(enquires, 365) },
   ];
 
   const statusDistribution = [
@@ -108,7 +101,7 @@ const LeadAnalytics = () => {
           {analyticsData.map((data) => (
             <div
               key={data.label}
-              className="bg-zinc-100 text-[#575757] px-4 pt-10 pb-12 rounded-md  text-center"
+              className="bg-zinc-100 text-[#575757] px-4 pt-10 pb-12 rounded-md  text-center "
             >
               <h3 className="text-4xl font-bold">{data.count}</h3>
               <p className=" text-[14px] font-medium mt-2">{data.label}</p>

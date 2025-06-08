@@ -58,7 +58,7 @@ const TemperatureCard = () => {
     }, []);
 
 
-    const [weatherCondition, setWeatherCondition] = useState('Sunny')
+    const [weatherCondition, setWeatherCondition] = useState('Rainy')
     return (
         <div className="relative rounded-xl cardShadow w-full h-full transition-all duration-500 ease-in-out ">
             {/* <div className={`rounded-xl cardShadow p-5 w-full h-full transition-all duration-500 ease-in-out ${weatherCondition === 'Sunny' ? 'bg-yellow-100 shadow-yellow-300'

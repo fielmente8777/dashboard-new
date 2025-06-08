@@ -22,8 +22,8 @@ const DashboardCard = ({ amount = 0, label = 'Label', progress = 0 }) => {
             <div className="flex justify-between items-start">
                 <div>
                     {/* <p className="text-2xl font-bold text-primary/90">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p> */}
-                    <p className="text-2xl font-bold text-primary/90">{amount}</p>
-                    <p className="text-sm text-gray-500">{label}</p>
+                    <p className="text-4xl font-bold text-primary/90">{amount}</p>
+                    <p className="text-lg font-medium text-gray-500">{label}</p>
                 </div>
                 <div className="bg-violet-500 p-2 rounded-md">
                     <BsFillBagCheckFill size={20} color="white" />

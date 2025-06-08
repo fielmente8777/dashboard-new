@@ -46,7 +46,9 @@ const Leads = () => {
         token,
         hid,
       });
-      setEnquires(response);
+
+      console.log(response)
+      setEnquires(response?.reverse());
     } catch (error) {
       console.error("Error fetching enquires:", error);
     } finally {
@@ -144,20 +146,18 @@ const Leads = () => {
           <button
             onClick={() => handleTabClick(index)}
             key={index}
-            className={`text-[14px] ${
-              active === index
-                ? "border-b-2 border-[#575757]"
-                : "border-b-2 border-transparent"
-            } px-4 py-3 bg-white font-medium text-[#575757]`}
+            className={`text-[14px] ${active === index
+              ? "border-b-2 border-[#575757]"
+              : "border-b-2 border-transparent"
+              } px-4 py-3 bg-white font-medium text-[#575757]`}
           >
             {item}
           </button>
         ))}
         <div
           onClick={() => fetchEnquires(localStorage.getItem("token"))}
-          className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
-            loading ? "animate-spin" : ""
-          } `}
+          className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
+            } `}
         >
           <MdRefresh size={25} />
         </div>
@@ -237,11 +237,10 @@ const Leads = () => {
                     .map((enquery, index) => (
                       <tr
                         key={index}
-                        className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
-                          enquery?.status === "Open"
-                            ? " text-purple-500"
-                            : "text-[#575757]"
-                        }`}
+                        className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
+                          ? " text-purple-500"
+                          : "text-[#575757]"
+                          }`}
                         onClick={() => {
                           setSelectedLead(enquery);
                           setIsPopupOpen(true);
@@ -309,7 +308,7 @@ const Leads = () => {
                         </td> */}
                       </tr>
                     ))
-                    .reverse()}
+                  }
                 </tbody>
               ) : (
                 <tr className="bg-white text-gray-600 text-center border">
@@ -322,15 +321,38 @@ const Leads = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {[1, 2, 3, 4, 5, 6, 7].map((index) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((index) => (
               <div key={index}>
-                <p className="py-5 animate-pulse bg-gray-100"></p>
+                <p className="py-[1.3rem] animate-pulse bg-gray-100"></p>
               </div>
             ))}
           </div>
         )}
-      </div>
 
+      </div>
+      {/* <div class="flex items-center justify-center space-x-2 my-4">
+        <button class="px-3 py-1 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-100 disabled:opacity-50" disabled>
+          Previous
+        </button>
+
+        <button class="px-3 py-1 border rounded-lg text-sm text-white bg-blue-600 hover:bg-blue-700">
+          1
+        </button>
+        <button class="px-3 py-1 border rounded-lg text-sm text-gray-700 bg-white hover:bg-gray-100">
+          2
+        </button>
+        <button class="px-3 py-1 border rounded-lg text-sm text-gray-700 bg-white hover:bg-gray-100">
+          3
+        </button>
+        <span class="px-3 py-1 text-gray-500">...</span>
+        <button class="px-3 py-1 border rounded-lg text-sm text-gray-700 bg-white hover:bg-gray-100">
+          10
+        </button>
+
+        <button class="px-3 py-1 border rounded-lg text-sm text-gray-600 bg-white hover:bg-gray-100">
+          Next
+        </button>
+      </div> */}
       {/* <FilterPopup open={open} setOpen={setOpen} /> */}
       <LeadPopup
         isOpen={isPopupOpen}

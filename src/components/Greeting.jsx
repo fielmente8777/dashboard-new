@@ -1,6 +1,5 @@
-import React from 'react'
 
-const Greeting = () => {
+const Greeting = ({ name }) => {
     const getGreet = () => {
         const hour = new Date().getHours();
 
@@ -18,7 +17,7 @@ const Greeting = () => {
     return (
         <div>
             <h1 className='text-xl font-bold text-primary/90 '>
-                {getGreet()}
+                {getGreet()}{name && <span className="text-orange-700">, {name}</span>}
             </h1>
             <p className='font-medium text-primary/80 mt-1'>Here’s an update on what’s happening with your property!</p>
 
