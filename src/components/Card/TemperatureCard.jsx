@@ -77,7 +77,7 @@ const TemperatureCard = () => {
                 className="w-full h-full object-cover  top-0 left-0 absolute rounded-xl"
             />
 
-            <div className="absolute top-0 left-0 z-10 h-full w-full p-5 bg-black/30 rounded-xl ">
+            <div className="absolute top-0 left-0 h-full w-full p-5 bg-black/30 rounded-xl ">
                 <h3 className="text-md font-semibold  !text-white">Temperature Guide</h3>
                 <div className='flex flex-col justify-between h-full py-6'>
 

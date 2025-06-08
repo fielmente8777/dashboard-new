@@ -3,7 +3,7 @@ import CommanHeader from '../../components/Navbar/CommanHeader'
 
 const GMBProfile = () => {
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName="Google Listing" />
             <hr className="mt-3" />
             <p className="text-gray-600 mb-4">

@@ -3,7 +3,7 @@ import CommanHeader from "../../components/Navbar/CommanHeader";
 
 const EmailMarketing = () => {
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-white mb-10 cardShadow">
       <CommanHeader serviceName="Email Marketing" />
       <hr className="mt-3" />
       <p className="text-gray-600 mb-4 mt-2">

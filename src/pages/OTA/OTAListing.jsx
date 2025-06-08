@@ -35,7 +35,7 @@ const OTAListing = () => {
     //     },
     // ];
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName={"OTA Listing Service"} />
             {/* <div className='flex justify-between items-center'>
 

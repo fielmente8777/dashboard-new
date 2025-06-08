@@ -83,7 +83,7 @@ const Request = () => {
 
 
     return (
-        <div>
+        <div className='bg-white cardShadow mb-10'>
             <div className="flex">
                 {header.map((item, index) => (
                     <button onClick={() => handleTabClick(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-white font-medium text-[#575757]`}>{item}</button>

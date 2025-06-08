@@ -276,11 +276,11 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
               setOpen(false);
             }
           }}
-          className="fixed top-0 left-0 z-20  bg-black/50 w-full h-[100dvh] flex justify-end "
+          className="fixed top-0 left-0 z-[999999999999999999999999]  bg-black/50 w-full h-[100dvh] flex justify-end "
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="text-[#575757] bg-white  w-[40%] absolute h-[100vh] z-[99999999999999999]"
+            className="text-[#575757] bg-white  w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
           >
             <input
               type="text"

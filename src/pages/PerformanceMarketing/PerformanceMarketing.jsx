@@ -1,8 +1,22 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import CommanHeader from '../../components/Navbar/CommanHeader';
 const PerformanceMarketing = () => {
+
+
+    const fetchData = () => {
+        try {
+            console.log("first")
+        }
+        catch (e) {
+            console.error(e)
+        }
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [])
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName="Performance Marketing" />
             <hr className="mt-3" />
             <p className="text-gray-600 mb-4 mt-2">

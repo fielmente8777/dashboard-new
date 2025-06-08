@@ -39,7 +39,7 @@ const Analytics = () => {
 
     return (
 
-        <div className='bg-white p-4 '>
+        <div className='bg-white p-4 mb-10 cardShadow'>
             <h2 className="text-sm font-semibold text-[#575757]">Request Analytics</h2>
 
             <button onClick={play} className='hidden'>Boop!</button>

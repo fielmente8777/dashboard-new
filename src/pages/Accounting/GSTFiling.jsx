@@ -3,7 +3,7 @@ import CommanHeader from '../../components/Navbar/CommanHeader';
 
 const GSTFiling = () => {
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName={"GST Filing Service"} />
 
             <hr className="mt-3" />

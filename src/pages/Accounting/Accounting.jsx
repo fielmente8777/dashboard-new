@@ -2,7 +2,7 @@ import CommanHeader from '../../components/Navbar/CommanHeader';
 
 const Accounting = () => {
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName={"Accounting Service"} />
 
             <hr className="mt-3" />

@@ -390,7 +390,7 @@ const RoomsAndInventory = () => {
   }, []);
 
   return (
-    <div className="maxwidth mx-auto mt-4 md:px-2">
+    <div className="maxwidth mx-auto mt-4 bg-white p-4 cardShadow mb-10">
       <div className="flex justify-between max-md:px-2">
         <div class="inline-flex rounded-lg shadow-sm" role="group">
           {/* <button onClick={handleAllClick} type="button" className={`px-4 py-2 text-sm font-medium  rounded-s-lg   ${showAll === true ? "border border-orange-600 bg-orange-600 text-white" : "text-gray-900 bg-white border border-gray-200 hover:text-orange-600 hover:bg-neutral-100"} `}>
@@ -400,7 +400,7 @@ const RoomsAndInventory = () => {
             onClick={handleInventoryClick}
             type="button"
             className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${showInventory === true
-              ? "border-t border-b  bg-primary  text-white"
+              ? "border-t border-b border-primary bg-primary  text-white"
               : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
               }`}
           >
@@ -411,7 +411,7 @@ const RoomsAndInventory = () => {
             onClick={handlePriceClick}
             type="button"
             className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${showPrice
-              ? "border bg-primary text-white"
+              ? "border bg-primary border-primary text-white"
               : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
               } `}
           >
@@ -505,8 +505,8 @@ const RoomsAndInventory = () => {
               </th>
 
               <td class="w-full flex justify-between">
-                {dates?.map((date) => (
-                  <div className="flex flex-col  w-full text-center border-r border-gray-300">
+                {dates?.map((date, index) => (
+                  <div key={index} className="flex flex-col  w-full text-center border-r border-gray-300">
                     <span>{getMonthInWords(date)}</span>
                     <span>{getYearFromDate(date)}</span>
                     <span>{getDayOfWeek(date)}</span>

@@ -69,7 +69,7 @@ const Navbar = () => {
   return (
     <div className="">
 
-      <div className="h-[8vh] z-50 fixed  bg-white border-b flex cardShadow flex-col md:flex-row md:px-4 items-center  justify-between top-0 w-full">
+      <div className="h-[8vh] z-10 fixed  bg-white border-b flex cardShadow flex-col md:flex-row md:px-4 items-center  justify-between top-0 w-full">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">

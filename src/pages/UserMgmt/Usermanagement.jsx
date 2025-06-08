@@ -105,7 +105,7 @@ const Usermanagement = () => {
   }, []);
 
   return (
-    <div className="bg-white p-4">
+    <div className="bg-white p-4 mb-10 cardShadow">
       <div className="flex justify-between items-center bg-white">
         <h2 className=" text-primary w-fit rounded-sm text-base font-medium">
           User Management

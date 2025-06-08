@@ -113,7 +113,7 @@ const BookingSetup = () => {
   }, []);
 
   return (
-    <div className="bg-white p-4">
+    <div className="bg-white p-4 mb-10 cardShadow">
       <div className="flex items-center divide-x divixe-gray-200 font-medium">
         {Tabs?.map((item, index) => (
           <button

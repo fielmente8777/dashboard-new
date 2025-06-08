@@ -149,11 +149,11 @@ export const SidebarData = [
         link: `grm/all-requests`,
         icon: <FaCodePullRequest size={16} />,
       },
-      {
-        name: "Emergency Request",
-        link: `grm/emergency-request`,
-        icon: <MdEmergencyShare size={18} />,
-      },
+      // {
+      //   name: "Emergency Request",
+      //   link: `grm/emergency-request`,
+      //   icon: <MdEmergencyShare size={18} />,
+      // },
       {
         name: "GRM Settings",
         link: `grm/settings`,

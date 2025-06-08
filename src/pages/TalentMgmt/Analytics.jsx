@@ -38,7 +38,7 @@ const Analytics = () => {
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
   return (
-    <div className="p-4 bg-white">
+    <div className="p-4 bg-white mb-10 cardShadow">
       <h2 className="text-sm font-semibold text-[#575757]">
         Application Analytics
       </h2>

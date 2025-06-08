@@ -47,7 +47,7 @@ const Settings = () => {
         <div >
 
 
-            <div className="flex flex-col p-4 bg-white rounded-lg  text-[#575757] w-full">
+            <div className="flex flex-col p-4 bg-white   cardShadow mb-10 text-[#575757] w-full">
                 <h2 className="font-semibold text-[#575757] mb-2">Generate GRM for your Hotel</h2>
                 <p className="text-[#575757]/70 mb-6">
                     To begin testing, Generate the guest request management website url and feel free to share with the upcomming guests.

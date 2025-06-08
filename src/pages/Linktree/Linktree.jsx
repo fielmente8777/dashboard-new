@@ -2,7 +2,7 @@ import React from 'react'
 import CommanHeader from '../../components/Navbar/CommanHeader';
 const Linktree = () => {
     return (
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName="Linktree Setup" />
             <hr className="mt-3" />
             <p className="text-gray-600 mb-4 mt-2">
