@@ -48,7 +48,7 @@ const Leads = () => {
       });
 
       console.log(response)
-      setEnquires(response?.reverse());
+      setEnquires(response);
     } catch (error) {
       console.error("Error fetching enquires:", error);
     } finally {
@@ -307,12 +307,12 @@ const Leads = () => {
                           {enquery?.status}
                         </td> */}
                       </tr>
-                    ))
+                    )).reverse()
                   }
                 </tbody>
               ) : (
                 <tr className="bg-white text-gray-600 text-center border">
-                  <td colSpan={6} className="py-2">
+                  <td colSpan={7} className="py-2">
                     Data not found!
                   </td>
                 </tr>
