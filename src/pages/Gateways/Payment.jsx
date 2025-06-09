@@ -1,7 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import DataContext from "../../context/DataContext";
+import Card from "react-bootstrap/Card";
+import AuthContext from "../../Context/AuthProvider";
+import Paytm from "../../Images/paytm.png";
+import Razorpay from "../../Images/razorpay.avif";
+import "../../Style/PaymentGateway.css";
 
-const PaymentGateway = () => {
+function Payment() {
   const {
     fetchBookingDatatData,
     gateway,
@@ -9,10 +13,10 @@ const PaymentGateway = () => {
     razorpayData,
     fetchByOrderid,
     fetchByPaymentid,
-  } = useContext(DataContext);
+  } = useContext(AuthContext);
   useEffect(() => {
-    // fetchBookingDatatData();
-    // fetchRazorpayData("0");
+    fetchBookingDatatData();
+    fetchRazorpayData("0");
   }, []);
   const [skip, setskip] = useState(0);
   const [id, setId] = useState("");
@@ -39,33 +43,29 @@ const PaymentGateway = () => {
     console.log("Payment ID:", id);
   };
   return (
-    <div>
-      <div className="grid grid-cols-4 gap-5">
-        <PaymentCard gateway={gateway} image={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s"} paymentMethod={"Razorpay"} />
-        <PaymentCard gateway={gateway} image={"https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/2560px-PhonePe_Logo.svg.png"} paymentMethod={"PhonePe"} />
-        {/* <PaymentCard gateway={gateway} image={"https://pwebassets.paytm.com/commonwebassets/ir/images/press-kit/brand.png"} paymentMethod={"Razorpay"} /> */}
-        {/* <PaymentCard gateway={gateway} image={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s"} paymentMethod={"Razorpay"} /> */}
-
-        {/* <div className="relative border px-5 bg-white h-[200px]">
-          <div className=" border-2 flex items-center justify-center aspect-4/2 p">
-            <img
-              className=""
-              srcSet="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/2560px-PhonePe_Logo.svg.png"
-              alt="razorpay"
-            />
-            <div className="absolute bottom-2 right-2">
-              {gateway?.Type === "PhonePe" ? (
-                <button>Deactivate</button>
-              ) : (
-                <a className="bg-green-600 px-2 py-1 rounded-md text-white" href="https://payroll.razorpay.com/login" target="_blank">
-                  <button>Activate</button>
-                </a>
-              )}
-            </div>
-          </div>
-        </div> */}
+    <>
+      <div className="paymentgateway">
         <div className="c-cards">
-          {/* <Card className="c-crd-inr ">
+          <Card className="c-crd-inr">
+            <Card.Img
+              className="c-img p-0"
+              variant="top"
+              src={Razorpay}
+              title="Razorpay"
+            />
+            {gateway.Type === "Razorpay" ? (
+              <a>
+                <button>Deactivate</button>
+              </a>
+            ) : (
+              <a href=" https://payroll.razorpay.com/login" target="_blank">
+                <button>Activate</button>
+              </a>
+            )}
+          </Card>
+        </div>
+        <div className="c-cards">
+          <Card className="c-crd-inr ">
             <Card.Img
               className="c-img"
               variant="top"
@@ -83,33 +83,33 @@ const PaymentGateway = () => {
                 <button>Activate</button>
               </a>
             )}
-          </Card> */}
+          </Card>
         </div>
         <div className="c-cards">
-          {/* <Card className="c-crd-inr">
+          <Card className="c-crd-inr">
             <Card.Img
               className="c-img"
               variant="top"
               src={Paytm}
               title="Make My Trip"
             />
-            <button style={{ background: "red" }}>Coming Soon</button>
-          </Card> */}
+            <button style={{background:"red"}}>Coming Soon</button>
+          </Card>
         </div>
         <div className="c-cards">
-          {/* <Card className="c-crd-inr">
+          <Card className="c-crd-inr">
             <Card.Img
               className="c-img"
               variant="top"
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/1200px-Stripe_Logo%2C_revised_2016.svg.png"
               title="Stripe"
             />
-            <button style={{ background: "red" }}>Coming Soon</button>
-          </Card> */}
+            <button style={{background:"red"}}>Coming Soon</button>
+          </Card>
         </div>
-
+        
       </div>
-      {gateway?.Type === "Razorpay" ? (
+      {gateway.Type === "Razorpay" ? (
         <div>
           <div
             style={{
@@ -187,7 +187,7 @@ const PaymentGateway = () => {
                     <td>{dt.contact}</td>
                     <td>{dt.vpa}</td>
                     <td>
-                      {dt.amount / 100}-{dt.currency}
+                      {dt.amount/100}-{dt.currency}
                     </td>
                     <td>{dt.order_id}</td>
                     <td>{dt.id}</td>
@@ -222,34 +222,8 @@ const PaymentGateway = () => {
       ) : (
         ""
       )}
-    </div>
+    </>
   );
-};
-
-export default PaymentGateway;
-
-
-
-
-
-const PaymentCard = ({ gateway, image, paymentMethod }) => {
-  return (
-    <div className="relative border px-5  h-[200px]">
-      <img
-        className=""
-        src={image}
-        alt="razorpay"
-      />
-
-      <div className="absolute bottom-2 right-2">
-        {gateway?.Type === paymentMethod ? (
-          <button>Deactivate</button>
-        ) : (
-          <a className="bg-green-600 px-2 py-1 rounded-md text-white" href="https://payroll.razorpay.com/login" target="_blank">
-            <button>Activate</button>
-          </a>
-        )}
-      </div>
-    </div>
-  )
 }
+
+export default Payment;

@@ -200,6 +200,7 @@ const Leads = () => {
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">Email</th>
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">Check In</th>
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">Check Out</th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Stage</th>
                 </tr>
               </thead>
 
@@ -209,7 +210,7 @@ const Leads = () => {
                     <tr
                       key={index}
                       className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                        ? " text-purple-500"
+                        ? " text-[#575757]"
                         : "text-[#575757]"
                         }`}
                       onClick={() => {
@@ -236,13 +237,14 @@ const Leads = () => {
                         {enquery.check_out ? enquery.check_out :
                           extractBookingInfo(enquery?.Message)?.checkOut || "-"}
                       </td>
+                      <td className="py-3 px-2 text-[14px] text-[#575757]">{enquery?.status}</td>
                     </tr>
                   ))}
                 </tbody>
               ) : (
                 <tbody>
                   <tr className="bg-white text-gray-600 text-center border">
-                    <td colSpan={7} className="py-2">
+                    <td colSpan={8} className="py-2">
                       Data not found!
                     </td>
                   </tr>
