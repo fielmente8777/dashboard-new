@@ -32,3 +32,41 @@ export const filterBookingData = async (filterData) => {
     throw error;
   }
 };
+
+export const filterBookingDates = async (filterData) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/booking/filter/dates`,
+      filterData,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response?.data;
+  } catch (error) {
+    console.error("Error fetching booking data:", error);
+    throw error;
+  }
+};
+
+export const filterBookingWithId = async (filterData) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/booking/filter/bookingid`,
+      filterData,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response?.data;
+  } catch (error) {
+    console.error("Error fetching booking data:", error);
+    throw error;
+  }
+};

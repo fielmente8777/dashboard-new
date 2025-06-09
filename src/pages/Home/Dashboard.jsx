@@ -12,9 +12,9 @@ import Services from "../../components/Card/Services";
 
 const Dashboard = () => {
   const [enquires, setEnquires] = useState([]);
-  const [convertedEnquiries, setConvertedEnquiries] = useState(0)
-  const [eazobotEnquiries, setEazobotEnquiries] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [convertedEnquiries, setConvertedEnquiries] = useState(0);
+  const [eazobotEnquiries, setEazobotEnquiries] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   // const navigate = useNavigate();
   // const location = useLocation();
@@ -73,34 +73,34 @@ const Dashboard = () => {
 
   const { user } = useSelector((state) => state?.userProfile);
 
-
   const fetchEnquires = async (token) => {
-
     const hid = handleLocalStorage("hid");
     try {
       const response = await getAllClientEnquires({
         token,
         hid,
       });
-      console.log(response)
+      console.log(response);
       setEnquires(response);
-      const converted = response?.filter((item) => item.status.toLowerCase() === "converted")
+      const converted = response?.filter(
+        (item) => item.status.toLowerCase() === "converted"
+      );
       const fromEazobot = response?.filter((item) => {
-        if (!item.created_from || typeof item.created_from !== "string") return false;
+        if (!item.created_from || typeof item.created_from !== "string")
+          return false;
         const source = item.created_from.toLowerCase();
-        return source === "eazobot" || source === "chatbot" || source === "chat bot";
+        return (
+          source === "eazobot" || source === "chatbot" || source === "chat bot"
+        );
       });
-      setEazobotEnquiries(fromEazobot)
-      setConvertedEnquiries(converted?.length)
-
+      setEazobotEnquiries(fromEazobot);
+      setConvertedEnquiries(converted?.length);
     } catch (error) {
       console.error("Error fetching enquires:", error);
-    }
-    finally {
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
-
 
   useEffect(() => {
     fetchEnquires(localStorage.getItem("token"));
@@ -108,39 +108,40 @@ const Dashboard = () => {
 
   const data = [
     {
-      "amount": enquires?.length,
-      "lable": "Totle Leads",
-      "progress": 50
+      amount: enquires?.length,
+      lable: "Totle Leads",
+      progress: 50,
     },
     {
-      "amount": getTodayQuery(enquires).length,
-      "lable": "Today Leads",
-      "progress": 18
+      amount: getTodayQuery(enquires).length,
+      lable: "Today Leads",
+      progress: 18,
     },
     {
-      "amount": eazobotEnquiries?.length,
-      "lable": "Eazotbot Leads",
-      "progress": 100
+      amount: eazobotEnquiries?.length,
+      lable: "Eazotbot Leads",
+      progress: 100,
     },
     {
-      "amount": convertedEnquiries,
-      "lable": "Lead Conversion",
-      "progress": 78
+      amount: convertedEnquiries,
+      lable: "Lead Conversion",
+      progress: 78,
     },
-
-  ]
+  ];
 
   return (
-
     <>
-      {!loading ?
+      {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar px-4">
-
           {/*   */}
           <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6">
             {data?.map((item, index) => (
-              <DashboardCard amount={item.amount} label={item.lable} progress={item.progress} key={index} />
-
+              <DashboardCard
+                amount={item.amount}
+                label={item.lable}
+                progress={item.progress}
+                key={index}
+              />
             ))}
           </div>
           <div className="grid grid-cols-5 gap-5 ">
@@ -149,8 +150,6 @@ const Dashboard = () => {
             </div>
             <div className="col-span-2">
               <TemperatureCard />
-
-
             </div>
           </div>
 
@@ -158,8 +157,6 @@ const Dashboard = () => {
             <Review />
 
             <Services />
-
-
 
             <div className="col-span-2">
               <MiniLineChartCard
@@ -173,8 +170,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        :
-
+      ) : (
         <div className="flex flex-col gap-5 hide-scrollbar px-4">
           {/* <div className="h-14 w-1/3 bg-zinc-200 animate-pulse rounded" /> */}
 
@@ -204,9 +200,8 @@ const Dashboard = () => {
             <div className="col-span-2 bg-zinc-200 animate-pulse rounded-xl h-[300px]" />
           </div>
         </div>
-      }
+      )}
     </>
-
   );
 };
 
