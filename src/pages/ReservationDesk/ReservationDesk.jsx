@@ -97,7 +97,7 @@ const ReservationDesk = () => {
       const filterData = {
         checkIn: dateFrom,
         checkOut: dateTo,
-        hid: String(handleLocalStorage("hid")),
+        hId: String(handleLocalStorage("hid")),
         token: handleLocalStorage("token"),
       };
 
@@ -107,7 +107,7 @@ const ReservationDesk = () => {
 
     if (filterType === "bookingId") {
       const filterData = {
-        hid: String(handleLocalStorage("hid")),
+        hId: String(handleLocalStorage("hid")),
         token: handleLocalStorage("token"),
         bookingId: bookingId,
       };
@@ -148,7 +148,7 @@ const ReservationDesk = () => {
               checked={filters === filter?.value}
               onChange={handleFilterChange}
             />
-            <label htmlFor="">{filter?.label}</label>
+            <label htmlFor="" className="font-semibold">{filter?.label}</label>
           </div>
         ))}
       </div>
@@ -341,14 +341,14 @@ const ReservationDesk = () => {
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
-                        // onClick={() => handleInfoPopup(row)}
+                      // onClick={() => handleInfoPopup(row)}
                       >
                         {" "}
                         <a>{row?.bookingId}</a>{" "}
                       </td>
                       <td
                         className="py-3 px-4 text-[14px]  text-[#575757]"
-                        // onClick={() => handleInfoPopupII(row)}
+                      // onClick={() => handleInfoPopupII(row)}
                       >
                         {row?.guestInfo?.guestName}
                       </td>
@@ -412,13 +412,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                            // onClick={() => {
-                            //     BookingCehckinStatus(
-                            //         row.bookingId,
-                            //         "true",
-                            //         "false"
-                            //     );
-                            // }}
+                          // onClick={() => {
+                          //     BookingCehckinStatus(
+                          //         row.bookingId,
+                          //         "true",
+                          //         "false"
+                          //     );
+                          // }}
                           >
                             Check In
                           </button>
@@ -435,13 +435,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                            // onClick={() => {
-                            //     BookingCehckinStatus(
-                            //         row.bookingId,
-                            //         "true",
-                            //         "true"
-                            //     );
-                            // }}
+                          // onClick={() => {
+                          //     BookingCehckinStatus(
+                          //         row.bookingId,
+                          //         "true",
+                          //         "true"
+                          //     );
+                          // }}
                           >
                             Check Out
                           </button>
