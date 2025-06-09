@@ -70,3 +70,22 @@ export const filterBookingWithId = async (filterData) => {
     throw error;
   }
 };
+
+export const filterBookingWithPayment = async (filterData, id) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/booking/filter/payment/${id}`,
+      filterData,
+      {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response?.data;
+  } catch (error) {
+    console.error("Error fetching booking data:", error);
+    throw error;
+  }
+};

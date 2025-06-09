@@ -16,7 +16,6 @@ const Navbar = () => {
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
 
-
   useEffect(() => {
     if (token) {
       dispatch(fetchUserProfile(token));
@@ -65,11 +64,9 @@ const Navbar = () => {
     // }, 1000)
   };
 
-
   return (
-    <div className="">
-
-      <div className="h-[8vh] z-10 fixed  bg-white border-b flex cardShadow flex-col md:flex-row md:px-4 items-center  justify-between top-0 w-full">
+    <div className="sticky top-0">
+      <div className="h-[8vh] z-10  bg-white border-b flex cardShadow flex-col md:flex-row md:px-4 items-center justify-between top-0 w-full overflow-hidden">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -102,16 +99,17 @@ const Navbar = () => {
           </Link>
         </div> */}
 
-          <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
+          {/* <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
             <GiHamburgerMenu size={20} />
-          </div>
+          </div> */}
 
-          <div className="flex text-zinc-700 items-center fixed mt-4 mr-4 top-0 right-0">
+          <div className="flex text-zinc-700 items-center">
             <div
               onClick={() => setOpen(true)}
               className="flex gap-2 py-2 text-white bg-gradient-to-r from-primary to-[#fd5c01]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md hover:scale-95"
             >
-              <RxDashboard size={22} /> <p className="text-md font-semibold">Marketplace</p>
+              <RxDashboard size={22} />{" "}
+              <p className="text-md font-semibold">Marketplace</p>
             </div>
           </div>
         </div>
@@ -119,7 +117,6 @@ const Navbar = () => {
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
       </div>
     </div>
-
   );
 };
 

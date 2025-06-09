@@ -5,6 +5,7 @@ import {
   filterBookingData,
   filterBookingDates,
   filterBookingWithId,
+  filterBookingWithPayment,
   getBookingsData,
 } from "../../services/api/reservationDesk";
 import { useState } from "react";
@@ -21,15 +22,15 @@ const filterData = [
 
 const filterBookingStatus = [
   {
-    value: "pay at hotel",
+    value: "1",
     label: "Pay at Hotel",
   },
   {
-    value: "advanced",
+    value: "2",
     label: "Advanced",
   },
   {
-    value: "success",
+    value: "3",
     label: "Success",
   },
 ];
@@ -38,7 +39,7 @@ const ReservationDesk = () => {
   const [bookingData, setBookingsData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState("date range");
-  const [bookingStatus, setBookingStatus] = useState("pay at hotel");
+  const [bookingStatus, setBookingStatus] = useState("1");
   const [bookingId, setBookingId] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -89,33 +90,50 @@ const ReservationDesk = () => {
     setFilters(value);
   };
 
-  const applyFilters = async (filterType) => {
+  const applyFilters = async (filterType, id) => {
+    console.log(filterType);
     if (filterType === "dates") {
+      setIsLoading(true);
       const dateFrom = new Date(fromDate).toLocaleDateString("en-CA", {});
       const dateTo = new Date(toDate).toLocaleDateString("en-CA", {});
 
       const filterData = {
         checkIn: dateFrom,
         checkOut: dateTo,
-        hid: String(handleLocalStorage("hid")),
+        hId: String(handleLocalStorage("hid")),
         token: handleLocalStorage("token"),
       };
 
       const response = await filterBookingDates(filterData);
-      console.log(response);
+      setBookingsData(response?.Details);
+      setIsLoading(false);
     }
 
     if (filterType === "bookingId") {
+      setIsLoading(true);
       const filterData = {
-        hid: String(handleLocalStorage("hid")),
+        hId: String(handleLocalStorage("hid")),
         token: handleLocalStorage("token"),
         bookingId: bookingId,
       };
       const response = await filterBookingWithId(filterData);
+      setBookingsData(response?.Details);
+      setIsLoading(false);
+    }
+
+    if (filterType === "payment") {
+      setIsLoading(true);
+      const filterData = {
+        hId: String(handleLocalStorage("hid")),
+        token: handleLocalStorage("token"),
+      };
+
+      const response = await filterBookingWithPayment(filterData, id);
       console.log(response);
+      setBookingsData(response?.Bookings);
+      setIsLoading(false);
     }
   };
-  console.log(bookingId);
 
   return (
     <div className="bg-white p-4 mb-10 cardShadow">
@@ -148,7 +166,9 @@ const ReservationDesk = () => {
               checked={filters === filter?.value}
               onChange={handleFilterChange}
             />
-            <label htmlFor="">{filter?.label}</label>
+            <label htmlFor="" className="font-semibold">
+              {filter?.label}
+            </label>
           </div>
         ))}
       </div>
@@ -257,7 +277,10 @@ const ReservationDesk = () => {
                   type="radio"
                   name="booking-status"
                   checked={bookingStatus === filter?.value}
-                  onChange={(e) => setBookingStatus(filter?.value)}
+                  onChange={(e) => {
+                    applyFilters("payment", filter?.value);
+                    setBookingStatus(filter?.value);
+                  }}
                 />
                 <label htmlFor="" className="text-lg uppercase">
                   {filter?.label}
