@@ -13,17 +13,25 @@ import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
+import { IoArrowBackCircleOutline } from "react-icons/io5";
 
-const Login = () => {
+const TotalStep = 2;
+
+const Signup = () => {
   const [formData, setFormData] = useState({
-    // email: 'reservation@minimalisthotes.com',
     email: "",
-    // email: '',
-    // email: '',
     password: "",
+    hotelName: "",
+    phoneNumber: "",
+    address: "",
+    country: "",
+    state: "",
+    city: "",
   });
-  const [spinnerLoader, setSpinnerLoader] = useState(false);
 
+  const [step, setStep] = useState(1);
+
+  const [spinnerLoader, setSpinnerLoader] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
@@ -107,8 +115,8 @@ const Login = () => {
 
   return (
     <div className="w-full h-screen flex items-center justify-center md:px-6">
-      <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
-        <div>
+      <div className="max-w-7xl w-full border-2 py-6 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
+        <div className="hidden md:block">
           <div className="w-full">
             <img
               src="/loginform.jpg"
@@ -119,74 +127,221 @@ const Login = () => {
         </div>
 
         <div>
+          {step > 1 && (
+            <div>
+              <IoArrowBackCircleOutline
+                className="text-3xl cursor-pointer mb-2"
+                onClick={() => setStep(step - 1)}
+              />
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <h2 className="font-bold text-xl">Welcome Back!</h2>
-              <h3 className="text-sm font-medium text-gray-500">
+            <div className="">
+              <h2 className="font-bold text-xl">Register Here!</h2>
+              {/* <h3 className="text-sm font-medium text-gray-500">
                 Login your account!
-              </h3>
+              </h3> */}
             </div>
 
-            <div className="space-y-6 mt-6">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="" className="font-medium text-gray-600">
-                  Email
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Enter you email"
-                  className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
-                  onChange={handleChange}
-                  value={formData.email}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="" className="font-medium text-gray-600">
-                  Password
-                </label>
-
-                <div className="w-full relative">
+            {step === 1 && (
+              <div className="space-y-6 mt-6">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="" className="font-medium text-gray-600">
+                    Name of the Hotel
+                  </label>
                   <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                    name="hotelName"
+                    type="text"
+                    placeholder="Enter you email"
+                    className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
                     onChange={handleChange}
-                    value={formData.password}
+                    value={formData.hotelName}
                   />
+                </div>
 
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                    {showPassword ? (
-                      <AiOutlineEye
-                        size={20}
-                        onClick={togglePassword}
-                        className="text-gray-400"
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="" className="font-medium text-gray-600">
+                    Enter Password
+                  </label>
+
+                  <div className="w-full relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                      onChange={handleChange}
+                      value={formData.password}
+                    />
+
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                      {showPassword ? (
+                        <AiOutlineEye
+                          size={20}
+                          onClick={togglePassword}
+                          className="text-gray-400"
+                        />
+                      ) : (
+                        <HiOutlineEyeOff
+                          size={20}
+                          onClick={togglePassword}
+                          className="text-gray-400"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      Phone Number
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="phoneNumber"
+                        type={"number"}
+                        placeholder="Enter your number"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.phoneNumber}
                       />
-                    ) : (
-                      <HiOutlineEyeOff
-                        size={20}
-                        onClick={togglePassword}
-                        className="text-gray-400"
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      Email
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="email"
+                        type={"email"}
+                        placeholder="Enter your email"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.email}
                       />
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="flex justify-end">
-                <Link className="text-sm text-blue-600 underline inline-block font-medium">
-                  Forgot password?
-                </Link>
+            {step === 2 && (
+              <div className="space-y-6 mt-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      Address
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="address"
+                        type={"text"}
+                        placeholder="Enter your address"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.address}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      Country
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="country"
+                        type={"text"}
+                        placeholder="Enter your Country"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.country}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      State
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="state"
+                        type={"text"}
+                        placeholder="Enter your State"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.state}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="" className="font-medium text-gray-600">
+                      City
+                    </label>
+
+                    <div className="w-full relative">
+                      <input
+                        name="city"
+                        type={"text"}
+                        placeholder="Enter your City"
+                        className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                        onChange={handleChange}
+                        value={formData.city}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
+            )}
 
-              <div className="flex">
-                <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
-                  Login {spinnerLoader && <Loader size={20} color="white" />}
+            {step === TotalStep ? (
+              <div className="flex mt-5">
+                <button
+                  disabled={
+                    !formData?.address ||
+                    !formData?.country ||
+                    !formData?.state ||
+                    !formData?.city
+                  }
+                  className="bg-primary disabled:opacity-50 text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center"
+                >
+                  Sumbmit
+                  {spinnerLoader && <Loader size={20} color="white" />}
                 </button>
               </div>
-            </div>
+            ) : (
+              <div className="flex mt-5">
+                <button
+                  disabled={
+                    !formData?.email ||
+                    !formData?.password ||
+                    !formData?.hotelName ||
+                    !formData?.phoneNumber
+                  }
+                  type="button"
+                  className="bg-primary disabled:opacity-50 text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setStep(step + 1);
+                  }}
+                >
+                  continue
+                </button>
+              </div>
+            )}
 
             {/* <div className="flex gap-3 items-center mt-5">
               <h2 className="text-gray-500 font-medium">
@@ -199,9 +354,9 @@ const Login = () => {
 
             <div>
               <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
-                Don't have an account?
-                <Link to="/signup" className="text-blue-600 underline">
-                  Sign up
+                Already have an account?
+                <Link to="/login" className="text-blue-600 underline">
+                  Login
                 </Link>
               </h2>
             </div>
@@ -212,7 +367,7 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
 
 // <div className="max-w-[1600px] mx-auto bg-[#f5f5f5] w-full h-[100vh] grid grid-cols-1 lg:grid-cols-2">
 //       <div className="h-screen bg-white overflow-hidden">

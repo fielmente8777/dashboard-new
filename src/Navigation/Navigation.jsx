@@ -7,6 +7,7 @@ import Login from "../pages/Login/Login";
 import ProtectedRoute from "../Protected/ProtecRoute";
 import RootRoute from "./RootRoute";
 import Whatsapp from "../components/Contacts/WhtasApp";
+import Signup from "../pages/Register/Signup";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -20,6 +21,8 @@ const Navigation = () => {
       </Route>
       {/* Route for auth */}
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+
       {/* Route for /dashboard/client */}
       <Route path={`${dashboardRootPath}/:ndid/*`} element={<ProtectedRoute />}>
         <Route index element={<Dashboard />} />

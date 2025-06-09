@@ -117,7 +117,10 @@ const Leads = () => {
   // Pagination Logic
   const totalPages = Math.ceil(filteredEnquires.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentItems = filteredEnquires.slice(startIndex, startIndex + itemsPerPage);
+  const currentItems = filteredEnquires.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -129,31 +132,33 @@ const Leads = () => {
     <div className="cardShadow">
       <div className="flex justify-between items-center bg-white">
         <div className="flex mt-4">
-
-
           {header.map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] ${active === index
-                ? "border-b-2 border-[#575757]"
-                : "border-b-2 border-transparent"
-                } px-4 py-3 bg-white font-medium text-[#575757]`}
+              className={`text-[14px] ${
+                active === index
+                  ? "border-b-2 border-[#575757]"
+                  : "border-b-2 border-transparent"
+              } px-4 py-3 bg-white font-medium text-[#575757]`}
             >
               {item}
             </button>
-
           ))}
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
-            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
-              } `}
+            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
+              loading ? "animate-spin" : ""
+            } `}
           >
             <MdRefresh size={25} />
           </div>
         </div>
         <div className=" py-2 px-4 mt-4 flex items-center gap-4">
-          <label htmlFor="itemsPerPage" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="itemsPerPage"
+            className="text-sm font-medium text-gray-700"
+          >
             Items per page:
           </label>
           <select
@@ -169,8 +174,6 @@ const Leads = () => {
             <option value={100}>100</option>
           </select>
         </div>
-
-
       </div>
 
       <div className="bg-white p-4  mb-10">
@@ -193,13 +196,30 @@ const Leads = () => {
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Date Added</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Source</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Name</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Contact</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Email</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Check In</th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">Check Out</th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Date Added
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Source
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Name
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Contact
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Email
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Message
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Check In
+                  </th>
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Check Out
+                  </th>
                 </tr>
               </thead>
 
@@ -208,33 +228,50 @@ const Leads = () => {
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
-                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                        ? " text-purple-500"
-                        : "text-[#575757]"
-                        }`}
+                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                        enquery?.status === "Open"
+                          ? " text-purple-500"
+                          : "text-[#575757]"
+                      }`}
                       onClick={() => {
                         setSelectedLead(enquery);
                         setIsPopupOpen(true);
                       }}
                     >
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
-                        {enquery?.Created_at ? formatDateTime(enquery?.Created_at) : ""}
+                        {enquery?.Created_at
+                          ? formatDateTime(enquery?.Created_at)
+                          : ""}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
-                        {enquery.created_from?.toLowerCase() === "chatbot" ? "Eazobot" : enquery.created_from}
+                        {enquery?.created_from?.toLowerCase() === "chatbot"
+                          ? "Eazobot"
+                          : enquery.created_from}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
-                        {enquery.Name.slice(0, 15)}
+                        {enquery?.Name.slice(0, 15)}
                       </td>
-                      <td className="py-3 px-2 text-[14px] capitalize">{enquery?.Contact}</td>
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">{enquery.Email}</td>
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery.check_in ? enquery.check_in :
-                          extractBookingInfo(enquery?.Message)?.checkIn || "-"}
+                      <td className="py-3 px-2 text-[14px] capitalize">
+                        {enquery?.Contact}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery.check_out ? enquery.check_out :
-                          extractBookingInfo(enquery?.Message)?.checkOut || "-"}
+                        {enquery?.Email}
+                      </td>
+
+                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                        {enquery?.Message}
+                      </td>
+                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                        {enquery?.check_in
+                          ? enquery.check_in
+                          : extractBookingInfo(enquery?.Message)?.checkIn ||
+                            "-"}
+                      </td>
+                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                        {enquery?.check_out
+                          ? enquery.check_out
+                          : extractBookingInfo(enquery?.Message)?.checkOut ||
+                            "-"}
                       </td>
                     </tr>
                   ))}
@@ -269,9 +306,11 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-1.5 text-sm rounded-md transition-all whitespace-nowrap duration-200
-          ${currentPage === 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"}`}
+          ${
+            currentPage === 1
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 ← Previous
               </button>
@@ -279,7 +318,7 @@ const Leads = () => {
               {/* Page Numbers */}
               <div className="flex overflow-x-auto hide-scrollbar">
                 {Array.from({ length: totalPages }, (_, index) => index + 1)
-                  .filter(page => {
+                  .filter((page) => {
                     return (
                       page === 1 || // first page
                       page === totalPages || // last page
@@ -295,15 +334,22 @@ const Leads = () => {
                   }, [])
                   .map((item, idx) =>
                     item === "ellipsis" ? (
-                      <span key={`ellipsis-${idx}`} className="px-2 text-gray-400">...</span>
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-2 text-gray-400"
+                      >
+                        ...
+                      </span>
                     ) : (
                       <button
                         key={item}
                         onClick={() => handlePageChange(item)}
                         className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200
-                  ${currentPage === item
-                            ? "bg-primary text-white shadow-sm"
-                            : "text-gray-700 hover:bg-gray-100"}`}
+                  ${
+                    currentPage === item
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                       >
                         {item}
                       </button>
@@ -311,16 +357,16 @@ const Leads = () => {
                   )}
               </div>
 
-
-
               {/* Next Button */}
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-1.5 text-sm rounded-md whitespace-nowrap transition-all duration-200
-          ${currentPage === totalPages
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"}`}
+          ${
+            currentPage === totalPages
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 Next →
               </button>
