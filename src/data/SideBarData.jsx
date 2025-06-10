@@ -224,12 +224,12 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup size={22} />,
   },
 
-  {
-    name: "Eazobot",
-    key: "Eazobot",
-    link: `eazobot`,
-    icon: <TiSocialSkype size={24} />,
-  },
+  // {
+  //   name: "Eazobot",
+  //   key: "Eazobot",
+  //   link: `eazobot`,
+  //   icon: <TiSocialSkype size={24} />,
+  // },
 
   // {
   //   name: "Conversational Tool",
