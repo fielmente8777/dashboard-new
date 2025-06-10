@@ -33,8 +33,6 @@ const Sidebar = () => {
     isAuthLoading,
   } = useSelector((state) => state.userProfile);
 
-  console.log(loading);
-
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
   const { setAuth } = useContext(DataContext);
   const { isOpen } = useSelector((state) => state.toggle);
