@@ -200,7 +200,7 @@ const Login = () => {
             <div>
               <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
                 Don't have an account?
-                <Link to="/signup" className="text-blue-600 underline">
+                <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
                   Sign up
                 </Link>
               </h2>

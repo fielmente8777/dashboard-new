@@ -32,43 +32,45 @@ const RoomsAndInventory = () => {
   const [date, setDate] = useState(today);
   const [prevDate, setprevDate] = useState();
   const [nextDate, setnextDate] = useState();
-  const [inventoryDatas, setinventoryDatas] = useState({
-    Inventory: {
-      1: {
-        "2024-05-10": 2,
-        "2024-05-11": 2,
-        "2024-05-12": 2,
-        "2024-05-13": 2,
-        "2024-05-14": 2,
-        "2024-05-15": 3,
-        "2024-05-16": 2,
-        "2024-05-17": 2,
-      },
-      2: {
-        "2024-05-10": 2,
-        "2024-05-11": 2,
-        "2024-05-12": 2,
-        "2024-05-13": 2,
-        "2024-05-14": 4,
-        "2024-05-15": 2,
-        "2024-05-16": 2,
-        "2024-05-17": 2,
-      },
-      3: {
-        "2024-05-10": 2,
-        "2024-05-11": 2,
-        "2024-05-12": 2,
-        "2024-05-13": 2,
-        "2024-05-14": 4,
-        "2024-05-15": 2,
-        "2024-05-16": 2,
-        "2024-05-17": 2,
-      },
-    },
-    Status: true,
-    next: "2024-05-17",
-    prev: "2024-05-10",
-  });
+  const [inventoryDatas, setinventoryDatas] = useState(
+    //   {
+    //   Inventory: {
+    //     1: {
+    //       "2024-05-10": 2,
+    //       "2024-05-11": 2,
+    //       "2024-05-12": 2,
+    //       "2024-05-13": 2,
+    //       "2024-05-14": 2,
+    //       "2024-05-15": 3,
+    //       "2024-05-16": 2,
+    //       "2024-05-17": 2,
+    //     },
+    //     2: {
+    //       "2024-05-10": 2,
+    //       "2024-05-11": 2,
+    //       "2024-05-12": 2,
+    //       "2024-05-13": 2,
+    //       "2024-05-14": 4,
+    //       "2024-05-15": 2,
+    //       "2024-05-16": 2,
+    //       "2024-05-17": 2,
+    //     },
+    //     3: {
+    //       "2024-05-10": 2,
+    //       "2024-05-11": 2,
+    //       "2024-05-12": 2,
+    //       "2024-05-13": 2,
+    //       "2024-05-14": 4,
+    //       "2024-05-15": 2,
+    //       "2024-05-16": 2,
+    //       "2024-05-17": 2,
+    //     },
+    //   },
+    //   Status: true,
+    //   next: "2024-05-17",
+    //   prev: "2024-05-10",
+    // }
+  );
 
   const [priceDatas, setpriceDatas] = useState({
     Price: {
@@ -111,12 +113,12 @@ const RoomsAndInventory = () => {
   const [priceData, setPriceData] = useState(priceDatas.Price);
   const [PriceBulkupdate, setPriceBulkupdate] = useState({});
 
-  const [inventoryData, setInventoryData] = useState(inventoryDatas.Inventory);
+  const [inventoryData, setInventoryData] = useState(inventoryDatas?.Inventory);
   const [InventoryBulkupdate, setInventoryBulkupdate] = useState({});
   const [isBulkUpdateLoading, setIsBulkUpdateLoading] = useState(false);
 
   const x = inventoryData && Object.keys(inventoryData);
-  if (x.length !== 0) {
+  if (x?.length !== 0) {
     var dates = inventoryData && Object.keys(inventoryData[x[0]]);
   } else {
     var dates = [];
@@ -399,11 +401,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handleInventoryClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
-              showInventory === true
-                ? "border-t border-b border-primary bg-primary  text-white"
-                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
-            }`}
+            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${showInventory === true
+              ? "border-t border-b border-primary bg-primary  text-white"
+              : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
+              }`}
           >
             Inventory
           </button>
@@ -411,11 +412,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handlePriceClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
-              showPrice
-                ? "border bg-primary border-primary text-white"
-                : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
-            } `}
+            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${showPrice
+              ? "border bg-primary border-primary text-white"
+              : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+              } `}
           >
             Price
           </button>
@@ -456,11 +456,10 @@ const RoomsAndInventory = () => {
                         if (!isPreviousDisabled)
                           GetDataForDate(prevDate, "prev");
                       }}
-                      className={`${
-                        isPreviousDisabled
-                          ? "cursor-not-allowed opacity-65"
-                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                      } me-1 p-2 bg-white border rounded-full `}
+                      className={`${isPreviousDisabled
+                        ? "cursor-not-allowed opacity-65"
+                        : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
+                        } me-1 p-2 bg-white border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>
@@ -527,7 +526,7 @@ const RoomsAndInventory = () => {
             {showInventory && (
               <>
                 {inventoryData &&
-                  Object.keys(inventoryData).length > 0 &&
+                  Object.keys(inventoryData)?.length > 0 &&
                   Object?.keys(inventoryData)?.map((item, itemIndex) => (
                     <tr
                       key={itemIndex}

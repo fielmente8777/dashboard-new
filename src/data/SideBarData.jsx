@@ -22,7 +22,7 @@ import { RiWechatChannelsLine } from "react-icons/ri";
 import { CgProfile } from "react-icons/cg";
 import { RiFolderUserFill } from "react-icons/ri";
 import { RiGalleryFill } from "react-icons/ri";
-import { BiSolidOffer } from "react-icons/bi";
+import { BiSolidOffer, BiCreditCardFront } from "react-icons/bi";
 import { MdEventSeat } from "react-icons/md";
 import { FaBloggerB } from "react-icons/fa";
 import { FaQuestion } from "react-icons/fa";
@@ -30,7 +30,8 @@ import { MdPrivacyTip } from "react-icons/md";
 import { MdPolicy } from "react-icons/md";
 import { MdOutlineFreeCancellation } from "react-icons/md";
 import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
-
+import { RiReservedFill } from "react-icons/ri";
+import { IoFastFood } from "react-icons/io5";
 export const SidebarData = [
   {
     name: "Dashboard",
@@ -114,7 +115,7 @@ export const SidebarData = [
     name: "Reservation Desk",
     link: `reservation-desk`,
     key: "Reservation Desk",
-    icon: <MdAnalytics size={24} />,
+    icon: <RiReservedFill size={24} />,
     // subLinks: [
     //   {
     //     name: "Enquiries",
@@ -142,7 +143,7 @@ export const SidebarData = [
     name: "Guest Request Management",
     link: `guest-request-management`,
     key: "GRM",
-    icon: <MdOutlineSos size={26} />,
+    icon: <IoFastFood size={22} />,
     subLinks: [
       {
         name: "All Requests",
@@ -368,7 +369,7 @@ export const SidebarData = [
     name: "FrontDesk",
     key: "FrontDesk",
     link: `frontdesk`,
-    icon: <HiOutlineUserGroup />,
+    icon: <BiCreditCardFront />,
   },
 
   // {
