@@ -138,7 +138,7 @@ const ReservationDesk = () => {
   return (
     <div className="bg-white p-4 mb-10 cardShadow">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">🔍 Filter Bookings</h2>
+        <h2 className="text-md font-semibold text-gray-600">Filter Bookings</h2>
         {/* Buttons */}
         {/* <div className="flex items-center gap-4">
           <button
@@ -156,7 +156,7 @@ const ReservationDesk = () => {
         </div> */}
       </div>
       {/* filters fields tabs */}
-      <div className="flex items-center gap-2 mt-4">
+      <div className="flex items-center gap-4 mt-4">
         {filterData.map((filter) => (
           <div className="flex gap-1 items-center">
             <input
@@ -166,7 +166,7 @@ const ReservationDesk = () => {
               checked={filters === filter?.value}
               onChange={handleFilterChange}
             />
-            <label htmlFor="" className="font-semibold">
+            <label htmlFor="" className="font-medium text-wide text-gray-600">
               {filter?.label}
             </label>
           </div>
@@ -203,7 +203,7 @@ const ReservationDesk = () => {
                     startDate={fromDate}
                     endDate={toDate}
                     // minDate={new Date(min || Date.now())}
-                    placeholderText="mm-dd-yyy"
+                    placeholderText="MM/DD/YYYY"
                     className="outline-none border w-full h-full py-2 pl-4 pr-10 bg-transparent barlow text-base text-dark2 placeholder:text-dark2"
                     wrapperClassName="w-full h-full !flex items-center"
                   />
@@ -223,7 +223,7 @@ const ReservationDesk = () => {
                     selectsStart
                     startDate={fromDate}
                     endDate={toDate}
-                    placeholderText="mm-dd-yy"
+                    placeholderText="MM/DD/YYYY"
                     className="outline-none border w-full h-full py-2 pl-4 pr-10 bg-transparent barlow text-base text-dark2 placeholder:text-dark2"
                     wrapperClassName="w-full h-full !flex items-center"
                   />
@@ -364,14 +364,14 @@ const ReservationDesk = () => {
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
-                        // onClick={() => handleInfoPopup(row)}
+                      // onClick={() => handleInfoPopup(row)}
                       >
                         {" "}
                         <a>{row?.bookingId}</a>{" "}
                       </td>
                       <td
                         className="py-3 px-4 text-[14px]  text-[#575757]"
-                        // onClick={() => handleInfoPopupII(row)}
+                      // onClick={() => handleInfoPopupII(row)}
                       >
                         {row?.guestInfo?.guestName}
                       </td>
@@ -435,13 +435,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                            // onClick={() => {
-                            //     BookingCehckinStatus(
-                            //         row.bookingId,
-                            //         "true",
-                            //         "false"
-                            //     );
-                            // }}
+                          // onClick={() => {
+                          //     BookingCehckinStatus(
+                          //         row.bookingId,
+                          //         "true",
+                          //         "false"
+                          //     );
+                          // }}
                           >
                             Check In
                           </button>
@@ -458,13 +458,13 @@ const ReservationDesk = () => {
                         ) : (
                           <button
                             className="btn btn-primary"
-                            // onClick={() => {
-                            //     BookingCehckinStatus(
-                            //         row.bookingId,
-                            //         "true",
-                            //         "true"
-                            //     );
-                            // }}
+                          // onClick={() => {
+                          //     BookingCehckinStatus(
+                          //         row.bookingId,
+                          //         "true",
+                          //         "true"
+                          //     );
+                          // }}
                           >
                             Check Out
                           </button>

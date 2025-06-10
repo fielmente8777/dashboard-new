@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { MdClose } from "react-icons/md";
 
 const AppsPopup = ({ open, setOpen, authUser }) => {
 
@@ -282,15 +283,20 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
             onClick={(e) => e.stopPropagation()}
             className="text-[#575757] bg-white  w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
           >
-            <input
-              type="text"
-              autoFocus
-              onChange={(e) => setSearch(e.target.value)}
-              value={search}
-              name="search"
-              placeholder="Search Services"
-              className="bg-white py-4 w-full px-5 outline-none border shadow-sm "
-            />
+            <div className="relative flex items-center">
+
+              <input
+                type="text"
+                autoFocus
+                onChange={(e) => setSearch(e.target.value)}
+                value={search}
+                name="search"
+                placeholder="Search Services"
+                className="bg-white py-4 w-full px-5 outline-none border  "
+              />
+              <MdClose onClick={() => setOpen(false)} className="mr-5 cursor-pointer text-3xl absolute right-0" />
+            </div>
+
             <div className=" p-4 pb-20 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
               {filteredPremium.length > 0 && <div>
                 <h2 className="font-semibold mb-2">Premium Services</h2>

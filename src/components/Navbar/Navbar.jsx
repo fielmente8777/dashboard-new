@@ -66,7 +66,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0">
-      <div className="h-[8vh] z-10  bg-white border-b flex cardShadow flex-col md:flex-row md:px-4 items-center justify-between top-0 w-full overflow-hidden">
+      <div className="h-[8vh] z-10  bg-[#2e3b61] border-b flex cardShadow flex-col md:flex-row md:px-4 items-center justify-between top-0 w-full overflow-hidden">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -106,7 +106,7 @@ const Navbar = () => {
           <div className="flex text-zinc-700 items-center">
             <div
               onClick={() => setOpen(true)}
-              className="flex gap-2 py-2 text-white bg-gradient-to-r from-primary to-[#fd5c01]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md hover:scale-95"
+              className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md hover:scale-95"
             >
               <RxDashboard size={22} />{" "}
               <p className="text-md font-semibold">Marketplace</p>

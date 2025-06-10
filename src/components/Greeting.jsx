@@ -16,10 +16,10 @@ const Greeting = ({ name }) => {
     }
     return (
         <div>
-            <h1 className='text-xl font-bold text-primary/90 '>
-                {getGreet()}{name && <span className="text-orange-700">, {name}</span>}
+            <h1 className='text-xl font-bold text-white'>
+                {getGreet()}, {name && <span className="text-[#fd5c01] capitalize">{name}</span>}
             </h1>
-            <p className='font-medium text-primary/80 mt-1'>Here’s an update on what’s happening with your property!</p>
+            <p className='font-medium text-white mt-1'>Here’s an update on what’s happening with your property!</p>
 
         </div>
     )
