@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
+import { BASE_URL } from "../data/constant";
 
 const DataContext = createContext({});
 
@@ -18,6 +19,8 @@ export const DataProvider = ({ children }) => {
   const [homeNotifications, setHomeNotifications] = useState([]);
   const [emergencyNotifications, setEmergencyNotifications] = useState([]);
 
+  const [RoomsData, setRoomsData] = useState([]);
+  const [bookingData, setBookingData] = useState(null);
   const [editButton, setEditButton] = useState(false);
 
   // const host = "http://localhost:8000"
@@ -28,6 +31,61 @@ export const DataProvider = ({ children }) => {
     reconnectionAttempts: 5, // Optional: retry connection attempts
     reconnectionDelay: 1000, // Optional: retry delay (in ms)
   });
+
+  const fetchRoomsData = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/room/${localStorage.getItem(
+          "token"
+        )}/${localStorage.getItem("hid")}`,
+        {
+          method: "GET",
+          header: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(response);
+
+      if (!response.ok) {
+        console.error(`Error: ${response.status} - ${response.statusText}`);
+      } else {
+        const responseData = await response.json();
+        setRoomsData(responseData.data);
+      }
+    } catch (error) {
+      //console.log('Error:', error);
+    }
+  };
+
+  const fetchBookingData = async () => {
+    try {
+      const bookingDataResponse = await fetch(
+        `${BASE_URL}/booking/bookings/${localStorage.getItem(
+          "token"
+        )}/${localStorage.getItem("hid")}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (bookingDataResponse.ok) {
+        const bookingData = await bookingDataResponse.json();
+
+        setBookingData(bookingData);
+      } else {
+        console.error("Failed to fetch booking data");
+      }
+    } catch (error) {
+      console.error("Error fetching booking data:", error);
+    }
+  };
 
   const getAllRequest = async () => {
     setLoading(true);
@@ -168,6 +226,10 @@ export const DataProvider = ({ children }) => {
         setHomeNotifications,
         emergencyNotifications,
         setEmergencyNotifications,
+        fetchRoomsData,
+        RoomsData,
+        fetchBookingData,
+        bookingData,
       }}
     >
       {children}

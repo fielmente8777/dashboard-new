@@ -398,6 +398,12 @@ export const SidebarData = [
     link: `payment-gateway`,
     icon: <MdPayment size={22} />,
   },
+  {
+    name: "Front Desk",
+    key: "Front Desk",
+    link: `front-desk`,
+    icon: <HiOutlineUserGroup />,
+  },
 ];
 
 // "CMS",
