@@ -25,6 +25,7 @@ import Website from "../pages/CustomWebsite/Website";
 import Seo from "../pages/SEO/Seo";
 import ChannelManager from "../pages/Manager/ChannelManager";
 import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
+import FrontDesk from "../pages/FrontDesk/FrontDesk";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -68,6 +69,7 @@ const Navigation = () => {
         {/* <Route path="leads-management" element={<Leads />} /> */}
         <Route path="pms-software" element={<ChannelManager />} />
         <Route path="sms-marketing" element={<EmailMarketing />} />
+        <Route path="front-desk" element={<FrontDesk />} />
 
         {SidebarData?.map((data, index) => {
           if (!data?.subLinks)

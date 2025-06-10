@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import DataContext from "../../context/DataContext";
+import { Link } from "react-router-dom";
 
 const PaymentGateway = () => {
   const {
@@ -55,7 +56,15 @@ const PaymentGateway = () => {
           }
           paymentMethod={"PhonePe"}
         />
-        {/* <PaymentCard gateway={gateway} image={"https://pwebassets.paytm.com/commonwebassets/ir/images/press-kit/brand.png"} paymentMethod={"Razorpay"} /> */}
+        <PaymentCard
+          color={"#00296F"}
+          gateway={gateway}
+          image={
+            "https://pwebassets.paytm.com/commonwebassets/ir/images/press-kit/brand.png"
+          }
+          paymentMethod={"paytm"}
+          status={"deactivated"}
+        />
         {/* <PaymentCard gateway={gateway} image={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s"} paymentMethod={"Razorpay"} /> */}
 
         {/* <div className="relative border px-5 bg-white h-[200px]">
@@ -239,24 +248,49 @@ const PaymentGateway = () => {
 
 export default PaymentGateway;
 
-const PaymentCard = ({ gateway, image, paymentMethod }) => {
+const PaymentCard = ({ gateway, image, paymentMethod, color, status }) => {
   return (
-    <div className="relative border-2 px-5 h-[200px]">
-      <img className="" src={image} alt="razorpay" />
+    <div
+      style={{
+        backgroundColor: color ? color : "#fff",
+      }}
+      className={`relative border-2 px-5 h-[200px] shadow-lg bg-white rounded-md`}
+    >
+      <img
+        className="w-full h-full object-contain"
+        src={image}
+        alt="razorpay"
+      />
 
       <div className="absolute bottom-2 right-2">
-        {gateway?.Type === paymentMethod ? (
-          <button>Deactivate</button>
+        {status === "deactivated" ? (
+          <button className="bg-red-600 text-white px-2 py-1 rounded-md">
+            Deactivate
+          </button>
         ) : (
-          <a
+          <Link
             className="bg-green-600 px-2 py-1 rounded-md text-white"
-            href="https://payroll.razorpay.com/login"
+            to="https://payroll.razorpay.com/login"
             target="_blank"
           >
             <button>Activate</button>
-          </a>
+          </Link>
         )}
       </div>
+
+      {/* <div className="absolute bottom-2 right-2">
+        {gateway?.Type === paymentMethod ? (
+          <button>Deactivate</button>
+        ) : (
+          <Link
+            className="bg-green-600 px-2 py-1 rounded-md text-white"
+            to="https://payroll.razorpay.com/login"
+            target="_blank"
+          >
+            <button>Activate</button>
+          </Link>
+        )}
+      </div> */}
     </div>
   );
 };
