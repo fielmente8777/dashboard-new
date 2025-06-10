@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const Analytics = () => {
   //   const dispatch = useDispatch();
@@ -83,6 +84,7 @@ const Analytics = () => {
     const Url = await UploadingImageS3(base64String);
     const updatedData = {
       token: token,
+      hid: String(handleLocalStorage("hid")),
       offer: [
         ...websiteoffersdata,
         {
@@ -143,6 +145,7 @@ const Analytics = () => {
         const updatedData = {
           token: token,
           offer: websiteoffersdata.filter((_, i) => i !== indexToDelete),
+          hid: String(handleLocalStorage("hid")),
         };
 
         axios
@@ -178,12 +181,13 @@ const Analytics = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
-          {currentLoactionWebsiteData?.Details?.Offers &&
-            currentLoactionWebsiteData?.Details?.Offers?.map((item, index) => (
+          {currentLoactionWebsiteData?.Offers &&
+            currentLoactionWebsiteData?.Offers?.map((item, index) => (
               <div
                 key={index}
-                className={`flex flex-col relative gap-2 ${activeIndex === index ? "bg-white z-10" : ""
-                  }`}
+                className={`flex flex-col relative gap-2 ${
+                  activeIndex === index ? "bg-white z-10" : ""
+                }`}
                 onMouseEnter={() => setActiveIndex(true)}
                 onMouseLeave={() => setActiveIndex(false)}
               >

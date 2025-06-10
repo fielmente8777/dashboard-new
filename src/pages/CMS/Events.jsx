@@ -4,6 +4,8 @@ import { MdDeleteOutline } from "react-icons/md";
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { UploadingImageS3 } from "../../services/api";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
 // import TimePick from '../../components/TimePicker';
 
 const Events = () => {
@@ -62,6 +64,7 @@ const Events = () => {
       Location: formData.location,
       BookingUrl: formData.bookingUrl,
       operation: "append",
+      hid: String(handleLocalStorage("hid")),
     };
 
     try {
@@ -124,11 +127,12 @@ const Events = () => {
 
         try {
           const response = await axios.post(
-            "http://127.0.0.1:5000/cms/operation/Events",
+            `${BASE_URL}/cms/operation/Events`,
             {
               token: token,
               operation: "pop",
               index: indexToDelete,
+              hid: String(handleLocalStorage("hid")),
             }
           );
           if (response?.data?.Status) {
@@ -175,7 +179,7 @@ const Events = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-            {currentLoactionWebsiteData?.Details?.Events?.map((item, index) => (
+            {currentLoactionWebsiteData?.Events?.map((item, index) => (
               <div
                 key={index}
                 className="bg-white rounded-lg p-4 mb-4 relative"

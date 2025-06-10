@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { MdAddBusiness } from "react-icons/md";
 import axios from "axios";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
+import { MdAddBusiness } from "react-icons/md";
 import { useDispatch } from "react-redux";
+import Swal from "sweetalert2";
+import { BASE_URL } from "../../data/constant";
 import { fetchUserProfile } from "../../redux/slice/UserSlice";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const AddLocationForm = ({ isOpen, handleClose }) => {
   const [countries, setCountries] = useState([]);
@@ -35,7 +36,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
     try {
       const { data } = await axios.post(
         // "https://nexon.eazotel.com/multilocation/addlocations/dashboard",
-        "http://127.0.0.1:5000/multilocation/addlocations/dashboard",
+        `${BASE_URL}/multilocation/addlocations/dashboard`,
         {
           token: handleLocalStorage("token"),
           local: local,
@@ -53,8 +54,6 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
           text: data?.Message || "Hotel added successfully.",
         });
         dispatch(fetchUserProfile(handleLocalStorage("token")));
-
-        // alert(data.message);
       } else {
         Swal.fire({
           icon: "error",

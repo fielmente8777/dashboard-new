@@ -2,6 +2,7 @@ import JoditEditor from "jodit-react";
 import React, { useEffect, useRef, useState } from "react";
 import { GetwebsiteDetails } from "../../services/api";
 import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 const Cancellationrefund = () => {
   const editor = useRef(null);
 
@@ -41,6 +42,7 @@ const Cancellationrefund = () => {
             Privacy: websitePrivacydata,
             Cancellation: text,
             TermsServices: websiteTermsdata,
+            hid: String(handleLocalStorage("hid")),
           }),
         }
       );
@@ -76,10 +78,7 @@ const Cancellationrefund = () => {
       ) : (
         <JoditEditor
           ref={editor}
-          value={
-            currentLoactionWebsiteData?.Details?.TermsConditions[1]
-              ?.Cancellation
-          }
+          value={currentLoactionWebsiteData?.TermsConditions[1]?.Cancellation}
           onChange={(newContent) => {
             setText(newContent);
             handleChangeJodit(newContent);

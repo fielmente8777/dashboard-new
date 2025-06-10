@@ -65,7 +65,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky top-0">
+    <div className="sticky top-0 z-50">
       <div className="h-[8vh] z-10  bg-[#2e3b61] border-b flex cardShadow flex-col md:flex-row md:px-4 items-center justify-between top-0 w-full overflow-hidden">
         <Greeting name={hotel?.Profile?.hotelName} />
 

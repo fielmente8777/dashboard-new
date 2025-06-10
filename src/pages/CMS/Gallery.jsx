@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { GetwebsiteDetails } from "../../services/api";
 import { MdDeleteOutline } from "react-icons/md";
 import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const Analytics = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -15,12 +16,13 @@ const Analytics = () => {
     (state) => state?.hotelsWebsiteData
   );
 
+  console.log(currentLoactionWebsiteData);
+
   useEffect(() => {
-    if (currentLoactionWebsiteData?.Details?.Gallery) {
-      const filteredImages =
-        currentLoactionWebsiteData?.Details?.Gallery.filter(
-          (item) => item.Category === selectedCategory
-        );
+    if (currentLoactionWebsiteData?.Gallery) {
+      const filteredImages = currentLoactionWebsiteData?.Gallery.filter(
+        (item) => item.Category === selectedCategory
+      );
       setfiltered(filteredImages);
     }
   }, [selectedCategory, currentLoactionWebsiteData]);
@@ -40,6 +42,7 @@ const Analytics = () => {
         operation: operation,
         category: category,
         imageurl: url,
+        hid: String(handleLocalStorage("hid")),
       }),
     })
       .then((response) => response.json())
@@ -99,7 +102,7 @@ const Analytics = () => {
       <div>
         <div className="flex gap-4 ">
           {currentLoactionWebsiteData &&
-            currentLoactionWebsiteData?.Details?.Gallery?.map((item, index) => (
+            currentLoactionWebsiteData?.Gallery?.map((item, index) => (
               <button
                 onClick={() => setSelectedCategory(item.Category)}
                 key={index}

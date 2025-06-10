@@ -190,8 +190,6 @@ export const SidebarData = [
     ],
   },
 
-
-
   {
     name: "Analytics & Reporting",
     key: "Analytics Reporting",
@@ -218,137 +216,153 @@ export const SidebarData = [
       },
     ],
   },
+
   {
     name: "User Management",
     key: "User Management",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup size={22} />,
   },
+
   {
     name: "Eazobot",
     key: "Eazobot",
     link: `eazobot`,
     icon: <TiSocialSkype size={24} />,
   },
-  {
-    name: "Conversational Tool",
-    key: "Conversational Tool",
-    link: `conversational-tool`,
-    icon: <IoIosChatbubbles size={24} />,
-  },
-  {
-    name: "Custom Website",
-    key: "Custom Website",
-    link: `custom-website`,
-    icon: <IoIosChatbubbles size={24} />,
-  },
 
-  {
-    name: "Social Media",
-    key: "Social Media",
-    link: `social-media`,
-    icon: <TiSocialSkype size={24} />,
-  },
-  {
-    name: "Leads Management",
-    icon: <TiSocialSkype size={24} />,
-    key: "Leads Management",
-    link: "leads-management",
-  },
-  {
-    name: "PMS Software",
-    icon: <TiSocialSkype size={24} />,
-    key: "PMS Software",
-    link: "pms-software",
-  },
-  {
-    name: "OTA Listing",
-    icon: <FaRobot size={24} />,
-    key: "OTA Listing",
-    link: "ota-listing",
-  },
-  {
-    name: "OTA Optimization",
-    icon: <FaRobot size={24} />,
-    key: "OTA Optimization",
-    link: "ota-optimization",
-  },
-  {
-    name: "OTA Management",
-    icon: <FaRobot size={24} />,
-    key: "OTA Management",
-    link: "ota-management",
-  },
-  {
-    name: "Accounting",
-    icon: <FaRobot size={24} />,
-    key: "Accounting",
-    link: "accounting",
-  },
-  {
-    name: "GST Filing",
-    icon: <FaRobot size={24} />,
-    key: "GST Filing",
-    link: "gst-filing",
-  },
-  {
-    name: "Performance Marketing",
-    icon: <FaRobot size={24} />,
-    key: "Performance Marketing",
-    link: "performance-marketing",
-  },
+  // {
+  //   name: "Conversational Tool",
+  //   key: "Conversational Tool",
+  //   link: `conversational-tool`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
 
-  {
-    name: "Public Relations (PR)",
-    icon: <FaRobot size={24} />,
-    key: "PR",
-    link: "pr",
-  },
-  {
-    name: "Linktree Setup",
-    icon: <FaRobot size={24} />,
-    key: "Linktree Setup",
-    link: "linktree-setup",
-  },
-  {
-    name: "Google Listing",
-    icon: <FaRobot size={24} />,
-    key: "Google Listing",
-    link: "google-listing",
-  },
-  {
-    name: "Google Map Itrations",
-    icon: <FaRobot size={24} />,
-    key: "Google Map Itrations",
-    link: "google-map-itrations",
-  },
-  {
-    name: "Influencer Marketing",
-    icon: <FaRobot size={24} />,
-    key: "Influencer Marketing",
-    link: "influencer-marketing",
-  },
+  // {
+  //   name: "Custom Website",
+  //   key: "Custom Website",
+  //   link: `custom-website`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
 
-  {
-    name: "Email Marketing",
-    key: "Email Marketing",
-    link: `email-marketing`,
-    icon: <MdMarkEmailUnread size={24} />,
-  },
+  // {
+  //   name: "Social Media",
+  //   key: "Social Media",
+  //   link: `social-media`,
+  //   icon: <TiSocialSkype size={24} />,
+  // },
 
-  {
-    name: "SMS Marketing",
-    key: "SMS Marketing",
-    link: `sms-marketing`,
-    icon: <FaCommentSms size={24} />,
-  },
+  // {
+  //   name: "Leads Management",
+  //   icon: <TiSocialSkype size={24} />,
+  //   key: "Leads Management",
+  //   link: "leads-management",
+  // },
 
-  {
-    name: "WhatsApp Marketing",
-    key: "WhatsApp Marketing",
-    link: `whatsapp-marketing`,
-    icon: <FaWhatsappSquare size={24} />,
-  },
+  // {
+  //   name: "PMS Software",
+  //   icon: <TiSocialSkype size={24} />,
+  //   key: "PMS Software",
+  //   link: "pms-software",
+  // },
+
+  // {
+  //   name: "OTA Listing",
+  //   icon: <FaRobot size={24} />,
+  //   key: "OTA Listing",
+  //   link: "ota-listing",
+  // },
+
+  // {
+  //   name: "OTA Optimization",
+  //   icon: <FaRobot size={24} />,
+  //   key: "OTA Optimization",
+  //   link: "ota-optimization",
+  // },
+
+  // {
+  //   name: "OTA Management",
+  //   icon: <FaRobot size={24} />,
+  //   key: "OTA Management",
+  //   link: "ota-management",
+  // },
+
+  // {
+  //   name: "Accounting",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Accounting",
+  //   link: "accounting",
+  // },
+
+  // {
+  //   name: "GST Filing",
+  //   icon: <FaRobot size={24} />,
+  //   key: "GST Filing",
+  //   link: "gst-filing",
+  // },
+
+  // {
+  //   name: "Performance Marketing",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Performance Marketing",
+  //   link: "performance-marketing",
+  // },
+
+  // {
+  //   name: "Public Relations (PR)",
+  //   icon: <FaRobot size={24} />,
+  //   key: "PR",
+  //   link: "pr",
+  // },
+
+  // {
+  //   name: "Linktree Setup",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Linktree Setup",
+  //   link: "linktree-setup",
+  // },
+
+  // {
+  //   name: "Google Listing",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Google Listing",
+  //   link: "google-listing",
+  // },
+
+  // {
+  //   name: "Google Map Itrations",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Google Map Itrations",
+  //   link: "google-map-itrations",
+  // },
+
+  // {
+  //   name: "Influencer Marketing",
+  //   icon: <FaRobot size={24} />,
+  //   key: "Influencer Marketing",
+  //   link: "influencer-marketing",
+  // },
+
+  // {
+  //   name: "Email Marketing",
+  //   key: "Email Marketing",
+  //   link: `email-marketing`,
+  //   icon: <MdMarkEmailUnread size={24} />,
+  // },
+
+  // {
+  //   name: "SMS Marketing",
+  //   key: "SMS Marketing",
+  //   link: `sms-marketing`,
+  //   icon: <FaCommentSms size={24} />,
+  // },
+
+  // {
+  //   name: "WhatsApp Marketing",
+  //   key: "WhatsApp Marketing",
+  //   link: `whatsapp-marketing`,
+  //   icon: <FaWhatsappSquare size={24} />,
+  // },
 
   {
     name: "FrontDesk",
@@ -357,26 +371,26 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
 
-  {
-    name: "SEO",
-    key: "SEO",
-    link: `seo`,
-    icon: <TbSeo size={24} />,
-  },
+  // {
+  //   name: "SEO",
+  //   key: "SEO",
+  //   link: `seo`,
+  //   icon: <TbSeo size={24} />,
+  // },
 
-  {
-    name: "Themes Manager",
-    key: "Themes Manager",
-    link: `themes-manager`,
-    icon: <FaThemeco size={22} />,
-  },
+  // {
+  //   name: "Themes Manager",
+  //   key: "Themes Manager",
+  //   link: `themes-manager`,
+  //   icon: <FaThemeco size={22} />,
+  // },
 
-  {
-    name: "Channel Manager",
-    key: "Channel Manager",
-    link: `channel-manager`,
-    icon: <RiWechatChannelsLine size={22} />,
-  },
+  // {
+  //   name: "Channel Manager",
+  //   key: "Channel Manager",
+  //   link: `channel-manager`,
+  //   icon: <RiWechatChannelsLine size={22} />,
+  // },
 
   {
     name: "Payment Gateway",

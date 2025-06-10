@@ -2,6 +2,7 @@ import JoditEditor from "jodit-react";
 import React, { useEffect, useRef, useState } from "react";
 import { GetwebsiteDetails } from "../../services/api";
 import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 const Analytics = () => {
   const editor = useRef(null);
 
@@ -42,6 +43,7 @@ const Analytics = () => {
             Privacy: websitePrivacydata,
             Cancellation: websiteCancellationdata,
             TermsServices: text,
+            hid: String(handleLocalStorage("hid")),
           }),
         }
       );
@@ -62,6 +64,7 @@ const Analytics = () => {
         <h2 className="text-sm font-semibold text-[#575757]">
           Terms and Conditions
         </h2>
+
         <button
           className="text-sm font-semibold  bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-3 py-1 flex items-center rounded-sm text-[14px]"
           onClick={() => {
@@ -77,10 +80,7 @@ const Analytics = () => {
       ) : (
         <JoditEditor
           ref={editor}
-          value={
-            currentLoactionWebsiteData?.Details?.TermsConditions[2]
-              ?.TermsServices
-          }
+          value={currentLoactionWebsiteData?.TermsConditions[2]?.TermsServices}
           onChange={(newContent) => {
             setText(newContent);
             handleChangeJodit(newContent);

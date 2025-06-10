@@ -136,18 +136,20 @@ const Leads = () => {
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] ${active === index
-                ? "border-b-2 border-[#575757]"
-                : "border-b-2 border-transparent"
-                } px-4 py-3 bg-white font-medium text-[#575757]`}
+              className={`text-[14px] ${
+                active === index
+                  ? "border-b-2 border-[#575757]"
+                  : "border-b-2 border-transparent"
+              } px-4 py-3 bg-white font-medium text-[#575757]`}
             >
               {item}
             </button>
           ))}
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
-            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
-              } `}
+            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
+              loading ? "animate-spin" : ""
+            } `}
           >
             <MdRefresh size={25} />
           </div>
@@ -229,10 +231,11 @@ const Leads = () => {
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
-                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                        ? " text-[#575757]"
-                        : "text-[#575757]"
-                        }`}
+                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                        enquery?.status === "Open"
+                          ? " text-[#575757]"
+                          : "text-[#575757]"
+                      }`}
                       onClick={() => {
                         setSelectedLead(enquery);
                         setIsPopupOpen(true);
@@ -265,13 +268,13 @@ const Leads = () => {
                         {enquery?.check_in
                           ? enquery.check_in
                           : extractBookingInfo(enquery?.Message)?.checkIn ||
-                          "-"}
+                            "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_out
                           ? enquery.check_out
                           : extractBookingInfo(enquery?.Message)?.checkOut ||
-                          "-"}
+                            "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.status}
@@ -282,7 +285,7 @@ const Leads = () => {
               ) : (
                 <tbody>
                   <tr className="bg-white text-gray-600 text-center border">
-                    <td colSpan={8} className="py-2">
+                    <td colSpan={9} className="py-2">
                       Data not found!
                     </td>
                   </tr>
@@ -309,10 +312,11 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-1.5 text-sm rounded-md transition-all whitespace-nowrap duration-200
-          ${currentPage === 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                  }`}
+          ${
+            currentPage === 1
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 ← Previous
               </button>
@@ -347,10 +351,11 @@ const Leads = () => {
                         key={item}
                         onClick={() => handlePageChange(item)}
                         className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200
-                  ${currentPage === item
-                            ? "bg-primary text-white shadow-sm"
-                            : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                  ${
+                    currentPage === item
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                       >
                         {item}
                       </button>
@@ -363,10 +368,11 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-1.5 text-sm rounded-md whitespace-nowrap transition-all duration-200
-          ${currentPage === totalPages
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                  }`}
+          ${
+            currentPage === totalPages
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 Next →
               </button>

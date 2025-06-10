@@ -76,9 +76,7 @@ const Analytics = () => {
       ) : (
         <JoditEditor
           ref={editor}
-          value={
-            currentLoactionWebsiteData?.Details?.TermsConditions[0]?.Privacy
-          }
+          value={currentLoactionWebsiteData?.TermsConditions[0]?.Privacy}
           onChange={(newContent) => {
             setText(newContent);
             handleChangeJodit(newContent);

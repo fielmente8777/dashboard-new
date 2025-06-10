@@ -4,6 +4,7 @@ import { GetwebsiteDetails, UploadingImageS3 } from "../../services/api";
 import JoditEditor from "jodit-react";
 import { FileUploader } from "react-drag-drop-files";
 import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 const fileTypes = ["JPG", "PNG", "GIF", "JPEG", "WEBP"];
 const Blogs = () => {
   const editor = useRef(null);
@@ -23,8 +24,6 @@ const Blogs = () => {
   const { currentLoactionWebsiteData, loading } = useSelector(
     (state) => state?.hotelsWebsiteData
   );
-
-  console.log(currentLoactionWebsiteData);
 
   const autoGenerateSlug = (text) => {
     const slug = text
@@ -108,6 +107,7 @@ const Blogs = () => {
           Image: Url,
           token: localStorage.getItem("token"),
           operation: "append",
+          hid: String(handleLocalStorage("hid")),
         }),
       });
       const result = await response.json();
@@ -165,8 +165,8 @@ const Blogs = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
           {currentLoactionWebsiteData &&
-          currentLoactionWebsiteData?.Details?.Blogs?.length > 0 ? (
-            currentLoactionWebsiteData?.Details?.Blogs?.map((blog, index) => (
+          currentLoactionWebsiteData?.Blogs?.length > 0 ? (
+            currentLoactionWebsiteData?.Blogs?.map((blog, index) => (
               <div key={index} className="bg-gray-100  rounded-md p-4">
                 <h3 className="text-lg font-semibold text-[#575757]">
                   {blog.Heading}

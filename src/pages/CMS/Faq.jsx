@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MdDeleteOutline } from "react-icons/md";
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const Analytics = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -12,8 +13,6 @@ const Analytics = () => {
   const { currentLoactionWebsiteData, loading } = useSelector(
     (state) => state?.hotelsWebsiteData
   );
-
-  console.log(currentLoactionWebsiteData);
 
   const deleteFaq = async (que, ans) => {
     const confirmation = await Swal.fire({
@@ -41,6 +40,7 @@ const Analytics = () => {
               question: que,
               answer: ans,
               index: "0",
+              hid: String(handleLocalStorage("hid")),
             }),
           }
         );
@@ -71,7 +71,6 @@ const Analytics = () => {
   };
 
   const addFaq = async () => {
-    console.log("question", question, "answer", answer);
     if (question === "" || answer === "") {
       Swal.fire({
         icon: "error",
@@ -87,6 +86,7 @@ const Analytics = () => {
       question: question,
       answer: answer,
       index: 0,
+      hid: String(handleLocalStorage("hid")),
     };
 
     try {
@@ -143,9 +143,9 @@ const Analytics = () => {
       <div className="px-4">
         {!loading ? (
           <>
-            {currentLoactionWebsiteData?.Details &&
-            currentLoactionWebsiteData?.Details?.Faq?.length > 0 ? (
-              currentLoactionWebsiteData?.Details?.Faq.map((faq, index) => (
+            {currentLoactionWebsiteData &&
+            currentLoactionWebsiteData?.Faq?.length > 0 ? (
+              currentLoactionWebsiteData?.Faq.map((faq, index) => (
                 <div key={index} className="border-b border-gray-200">
                   <button
                     className="w-full flex justify-between items-center text-left text-sm py-3 font-medium text-[#333] focus:outline-none"
@@ -155,7 +155,7 @@ const Analytics = () => {
                     {openIndex === index && (
                       <MdDeleteOutline
                         size={20}
-                        // onClick={() => deleteFaq(faq.Question, faq.Answer)}
+                        onClick={() => deleteFaq(faq.Question, faq.Answer)}
                         className="text-red-500 mt-[2px]"
                       />
                     )}

@@ -24,9 +24,9 @@ const GlobalDataProvider = () => {
 
   useEffect(() => {
     if (token) {
-      dispatch(fetchWebsiteData(token, HID));
       dispatch(fetchAuthUserProfile(token));
       dispatch(fetchUserProfile(token));
+      dispatch(fetchWebsiteData(token, HID));
       if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
     }
   }, [token]);

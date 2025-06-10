@@ -178,10 +178,10 @@ const Sidebar = () => {
 
   return (
     <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white">
+      {/* eazotel logo and hamburger*/}
       <div className="flex justify-between items-center mb-4">
         {isOpen && (
           <div>
-            {/* <img src={Logo} alt="logo" className="h-8 object-contain" /> */}
             <div className="w-28 h-10 -ml-2">
               <img
                 src={Logo}
@@ -204,6 +204,7 @@ const Sidebar = () => {
         </span>
       </div>
 
+      {/* dropdown mutli location */}
       <div
         className={`${
           isOpen ? "w-full" : "w-0 opacity-0 hidden"
@@ -351,8 +352,9 @@ const Sidebar = () => {
         )}
       </div>
 
+      {/* navLinks and subLinks dropdown*/}
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
-        {isAuthLoading
+        {loading
           ? Array.from({ length: 10 }).map((_, index) => (
               <div className="animate-pulse h-10 bg-gray-200" />
             ))
@@ -632,14 +634,18 @@ const Sidebar = () => {
                 );
               }
             })}
+
+        {/* add location form  */}
         <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
       </div>
 
+      {/* logout button  */}
       <div
         className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white cursor-pointer"
         onClick={handleLogout}
       >
         <FiLogOut size={20} />
+
         {isOpen && (
           <button
             className={`${

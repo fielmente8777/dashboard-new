@@ -11,6 +11,7 @@ import { GetwebsiteDetails } from "../../services/api";
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 const Profile = () => {
   const [websiteFooterData, setwebsiteFooterData] = useState(null);
   const [websiteLinksData, setwebsiteLinksData] = useState(null);
@@ -46,7 +47,6 @@ const Profile = () => {
   }
 
   function handleChnageDataAccounts(value, fieldName) {
-    console.log(value, fieldName);
     setwebsiteFooterData({
       ...websiteFooterData,
       [fieldName]: value,
@@ -74,6 +74,7 @@ const Profile = () => {
         Youtube: websiteLinksData?.Youtube,
         Linkedin: websiteLinksData?.Linkedin,
         Tripadvisors: websiteLinksData?.Tripadvisors,
+        hid: String(handleLocalStorage("hid")),
       }),
     })
       .then((response) => response.json())
@@ -114,6 +115,7 @@ const Profile = () => {
         email: websiteFooterData?.Email,
         Abouttext: websiteFooterData?.AboutText,
         logo: websiteFooterData?.Logo,
+        hid: String(handleLocalStorage("hid")),
       }),
     })
       .then((response) => response.json())
@@ -140,6 +142,7 @@ const Profile = () => {
         Pixel: websiteReviewsData?.Pixel,
         Analytics: websiteReviewsData?.Analytics,
         Pagespeed: websiteReviewsData?.Pagespeed,
+        hid: String(handleLocalStorage("hid")),
       }),
     })
       .then((response) => response.json())
@@ -197,17 +200,16 @@ const Profile = () => {
 
   useEffect(() => {
     if (currentLoactionWebsiteData) {
-      console.log(currentLoactionWebsiteData);
       setwebsiteFooterData({
-        ...currentLoactionWebsiteData?.Details?.Footer,
+        ...currentLoactionWebsiteData?.Footer,
       });
 
       setwebsiteLinksData({
-        ...currentLoactionWebsiteData?.Details?.Links,
+        ...currentLoactionWebsiteData?.Links,
       });
 
       setwebsiteReviewsData({
-        ...currentLoactionWebsiteData?.Details?.Reviews,
+        ...currentLoactionWebsiteData?.Reviews,
       });
     }
   }, [currentLoactionWebsiteData]);
@@ -240,7 +242,7 @@ const Profile = () => {
               <div className="border border-gray-300 rounded-lg flex justify-between p-4 items-center">
                 <div className="flex flex-col items-center">
                   <img
-                    src={currentLoactionWebsiteData?.Details?.Footer?.Logo}
+                    src={currentLoactionWebsiteData?.Footer?.Logo}
                     alt=""
                     className="w-24 h-24 rounded-full object-cover border"
                   />

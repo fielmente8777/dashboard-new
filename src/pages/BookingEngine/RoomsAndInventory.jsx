@@ -115,9 +115,9 @@ const RoomsAndInventory = () => {
   const [InventoryBulkupdate, setInventoryBulkupdate] = useState({});
   const [isBulkUpdateLoading, setIsBulkUpdateLoading] = useState(false);
 
-  const x = Object.keys(inventoryData);
+  const x = inventoryData && Object.keys(inventoryData);
   if (x.length !== 0) {
-    var dates = Object.keys(inventoryData[x[0]]);
+    var dates = inventoryData && Object.keys(inventoryData[x[0]]);
   } else {
     var dates = [];
   }
@@ -399,10 +399,11 @@ const RoomsAndInventory = () => {
           <button
             onClick={handleInventoryClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${showInventory === true
-              ? "border-t border-b border-primary bg-primary  text-white"
-              : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
-              }`}
+            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
+              showInventory === true
+                ? "border-t border-b border-primary bg-primary  text-white"
+                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
+            }`}
           >
             Inventory
           </button>
@@ -410,10 +411,11 @@ const RoomsAndInventory = () => {
           <button
             onClick={handlePriceClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${showPrice
-              ? "border bg-primary border-primary text-white"
-              : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
-              } `}
+            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
+              showPrice
+                ? "border bg-primary border-primary text-white"
+                : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+            } `}
           >
             Price
           </button>
@@ -454,10 +456,11 @@ const RoomsAndInventory = () => {
                         if (!isPreviousDisabled)
                           GetDataForDate(prevDate, "prev");
                       }}
-                      className={`${isPreviousDisabled
-                        ? "cursor-not-allowed opacity-65"
-                        : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                        } me-1 p-2 bg-white border rounded-full `}
+                      className={`${
+                        isPreviousDisabled
+                          ? "cursor-not-allowed opacity-65"
+                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
+                      } me-1 p-2 bg-white border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>
@@ -506,7 +509,10 @@ const RoomsAndInventory = () => {
 
               <td class="w-full flex justify-between">
                 {dates?.map((date, index) => (
-                  <div key={index} className="flex flex-col  w-full text-center border-r border-gray-300">
+                  <div
+                    key={index}
+                    className="flex flex-col  w-full text-center border-r border-gray-300"
+                  >
                     <span>{getMonthInWords(date)}</span>
                     <span>{getYearFromDate(date)}</span>
                     <span>{getDayOfWeek(date)}</span>
@@ -520,52 +526,54 @@ const RoomsAndInventory = () => {
 
             {showInventory && (
               <>
-                {Object?.keys(inventoryData)?.map((item, itemIndex) => (
-                  <tr
-                    key={itemIndex}
-                    className="bg-white border-t border-gray-300"
-                  >
-                    <th className="px-4 font-medium text-gray-600 bg-gray-200 w-[16rem] py-2">
-                      <div className="gap-4 flex flex-col">
-                        <span className="font-bold text-md uppercase">
-                          {room_type_name[item]}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <CiCirclePlus fontSize={20} fontWeight={500} />
-                            <span className="text-bold">Inventory</span>
+                {inventoryData &&
+                  Object.keys(inventoryData).length > 0 &&
+                  Object?.keys(inventoryData)?.map((item, itemIndex) => (
+                    <tr
+                      key={itemIndex}
+                      className="bg-white border-t border-gray-300"
+                    >
+                      <th className="px-4 font-medium text-gray-600 bg-gray-200 w-[16rem] py-2">
+                        <div className="gap-4 flex flex-col">
+                          <span className="font-bold text-md uppercase">
+                            {room_type_name[item]}
+                          </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CiCirclePlus fontSize={20} fontWeight={500} />
+                              <span className="text-bold">Inventory</span>
+                            </div>
+                            <div className="ms-7">
+                              <span className="font-light border-b-2 border-gray-400">
+                                Multi Update
+                              </span>
+                            </div>
                           </div>
-                          <div className="ms-7">
-                            <span className="font-light border-b-2 border-gray-400">
-                              Multi Update
+                        </div>
+                      </th>
+
+                      <td class="w-full flex">
+                        {dates?.map((date) => (
+                          <div
+                            key={date}
+                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
+                          >
+                            <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
+                            <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
+                              <input
+                                type="text"
+                                value={inventoryData[item][date]}
+                                onChange={(e) =>
+                                  InventoryUpdate(e.target.value, item, date)
+                                }
+                                className="w-[100%]  py-1 text-center outline-none  h-[100%] "
+                              />
                             </span>
                           </div>
-                        </div>
-                      </div>
-                    </th>
-
-                    <td class="w-full flex">
-                      {dates?.map((date) => (
-                        <div
-                          key={date}
-                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
-                        >
-                          <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                          <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
-                            <input
-                              type="text"
-                              value={inventoryData[item][date]}
-                              onChange={(e) =>
-                                InventoryUpdate(e.target.value, item, date)
-                              }
-                              className="w-[100%]  py-1 text-center outline-none  h-[100%] "
-                            />
-                          </span>
-                        </div>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
+                        ))}
+                      </td>
+                    </tr>
+                  ))}
               </>
             )}
 
