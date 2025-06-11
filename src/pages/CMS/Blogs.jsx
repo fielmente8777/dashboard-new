@@ -5,6 +5,7 @@ import JoditEditor from "jodit-react";
 import { FileUploader } from "react-drag-drop-files";
 import { useSelector } from "react-redux";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
 const fileTypes = ["JPG", "PNG", "GIF", "JPEG", "WEBP"];
 const Blogs = () => {
   const editor = useRef(null);
@@ -91,11 +92,10 @@ const Blogs = () => {
       });
       return;
     }
-
     const Url = await UploadingImageS3(base64String);
 
     try {
-      const response = await fetch(`https://nexon.eazotel.com/cms/add/blog`, {
+      const response = await fetch(`${BASE_URL}/cms/add/blog`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

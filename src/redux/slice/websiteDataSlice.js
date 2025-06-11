@@ -28,12 +28,7 @@ const websiteDataSlice = createSlice({
     },
     fetchCurrentLocationWebsiteData: (state, action) => {
       const { data, hid } = action.payload;
-
-      // const currentLocationWebsiteData = data?.find(
-      //   (item) => item?.hId === String(hid)
-      // );
       const currentLocationWebsiteData = data[hid];
-
       state.loading = false;
       state.currentLoactionWebsiteData = currentLocationWebsiteData;
     },

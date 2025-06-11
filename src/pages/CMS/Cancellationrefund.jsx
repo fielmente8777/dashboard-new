@@ -1,11 +1,15 @@
 import JoditEditor from "jodit-react";
 import React, { useEffect, useRef, useState } from "react";
 import { GetwebsiteDetails } from "../../services/api";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
+import Swal from "sweetalert2";
+import Loader from "../../components/Loader";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 const Cancellationrefund = () => {
   const editor = useRef(null);
-
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
   const [editable, setEditable] = useState("None");
   const [text, setText] = useState("sfsd");
   const [openIndex, setOpenIndex] = useState(null);
@@ -13,6 +17,8 @@ const Cancellationrefund = () => {
   const [websiteCancellationdata, setwebsiteCancellationdata] = useState("");
   const [websiteTermsdata, setwebsiteTermsdata] = useState("");
   const [websitePrivacydata, setwebsitePrivacydata] = useState("");
+
+  const dispatch = useDispatch();
 
   const handleChangeJodit = (idx, name, value) => {
     // const updatedTerms = [...termsAndCondition]; // Create a copy of the array
@@ -28,32 +34,48 @@ const Cancellationrefund = () => {
   };
 
   const update = async (text) => {
+    setLoadingUpdate(true);
     try {
-      const response = await fetch(
-        `https://nexon.eazotel.com/cms/edit/termsandconditions`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: localStorage.getItem("token"),
-            Privacy: websitePrivacydata,
-            Cancellation: text,
-            TermsServices: websiteTermsdata,
-            hid: String(handleLocalStorage("hid")),
-          }),
-        }
-      );
+      const response = await fetch(`${BASE_URL}/cms/edit/termsandconditions`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: localStorage.getItem("token"),
+          Privacy: currentLoactionWebsiteData?.TermsConditions[0]?.Privacy,
+          Cancellation: text,
+          TermsServices:
+            currentLoactionWebsiteData?.TermsConditions[2]?.TermsServices,
+          hid: String(handleLocalStorage("hid")),
+        }),
+      });
 
       const result = await response.json();
 
       if (result?.Status) {
-        console.log("Done");
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Updated Successfully",
+        });
+
+        dispatch(
+          fetchWebsiteData(
+            handleLocalStorage("token"),
+            handleLocalStorage("hid")
+          )
+        );
       }
     } catch (error) {
-      console.log("Error");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: `${error?.message || "Something went wrong"}`,
+      });
+    } finally {
+      setLoadingUpdate(false);
     }
   };
 
@@ -63,13 +85,15 @@ const Cancellationrefund = () => {
         <h2 className="text-sm font-semibold text-[#575757]">
           Cancellation and Refund Policy
         </h2>
+
         <button
-          className="text-sm font-semibold  bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-3 py-1 flex items-center rounded-sm text-[14px]"
+          disabled={loadingUpdate}
+          className="text-sm font-semibold disabled:opacity-80 bg-primary disabled:hover:bg-primary hover:bg-primary/90 text-white px-3 py-1 flex items-center rounded-sm gap-4"
           onClick={() => {
             update(text);
           }}
         >
-          Update
+          Update {loadingUpdate && <Loader size={16} color="#fff" />}
         </button>
       </div>
 

@@ -12,23 +12,25 @@ import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
 const Profile = () => {
   const [websiteFooterData, setwebsiteFooterData] = useState(null);
   const [websiteLinksData, setwebsiteLinksData] = useState(null);
   const [websiteReviewsData, setwebsiteReviewsData] = useState(null);
   const [websiteImage, setwebsiteImage] = useState(null);
   // const [baseUrl, setBaseUrl] = useState("https://.example.com");
-  const [EngineUrl, setEngineUrl] = useState("https://nexon.eazotel.com");
+  // const [BASE_URL, setBASE_URL] = useState("https://nexon.eazotel.com");
   const [WebsiteData, setWebsiteData] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [websitedata, setWebsitedata] = useState({});
+
   // const {
   //     websiteFooterData?,
   //     setwebsiteFooterData?,
   //     WebsiteData,
   //     baseUrl,
-  //     EngineUrl,
+  //     BASE_URL,
   //     websiteLinksData?,
   //     setwebsiteLinksData?,
   //     websiteReviewsData?,
@@ -61,7 +63,7 @@ const Profile = () => {
   }
 
   const UpdateSocialAccounts = () => {
-    fetch(`${EngineUrl}/cms/edit/sociallinks`, {
+    fetch(`${BASE_URL}/cms/edit/sociallinks`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -100,7 +102,7 @@ const Profile = () => {
   };
 
   const UpdateDataAccounts = () => {
-    fetch(`${EngineUrl}/cms/edit/footer`, {
+    fetch(`${BASE_URL}/cms/edit/footer`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -129,7 +131,7 @@ const Profile = () => {
 
   const UpdateInbuiltCodes = () => {
     // Replace 'YOUR_BACKEND_API_URL' with the actual URL of your backend API
-    fetch(`${EngineUrl}/cms/post/reviewsection`, {
+    fetch(`${BASE_URL}/cms/post/reviewsection`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -175,7 +177,7 @@ const Profile = () => {
 
   const UploadingImageS3 = (base64String) => {
     // Replace 'YOUR_BACKEND_API_URL' with the actual URL of your backend API
-    fetch(`${EngineUrl}/upload/file/image`, {
+    fetch(`${BASE_URL}/upload/file/image`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -213,6 +215,8 @@ const Profile = () => {
       });
     }
   }, [currentLoactionWebsiteData]);
+
+  console.log(currentLoactionWebsiteData);
 
   return (
     <>

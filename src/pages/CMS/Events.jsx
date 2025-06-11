@@ -1,11 +1,13 @@
 import axios from "axios";
 import { useState } from "react";
 import { MdDeleteOutline } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { UploadingImageS3 } from "../../services/api";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { BASE_URL } from "../../data/constant";
+import Loader from "../../components/Loader";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 // import TimePick from '../../components/TimePicker';
 
 const Events = () => {
@@ -20,10 +22,13 @@ const Events = () => {
     location: "",
     bookingUrl: "",
   });
+  const [loadingAddEvent, setLoadingAddEvent] = useState(false);
 
   const { currentLoactionWebsiteData, loading } = useSelector(
     (state) => state?.hotelsWebsiteData
   );
+
+  const dispatch = useDispatch();
 
   const uploadImage = async (e) => {
     e.preventDefault();
@@ -50,10 +55,10 @@ const Events = () => {
   };
 
   const handleSubmit = async (e) => {
+    setLoadingAddEvent(true);
     e.preventDefault();
-    setAddEventLoader(true);
-    const Url = await UploadingImageS3(base64String);
 
+    const Url = await UploadingImageS3(base64String);
     const newEvent = {
       token: localStorage.getItem("token"),
       Heading: formData.heading,
@@ -68,31 +73,27 @@ const Events = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:5000/cms/operation/Events",
+      const { data } = await axios.post(
+        `${BASE_URL}/cms/operation/Events`,
         // "https://nexon.eazotel.com/cms/operation/Events",
         newEvent
       );
 
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Offer added successfully!",
-        timer: 600,
-        showConfirmButton: false,
-      }).then(() => {
-        if (response?.data?.Status) {
-          // fetchData();
-        }
-      });
-      // update UI
-      setFormData({
-        heading: "",
-        text: "",
-        date: "",
-        time: "",
-        image: "",
-      });
+      if (data?.Status) {
+        dispatch(
+          fetchWebsiteData(
+            handleLocalStorage("token"),
+            handleLocalStorage("hid")
+          )
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Offer added successfully!",
+          timer: 600,
+          showConfirmButton: false,
+        });
+      }
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -108,7 +109,7 @@ const Events = () => {
         time: "",
         image: "",
       });
-      setAddEventLoader(false);
+      setLoadingAddEvent(false);
     }
   };
 
@@ -124,7 +125,6 @@ const Events = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const token = localStorage.getItem("token");
-
         try {
           const response = await axios.post(
             `${BASE_URL}/cms/operation/Events`,
@@ -136,16 +136,18 @@ const Events = () => {
             }
           );
           if (response?.data?.Status) {
+            dispatch(
+              fetchWebsiteData(
+                handleLocalStorage("token"),
+                handleLocalStorage("hid")
+              )
+            );
             Swal.fire({
               icon: "success",
               title: "Deleted!",
               text: result.Message || "Event has been deleted.",
               timer: 600,
               showConfirmButton: false,
-            }).then(() => {
-              if (response?.data?.Status) {
-                // fetchData();
-              }
             });
           }
         } catch (error) {
@@ -215,9 +217,9 @@ const Events = () => {
               </div>
             ))}
 
-            {addEventLoader && (
+            {/* {addEventLoader && (
               <div className="h-[75dvh] animate-pulse bg-gray-100 mt-4" />
-            )}
+            )} */}
           </div>
         )}
       </div>
@@ -241,6 +243,7 @@ const Events = () => {
           required
           className="border border-gray-300 rounded-md px-3 py-2 outline-none"
         />
+
         <input
           type="text"
           value={formData.text}
@@ -259,12 +262,6 @@ const Events = () => {
           className="border border-gray-300 rounded-md px-3 py-2 outline-none"
         />
 
-        {/* <TimePick
-                    format="HH:mm"
-                    value={formData.time}
-                    onChange={(value) => setFormData({ ...formData, time: value })}
-                    placeholder='Time'
-                /> */}
         <input
           htmlFor="time"
           id="time"
@@ -341,10 +338,11 @@ const Events = () => {
                 /> */}
 
         <button
+          disabled={loadingAddEvent}
           type="submit"
-          className="bg-[#0a3a75] text-white px-4 py-2 rounded-md"
+          className="bg-[#0a3a75] disabled:opacity-75 text-white px-4 py-2 rounded-md flex items-center gap-4 justify-center"
         >
-          Add
+          Add Event {loadingAddEvent && <Loader size={18} color="#fff" />}
         </button>
       </form>
     </div>

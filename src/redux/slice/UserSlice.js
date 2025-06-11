@@ -63,6 +63,7 @@ export const fetchUserProfile = (token) => async (dispatch) => {
   dispatch(getUserProfileRequest());
   try {
     const data = await getUserProfile(token);
+
     dispatch(getUserProfileSuccess(data));
     return { success: true, response: data };
   } catch (error) {

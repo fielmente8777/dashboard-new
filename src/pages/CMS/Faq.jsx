@@ -1,20 +1,27 @@
 import { useState } from "react";
 import { MdDeleteOutline } from "react-icons/md";
 import Swal from "sweetalert2";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
+import Loader from "../../components/Loader";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 
 const Analytics = () => {
   const [openIndex, setOpenIndex] = useState(null);
-
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [loadingAddFaq, setLoadingAddFaq] = useState(false);
+  // const []
+
+  const dispatch = useDispatch();
 
   const { currentLoactionWebsiteData, loading } = useSelector(
     (state) => state?.hotelsWebsiteData
   );
 
-  const deleteFaq = async (que, ans) => {
+  // handle delete faq function here
+  const deleteFaq = async (que, ans, index) => {
     const confirmation = await Swal.fire({
       title: "Are you sure?",
       text: `Do you really want to delete this ${que}? This action cannot be undone.`,
@@ -27,37 +34,37 @@ const Analytics = () => {
     });
     if (confirmation.isConfirmed) {
       try {
-        const response = await fetch(
-          `https://nexon.eazotel.com/cms/operation/Faq`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              token: localStorage.getItem("token"),
-              operation: "remove",
-              question: que,
-              answer: ans,
-              index: "0",
-              hid: String(handleLocalStorage("hid")),
-            }),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        Swal.fire({
-          icon: "success",
-          title: "Deleted!",
-          text: data.Message || "User has been deleted successfully.",
-          timer: 600,
-          showConfirmButton: false,
+        const response = await fetch(`${BASE_URL}/cms/operation/Faq`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: localStorage.getItem("token"),
+            operation: "remove",
+            question: que,
+            answer: ans,
+            index: index,
+            hid: String(handleLocalStorage("hid")),
+          }),
         });
-        // .then(() => {
-        //     if (data.Status) {
-        //         fetchData();
-        //     }
-        // });
+        const data = await response.json();
+
+        if (data?.Status) {
+          dispatch(
+            fetchWebsiteData(
+              handleLocalStorage("token"),
+              handleLocalStorage("hid")
+            )
+          );
+          Swal.fire({
+            icon: "success",
+            title: "Deleted!",
+            text: data.Message || "User has been deleted successfully.",
+            timer: 600,
+            showConfirmButton: false,
+          });
+        }
 
         console.log("FAQ deleted successfully:", data);
       } catch (error) {
@@ -70,6 +77,7 @@ const Analytics = () => {
     }
   };
 
+  // handle add faq function
   const addFaq = async () => {
     if (question === "" || answer === "") {
       Swal.fire({
@@ -90,8 +98,9 @@ const Analytics = () => {
     };
 
     try {
+      setLoadingAddFaq(true);
       obj["token"] = localStorage.getItem("token");
-      const url = `https://nexon.eazotel.com/cms/operation/Faq`;
+      const url = `${BASE_URL}/cms/operation/Faq`;
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -100,8 +109,13 @@ const Analytics = () => {
         body: JSON.stringify(obj),
       });
       const resp = await response.json();
-      console.log(resp);
       if (resp.Status === true) {
+        dispatch(
+          fetchWebsiteData(
+            handleLocalStorage("token"),
+            handleLocalStorage("hid")
+          )
+        );
         Swal.fire({
           icon: "success",
           title: "Success",
@@ -126,6 +140,8 @@ const Analytics = () => {
         text: "An error occurred while adding the FAQ.",
       });
       return false;
+    } finally {
+      setLoadingAddFaq(false);
     }
   };
 
@@ -155,7 +171,9 @@ const Analytics = () => {
                     {openIndex === index && (
                       <MdDeleteOutline
                         size={20}
-                        onClick={() => deleteFaq(faq.Question, faq.Answer)}
+                        onClick={() =>
+                          deleteFaq(faq.Question, faq.Answer, index)
+                        }
                         className="text-red-500 mt-[2px]"
                       />
                     )}
@@ -175,8 +193,9 @@ const Analytics = () => {
           <p className="h-[50dvh] animate-pulse bg-gray-100 mt-2"></p>
         )}
 
-        {/* <div className="mt-4 rounded">
+        <div className="mt-4 rounded">
           <h2 className="text-sm font-semibold text-[#575757] mt-4">Add FAQ</h2>
+
           <div className="flex flex-col gap-4 mt-4">
             <input
               type="text"
@@ -194,13 +213,14 @@ const Analytics = () => {
               rows="4"
             />
             <button
+              disabled={loadingAddFaq}
               onClick={addFaq}
-              className="bg-[#0a3a75] text-white py-2 px-4 rounded"
+              className="bg-[#0a3a75] disabled:opacity-75 text-white py-2 px-4 rounded flex items-center gap-4 justify-center"
             >
-              Add FAQ
+              Add FAQ {loadingAddFaq && <Loader size={20} color="#fff" />}
             </button>
           </div>
-        </div> */}
+        </div>
       </div>
     </div>
   );
