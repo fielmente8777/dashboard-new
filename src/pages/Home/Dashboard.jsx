@@ -109,7 +109,7 @@ const Dashboard = () => {
   const data = [
     {
       amount: enquires?.length,
-      lable: "Totle Leads",
+      lable: "Total Leads",
       progress: 50,
     },
     {
