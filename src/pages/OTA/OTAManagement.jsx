@@ -4,7 +4,7 @@ import CommanHeader from '../../components/Navbar/CommanHeader';
 const OTAManagement = () => {
     return (
         <div className="p-4 bg-white mb-10 cardShadow">
-            <CommanHeader serviceName={"OTA Management Service"} />
+            <CommanHeader serviceName={"OTA Management"} />
 
             <hr className="mt-3" />
             <p className="mb-4 mt-2 text-gray-600">

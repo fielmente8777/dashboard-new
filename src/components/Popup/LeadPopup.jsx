@@ -121,7 +121,7 @@ const LeadPopup = ({
   return (
     <div
       // onClick={onClose}
-      className={`fixed cursor-pointer z-20 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
     // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >

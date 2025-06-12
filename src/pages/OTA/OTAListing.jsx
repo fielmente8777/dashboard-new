@@ -36,7 +36,7 @@ const OTAListing = () => {
     // ];
     return (
         <div className="p-4 bg-white mb-10 cardShadow">
-            <CommanHeader serviceName={"OTA Listing Service"} />
+            <CommanHeader serviceName={"OTA Listing"} />
             {/* <div className='flex justify-between items-center'>
 
                 <h1 className="text-md text-gray-600 font-bold mb-4">OTA Listing Service</h1>

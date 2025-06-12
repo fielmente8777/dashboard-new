@@ -1,6 +1,6 @@
 export const BASE_PATH = "/dashboard/client";
-export const BASE_URL = "http://127.0.0.1:5000";
-// export const BASE_URL = "https://nexon.eazotel.com";
+// export const BASE_URL = "http://127.0.0.1:5000";
+export const BASE_URL = "https://nexon.eazotel.com";
 
 export const room_type_name = {
   1: "DELUXE",
@@ -16,3 +16,31 @@ export const room_type_name = {
   11: "Prestige Suite",
   12: "Exclusive Retreat",
 };
+
+
+
+
+export const MarketPlaceService = [
+  "OTA Listing",
+  "OTA Optimization",
+  "OTA Management",
+  "Accounting",
+  "GST Filing",
+  "Performance Marketing",
+  "Public Relations (PR)",
+  "Linktree Setup",
+  "Google Listing",
+  "Google Map Iterations",
+  "Influencer Marketing",
+  "Social Media",
+  "Email Marketing",
+  "WhatsApp Marketing",
+  "Conversational Tool",
+  "Custom Website",
+  "SEO",
+  "Channel Manager",
+  "Leads Management",
+  "PMS Software",
+  "SMS Marketing"
+];
+

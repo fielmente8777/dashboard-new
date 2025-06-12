@@ -1,7 +1,7 @@
 import React from "react";
 
 const Modal = ({
-  isOpen,
+  open,
   title,
   description,
   onConfirm,
@@ -11,7 +11,7 @@ const Modal = ({
 }) => {
   const { confirm, cancel } = labels;
   return (
-    isOpen && (
+    open && (
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm">
         <div className="animate-topDown max-w-xl mx-auto border border-gray-100 rounded-sm shadow-md bg-gray-100 p-6 space-y-6">
           <div>

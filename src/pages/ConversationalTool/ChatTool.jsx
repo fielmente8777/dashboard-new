@@ -24,7 +24,7 @@ const ChatTool = ({ active, setActive }) => {
         <div className="flex flex-col gap-4 text-blue-600">
 
             {option?.map((item, index) => (
-                <button onClick={() => setActive(item.name)} key={index} title={item.name} className={`duration-300 w-fit p-1 border border-2  rounded-md   ${item.name === "Instagram" ? "-ml-[1px] text-[#a339a7] hover:bg-[#a339a7] hover:text-white" : ""}`} >
+                <button onClick={() => setActive(item.name)} key={index} title={item.name} className={`duration-300 w-fit p-1 border-2  rounded-md   ${item.name === "Instagram" ? "-ml-[1px] text-[#a339a7] hover:bg-[#a339a7] hover:text-white" : ""}`} >
                     {item.icon}
                 </button>
             ))}

@@ -3,7 +3,7 @@ import CommanHeader from '../../components/Navbar/CommanHeader'
 const GoogleMapItiration = () => {
     return (
         <div className="p-4 bg-white mb-10 cardShadow">
-            <CommanHeader serviceName="Google Map Iteration" />
+            <CommanHeader serviceName="Google Map Iterations" />
             <hr className="mt-3" />
             <p className="text-gray-600 mb-4 mt-2">
                 We help correct, optimize, or update your location pin and appearance on Google Maps for better discoverability and accurate directions.
