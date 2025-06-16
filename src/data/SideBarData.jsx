@@ -100,15 +100,21 @@ export const SidebarData = [
     icon: <SiGoogleearthengine size={20} />,
     subLinks: [
       {
+        name: "Rooms Setup",
+        link: `booking-engine/rooms-setup`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
         name: "Rooms & Inventory",
         link: `booking-engine/rooms-and-inventory`,
         icon: <MdOutlineInventory size={18} />,
       },
       {
-        name: "Rooms Setup",
-        link: `booking-engine/rooms-setup`,
+        name: "Ads Packages",
+        link: `booking-engine/ads-packages`,
         icon: <MdBedroomParent size={18} />,
       },
+
     ],
   },
   {

@@ -34,7 +34,7 @@ const Review = () => {
                 </div>
             </div>
 
-            <div className="flex justify-around mt-6 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row justify-around mt-6 text-sm text-gray-600">
                 {reviews.map((r, i) => (
                     <div key={i} className="flex items-center space-x-3">
                         <span className="w-3 h-3 rounded-full" style={{ backgroundColor: getColor(i) }}></span>

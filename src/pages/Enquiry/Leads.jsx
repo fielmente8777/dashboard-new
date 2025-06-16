@@ -162,13 +162,13 @@ const Leads = () => {
 
   return (
     <div className="cardShadow">
-      <div className="flex justify-between items-center bg-white">
-        <div className="flex mt-4">
+      <div className="flex flex-col lg:flex-row justify-between  bg-white">
+        <div className="flex flex-wrap mt-4">
           {header.map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] ${active === index
+              className={`text-[14px] whitespace-nowrap  ${active === index
                 ? "border-b-2 border-[#575757]"
                 : "border-b-2 border-transparent"
                 } px-4 py-3 bg-white font-medium text-[#575757]`}
@@ -184,10 +184,10 @@ const Leads = () => {
             <MdRefresh size={25} />
           </div>
         </div>
-        <div className=" py-2 px-4 mt-4 flex items-center gap-4">
+        <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label
             htmlFor="itemsPerPage"
-            className="text-sm font-medium text-gray-700"
+            className="text-sm font-medium whitespace-nowrap text-gray-700"
           >
             Items per page:
           </label>
@@ -195,7 +195,7 @@ const Leads = () => {
             id="itemsPerPage"
             value={itemsPerPage}
             onChange={(e) => setItemsPerPage(Number(e.target.value))}
-            className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border  sm:w-fit border-gray-300 rounded-md px-1 lg:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -206,7 +206,7 @@ const Leads = () => {
 
           <div
             onClick={() => jsonToCsvExport({ data: exportedData, headers })}
-            className="bg-green-500  text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+            className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
           >
             <FaFileExcel />
             <span className="font-medium">Export</span>
@@ -223,7 +223,7 @@ const Leads = () => {
             <input
               type="text"
               placeholder="Search clients by name, contact or message"
-              className=" px-3 pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
+              className=" px-3 pl-2 lg:pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>

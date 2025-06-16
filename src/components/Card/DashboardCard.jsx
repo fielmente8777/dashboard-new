@@ -18,7 +18,7 @@ const DashboardCard = ({ amount = 0, label = 'Label', progress = 0 }) => {
     }
 
     return (
-        <div className=" h-[156px] p-4 rounded-xl cardShadow overflow-hidden bg-white flex flex-col justify-between">
+        <div className=" h-[156px] p-4 rounded-xl md:cardShadow overflow-hidden bg-white flex flex-col justify-between">
             <div className="flex justify-between items-start">
                 <div>
                     {/* <p className="text-2xl font-bold text-primary/90">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p> */}

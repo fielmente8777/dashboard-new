@@ -56,7 +56,7 @@ const TemperatureCard = () => {
 
   const [weatherCondition, setWeatherCondition] = useState("Rainy");
   return (
-    <div className="relative rounded-xl cardShadow w-full h-full transition-all duration-500 ease-in-out ">
+    <div className="relative rounded-xl cardShadow w-full h-[300px] lg:h-full transition-all duration-500 ease-in-out ">
       {/* <div className={`rounded-xl cardShadow p-5 w-full h-full transition-all duration-500 ease-in-out ${weatherCondition === 'Sunny' ? 'bg-yellow-100 shadow-yellow-300'
             : weatherCondition === 'Rainy' ? 'bg-blue-100 shadow-blue-300'
                 : weatherCondition === 'Cloudy' ? 'bg-gray-100 shadow-gray-300'
@@ -68,10 +68,10 @@ const TemperatureCard = () => {
           weatherCondition === "Rainy"
             ? RainVideo
             : weatherCondition === "Cloudy"
-            ? CouldVideo
-            : weatherCondition === "Sunny"
-            ? SummerVideo
-            : ""
+              ? CouldVideo
+              : weatherCondition === "Sunny"
+                ? SummerVideo
+                : ""
         }
         autoPlay
         loop
@@ -80,15 +80,15 @@ const TemperatureCard = () => {
         className="w-full h-full object-cover  top-0 left-0 absolute rounded-xl"
       />
 
-      <div className="absolute top-0 left-0 h-full w-full p-5 bg-black/30 rounded-xl ">
+      <div className="absolute top-0 left-0 h-full w-full px-2 py-5 md:p-5 bg-black/30 rounded-xl ">
         <h3 className="text-md font-semibold  !text-white">
           Temperature Guide
         </h3>
         <div className="flex flex-col justify-between h-full py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 ">
+            <div className="flex items-center space-x-1  md:space-x-2 ">
               <Cloud />
-              <span className="text-7xl font-semibold  !text-white ">
+              <span className=" text-3xl lg:text-7xl font-semibold  !text-white ">
                 {weatherData?.current?.temp_c}°
               </span>
             </div>

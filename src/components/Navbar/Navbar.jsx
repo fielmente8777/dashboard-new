@@ -66,7 +66,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="h-[8vh] z-10  bg-[#2e3b61] border-b flex cardShadow flex-col md:flex-row md:px-4 items-center justify-between top-0 w-full overflow-hidden">
+      <div className="h-[8vh] z-10  bg-[#2e3b61] border-b flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -103,15 +103,20 @@ const Navbar = () => {
             <GiHamburgerMenu size={20} />
           </div> */}
 
-          <div className="flex text-zinc-700 items-center">
+          <div className="hidden sm:flex text-zinc-700 items-center">
             <div
               onClick={() => setOpen(true)}
-              className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md hover:scale-95"
+              className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
             >
               <RxDashboard size={22} />{" "}
               <p className="text-md font-semibold">Marketplace</p>
             </div>
           </div>
+
+
+        </div>
+        <div onClick={() => setOpen(true)} className="bg-[#0088ff]a text-white sm:hidden p-1 rounded-md">
+          <RxDashboard size={22} />{" "}
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />

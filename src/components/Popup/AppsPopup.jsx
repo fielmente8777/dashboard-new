@@ -236,6 +236,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
   }, [])
 
   const handleOpenService = (service) => {
+    // console.log(service.link)
     // const key = service.key;
 
     // if (service?.name === "Analytics & Reporting") {
@@ -281,7 +282,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="text-[#575757] bg-white  w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
+            className="text-[#575757] bg-white w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
           >
             <div className="relative flex items-center">
 
@@ -294,13 +295,13 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                 placeholder="Search Services"
                 className="bg-white py-4 w-full px-5 outline-none border  "
               />
-              <MdClose onClick={() => setOpen(false)} className="mr-5 cursor-pointer text-3xl absolute right-0" />
+              <MdClose onClick={() => setOpen(false)} className=" mr-2 md:mr-5 cursor-pointer text-2xl md:text-3xl absolute right-0" />
             </div>
 
             <div className=" p-4 pb-20 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
               {filteredPremium.length > 0 && <div>
                 <h2 className="font-semibold mb-2">Premium Services</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-6">
                   {filteredPremium.map((service) => (
                     <div
                       key={service.name}
@@ -328,7 +329,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                   <h2 className="text-gray-800 font-semibold">Other Services</h2>
                   {/* <span className="text-blue-600 text-sm cursor-pointer">Preference</span> */}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                   {filteredOther.map((service) => (
                     <div
                       key={service.name}

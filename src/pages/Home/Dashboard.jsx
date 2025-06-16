@@ -132,9 +132,9 @@ const Dashboard = () => {
   return (
     <>
       {!loading ? (
-        <div className="flex flex-col gap-5 hide-scrollbar px-4">
+        <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}
@@ -144,21 +144,23 @@ const Dashboard = () => {
               />
             ))}
           </div>
-          <div className="grid grid-cols-5 gap-5 ">
-            <div className="col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
+            <div className="lg:col-span-3">
               <AnalyticsCard />
             </div>
-            <div className="col-span-2">
+            <div className="md:hidden lg:block lg:col-span-2">
               <TemperatureCard />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
             <Review />
-
+            <div className="hidden md:block lg:hidden">
+              <TemperatureCard />
+            </div>
             <Services />
 
-            <div className="col-span-2">
+            <div className="lg:col-span-2">
               <MiniLineChartCard
                 title="Other"
                 value="0.00"

@@ -41,7 +41,7 @@ const WeatherCard = ({ icon, temp, time, text }) => {
         <div
             className={`flex flex-col gap-1 justify-center px-2 `}>
 
-            <span className={`flex justify-center !text-white text-[#5A6ACF] `} >
+            <span className={`flex justify-center !text-white  `} >
                 {text === "Cloudy " ? (
                     <FaCloud size={20} />
                 ) : text === "Sunny" ? (

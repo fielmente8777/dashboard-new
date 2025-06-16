@@ -35,6 +35,7 @@ import SocialMedia from "../Social/SocialMedia";
 import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 import BookingEngine from "../BookingEngine/BookingEngine";
 import BookingSetup from "../BookingEngine/BookingSetup";
+import AdsPackages from "../BookingEngine/AdsPackages"
 import ReservationDesk from "../ReservationDesk/ReservationDesk";
 import Website from "../CustomWebsite/Website";
 import OTAListing from "../OTA/OTAListing";
@@ -79,6 +80,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/booking-engine/rooms-setup`]: <BookingSetup />,
     [`${BASE_PATH}/${hid}/booking-engine/rooms-and-inventory`]: (
       <RoomsAndInventory />
+    ),
+
+    [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: (
+      <AdsPackages />
     ),
 
     // GRM
