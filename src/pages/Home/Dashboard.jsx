@@ -86,12 +86,12 @@ const Dashboard = () => {
         (item) => item.status.toLowerCase() === "converted"
       );
       const fromEazobot = response?.filter((item) => {
-        if (!item.created_from || typeof item.created_from !== "string")
-          return false;
-        const source = item.created_from.toLowerCase();
-        return (
-          source === "eazobot" || source === "chatbot" || source === "chat bot"
-        );
+        if (item?.created_from === "null") return false;
+        else {
+          const source = item?.created_from?.toLowerCase();
+          return source === "eazobot" || source === "chatbot" || source === "chat bot";
+        }
+
       });
       setEazobotEnquiries(fromEazobot);
       setConvertedEnquiries(converted?.length);
@@ -128,6 +128,10 @@ const Dashboard = () => {
       progress: 78,
     },
   ];
+
+
+
+  console.log("Dashboard data:", eazobotEnquiries);
 
   return (
     <>
