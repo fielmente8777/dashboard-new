@@ -17,9 +17,6 @@ export const room_type_name = {
   12: "Exclusive Retreat",
 };
 
-
-
-
 export const MarketPlaceService = [
   "OTA Listing",
   "OTA Optimization",
@@ -41,6 +38,5 @@ export const MarketPlaceService = [
   "Channel Manager",
   "Leads Management",
   "PMS Software",
-  "SMS Marketing"
+  "SMS Marketing",
 ];
-

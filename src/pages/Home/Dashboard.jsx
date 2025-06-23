@@ -80,19 +80,31 @@ const Dashboard = () => {
         token,
         hid,
       });
-      console.log(response);
       setEnquires(response);
-      const converted = response?.filter(
-        (item) => item.status.toLowerCase() === "converted"
-      );
+      const converted = response?.filter((item) => {
+        if (item?.status) {
+          return item?.status.toLowerCase() === "converted";
+        }
+
+        return false;
+      });
+
       const fromEazobot = response?.filter((item) => {
         if (item?.created_from === "null") return false;
         else {
-          const source = item?.created_from?.toLowerCase();
-          return source === "eazobot" || source === "chatbot" || source === "chat bot";
-        }
+          if (item?.created_from) {
+            const source = item?.created_from?.toLowerCase();
+            return (
+              source === "eazobot" ||
+              source === "chatbot" ||
+              source === "chat bot"
+            );
+          }
 
+          return false;
+        }
       });
+
       setEazobotEnquiries(fromEazobot);
       setConvertedEnquiries(converted?.length);
     } catch (error) {
@@ -128,10 +140,6 @@ const Dashboard = () => {
       progress: 78,
     },
   ];
-
-
-
-  console.log("Dashboard data:", eazobotEnquiries);
 
   return (
     <>
