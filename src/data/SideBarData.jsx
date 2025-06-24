@@ -76,6 +76,11 @@ export const SidebarData = [
         icon: <FaQuestion size={22} />,
       },
       {
+        name: "Newsletter",
+        link: `cms/newsletter`,
+        icon: <FaQuestion size={22} />,
+      },
+      {
         name: "Privacy Policy",
         link: `cms/privacy-policy`,
         icon: <MdPrivacyTip size={22} />,
