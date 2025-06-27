@@ -6,7 +6,7 @@ import {
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
-import { MdEmergencyShare, MdOutlineSos } from "react-icons/md";
+import { MdEmergencyShare, MdOutlineSos, MdUnsubscribe } from "react-icons/md";
 import { SiGoogleanalytics } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
@@ -75,11 +75,11 @@ export const SidebarData = [
         link: `cms/faq`,
         icon: <FaQuestion size={22} />,
       },
-      {
-        name: "Newsletter",
-        link: `cms/newsletter`,
-        icon: <FaQuestion size={22} />,
-      },
+      // {
+      //   name: "Newsletter",
+      //   link: `cms/newsletter`,
+      //   icon: <FaQuestion size={22} />,
+      // },
       {
         name: "Privacy Policy",
         link: `cms/privacy-policy`,
@@ -228,7 +228,23 @@ export const SidebarData = [
       },
     ],
   },
-
+  {
+    name: "Payment Gateway",
+    key: "Payment Gateway",
+    link: `payment-gateway`,
+    icon: <MdPayment size={22} />,
+  },
+  {
+    name: "Front Desk",
+    key: "Front Desk",
+    link: `front-desk`,
+    icon: <HiOutlineUserGroup />,
+  },
+  {
+    name: "Newsletter",
+    link: `newsletter`,
+    icon: <MdUnsubscribe size={22} />,
+  },
   {
     name: "User Management",
     key: "User Management",
@@ -376,12 +392,7 @@ export const SidebarData = [
   //   icon: <FaWhatsappSquare size={24} />,
   // },
 
-  {
-    name: "FrontDesk",
-    key: "FrontDesk",
-    link: `frontdesk`,
-    icon: <BiCreditCardFront />,
-  },
+
 
   // {
   //   name: "SEO",
@@ -404,18 +415,7 @@ export const SidebarData = [
   //   icon: <RiWechatChannelsLine size={22} />,
   // },
 
-  {
-    name: "Payment Gateway",
-    key: "Payment Gateway",
-    link: `payment-gateway`,
-    icon: <MdPayment size={22} />,
-  },
-  {
-    name: "Front Desk",
-    key: "Front Desk",
-    link: `front-desk`,
-    icon: <HiOutlineUserGroup />,
-  },
+
 ];
 
 // "CMS",

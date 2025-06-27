@@ -68,7 +68,6 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/cms/gallery`]: <Gallery />,
     [`${BASE_PATH}/${hid}/cms/profile-and-links`]: <Profile />,
     [`${BASE_PATH}/${hid}/cms/faq`]: <Faq />,
-    [`${BASE_PATH}/${hid}/cms/newsletter`]: <Newsletter />,
     [`${BASE_PATH}/${hid}/cms/offers`]: <Offers />,
     [`${BASE_PATH}/${hid}/cms/events`]: <Events />,
     [`${BASE_PATH}/${hid}/cms/blogs`]: <Blogs />,
@@ -95,6 +94,9 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/grm/settings`]: <Settings />,
     [`${BASE_PATH}/${hid}/grm/guest-feedback`]: <GrmFeedback />,
 
+
+    // newsletter
+    [`${BASE_PATH}/${hid}/newsletter`]: <Newsletter />,
     // User Management
     [`${BASE_PATH}/${hid}/user-management/all-users`]: <Usermanagement />,
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,

@@ -134,6 +134,57 @@ const Leads = () => {
     }
   };
 
+
+  // const handleQueryStatus = async (status) => {
+  //     try {
+  //       const response = await axios.post(
+  //         "https://nexon.eazotel.com/eazotel/edit-contact-query",
+  //         {
+  //           token: localStorage.getItem("token"),
+  //           Contact: lead.Contact,
+  //           Email: lead.Email,
+  //           Message: lead.Email,
+  //           Name: lead.Name,
+  //           Remark: lead.Remark,
+  //           Subject: lead.Subject,
+  //           id: lead._id,
+  //           converted_by: lead.converted_by,
+  //           created_from: lead.created_from,
+  //           is_convertable: true,
+  //           is_converted: false,
+  //           ndid: lead.ndid,
+  //           status: status,
+  //         }
+  //       );
+
+  //       const result = await response.data;
+
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "Query Status Updated!",
+  //         text: result.Message || "Query has been updated successfully.",
+  //         timer: 600,
+  //         showConfirmButton: false,
+  //       }).then(() => {
+  //         if (result.Status) {
+  //           handleTabClick(activeIndex);
+
+  //           // fetchEnquires(localStorage.getItem('token'));
+  //         }
+  //       });
+
+  //       onClose();
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error",
+  //         text: "Error updating Query Status",
+  //       });
+  //     }
+  //   };
+
+
+
   // Pagination Logic
   const totalPages = Math.ceil(filteredEnquires.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;

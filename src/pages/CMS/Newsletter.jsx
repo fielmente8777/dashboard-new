@@ -1,63 +1,58 @@
-import React from 'react'
+import { MdEmail } from 'react-icons/md';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 const Newsletter = () => {
-    const { currentLoactionWebsiteData, loading } = useSelector(
+    const { newsletterData: data, loading } = useSelector(
         (state) => state?.hotelsWebsiteData
     );
 
-
-    // console.log(currentLoactionWebsiteData)
-
-    const data = [
-        {
-            _id: "734236482384382",
-            email: "test@gmail.com"
-        },
-        {
-            _id: "734236482384383",
-            email: "test@eazotel.com"
-        }
-
-    ];
     return (
-        <div className="bg-white">
+        <div className="bg-white cardShadow mb-10">
             <div className="bg-white p-4">
                 <h2 className="text-md font-semibold text-[#575757]">
                     Newsletters
                 </h2>
             </div>
 
-            <div className="bg-white p-4 ">
+            <div className="bg-white p-4  ">
                 {!loading ? (
                     <div className="overflow-auto">
                         <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
                             <thead>
                                 <tr className="border-b">
 
-                                    <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
+                                    {/* <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
                                         ID
-                                    </th>
+                                    </th> */}
                                     <th className="py-3 px-2 text-[14px] font-medium capitalize">
                                         Email
+                                    </th>
+                                    <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                                        Action
                                     </th>
                                 </tr>
                             </thead>
 
-                            {/* {data?.length > 0 ? ( */}
-                            {currentLoactionWebsiteData?.NewsletterData?.length > 0 ? (
+                            {data?.length > 0 ? (
+                                // {currentLoactionWebsiteData?.NewsletterData?.length > 0 ? (
                                 <tbody>
-                                    {/* {data?.map((subs, index) => ( */}
-                                    {currentLoactionWebsiteData?.NewsletterData?.map((subs, index) => (
+                                    {data?.map((subs, index) => (
+                                        // {currentLoactionWebsiteData?.NewsletterData?.map((subs, index) => (
                                         <tr
                                             key={index}
                                             className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer `}
                                         >
-                                            <td className="py-3 px-2 text-[14px] text-[#575757]">
+                                            {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
                                                 {subs?._id}
-                                            </td>
+                                            </td> */}
                                             <td className="py-3 px-2 text-[14px] text-[#575757]">
                                                 {subs?.email}
+                                            </td>
+                                            <td className="py-3 px-2 text-[16px] text-[#575757]">
+                                                <Link to={`mailto:${subs?.email}`} className='bg-red-900'>
+                                                    <MdEmail size={24} />
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}
