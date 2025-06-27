@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdHome } from "react-icons/io";
-import { MdOutlineSos } from "react-icons/md";
+import { MdOutlineSos, MdSettings } from "react-icons/md";
 import { RiFeedbackFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import AppsPopup from "../Popup/AppsPopup";
 import { RxDashboard } from "react-icons/rx";
 import Greeting from "../Greeting";
+import ChangePassword from "../Popup/ChangePassword";
 const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
@@ -27,6 +28,7 @@ const Navbar = () => {
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
   const [open, setOpen] = useState(false);
+  const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] = useState(false);
 
   const SidebarData = [
     {
@@ -66,7 +68,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="h-[8vh] z-10  bg-[#2e3b61] border-b flex cardShadow px-4 items-center justify-between top-0 w-full ">
+      <div className="h-[8vh] z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -103,7 +105,7 @@ const Navbar = () => {
             <GiHamburgerMenu size={20} />
           </div> */}
 
-          <div className="hidden sm:flex text-zinc-700 items-center">
+          <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
             <div
               onClick={() => setOpen(true)}
               className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
@@ -111,6 +113,10 @@ const Navbar = () => {
               <RxDashboard size={22} />{" "}
               <p className="text-md font-semibold">Marketplace</p>
             </div>
+            <div>
+              <MdSettings onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={30} />
+            </div>
+
           </div>
 
 
@@ -120,6 +126,10 @@ const Navbar = () => {
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
+        <ChangePassword
+          isOpen={isChangePasswordPopupOpen}
+          onClose={() => setIsChangePasswordPopupOpen(false)}
+        />
       </div>
     </div>
   );

@@ -13,6 +13,8 @@ import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
+import axios from "axios";
+import { BASE_URL } from "../../data/constant";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -23,6 +25,7 @@ const Login = () => {
     password: "",
   });
   const [spinnerLoader, setSpinnerLoader] = useState(false);
+  const [forget, setForget] = useState(false);
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -105,6 +108,34 @@ const Login = () => {
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${BASE_URL}/eazotel/forgot/password`, {
+        email: formData.email
+      })
+
+      if (response?.data?.Status === true) {
+        Swal.fire({
+          title: "Password reset successfully",
+          text: "Please check your email to reset your password.",
+          icon: "success",
+          confirmButtonText: "OK"
+        });
+        setForget(false);
+      }
+
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: "There was an error sending the email. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK"
+      });
+    }
+  }
+
+
   return (
     <div className="w-full h-screen flex items-center justify-center md:px-6">
       <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
@@ -119,76 +150,77 @@ const Login = () => {
         </div>
 
         <div>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-1">
-              <h2 className="font-bold text-xl">Welcome Back!</h2>
-              <h3 className="text-sm font-medium text-gray-500">
-                Login your account!
-              </h3>
-            </div>
-
-            <div className="space-y-6 mt-6">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="" className="font-medium text-gray-600">
-                  Email
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  placeholder="Enter you email"
-                  className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
-                  onChange={handleChange}
-                  value={formData.email}
-                />
+          {!forget ?
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-1">
+                <h2 className="font-bold text-xl">Welcome Back!</h2>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Login your account!
+                </h3>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <label htmlFor="" className="font-medium text-gray-600">
-                  Password
-                </label>
-
-                <div className="w-full relative">
+              <div className="space-y-6 mt-6">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="" className="font-medium text-gray-600">
+                    Email
+                  </label>
                   <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                    name="email"
+                    type="email"
+                    placeholder="Enter you email"
+                    className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
                     onChange={handleChange}
-                    value={formData.password}
+                    value={formData.email}
                   />
+                </div>
 
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                    {showPassword ? (
-                      <AiOutlineEye
-                        size={20}
-                        onClick={togglePassword}
-                        className="text-gray-400"
-                      />
-                    ) : (
-                      <HiOutlineEyeOff
-                        size={20}
-                        onClick={togglePassword}
-                        className="text-gray-400"
-                      />
-                    )}
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="" className="font-medium text-gray-600">
+                    Password
+                  </label>
+
+                  <div className="w-full relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                      onChange={handleChange}
+                      value={formData.password}
+                    />
+
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                      {showPassword ? (
+                        <AiOutlineEye
+                          size={20}
+                          onClick={togglePassword}
+                          className="text-gray-400"
+                        />
+                      ) : (
+                        <HiOutlineEyeOff
+                          size={20}
+                          onClick={togglePassword}
+                          className="text-gray-400"
+                        />
+                      )}
+                    </div>
                   </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <p onClick={() => setForget(true)} className="cursor-pointer text-sm text-blue-600 underline inline-block font-medium">
+                    Forgot password?
+                  </p>
+                </div>
+
+                <div className="flex">
+                  <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
+                    Login {spinnerLoader && <Loader size={20} color="white" />}
+                  </button>
                 </div>
               </div>
 
-              <div className="flex justify-end">
-                <Link className="text-sm text-blue-600 underline inline-block font-medium">
-                  Forgot password?
-                </Link>
-              </div>
-
-              <div className="flex">
-                <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
-                  Login {spinnerLoader && <Loader size={20} color="white" />}
-                </button>
-              </div>
-            </div>
-
-            {/* <div className="flex gap-3 items-center mt-5">
+              {/* <div className="flex gap-3 items-center mt-5">
               <h2 className="text-gray-500 font-medium">
                 Create an account with:
               </h2>
@@ -197,15 +229,65 @@ const Login = () => {
               </div>
             </div> */}
 
-            <div>
-              <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
-                Don't have an account?
-                <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
-                  Sign up
-                </Link>
+              <div>
+                <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
+                  Don't have an account?
+                  <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
+                    Sign up
+                  </Link>
+                </h2>
+              </div>
+            </form>
+            :
+
+            <form onSubmit={handleForgotSubmit}>
+              <div className="space-y-1">
+                <h2 className="font-bold text-xl">Welcome Back!</h2>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Change password of your account!
+                </h3>
+              </div>
+
+              <div className="space-y-6 mt-6">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="" className="font-medium text-gray-600">
+                    Email
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    placeholder="Enter you email"
+                    className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+                    onChange={handleChange}
+                    value={formData.email}
+                  />
+                </div>
+
+                <div className="flex">
+                  <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
+                    Send Email {spinnerLoader && <Loader size={20} color="white" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* <div className="flex gap-3 items-center mt-5">
+              <h2 className="text-gray-500 font-medium">
+                Create an account with:
               </h2>
-            </div>
-          </form>
+              <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer">
+                <FcGoogle size={22} />
+              </div>
+            </div> */}
+
+              <div>
+                <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
+                  Do you know password?
+                  <p onClick={() => setForget(false)} className="cursor-pointer text-blue-600 underline">
+                    Login
+                  </p>
+                </h2>
+              </div>
+            </form>}
         </div>
       </div>
     </div>
