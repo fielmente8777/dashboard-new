@@ -114,7 +114,6 @@ export const SidebarData = [
         link: `booking-engine/ads-packages`,
         icon: <MdBedroomParent size={18} />,
       },
-
     ],
   },
   {
@@ -146,82 +145,18 @@ export const SidebarData = [
   },
 
   {
-    name: "Guest Request Management",
-    link: `guest-request-management`,
-    key: "GRM",
-    icon: <IoFastFood size={22} />,
-    subLinks: [
-      {
-        name: "All Requests",
-        link: `grm/all-requests`,
-        icon: <FaCodePullRequest size={16} />,
-      },
-      // {
-      //   name: "Emergency Request",
-      //   link: `grm/emergency-request`,
-      //   icon: <MdEmergencyShare size={18} />,
-      // },
-      {
-        name: "GRM Settings",
-        link: `grm/settings`,
-        icon: <IoMdSettings size={18} />,
-      },
-    ],
-  },
-
-  {
-    name: "Human Resources Management",
-    link: `human-resources-management`,
-    key: "HRM",
-    icon: <GrResources size={24} />,
-    subLinks: [
-      {
-        name: "Applications",
-        link: `human-resources-management/applications`,
-        icon: <FaFilePdf size={18} />,
-      },
-    ],
-  },
-
-  {
-    name: "Leads Form",
+    name: "Lead Gen Form",
     key: "Leads Form",
     icon: <MdLeaderboard size={24} />,
+    link: `lead-form/lead-gen-form`,
     key: "Leads Form",
-    subLinks: [
-      {
-        name: "Lead Gen Form",
-        link: `lead-form/lead-gen-form`,
-        icon: <SiGoogleforms size={16} />,
-      },
-    ],
-  },
-
-  {
-    name: "Analytics & Reporting",
-    key: "Analytics Reporting",
-    link: ``,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "HRM Analytics",
-        link: `human-resources-management/analytics`,
-        key: "HRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        key: "Enquiries Management",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GRM Analytics",
-        link: `grm/analytics`,
-        key: "GRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
+    // subLinks: [
+    //   {
+    //     name: "My Form",
+    //     link: `lead-form/lead-gen-form`,
+    //     icon: <SiGoogleforms size={16} />,
+    //   },
+    // ],
   },
 
   {
@@ -231,12 +166,12 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup size={22} />,
   },
 
-  // {
-  //   name: "Eazobot",
-  //   key: "Eazobot",
-  //   link: `eazobot`,
-  //   icon: <TiSocialSkype size={24} />,
-  // },
+  {
+    name: "Social Media",
+    key: "Social Media",
+    link: `social-media`,
+    icon: <TiSocialSkype size={24} />,
+  },
 
   // {
   //   name: "Conversational Tool",
@@ -406,10 +341,50 @@ export const SidebarData = [
     icon: <MdPayment size={22} />,
   },
   {
-    name: "Front Desk",
-    key: "Front Desk",
-    link: `front-desk`,
-    icon: <HiOutlineUserGroup />,
+    name: "Human Resources Management",
+    link: `human-resources-management`,
+    key: "HRM",
+    icon: <GrResources size={24} />,
+    subLinks: [
+      {
+        name: "Applications",
+        link: `human-resources-management/applications`,
+        icon: <FaFilePdf size={18} />,
+      },
+    ],
+  },
+  {
+    name: "User Management",
+    key: "User Management",
+    link: `user-management/all-users`,
+    icon: <HiOutlineUserGroup size={22} />,
+  },
+
+  {
+    name: "Analytics & Reporting",
+    key: "Analytics Reporting",
+    link: ``,
+    icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "HRM Analytics",
+        link: `human-resources-management/analytics`,
+        key: "HRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Enquiries Analytics",
+        link: `enquiries-management/enquiries-analytics`,
+        key: "Enquiries Management",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GRM Analytics",
+        link: `grm/analytics`,
+        key: "GRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
   },
 ];
 
