@@ -4,12 +4,10 @@ import { MarketPlaceService } from "../../data/constant";
 import MarkInterestedPopup from "../Popup/MarkInterestedPopup";
 
 const CommanHeader = ({ serviceName }) => {
+  const [open, setOpen] = useState(false);
+  const [selectedServices, setSelectedServices] = useState([serviceName]);
 
-  const [open, setOpen] = useState(false)
-  const [selectedServices, setSelectedServices] = useState([serviceName])
-
-
-  console.log(selectedServices)
+  console.log(selectedServices);
   return (
     <div className="bg-white">
       <div className="flex justify-between items-center">
@@ -17,12 +15,20 @@ const CommanHeader = ({ serviceName }) => {
         {/* <button onClick={handleMarkAsInterested(serviceName)} className="bg-green-600 text-white py-2 px-3 rounded-lg hover:scale-95 font-semibold">
           Mark as interested
         </button> */}
-        <button onClick={() => setOpen(true)} className="bg-green-600 text-white py-2 px-3 rounded-lg hover:scale-95 font-semibold">
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-green-600 text-white py-2 px-3 rounded-lg hover:scale-95 font-semibold"
+        >
           Mark as interested
         </button>
       </div>
 
-      <MarkInterestedPopup open={open} setOpen={setOpen} selectedServices={selectedServices} setSelectedServices={setSelectedServices} />
+      <MarkInterestedPopup
+        open={open}
+        setOpen={setOpen}
+        selectedServices={selectedServices}
+        setSelectedServices={setSelectedServices}
+      />
     </div>
   );
 };
