@@ -6,7 +6,7 @@ import {
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
-import { MdEmergencyShare, MdOutlineSos } from "react-icons/md";
+import { MdEmergencyShare, MdOutlineSos, MdUnsubscribe } from "react-icons/md";
 import { SiGoogleanalytics } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
@@ -75,6 +75,11 @@ export const SidebarData = [
         link: `cms/faq`,
         icon: <FaQuestion size={22} />,
       },
+      // {
+      //   name: "Newsletter",
+      //   link: `cms/newsletter`,
+      //   icon: <FaQuestion size={22} />,
+      // },
       {
         name: "Privacy Policy",
         link: `cms/privacy-policy`,
@@ -158,7 +163,23 @@ export const SidebarData = [
     //   },
     // ],
   },
-
+  {
+    name: "Payment Gateway",
+    key: "Payment Gateway",
+    link: `payment-gateway`,
+    icon: <MdPayment size={22} />,
+  },
+  {
+    name: "Front Desk",
+    key: "Front Desk",
+    link: `front-desk`,
+    icon: <HiOutlineUserGroup />,
+  },
+  {
+    name: "Newsletter",
+    link: `newsletter`,
+    icon: <MdUnsubscribe size={22} />,
+  },
   {
     name: "User Management",
     key: "User Management",
@@ -306,13 +327,6 @@ export const SidebarData = [
   //   icon: <FaWhatsappSquare size={24} />,
   // },
 
-  {
-    name: "FrontDesk",
-    key: "FrontDesk",
-    link: `frontdesk`,
-    icon: <BiCreditCardFront />,
-  },
-
   // {
   //   name: "SEO",
   //   key: "SEO",
@@ -333,59 +347,6 @@ export const SidebarData = [
   //   link: `channel-manager`,
   //   icon: <RiWechatChannelsLine size={22} />,
   // },
-
-  {
-    name: "Payment Gateway",
-    key: "Payment Gateway",
-    link: `payment-gateway`,
-    icon: <MdPayment size={22} />,
-  },
-  {
-    name: "Human Resources Management",
-    link: `human-resources-management`,
-    key: "HRM",
-    icon: <GrResources size={24} />,
-    subLinks: [
-      {
-        name: "Applications",
-        link: `human-resources-management/applications`,
-        icon: <FaFilePdf size={18} />,
-      },
-    ],
-  },
-  {
-    name: "User Management",
-    key: "User Management",
-    link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
-
-  {
-    name: "Analytics & Reporting",
-    key: "Analytics Reporting",
-    link: ``,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "HRM Analytics",
-        link: `human-resources-management/analytics`,
-        key: "HRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        key: "Enquiries Management",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GRM Analytics",
-        link: `grm/analytics`,
-        key: "GRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
 ];
 
 // "CMS",

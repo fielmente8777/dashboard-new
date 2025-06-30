@@ -5,6 +5,7 @@ import { act } from "react";
 const initialState = {
   hotels: null,
   currentLoactionWebsiteData: null,
+  newsletterData: null,
   loading: false,
   error: null,
 };
@@ -32,6 +33,10 @@ const websiteDataSlice = createSlice({
       state.loading = false;
       state.currentLoactionWebsiteData = currentLocationWebsiteData;
     },
+    newsletterData: (state, action) => {
+      state.loading = false;
+      state.newsletterData = action.payload || [];
+    }
   },
 });
 
@@ -40,6 +45,7 @@ export const {
   getWebsiteDataSucccess,
   getWebsiteDataFailure,
   fetchCurrentLocationWebsiteData,
+  newsletterData
 } = websiteDataSlice.actions;
 
 export default websiteDataSlice.reducer;
@@ -49,13 +55,15 @@ export const fetchWebsiteData = (token, hid) => async (dispatch) => {
   dispatch(getWebsiteDataRequest());
   try {
     const data = await GetwebsiteDetails(token);
-    dispatch(getWebsiteDataSucccess(data));
+
+    dispatch(getWebsiteDataSucccess(data?.WebsiteData || data.Hotels));
     dispatch(
       fetchCurrentLocationWebsiteData({
-        data,
+        data: data?.WebsiteData || data.Hotels,
         hid,
       })
     );
+    dispatch(newsletterData(data?.Newsletter));
     // return { success: true, response: data };
   } catch (error) {
     dispatch(getWebsiteDataFailure(error.message));

@@ -8,6 +8,8 @@ import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import FilterPopup from "../../components/Popup/FilterPopup";
 import { FaFileExcel } from "react-icons/fa";
 import jsonToCsvExport from "json-to-csv-export";
+import axios from "axios";
+import Swal from "sweetalert2";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -134,6 +136,54 @@ const Leads = () => {
     }
   };
 
+  // const handleQueryStatus = async (status) => {
+  //     try {
+  //       const response = await axios.post(
+  //         "https://nexon.eazotel.com/eazotel/edit-contact-query",
+  //         {
+  //           token: localStorage.getItem("token"),
+  //           Contact: lead.Contact,
+  //           Email: lead.Email,
+  //           Message: lead.Email,
+  //           Name: lead.Name,
+  //           Remark: lead.Remark,
+  //           Subject: lead.Subject,
+  //           id: lead._id,
+  //           converted_by: lead.converted_by,
+  //           created_from: lead.created_from,
+  //           is_convertable: true,
+  //           is_converted: false,
+  //           ndid: lead.ndid,
+  //           status: status,
+  //         }
+  //       );
+
+  //       const result = await response.data;
+
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "Query Status Updated!",
+  //         text: result.Message || "Query has been updated successfully.",
+  //         timer: 600,
+  //         showConfirmButton: false,
+  //       }).then(() => {
+  //         if (result.Status) {
+  //           handleTabClick(activeIndex);
+
+  //           // fetchEnquires(localStorage.getItem('token'));
+  //         }
+  //       });
+
+  //       onClose();
+  //     } catch (error) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Error",
+  //         text: "Error updating Query Status",
+  //       });
+  //     }
+  //   };
+
   // Pagination Logic
   const totalPages = Math.ceil(filteredEnquires.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -160,6 +210,51 @@ const Leads = () => {
     { key: "status", label: "Status" },
   ];
 
+  const handleStatusChange = async (lead, status) => {
+    try {
+      const response = await axios.post(
+        "https://nexon.eazotel.com/eazotel/edit-contact-query",
+        {
+          token: localStorage.getItem("token"),
+          Contact: lead.Contact,
+          Email: lead.Email,
+          Message: lead.Email,
+          Name: lead.Name,
+          Remark: lead.Remark,
+          Subject: lead.Subject,
+          id: lead._id,
+          converted_by: lead.converted_by,
+          created_from: lead.created_from,
+          is_convertable: true,
+          is_converted: false,
+          ndid: lead.ndid,
+          status: status,
+        }
+      );
+
+      const result = await response.data;
+
+      Swal.fire({
+        icon: "success",
+        title: "Query Status Updated!",
+        text: result.Message || "Query has been updated successfully.",
+        timer: 600,
+        showConfirmButton: false,
+      }).then(() => {
+        if (result.Status) {
+          // handleTabClick(activeIndex);
+          // fetchEnquires(localStorage.getItem('token'));
+        }
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error updating Query Status",
+      });
+    }
+  };
+
   return (
     <div className="cardShadow">
       <div className="flex flex-col lg:flex-row justify-between  bg-white">
@@ -168,18 +263,20 @@ const Leads = () => {
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] whitespace-nowrap  ${active === index
-                ? "border-b-2 border-[#575757]"
-                : "border-b-2 border-transparent"
-                } px-4 py-3 bg-white font-medium text-[#575757]`}
+              className={`text-[14px] whitespace-nowrap  ${
+                active === index
+                  ? "border-b-2 border-[#575757]"
+                  : "border-b-2 border-transparent"
+              } px-4 py-3 bg-white font-medium text-[#575757]`}
             >
               {item}
             </button>
           ))}
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
-            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
-              } `}
+            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
+              loading ? "animate-spin" : ""
+            } `}
           >
             <MdRefresh size={25} />
           </div>
@@ -269,10 +366,11 @@ const Leads = () => {
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
-                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                        ? " text-[#575757]"
-                        : "text-[#575757]"
-                        }`}
+                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                        enquery?.status === "Open"
+                          ? " text-[#575757]"
+                          : "text-[#575757]"
+                      }`}
                       onClick={() => {
                         setSelectedLead(enquery);
                         setIsPopupOpen(true);
@@ -305,16 +403,50 @@ const Leads = () => {
                         {enquery?.check_in
                           ? enquery.check_in
                           : extractBookingInfo(enquery?.Message)?.checkIn ||
-                          "-"}
+                            "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_out
                           ? enquery.check_out
                           : extractBookingInfo(enquery?.Message)?.checkOut ||
-                          "-"}
+                            "-"}
                       </td>
-                      <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                      {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
                         {enquery?.status}
+                      </td> */}
+
+                      <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                        <select
+                          className="outline-none py-2 bg-gray-50 cursor-pointer"
+                          defaultValue={enquery?.status}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            handleStatusChange(enquery, e.target.value);
+                          }}
+                        >
+                          <option
+                            value=""
+                            disabled
+                            className="text-gray-500 bg-white"
+                          >
+                            Select Status
+                          </option>
+                          <option
+                            value="Converted"
+                            className="bg-white text-black"
+                          >
+                            Converted
+                          </option>
+                          <option
+                            value="Contacted"
+                            className="bg-white  text-black"
+                          >
+                            Contacted
+                          </option>
+                          <option value="Open" className="bg-white  text-black">
+                            Open
+                          </option>
+                        </select>
                       </td>
                     </tr>
                   ))}
@@ -349,10 +481,11 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-1.5 text-sm rounded-md transition-all whitespace-nowrap duration-200
-          ${currentPage === 1
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                  }`}
+          ${
+            currentPage === 1
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 ← Previous
               </button>
@@ -387,10 +520,11 @@ const Leads = () => {
                         key={item}
                         onClick={() => handlePageChange(item)}
                         className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200
-                  ${currentPage === item
-                            ? "bg-primary text-white shadow-sm"
-                            : "text-gray-700 hover:bg-gray-100"
-                          }`}
+                  ${
+                    currentPage === item
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                       >
                         {item}
                       </button>
@@ -403,10 +537,11 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-1.5 text-sm rounded-md whitespace-nowrap transition-all duration-200
-          ${currentPage === totalPages
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "hover:bg-gray-100 text-gray-700"
-                  }`}
+          ${
+            currentPage === totalPages
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-gray-100 text-gray-700"
+          }`}
               >
                 Next →
               </button>

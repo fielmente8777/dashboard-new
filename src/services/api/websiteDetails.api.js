@@ -11,7 +11,8 @@ export const GetwebsiteDetails = async (token) => {
       },
     });
     const result = await response.json();
-    return result?.WebsiteData || result?.Hotels;
+    // return result?.WebsiteData || result?.Hotels;
+    return result;
   } catch (error) {
     console.error("Error getting applicants:", error);
     throw error;

@@ -51,6 +51,7 @@ import GoogleMapItiration from "../GoogleListing/GoogleMapItiration";
 import GMBProfile from "../GoogleListing/GMBProfile";
 import InfluencerMarketing from "../Social/InfluencerMarketing";
 import Seo from "../SEO/Seo";
+import Newsletter from "../CMS/Newsletter";
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -93,6 +94,9 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/grm/settings`]: <Settings />,
     [`${BASE_PATH}/${hid}/grm/guest-feedback`]: <GrmFeedback />,
 
+
+    // newsletter
+    [`${BASE_PATH}/${hid}/newsletter`]: <Newsletter />,
     // User Management
     [`${BASE_PATH}/${hid}/user-management/all-users`]: <Usermanagement />,
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
