@@ -81,6 +81,11 @@ export const roomTypes = [
   "Exclusive Retreat",
 ];
 
+export const getRoomType = (roomType = "Deluxe") => {
+  const roomTypeNumber = roomTypes.indexOf(roomType);
+  return roomTypeNumber + 1;
+}
+
 export const facilitiesList = [
   "Wi-Fi",
   "Air Conditioning",

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { facilitiesList, roomTypes } from "./Data";
+import { facilitiesList, getRoomType, roomTypes } from "./Data";
 import { PiUploadSimpleBold } from "react-icons/pi";
 import { addRoom } from "../../services/api/bookingEngine";
 import handleLocalStorage from "../../utils/handleLocalStorage";
@@ -83,8 +83,11 @@ const BookingSetup = () => {
     //   }
     // }
 
+
+    const roomTypeValue = getRoomType(formData?.roomType);
     const newRoomData = {
-      roomType: formData?.roomType,
+
+      roomType: roomTypeValue?.toString(),
       hId: String(handleLocalStorage("hid")),
       roomName: formData?.roomName,
       roomDescription: formData?.roomDescription,
