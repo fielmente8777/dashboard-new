@@ -258,15 +258,15 @@ function PricePackage() {
 
               <div className="priceCardMain">
                 {Mealpackages.map((pack, index) => (
-                  <div class="card priceCard">
-                    {/* <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?cs=srgb&dl=pexels-pixabay-164595.jpg&fm=jpg" class="card-img-top" alt="..." /> */}
-                    <div class="card-body">
-                      <h5 class="card-title">{pack.packageName}</h5>
-                      <p class="card-text">{pack.packageDesc}</p>
-                      <p class="card-text">{pack.packagePrice}</p>
+                  <div className="card priceCard">
+                    {/* <img src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg?cs=srgb&dl=pexels-pixabay-164595.jpg&fm=jpg" className="card-img-top" alt="..." /> */}
+                    <div className="card-body">
+                      <h5 className="card-title">{pack.packageName}</h5>
+                      <p className="card-text">{pack.packageDesc}</p>
+                      <p className="card-text">{pack.packagePrice}</p>
                       <a
                         href="#"
-                        class="btn btn-primary"
+                        className="btn btn-primary"
                         onClick={() => {
                           DeleteMealPackage(pack.planId);
                         }}

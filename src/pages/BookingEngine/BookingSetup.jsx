@@ -749,9 +749,9 @@ export default BookingSetup;
 //             <div className="BookingSetup_div">
 //               <label htmlFor="/">Choose Facilities :</label>
 
-//               <div class="dropdown">
+//               <div className="dropdown">
 //                 <button
-//                   class="btn btn-secondary dropdown-toggle"
+//                   className="btn btn-secondary dropdown-toggle"
 //                   type="button"
 //                   id="dropdownMenuButton1"
 //                   data-bs-toggle="dropdown"
@@ -759,10 +759,10 @@ export default BookingSetup;
 //                 >
 //                   Facilities
 //                 </button>
-//                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+//                 <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
 //                   <li>
-//                     <a class="dropdown-item">
-//                       <div class="scrollable-content">
+//                     <a className="dropdown-item">
+//                       <div className="scrollable-content">
 //                         {facilitiesData.map((facility) => (
 //                           <div className="form-check row w-100">
 //                             <input

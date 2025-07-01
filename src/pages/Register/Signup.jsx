@@ -452,7 +452,7 @@ export default Signup;
 //                 Login
 //               </button>
 
-//               <button class="flex items-center justify-center bg-white text-black/70 border border-gray-300 rounded-lg px-6 py-2 text-sm font-medium    focus:outline-none">
+//               <button className="flex items-center justify-center bg-white text-black/70 border border-gray-300 rounded-lg px-6 py-2 text-sm font-medium    focus:outline-none">
 //                 <svg
 //                   className="h-6 w-6 mr-2"
 //                   xmlns="http://www.w3.org/2000/svg"

@@ -394,7 +394,7 @@ const RoomsAndInventory = () => {
   return (
     <div className="maxwidth mx-auto mt-4 bg-white p-4 cardShadow mb-10">
       <div className="flex justify-between max-md:px-2">
-        <div class="inline-flex rounded-lg shadow-sm" role="group">
+        <div className="inline-flex rounded-lg shadow-sm" role="group">
           {/* <button onClick={handleAllClick} type="button" className={`px-4 py-2 text-sm font-medium  rounded-s-lg   ${showAll === true ? "border border-orange-600 bg-orange-600 text-white" : "text-gray-900 bg-white border border-gray-200 hover:text-orange-600 hover:bg-neutral-100"} `}>
             All
           </button> */}
@@ -425,13 +425,13 @@ const RoomsAndInventory = () => {
         </div> */}
       </div>
 
-      <div class="relative overflow-x-auto mt-4">
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 border border-gray-300">
-          <thead class="text-xs text-gray-700 uppercase">
+      <div className="relative overflow-x-auto mt-4">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 border border-gray-300">
+          <thead className="text-xs text-gray-700 uppercase">
             <tr>
               <th
                 scope="col"
-                class="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-gray-200"
+                className="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-gray-200"
               >
                 <button className="px-4 text-sm font-medium  rounded-lg text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
                   <IoSync size={20} />
@@ -445,7 +445,7 @@ const RoomsAndInventory = () => {
 
               <th
                 scope="col"
-                class="px-4  py-3 bg-gray-100 w-full mx-auto text-center border-t border-r border-b border-gray-300"
+                className="px-4  py-3 bg-gray-100 w-full mx-auto text-center border-t border-r border-b border-gray-300"
               >
                 <div className="flex justify-between">
                   <div className="w-[33.33%] max-md:hidden"></div>
@@ -498,15 +498,15 @@ const RoomsAndInventory = () => {
           </thead>
 
           <tbody>
-            <tr class="bg-white border-b border-gray-300 flex-grow">
+            <tr className="bg-white border-b border-gray-300 flex-grow">
               <th
                 scope="row"
-                class="px-4 py-4 font-medium text-gray-600 bg-gray-200 whitespace-nowrap w-[16rem]"
+                className="px-4 py-4 font-medium text-gray-600 bg-gray-200 whitespace-nowrap w-[16rem]"
               >
                 <span className="text-2xl font-bold">Rooms</span>
               </th>
 
-              <td class="w-full flex justify-between">
+              <td className="w-full flex justify-between">
                 {dates?.map((date, index) => (
                   <div
                     key={index}
@@ -551,7 +551,7 @@ const RoomsAndInventory = () => {
                         </div>
                       </th>
 
-                      <td class="w-full flex">
+                      <td className="w-full flex">
                         {dates?.map((date) => (
                           <div
                             key={date}
@@ -602,7 +602,7 @@ const RoomsAndInventory = () => {
                       </div>
                     </th>
 
-                    <td class="w-full flex">
+                    <td className="w-full flex">
                       {dates?.map((date) => (
                         <div
                           key={date}

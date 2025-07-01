@@ -15,7 +15,7 @@ const AdsPackage = ({ packageImage, packageName, packageDesc, packagePrice, pack
         setImageIndex((pre) => pre - 1);
     };
     return (
-        <div class="">
+        <div className="">
             <div className="md:h-96 w-full relative">
                 <img
                     src={packageImage[imageIndex]}
@@ -50,10 +50,10 @@ const AdsPackage = ({ packageImage, packageName, packageDesc, packagePrice, pack
                 </span>
                 <div className="absolute  inset-0 bg-black/10" />
             </div>
-            <div class="flex flex-col gap-2">
-                <h1 class="text-md font-medium text-[#575771] mt-2">{packageName}</h1>
-                <p class="text-[#575771]/80">{packageDesc}</p>
-                <p class="font-semibold text-[#575771]">₹ {packagePrice}</p>
+            <div className="flex flex-col gap-2">
+                <h1 className="text-md font-medium text-[#575771] mt-2">{packageName}</h1>
+                <p className="text-[#575771]/80">{packageDesc}</p>
+                <p className="font-semibold text-[#575771]">₹ {packagePrice}</p>
             </div>
         </div>
     )
