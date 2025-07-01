@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import DataContext from "../../context/DataContext";
 import { Link } from "react-router-dom";
+import PaymentIntegrationPopup from "../../components/Popup/PaymentIntegrationPopup";
 
 const PaymentGateway = () => {
   const {
@@ -15,6 +16,9 @@ const PaymentGateway = () => {
     // fetchBookingDatatData();
     // fetchRazorpayData("0");
   }, []);
+
+  const [title, setTitle] = useState("Razorpay");
+  const [open, setOpen] = useState(false);
   const [skip, setskip] = useState(0);
   const [id, setId] = useState("");
 
@@ -39,8 +43,27 @@ const PaymentGateway = () => {
     fetchByPaymentid(id);
     console.log("Payment ID:", id);
   };
+
+
+  const handleOnConfirm = (title, apiKey, secretkey) => {
+    // console.log(title, apiKey, secretkey);
+
+    alert("Payment Gateway Activated");
+    setOpen(false);
+  }
+
+  const handleOnCancel = () => {
+    alert("Payment Gateway Activation Cancelled");
+    setOpen(false);
+  }
   return (
     <div>
+      {/* <iframe
+        src="https://hotels.travelnet.in/booking/976-panagad"
+        // style={{ width: "1200px", height: "500px" }}
+      >
+        Your browser doesn't support iframes.
+      </iframe> */}
       <div className="grid grid-cols-4 gap-5">
         <PaymentCard
           gateway={gateway}
@@ -48,6 +71,9 @@ const PaymentGateway = () => {
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s"
           }
           paymentMethod={"Razorpay"}
+          setOpen={setOpen}
+          open={open}
+          setTitle={setTitle}
         />
         <PaymentCard
           gateway={gateway}
@@ -55,6 +81,9 @@ const PaymentGateway = () => {
             "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/2560px-PhonePe_Logo.svg.png"
           }
           paymentMethod={"PhonePe"}
+          setOpen={setOpen}
+          open={open}
+          setTitle={setTitle}
         />
         <PaymentCard
           color={"#00296F"}
@@ -63,6 +92,9 @@ const PaymentGateway = () => {
             "https://pwebassets.paytm.com/commonwebassets/ir/images/press-kit/brand.png"
           }
           paymentMethod={"paytm"}
+          setOpen={setOpen}
+          open={open}
+          setTitle={setTitle}
           status={"deactivated"}
         />
         {/* <PaymentCard gateway={gateway} image={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s"} paymentMethod={"Razorpay"} /> */}
@@ -242,13 +274,23 @@ const PaymentGateway = () => {
       ) : (
         ""
       )}
+
+      <PaymentIntegrationPopup
+        title={title}
+        open={open}
+        setOpen={setOpen}
+        onCancel={handleOnCancel}
+        onConfirm={(title, apiKey, secretkey) => {
+          handleOnConfirm(title, apiKey, secretkey)
+        }}
+      />
     </div>
   );
 };
 
 export default PaymentGateway;
 
-const PaymentCard = ({ gateway, image, paymentMethod, color, status }) => {
+const PaymentCard = ({ setOpen, setTitle, open, gateway, image, paymentMethod, color, status }) => {
   return (
     <div
       style={{
@@ -268,13 +310,16 @@ const PaymentCard = ({ gateway, image, paymentMethod, color, status }) => {
             Deactivate
           </button>
         ) : (
-          <Link
+          <button
             className="bg-green-600 px-2 py-1 rounded-md text-white"
-            to="https://payroll.razorpay.com/login"
+            onClick={() => {
+              setOpen(true)
+              setTitle(paymentMethod)
+            }}
             target="_blank"
           >
             <button>Activate</button>
-          </Link>
+          </button>
         )}
       </div>
 
