@@ -242,8 +242,8 @@ const Leads = () => {
         showConfirmButton: false,
       }).then(() => {
         if (result.Status) {
-          // handleTabClick(activeIndex);
-          // fetchEnquires(localStorage.getItem('token'));
+          handleTabClick(active);
+          // fetchEnquires(localStorage.getItem("token"));
         }
       });
     } catch (error) {
@@ -419,16 +419,13 @@ const Leads = () => {
                         <select
                           className="outline-none py-2 bg-gray-50 cursor-pointer"
                           defaultValue={enquery?.status}
+                          value={enquery?.status}
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => {
                             handleStatusChange(enquery, e.target.value);
                           }}
                         >
-                          <option
-                            value=""
-                            disabled
-                            className="text-gray-500 bg-white"
-                          >
+                          <option disabled className="text-gray-500 bg-white">
                             Select Status
                           </option>
                           <option
