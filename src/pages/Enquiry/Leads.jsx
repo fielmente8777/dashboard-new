@@ -10,6 +10,7 @@ import { FaFileExcel } from "react-icons/fa";
 import jsonToCsvExport from "json-to-csv-export";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { MdDeleteOutline } from "react-icons/md";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -255,6 +256,53 @@ const Leads = () => {
     }
   };
 
+  const handleDelete = async (id, email) => {
+    const confirmation = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you really want to delete user: ${email}? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await axios.post(
+          "https://nexon.eazotel.com/eazotel/delete-contact-query",
+          {
+            token: localStorage.getItem("token"),
+            id: id,
+          }
+        );
+
+        const result = await response.data;
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: result.Message || "User has been deleted successfully.",
+          timer: 600,
+          showConfirmButton: false,
+        }).then(() => {
+          if (result.Status) {
+            fetchEnquires(localStorage.getItem("token"));
+          }
+        });
+
+        // onClose();
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "User Management API error. Please try again.",
+        });
+      }
+    }
+  };
+
   return (
     <div className="cardShadow">
       <div className="flex flex-col lg:flex-row justify-between  bg-white">
@@ -358,6 +406,10 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Stages
                   </th>
+
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
@@ -444,6 +496,18 @@ const Leads = () => {
                             Open
                           </option>
                         </select>
+                      </td>
+
+                      <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                        <span
+                          className="flex justify-center"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(enquery._id, enquery.Email);
+                          }}
+                        >
+                          <MdDeleteOutline size={22} color="#df4545" />
+                        </span>
                       </td>
                     </tr>
                   ))}
