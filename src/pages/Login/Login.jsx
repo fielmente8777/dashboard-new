@@ -15,17 +15,17 @@ import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    // email: 'reservation@minimalisthotes.com',
     email: "",
-    // email: '',
-    // email: '',
     password: "",
   });
   const [spinnerLoader, setSpinnerLoader] = useState(false);
   const [forget, setForget] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -136,6 +136,33 @@ const Login = () => {
   }
 
 
+  const handleSuccess = async (response) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = response.credential;
+      console.log(token)
+
+      // const jwtToken = (await verify(token)).data.jwt_token;
+      // console.log(jwtToken)
+
+      // await testprotected(jwtToken);
+      // saveToken(jwtToken);
+      // navigate("/onboarding");
+      return "Login successful";
+    } catch (err) {
+      console.error("Authentication error:", err);
+      setError("Failed to authenticate. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFailure = (error) => {
+    console.error("Login Failed:", error);
+    setError("Login failed. Please try again.");
+  };
+
   return (
     <div className="w-full h-screen flex items-center justify-center md:px-6">
       <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
@@ -220,17 +247,42 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* <div className="flex gap-3 items-center mt-5">
-              <h2 className="text-gray-500 font-medium">
-                Create an account with:
-              </h2>
-              <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer">
-                <FcGoogle size={22} />
+              <div className="flex gap-3 items-center mt-5">
+                {/* <h2 className="text-gray-500 font-medium">
+                  Create an account with:
+                </h2> */}
+                {/* <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer"> */}
+                {/* <GoogleOAuthProvider
+                  clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
+                // clientSecret={"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"}
+                >
+                  <div className="flex justify-center w-full border-2 rounded-md">
+                    <GoogleLogin
+                        onSuccess={handleSuccess}
+                        onError={handleFailure}
+                        disabled={loading}
+                        theme="outline"
+                        size="large"
+                        shape="rectangular"
+                        useOneTap
+                      />
+
+                    <GoogleLogin
+                      onSuccess={handleSuccess}
+                      onError={handleFailure}
+                      useOneTap
+                    />
+                  </div>
+
+
+                </GoogleOAuthProvider> */}
+
+                {/* </div> */}
               </div>
-            </div> */}
+
 
               <div>
-                <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
+                <h2 className="text-gray-500 font-medium py-2 flex gap-2 items-center">
                   Don't have an account?
                   <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
                     Sign up
