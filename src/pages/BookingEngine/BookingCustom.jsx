@@ -1,10 +1,9 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 
-import Form from "react-bootstrap/Form";
-import SaveBtn from "../../Components/SaveBtn";
-import AuthContext from "../../Context/AuthProvider";
+import DataContext from "../../context/DataContext";
+import { BASE_URL } from "../../data/constant";
 
-function BookingCustom() {
+const BookingCustom = () => {
   const {
     BackgroundColor,
     setBackgroundColor,
@@ -16,7 +15,44 @@ function BookingCustom() {
     setBackgroundImage,
     baseUrl,
     EngineNewUrl,
-  } = useContext(AuthContext);
+  } = useContext(DataContext);
+
+  const fetchBookingDatatData = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/booking/getengine/${localStorage.getItem(
+          "token"
+        )}/${localStorage.getItem("hid")}`,
+        {
+          method: "GET", // Use 'GET' method
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const json = await response.json();
+      if (json.Status) {
+        console.log(json)
+        // setgateway(json.Details.Gateway);
+        // setAboutusEngine(json.Details.AboutUs);
+        // setCancellationPolicyEngine(json.Details.CancellationPolicy);
+        // setPrivacyPolicyEngine(json.Details.PrivacyPolicy);
+        // setTermsConditionsEngine(json.Details.TermsConditions);
+        // setConfirmButton(json.Details.Labels.ConfirmButton);
+        // setPayButton(json.Details.Labels.PayButton);
+        // setReserveBoard(json.Details.Labels.ReserveBoard);
+        // setReserveButton(json.Details.Labels.ReserveButton);
+        // setBackgroundColor(json.Details.Colors.BackgroundColor);
+        // setBoardColor(json.Details.Colors.BoardColor);
+        // setButtonColor(json.Details.Colors.ButtonColor);
+        // setBackgroundImage(json.Details.BgImage);
+        // fetchRazorpayData("0");
+      }
+    } catch (error) {
+      // console.log('Error fetching data:', error);
+    }
+  };
 
   const UpdateLabelEngine = async () => {
     try {
@@ -43,6 +79,9 @@ function BookingCustom() {
     }
   };
 
+  useEffect(() => {
+    fetchBookingDatatData()
+  }, [])
   return (
     <div className="bCustom">
       <div className="b-desc">

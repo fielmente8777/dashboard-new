@@ -115,8 +115,18 @@ export const SidebarData = [
         icon: <MdOutlineInventory size={18} />,
       },
       {
+        name: "Price Packages",
+        link: `booking-engine/price-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
         name: "Ads Packages",
         link: `booking-engine/ads-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Customization",
+        link: `booking-engine/customization`,
         icon: <MdBedroomParent size={18} />,
       },
     ],

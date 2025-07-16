@@ -13,6 +13,7 @@ import { formatDateTime } from "../../services/formateDate";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { getDateInputLimits } from "../../utils/getDateInputLimits";
+import BookingDetailsPopup from "../../components/Popup/BookingDetailsPopup";
 
 const filterData = [
   { value: "date range", label: "Date Range" },
@@ -43,6 +44,8 @@ const ReservationDesk = () => {
   const [bookingId, setBookingId] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [chechinData, setchechinData] = useState();
+  const [openInfoPopUpIII, setopenInfoPopUpIII] = useState(false);
 
   const fromDateRef = useRef(null);
   const toDateRef = useRef(null);
@@ -133,6 +136,11 @@ const ReservationDesk = () => {
       setBookingsData(response?.Bookings);
       setIsLoading(false);
     }
+  };
+
+  const handleInfoPopupIII = (data) => {
+    setchechinData(data);
+    setopenInfoPopUpIII(!openInfoPopUpIII);
   };
 
   return (
@@ -360,6 +368,7 @@ const ReservationDesk = () => {
                   ?.map((row, rowIndex) => (
                     <tr
                       key={rowIndex}
+                      onClick={() => handleInfoPopupIII(row)}
                       className="py-1  border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
                     >
                       <td
@@ -426,7 +435,7 @@ const ReservationDesk = () => {
                         ) : row.isCheckedIn === true ? (
                           <span
                             // onClick={() => {
-                            //     handleInfoPopupIII(row);
+                            //   handleInfoPopupIII(row);
                             // }}
                             className="badge bg-success"
                           >
@@ -515,6 +524,12 @@ const ReservationDesk = () => {
                     Next
                 </button>
             </div> */}
+
+      {openInfoPopUpIII && <BookingDetailsPopup
+        infoData={chechinData}
+        setopenInfoPopUpIII={setopenInfoPopUpIII}
+        openInfoPopUpIII={openInfoPopUpIII}
+      />}
     </div>
   );
 };

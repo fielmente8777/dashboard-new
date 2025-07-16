@@ -35,7 +35,7 @@ const PaymentIntegrationPopup = ({
                                     }
                                     setApiKey(e.target.value);
                                 }}
-                                placeholder="API Key"
+                                placeholder="API Key*"
                                 className="outline-none border border-primary/40 bg-transparent p-2 rounded-sm w-full"
                             />
                             <input
@@ -54,7 +54,7 @@ const PaymentIntegrationPopup = ({
                                     }
                                     setSecretKey(e.target.value);
                                 }}
-                                placeholder="Secret Key"
+                                placeholder="Secret Key*"
                                 className="outline-none border border-primary/40 bg-transparent p-2 rounded-sm w-full"
                             />
 

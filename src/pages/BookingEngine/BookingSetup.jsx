@@ -7,6 +7,9 @@ import { UploadingImageS3 } from "../../services/api/s3Image.api";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllRooms } from "../../redux/slice/bookingEngine";
 import RoomsCard from "../../components/Card/RoomCard";
+import Swal from "sweetalert2";
+import Loader from "../../components/Loader";
+
 
 const Tabs = ["All Rooms", "Add Rooms"];
 
@@ -16,6 +19,7 @@ const BookingSetup = () => {
   const [activeTab, setActiveTab] = useState("All Rooms");
   const [selectedFacilities, setSelectedFacilities] = useState([]);
   const [images, setImages] = useState([]);
+  const [addLoading, setAddLoading] = useState(false);
   const [formData, setFormData] = useState({
     roomType: "",
     roomName: "",
@@ -69,6 +73,7 @@ const BookingSetup = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setAddLoading(true);
     // let uploadedImageResponses = [];
     // console.log(images);
     // if (images?.length > 0) {
@@ -105,9 +110,71 @@ const BookingSetup = () => {
       },
     };
 
-    const response = await addRoom(newRoomData);
-    console.log(response);
+    try {
+      const response = await addRoom(newRoomData);
+
+      if (response.status === true) {
+
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+          }
+        });
+        Toast.fire({
+          icon: "success",
+          titleText: "Success",
+          title: "Room added in successfully"
+        });
+        // Reset form data
+        setFormData({
+          roomType: "",
+          roomName: "",
+          roomSubheading: "",
+          roomDescription: "",
+          child: "",
+          adult: "",
+          noOfRooms: "",
+          price: "",
+        });
+        setSelectedFacilities([]);
+        setImages([]);
+        dispatch(fetchAllRooms(handleLocalStorage("token"), handleLocalStorage("hid")));
+        setActiveTab(Tabs[0])
+      }
+      else {
+
+        Swal.fire({
+          icon: "warning",
+          title: "Warning",
+          text: response.message || "Room already exist with this name!",
+          confirmButtonText: "OK",
+        })
+
+        return;
+      }
+
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to add room. Please try again.",
+      })
+      console.error("Error uploading images:", error);
+      return;
+    }
+    finally {
+      setAddLoading(false);
+    }
+
   };
+
+
 
   useEffect(() => {
     const token = handleLocalStorage("token");
@@ -115,14 +182,15 @@ const BookingSetup = () => {
     dispatch(fetchAllRooms(token, hid));
   }, []);
 
+
   return (
-    <div className="bg-white p-4 mb-10 cardShadow">
+    <div className="bg-white mb-10 cardShadow">
       <div className="flex items-center divide-x divixe-gray-200 font-medium">
         {Tabs?.map((item, index) => (
           <button
             onClick={() => setActiveTab(item)}
             key={index}
-            className={`px-4 py-1 text-primary rounded-sm ${activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
+            className={`px-4 py-4 text-primary rounded-sm ${activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
               ? "bg-primary text-white duration-500"
               : "bg-white"
               }`}
@@ -132,217 +200,221 @@ const BookingSetup = () => {
         ))}
       </div>
 
-      {activeTab.toLocaleLowerCase() === "all rooms" && (
-        <div className="mt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-            {allRooms?.map((item) => (
-              <RoomsCard {...item} />
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="p-4">
 
-      {activeTab.toLocaleLowerCase() === "add rooms" && (
-        <form
-          onSubmit={handleFormSubmit}
-          className="mx-auto sm:px-4 py-2 rounded-2xl space-y-6"
-        >
-          <h2 className="text-2xl font-bold text-gray-800 mt-2">
-            Room Setup Form
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Room Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ">
-                Room Type
-              </label>
-              <select
-                name="roomType"
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                onChange={handleInputChange}
-              >
-                {roomTypes.map((type, idx) => (
-                  <option key={idx} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Room Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Room Name
-              </label>
-              <input
-                className="w-full rounded-md p-2 outline-none border border-primary/20 focus:border-primary/50"
-                name="roomName"
-                placeholder="Enter room name"
-                onChange={handleInputChange}
-              />
+        {activeTab.toLocaleLowerCase() === "all rooms" && (
+          <div className="">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+              {allRooms?.map((item, index) => (
+                <RoomsCard {...item} key={index} />
+              ))}
             </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {/* Room Subheading */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Room Subheading
-              </label>
-              <input
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                name="roomSubheading"
-                placeholder="Enter subheading"
-                onChange={handleInputChange}
-              />
-            </div>
+        {activeTab.toLocaleLowerCase() === "add rooms" && (
+          <form
+            onSubmit={handleFormSubmit}
+            className="mx-auto rounded-2xl space-y-6"
+          >
+            <h2 className="text-2xl font-bold text-gray-800">
+              Room Setup Form
+            </h2>
 
-            {/* price  */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (per night)
-              </label>
-              <input
-                type="number"
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                min="0"
-                name="price"
-                placeholder="Enter price"
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          {/* Numbers */}
-          <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Children
-              </label>
-              <input
-                type="number"
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                min="0"
-                name="child"
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 border-primary/40 focus:border-primary/50">
-                Adults
-              </label>
-              <input
-                type="number"
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                min="1"
-                name="adult"
-                onChange={handleInputChange}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Number of Rooms
-              </label>
-              <input
-                type="number"
-                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-                min="1"
-                name="noOfRooms"
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              rows={8}
-              className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
-              placeholder="Room description..."
-              name="roomDescription"
-              onChange={handleInputChange}
-            />
-          </div>
-
-          {/* Facilities */}
-          <div className="rounded-sm">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Facilities
-            </label>
-            <div className="flex flex-wrap gap-3">
-              {facilitiesList.map((facility, i) => (
-                <button
-                  type="button"
-                  key={i}
-                  onClick={() => handleFacilityToggle(facility)}
-                  className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
-                    ? "bg-primary/90 text-white"
-                    : "bg-gray-100 text-gray-700"
-                    }`}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* Room Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 ">
+                  Room Type
+                </label>
+                <select
+                  name="roomType"
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  onChange={handleInputChange}
                 >
-                  {facility}
-                </button>
-              ))}
-            </div>
-          </div>
+                  {roomTypes.map((type, idx) => (
+                    <option key={idx} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Upload Images */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload Images
-            </label>
-            <input
-              ref={inputFileRef}
-              type="file"
-              multiple
-              hidden
-              onChange={handleImageUpload}
-            />
-            <div
-              className="flex items-center gap-2 w-fit text-sm hover:bg-primary hover:text-white py-2 px-4
-            rounded-sm border border-primary/20 text-primary font-medium cursor-pointer duration-300"
-              onClick={() => inputFileRef?.current?.click()}
-            >
-              <button>Upload</button>
-              <PiUploadSimpleBold size={22} />
+              {/* Room Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Room Name
+                </label>
+                <input
+                  className="w-full rounded-md p-2 outline-none border border-primary/20 focus:border-primary/50"
+                  name="roomName"
+                  placeholder="Enter room name"
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
-            {/* Preview */}
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              {images.map((img, i) => (
-                <div key={i} className="relative">
-                  <div className="w-full h-40 overflow-hidden rounded-lg border">
-                    <img
-                      src={URL.createObjectURL(img)}
-                      alt={`upload-${i}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div
-                    className="absolute right-0 -top-5 size-5 flex justify-center items-center text-xs font-semibold bg-primary text-white cursor-pointer rounded-full"
-                    onClick={() => handleRemoveImages(img)}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {/* Room Subheading */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Room Subheading
+                </label>
+                <input
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  name="roomSubheading"
+                  placeholder="Enter subheading"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              {/* price  */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Price (per night)
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  min="0"
+                  name="price"
+                  placeholder="Enter price"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
+            {/* Numbers */}
+            <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Children
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  min="0"
+                  name="child"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 border-primary/40 focus:border-primary/50">
+                  Adults
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  min="1"
+                  name="adult"
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Rooms
+                </label>
+                <input
+                  type="number"
+                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  min="1"
+                  name="noOfRooms"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                rows={8}
+                className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                placeholder="Room description..."
+                name="roomDescription"
+                onChange={handleInputChange}
+              />
+            </div>
+
+            {/* Facilities */}
+            <div className="rounded-sm">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Facilities
+              </label>
+              <div className="flex flex-wrap gap-3">
+                {facilitiesList.map((facility, i) => (
+                  <button
+                    type="button"
+                    key={i}
+                    onClick={() => handleFacilityToggle(facility)}
+                    className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
+                      ? "bg-primary/90 text-white"
+                      : "bg-gray-100 text-gray-700"
+                      }`}
                   >
-                    X
-                  </div>
-                </div>
-              ))}
+                    {facility}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Submit Button */}
-          <div className="text-right">
-            <button className=" bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
-              Add Room
-            </button>
-          </div>
-        </form>
-      )}
+            {/* Upload Images */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Images
+              </label>
+              <input
+                ref={inputFileRef}
+                type="file"
+                multiple
+                hidden
+                onChange={handleImageUpload}
+              />
+              <div
+                className="flex items-center gap-2 w-fit text-sm hover:bg-primary hover:text-white py-2 px-4
+            rounded-sm border border-primary/20 text-primary font-medium cursor-pointer duration-300"
+                onClick={() => inputFileRef?.current?.click()}
+              >
+                <button>Upload</button>
+                <PiUploadSimpleBold size={22} />
+              </div>
+              {/* Preview */}
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                {images.map((img, i) => (
+                  <div key={i} className="relative">
+                    <div className="w-full h-40 overflow-hidden rounded-lg border">
+                      <img
+                        src={URL.createObjectURL(img)}
+                        alt={`upload-${i}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div
+                      className="absolute right-0 -top-5 size-5 flex justify-center items-center text-xs font-semibold bg-primary text-white cursor-pointer rounded-full"
+                      onClick={() => handleRemoveImages(img)}
+                    >
+                      X
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end">
+              <button className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
+                Add Room {addLoading && <Loader size={20} color="white" />}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
+
   );
 };
 

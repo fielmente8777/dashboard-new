@@ -1,5 +1,11 @@
+import axios from "axios";
 import { useState } from "react";
-import { MdOutlineNavigateNext, MdOutlineNavigateBefore } from "react-icons/md";
+import { MdOutlineNavigateNext, MdOutlineNavigateBefore, MdDeleteOutline } from "react-icons/md";
+import Swal from "sweetalert2";
+import { deleteRoom } from "../../services/api/bookingEngine";
+import { useDispatch } from "react-redux";
+import { fetchAllRooms } from "../../redux/slice/bookingEngine";
+import handleLocalStorage from "../../utils/handleLocalStorage";
 
 const RoomsCard = ({
   roomImage,
@@ -8,10 +14,12 @@ const RoomsCard = ({
   roomSubheading,
   roomName,
   roomTypeName,
+  roomType,
   roomDescription,
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const dispatch = useDispatch();
 
   const handleImageNext = () => {
     if (imageIndex === roomImage.length - 1) return;
@@ -23,6 +31,50 @@ const RoomsCard = ({
     setImageIndex((pre) => pre - 1);
   };
 
+
+  const handleDelete = async (roomId) => {
+
+    const confirmation = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you really want to delete this room. This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await deleteRoom(localStorage.getItem("token"), localStorage.getItem("hid"), roomId)
+        if (response?.status === true) {
+          Swal.fire({
+            icon: "success",
+            title: "Success",
+            text: "Room deleted successfully.",
+            confirmButtonText: "OK",
+          })
+          dispatch(fetchAllRooms(handleLocalStorage("token"), handleLocalStorage("hid")));
+        }
+        else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: response?.message || "Something went wrong while deleting the room.",
+            confirmButtonText: "OK",
+          })
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error.message || "Something went wrong while deleting the room.",
+          confirmButtonText: "OK",
+        })
+      }
+    }
+  }
   return (
     <div className="border border-gray-300 rounded-md shadow-sm">
       <div>
@@ -52,6 +104,9 @@ const RoomsCard = ({
 
           <div className="absolute w-fit right-1 top-1 bg-white/80 px-2 text-sm rounded-full font-medium tracking-widest z-10">
             <h2>{roomTypeName}</h2>
+          </div>
+          <div onClick={() => handleDelete(roomType)} className="absolute w-fit right-1 top-10 bg-white/80 px-2 text-sm rounded-full font-medium tracking-widest z-10">
+            <MdDeleteOutline size={22} color="#df4545" />
           </div>
 
           <div className="absolute inset-0 bg-black/10" />

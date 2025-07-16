@@ -52,6 +52,8 @@ import GMBProfile from "../GoogleListing/GMBProfile";
 import InfluencerMarketing from "../Social/InfluencerMarketing";
 import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
+import PricePackage from "../BookingEngine/PricePackage";
+import BookingCustom from "../BookingEngine/BookingCustom";
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -85,6 +87,12 @@ const DynamicPage = () => {
 
     [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: (
       <AdsPackages />
+    ),
+    [`${BASE_PATH}/${hid}/booking-engine/price-packages`]: (
+      <PricePackage />
+    ),
+    [`${BASE_PATH}/${hid}/booking-engine/customization`]: (
+      <BookingCustom />
     ),
 
     // GRM
