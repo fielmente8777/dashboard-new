@@ -32,6 +32,7 @@ import { MdOutlineFreeCancellation } from "react-icons/md";
 import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
+
 export const SidebarData = [
   {
     name: "Dashboard",

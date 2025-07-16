@@ -112,36 +112,34 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`${BASE_URL}/eazotel/forgot/password`, {
-        email: formData.email
-      })
+        email: formData.email,
+      });
 
       if (response?.data?.Status === true) {
         Swal.fire({
           title: "Password reset successfully",
           text: "Please check your email to reset your password.",
           icon: "success",
-          confirmButtonText: "OK"
+          confirmButtonText: "OK",
         });
         setForget(false);
       }
-
     } catch (error) {
       Swal.fire({
         title: "Error",
         text: "There was an error sending the email. Please try again.",
         icon: "error",
-        confirmButtonText: "OK"
+        confirmButtonText: "OK",
       });
     }
-  }
-
+  };
 
   const handleSuccess = async (response) => {
     setLoading(true);
     setError(null);
     try {
       const token = response.credential;
-      console.log(token)
+      console.log(token);
 
       // const jwtToken = (await verify(token)).data.jwt_token;
       // console.log(jwtToken)
@@ -164,182 +162,129 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center md:px-6">
-      <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
-        <div>
-          <div className="w-full">
-            <img
-              src="/loginform.jpg"
-              className="object-cover w-full h-full"
-              alt="undraw-svg"
-            />
-          </div>
+    <div className="w-full min-h-screen flex items-center justify-center">
+      <div className="max-w-[1500px] w-full grid lg:grid-cols-2 items-center gap-4">
+        <div className="aspect-[4/4]">
+          <img
+            src="/LoginImage.png"
+            alt=""
+            className="w-full h-full object-cover object-bottom"
+          />
         </div>
 
-        <div>
-          {!forget ?
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-1">
-                <h2 className="font-bold text-xl">Welcome Back!</h2>
-                <h3 className="text-sm font-medium text-gray-500">
-                  Login your account!
-                </h3>
-              </div>
+        <div className="border p-6 rounded-2xl max-w-xl w-full mx-auto">
+          <div>
+            <div className="max-w-60 mx-auto aspect-[3/1]">
+              <img
+                src="/EAZOTEL LOGO.png"
+                alt=""
+                className="w-full h-full object-contain"
+              />
+            </div>
 
-              <div className="space-y-6 mt-6">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="" className="font-medium text-gray-600">
-                    Email
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="Enter you email"
-                    className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
-                    onChange={handleChange}
-                    value={formData.email}
-                  />
-                </div>
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold text-text-black">Sign In</h2>
+              <p className="text-text-gray">
+                Provide Your Details to Access Your Account.
+              </p>
+            </div>
+          </div>
 
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="" className="font-medium text-gray-600">
-                    Password
-                  </label>
-
-                  <div className="w-full relative">
-                    <input
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
-                      onChange={handleChange}
-                      value={formData.password}
-                    />
-
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                      {showPassword ? (
-                        <AiOutlineEye
-                          size={20}
-                          onClick={togglePassword}
-                          className="text-gray-400"
-                        />
-                      ) : (
-                        <HiOutlineEyeOff
-                          size={20}
-                          onClick={togglePassword}
-                          className="text-gray-400"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <p onClick={() => setForget(true)} className="cursor-pointer text-sm text-blue-600 underline inline-block font-medium">
-                    Forgot password?
-                  </p>
-                </div>
-
-                <div className="flex">
-                  <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
-                    Login {spinnerLoader && <Loader size={20} color="white" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-3 items-center mt-5">
-                {/* <h2 className="text-gray-500 font-medium">
-                  Create an account with:
-                </h2> */}
-                {/* <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer"> */}
-                {/* <GoogleOAuthProvider
-                  clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
-                // clientSecret={"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"}
+          <form onSubmit={handleSubmit} className="mt-6">
+            <div className="space-y-6">
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor=""
+                  className="font-medium text-text-black text-sm"
                 >
-                  <div className="flex justify-center w-full border-2 rounded-md">
-                    <GoogleLogin
-                        onSuccess={handleSuccess}
-                        onError={handleFailure}
-                        disabled={loading}
-                        theme="outline"
-                        size="large"
-                        shape="rectangular"
-                        useOneTap
-                      />
+                  Email
+                </label>
 
-                    <GoogleLogin
-                      onSuccess={handleSuccess}
-                      onError={handleFailure}
-                      useOneTap
-                    />
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Enter you email"
+                  className="p-4 border border-text-light  outline-none placeholder:text-gray-400 shadow-sm"
+                  onChange={handleChange}
+                  value={formData.email}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor=""
+                  className="font-medium text-text-black text-sm"
+                >
+                  Password
+                </label>
+
+                <div className="w-full relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="p-4 border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
+                    onChange={handleChange}
+                    value={formData.password}
+                  />
+
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                    {showPassword ? (
+                      <AiOutlineEye
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
+                    ) : (
+                      <HiOutlineEyeOff
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-1">
+                    <input type="checkbox" id="remember" className="mt-1" />
+                    <label
+                      htmlFor="remember"
+                      className="text-sm text-text-black font-medium"
+                    >
+                      Remember Me
+                    </label>
                   </div>
 
-
-                </GoogleOAuthProvider> */}
-
-                {/* </div> */}
-              </div>
-
-
-              <div>
-                <h2 className="text-gray-500 font-medium py-2 flex gap-2 items-center">
-                  Don't have an account?
-                  <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
-                    Sign up
-                  </Link>
-                </h2>
-              </div>
-            </form>
-            :
-
-            <form onSubmit={handleForgotSubmit}>
-              <div className="space-y-1">
-                <h2 className="font-bold text-xl">Welcome Back!</h2>
-                <h3 className="text-sm font-medium text-gray-500">
-                  Change password of your account!
-                </h3>
-              </div>
-
-              <div className="space-y-6 mt-6">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="" className="font-medium text-gray-600">
-                    Email
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="Enter you email"
-                    className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
-                    onChange={handleChange}
-                    value={formData.email}
-                  />
-                </div>
-
-                <div className="flex">
-                  <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
-                    Send Email {spinnerLoader && <Loader size={20} color="white" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* <div className="flex gap-3 items-center mt-5">
-              <h2 className="text-gray-500 font-medium">
-                Create an account with:
-              </h2>
-              <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer">
-                <FcGoogle size={22} />
-              </div>
-            </div> */}
-
-              <div>
-                <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
-                  Do you know password?
-                  <p onClick={() => setForget(false)} className="cursor-pointer text-blue-600 underline">
-                    Login
+                  <p
+                    onClick={() => setForget(true)}
+                    className="cursor-pointer text-sm text-secondary  inline-block font-medium"
+                  >
+                    Forgot Password
                   </p>
-                </h2>
+                </div>
               </div>
-            </form>}
+
+              <div className="flex">
+                <button className="bg-ternary text-white py-4 shadow-md w-full flex justify-center gap-3 items-center">
+                  Sign In <SignInIcon />
+                  {spinnerLoader && <Loader size={20} color="white" />}
+                </button>
+              </div>
+
+              <div>
+                <p className="text-lg text-text-gray -mt-4">
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    to="/signin"
+                    className="text-secondary font-medium inline-block"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -348,171 +293,197 @@ const Login = () => {
 
 export default Login;
 
-// <div className="max-w-[1600px] mx-auto bg-[#f5f5f5] w-full h-[100vh] grid grid-cols-1 lg:grid-cols-2">
-//       <div className="h-screen bg-white overflow-hidden">
-//         <div className="h-[6vh] px-3">
-//           <img src={Logo} alt="image" className="w-[132px] object-cover" />
+const SignInIcon = () => {
+  return (
+    <svg
+      width="18"
+      height="19"
+      viewBox="0 0 18 19"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M9 18.5V16.5H16V2.5H9V0.5H16C16.55 0.5 17.0208 0.695833 17.4125 1.0875C17.8042 1.47917 18 1.95 18 2.5V16.5C18 17.05 17.8042 17.5208 17.4125 17.9125C17.0208 18.3042 16.55 18.5 16 18.5H9ZM7 14.5L5.625 13.05L8.175 10.5H0V8.5H8.175L5.625 5.95L7 4.5L12 9.5L7 14.5Z"
+        fill="white"
+      />
+    </svg>
+  );
+};
+
+// <div className="w-full h-screen flex items-center justify-center md:px-6">
+//     <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
+//       <div>
+//         <div className="w-full">
+//           <img
+//             src="/loginform.jpg"
+//             className="object-cover w-full h-full"
+//             alt="undraw-svg"
+//           />
 //         </div>
-//         <div className="flex justify-center items-center h-[94vh]">
-//           <form
-//             className=" md:w-[25rem] p-5 rounded-md"
-//             onSubmit={handleSubmit}
-//           >
-//             <h1 className="text-2xl font-bold">Welcome back</h1>
-//             <p className="text-[14px] font- text-[#575757]/70 mt-2">
-//               Please enter your details
-//             </p>
-//             <div className="flex flex-col flex-1 gap-5 w-full h-full mt-5">
-//               <div className="flex flex-col gap-1 ">
-//                 <label
-//                   htmlFor="username"
-//                   className="text-black font-medium !text-[14px]"
-//                 >
-//                   Email address
+//       </div>
+
+//       <div>
+//         {!forget ?
+//           <form onSubmit={handleSubmit}>
+//             <div className="space-y-1">
+//               <h2 className="font-bold text-xl">Welcome Back!</h2>
+//               <h3 className="text-sm font-medium text-gray-500">
+//                 Login your account!
+//               </h3>
+//             </div>
+
+//             <div className="space-y-6 mt-6">
+//               <div className="flex flex-col gap-2">
+//                 <label htmlFor="" className="font-medium text-gray-600">
+//                   Email
 //                 </label>
 //                 <input
-//                   type="text"
-//                   placeholder="Enter email"
-//                   id="email"
 //                   name="email"
-//                   value={formData?.email}
+//                   type="email"
+//                   placeholder="Enter you email"
+//                   className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
 //                   onChange={handleChange}
-//                   className={` ${
-//                     error === "email"
-//                       ? "border border-red-600 text-red-600 animate-pulse"
-//                       : "border text-black/70"
-//                   }   px-3 rounded-lg focus:outline-none  outline-none text-[14px] py-2`}
+//                   value={formData.email}
 //                 />
 //               </div>
-//               {/* {!error && <p className="error-message text-[#0a3a75]">{error ? error : "This is the error field"}</p>} */}
-//               <div className="flex flex-col gap-1 relative">
-//                 <label
-//                   htmlFor="password"
-//                   className="text-black font-medium text-[14px]"
-//                 >
+
+//               <div className="flex flex-col gap-2">
+//                 <label htmlFor="" className="font-medium text-gray-600">
 //                   Password
 //                 </label>
-//                 <input
-//                   type={showPassword ? "text" : "password"}
-//                   placeholder="Enter password"
-//                   id="password"
-//                   name="password"
-//                   value={formData?.password}
-//                   // required
-//                   onChange={handleChange}
-//                   className={` ${
-//                     error === "password"
-//                       ? "border border-red-600 text-red-600 animate-pulse"
-//                       : "border text-black/70"
-//                   }   px-3 rounded-lg focus:outline-none  outline-none text-[14px] py-2`}
-//                 />
 
-//                 {/* Eye Icon */}
-//                 <span
-//                   onClick={togglePassword}
-//                   className="absolute right-2 top-[45%] translate-y-1/2 cursor-pointer text-gray-600"
-//                 >
-//                   {showPassword ? <FaEyeSlash /> : <FaEye />}
-//                 </span>
-//               </div>
-//               <div className="flex items-center justify-between gap-1 text-[14px] font-medium">
-//                 <div className="flex items-center gap-1">
-//                   <input type="checkbox" id="Remember-me" className="w-3 h-3" />
-//                   <label htmlFor="Remember-me ">Remember me</label>
+//                 <div className="w-full relative">
+//                   <input
+//                     name="password"
+//                     type={showPassword ? "text" : "password"}
+//                     placeholder="Enter your password"
+//                     className="w-full px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+//                     onChange={handleChange}
+//                     value={formData.password}
+//                   />
+
+//                   <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+//                     {showPassword ? (
+//                       <AiOutlineEye
+//                         size={20}
+//                         onClick={togglePassword}
+//                         className="text-gray-400"
+//                       />
+//                     ) : (
+//                       <HiOutlineEyeOff
+//                         size={20}
+//                         onClick={togglePassword}
+//                         className="text-gray-400"
+//                       />
+//                     )}
+//                   </div>
 //                 </div>
-//                 <div className="text-[#0a3a75] cursor-pointer underline">
-//                   Forget password?
-//                 </div>
 //               </div>
-//               <button
-//                 type="submit"
-//                 className="bg-[#0a3a75] text-[14px] font-medium text-white py-2.5 px-4 rounded-lg"
+
+//               <div className="flex justify-end">
+//                 <p onClick={() => setForget(true)} className="cursor-pointer text-sm text-blue-600 underline inline-block font-medium">
+//                   Forgot password?
+//                 </p>
+//               </div>
+
+//               <div className="flex">
+//                 <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
+//                   Login {spinnerLoader && <Loader size={20} color="white" />}
+//                 </button>
+//               </div>
+//             </div>
+
+//             <div className="flex gap-3 items-center mt-5">
+//               {/* <h2 className="text-gray-500 font-medium">
+//                 Create an account with:
+//               </h2> */}
+//               {/* <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer"> */}
+//               {/* <GoogleOAuthProvider
+//                 clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
+//               // clientSecret={"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"}
 //               >
-//                 Login
-//               </button>
+//                 <div className="flex justify-center w-full border-2 rounded-md">
+//                   <GoogleLogin
+//                       onSuccess={handleSuccess}
+//                       onError={handleFailure}
+//                       disabled={loading}
+//                       theme="outline"
+//                       size="large"
+//                       shape="rectangular"
+//                       useOneTap
+//                     />
 
-//               <button className="flex items-center justify-center bg-white text-black/70 border border-gray-300 rounded-lg px-6 py-2 text-sm font-medium    focus:outline-none">
-//                 <svg
-//                   className="h-6 w-6 mr-2"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                   xmlnsXlink="http://www.w3.org/1999/xlink"
-//                   width="800px"
-//                   height="800px"
-//                   viewBox="-0.5 0 48 48"
-//                   version="1.1"
-//                 >
-//                   <title>Google-color</title>
-//                   <desc>Created with Sketch.</desc>
-//                   <g
-//                     id="Icons"
-//                     stroke="none"
-//                     strokeWidth="1"
-//                     fill="none"
-//                     fillRule="evenodd"
-//                   >
-//                     <g
-//                       id="Color-"
-//                       transform="translate(-401.000000, -860.000000)"
-//                     >
-//                       <g
-//                         id="Google"
-//                         transform="translate(401.000000, 860.000000)"
-//                       >
-//                         <path
-//                           d="M9.82727273,24 C9.82727273,22.4757333 10.0804318,21.0144 10.5322727,19.6437333 L2.62345455,13.6042667 C1.08206818,16.7338667 0.213636364,20.2602667 0.213636364,24 C0.213636364,27.7365333 1.081,31.2608 2.62025,34.3882667 L10.5247955,28.3370667 C10.0772273,26.9728 9.82727273,25.5168 9.82727273,24"
-//                           id="Fill-1"
-//                           fill="#FBBC05"
-//                         />
-//                         <path
-//                           d="M23.7136364,10.1333333 C27.025,10.1333333 30.0159091,11.3066667 32.3659091,13.2266667 L39.2022727,6.4 C35.0363636,2.77333333 29.6954545,0.533333333 23.7136364,0.533333333 C14.4268636,0.533333333 6.44540909,5.84426667 2.62345455,13.6042667 L10.5322727,19.6437333 C12.3545909,14.112 17.5491591,10.1333333 23.7136364,10.1333333"
-//                           id="Fill-2"
-//                           fill="#EB4335"
-//                         />
-//                         <path
-//                           d="M23.7136364,37.8666667 C17.5491591,37.8666667 12.3545909,33.888 10.5322727,28.3562667 L2.62345455,34.3946667 C6.44540909,42.1557333 14.4268636,47.4666667 23.7136364,47.4666667 C29.4455,47.4666667 34.9177955,45.4314667 39.0249545,41.6181333 L31.5177727,35.8144 C29.3995682,37.1488 26.7323182,37.8666667 23.7136364,37.8666667"
-//                           id="Fill-3"
-//                           fill="#34A853"
-//                         />
-//                         <path
-//                           d="M46.1454545,24 C46.1454545,22.6133333 45.9318182,21.12 45.6113636,19.7333333 L23.7136364,19.7333333 L23.7136364,28.8 L36.3181818,28.8 C35.6879545,31.8912 33.9724545,34.2677333 31.5177727,35.8144 L39.0249545,41.6181333 C43.3393409,37.6138667 46.1454545,31.6490667 46.1454545,24"
-//                           id="Fill-4"
-//                           fill="#4285F4"
-//                         />
-//                       </g>
-//                     </g>
-//                   </g>
-//                 </svg>
+//                   <GoogleLogin
+//                     onSuccess={handleSuccess}
+//                     onError={handleFailure}
+//                     useOneTap
+//                   />
+//                 </div>
 
-//                 <span>Continue with Google</span>
-//               </button>
+//               </GoogleOAuthProvider> */}
 
-//               <p className="text-[14px] text-center">
-//                 Dont have an account?{" "}
-//                 <Link
-//                   to="/https://www.eazotel.com"
-//                   target="_blank"
-//                   className="text-[#0a3a75]"
-//                 >
+//               {/* </div> */}
+//             </div>
+
+//             <div>
+//               <h2 className="text-gray-500 font-medium py-2 flex gap-2 items-center">
+//                 Don't have an account?
+//                 <Link to="https://app.eazotel.com" target="_blank" className="text-blue-600 underline">
 //                   Sign up
 //                 </Link>
-//               </p>
+//               </h2>
 //             </div>
 //           </form>
-//         </div>
-//         {/* <Link
-//           to="https://wa.me/9528295631?text=Hi%20there!%20%F0%9F%91%8B%0AWelcome%20to%20Eazotel%20%F0%9F%8C%90%0AHow%20can%20I%20assist%20you%20today%3F"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//           className="flex items-center gap-1 absolute left-5 bottom-2 text-[14px] font-medium text-black/70 cursor-pointer"
-//         >
-//           <FaWhatsapp className="text-black/70" />
-//           Chat with us on WhatsApp
-//         </Link> */}
-//       </div>
+//           :
 
-//       <div className="hidden lg:flex justify-center items-center">
-//         <img srcSet={Banner} alt="image" className="h-[100%] object-cover" />
-//       </div>
+//           <form onSubmit={handleForgotSubmit}>
+//             <div className="space-y-1">
+//               <h2 className="font-bold text-xl">Welcome Back!</h2>
+//               <h3 className="text-sm font-medium text-gray-500">
+//                 Change password of your account!
+//               </h3>
+//             </div>
 
-//       <Whatsapp whatsAppNumber={"9528295631"} />
+//             <div className="space-y-6 mt-6">
+//               <div className="flex flex-col gap-2">
+//                 <label htmlFor="" className="font-medium text-gray-600">
+//                   Email
+//                 </label>
+//                 <input
+//                   name="email"
+//                   type="email"
+//                   placeholder="Enter you email"
+//                   className="px-4 py-3 border-2 border-gray-300 focus:border-primary/80 rounded-md outline-none placeholder:text-gray-400 shadow-sm"
+//                   onChange={handleChange}
+//                   value={formData.email}
+//                 />
+//               </div>
+
+//               <div className="flex">
+//                 <button className="bg-primary text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center">
+//                   Send Email {spinnerLoader && <Loader size={20} color="white" />}
+//                 </button>
+//               </div>
+//             </div>
+
+//             {/* <div className="flex gap-3 items-center mt-5">
+//             <h2 className="text-gray-500 font-medium">
+//               Create an account with:
+//             </h2>
+//             <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer">
+//               <FcGoogle size={22} />
+//             </div>
+//           </div> */}
+
+//             <div>
+//               <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
+//                 Do you know password?
+//                 <p onClick={() => setForget(false)} className="cursor-pointer text-blue-600 underline">
+//                   Login
+//                 </p>
+//               </h2>
+//             </div>
+//           </form>}
+//       </div>
 //     </div>
+//   </div>
