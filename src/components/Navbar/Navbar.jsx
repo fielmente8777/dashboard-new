@@ -30,7 +30,8 @@ const Navbar = () => {
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
   const [open, setOpen] = useState(false);
-  const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] = useState(false);
+  const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
+    useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const SidebarData = [
@@ -68,7 +69,6 @@ const Navbar = () => {
     navigate("/login");
     // }, 1000)
   };
-
 
   return (
     <div className="sticky top-0 z-50">
@@ -118,29 +118,37 @@ const Navbar = () => {
               <p className="text-md font-semibold">Marketplace</p>
             </div>
             <div>
-              <MdSettings onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} />
+              <MdSettings
+                onClick={() => setIsChangePasswordPopupOpen(true)}
+                className="text-white"
+                size={24}
+              />
             </div>
-            <button onClick={() => setIsProfileOpen(true)} className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white">
+            <button
+              onClick={() => setIsProfileOpen(true)}
+              className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
+            >
               <p className="text-2xl font-semibold">S</p>
               {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
             </button>
-
           </div>
-
-
         </div>
-        <div onClick={() => setOpen(true)} className="bg-[#0088ff]a text-white sm:hidden p-1 rounded-md">
+        <div
+          onClick={() => setOpen(true)}
+          className="bg-[#0088ff]a text-white sm:hidden p-1 rounded-md"
+        >
           <RxDashboard size={22} />{" "}
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
-        <ProfilePopup isProfileOpen={isProfileOpen} setIsProfileOpen={setIsProfileOpen} />
+        <ProfilePopup
+          isProfileOpen={isProfileOpen}
+          setIsProfileOpen={setIsProfileOpen}
+        />
         <ChangePassword
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
         />
-
-
       </div>
     </div>
   );

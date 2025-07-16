@@ -161,6 +161,33 @@ export const SidebarData = [
   },
 
   {
+    name: "Analytics & Reporting",
+    key: "Analytics Reporting",
+    link: ``,
+    icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "HRM Analytics",
+        link: `human-resources-management/analytics`,
+        key: "HRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Enquiries Analytics",
+        link: `enquiries-management/enquiries-analytics`,
+        key: "Enquiries Management",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GRM Analytics",
+        link: `grm/analytics`,
+        key: "GRM",
+        icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
+  },
+
+  {
     name: "Lead Gen Form",
     key: "Leads Form",
     icon: <MdLeaderboard size={24} />,
@@ -197,7 +224,6 @@ export const SidebarData = [
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup size={22} />,
   },
-
   {
     name: "Social Media",
     key: "Social Media",
