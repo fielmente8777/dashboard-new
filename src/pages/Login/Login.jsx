@@ -136,32 +136,32 @@ const Login = () => {
   }
 
 
-  // const handleSuccess = async (response) => {
-  //   setLoading(true);
-  //   setError(null);
-  //   try {
-  //     const token = response.credential;
-  //     console.log(token)
+  const handleSuccess = async (response) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = response.credential;
+      console.log(token)
 
-  //     // const jwtToken = (await verify(token)).data.jwt_token;
-  //     // console.log(jwtToken)
+      // const jwtToken = (await verify(token)).data.jwt_token;
+      // console.log(jwtToken)
 
-  //     // await testprotected(jwtToken);
-  //     // saveToken(jwtToken);
-  //     // navigate("/onboarding");
-  //     return "Login successful";
-  //   } catch (err) {
-  //     console.error("Authentication error:", err);
-  //     setError("Failed to authenticate. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      // await testprotected(jwtToken);
+      // saveToken(jwtToken);
+      // navigate("/onboarding");
+      return "Login successful";
+    } catch (err) {
+      console.error("Authentication error:", err);
+      setError("Failed to authenticate. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // const handleFailure = (error) => {
-  //   console.error("Login Failed:", error);
-  //   setError("Login failed. Please try again.");
-  // };
+  const handleFailure = (error) => {
+    console.error("Login Failed:", error);
+    setError("Login failed. Please try again.");
+  };
 
   return (
     <div className="w-full h-screen flex items-center justify-center md:px-6">
@@ -253,7 +253,8 @@ const Login = () => {
                 </h2> */}
                 {/* <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer"> */}
                 {/* <GoogleOAuthProvider
-                  }
+                  clientId={""}
+                // clientSecret={""}
                 >
                   <div className="flex justify-center w-full border-2 rounded-md">
                     <GoogleLogin
