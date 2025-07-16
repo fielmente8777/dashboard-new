@@ -253,8 +253,8 @@ const Login = () => {
                 </h2> */}
                 {/* <div className="size-10 border border-gray-300 flex items-center justify-center rounded-full cursor-pointer"> */}
                 {/* <GoogleOAuthProvider
-                  clientId={""}
-                // clientSecret={""}
+                  clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
+                // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full border-2 rounded-md">
                     <GoogleLogin
