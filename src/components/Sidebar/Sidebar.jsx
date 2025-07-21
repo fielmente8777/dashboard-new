@@ -123,12 +123,12 @@ const Sidebar = () => {
   };
 
   useEffect(() => {
-    console.log("authUser", authUser);
+    // console.log("authUser", authUser);
     if (authUser) {
 
       const hid = handleLocalStorage("hid");
       if (authUser?.isAdmin) {
-        console.log(hotel)
+        // console.log(hotel)
         const currentLoaction = hotel?.Profile?.hotels[hid];
         setCurrentLocation(currentLoaction);
       } else {
@@ -179,7 +179,7 @@ const Sidebar = () => {
     };
   });
 
-  console.log(maniuplateSideBarData);
+  // console.log(maniuplateSideBarData);
 
   return (
     <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white">

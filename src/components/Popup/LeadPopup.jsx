@@ -11,6 +11,17 @@ import { FaPhoneFlip } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
 
+
+export const formatPhoneNumber = (phone) => {
+  let cleaned = phone.replace(/\D/g, ''); // remove non-digit characters
+
+
+  if (cleaned.length === 10) {
+    cleaned = '91' + cleaned; // prepend country code if it's a 10-digit
+  }
+
+  return cleaned;
+};
 const LeadPopup = ({
   hotelName = "Eazotel",
   isOpen,
@@ -118,6 +129,9 @@ const LeadPopup = ({
     }
   };
 
+
+
+
   return (
     <div
       // onClick={onClose}
@@ -147,14 +161,14 @@ const LeadPopup = ({
                 <div>
                   <p className=" font-medium text-[#575757]">Mobile Number:</p>
                   <Link
-                    to={`tel:${lead?.Contact}`}
+                    to={`tel:${formatPhoneNumber(lead?.Contact)}`}
                     className="text-[#575757]/70"
                   >
-                    {lead?.Contact}
+                    {formatPhoneNumber(lead?.Contact)}
                   </Link>
                 </div>
 
-                <Link to={`tel:${lead?.Contact}`} className="text-primary">
+                <Link to={`tel:${formatPhoneNumber(lead?.Contact)}`} className="text-primary">
                   <FaPhone size={18} />
                 </Link>
               </div>
@@ -275,7 +289,7 @@ const LeadPopup = ({
             {lead.Contact && (
               <div>
                 <Link
-                  to={`https://wa.me/${lead.Contact}?text=Hi%20${lead.Name}!%20%F0%9F%91%8B%0AWelcome%20to%20${hotelName}%20%F0%9F%8C%90%0AHow%20can%20I%20assist%20you%20today%3F`}
+                  to={`https://wa.me/${formatPhoneNumber(lead.Contact)}?text=${encodeURIComponent(`Hi ${lead.Name}! 👋\nWelcome to ${hotelName} 🌐\nHow can I assist you today?`)}`}
                   target="_blank"
                   className="py-2 px-3 gap-2 bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
                 >
