@@ -15,7 +15,7 @@ import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
-import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { useGoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { verify } from "../../utils/verify";
 
 const Login = () => {
@@ -136,7 +136,7 @@ const Login = () => {
   };
 
   const handleSuccess = async (response) => {
-    setLoading(true);
+    // setLoading(true);
     setError(null);
     try {
       const token = response.credential;
@@ -144,7 +144,7 @@ const Login = () => {
 
       const result = (await verify(token)).data;
 
-      console.log(result)
+      console.log(result);
 
       let timerInterval;
       if (result?.status === true) {
@@ -301,16 +301,19 @@ const Login = () => {
                 </button>
               </div>
 
-
               <div className="">
-                <h1 className="font-medium text-lg text-text-black mb-3">Sign in using</h1>
+                {/* <h1 className="font-medium text-lg text-text-black mb-3">
+                  Sign in using
+                </h1> */}
 
                 <GoogleOAuthProvider
-                  clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
-                // clientSecret={"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"}
+                  clientId={
+                    "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
+                  }
+                  // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full rounded-md">
-                    <GoogleLogin
+                    {/* <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleFailure}
                       disabled={loading}
@@ -321,15 +324,13 @@ const Login = () => {
                       size="large"
                       shape="pill"
                       useOneTap={true}
+                    /> */}
+
+                    <GoogleLoginButton
+                      handleSuccess={handleSuccess}
+                      handleFailure={handleFailure}
                     />
-
-                    {/* <GoogleLogin
-                    onSuccess={handleSuccess}
-                    onError={handleFailure}
-                    useOneTap
-                  /> */}
                   </div>
-
                 </GoogleOAuthProvider>
               </div>
 
@@ -371,6 +372,31 @@ const SignInIcon = () => {
   );
 };
 
+const GoogleLoginButton = ({ handleSuccess, handleFailure }) => {
+  const login = useGoogleLogin({
+    onSuccess: handleSuccess,
+    onError: handleFailure,
+  });
+
+  return (
+    <div className="flex justify-center w-full">
+      <button
+        type="button"
+        onClick={() => {
+          login();
+        }}
+        className="w-full flex items-center justify-center gap-3 bg-white text-black border border-gray-300 px-6 py-2 rounded-md shadow hover:shadow-md transition"
+      >
+        <img
+          src="https://developers.google.com/identity/images/g-logo.png"
+          alt="google"
+          className="w-8 h-8"
+        />
+        <span>Sign in with Google</span>
+      </button>
+    </div>
+  );
+};
 // <div className="w-full h-screen flex items-center justify-center md:px-6">
 //     <div className="max-w-7xl w-full border-2 py-24 px-8 grid md:grid-cols-2 items-center gap-12 shadow-lg bg-white rounded-md">
 //       <div>
