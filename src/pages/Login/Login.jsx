@@ -16,6 +16,7 @@ import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { verify } from "../../utils/verify";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -141,8 +142,36 @@ const Login = () => {
       const token = response.credential;
       console.log(token);
 
-      // const jwtToken = (await verify(token)).data.jwt_token;
-      // console.log(jwtToken)
+      const result = (await verify(token)).data;
+
+      console.log(result)
+
+      let timerInterval;
+      if (result?.status === true) {
+        handleLocalStorage("token", result?.token || "");
+        setCookie("token", result?.token || "");
+        // setSpinnerLoader(false);
+        Swal.fire({
+          title: "Logged in Successfully",
+          html: "We will redirect you to the dashboard <b></b>",
+          timer: 1000,
+          timerProgressBar: true,
+          didOpen: () => {
+            Swal.showLoading();
+            const timer = Swal.getPopup().querySelector("b");
+            timerInterval = setInterval(() => {
+              timer.textContent = `${Swal.getTimerLeft()}`;
+            }, 1000);
+          },
+          willClose: () => {
+            clearInterval(timerInterval);
+          },
+        }).then((result) => {
+          if (result.dismiss === Swal.DismissReason.timer) {
+            navigate("/");
+          }
+        });
+      }
 
       // await testprotected(jwtToken);
       // saveToken(jwtToken);
@@ -195,7 +224,7 @@ const Login = () => {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor=""
-                  className="font-medium text-text-black text-sm"
+                  className="font-medium text-text-black text-md"
                 >
                   Email
                 </label>
@@ -213,7 +242,7 @@ const Login = () => {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor=""
-                  className="font-medium text-text-black text-sm"
+                  className="font-medium text-text-black text-md"
                 >
                   Password
                 </label>
@@ -272,8 +301,40 @@ const Login = () => {
                 </button>
               </div>
 
+
+              <div className="">
+                <h1 className="font-medium text-lg text-text-black mb-3">Sign in using</h1>
+
+                <GoogleOAuthProvider
+                  clientId={"737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"}
+                // clientSecret={"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"}
+                >
+                  <div className="flex justify-center w-full rounded-md">
+                    <GoogleLogin
+                      onSuccess={handleSuccess}
+                      onError={handleFailure}
+                      disabled={loading}
+                      text="continue_with"
+                      width="700px"
+                      type="standard"
+                      theme="filled_blue"
+                      size="large"
+                      shape="pill"
+                      useOneTap={true}
+                    />
+
+                    {/* <GoogleLogin
+                    onSuccess={handleSuccess}
+                    onError={handleFailure}
+                    useOneTap
+                  /> */}
+                  </div>
+
+                </GoogleOAuthProvider>
+              </div>
+
               <div>
-                <p className="text-lg text-text-gray -mt-4">
+                <p className="text-md font-medium text-text-gray -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
                     to="/signin"
