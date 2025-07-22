@@ -18,6 +18,7 @@ export const DataProvider = ({ children }) => {
   const [cancelledRequests, setCancelledRequests] = useState("");
   const [homeNotifications, setHomeNotifications] = useState([]);
   const [emergencyNotifications, setEmergencyNotifications] = useState([]);
+  const [Leads, setLeads] = useState([]);
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
@@ -230,6 +231,7 @@ export const DataProvider = ({ children }) => {
         RoomsData,
         fetchBookingData,
         bookingData,
+        Leads, setLeads
       }}
     >
       {children}

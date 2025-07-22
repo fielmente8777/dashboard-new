@@ -84,6 +84,7 @@ const LeadAnalytics = () => {
 
   return (
     <div className="bg-white p-4 cardShadow mb-10">
+
       <h2 className="text-sm font-semibold text-[#575757]">
         Enquiries Analytics
       </h2>

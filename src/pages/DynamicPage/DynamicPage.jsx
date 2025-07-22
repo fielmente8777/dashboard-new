@@ -54,6 +54,11 @@ import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
+import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
+import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
+import Instagram from "../ConversationalTool/Instagram/Instagram";
+import Facebook from "../ConversationalTool/Facebook/Facebook";
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -114,6 +119,8 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/enquiries-management/ad-leads`]: <AdsLeadsUsingGoogleSheet />,
+    [`${BASE_PATH}/${hid}/enquiries-management/ad-analytics`]: <AdLeadsAnalytics />,
     [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
 
     // Human Resources Management
@@ -137,7 +144,14 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
     [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,
     [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
-    [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
+
+
+    // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
+    [`${BASE_PATH}/${hid}/channel/wa/chat`]: <WhatsApp />,
+    [`${BASE_PATH}/${hid}/channel/ig/chat`]: <Instagram />,
+    [`${BASE_PATH}/${hid}/channel/fb/chat`]: <Facebook />,
+
+
     [`${BASE_PATH}/${hid}/themes-manager`]: <ThemesManager />,
     [`${BASE_PATH}/${hid}/channel-manager`]: <ChannelManager />,
     [`${BASE_PATH}/${hid}/payment-gateway`]: <PaymentGateway />,

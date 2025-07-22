@@ -312,8 +312,8 @@ const Leads = () => {
               onClick={() => handleTabClick(index)}
               key={index}
               className={`text-[14px] whitespace-nowrap  ${active === index
-                  ? "border-b-2 border-[#575757]"
-                  : "border-b-2 border-transparent"
+                ? "border-b-2 border-[#575757]"
+                : "border-b-2 border-transparent"
                 } px-4 py-3 bg-white font-medium text-[#575757]`}
             >
               {item}
@@ -417,8 +417,8 @@ const Leads = () => {
                     <tr
                       key={index}
                       className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                          ? " text-[#575757]"
-                          : "text-[#575757]"
+                        ? " text-[#575757]"
+                        : "text-[#575757]"
                         }`}
                       onClick={() => {
                         setSelectedLead(enquery);
@@ -431,9 +431,19 @@ const Leads = () => {
                           : ""}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
-                        {enquery?.created_from?.toLowerCase() === "chatbot"
-                          ? "Eazobot"
-                          : enquery.created_from}
+                        {/* kjhjkhk */}
+                        {
+                          enquery?.created_from?.toLowerCase() === "chatbot"
+                            ? "Eazbot"
+                            : enquery?.created_from?.toLowerCase() === "chat bot"
+                              ? "Eazbot"
+                              : enquery?.created_from?.toLowerCase() === "eazobot"
+                                ? "Eazbot"
+                                : enquery?.created_from === "Website"
+                                  ? "Webform"
+                                  : enquery?.created_from || "Webform"
+                        }
+
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         {enquery?.Name.slice(0, 15)}

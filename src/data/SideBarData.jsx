@@ -1,4 +1,4 @@
-import { FaFilePdf, FaWhatsappSquare, FaThemeco } from "react-icons/fa";
+import { FaFilePdf, FaWhatsappSquare, FaThemeco, FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
 import {
   FaCircleQuestion,
   FaCodePullRequest,
@@ -38,6 +38,123 @@ export const SidebarData = [
     name: "Dashboard",
     link: ``,
     icon: <MdDashboard size={24} />,
+  },
+  {
+    name: "Live Chat",
+    key: "Conversational Tool",
+    link: `chat`,
+    icon: <IoIosChatbubbles size={24} />,
+    subLinks: [
+      {
+        name: "WhatsApp",
+        link: `channel/wa/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
+      {
+        name: "Instagram",
+        link: `channel/ig/chat`,
+        icon: <FaInstagram size={16} />,
+      },
+      {
+        name: "Facebook",
+        link: `channel/fb/chat`,
+        icon: <FaFacebook size={16} />,
+      },
+    ],
+  },
+  {
+    name: "Enquiries Management",
+    link: `enquiries-management`,
+    key: "Enquiries Management",
+    icon: <MdAnalytics size={24} />,
+    subLinks: [
+      {
+        name: "Enquiries",
+        link: `enquiries-management/enquiries`,
+        icon: <FaCircleQuestion size={18} />,
+      },
+      {
+        name: "Ad Leads",
+        link: `enquiries-management/ad-leads`,
+        icon: <FaCircleQuestion size={18} />,
+      },
+      {
+        name: "Ads Performance",
+        link: `enquiries-management/ad-analytics`,
+        icon: <FaCircleQuestion size={18} />,
+      },
+    ],
+  },
+
+  {
+    name: "Booking Engine",
+    key: "Booking Engine",
+    link: `booking-engine`,
+    icon: <SiGoogleearthengine size={20} />,
+    subLinks: [
+      {
+        name: "Rooms Setup",
+        link: `booking-engine/rooms-setup`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Rooms & Inventory",
+        link: `booking-engine/rooms-and-inventory`,
+        icon: <MdOutlineInventory size={18} />,
+      },
+      {
+        name: "Price Packages",
+        link: `booking-engine/price-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Ads Packages",
+        link: `booking-engine/ads-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Customization",
+        link: `booking-engine/customization`,
+        icon: <MdBedroomParent size={18} />,
+      },
+    ],
+  },
+
+  {
+    name: "Guest Request Management",
+    link: `guest-request-management`,
+    key: "GRM",
+    icon: <MdOutlineSos size={26} />,
+    subLinks: [
+      {
+        name: "All Requests",
+        link: `grm/all-requests`,
+        icon: <FaCodePullRequest size={16} />,
+      },
+      {
+        name: "Emergency Request",
+        link: `grm/emergency-request`,
+        icon: <MdEmergencyShare size={18} />,
+      },
+      {
+        name: "GRM Settings",
+        link: `grm/settings`,
+        icon: <IoMdSettings size={18} />,
+      },
+    ],
+  },
+  {
+    name: "Reservation Desk",
+    link: `reservation-desk`,
+    key: "Reservation Desk",
+    icon: <RiReservedFill size={24} />,
+    // subLinks: [
+    //   {
+    //     name: "Enquiries",
+    //     link: `enquiries-management/enquiries`,
+    //     icon: <FaCircleQuestion size={18} />,
+    //   },
+    // ],
   },
 
   {
@@ -99,90 +216,10 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "Booking Engine",
-    key: "Booking Engine",
-    link: `booking-engine`,
-    icon: <SiGoogleearthengine size={20} />,
-    subLinks: [
-      {
-        name: "Rooms Setup",
-        link: `booking-engine/rooms-setup`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Rooms & Inventory",
-        link: `booking-engine/rooms-and-inventory`,
-        icon: <MdOutlineInventory size={18} />,
-      },
-      {
-        name: "Price Packages",
-        link: `booking-engine/price-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Ads Packages",
-        link: `booking-engine/ads-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Customization",
-        link: `booking-engine/customization`,
-        icon: <MdBedroomParent size={18} />,
-      },
-    ],
-  },
-  {
-    name: "Reservation Desk",
-    link: `reservation-desk`,
-    key: "Reservation Desk",
-    icon: <RiReservedFill size={24} />,
-    // subLinks: [
-    //   {
-    //     name: "Enquiries",
-    //     link: `enquiries-management/enquiries`,
-    //     icon: <FaCircleQuestion size={18} />,
-    //   },
-    // ],
-  },
 
-  {
-    name: "Enquiries Management",
-    link: `enquiries-management`,
-    key: "Enquiries Management",
-    icon: <MdAnalytics size={24} />,
-    subLinks: [
-      {
-        name: "Enquiries",
-        link: `enquiries-management/enquiries`,
-        icon: <FaCircleQuestion size={18} />,
-      },
-    ],
-  },
 
-  {
-    name: "Guest Request Management",
-    link: `guest-request-management`,
-    key: "GRM",
-    icon: <MdOutlineSos size={26} />,
-    subLinks: [
-      {
-        name: "All Requests",
-        link: `grm/all-requests`,
-        icon: <FaCodePullRequest size={16} />,
-      },
-      {
-        name: "Emergency Request",
-        link: `grm/emergency-request`,
-        icon: <MdEmergencyShare size={18} />,
-      },
-      {
-        name: "GRM Settings",
-        link: `grm/settings`,
-        icon: <IoMdSettings size={18} />,
-      },
-    ],
-  },
+
+
 
   {
     name: "Human Resources Management",
@@ -267,19 +304,14 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup size={22} />,
   },
 
-  {
-    name: "Social Media",
-    key: "Social Media",
-    link: `social-media`,
-    icon: <TiSocialSkype size={24} />,
-  },
-
   // {
-  //   name: "Conversational Tool",
-  //   key: "Conversational Tool",
-  //   link: `conversational-tool`,
-  //   icon: <IoIosChatbubbles size={24} />,
+  //   name: "Social Media",
+  //   key: "Social Media",
+  //   link: `social-media`,
+  //   icon: <TiSocialSkype size={24} />,
   // },
+
+
 
   // {
   //   name: "Custom Website",

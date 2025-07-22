@@ -131,7 +131,7 @@ const Dashboard = () => {
     },
     {
       amount: eazobotEnquiries?.length,
-      lable: "Eazotbot Leads",
+      lable: "Eazbot Leads",
       progress: 100,
     },
     {

@@ -15,7 +15,7 @@ import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
-import { useGoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
+import { useGoogleLogin, GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { verify } from "../../utils/verify";
 
 const Login = () => {
@@ -310,10 +310,10 @@ const Login = () => {
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
-                  // clientSecret={"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"}
+                // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full rounded-md">
-                    {/* <GoogleLogin
+                    <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleFailure}
                       disabled={loading}
@@ -324,12 +324,12 @@ const Login = () => {
                       size="large"
                       shape="pill"
                       useOneTap={true}
-                    /> */}
-
+                    />
+                    {/* 
                     <GoogleLoginButton
                       handleSuccess={handleSuccess}
                       handleFailure={handleFailure}
-                    />
+                    /> */}
                   </div>
                 </GoogleOAuthProvider>
               </div>
