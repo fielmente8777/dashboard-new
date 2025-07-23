@@ -1,19 +1,47 @@
 import { useContext, useEffect, useState } from "react";
-import { GiHamburgerMenu } from "react-icons/gi";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdHome } from "react-icons/io";
 import { MdOutlineSos, MdSettings } from "react-icons/md";
 import { RiFeedbackFill } from "react-icons/ri";
+import { RxDashboard } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DataContext from "../../context/DataContext";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
-import AppsPopup from "../Popup/AppsPopup";
-import { RxDashboard } from "react-icons/rx";
 import Greeting from "../Greeting";
+import AppsPopup from "../Popup/AppsPopup";
 import ChangePassword from "../Popup/ChangePassword";
-import { FaUser } from "react-icons/fa";
 import ProfilePopup from "../Popup/ProfilePopup";
+
+const letterColorMap = {
+  a: "#e6194b",
+  b: "#3cb44b",
+  c: "#ffe119",
+  d: "#4363d8",
+  e: "#f58231",
+  f: "#911eb4",
+  g: "#46f0f0",
+  h: "#f032e6",
+  i: "#bcf60c",
+  j: "#fabebe",
+  k: "#008080",
+  l: "#e6beff",
+  m: "#9a6324",
+  n: "#fffac8",
+  o: "#800000",
+  p: "#aaffc3",
+  q: "#808000",
+  r: "#ffd8b1",
+  s: "#000075",
+  t: "#808080",
+  u: "#59b1ad",
+  v: "#000000",
+  w: "#d2691e",
+  x: "#ff69b4",
+  y: "#00ced1",
+  z: "#8a2be2",
+};
+
 const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
@@ -125,10 +153,18 @@ const Navbar = () => {
               />
             </div>
             <button
+              style={{
+                backgroundColor:
+                  letterColorMap[
+                    hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
+                  ],
+              }}
               onClick={() => setIsProfileOpen(true)}
               className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
             >
-              <p className="text-2xl font-semibold">S</p>
+              <p className="text-2xl font-semibold">
+                {hotel?.Profile?.hotelName.charAt(0).toUpperCase()}
+              </p>
               {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
             </button>
           </div>
@@ -141,9 +177,13 @@ const Navbar = () => {
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
+
         <ProfilePopup
           isProfileOpen={isProfileOpen}
           setIsProfileOpen={setIsProfileOpen}
+          Color={
+            letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
+          }
         />
         <ChangePassword
           isOpen={isChangePasswordPopupOpen}

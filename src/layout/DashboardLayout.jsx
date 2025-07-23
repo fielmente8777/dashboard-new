@@ -1,5 +1,4 @@
 import { useSelector } from "react-redux";
-import Breadcrumb from "../components/Breadcrumb";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 
@@ -21,7 +20,7 @@ export default function DashboardLayout({ children }) {
 
         <div className="flex-1 flex flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto rounded-sm bg-[#f8f8fb]">
           <Navbar />
-          <div className="overflow-auto flex-1 p-4">
+          <div className="overflow-auto flex-1 scrollbar-hidden">
             {/* <Breadcrumb /> */}
             {children}
           </div>

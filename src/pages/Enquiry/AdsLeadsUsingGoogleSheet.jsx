@@ -397,31 +397,36 @@ const AdsLeadsUsingGoogleSheet = () => {
         <div className="flex justify-between gap-5 items-center bg-primary/95 text-white shadow-md p-2 rounded-sm">
           {sheetaccessToken !== "None" ? (
             <div className="w-fit flex gap-2">
-              <div className="px-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
+              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
                 <select
-                  className="outline-none bg-transparent w-full"
+                  className="outline-none bg-transparent w-full px-4"
                   id="spreadsheet"
                   onChange={(event) =>
                     ChangeSpreadsheetFetchData(event.target.value)
                   }
                 >
                   {Spreadsheet.reverse().map((spread) => (
-                    <option key={spread.id} value={spread.id} className="py-4">
+                    <option
+                      key={spread.id}
+                      value={spread.id}
+                      className="py-4 text-gray-700"
+                    >
                       {spread.Name}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="px-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200">
+              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200">
                 <select
-                  className="outline-none bg-transparent"
+                  className="outline-none bg-transparent px-4"
                   onChange={(event) => ChangeSheetFetchData(event.target.value)}
                 >
                   {Sheets.map((sheet) => (
                     <option
                       key={sheet.properties.title}
                       value={sheet.properties.title}
+                      className="text-gray-700"
                     >
                       {sheet.properties.title}
                     </option>
@@ -451,7 +456,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                   setid(e.target.value);
                 }}
                 placeholder="Enter sheet Id or Url"
-                className="placeholder:text-gray-600 w-[500px] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
+                className="placeholder:text-gray-600 w-[200px] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
               />
               <button
                 className=" bg-[#00C899] py-2 px-4 text-white rounded-full font-semibold"
