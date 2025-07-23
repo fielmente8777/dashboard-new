@@ -231,7 +231,8 @@ export const DataProvider = ({ children }) => {
         RoomsData,
         fetchBookingData,
         bookingData,
-        Leads, setLeads
+        Leads,
+        setLeads,
       }}
     >
       {children}
