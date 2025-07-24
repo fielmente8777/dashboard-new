@@ -3,9 +3,9 @@ import { BsImage } from "react-icons/bs";
 
 const ChatArea = ({ selectedContact }) => {
   return (
-    <div className="flex-1 flex flex-col bg-gray-50">
+    <div className="flex-1 flex flex-col bg-gray-50 ">
       {/* Chat Header */}
-      <div className="bg-teal-600 text-white px-6 py-4">
+      <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">
             {selectedContact} (+919328405012)

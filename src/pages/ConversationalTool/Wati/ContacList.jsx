@@ -47,7 +47,7 @@ function ContactList(props) {
 
   const handleClick = (contact) => {
     const id = contact.id;
-    console.log(contact.wAid);
+    // console.log(contact.wAid);
     setWatiSelectedContact(contact);
     GetMessagesWati(contact.wAid);
     setSelectedContactId(id === selectedContactId ? null : id);

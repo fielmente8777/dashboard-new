@@ -6,7 +6,7 @@ export const getBookingsData = async (token, hId) => {
       `${BASE_URL}/booking/bookings/${token}/${hId}`
     );
 
-    console.log("jkhjlhjhljhjk", response?.data);
+    // console.log("jkhjlhjhljhjk", response?.data);
     return response?.data;
   } catch (error) {
     console.error("Error fetching booking data:", error);

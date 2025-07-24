@@ -156,7 +156,7 @@ const Navbar = () => {
               style={{
                 backgroundColor:
                   letterColorMap[
-                    hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
+                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
                   ],
               }}
               onClick={() => setIsProfileOpen(true)}

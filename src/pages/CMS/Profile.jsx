@@ -149,7 +149,7 @@ const Profile = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Response from backend:", data);
+        // console.log("Response from backend:", data);
         // Handle the backend response as needed
       })
       .catch((error) => {
@@ -189,7 +189,7 @@ const Profile = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Response from backend:", data);
+        // console.log("Response from backend:", data);
         setwebsiteImage(data.Image);
         handleChnageDataAccounts(data.Image, "Logo");
         UpdateSocialAccounts();
@@ -216,7 +216,7 @@ const Profile = () => {
     }
   }, [currentLoactionWebsiteData]);
 
-  console.log(currentLoactionWebsiteData);
+  // console.log(currentLoactionWebsiteData);
 
   return (
     <>

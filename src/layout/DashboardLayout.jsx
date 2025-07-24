@@ -8,9 +8,8 @@ export default function DashboardLayout({ children }) {
     <div>
       <div className="flex overflow-hidden h-screen">
         <div
-          className={`${
-            isOpen ? "w-[330px]" : "w-[70px]"
-          } overflow-hidden transition-all duration-300 bg-white sm:overflow-hidden rounded-sm border`}
+          className={`${isOpen ? "w-[330px]" : "w-[70px]"
+            } overflow-hidden transition-all duration-300 bg-white sm:overflow-hidden border`}
         >
           {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
@@ -18,7 +17,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto rounded-sm bg-[#f8f8fb]">
+        <div className="flex-1 flex flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
           <Navbar />
           <div className="overflow-auto flex-1 scrollbar-hidden">
             {/* <Breadcrumb /> */}

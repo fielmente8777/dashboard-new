@@ -94,7 +94,7 @@ const ReservationDesk = () => {
   };
 
   const applyFilters = async (filterType, id) => {
-    console.log(filterType);
+    // console.log(filterType);
     if (filterType === "dates") {
       setIsLoading(true);
       const dateFrom = new Date(fromDate).toLocaleDateString("en-CA", {});
@@ -132,7 +132,7 @@ const ReservationDesk = () => {
       };
 
       const response = await filterBookingWithPayment(filterData, id);
-      console.log(response);
+      // console.log(response);
       setBookingsData(response?.Bookings);
       setIsLoading(false);
     }

@@ -4,7 +4,7 @@ import handleLocalStorage from "../../utils/handleLocalStorage";
 // handle api for uploading image to s3 bucket**
 export const UploadingImageS3 = async (base64String) => {
   try {
-    console.log("aaya");
+    // console.log("aaya");
     const response = await fetch(`${BASE_URL}/upload/file/image`, {
       method: "POST",
       headers: {
@@ -17,7 +17,7 @@ export const UploadingImageS3 = async (base64String) => {
     });
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
 
     return result?.Image || null;
   } catch (error) {

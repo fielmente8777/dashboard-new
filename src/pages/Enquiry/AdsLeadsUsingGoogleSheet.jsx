@@ -43,7 +43,7 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   }
   const ChangeSpreadsheetFetchData = (spreadsheetid) => {
-    console.log(spreadsheetid);
+    // console.log(spreadsheetid);
     setsheetid(spreadsheetid);
     FetchSheetofSpreadSheet(spreadsheetid);
   };
@@ -56,7 +56,7 @@ const AdsLeadsUsingGoogleSheet = () => {
 
   const FetchAccessTokenFromDb = async () => {
     try {
-      console.log("jsfhkdhbkhksf");
+      // console.log("jsfhkdhbkhksf");
       const response = await fetch(
         `${BASE_URL}/leadmanagement/getGoogltoken/${localStorage.getItem(
           "token"
@@ -70,7 +70,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         }
       );
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
       if (json.Status === true) {
         setsheetaccessToken(json.Message);
       }
@@ -93,7 +93,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         }
       );
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
       if (json.Status) {
         setsheetNamess(sheetname);
         setsheetid(sheetid);
@@ -132,7 +132,7 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
   const FetchSheetofSpreadSheet = async (sheetid) => {
-    console.log("ncxzxnjkndsjjk", sheetid);
+    // console.log("ncxzxnjkndsjjk", sheetid);
     try {
       const response = await fetch(
         `${BASE_URL}/leadmanagement/getsheetName/${sheetid}/${localStorage.getItem(
@@ -146,11 +146,11 @@ const AdsLeadsUsingGoogleSheet = () => {
           },
         }
       );
-      console.log(response);
+      // console.log(response);
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
       if (json.Status) {
-        console.log("vchghjklhjgfvxc", json.sheets);
+        // console.log("vchghjklhjgfvxc", json.sheets);
         setSheets(json.sheets);
         if (json.sheets.length > 0) {
           setsheetid(json.sheets[0]);
@@ -164,7 +164,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         setSheets([]);
       }
     } catch (error) {
-      console.log("Error fetching sheets:", error);
+      // console.log("Error fetching sheets:", error);
       setSheets([]);
       setsheetaccessToken("None");
       updateAccessTokenDb("None");
@@ -186,7 +186,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         }
       );
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
       if (json.Status) {
         setSpreadsheet(json.data);
         if (json.data.length > 0) {
@@ -212,7 +212,7 @@ const AdsLeadsUsingGoogleSheet = () => {
 
   const handleConnectGoogleTool = async (provider, data) => {
     try {
-      console.log(data);
+      // console.log(data);
       const tokenEndpoint = "https://oauth2.googleapis.com/token";
       const response = await fetch(tokenEndpoint, {
         method: "POST",
@@ -230,8 +230,8 @@ const AdsLeadsUsingGoogleSheet = () => {
       });
 
       const tokenData = await response.json();
-      console.log("Token Data:", tokenData.access_token);
-      console.log("Token Data:", tokenData);
+      // console.log("Token Data:", tokenData.access_token);
+      // console.log("Token Data:", tokenData);
 
       setsheetaccessToken(tokenData.access_token);
       updateAccessTokenDb(tokenData.access_token);
@@ -256,7 +256,7 @@ const AdsLeadsUsingGoogleSheet = () => {
     FetchSpreadSheetFromDb();
   }, []);
 
-  console.log("sheetaccessToken", sheetaccessToken);
+  // console.log("sheetaccessToken", sheetaccessToken);
 
   const [alphabet, setalphabet] = useState({
     0: "A",
@@ -323,7 +323,7 @@ const AdsLeadsUsingGoogleSheet = () => {
       );
 
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
       FetchSheetsDataofSpreadSheet(sheetid, sheetNamess);
     } catch {
       alert("Some Problem update token");
@@ -355,9 +355,9 @@ const AdsLeadsUsingGoogleSheet = () => {
   };
 
   return (
-    <div>
-      <div className="">
-        <div className="flex justify-end gap-2 items-center mb-4">
+    <div className="bg-white">
+      <div className="py-4">
+        <div className="flex  justify-end gap-2 px-2 items-center mb-4">
           {sheetaccessToken !== "None" && (
             <div className="rounded-full flex items-center gap-1 text-green-800 border px-3 py-2 border-gray-500 shadow-md">
               <p className="font-semibold">Connected</p>
@@ -394,7 +394,7 @@ const AdsLeadsUsingGoogleSheet = () => {
           )}
         </div>
 
-        <div className="flex justify-between gap-5 items-center bg-primary/95 text-white shadow-md p-2 rounded-sm">
+        {sheetaccessToken !== "None" && <div className="flex justify-between bg-primary p-2 gap-5 items-center  text-white rounded-sm">
           {sheetaccessToken !== "None" ? (
             <div className="w-fit flex gap-2">
               <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
@@ -470,13 +470,13 @@ const AdsLeadsUsingGoogleSheet = () => {
           ) : (
             ""
           )}
-        </div>
+        </div>}
       </div>
 
       {sheetaccessToken !== "None" ? (
         <div className="h-full w-full overflow-scroll">
           {Leads.length > 0 ? (
-            <table className="border mt-4 bg-white ">
+            <table className="border bg-white ">
               {Leads.map((data, rowindex) => {
                 if (rowindex === 0) {
                   return (
@@ -484,7 +484,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                       <tr className="tablerow">
                         {data.map((headerLabel) => (
                           <th
-                            className="w-auto px-2 border py-3 font-medium capitalize"
+                            className="w-auto px-2 border font-medium capitalize"
                             key={headerLabel}
                           >
                             {headerLabel}
@@ -498,15 +498,14 @@ const AdsLeadsUsingGoogleSheet = () => {
                     <tbody>
                       <tr>
                         {data.map((head, index) => (
-                          <td className="w-full ">
+                          <td className="w-full border border-gray-300">
                             <input
-                              className="w-auto px-2 py-1 outline-none border border-gray-300 rounded-md text-black"
+                              className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                               type="text"
                               value={head}
                               onChange={(e) => {
                                 getColumn(
-                                  `${
-                                    alphabet[String(index)] + String(rowindex)
+                                  `${alphabet[String(index)] + String(rowindex)
                                   }`,
                                   rowindex,
                                   index,
@@ -529,7 +528,7 @@ const AdsLeadsUsingGoogleSheet = () => {
           )}
         </div>
       ) : (
-        <div className="w-full bg-white cardShadow overflow-hidden p-8 mb-8 text-center">
+        <div className="w-full bg-white cardShadow overflow-hidden p-8  text-center">
           {/* Header */}
           <div className="mb-8">
             <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">

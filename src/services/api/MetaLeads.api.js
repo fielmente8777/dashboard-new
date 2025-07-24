@@ -32,12 +32,12 @@ export const getLeadGenFromFields = async (token) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 };
 
 export const UpdateLeadGenForm = async (token, formData) => {
-  console.log(formData);
+  // console.log(formData);
   try {
     const response = await fetch(
       `${BASE_URL}/leadgen/edit-lead-gen-form?form_id=${encodeURIComponent(

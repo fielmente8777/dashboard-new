@@ -33,9 +33,9 @@ const Events = () => {
   const uploadImage = async (e) => {
     e.preventDefault();
     const imageInput = document.getElementById("file");
-    console.log(imageInput);
+    // console.log(imageInput);
     const file = imageInput.files[0];
-    console.log(file);
+    // console.log(file);
     if (!file) {
       Swal.fire({
         icon: "error",

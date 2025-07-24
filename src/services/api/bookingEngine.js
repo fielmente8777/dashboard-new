@@ -9,7 +9,7 @@ export const getBookingEngineDetails = async () => {
     const response = await axios.get(`${BASE_URL}/booking/getengine/${handleLocalStorage("token")}/${handleLocalStorage("hid")}`)
     return response?.data;
   } catch (error) {
-    console.log("Error fetching engine details:", error)
+    // console.log("Error fetching engine details:", error)
     throw error;
   }
 }

@@ -7,7 +7,7 @@ const CommanHeader = ({ serviceName }) => {
   const [open, setOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState([serviceName]);
 
-  console.log(selectedServices);
+  // console.log(selectedServices);
   return (
     <div className="bg-white">
       <div className="flex justify-between items-center">

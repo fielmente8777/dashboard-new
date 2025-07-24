@@ -3,9 +3,9 @@ import CommanHeader from "../../components/Navbar/CommanHeader";
 const PerformanceMarketing = () => {
   const fetchData = () => {
     try {
-      console.log("first");
+      // console.log("first");
     } catch (e) {
-      console.error(e);
+      // console.error(e);
     }
   };
 

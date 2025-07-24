@@ -16,7 +16,7 @@ const Analytics = () => {
     (state) => state?.hotelsWebsiteData
   );
 
-  console.log(currentLoactionWebsiteData);
+  // console.log(currentLoactionWebsiteData);
 
   useEffect(() => {
     if (currentLoactionWebsiteData?.Gallery) {
@@ -46,7 +46,7 @@ const Analytics = () => {
       }),
     })
       .then((response) => response.json())
-      .then((data) => {})
+      .then((data) => { })
       .catch((error) => {
         console.error("Error:", error);
       });
@@ -84,7 +84,7 @@ const Analytics = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log("Response from backend:", data);
+        // console.log("Response from backend:", data);
         handleDeleteImage(selectedCategory, data.Image, "append");
         // Handle the backend response as needed
       })
@@ -106,11 +106,10 @@ const Analytics = () => {
               <button
                 onClick={() => setSelectedCategory(item.Category)}
                 key={index}
-                className={`text-[14px] ${
-                  selectedCategory === item.Category
-                    ? "border-b-2 border-[#575757]"
-                    : "border-b-2 border-transparent"
-                } px-4 py-3 bg-white font-medium text-[#575757]`}
+                className={`text-[14px] ${selectedCategory === item.Category
+                  ? "border-b-2 border-[#575757]"
+                  : "border-b-2 border-transparent"
+                  } px-4 py-3 bg-white font-medium text-[#575757]`}
               >
                 {item.Category}
               </button>

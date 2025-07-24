@@ -441,7 +441,7 @@ const Leads = () => {
                                 ? "Eazbot"
                                 : enquery?.created_from === "Website"
                                   ? "Webform"
-                                  : enquery?.created_from || "Webform"
+                                  : enquery?.created_from === null ? "Webform" : "Webform"
                         }
 
                       </td>

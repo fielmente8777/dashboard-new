@@ -66,7 +66,7 @@ const LeadGenForm = () => {
     (state) => state?.metaLeads
   );
 
-  console.log(isLeadGenFormLoading);
+  // console.log(isLeadGenFormLoading);
 
   // handleCreateLeadGenForm
 
@@ -127,7 +127,7 @@ const LeadGenForm = () => {
       if (!result.isConfirmed) return;
       const token = handleLocalStorage("token");
       const response = await deleteLeadGenForm(token, form_id);
-      console.log(response);
+      // console.log(response);
       dispatch(
         fetchLeadGenForm(handleLocalStorage("token"), handleLocalStorage("hid"))
       );
@@ -1041,8 +1041,8 @@ export const FormField = ({
 
               <button
                 className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${isVisible
-                    ? "hover:bg-[#618ae4] hover:text-white  "
-                    : "bg-gray-300 cursor-not-allowed"
+                  ? "hover:bg-[#618ae4] hover:text-white  "
+                  : "bg-gray-300 cursor-not-allowed"
                   }`}
                 title="Edit"
                 disabled={!isVisible}

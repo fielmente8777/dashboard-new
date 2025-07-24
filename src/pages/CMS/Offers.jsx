@@ -166,7 +166,7 @@ const Analytics = () => {
   };
 
   const handleDelete = (indexToDelete) => {
-    console.log(indexToDelete);
+    // console.log(indexToDelete);
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -234,9 +234,8 @@ const Analytics = () => {
             currentLoactionWebsiteData?.Offers?.map((item, index) => (
               <div
                 key={index}
-                className={`flex flex-col relative gap-2 ${
-                  activeIndex === index ? "bg-white z-10" : ""
-                }`}
+                className={`flex flex-col relative gap-2 ${activeIndex === index ? "bg-white z-10" : ""
+                  }`}
                 onMouseEnter={() => setActiveIndex(true)}
                 onMouseLeave={() => setActiveIndex(false)}
               >

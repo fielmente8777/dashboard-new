@@ -54,7 +54,7 @@ const PaymentGateway = () => {
       });
 
       const json = await response.json();
-      console.log(json)
+      // console.log(json)
       if (json.status) {
         setrazorpayData(json.Details.items);
       }
@@ -84,9 +84,9 @@ const PaymentGateway = () => {
       );
 
       const json = await response.json();
-      console.log(json)
+      // console.log(json)
       if (json.status) {
-        console.log(json.Details);
+        // console.log(json.Details);
         setrazorpayData([json.Details]);
       } else {
         setrazorpayData([]);
@@ -114,9 +114,9 @@ const PaymentGateway = () => {
       );
 
       const json = await response.json();
-      console.log(json)
+      // console.log(json)
       if (json.status) {
-        console.log(json.Details);
+        // console.log(json.Details);
         setrazorpayData([json.Details]);
       } else {
         setrazorpayData([]);
@@ -148,7 +148,7 @@ const PaymentGateway = () => {
 
   const handleOnConfirm = async (title, apiKey, secretkey) => {
 
-    console.log(title, apiKey, secretkey);
+    // console.log(title, apiKey, secretkey);
     if (title === "Razorpay") {
       if (!apiKey || !secretkey) {
         Swal.fire({
@@ -168,7 +168,7 @@ const PaymentGateway = () => {
         SECRET_KEY: secretkey,
       })
 
-      console.log(response);
+      // console.log(response);
     }
     alert("Payment Gateway Activated");
     setOpen(false);

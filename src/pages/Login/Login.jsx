@@ -301,10 +301,8 @@ const Login = () => {
                 </button>
               </div>
 
-              <div className="">
-                {/* <h1 className="font-medium text-lg text-text-black mb-3">
-                  Sign in using
-                </h1> */}
+              {/* <div className="">
+
 
                 <GoogleOAuthProvider
                   clientId={
@@ -325,14 +323,14 @@ const Login = () => {
                       shape="pill"
                       useOneTap={true}
                     />
-                    {/* 
+                    
                     <GoogleLoginButton
                       handleSuccess={handleSuccess}
                       handleFailure={handleFailure}
-                    /> */}
+                    />
                   </div>
                 </GoogleOAuthProvider>
-              </div>
+              </div> */}
 
               <div>
                 <p className="text-md font-medium text-text-gray -mt-4">

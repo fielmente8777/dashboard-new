@@ -34,13 +34,13 @@ function Payment() {
   };
 
   const handleOrderid = () => {
-    console.log("Order ID:", id);
+    // console.log("Order ID:", id);
     fetchByOrderid(id);
   };
 
   const handlePaymentId = () => {
     fetchByPaymentid(id);
-    console.log("Payment ID:", id);
+    // console.log("Payment ID:", id);
   };
   return (
     <>

@@ -146,7 +146,7 @@ const Dashboard = () => {
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}
@@ -188,7 +188,7 @@ const Dashboard = () => {
         <div className="flex flex-col gap-5 hide-scrollbar px-4">
           {/* <div className="h-14 w-1/3 bg-zinc-200 animate-pulse rounded" /> */}
 
-          <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6">
+          <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6 mt-4">
             {[1, 2, 3, 4].map((_, index) => (
               <div
                 key={index}

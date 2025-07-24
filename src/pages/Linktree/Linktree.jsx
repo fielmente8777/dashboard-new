@@ -66,7 +66,7 @@ const Linktree = () => {
     };
     const [currentStage, setCurrentStage] = useState(chatFlow["Start"])
 
-    console.log(currentStage)
+    // console.log(currentStage)
     return (
         <div className="p-4 bg-white mb-10 cardShadow">
             <CommanHeader serviceName="Linktree Setup" />
