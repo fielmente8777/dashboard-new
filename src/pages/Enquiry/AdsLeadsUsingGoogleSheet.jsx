@@ -14,6 +14,8 @@ import { FaGoogle } from "react-icons/fa";
 import { TbAlertTriangle } from "react-icons/tb";
 import { IoMdCheckmarkCircle } from "react-icons/io";
 import { FaPowerOff } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 // import AuthContext from '../../Context/AuthProvider';
 
@@ -28,6 +30,15 @@ const AdsLeadsUsingGoogleSheet = () => {
   const [sheetid, setsheetid] = useState("None");
   const [tokenExpire, settokenExpire] = useState(false);
   const [sheetNamess, setsheetNamess] = useState("");
+
+  const {
+    user: hotel,
+    authUser,
+    hid,
+    loading,
+    isAuthLoading,
+  } = useSelector((state) => state.userProfile);
+
   function getSheetId(input) {
     // Check if the input is a link
     const linkMatch = input.match(/\/spreadsheets\/d\/(.+?)\//);
@@ -394,83 +405,87 @@ const AdsLeadsUsingGoogleSheet = () => {
           )}
         </div>
 
-        {sheetaccessToken !== "None" && <div className="flex justify-between bg-primary p-2 gap-5 items-center  text-white rounded-sm">
-          {sheetaccessToken !== "None" ? (
-            <div className="w-fit flex gap-2">
-              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
-                <select
-                  className="outline-none bg-transparent w-full px-4"
-                  id="spreadsheet"
-                  onChange={(event) =>
-                    ChangeSpreadsheetFetchData(event.target.value)
-                  }
-                >
-                  {Spreadsheet.reverse().map((spread) => (
-                    <option
-                      key={spread.id}
-                      value={spread.id}
-                      className="py-4 text-gray-700"
-                    >
-                      {spread.Name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        {sheetaccessToken !== "None" && (
+          <div className="flex justify-between bg-primary p-2 gap-5 items-center  text-white rounded-sm">
+            {sheetaccessToken !== "None" ? (
+              <div className="w-fit flex gap-2">
+                <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
+                  <select
+                    className="outline-none bg-transparent w-full px-4"
+                    id="spreadsheet"
+                    onChange={(event) =>
+                      ChangeSpreadsheetFetchData(event.target.value)
+                    }
+                  >
+                    {Spreadsheet.reverse().map((spread) => (
+                      <option
+                        key={spread.id}
+                        value={spread.id}
+                        className="py-4 text-gray-700"
+                      >
+                        {spread.Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200">
-                <select
-                  className="outline-none bg-transparent px-4"
-                  onChange={(event) => ChangeSheetFetchData(event.target.value)}
-                >
-                  {Sheets.map((sheet) => (
-                    <option
-                      key={sheet.properties.title}
-                      value={sheet.properties.title}
-                      className="text-gray-700"
-                    >
-                      {sheet.properties.title}
-                    </option>
-                  ))}
-                </select>
+                <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200">
+                  <select
+                    className="outline-none bg-transparent px-4"
+                    onChange={(event) =>
+                      ChangeSheetFetchData(event.target.value)
+                    }
+                  >
+                    {Sheets.map((sheet) => (
+                      <option
+                        key={sheet.properties.title}
+                        value={sheet.properties.title}
+                        className="text-gray-700"
+                      >
+                        {sheet.properties.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            </div>
-          ) : (
-            ""
-          )}
+            ) : (
+              ""
+            )}
 
-          {sheetaccessToken !== "None" ? (
-            <div className="flex justify-end items-center gap-2">
-              <input
-                type="text"
-                value={sheetName}
-                onChange={(e) => {
-                  setSheetName(e.target.value);
-                }}
-                placeholder="Sheet Name"
-                className="placeholder:text-gray-600  w-[14rem] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
-              />
-              <input
-                type="text"
-                value={id}
-                onChange={(e) => {
-                  setid(e.target.value);
-                }}
-                placeholder="Enter sheet Id or Url"
-                className="placeholder:text-gray-600 w-[200px] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
-              />
-              <button
-                className=" bg-[#00C899] py-2 px-4 text-white rounded-full font-semibold"
-                onClick={() => {
-                  AddSpreadSheet();
-                }}
-              >
-                Add <span className="font-bold text-lg">+</span>
-              </button>
-            </div>
-          ) : (
-            ""
-          )}
-        </div>}
+            {sheetaccessToken !== "None" ? (
+              <div className="flex justify-end items-center gap-2">
+                <input
+                  type="text"
+                  value={sheetName}
+                  onChange={(e) => {
+                    setSheetName(e.target.value);
+                  }}
+                  placeholder="Sheet Name"
+                  className="placeholder:text-gray-600  w-[14rem] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
+                />
+                <input
+                  type="text"
+                  value={id}
+                  onChange={(e) => {
+                    setid(e.target.value);
+                  }}
+                  placeholder="Enter sheet Id or Url"
+                  className="placeholder:text-gray-600 w-[200px] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
+                />
+                <button
+                  className=" bg-[#00C899] py-2 px-4 text-white rounded-full font-semibold"
+                  onClick={() => {
+                    AddSpreadSheet();
+                  }}
+                >
+                  Add <span className="font-bold text-lg">+</span>
+                </button>
+              </div>
+            ) : (
+              ""
+            )}
+          </div>
+        )}
       </div>
 
       {sheetaccessToken !== "None" ? (
@@ -497,24 +512,86 @@ const AdsLeadsUsingGoogleSheet = () => {
                   return (
                     <tbody>
                       <tr>
-                        {data.map((head, index) => (
-                          <td className="w-full border border-gray-300">
-                            <input
-                              className="w-auto px-2 py-2 outline-none  rounded-md text-black"
-                              type="text"
-                              value={head}
-                              onChange={(e) => {
-                                getColumn(
-                                  `${alphabet[String(index)] + String(rowindex)
-                                  }`,
-                                  rowindex,
-                                  index,
-                                  e.target.value
-                                );
-                              }}
-                            />
-                          </td>
-                        ))}
+                        {data.map((head, index) => {
+                          const phoneRegex = /^p:\+?\d{10,15}$/i;
+                          const isPhone = phoneRegex.test(head);
+                          const isDate = Date.parse(head);
+
+                          // const nameRegex = /^[a-zA-Z]+(?:\s[a-zA-Z]+)*$/;
+
+                          if (isPhone) {
+                            const phone = head.replace("p:", "");
+
+                            return (
+                              <td className="border border-gray-300">
+                                <Link
+                                  className="w-auto px-2 py-2 outline-none  rounded-md text-black"
+                                  target="_blank"
+                                  to={`https://wa.me/${phone}?text=${encodeURIComponent(
+                                    `Hello! ${""}👋\nWelcome to ${
+                                      hotel?.Profile?.hotelName
+                                    } 🌐\nHow can I assist you today?`
+                                  )}`}
+                                >
+                                  {head}
+                                </Link>
+                              </td>
+                            );
+                          }
+
+                          if (!isNaN(isDate)) {
+                            return (
+                              <td className="w-full border border-gray-300">
+                                <input
+                                  className="w-auto px-2 py-2 outline-none  rounded-md text-black"
+                                  type="text"
+                                  value={new Date(head).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}
+                                  onChange={(e) => {
+                                    getColumn(
+                                      `${
+                                        alphabet[String(index)] +
+                                        String(rowindex)
+                                      }`,
+                                      rowindex,
+                                      index,
+                                      e.target.value
+                                    );
+                                  }}
+                                />
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td className="w-full border border-gray-300 whitespace-nowrap">
+                              <p className="w-auto px-2 py-2 outline-none  rounded-md text-black whitespace-nowrap">
+                                {head}
+                              </p>
+                              {/* <input
+                                className="w-auto px-2 py-2 outline-none  rounded-md text-black"
+                                type="text"
+                                value={head}
+                                onChange={(e) => {
+                                  getColumn(
+                                    `${
+                                      alphabet[String(index)] + String(rowindex)
+                                    }`,
+                                    rowindex,
+                                    index,
+                                    e.target.value
+                                  );
+                                }}
+                              /> */}
+                            </td>
+                          );
+                        })}
                       </tr>
                     </tbody>
                   );
@@ -638,12 +715,12 @@ const AdsLeadsUsingGoogleSheet = () => {
 
           {/* Help Link */}
           <div className="mt-8">
-            <a
+            <Link
               href="#"
               className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
             >
               Need help connecting? Contact support
-            </a>
+            </Link>
           </div>
         </div>
       )}
