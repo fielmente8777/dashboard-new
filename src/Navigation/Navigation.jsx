@@ -26,6 +26,7 @@ import Seo from "../pages/SEO/Seo";
 import ChannelManager from "../pages/Manager/ChannelManager";
 import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
 import FrontDesk from "../pages/FrontDesk/FrontDesk";
+import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -34,12 +35,14 @@ const Navigation = () => {
     <Routes>
       {/* Public */}
       {/* navigate to dashboard client  */}
+
       <Route path="/" element={<ProtectedRoute />} replace>
         <Route index element={<RootRoute />} />
       </Route>
       {/* Route for auth */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/onboarding/form" element={<OnboardingForm />} />
 
       {/* Route for /dashboard/client */}
       <Route path={`${dashboardRootPath}/:ndid/*`} element={<ProtectedRoute />}>

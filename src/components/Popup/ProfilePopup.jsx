@@ -52,7 +52,7 @@ const ProfilePopup = ({
                     }}
                   >
                     <p className="text-3xl font-semibold">
-                      {hotel?.Profile?.hotelName.charAt(0).toUpperCase()}
+                      {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
                     </p>
                   </div>
                   <div>

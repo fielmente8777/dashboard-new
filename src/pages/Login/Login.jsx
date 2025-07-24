@@ -15,7 +15,11 @@ import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
-import { useGoogleLogin, GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import {
+  useGoogleLogin,
+  GoogleOAuthProvider,
+  GoogleLogin,
+} from "@react-oauth/google";
 import { verify } from "../../utils/verify";
 
 const Login = () => {
@@ -140,10 +144,7 @@ const Login = () => {
     setError(null);
     try {
       const token = response.credential;
-      console.log(token);
-
       const result = (await verify(token)).data;
-
       console.log(result);
 
       let timerInterval;
@@ -166,11 +167,13 @@ const Login = () => {
           willClose: () => {
             clearInterval(timerInterval);
           },
-        }).then((result) => {
-          if (result.dismiss === Swal.DismissReason.timer) {
-            navigate("/");
-          }
         });
+
+        if (result?.onboarding) {
+          navigate("/");
+        } else {
+          navigate("/onboarding/form");
+        }
       }
 
       // await testprotected(jwtToken);
@@ -310,7 +313,7 @@ const Login = () => {
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
-                // clientSecret={"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"}
+                  // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full rounded-md">
                     <GoogleLogin
