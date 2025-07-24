@@ -496,10 +496,10 @@ const AdsLeadsUsingGoogleSheet = () => {
                 if (rowindex === 0) {
                   return (
                     <thead>
-                      <tr className="tablerow">
+                      <tr className="tablerow bg-primary text-white">
                         {data.map((headerLabel) => (
                           <th
-                            className="w-auto px-2 border font-medium capitalize"
+                            className="w-auto px-2 py-3 border font-medium capitalize"
                             key={headerLabel}
                           >
                             {headerLabel}
@@ -528,8 +528,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                                   className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                                   target="_blank"
                                   to={`https://wa.me/${phone}?text=${encodeURIComponent(
-                                    `Hello! ${""}👋\nWelcome to ${
-                                      hotel?.Profile?.hotelName
+                                    `Hello! ${""}👋\nWelcome to ${hotel?.Profile?.hotelName
                                     } 🌐\nHow can I assist you today?`
                                   )}`}
                                 >
@@ -541,8 +540,18 @@ const AdsLeadsUsingGoogleSheet = () => {
 
                           if (!isNaN(isDate)) {
                             return (
-                              <td className="w-full border border-gray-300">
-                                <input
+                              <td className="w-full border border-gray-300 whitespace-nowrap">
+                                <p className="px-2 py-2">
+                                  {new Date(head).toLocaleDateString(
+                                    "en-US",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )}
+                                </p>
+                                {/* <input
                                   className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                                   type="text"
                                   value={new Date(head).toLocaleDateString(
@@ -555,16 +564,15 @@ const AdsLeadsUsingGoogleSheet = () => {
                                   )}
                                   onChange={(e) => {
                                     getColumn(
-                                      `${
-                                        alphabet[String(index)] +
-                                        String(rowindex)
+                                      `${alphabet[String(index)] +
+                                      String(rowindex)
                                       }`,
                                       rowindex,
                                       index,
                                       e.target.value
                                     );
                                   }}
-                                />
+                                /> */}
                               </td>
                             );
                           }
