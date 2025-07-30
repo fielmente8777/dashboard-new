@@ -14,13 +14,13 @@ import Swal from "sweetalert2";
 import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
 import { FaAlignRight } from "react-icons/fa";
 import Logo from "../../assets/companylogo.b.png";
-import { open, toggleSideBar } from "../../redux/slice/SidebarToggle";
+import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { IoClose } from "react-icons/io5";
 import { FiLogOut } from "react-icons/fi";
 import DataContext from "../../context/DataContext";
 import { removeCookie } from "../../utils/handleCookies";
 
-const Sidebar = () => {
+const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -122,6 +122,33 @@ const Sidebar = () => {
     }
   };
 
+  const handleResize = (event) => {
+    setIsSmooth(false);
+    const startX = event.clientX;
+    const moveHandler = (e) => {
+      const diffX = e.clientX - startX;
+      const newWidth = sideBarWidth + diffX;
+
+      if (newWidth < 180) {
+        setSidebarWidth(340);
+        dispatch(close());
+      }
+
+      if (newWidth >= 70 && newWidth <= 600) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const upHandler = () => {
+      setIsSmooth(true);
+      document.removeEventListener("mousemove", moveHandler);
+      document.removeEventListener("mouseup", upHandler);
+    };
+
+    document.addEventListener("mousemove", moveHandler);
+    document.addEventListener("mouseup", upHandler);
+  };
+
   useEffect(() => {
     // console.log("authUser", authUser);
     if (authUser && hotel) {
@@ -179,10 +206,8 @@ const Sidebar = () => {
     };
   });
 
-  // console.log(maniuplateSideBarData);
-
   return (
-    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white">
+    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white relative ">
       {/* eazotel logo and hamburger*/}
       <div className="flex justify-between items-center mb-4">
         {isOpen && (
@@ -648,23 +673,10 @@ const Sidebar = () => {
         <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
       </div>
 
-      {/* logout button  */}
-      {/* <div
-        className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white cursor-pointer"
-        onClick={handleLogout}
-      >
-        <FiLogOut size={20} />
-
-        {isOpen && (
-          <button
-            className={`${
-              !isOpen ? "w-0" : "w-f"
-            } font-medium text-nowrap overflow-hidden`}
-          >
-            Logout
-          </button>
-        )}
-      </div> */}
+      <div
+        className="w-[2px] h-full absolute right-0 top-0 bg-white cursor-e-resize"
+        onMouseDown={handleResize}
+      />
     </div>
   );
 };

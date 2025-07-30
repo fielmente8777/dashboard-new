@@ -10,14 +10,14 @@ import { MdMail } from "react-icons/md";
 import { FaPhoneFlip } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
-
+import QuickResponsePopup from "./QuickResponsePopup";
+import { useState } from "react";
 
 export const formatPhoneNumber = (phone) => {
-  let cleaned = phone.replace(/\D/g, ''); // remove non-digit characters
-
+  let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
 
   if (cleaned.length === 10) {
-    cleaned = '91' + cleaned; // prepend country code if it's a 10-digit
+    cleaned = "91" + cleaned; // prepend country code if it's a 10-digit
   }
 
   return cleaned;
@@ -31,6 +31,8 @@ const LeadPopup = ({
   handleTabClick,
   activeIndex,
 }) => {
+  const [quickResponePopup, setQuickResponePopup] = useState(false);
+
   if (!lead) return null;
 
   // console.log(lead)
@@ -129,15 +131,13 @@ const LeadPopup = ({
     }
   };
 
-
-
-
   return (
     <div
       // onClick={onClose}
-      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-    // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
+      // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
       <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm w-[60%] ">
         <div className="flex justify-between items-center mb-4">
@@ -168,7 +168,10 @@ const LeadPopup = ({
                   </Link>
                 </div>
 
-                <Link to={`tel:${formatPhoneNumber(lead?.Contact)}`} className="text-primary">
+                <Link
+                  to={`tel:${formatPhoneNumber(lead?.Contact)}`}
+                  className="text-primary"
+                >
                   <FaPhone size={18} />
                 </Link>
               </div>
@@ -200,8 +203,8 @@ const LeadPopup = ({
                         {lead?.check_in
                           ? lead?.check_in
                           : extractBookingInfo(lead?.Message).checkIn
-                            ? extractBookingInfo(lead?.Message).checkIn
-                            : "-"}
+                          ? extractBookingInfo(lead?.Message).checkIn
+                          : "-"}
                       </p>
                     </div>
 
@@ -213,8 +216,8 @@ const LeadPopup = ({
                         {lead?.check_out
                           ? lead?.check_out
                           : extractBookingInfo(lead?.Message).checkOut
-                            ? extractBookingInfo(lead?.Message).checkOut
-                            : "-"}
+                          ? extractBookingInfo(lead?.Message).checkOut
+                          : "-"}
                       </p>
                     </div>
 
@@ -227,8 +230,8 @@ const LeadPopup = ({
                           {lead?.number_of_guest
                             ? lead?.number_of_guest
                             : extractBookingInfo(lead?.Message).guests
-                              ? extractBookingInfo(lead?.Message).guests
-                              : "-"}
+                            ? extractBookingInfo(lead?.Message).guests
+                            : "-"}
                         </p>
                       </div>
                     </div>
@@ -288,13 +291,18 @@ const LeadPopup = ({
 
             {lead.Contact && (
               <div>
-                <Link
-                  to={`https://wa.me/${formatPhoneNumber(lead.Contact)}?text=${encodeURIComponent(`Hi ${lead.Name}! 👋\nWelcome to ${hotelName} 🌐\nHow can I assist you today?`)}`}
+                <div
+                  // to={`https://wa.me/${formatPhoneNumber(
+                  //   lead.Contact
+                  // )}?text=${encodeURIComponent(
+                  //   `Hi ${lead.Name}! 👋\nWelcome to ${hotelName} 🌐\nHow can I assist you today?`
+                  // )}`}
                   target="_blank"
                   className="py-2 px-3 gap-2 bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
+                  onClick={() => setQuickResponePopup(true)}
                 >
                   <FaWhatsapp size={20} className="" /> send quick response
-                </Link>
+                </div>
               </div>
             )}
           </div>
@@ -315,6 +323,11 @@ const LeadPopup = ({
           </div>
         </div>
       </div>
+
+      <QuickResponsePopup
+        open={quickResponePopup}
+        setOpen={setQuickResponePopup}
+      />
     </div>
   );
 };
