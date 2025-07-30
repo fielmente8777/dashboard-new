@@ -119,8 +119,8 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/ad-leads`]: <AdsLeadsUsingGoogleSheet />,
-    [`${BASE_PATH}/${hid}/enquiries-management/ad-analytics`]: <AdLeadsAnalytics />,
+    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: <AdsLeadsUsingGoogleSheet />,
+    [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: <AdLeadsAnalytics />,
     [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
 
     // Human Resources Management

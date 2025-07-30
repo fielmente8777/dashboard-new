@@ -74,13 +74,13 @@ export const SidebarData = [
         icon: <FaCircleQuestion size={18} />,
       },
       {
-        name: "Ad Leads",
-        link: `enquiries-management/ad-leads`,
+        name: "Meta Leads",
+        link: `enquiries-management/meta-leads`,
         icon: <FaCircleQuestion size={18} />,
       },
       {
-        name: "Ads Performance",
-        link: `enquiries-management/ad-analytics`,
+        name: "Meta Ads Performance",
+        link: `enquiries-management/meta-analytics`,
         icon: <FaCircleQuestion size={18} />,
       },
     ],

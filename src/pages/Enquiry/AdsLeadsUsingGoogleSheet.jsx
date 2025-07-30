@@ -118,7 +118,7 @@ const AdsLeadsUsingGoogleSheet = () => {
       // alert("Some Problem update token");
     }
   };
-  const updateAccessTokenDb = async (gtoken) => {
+  const updateAccessTokenDb = async (gtoken, refreshToken) => {
     try {
       const response = await fetch(
         `${BASE_URL}/leadmanagement/updategoogletokenleadmanagement`,
@@ -131,11 +131,13 @@ const AdsLeadsUsingGoogleSheet = () => {
           body: JSON.stringify({
             token: localStorage.getItem("token"),
             googleToken: gtoken,
+            refreshToken: refreshToken,
           }),
         }
       );
 
       const json = await response.json();
+      console.log(json)
 
       FetchSpreadSheetFromDb();
     } catch {
@@ -242,10 +244,12 @@ const AdsLeadsUsingGoogleSheet = () => {
 
       const tokenData = await response.json();
       // console.log("Token Data:", tokenData.access_token);
-      // console.log("Token Data:", tokenData);
+      console.log("Token Data:", tokenData);
+      const accessToken = tokenData.access_token; // <-- 🟡 important
+      const refreshToken = tokenData.refresh_token; // <-- 🟡 important
 
-      setsheetaccessToken(tokenData.access_token);
-      updateAccessTokenDb(tokenData.access_token);
+      setsheetaccessToken(accessToken);
+      updateAccessTokenDb(accessToken, refreshToken);
 
       if (Spreadsheet.length != 0) {
         FetchSheetofSpreadSheet(Spreadsheet[0].id);
@@ -700,6 +704,7 @@ const AdsLeadsUsingGoogleSheet = () => {
               scope="https://www.googleapis.com/auth/spreadsheets"
               discoveryDocs="claims_supported"
               access_type="offline"
+              prompt="consent"
               onResolve={({ provider, data }) => {
                 handleConnectGoogleTool(provider, data);
               }}
