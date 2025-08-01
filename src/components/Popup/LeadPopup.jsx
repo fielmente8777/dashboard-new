@@ -327,6 +327,8 @@ const LeadPopup = ({
       <QuickResponsePopup
         open={quickResponePopup}
         setOpen={setQuickResponePopup}
+        lead={lead}
+        hotelName={hotelName}
       />
     </div>
   );
