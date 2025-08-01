@@ -59,6 +59,7 @@ import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
 import Instagram from "../ConversationalTool/Instagram/Instagram";
 import Facebook from "../ConversationalTool/Facebook/Facebook";
+import Eazbot from "../Eazobot/Eazbot";
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -139,7 +140,7 @@ const DynamicPage = () => {
 
     // Feedback, Reports, Analytics, Help
     [`${BASE_PATH}/${hid}/lead-form/lead-gen-form`]: <LeadGenForm />,
-    [`${BASE_PATH}/${hid}/eazobot`]: <Eazobot />,
+    [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
     [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
     [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,

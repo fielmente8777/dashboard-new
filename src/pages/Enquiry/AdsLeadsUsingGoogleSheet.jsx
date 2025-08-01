@@ -372,7 +372,7 @@ const AdsLeadsUsingGoogleSheet = () => {
   return (
     <div className="bg-white">
       <div className="py-4">
-        <div className="flex  justify-end gap-2 px-2 items-center mb-4">
+        {/* <div className="flex  justify-end gap-2 px-2 items-center mb-4">
           {sheetaccessToken !== "None" && (
             <div className="rounded-full flex items-center gap-1 text-green-800 border px-3 py-2 border-gray-500 shadow-md">
               <p className="font-semibold">Connected</p>
@@ -407,8 +407,8 @@ const AdsLeadsUsingGoogleSheet = () => {
           ) : (
             ""
           )}
-        </div>
-
+        </div> */}
+        {/* 
         {sheetaccessToken !== "None" && (
           <div className="flex justify-between bg-primary p-2 gap-5 items-center  text-white rounded-sm">
             {sheetaccessToken !== "None" ? (
@@ -489,7 +489,7 @@ const AdsLeadsUsingGoogleSheet = () => {
               ""
             )}
           </div>
-        )}
+        )} */}
       </div>
 
       {sheetaccessToken !== "None" ? (

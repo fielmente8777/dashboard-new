@@ -85,7 +85,12 @@ export const SidebarData = [
       },
     ],
   },
-
+  {
+    name: "Eazbot",
+    key: "Eazobot",
+    link: `eazbot`,
+    icon: <IoIosChatbubbles size={24} />
+  },
   {
     name: "Booking Engine",
     key: "Booking Engine",
