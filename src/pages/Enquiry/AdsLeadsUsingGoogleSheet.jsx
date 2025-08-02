@@ -372,8 +372,8 @@ const AdsLeadsUsingGoogleSheet = () => {
   return (
     <div className="bg-white">
       <div className="py-4">
-        {/* <div className="flex  justify-end gap-2 px-2 items-center mb-4">
-          {sheetaccessToken !== "None" && (
+        <div className="flex justify-between gap-2 border-b-2 pb-2 w-full px-2 items-center mb-4">
+          {/* {sheetaccessToken !== "None" && (
             <div className="rounded-full flex items-center gap-1 text-green-800 border px-3 py-2 border-gray-500 shadow-md">
               <p className="font-semibold">Connected</p>
 
@@ -381,11 +381,32 @@ const AdsLeadsUsingGoogleSheet = () => {
                 <IoMdCheckmarkCircle />
               </span>
             </div>
-          )}
+          )} */}
+
+          <div>
+
+            {sheetaccessToken !== "None" && !tokenExpire && <p className="font-medium text-lg  text-gray-500">
+              {Spreadsheet[0]?.Name}
+
+            </p>
+            }
+
+
+            {/* {Spreadsheet.reverse().map((spread) => (
+              <option
+                key={spread.id}
+                value={spread.id}
+                className="py-4 text-gray-700"
+              >
+                {spread.Name}
+              </option>
+            ))} */}
+
+          </div>
 
           {sheetaccessToken !== "None" && tokenExpire ? (
             <button
-              className="bg-yellow-400 font-medium px-3 py-2 rounded-full text-gray-800 flex items-center gap-1"
+              className="bg-yellow-400 font-medium px-4 py-2 rounded-full text-gray-800 flex items-center gap-1"
               onClick={() => {
                 reconnect();
               }}
@@ -397,17 +418,17 @@ const AdsLeadsUsingGoogleSheet = () => {
             </button>
           ) : sheetaccessToken !== "None" && !tokenExpire ? (
             <button
-              className=" bg-green-600 px-3 py-2 font-medium text-white rounded-full"
-              onClick={() => {
-                updateSheetData();
-              }}
+              className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
+            // onClick={() => {
+            //   updateSheetData();
+            // }}
             >
-              Update Sheet
+              <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>Connected
             </button>
           ) : (
             ""
           )}
-        </div> */}
+        </div>
         {/* 
         {sheetaccessToken !== "None" && (
           <div className="flex justify-between bg-primary p-2 gap-5 items-center  text-white rounded-sm">

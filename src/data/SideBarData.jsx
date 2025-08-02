@@ -39,6 +39,8 @@ import { MdOutlineFreeCancellation } from "react-icons/md";
 import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
+import { SiGoogleadsense } from "react-icons/si";
+import { SiGoogleads } from "react-icons/si";
 
 export const SidebarData = [
   {
@@ -78,17 +80,17 @@ export const SidebarData = [
       {
         name: "Enquiries",
         link: `enquiries-management/enquiries`,
-        icon: <FaCircleQuestion size={18} />,
+        icon: <MdLeaderboard size={18} />,
       },
       {
         name: "Meta Leads",
         link: `enquiries-management/meta-leads`,
-        icon: <FaCircleQuestion size={18} />,
+        icon: <SiGoogleads size={18} />,
       },
       {
         name: "Meta Ads Performance",
         link: `enquiries-management/meta-analytics`,
-        icon: <FaCircleQuestion size={18} />,
+        icon: <SiGoogleadsense size={18} />,
       },
     ],
   },
