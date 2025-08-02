@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { formatPhoneNumber } from "./LeadPopup";
+import { MdClose } from "react-icons/md";
 
 // Step 1: Define channels
 const channels = [
@@ -53,16 +54,15 @@ const templatesByChannel = {
 const ChannelOption = ({ channel, selected, onSelect }) => (
   <div
     onClick={() => onSelect(channel.id)}
-    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${
-      selected === channel.id ? "bg-primary text-white" : "bg-white"
-    } border-primary/75`}
+    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${selected === channel.id ? "bg-primary text-white" : "bg-white"
+      } border-primary/75`}
   >
     <div>
       <div className="flex gap-2 items-center">
         <span>{channel.icon}</span>
         <p>{channel.name}</p>
       </div>
-      <p>{channel.detail}</p>
+      {/* <p>{channel.detail}</p> */}
     </div>
     <input type="radio" checked={selected === channel.id} readOnly />
   </div>
@@ -77,11 +77,10 @@ const TemplateCard = ({ template, selected, onSelect }) => (
     </div>
     <button
       onClick={() => onSelect(template)}
-      className={`px-4 py-2 rounded ${
-        selected?.id === template.id
-          ? "bg-green-600 text-white"
-          : "bg-blue-500 text-white hover:bg-blue-600"
-      }`}
+      className={`px-4 py-2 rounded ${selected?.id === template.id
+        ? "bg-green-600 text-white"
+        : "bg-blue-500 text-white hover:bg-blue-600"
+        }`}
     >
       {selected?.id === template.id ? "Selected" : "Select"}
     </button>
@@ -101,13 +100,13 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
     //   return;
     // }
 
-    console.log(selectedTemplate);
+    // console.log(selectedTemplate);
 
-    alert(
-      `Sending via ${channels[selectedChannel].name}:\n${selectedTemplate.content}`
-    );
+    // alert(
+    //   `Sending via ${channels[selectedChannel].name}:\n${selectedTemplate.content}`
+    // );
 
-    console.log(lead.Contact);
+    // console.log(lead.Contact);
 
     window.open(
       `https://wa.me/${formatPhoneNumber(
@@ -122,6 +121,8 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
 
   if (!open) return null;
 
+  // console.log(lead)
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-white rounded shadow-lg flex min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
@@ -129,7 +130,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
         <div className="w-64 bg-gray-100 p-4 space-y-6">
           <div>
             <h2 className="text-lg font-bold">Send Quick Response to</h2>
-            <p className="text-gray-700">Hem Bhadur</p>
+            <p className="text-gray-700">{lead?.Name}</p>
           </div>
 
           <div>
@@ -188,7 +189,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
 
         {/* Cross Icon */}
         <div className="absolute right-4 top-1" onClick={() => setOpen(false)}>
-          <span className="text-lg font-semibold">X</span>
+          <span className="text-lg font-semibold"><MdClose /></span>
         </div>
       </div>
     </div>
