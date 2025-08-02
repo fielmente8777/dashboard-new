@@ -35,7 +35,7 @@ import SocialMedia from "../Social/SocialMedia";
 import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 import BookingEngine from "../BookingEngine/BookingEngine";
 import BookingSetup from "../BookingEngine/BookingSetup";
-import AdsPackages from "../BookingEngine/AdsPackages"
+import AdsPackages from "../BookingEngine/AdsPackages";
 import ReservationDesk from "../ReservationDesk/ReservationDesk";
 import Website from "../CustomWebsite/Website";
 import OTAListing from "../OTA/OTAListing";
@@ -59,7 +59,9 @@ import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
 import Instagram from "../ConversationalTool/Instagram/Instagram";
 import Facebook from "../ConversationalTool/Facebook/Facebook";
-import Eazbot from "../Eazobot/Eazbot";
+// import Eazbot from "../Eazobot/Eazbot";
+import Eazbot from "../Eazobot/Eazobot";
+
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -91,15 +93,9 @@ const DynamicPage = () => {
       <RoomsAndInventory />
     ),
 
-    [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: (
-      <AdsPackages />
-    ),
-    [`${BASE_PATH}/${hid}/booking-engine/price-packages`]: (
-      <PricePackage />
-    ),
-    [`${BASE_PATH}/${hid}/booking-engine/customization`]: (
-      <BookingCustom />
-    ),
+    [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: <AdsPackages />,
+    [`${BASE_PATH}/${hid}/booking-engine/price-packages`]: <PricePackage />,
+    [`${BASE_PATH}/${hid}/booking-engine/customization`]: <BookingCustom />,
 
     // GRM
     [`${BASE_PATH}/${hid}/grm/analytics`]: <GrmAnalytics />,
@@ -107,7 +103,6 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/grm/emergency-request`]: <EmergencyRequest />,
     [`${BASE_PATH}/${hid}/grm/settings`]: <Settings />,
     [`${BASE_PATH}/${hid}/grm/guest-feedback`]: <GrmFeedback />,
-
 
     // newsletter
     [`${BASE_PATH}/${hid}/newsletter`]: <Newsletter />,
@@ -120,8 +115,12 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: <AdsLeadsUsingGoogleSheet />,
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: <AdLeadsAnalytics />,
+    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
+      <AdsLeadsUsingGoogleSheet />
+    ),
+    [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: (
+      <AdLeadsAnalytics />
+    ),
     [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
 
     // Human Resources Management
@@ -146,12 +145,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,
     [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
 
-
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
     [`${BASE_PATH}/${hid}/channel/wa/chat`]: <WhatsApp />,
     [`${BASE_PATH}/${hid}/channel/ig/chat`]: <Instagram />,
     [`${BASE_PATH}/${hid}/channel/fb/chat`]: <Facebook />,
-
 
     [`${BASE_PATH}/${hid}/themes-manager`]: <ThemesManager />,
     [`${BASE_PATH}/${hid}/channel-manager`]: <ChannelManager />,
@@ -177,12 +174,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/performance-marketing`]: <PerformanceMarketing />,
     [`${BASE_PATH}/${hid}/pr`]: <PublicRelation />,
 
-
     // link tree setup
     [`${BASE_PATH}/${hid}/linktree-setup`]: <Linktree />,
 
-
-    // google listing 
+    // google listing
     [`${BASE_PATH}/${hid}/google-listing`]: <GMBProfile />,
     [`${BASE_PATH}/${hid}/google-map-itrations`]: <GoogleMapItiration />,
 

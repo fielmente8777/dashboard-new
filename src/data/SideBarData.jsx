@@ -1,4 +1,11 @@
-import { FaFilePdf, FaWhatsappSquare, FaThemeco, FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
+import {
+  FaFilePdf,
+  FaWhatsappSquare,
+  FaThemeco,
+  FaWhatsapp,
+  FaInstagram,
+  FaFacebook,
+} from "react-icons/fa";
 import {
   FaCircleQuestion,
   FaCodePullRequest,
@@ -87,9 +94,9 @@ export const SidebarData = [
   },
   {
     name: "Eazbot",
-    key: "Eazobot",
+    // key: "Eazobot",
     link: `eazbot`,
-    icon: <IoIosChatbubbles size={24} />
+    icon: <IoIosChatbubbles size={24} />,
   },
   {
     name: "Booking Engine",
@@ -221,11 +228,6 @@ export const SidebarData = [
     ],
   },
 
-
-
-
-
-
   {
     name: "Human Resources Management",
     link: `human-resources-management`,
@@ -315,8 +317,6 @@ export const SidebarData = [
   //   link: `social-media`,
   //   icon: <TiSocialSkype size={24} />,
   // },
-
-
 
   // {
   //   name: "Custom Website",
