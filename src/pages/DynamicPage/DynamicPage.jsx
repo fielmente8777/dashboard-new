@@ -61,6 +61,7 @@ import Instagram from "../ConversationalTool/Instagram/Instagram";
 import Facebook from "../ConversationalTool/Facebook/Facebook";
 // import Eazbot from "../Eazobot/Eazbot";
 import Eazbot from "../Eazobot/Eazobot";
+import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -146,6 +147,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
 
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
+    [`${BASE_PATH}/${hid}/channel/eb/chat`]: <EazbotChat />,
     [`${BASE_PATH}/${hid}/channel/wa/chat`]: <WhatsApp />,
     [`${BASE_PATH}/${hid}/channel/ig/chat`]: <Instagram />,
     [`${BASE_PATH}/${hid}/channel/fb/chat`]: <Facebook />,

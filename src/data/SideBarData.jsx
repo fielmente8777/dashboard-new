@@ -55,6 +55,11 @@ export const SidebarData = [
     icon: <IoIosChatbubbles size={24} />,
     subLinks: [
       {
+        name: "Eazbot",
+        link: `channel/eb/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
+      {
         name: "WhatsApp",
         link: `channel/wa/chat`,
         icon: <FaWhatsapp size={16} />,

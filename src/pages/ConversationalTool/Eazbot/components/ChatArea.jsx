@@ -1,0 +1,102 @@
+import React from "react";
+import { BsImage } from "react-icons/bs";
+
+const ChatArea = ({ chat, messages }) => {
+  console.log(messages)
+  if (!chat)
+    return <div className="flex-1">Select a chat to start messaging</div>;
+  return (
+    <div className="flex-1 flex flex-col bg-gray-50 ">
+      {/* Chat Header */}
+      <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">
+            {/* {selectedContact} */}
+            (+919328405012)
+          </h2>
+          <button className="text-teal-100 hover:text-white text-sm">
+            Chat Profile
+          </button>
+        </div>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="flex-1 p-6 overflow-y-auto scrollbar-hidden">
+        <div className="flex justify-center mb-4">
+          <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
+            22/07/2025
+          </span>
+        </div>
+
+        {/* Message */}
+        {/* {[1, 2, 3, 4, 5].map((item) => (
+          <div key={item} className="flex items-start mb-6">
+            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium mr-3">
+              K
+            </div>
+            <div className="bg-teal-600 rounded-2xl rounded-tl-sm p-4 max-w-sm text-white">
+              <div className="flex items-center text-teal-100 text-xs mb-2">
+                <BsImage className="mr-1" />
+                Message via ad
+              </div>
+              <div className="bg-white rounded-lg p-2 mb-3">
+                <img
+                  src="https://plus.unsplash.com/premium_photo-1676823547752-1d24e8597047?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bGl2aW5nJTIwcm9vbXxlbnwwfHwwfHx8MA%3D%3D"
+                  alt="Resort"
+                  className="w-full h-40 object-cover rounded"
+                />
+              </div>
+              <p className="text-sm font-medium mb-2">
+                Looking for your next goa ge...
+              </p>
+              <p className="text-xs text-teal-100 mb-2">
+                Escape to Nature. Indulge in Lu...
+              </p>
+              <p className="text-xs text-teal-100 mb-2">fb.me</p>
+              <p className="text-xs text-teal-100 mb-3">
+                Ad ID: 120225047748280256
+              </p>
+              <p className="text-sm">Is there any upcoming packages?</p>
+            </div>
+          </div>
+        ))} */}
+        {messages?.map((message, index) => {
+          return (
+            <div key={index}>
+
+              {message.senderType === "bot" && <div className="flex justify-end">
+                <div className="bg-teal-600 rounded-2xl rounded-tr-sm p-4 text-white border text-left ">
+                  {message?.message}
+                </div></div>}
+
+
+              {message.senderType === "guest" && <div className="flex max-w-sm">
+                <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
+                  {message?.message}
+                </div></div>}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Chat Input Area */}
+      {/* <div className="bg-white border-t border-gray-200 p-4 flex justify-center">
+                <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                    Intervene
+                </button>
+            </div> */}
+      <div className="bg-white border-t border-gray-200 p-4 flex items-center">
+        <input
+          type="text"
+          placeholder="Type a message..."
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 mr-4"
+        />
+        <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+          Send
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ChatArea;
