@@ -54,8 +54,9 @@ const templatesByChannel = {
 const ChannelOption = ({ channel, selected, onSelect }) => (
   <div
     onClick={() => onSelect(channel.id)}
-    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${selected === channel.id ? "bg-primary text-white" : "bg-white"
-      } border-primary/75`}
+    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${
+      selected === channel.id ? "bg-primary text-white" : "bg-white"
+    } border-primary/75`}
   >
     <div>
       <div className="flex gap-2 items-center">
@@ -77,10 +78,11 @@ const TemplateCard = ({ template, selected, onSelect }) => (
     </div>
     <button
       onClick={() => onSelect(template)}
-      className={`px-4 py-2 rounded ${selected?.id === template.id
-        ? "bg-green-600 text-white"
-        : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
+      className={`px-4 py-2 rounded ${
+        selected?.id === template.id
+          ? "bg-green-600 text-white"
+          : "bg-blue-500 text-white hover:bg-blue-600"
+      }`}
     >
       {selected?.id === template.id ? "Selected" : "Select"}
     </button>
@@ -95,27 +97,27 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
   // console.log(lead);
 
   const handleSend = () => {
-    // if (!selectedChannel || !selectedTemplate) {
-    //   alert("Please select a channel and template first.");
-    //   return;
-    // }
+    const phone = formatPhoneNumber(lead.Contact);
+    const message = encodeURIComponent(selectedTemplate?.content?.trim());
+    console.log(phone);
+    // const message =
+    //   "Hi!👋 Welcome to our service.\nHow can I assist you today?";
 
-    // console.log(selectedTemplate);
+    if (!phone || !message) {
+      console.error("Phone number or message is missing");
+      return;
+    }
 
-    // alert(
-    //   `Sending via ${channels[selectedChannel].name}:\n${selectedTemplate.content}`
-    // );
+    const isMobile =
+      typeof window !== "undefined" &&
+      /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+      !window.matchMedia("(hover: hover)").matches;
 
-    // console.log(lead.Contact);
+    const url = isMobile
+      ? `https://api.whatsapp.com/send?phone=${phone}&text=${message}` // Opens app
+      : `https://web.whatsapp.com/send?phone=${phone}&text=${message}`; // Opens Web
 
-    window.open(
-      `https://wa.me/${formatPhoneNumber(
-        lead.Contact
-      )}?text=${encodeURIComponent(
-        selectedTemplate.content
-        // `Hi ${lead.Name}! 👋\nWelcome to ${hotelName} 🌐\nHow can I assist you today?`
-      )}`
-    );
+    window.open(url, "_blank");
     setOpen(false);
   };
 
@@ -161,7 +163,12 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
               <textarea
                 className="w-full h-48 border p-3 rounded"
                 value={selectedTemplate.content}
-                readOnly
+                onChange={(e) =>
+                  setSelectedTemplate({
+                    ...selectedTemplate,
+                    content: e.target.value,
+                  })
+                }
               />
               <button
                 className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
@@ -189,7 +196,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
 
         {/* Cross Icon */}
         <div className="absolute right-4 top-1" onClick={() => setOpen(false)}>
-          <span className="text-lg font-semibold"><MdClose /></span>
+          <span className="text-lg font-semibold">
+            <MdClose />
+          </span>
         </div>
       </div>
     </div>
