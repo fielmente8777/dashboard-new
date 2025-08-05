@@ -19,3 +19,21 @@ export const getChatbotData = async ({ ndid, hid }) => {
     throw error;
   }
 };
+
+export const createChatbotData = async ({ hid, chatbotData }) => {
+  try {
+    const response = await fetch(`${BASE_URL}/leadeazbot/create?hid=${hid}`, {
+      method: "POST", // or "POST" if you're sending data
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(chatbotData),
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};

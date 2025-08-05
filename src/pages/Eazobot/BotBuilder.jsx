@@ -4,7 +4,7 @@ import { IoIosCopy } from "react-icons/io";
 
 const colors = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
-const BotBuilderStep = ({ chatbotData, setChatbotData }) => {
+const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   const [openStep, setOpenStep] = useState(null);
   const [config, setConfig] = useState({
     name: "Lotus CRM",
@@ -27,13 +27,12 @@ const BotBuilderStep = ({ chatbotData, setChatbotData }) => {
   `,
   });
 
-  console.log(chatbotData);
-
   const colorInputRef = useRef(null);
 
   const isCustom = !colors.includes(config.color);
 
   const toggleStep = (step) => {
+    // setIsEdit(true);
     setOpenStep(openStep === step ? null : step);
   };
 
@@ -83,9 +82,10 @@ const BotBuilderStep = ({ chatbotData, setChatbotData }) => {
                 {colors.map((color) => (
                   <button
                     key={color}
-                    onClick={() =>
-                      setChatbotData((prev) => ({ ...prev, bgcolor: color }))
-                    }
+                    onClick={() => {
+                      setIsEdit(true);
+                      setChatbotData((prev) => ({ ...prev, bgcolor: color }));
+                    }}
                     className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                       config.color === color
                         ? "border-gray-400"
@@ -116,12 +116,13 @@ const BotBuilderStep = ({ chatbotData, setChatbotData }) => {
                       ref={colorInputRef}
                       type="color"
                       value={config.color}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        setIsEdit(true);
                         setChatbotData((prev) => ({
                           ...prev,
                           bgcolor: e.target.value,
-                        }))
-                      }
+                        }));
+                      }}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </button>
@@ -138,12 +139,13 @@ const BotBuilderStep = ({ chatbotData, setChatbotData }) => {
                 <input
                   type="text"
                   value={chatbotData?.welcome_message}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    setIsEdit(true);
                     setChatbotData((prev) => ({
                       ...prev,
                       welcome_message: e.target.value,
-                    }))
-                  }
+                    }));
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Enter greeting message"
                 />

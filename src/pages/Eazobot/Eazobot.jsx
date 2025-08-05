@@ -4,7 +4,10 @@ import BotProfileStep from "./BotProfile";
 import BotConfigStep from "./BotConfig";
 import BotInstallStep from "./BotInstallStep";
 import StepIndicator from "./StepIndicator";
-import { getChatbotData } from "../../services/api/chatbot.api";
+import {
+  createChatbotData,
+  getChatbotData,
+} from "../../services/api/chatbot.api";
 
 const steps = [
   { id: 0, title: "Bot Builder" },
@@ -31,11 +34,24 @@ const Eazobot = () => {
     avatar_url: "",
     enable_live_chat: false,
     show_typing_indicator: false,
-    time_interval: 0,
+    time_interval: "",
     show_eazotel_branding: false,
     bot_type: "",
     chat_flow: [],
   });
+
+  const [isEdit, setIsEdit] = useState(false);
+
+  const handlePublish = async () => {
+    try {
+      const chatbotFormData = {
+        hid: "4534543",
+        chatbotData,
+      };
+      const data = await createChatbotData(chatbotFormData);
+      console.log(data);
+    } catch (error) {}
+  };
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -56,12 +72,25 @@ const Eazobot = () => {
           <BotBuilderStep
             chatbotData={chatbotData}
             setChatbotData={setChatbotData}
+            setIsEdit={setIsEdit}
           />
         );
       case 1:
-        return <BotProfileStep />;
+        return (
+          <BotProfileStep
+            chatbotData={chatbotData}
+            setChatbotData={setChatbotData}
+            setIsEdit={setIsEdit}
+          />
+        );
       case 2:
-        return <BotConfigStep />;
+        return (
+          <BotConfigStep
+            chatbotData={chatbotData}
+            setChatbotData={setChatbotData}
+            setIsEdit={setIsEdit}
+          />
+        );
       case 3:
         return <BotInstallStep />;
       default:
@@ -79,11 +108,11 @@ const Eazobot = () => {
       ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
       hid: "4534543",
     });
+
     if (data?.Status) {
       setChatbotData((prev) => ({
         ...prev,
         ...data?.Data,
-        bgcolor: data?.Data?.theme?.bg_color,
       }));
     }
   };
@@ -95,11 +124,17 @@ const Eazobot = () => {
   return (
     <div className="max-w-7xl w-full mx-auto py-6 px-2">
       <div>
-        <div className="flex justify-end">
-          <button className="border border-primary text-primary px-4 py-2 mb-4 rounded-sm hover:bg-primary hover:text-white transition-all duration-200">
-            Publish
-          </button>
-        </div>
+        {isEdit && (
+          <div className="flex justify-end">
+            <button
+              className="border border-primary text-primary px-4 py-2 mb-4 rounded-sm hover:bg-primary hover:text-white transition-all duration-200"
+              onClick={handlePublish}
+            >
+              Publish
+            </button>
+          </div>
+        )}
+
         <StepIndicator steps={updatedSteps} currentStep={currentStep} />
       </div>
 
