@@ -21,6 +21,7 @@ export const getChatbotData = async ({ ndid, hid }) => {
 };
 
 export const createChatbotData = async ({ hid, chatbotData }) => {
+  console.log("vbnkml,", chatbotData)
   try {
     const response = await fetch(`${BASE_URL}/leadeazbot/create?hid=${hid}`, {
       method: "POST", // or "POST" if you're sending data

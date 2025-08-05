@@ -44,19 +44,21 @@ const Eazobot = () => {
 
   const handlePublish = async () => {
     try {
-      const chatbotFormData = {
-        hid: "4534543",
-        chatbotData,
-      };
+      // const chatbotFormData = {
+      //   hid: "4534543",
+      //   chatbotData,
+      // };
+      alert("hjgjlk")
+      console.log("andjfdslfbdbjlb")
       const data = await createChatbotData({
         hid: "4534543",
         chatbotData: {
           bot_name: "Your Bot is ud",
           email: "bot@example.com",
           contact: "+1234567890",
-          description: "This is a demo chatbot for support.",
+          description: "This",
           welcome_message: "Hello! How can ?",
-          fallback_message: "I'm sorry, I didn't understand that?",
+          fallback_message: "",
           chat_terminate_message: "",
           bgcolor: "#ffffff",
           textcolor: "#000000",
@@ -70,12 +72,12 @@ const Eazobot = () => {
           show_eazotel_branding: true,
           bot_type: "lead",
           chat_flow: [
-            { key: "name", question: "What's your Name?", type: "text" },
+            { key: "name", question: "What's you?", type: "text" },
           ],
         },
       });
       console.log(data);
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const handleNext = () => {
@@ -169,11 +171,10 @@ const Eazobot = () => {
         <button
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === 0
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
+          className={`px-4 py-2 rounded text-white transition ${currentStep === 0
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-primary hover:bg-primary/80"
+            }`}
         >
           Previous
         </button>
@@ -181,11 +182,10 @@ const Eazobot = () => {
         <button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === steps.length
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
+          className={`px-4 py-2 rounded text-white transition ${currentStep === steps.length
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-primary hover:bg-primary/80"
+            }`}
         >
           {currentStep === steps.length - 1 ? "Finish" : "Next"}
         </button>
