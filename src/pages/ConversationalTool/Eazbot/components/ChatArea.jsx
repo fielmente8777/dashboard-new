@@ -1,8 +1,37 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { BsImage } from "react-icons/bs";
+import axios from "axios"
 
 const ChatArea = ({ chat, messages }) => {
+  const chatEndRef = useRef(null);
+
+  const [responseMessage, setResponseMessage] = useState("");
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
   console.log(messages)
+
+
+  const handleSubmit = async () => {
+    try {
+
+      const sendMessageResponse = await axios.post('http://localhost:4000/api/chat/send-message',
+        {
+          ndid: localStorage.getItem('ndid'),                // unique website/client ID
+          guestId: "5617a084-5783-4bac-b299-bdb6e8e471aa",              // guest user ID
+          botId: localStorage.getItem('ndid'),              // admin ID (can be placeholder initially)
+          senderId: localStorage.getItem('ndid'),           // who is sending this message
+          senderType: "bot",             // "guest", "admin", or "bot"
+          message: responseMessage
+        });
+
+
+      console.log(sendMessageResponse)
+    } catch (error) {
+      console.error("Error sending message", error.message);
+    }
+  }
   if (!chat)
     return <div className="flex-1">Select a chat to start messaging</div>;
   return (
@@ -62,21 +91,24 @@ const ChatArea = ({ chat, messages }) => {
         ))} */}
         {messages?.map((message, index) => {
           return (
-            <div key={index}>
+            <div key={index} >
 
-              {message.senderType === "bot" && <div className="flex justify-end">
+              {message.senderType === "bot" && <div className="flex justify-end mt-1">
                 <div className="bg-teal-600 rounded-2xl rounded-tr-sm p-4 text-white border text-left ">
                   {message?.message}
-                </div></div>}
+                </div>
+              </div>}
 
 
-              {message.senderType === "guest" && <div className="flex max-w-sm">
+              {message.senderType === "guest" && <div className="flex max-w-sm mt-1">
                 <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
                   {message?.message}
                 </div></div>}
             </div>
           )
         })}
+        <div ref={chatEndRef} />
+
       </div>
 
       {/* Chat Input Area */}
@@ -88,10 +120,12 @@ const ChatArea = ({ chat, messages }) => {
       <div className="bg-white border-t border-gray-200 p-4 flex items-center">
         <input
           type="text"
+          value={responseMessage}
+          onChange={(e) => setResponseMessage(e.target.value)}
           placeholder="Type a message..."
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 mr-4"
         />
-        <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        <button onClick={handleSubmit} className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
           Send
         </button>
       </div>
