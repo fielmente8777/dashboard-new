@@ -40,6 +40,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     navigator.clipboard.writeText(config);
   };
 
+  console.log(chatbotData);
   return (
     <div className="w-full mx-auto p-6 bg-gray-50 rounded-lg shadow-lg space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">Build Your Chatbot</h2>
@@ -106,7 +107,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                     onClick={() => colorInputRef.current?.click()}
                     className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition relative`}
                     style={{
-                      backgroundColor: chatbotData?.bgcolor,
+                      backgroundColor: chatbotData?.theme?.bg_color,
                       mixBlendMode: "multiply",
                       borderColor: isCustom ? "#9CA3AF" : "transparent", // gray-400 if custom
                     }}
@@ -115,7 +116,8 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                     <input
                       ref={colorInputRef}
                       type="color"
-                      value={config.color}
+                      // value={chatbotData?.bgcolor || config.color}
+                      value={"#4F46E5"}
                       onChange={(e) => {
                         setIsEdit(true);
                         setChatbotData((prev) => ({
@@ -185,7 +187,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                 </div>
                 <div
                   className="absolute -bottom-8 -right-2 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg"
-                  style={{ backgroundColor: chatbotData?.bgcolor }}
+                  style={{ backgroundColor: chatbotData?.bgcolor || colors[0] }}
                 >
                   <FiMessageSquare size={20} />
                 </div>

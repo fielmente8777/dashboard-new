@@ -1,20 +1,20 @@
 import React, { useState } from "react";
 
 const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
-  const [form, setForm] = useState({
-    terminateMessage: "",
-    fallbackMessage: "",
-    showBranding: false,
-    showTyping: false,
-    timeInterval: "",
-    enableLiveChat: false,
-    isActive: false,
-  });
+  // const [form, setForm] = useState({
+  //   terminateMessage: "",
+  //   fallbackMessage: "",
+  //   showBranding: false,
+  //   showTyping: false,
+  //   timeInterval: "",
+  //   enableLiveChat: false,
+  //   isActive: false,
+  // });
 
   const handleChange = (e) => {
     setIsEdit(true);
     const { name, value } = e.target;
-    setChatbotData({ ...form, [name]: value });
+    setChatbotData({ ...chatbotData, [name]: value });
   };
 
   const handleToggle = (e) => {
@@ -34,7 +34,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           </label>
           <input
             type="text"
-            name="terminate_message"
+            name="chat_terminate_message"
             value={chatbotData?.chat_terminate_message}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
