@@ -48,7 +48,32 @@ const Eazobot = () => {
         hid: "4534543",
         chatbotData,
       };
-      const data = await createChatbotData(chatbotFormData);
+      const data = await createChatbotData({
+        hid: "4534543",
+        chatbotData: {
+          bot_name: "Your Bot is ud",
+          email: "bot@example.com",
+          contact: "+1234567890",
+          description: "This is a demo chatbot for support.",
+          welcome_message: "Hello! How can ?",
+          fallback_message: "I'm sorry, I didn't understand that?",
+          chat_terminate_message: "",
+          bgcolor: "#ffffff",
+          textcolor: "#000000",
+          buttoncolor: "#007bff",
+          buttontextcolor: "#ffffff",
+          active: true,
+          avatar_url: "https://yourcdn.com/bot-avatar.png",
+          enable_live_chat: false,
+          show_typing_indicator: true,
+          time_interval: 40000,
+          show_eazotel_branding: true,
+          bot_type: "lead",
+          chat_flow: [
+            { key: "name", question: "What's your Name?", type: "text" },
+          ],
+        },
+      });
       console.log(data);
     } catch (error) {}
   };
