@@ -165,6 +165,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                 value={editQuestion.key}
                 onChange={handleQuestionEditChange}
                 className="w-full px-4 py-2 border rounded-md"
+                disabled
               />
               <input
                 type="text"
@@ -179,6 +180,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                 value={editQuestion.type}
                 onChange={handleQuestionEditChange}
                 className="w-full px-4 py-2 border rounded-md"
+                disabled
               >
                 {INPUT_TYPES.map((type) => (
                   <option key={type} value={type}>
