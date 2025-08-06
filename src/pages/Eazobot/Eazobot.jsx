@@ -69,9 +69,7 @@ const Eazobot = () => {
           time_interval: chatbotData.time_interval,
           show_eazotel_branding: chatbotData.show_eazotel_branding,
           bot_type: "lead",
-          chat_flow: [
-            { key: "name", question: "What's your Name?", type: "text" },
-          ],
+          chat_flow: chatbotData?.chat_flow,
         },
       };
 
