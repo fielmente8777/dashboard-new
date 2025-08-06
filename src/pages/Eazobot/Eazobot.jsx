@@ -8,6 +8,8 @@ import {
   createChatbotData,
   getChatbotData,
 } from "../../services/api/chatbot.api";
+import Loader from "../../components/Loader";
+import Swal from "sweetalert2";
 
 const steps = [
   { id: 0, title: "Bot Builder" },
@@ -39,45 +41,51 @@ const Eazobot = () => {
     bot_type: "",
     chat_flow: [],
   });
+  const [isLoader, setIsLoader] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
 
   const handlePublish = async () => {
+    setIsLoader(true);
     try {
-      // const chatbotFormData = {
-      //   hid: "4534543",
-      //   chatbotData,
-      // };
-      alert("hjgjlk")
-      console.log("andjfdslfbdbjlb")
-      const data = await createChatbotData({
+      const chatbotFormData = {
         hid: "4534543",
         chatbotData: {
-          bot_name: "Your Bot is ud",
-          email: "bot@example.com",
-          contact: "+1234567890",
-          description: "This",
-          welcome_message: "Hello! How can ?",
-          fallback_message: "",
-          chat_terminate_message: "",
-          bgcolor: "#ffffff",
-          textcolor: "#000000",
-          buttoncolor: "#007bff",
-          buttontextcolor: "#ffffff",
-          active: true,
-          avatar_url: "https://yourcdn.com/bot-avatar.png",
-          enable_live_chat: false,
-          show_typing_indicator: true,
-          time_interval: 40000,
-          show_eazotel_branding: true,
+          bot_name: chatbotData.bot_name,
+          email: chatbotData.email,
+          contact: chatbotData.contact,
+          description: chatbotData.description,
+          welcome_message: chatbotData.welcome_message,
+          fallback_message: chatbotData.fallback_message,
+          chat_terminate_message: chatbotData.chat_terminate_message,
+          bgcolor: chatbotData.bgcolor,
+          textcolor: chatbotData.textcolor,
+          buttoncolor: chatbotData.buttoncolor,
+          buttontextcolor: chatbotData.buttontextcolor,
+          active: chatbotData.active,
+          avatar_url: chatbotData.avatar_url,
+          enable_live_chat: chatbotData.enable_live_chat,
+          show_typing_indicator: chatbotData.show_typing_indicator,
+          time_interval: chatbotData.time_interval,
+          show_eazotel_branding: chatbotData.show_eazotel_branding,
           bot_type: "lead",
           chat_flow: [
             { key: "name", question: "What's you?", type: "text" },
           ],
         },
-      });
+      };
+
+      const data = await createChatbotData(chatbotFormData);
       console.log(data);
-    } catch (error) { }
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: data?.Message,
+      });
+    } catch (error) {
+    } finally {
+      setIsLoader(false);
+    }
   };
 
   const handleNext = () => {
@@ -154,10 +162,12 @@ const Eazobot = () => {
         {isEdit && (
           <div className="flex justify-end">
             <button
-              className="border border-primary text-primary px-4 py-2 mb-4 rounded-sm hover:bg-primary hover:text-white transition-all duration-200"
+              disabled={isLoader}
+              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${isLoader && "opacity-40"
+                }`}
               onClick={handlePublish}
             >
-              Publish
+              Publish {isLoader && <Loader size={20} color="#fff" />}
             </button>
           </div>
         )}
