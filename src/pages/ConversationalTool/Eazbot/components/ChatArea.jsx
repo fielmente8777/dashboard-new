@@ -33,7 +33,11 @@ const ChatArea = ({ chat, messages }) => {
     }
   }
   if (!chat)
-    return <div className="flex-1">Select a chat to start messaging</div>;
+    return (
+      <div className="flex border justify-center items-center w-full bg-red-900 h-full">
+        Select a chat to start messaging
+      </div>
+    );
   return (
     <div className="flex-1 flex flex-col bg-gray-50 ">
       {/* Chat Header */}
