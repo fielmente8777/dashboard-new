@@ -49,7 +49,7 @@ const Eazobot = () => {
     setIsLoader(true);
     try {
       const chatbotFormData = {
-        hid: "4534543",
+        hid: localStorage.getItem("hid"),
         chatbotData: {
           bot_name: chatbotData.bot_name,
           email: chatbotData.email,
@@ -69,9 +69,7 @@ const Eazobot = () => {
           time_interval: chatbotData.time_interval,
           show_eazotel_branding: chatbotData.show_eazotel_branding,
           bot_type: "lead",
-          chat_flow: [
-            { key: "name", question: "What's you?", type: "text" },
-          ],
+          chat_flow: chatbotData?.chat_flow,
         },
       };
 
@@ -140,8 +138,10 @@ const Eazobot = () => {
 
   const getChatbotDetails = async () => {
     const data = await getChatbotData({
-      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-      hid: "4534543",
+      //   ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+      //   hid: "4534543",
+      ndid: localStorage.getItem("ndid"),
+      hid: localStorage.getItem("hid"),
     });
 
     if (data?.Status) {

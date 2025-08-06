@@ -4,7 +4,8 @@ import { BASE_URL } from "../../data/constant";
 export const getChatbotData = async ({ ndid, hid }) => {
   try {
     const response = await fetch(
-      `${BASE_URL}/leadeazbot/get/dashboard?ndid=5617a084-5783-4bac-b299-bdb6e8e471bb&hid=4534543`,
+      // `${BASE_URL}/leadeazbot/get/dashboard?ndid=5617a084-5783-4bac-b299-bdb6e8e471bb&hid=4534543`,
+      `${BASE_URL}/leadeazbot/get/dashboard?ndid=${ndid}&hid=${hid}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
