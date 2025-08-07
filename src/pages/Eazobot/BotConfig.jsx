@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FiEdit, FiEye, FiEyeOff } from "react-icons/fi";
 
 // Supported input types for questions
 const INPUT_TYPES = [
@@ -59,6 +60,17 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     setChatbotData({ ...chatbotData, chat_flow: updatedQuestions });
     setEditIndex(null);
     setEditQuestion({ key: "", question: "", type: "text" });
+  };
+
+  const toggleStatus = (index) => {
+    setIsEdit(true);
+    const updatedFlow = [...chatbotData.chat_flow];
+    updatedFlow[index].active = !updatedFlow[index].active;
+
+    setChatbotData((prev) => ({
+      ...prev,
+      chat_flow: updatedFlow,
+    }));
   };
 
   const deleteQuestion = (index) => {
@@ -206,33 +218,53 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           )}
           {/* QUESTIONS LIST */}
           <div className="space-y-4">
-            {chatbotData?.chat_flow?.map((q, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center bg-gray-50 p-4 border rounded-md"
-              >
-                <div>
-                  <div className="text-sm font-medium text-gray-800">
-                    {q.question} ({q.type})
+            {chatbotData?.chat_flow?.map((q, index) => {
+              const isActive = q.active;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
+                    isActive ? "bg-white" : "bg-gray-100 opacity-60"
+                  }`}
+                >
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">
+                      {q.question}{" "}
+                      <span className="text-gray-500">({q.type})</span>
+                    </div>
+                    <div className="text-xs text-gray-500">Key: {q.key}</div>
                   </div>
-                  <div className="text-xs text-gray-500">Key: {q.key}</div>
+
+                  <div className="flex items-center gap-3">
+                    {/* Toggle Active Status */}
+                    <button
+                      onClick={() => toggleStatus(index)}
+                      className="text-gray-600 hover:text-gray-800 transition"
+                      title={isActive ? "Deactivate" : "Activate"}
+                    >
+                      {isActive ? <FiEye size={16} /> : <FiEyeOff size={16} />}
+                    </button>
+
+                    {/* Edit Button */}
+                    <button
+                      onClick={() => startEditing(index)}
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      <FiEdit size={16} />
+                    </button>
+
+                    {/* Delete Button */}
+                    {/* <button
+                      onClick={() => deleteQuestion(index)}
+                      className="text-red-500 hover:underline text-sm"
+                    >
+                      Delete
+                    </button> */}
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => startEditing(index)}
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteQuestion(index)}
-                    className="text-red-500 hover:underline text-sm"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}

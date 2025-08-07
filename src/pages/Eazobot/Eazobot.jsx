@@ -28,7 +28,7 @@ const Eazobot = () => {
     welcome_message: "",
     fallback_message: "",
     chat_terminate_message: "",
-    bgcolor: "",
+    bg_color: "",
     textcolor: "",
     buttoncolor: "",
     buttontextcolor: "",
@@ -58,7 +58,7 @@ const Eazobot = () => {
           welcome_message: chatbotData.welcome_message,
           fallback_message: chatbotData.fallback_message,
           chat_terminate_message: chatbotData.chat_terminate_message,
-          bgcolor: chatbotData.bgcolor,
+          bg_color: chatbotData.bg_color,
           textcolor: chatbotData.textcolor,
           buttoncolor: chatbotData.buttoncolor,
           buttontextcolor: chatbotData.buttontextcolor,
@@ -148,9 +148,12 @@ const Eazobot = () => {
       setChatbotData((prev) => ({
         ...prev,
         ...data?.Data,
+        bg_color: data?.Data?.theme?.bg_color,
       }));
     }
   };
+
+  console.log(chatbotData);
 
   useEffect(() => {
     getChatbotDetails();
@@ -163,8 +166,9 @@ const Eazobot = () => {
           <div className="flex justify-end">
             <button
               disabled={isLoader}
-              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${isLoader && "opacity-40"
-                }`}
+              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${
+                isLoader && "opacity-40"
+              }`}
               onClick={handlePublish}
             >
               Publish {isLoader && <Loader size={20} color="#fff" />}
@@ -181,10 +185,11 @@ const Eazobot = () => {
         <button
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className={`px-4 py-2 rounded text-white transition ${currentStep === 0
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-primary hover:bg-primary/80"
-            }`}
+          className={`px-4 py-2 rounded text-white transition ${
+            currentStep === 0
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/80"
+          }`}
         >
           Previous
         </button>
@@ -192,10 +197,11 @@ const Eazobot = () => {
         <button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className={`px-4 py-2 rounded text-white transition ${currentStep === steps.length
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-primary hover:bg-primary/80"
-            }`}
+          className={`px-4 py-2 rounded text-white transition ${
+            currentStep === steps.length
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/80"
+          }`}
         >
           {currentStep === steps.length - 1 ? "Finish" : "Next"}
         </button>

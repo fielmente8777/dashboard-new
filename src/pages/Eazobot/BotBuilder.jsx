@@ -85,7 +85,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                     key={color}
                     onClick={() => {
                       setIsEdit(true);
-                      setChatbotData((prev) => ({ ...prev, bgcolor: color }));
+                      setChatbotData((prev) => ({ ...prev, bg_color: color }));
                     }}
                     className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                       config.color === color
@@ -107,7 +107,10 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                     onClick={() => colorInputRef.current?.click()}
                     className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition relative`}
                     style={{
-                      backgroundColor: chatbotData?.theme?.bg_color,
+                      backgroundColor:
+                        chatbotData?.bg_color ||
+                        chatbotData?.theme?.bg_color ||
+                        "#4F46E5",
                       mixBlendMode: "multiply",
                       borderColor: isCustom ? "#9CA3AF" : "transparent", // gray-400 if custom
                     }}
@@ -122,7 +125,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                         setIsEdit(true);
                         setChatbotData((prev) => ({
                           ...prev,
-                          bgcolor: e.target.value,
+                          bg_color: e.target.value,
                         }));
                       }}
                       className="absolute inset-0 opacity-0 cursor-pointer"
@@ -172,7 +175,10 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                       <div
                         className="w-3 h-3 rounded-full mr-2"
                         style={{
-                          backgroundColor: chatbotData?.bgcolor || colors[0],
+                          backgroundColor:
+                            chatbotData?.bg_color ||
+                            chatbotData?.theme?.bg_color ||
+                            colors[0],
                         }}
                       ></div>
                       <span className="text-sm font-medium text-gray-700">
@@ -187,7 +193,12 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                 </div>
                 <div
                   className="absolute -bottom-8 -right-2 w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg"
-                  style={{ backgroundColor: chatbotData?.bgcolor || colors[0] }}
+                  style={{
+                    backgroundColor:
+                      chatbotData?.bg_color ||
+                      chatbotData?.theme?.bg_color ||
+                      colors[0],
+                  }}
                 >
                   <FiMessageSquare size={20} />
                 </div>
