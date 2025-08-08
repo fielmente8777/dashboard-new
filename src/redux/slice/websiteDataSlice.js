@@ -20,6 +20,7 @@ const websiteDataSlice = createSlice({
     },
 
     getWebsiteDataSucccess: (state, action) => {
+      console.log(action.payload);
       state.loading = false;
       state.hotels = action.payload;
     },
@@ -36,7 +37,7 @@ const websiteDataSlice = createSlice({
     newsletterData: (state, action) => {
       state.loading = false;
       state.newsletterData = action.payload || [];
-    }
+    },
   },
 });
 
@@ -45,7 +46,7 @@ export const {
   getWebsiteDataSucccess,
   getWebsiteDataFailure,
   fetchCurrentLocationWebsiteData,
-  newsletterData
+  newsletterData,
 } = websiteDataSlice.actions;
 
 export default websiteDataSlice.reducer;
