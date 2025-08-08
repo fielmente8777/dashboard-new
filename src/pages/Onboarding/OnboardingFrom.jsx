@@ -4,6 +4,8 @@ import handleLocalStorage from "../../utils/handleLocalStorage";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../../data/constant";
 import Loader from "../../components/Loader";
+import { useDispatch } from "react-redux";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 
 const Steps = {
   1: {
@@ -100,6 +102,7 @@ const Steps = {
 };
 
 const OnboardingForm = () => {
+  const dispatch = useDispatch();
   const [spinner, setSpinner] = useState(false);
   const [stepsData, setStepsData] = useState({
     ...Steps,
@@ -232,7 +235,8 @@ const OnboardingForm = () => {
 
     if (data?.Status) {
       handleLocalStorage("hid", data?.hId);
-      navigate(`dashboard/client/${data?.hId}`);
+      dispatch(fetchWebsiteData(localStorage.getItem("token"), data?.hId));
+      navigate(`/dashboard/client/${data?.hId}`);
       setSpinner(false);
     }
 
