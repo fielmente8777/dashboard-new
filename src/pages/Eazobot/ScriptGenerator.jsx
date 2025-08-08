@@ -7,9 +7,8 @@ const ScriptGenerator = () => {
   const script = `<!-- Eazobot Script -->
 <script>
   window.eazbotConfig = {
-    ndid: "******",
-    hid: "*******",
-    interval: "2000",
+    ndid: ${String(localStorage.getItem("ndid"))},
+    hid: ${String(localStorage.getItem("hid"))},
   };
 </script>
 <script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>`;
@@ -17,9 +16,8 @@ const ScriptGenerator = () => {
   const handleCopy = () => {
     const copyScript = `<script>
   window.eazbotConfig = {
-    ndid: "******",
-    hid: "*******",
-    interval: "2000",
+     ndid: ${String(localStorage.getItem("ndid"))},
+    hid: ${String(localStorage.getItem("hid"))},
   };
 </script>
 <script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>`;

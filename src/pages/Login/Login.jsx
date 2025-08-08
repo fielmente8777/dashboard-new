@@ -304,14 +304,14 @@ const Login = () => {
                 </button>
               </div>
 
-              {/* <div className="">
+              <div className="">
 
 
                 <GoogleOAuthProvider
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
-                  // clientSecret={"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"}
+                // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full rounded-md">
                     <GoogleLogin
@@ -324,16 +324,16 @@ const Login = () => {
                       theme="filled_blue"
                       size="large"
                       shape="pill"
-                      useOneTap={true}
+                    // useOneTap={true}
                     />
-                    
-                    <GoogleLoginButton
+
+                    {/* <GoogleLoginButton
                       handleSuccess={handleSuccess}
                       handleFailure={handleFailure}
-                    />
+                    /> */}
                   </div>
                 </GoogleOAuthProvider>
-              </div> */}
+              </div>
 
               <div>
                 <p className="text-md font-medium text-text-gray -mt-4">

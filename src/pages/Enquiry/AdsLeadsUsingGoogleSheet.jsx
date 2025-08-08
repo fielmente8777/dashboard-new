@@ -423,9 +423,9 @@ const AdsLeadsUsingGoogleSheet = () => {
           ) : sheetaccessToken !== "None" && !tokenExpire ? (
             <button
               className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
-              // onClick={() => {
-              //   updateSheetData();
-              // }}
+            // onClick={() => {
+            //   updateSheetData();
+            // }}
             >
               <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>
               Connected
@@ -442,6 +442,7 @@ const AdsLeadsUsingGoogleSheet = () => {
             <table className="border bg-white ">
               <thead>
                 <tr className="tablerow bg-primary text-white">
+                  <th className="w-auto px-2 py-3 border font-medium capitalize">S.N</th>
                   {headerRow &&
                     headerRow.length > 0 &&
                     headerRow?.map((headerLabel, idx) => {
@@ -466,15 +467,15 @@ const AdsLeadsUsingGoogleSheet = () => {
 
                   return (
                     <tr
-                      className={`cursor-pointer ${
-                        isToday
-                          ? "bg-blue-100 text-gray-900"
-                          : "text-gray-600  "
-                      }`}
+                      className={`cursor-pointer ${isToday
+                        ? "bg-blue-100 text-gray-900"
+                        : "text-gray-600  "
+                        }`}
                       onClick={() => {
                         setSelectedRow(rowindex);
                       }}
                     >
+                      <p className="w-auto px-2 py-2 outline-none border-t border-gray-300 text-center text-black">{rowindex + 1}</p>
                       {data?.map((head, index) => {
                         const phoneRegex = /^p:\+?\d{10,15}$/i;
                         const isPhone = phoneRegex.test(head);
@@ -491,8 +492,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                                 className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                                 target="_blank"
                                 to={`https://wa.me/${phone}?text=${encodeURIComponent(
-                                  `Hello! ${""}👋\nWelcome to ${
-                                    hotel?.Profile?.hotelName
+                                  `Hello! ${""}👋\nWelcome to ${hotel?.Profile?.hotelName
                                   } 🌐\nHow can I assist you today?`
                                 )}`}
                               >

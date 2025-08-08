@@ -41,7 +41,7 @@ const SidebarChat = ({ contacts, activeTab, setActiveTab, selectedContact, setSe
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
             {/* Tabs */}
             <div className="flex border-b border-gray-200">
-                {tabs.map((tab) => (
+                {tabs?.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
@@ -57,7 +57,7 @@ const SidebarChat = ({ contacts, activeTab, setActiveTab, selectedContact, setSe
 
             {/* Contact List */}
             <div className="flex-1 overflow-y-auto scrollbar-hidden">
-                {contacts.map((contact) => (
+                {contacts?.map((contact) => (
                     <div
                         key={contact.id}
                         onClick={() => setSelectedContact(contact)}

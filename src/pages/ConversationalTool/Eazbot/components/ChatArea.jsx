@@ -2,15 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { BsImage } from "react-icons/bs";
 import axios from "axios"
 
-const ChatArea = ({ chat, messages }) => {
+const ChatArea = ({ chat, messages, setMessages }) => {
   const chatEndRef = useRef(null);
 
   const [responseMessage, setResponseMessage] = useState("");
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
-  console.log(messages)
 
 
   const handleSubmit = async () => {
@@ -19,19 +18,18 @@ const ChatArea = ({ chat, messages }) => {
       const sendMessageResponse = await axios.post('http://localhost:4000/api/chat/send-message',
         {
           ndid: localStorage.getItem('ndid'),                // unique website/client ID
-          guestId: "5617a084-5783-4bac-b299-bdb6e8e471aa",              // guest user ID
+          guestId: chat?.guestId,              // guest user ID
           botId: localStorage.getItem('ndid'),              // admin ID (can be placeholder initially)
           senderId: localStorage.getItem('ndid'),           // who is sending this message
           senderType: "bot",             // "guest", "admin", or "bot"
           message: responseMessage
         });
-
-
-      console.log(sendMessageResponse)
     } catch (error) {
       console.error("Error sending message", error.message);
     }
   }
+
+
   if (!chat)
     return (
       <div className="flex border justify-center items-center w-full bg-red-900 h-full">
@@ -97,14 +95,14 @@ const ChatArea = ({ chat, messages }) => {
           return (
             <div key={index} >
 
-              {message.senderType === "bot" && <div className="flex justify-end mt-1">
+              {message?.senderType === "bot" && <div className="flex justify-end mt-1">
                 <div className="bg-teal-600 rounded-2xl rounded-tr-sm p-4 text-white border text-left ">
                   {message?.message}
                 </div>
               </div>}
 
 
-              {message.senderType === "guest" && <div className="flex max-w-sm mt-1">
+              {message?.senderType === "guest" && <div className="flex max-w-sm mt-1">
                 <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
                   {message?.message}
                 </div></div>}

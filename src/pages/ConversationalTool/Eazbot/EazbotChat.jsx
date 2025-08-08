@@ -39,16 +39,15 @@ const EazbotChat = () => {
 
     useEffect(() => {
         socket.on("newMessage", (newMessage) => {
+            getAllChats()
 
-            console.log(newMessage)
-            if (selectedContact?.guestId === newMessage.senderId || selectedContact.botId === newMessage.senderId) {
+            if (selectedContact?.guestId === newMessage.senderId) {
                 setMessages(prev => [...prev, newMessage]);
             }
 
-            // Sync message in global contact list
             setContacts(prevContacts => {
                 return prevContacts.map(chat => {
-                    if (chat.guestId === newMessage.senderId || chat.botId === newMessage.senderId) {
+                    if (chat.guestId === newMessage.senderId) {
                         return {
                             ...chat,
                             messages: [...chat.messages, newMessage]
@@ -64,7 +63,7 @@ const EazbotChat = () => {
         };
     }, [socket, selectedContact]);
 
-    // ✅ Whenever selected contact changes, update messages
+
     useEffect(() => {
         if (!selectedContact) return;
         const chat = contacts.find(c => c.guestId === selectedContact.guestId);
@@ -88,7 +87,7 @@ const EazbotChat = () => {
                     selectedContact={selectedContact}
                     setSelectedContact={setSelectedContact}
                 />
-                <ChatArea chat={selectedChat} messages={messages} />
+                <ChatArea chat={selectedChat} messages={messages} setMessages={setMessages} />
                 {/* <ProfilePanel chat={selectedChat} /> */}
             </div>
         </div>

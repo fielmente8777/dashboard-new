@@ -150,11 +150,11 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   };
 
   useEffect(() => {
-    // console.log("authUser", authUser);
+    console.log("authUser", authUser);
     if (authUser && hotel) {
       const hid = handleLocalStorage("hid");
       if (authUser?.isAdmin && hid) {
-        // console.log(hotel)
+        console.log(hotel)
         const currentLoaction = hotel?.Profile?.hotels[hid];
         setCurrentLocation(currentLoaction);
       } else {
@@ -223,9 +223,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
         )}
 
         <span
-          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${
-            !isOpen && "ml-2 rotate-180"
-          }`}
+          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${!isOpen && "ml-2 rotate-180"
+            }`}
           onClick={() => {
             dispatch(toggleSideBar());
           }}
@@ -236,9 +235,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
 
       {/* dropdown mutli location */}
       <div
-        className={`${
-          isOpen ? "w-full" : "w-0 opacity-0 hidden"
-        } duration-200 text-nowrap`}
+        className={`${isOpen ? "w-full" : "w-0 opacity-0 hidden"
+          } duration-200 text-nowrap`}
       >
         {loading ? (
           <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
@@ -289,11 +287,10 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                           return (
                             <div
                               key={key + 1}
-                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${
-                                isCurrentLocation
+                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation
                                   ? "bg-gray-100 opacity-70 cursor-not-allowed"
                                   : "bg-gray-200 cursor-pointer"
-                              }`}
+                                }`}
                               onClick={(e) => {
                                 if (!isCurrentLocation)
                                   handleSelectLocation(e, value, key);
@@ -331,11 +328,10 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                         return (
                           <div
                             key={index + 1}
-                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
-                              isCurrentLocation
+                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation
                                 ? "bg-gray-100 opacity-70 cursor-not-allowed"
                                 : "bg-gray-200 cursor-pointer"
-                            }`}
+                              }`}
                             onClick={(e) => {
                               if (!isCurrentLocation)
                                 handleSelectLocation(e, value, location?.hid);
@@ -374,9 +370,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
             </div>
 
             <div
-              className={`${
-                isDropDownOpen ? "rotate-90 " : "-rotate-90"
-              } absolute top-5 right-2`}
+              className={`${isDropDownOpen ? "rotate-90 " : "-rotate-90"
+                } absolute top-5 right-2`}
             >
               <span className="text-white">
                 <Arrow />
@@ -390,77 +385,208 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
-              <div className="animate-pulse h-10 bg-gray-200" />
-            ))
+            <div className="animate-pulse h-10 bg-gray-200" />
+          ))
           : maniuplateSideBarData?.map((item, index) => {
-              if (authUser?.isAdmin) {
-                const key = item.key;
+            if (authUser?.isAdmin) {
+              const key = item.key;
 
-                if (key && !authUser?.accessScope[accessScopeMap[key]])
-                  return null;
-                return (
-                  <div key={index} className="flex flex-col">
-                    {item?.subLinks ? (
-                      <div
-                        onClick={() => {
-                          navigate(item?.subLinks[0]?.link);
-                          setSidebarActiveIndex(null);
-                          toggleMenu(index);
-                          dispatch(open());
-                        }}
-                        className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
-                          pathLocation?.pathname
-                            ?.split("/")
-                            .slice(4)
-                            .join("/")
-                            .toString() ===
+              if (key && !authUser?.accessScope[accessScopeMap[key]])
+                return null;
+              return (
+                <div key={index} className="flex flex-col">
+                  {item?.subLinks ? (
+                    <div
+                      onClick={() => {
+                        navigate(item?.subLinks[0]?.link);
+                        setSidebarActiveIndex(null);
+                        toggleMenu(index);
+                        dispatch(open());
+                      }}
+                      className={`flex justify-between items-center cursor-pointer py-3 px-2 ${pathLocation?.pathname
+                          ?.split("/")
+                          .slice(4)
+                          .join("/")
+                          .toString() ===
                           item?.subLinks[sidebarActiveIndex]?.link
-                            ? " text-white rounded-sm bg-primary"
-                            : "text-primary"
+                          ? " text-white rounded-sm bg-primary"
+                          : "text-primary"
                         }`}
-                      >
-                        <div className={`flex gap-2 items-center`}>
-                          <span>{item?.icon}</span>
+                    >
+                      <div className={`flex gap-2 items-center`}>
+                        <span>{item?.icon}</span>
 
-                          <p
-                            className={`font-medium text-nowrap ${
-                              isOpen ? "block" : "hidden"
+                        <p
+                          className={`font-medium text-nowrap ${isOpen ? "block" : "hidden"
                             }  duration-300 overflow-hidden`}
-                          >
-                            {item.name}
-                          </p>
-                        </div>
-
-                        {isOpen && (
-                          <span
-                            className={`${
-                              openMenus[index] ? "rotate-90" : " -rotate-90"
-                            } ${
-                              pathLocation?.pathname
-                                ?.split("/")
-                                .slice(4)
-                                .join("/")
-                                .toString() ===
-                              item?.subLinks[sidebarActiveIndex]?.link
-                                ? " text-white"
-                                : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
-                          >
-                            <Arrow />
-                          </span>
-                        )}
+                        >
+                          {item.name}
+                        </p>
                       </div>
-                    ) : (
+
+                      {isOpen && (
+                        <span
+                          className={`${openMenus[index] ? "rotate-90" : " -rotate-90"
+                            } ${pathLocation?.pathname
+                              ?.split("/")
+                              .slice(4)
+                              .join("/")
+                              .toString() ===
+                              item?.subLinks[sidebarActiveIndex]?.link
+                              ? " text-white"
+                              : ""
+                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                        >
+                          <Arrow />
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex gap-2 items-center py-3 px-2  ${pathLocation?.pathname
+                          ?.split("/")
+                          .slice(4)
+                          .join("/")
+                          .toString() === item?.link
+                          ? "bg-[#0a3a75] text-white rounded-sm"
+                          : "text-primary"
+                        } `}
+                    >
+                      <Link
+                        to={item.link}
+                        className={`flex gap-1 font-medium`}
+                      >
+                        {item?.icon}
+                      </Link>
+
+                      {isOpen && (
+                        <Link
+                          to={item.link}
+                          className={`flex gap-1 font-medium text-nowrap`}
+                        >
+                          {item.name}
+                        </Link>
+                      )}
+                    </div>
+                  )}
+
+                  {openMenus[index] && item?.subLinks && (
+                    <hr className="border-b" />
+                  )}
+
+                  {isOpen && openMenus[index] && (
+                    <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
+                      {item?.subLinks &&
+                        item.subLinks.map((subLink, index) => {
+                          if (
+                            subLink?.key &&
+                            !authUser?.accessScope[
+                            accessScopeMap[subLink?.key]
+                            ]
+                          )
+                            return null;
+                          return (
+                            <div className="flex flex-col">
+                              <Link
+                                onClick={() => {
+                                  setSidebarActiveIndex(index);
+                                }}
+                                to={subLink.link}
+                                key={index}
+                                className={` ${subLink?.link ===
+                                    pathLocation?.pathname
+                                      ?.split("/")
+                                      .slice(4)
+                                      .join("/")
+                                      .toString()
+                                    ? "bg-[#DBEAFE] text-gray-700 px-2"
+                                    : "hover:bg-[#0a3a75]/10"
+                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                              >
+                                {subLink.icon} {subLink.name}
+                                {/* {hid}{subLink.link} */}
+                              </Link>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              );
+            } else {
+              const currentLocationAccessScope =
+                authUser?.assigned_location?.filter(
+                  (location) =>
+                    location?.hid === String(handleLocalStorage("hid"))
+                )[0];
+
+              const key = item?.key;
+              if (
+                key &&
+                currentLocationAccessScope &&
+                !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+              )
+                return null;
+
+              return (
+                <div key={index} className="flex flex-col gap-1">
+                  {item?.subLinks && item?.subLinks.length > 0 ? (
+                    <div
+                      onClick={() => {
+                        navigate(item?.subLinks[0]?.link);
+                        setSidebarActiveIndex(0);
+                        toggleMenu(index);
+                        dispatch(open());
+                      }}
+                      className={`flex justify-between items-center cursor-pointer py-3 px-2 ${pathLocation?.pathname
+                          ?.split("/")
+                          .slice(4)
+                          .join("/")
+                          .toString() ===
+                          item?.subLinks[sidebarActiveIndex]?.link
+                          ? " text-white rounded-sm bg-primary"
+                          : "text-primary"
+                        }`}
+                    >
+                      <div className={`flex gap-2 items-center`}>
+                        <span>{item?.icon}</span>
+
+                        <p
+                          className={`font-medium text-nowrap ${isOpen ? "block" : "hidden"
+                            }  duration-300 overflow-hidden`}
+                        >
+                          {item.name}
+                        </p>
+                      </div>
+
+                      {isOpen && (
+                        <span
+                          className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
+                            } ${pathLocation?.pathname
+                              ?.split("/")
+                              .slice(4)
+                              .join("/")
+                              .toString() ===
+                              item?.subLinks[sidebarActiveIndex]?.link
+                              ? " text-white"
+                              : ""
+                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                        >
+                          <Arrow />
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    !item?.subLinks && (
                       <div
-                        className={`flex gap-2 items-center py-3 px-2  ${
-                          pathLocation?.pathname
+                        className={`flex gap-2 items-center py-3 px-2  ${pathLocation?.pathname
                             ?.split("/")
                             .slice(4)
                             .join("/")
                             .toString() === item?.link
                             ? "bg-[#0a3a75] text-white rounded-sm"
                             : "text-primary"
-                        } `}
+                          } `}
                       >
                         <Link
                           to={item.link}
@@ -478,196 +604,53 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                           </Link>
                         )}
                       </div>
-                    )}
+                    )
+                  )}
 
-                    {openMenus[index] && item?.subLinks && (
-                      <hr className="border-b" />
-                    )}
+                  {openMenus[index] && item?.subLinks && (
+                    <hr className="border-b" />
+                  )}
 
-                    {isOpen && openMenus[index] && (
-                      <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
-                        {item?.subLinks &&
-                          item.subLinks.map((subLink, index) => {
-                            if (
-                              subLink?.key &&
-                              !authUser?.accessScope[
-                                accessScopeMap[subLink?.key]
-                              ]
-                            )
-                              return null;
-                            return (
-                              <div className="flex flex-col">
-                                <Link
-                                  onClick={() => {
-                                    setSidebarActiveIndex(index);
-                                  }}
-                                  to={subLink.link}
-                                  key={index}
-                                  className={` ${
-                                    subLink?.link ===
+                  {isOpen && openMenus[index] && (
+                    <div className="space-y-2 mt-2">
+                      {item?.subLinks &&
+                        item?.subLinks?.length > 0 &&
+                        item.subLinks.map((subLink, index) => {
+                          if (
+                            subLink?.key &&
+                            !currentLocationAccessScope?.accessScope[
+                            accessScopeMap[subLink?.key]
+                            ]
+                          )
+                            return null;
+                          return (
+                            <div className="flex flex-col">
+                              <Link
+                                onClick={() => setSidebarActiveIndex(index)}
+                                to={subLink.link}
+                                key={index}
+                                className={` ${subLink?.link ===
                                     pathLocation?.pathname
                                       ?.split("/")
                                       .slice(4)
                                       .join("/")
                                       .toString()
-                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                      : "hover:bg-[#0a3a75]/10"
+                                    ? "bg-[#DBEAFE] text-gray-700 px-2"
+                                    : "hover:bg-[#0a3a75]/10"
                                   }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
-                                >
-                                  {subLink.icon} {subLink.name}
-                                  {/* {hid}{subLink.link} */}
-                                </Link>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    )}
-                  </div>
-                );
-              } else {
-                const currentLocationAccessScope =
-                  authUser?.assigned_location?.filter(
-                    (location) =>
-                      location?.hid === String(handleLocalStorage("hid"))
-                  )[0];
-
-                const key = item?.key;
-                if (
-                  key &&
-                  currentLocationAccessScope &&
-                  !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
-                )
-                  return null;
-
-                return (
-                  <div key={index} className="flex flex-col gap-1">
-                    {item?.subLinks && item?.subLinks.length > 0 ? (
-                      <div
-                        onClick={() => {
-                          navigate(item?.subLinks[0]?.link);
-                          setSidebarActiveIndex(0);
-                          toggleMenu(index);
-                          dispatch(open());
-                        }}
-                        className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
-                          pathLocation?.pathname
-                            ?.split("/")
-                            .slice(4)
-                            .join("/")
-                            .toString() ===
-                          item?.subLinks[sidebarActiveIndex]?.link
-                            ? " text-white rounded-sm bg-primary"
-                            : "text-primary"
-                        }`}
-                      >
-                        <div className={`flex gap-2 items-center`}>
-                          <span>{item?.icon}</span>
-
-                          <p
-                            className={`font-medium text-nowrap ${
-                              isOpen ? "block" : "hidden"
-                            }  duration-300 overflow-hidden`}
-                          >
-                            {item.name}
-                          </p>
-                        </div>
-
-                        {isOpen && (
-                          <span
-                            className={`${
-                              openMenus[index] ? "-rotate-90" : " rotate-90"
-                            } ${
-                              pathLocation?.pathname
-                                ?.split("/")
-                                .slice(4)
-                                .join("/")
-                                .toString() ===
-                              item?.subLinks[sidebarActiveIndex]?.link
-                                ? " text-white"
-                                : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
-                          >
-                            <Arrow />
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      !item?.subLinks && (
-                        <div
-                          className={`flex gap-2 items-center py-3 px-2  ${
-                            pathLocation?.pathname
-                              ?.split("/")
-                              .slice(4)
-                              .join("/")
-                              .toString() === item?.link
-                              ? "bg-[#0a3a75] text-white rounded-sm"
-                              : "text-primary"
-                          } `}
-                        >
-                          <Link
-                            to={item.link}
-                            className={`flex gap-1 font-medium`}
-                          >
-                            {item?.icon}
-                          </Link>
-
-                          {isOpen && (
-                            <Link
-                              to={item.link}
-                              className={`flex gap-1 font-medium text-nowrap`}
-                            >
-                              {item.name}
-                            </Link>
-                          )}
-                        </div>
-                      )
-                    )}
-
-                    {openMenus[index] && item?.subLinks && (
-                      <hr className="border-b" />
-                    )}
-
-                    {isOpen && openMenus[index] && (
-                      <div className="space-y-2 mt-2">
-                        {item?.subLinks &&
-                          item?.subLinks?.length > 0 &&
-                          item.subLinks.map((subLink, index) => {
-                            if (
-                              subLink?.key &&
-                              !currentLocationAccessScope?.accessScope[
-                                accessScopeMap[subLink?.key]
-                              ]
-                            )
-                              return null;
-                            return (
-                              <div className="flex flex-col">
-                                <Link
-                                  onClick={() => setSidebarActiveIndex(index)}
-                                  to={subLink.link}
-                                  key={index}
-                                  className={` ${
-                                    subLink?.link ===
-                                    pathLocation?.pathname
-                                      ?.split("/")
-                                      .slice(4)
-                                      .join("/")
-                                      .toString()
-                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                      : "hover:bg-[#0a3a75]/10"
-                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
-                                >
-                                  {subLink.icon} {subLink.name}
-                                  {/* {hid}{subLink.link} */}
-                                </Link>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-            })}
+                              >
+                                {subLink.icon} {subLink.name}
+                                {/* {hid}{subLink.link} */}
+                              </Link>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+          })}
 
         {/* add location form  */}
         <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />

@@ -134,10 +134,9 @@ const LeadPopup = ({
   return (
     <div
       // onClick={onClose}
-      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
-        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-      }`}
-      // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+    // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
       <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm w-[60%] ">
         <div className="flex justify-between items-center mb-4">
@@ -202,9 +201,9 @@ const LeadPopup = ({
                       <p>
                         {lead?.check_in
                           ? lead?.check_in
-                          : extractBookingInfo(lead?.Message).checkIn
-                          ? extractBookingInfo(lead?.Message).checkIn
-                          : "-"}
+                          : extractBookingInfo(lead?.Message)?.checkIn
+                            ? extractBookingInfo(lead?.Message)?.checkIn
+                            : "-"}
                       </p>
                     </div>
 
@@ -215,9 +214,9 @@ const LeadPopup = ({
                       <p>
                         {lead?.check_out
                           ? lead?.check_out
-                          : extractBookingInfo(lead?.Message).checkOut
-                          ? extractBookingInfo(lead?.Message).checkOut
-                          : "-"}
+                          : extractBookingInfo(lead?.Message)?.checkOut
+                            ? extractBookingInfo(lead?.Message)?.checkOut
+                            : "-"}
                       </p>
                     </div>
 
@@ -229,9 +228,9 @@ const LeadPopup = ({
                         <p>
                           {lead?.number_of_guest
                             ? lead?.number_of_guest
-                            : extractBookingInfo(lead?.Message).guests
-                            ? extractBookingInfo(lead?.Message).guests
-                            : "-"}
+                            : extractBookingInfo(lead?.Message)?.guests
+                              ? extractBookingInfo(lead?.Message)?.guests
+                              : "-"}
                         </p>
                       </div>
                     </div>
