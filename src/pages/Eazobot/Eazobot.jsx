@@ -160,15 +160,14 @@ const Eazobot = () => {
   }, []);
 
   return (
-    <div className="max-w-7xl w-full mx-auto py-6 px-2">
-      <div>
+    <div className=" w-full mx-auto py-6">
+      <div className="">
         {isEdit && (
-          <div className="flex justify-end">
+          <div className="flex justify-end px-4">
             <button
               disabled={isLoader}
-              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${
-                isLoader && "opacity-40"
-              }`}
+              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${isLoader && "opacity-40"
+                }`}
               onClick={handlePublish}
             >
               Publish {isLoader && <Loader size={20} color="#fff" />}
@@ -181,15 +180,14 @@ const Eazobot = () => {
 
       <div className="mt-6">{renderStep()}</div>
 
-      <div className="flex gap-5 mt-8 items-center">
+      <div className="flex gap-5 mt-8 items-center px-4">
         <button
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === 0
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
+          className={`px-4 py-2 rounded text-white transition ${currentStep === 0
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-primary hover:bg-primary/80"
+            }`}
         >
           Previous
         </button>
@@ -197,11 +195,10 @@ const Eazobot = () => {
         <button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === steps.length
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
+          className={`px-4 py-2 rounded text-white transition ${currentStep === steps.length
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-primary hover:bg-primary/80"
+            }`}
         >
           {currentStep === steps.length - 1 ? "Finish" : "Next"}
         </button>

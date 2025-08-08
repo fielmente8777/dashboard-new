@@ -82,8 +82,8 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Configure Bot</h2>
+    <div className="px-4">
+      <h2 className="text-lg font-semibold mb-6 text-gray-800">Configure Bot</h2>
 
       {/* Tabs */}
       <div className="flex space-x-4 mb-6">
@@ -91,9 +91,8 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-md ${
-              activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200"
-            }`}
+            className={`px-4 py-2 rounded-md font-medium ${activeTab === tab ? "bg-primary text-white" : "bg-gray-200"
+              }`}
           >
             {tab === "basic" ? "Basic Setup" : "Questions"}
           </button>
@@ -104,30 +103,41 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
         <>
           {/* BASIC SETUP FORM */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input
-              type="text"
-              name="chat_terminate_message"
-              placeholder="Chat Terminate Message"
-              value={chatbotData?.chat_terminate_message || ""}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md"
-            />
-            <input
-              type="text"
-              name="fallback_message"
-              placeholder="Fallback Message"
-              value={chatbotData?.fallback_message || ""}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-md"
-            />
-            <div className="md:col-span-2">
+            <div>
+              <lable htmlFor="terminate" className="font-medium text-md text-gray-500">Chat Terminate Message</lable>
               <input
+                id="terminate"
+                type="text"
+                name="chat_terminate_message"
+                placeholder="Thanks for you response, Our team will reach out to you asap!"
+                value={chatbotData?.chat_terminate_message || ""}
+                onChange={handleChange}
+                className="w-full px-4 py-4 mt-1 border rounded-md outline-none"
+              />
+            </div>
+
+            <div>
+              <lable htmlFor="fallback" className="font-medium text-gray-500" >Fallback Message</lable>
+              <input
+                id="fallback"
+                type="text"
+                name="fallback_message"
+                placeholder="I'm sorry, Please choose a valid formate"
+                value={chatbotData?.fallback_message || ""}
+                onChange={handleChange}
+                className="w-full px-4 py-4 border mt-1 rounded-md outline-none"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <lable htmlFor="interval" className="font-medium text-gray-500" >Time Intetval</lable>
+              <input
+                id="interval"
                 type="number"
                 name="time_interval"
                 placeholder="Time Interval (in seconds)"
                 value={chatbotData?.time_interval || ""}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-md"
+                className="w-full px-4 py-4 border mt-1 rounded-md outline-none"
               />
             </div>
           </div>
@@ -142,9 +152,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             ].map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between bg-gray-50 p-4 border rounded-md"
+                className="flex items-center justify-between bg-white p-4 border rounded-md"
               >
-                <span className="text-sm text-gray-800 font-medium">
+                <span className="text-md text-gray-500 font-medium">
                   {item.label}
                 </span>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -167,7 +177,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           {/* EDIT FORM (conditional) */}
           {editIndex !== null && (
             <div className="my-5 p-4 border rounded-md bg-gray-50 space-y-4">
-              <h4 className="text-md font-semibold text-gray-700">
+              <h4 className="text-md font-semibold text-gray-500">
                 Edit Question
               </h4>
               <input
@@ -203,13 +213,13 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               <div className="flex gap-2">
                 <button
                   onClick={updateQuestion}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md"
                 >
                   Update
                 </button>
                 <button
                   onClick={cancelEditing}
-                  className="px-4 py-2 text-gray-600 hover:underline"
+                  className="px-4 py-2 bg-red-600 text-white font-medium rounded-md "
                 >
                   Cancel
                 </button>
@@ -224,16 +234,15 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               return (
                 <div
                   key={index}
-                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
-                    isActive ? "bg-white" : "bg-gray-100 opacity-60"
-                  }`}
+                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${isActive ? "bg-white" : "bg-gray-100 opacity-60"
+                    }`}
                 >
                   <div>
-                    <div className="text-sm font-medium text-gray-800">
+                    <div className="text-md font-medium text-gray-500">
                       {q.question}{" "}
                       <span className="text-gray-500">({q.type})</span>
                     </div>
-                    <div className="text-xs text-gray-500">Key: {q.key}</div>
+                    <div className="text-sm text-gray-500 font-medium">Key: {q.key}</div>
                   </div>
 
                   <div className="flex items-center gap-3">

@@ -22,13 +22,13 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   };
 
   return (
-    <div className="space-y-6 shadow-md rounded-md p-4">
-      <h2 className="text-2xl font-bold text-gray-900">Bot Profile</h2>
+    <div className="space-y-6 p-4">
+      <h2 className="text-lg font-semibold text-gray-600">Bot Profile</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Bot Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-md font-medium text-gray-500 mb-1">
             Bot Name
           </label>
           <input
@@ -38,7 +38,7 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             // onChange={(e) => setBotName(e.target.value)}
             onChange={handleChange}
             placeholder="Enter your bot's name"
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full px-4 py-2 border text-md outline-none rounded-md"
           />
         </div>
 
@@ -61,7 +61,7 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
 
       {/* Intro Text */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-md font-medium text-gray-500 mb-1">
           Description
         </label>
         <textarea
@@ -71,13 +71,13 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           onChange={handleChange}
           placeholder="Hello! I'm your virtual assistant. How can I help you today?"
           rows={4}
-          className="w-full px-4 py-2 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full px-4 py-2 border outline-none rounded-md resize-none "
         />
       </div>
 
       {/* Bot Logo */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-md font-medium text-gray-500 mb-2">
           Bot Logo
         </label>
         <div className="flex items-center gap-4 border px-2 py-4 rounded-md">

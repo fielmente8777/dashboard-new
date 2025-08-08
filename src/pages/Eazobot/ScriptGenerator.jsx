@@ -7,17 +7,19 @@ const ScriptGenerator = () => {
   const script = `<!-- Eazobot Script -->
 <script>
   window.eazbotConfig = {
-    ndid: ${String(localStorage.getItem("ndid"))},
-    hid: ${String(localStorage.getItem("hid"))},
+    ndid: "${String(localStorage.getItem("ndid"))}",
+    hid: "${String(localStorage.getItem("hid"))}",
   };
 </script>
-<script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>`;
+<script 
+  src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js">
+</script>`;
 
   const handleCopy = () => {
     const copyScript = `<script>
   window.eazbotConfig = {
-     ndid: ${String(localStorage.getItem("ndid"))},
-    hid: ${String(localStorage.getItem("hid"))},
+     ndid: "${String(localStorage.getItem("ndid"))}",
+    hid: "${String(localStorage.getItem("hid"))}",
   };
 </script>
 <script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>`;
@@ -29,25 +31,28 @@ const ScriptGenerator = () => {
 
   return (
     <div className="relative w-full">
+      <p className="mb-2">{`Copy and paste the below code before the closing </body> tag of your website's HTML source code.`}</p>
       <textarea
         value={script}
         readOnly
-        className="w-full p-4 bg-gray-100 border rounded resize-none font-mono text-sm"
-        rows={8}
+        className="w-full px-4 py-6 bg-white border rounded resize-none outline-none font-mono text-sm"
+        rows={10}
       />
       <button
         onClick={handleCopy}
-        className="absolute top-4 right-10 text-gray-600 hover:text-black"
+        className="absolute top-12 right-5 text-gray-600 hover:text-black"
         title="Copy to Clipboard"
       >
         <FiCopy className="w-5 h-5" />
       </button>
-      {copied && (
-        <span className="absolute top-4 bg-gray-200 px-2 py-1 rounded-sm right-20 text-gray-600 text-sm font-medium">
-          Copied!
-        </span>
-      )}
-    </div>
+      {
+        copied && (
+          <span className="absolute top-10 bg-gray-200 px-2 py-1 rounded-sm right-10 text-gray-600 text-sm font-medium">
+            Copied!
+          </span>
+        )
+      }
+    </div >
   );
 };
 

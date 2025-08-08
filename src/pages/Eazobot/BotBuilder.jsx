@@ -18,9 +18,8 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     color: "#1e40af",
     script: `<script>
       window.eazbotConfig = {
-        ndid: "******",
-        hid: "*******",
-        interval: "2000",
+        ndid: "${localStorage.getItem("ndid")}"
+        hid: "${localStorage.getItem("hid")}",
       };
 </script>
 <script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>
@@ -42,8 +41,8 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
 
   console.log(chatbotData);
   return (
-    <div className="w-full mx-auto p-6 bg-gray-50 rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">Build Your Chatbot</h2>
+    <div className="w-full mx-auto p-4 space-y-6">
+      <h2 className="text-lg font-semibold text-gray-600">Build Your Chatbot</h2>
 
       <div>
         {/* Accordion Step: Intro */}
@@ -53,7 +52,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           onToggle={() => toggleStep(0)}
         >
           <div className="bg-white p-6 rounded-xl shadow-md mb-6">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+            <h3 className="text-md font-semibold text-gray-600 mb-2">
               🤖 Welcome to Your Chatbot Builder
             </h3>
             <p className="text-gray-600 text-base leading-relaxed">
@@ -70,12 +69,12 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           onToggle={() => toggleStep(1)}
         >
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <h2 className="text-md font-semibold text-gray-600 mb-6">
               Customize Chat Widget
             </h2>
 
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-md font-semibold text-gray-600 mb-4">
                 Pick a color
               </h3>
 
@@ -87,11 +86,10 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                       setIsEdit(true);
                       setChatbotData((prev) => ({ ...prev, bg_color: color }));
                     }}
-                    className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                      config.color === color
-                        ? "border-gray-400"
-                        : "border-transparent"
-                    }`}
+                    className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${config.color === color
+                      ? "border-gray-400"
+                      : "border-transparent"
+                      }`}
                     style={{ backgroundColor: color }}
                   >
                     {chatbotData?.bgcolor === color && (
@@ -137,7 +135,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             </div>
 
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-md font-semibold text-gray-600 mb-4">
                 Greeting message
               </h3>
               <div className="space-y-3">
@@ -151,7 +149,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                       welcome_message: e.target.value,
                     }));
                   }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none"
                   placeholder="Enter greeting message"
                 />
                 {/* <input
@@ -169,7 +167,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             {/* Chat Preview */}
             <div className="flex justify-end">
               <div className="relative">
-                <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-80">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 w-80">
                   <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center">
                       <div
@@ -214,13 +212,13 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           onToggle={() => toggleStep(2)}
         >
           <div>
-            <h3 className="text-lg font-semibold mb-4">
+            <h3 className="text-md font-semibold text-gray-600 mb-2">
               Your Script is Ready!
             </h3>
             <p className="mb-4 text-gray-600">
               Below is your chatbot script configuration:
             </p>
-            <pre className="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
+            <pre className="bg-gray-100 border p-4 rounded text-sm overflow-x-auto">
               <div className="flex justify-end ">
                 <span
                   className="size-8 rounded-md bg-blue-100 cursor-pointer flex justify-center items-center"
@@ -241,7 +239,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
 
 // 💡 Reusable Accordion Component
 const Accordion = ({ title, isOpen, onToggle, children }) => (
-  <div className="border-b shadow-sm ">
+  <div className="border-b ">
     <button
       onClick={onToggle}
       className="w-full flex justify-between items-center px-4 py-6 bg-gray-100 hover:bg-gray-200 font-semibold"
