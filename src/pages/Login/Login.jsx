@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
+// import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Banner from "../../assets/HotelVhNPHJ.png";
-import Logo from "../../assets/companylogo.b.png";
+// import Banner from "../../assets/HotelVhNPHJ.png";
+// import Logo from "../../assets/companylogo.b.png";
 import { loginUser } from "../../redux/slice/LoginSlice";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { setCookie } from "../../utils/handleCookies";
-import Whatsapp from "../../components/Contacts/WhtasApp";
-import { FcGoogle } from "react-icons/fc";
+// import Whatsapp from "../../components/Contacts/WhtasApp";
+// import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
@@ -51,7 +51,7 @@ const Login = () => {
       setSpinnerLoader(false);
       Swal.fire({
         title: "Logged Failed",
-        html: "Navigating you to Login <b></b>",
+        html: "Please enter correct username and password <b></b>",
         timer: 700,
         timerProgressBar: true,
         didOpen: () => {
@@ -94,7 +94,7 @@ const Login = () => {
       setSpinnerLoader(false);
       Swal.fire({
         title: "Logged Failed",
-        html: "Navigating you to Login <b></b>",
+        html: "Please enter correct username and password <b></b>",
         timer: 700,
         timerProgressBar: true,
         didOpen: () => {
@@ -145,7 +145,6 @@ const Login = () => {
     try {
       const token = response.credential;
       const result = (await verify(token)).data;
-      console.log(result);
 
       let timerInterval;
       if (result?.status === true) {
@@ -309,7 +308,7 @@ const Login = () => {
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
-                  // clientSecret={"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"}
+                // clientSecret={"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"}
                 >
                   <div className="flex justify-center w-full rounded-md">
                     <GoogleLogin
@@ -322,7 +321,7 @@ const Login = () => {
                       theme="filled_blue"
                       size="large"
                       shape="pill"
-                      // useOneTap={true}
+                    // useOneTap={true}
                     />
 
                     {/* <GoogleLoginButton

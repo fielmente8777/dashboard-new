@@ -4,7 +4,7 @@ import { useState } from "react";
 const ScriptGenerator = () => {
   const [copied, setCopied] = useState(false);
 
-  const script = `<!-- Eazobot Script -->
+  const script = `<!-- Eazbot Script -->
 <script>
   window.eazbotConfig = {
     ndid: "${String(localStorage.getItem("ndid"))}",

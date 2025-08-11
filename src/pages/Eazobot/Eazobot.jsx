@@ -74,7 +74,6 @@ const Eazobot = () => {
       };
 
       const data = await createChatbotData(chatbotFormData);
-      console.log(data);
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -153,7 +152,6 @@ const Eazobot = () => {
     }
   };
 
-  console.log(chatbotData);
 
   useEffect(() => {
     getChatbotDetails();

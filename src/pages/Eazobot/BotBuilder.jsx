@@ -39,7 +39,6 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     navigator.clipboard.writeText(config);
   };
 
-  console.log(chatbotData);
   return (
     <div className="w-full mx-auto p-4 space-y-6">
       <h2 className="text-lg font-semibold text-gray-600">Build Your Chatbot</h2>
@@ -51,7 +50,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           isOpen={openStep === 0}
           onToggle={() => toggleStep(0)}
         >
-          <div className="bg-white p-6 rounded-xl shadow-md mb-6">
+          <div className="bg-white py-3">
             <h3 className="text-md font-semibold text-gray-600 mb-2">
               🤖 Welcome to Your Chatbot Builder
             </h3>
@@ -206,7 +205,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
         </Accordion>
 
         {/* Accordion Step: Script */}
-        <Accordion
+        {/* <Accordion
           title="📜 Script"
           isOpen={openStep === 2}
           onToggle={() => toggleStep(2)}
@@ -231,7 +230,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               {config.script}
             </pre>
           </div>
-        </Accordion>
+        </Accordion> */}
       </div>
     </div>
   );

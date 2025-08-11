@@ -37,7 +37,6 @@ function PricePackage() {
         return;
       }
 
-      console.log(files)
 
       for (let i = 0; i < files.length && files.length <= 5; i++) {
         const file = files[i];
@@ -45,7 +44,6 @@ function PricePackage() {
         const reader = new FileReader();
         reader.onloadend = function () {
           const base64String = reader.result.split(",")[1];
-          console.log(base64String)
           setImage((prevImages) => [...prevImages, base64String]);
           // UploadingImageS3(base64String);
         };

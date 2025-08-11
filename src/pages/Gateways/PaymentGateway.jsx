@@ -183,7 +183,7 @@ const PaymentGateway = () => {
     fetchRazorpayData("0");
   }, [])
   return (
-    <div>
+    <div className="p-4">
       <div className="grid grid-cols-4 gap-5">
         <PaymentCard
           gateway={gateway}
@@ -246,7 +246,7 @@ const PaymentGateway = () => {
           </div>
 
           {!dataloading ? (
-            <table className="w-full text-left bg-[#0a3a75] text-white/90 shadow-md rounded-sm shadow-black/20">
+            <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-black/20">
               <thead>
                 <tr className="border-b">
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">
@@ -378,7 +378,7 @@ const PaymentCard = ({ setOpen, setTitle, open, gateway, image, paymentMethod, c
       style={{
         backgroundColor: color ? color : "#fff",
       }}
-      className={`relative border-2 px-5 h-[200px] shadow-lg bg-white rounded-md`}
+      className={`relative border px-5 h-[200px] bg-white rounded-md`}
     >
       <img
         className="w-full h-full object-contain"

@@ -33,7 +33,6 @@ const Eazobot = () => {
         `${BASE_URL}/leadeazbot/get/dashboard?ndid=5617a084-5783-4bac-b299-bdb6e8e471bb&hid=4534543`
       );
       const data = await response.json();
-      console.log(data);
     } catch (error) {
       console.error("Error fetching website details:", error);
     }

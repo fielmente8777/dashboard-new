@@ -75,7 +75,6 @@ const EazbotChat = () => {
         return contacts.find(chat => chat.guestId === selectedContact.guestId);
     }, [selectedContact, contacts]);
 
-    console.log(messages)
     return (
         <div className="h-[calc(100vh-8.2vh)] bg-gray-50 flex flex-col">
             {/* <Header /> */}

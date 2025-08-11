@@ -213,12 +213,10 @@ const RoomsAndInventory = () => {
 
     setInventoryBulkupdate(updatedBulkPriceUpdate);
     // setInventoryData(updatePriceData)
-    console.log(updatedBulkPriceUpdate);
   };
 
   const GetDataForDate = (date, key) => {
     if (key === "prev") {
-      console.log("daaa", date);
       const currentDate = new Date(date);
       currentDate.setDate(currentDate.getDate() - 7); // go 7 days back
       const formattedDate = formatDate(currentDate);

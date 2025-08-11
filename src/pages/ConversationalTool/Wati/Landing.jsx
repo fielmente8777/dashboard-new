@@ -95,7 +95,6 @@ function Landing() {
         customParams: attributesWithoutId,
       };
       const res = await AddWatiContact(data);
-      console.log(res);
       props.onHide();
       if (res) {
         toast.success("Contact added successfully");

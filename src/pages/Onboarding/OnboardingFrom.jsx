@@ -231,7 +231,6 @@ const OnboardingForm = () => {
       }
     );
 
-    console.log(data);
 
     if (data?.Status) {
       handleLocalStorage("hid", data?.hId);
@@ -272,7 +271,6 @@ const OnboardingForm = () => {
     );
     const data = await response.json();
 
-    console.log(data);
 
     setStepsData((prev) => {
       return {
@@ -405,11 +403,10 @@ const OnboardingForm = () => {
               return (
                 <div
                   key={step}
-                  className={`w-8 h-2 rounded-full flex items-center gap-2 cursor-pointer ${
-                    Number(step) === Number(currentStep)
+                  className={`w-8 h-2 rounded-full flex items-center gap-2 cursor-pointer ${Number(step) === Number(currentStep)
                       ? "bg-blue-300"
                       : "bg-gray-300"
-                  }`}
+                    }`}
                 />
               );
             })}
@@ -499,9 +496,8 @@ const OnboardingForm = () => {
               <button
                 disabled={currentStep === 1}
                 type="button"
-                className={`px-4 py-2 font-semibold bg-primary/85 text-white rounded-md  ${
-                  currentStep === 1 ? "opacity-60" : "hover:bg-primary/80"
-                }`}
+                className={`px-4 py-2 font-semibold bg-primary/85 text-white rounded-md  ${currentStep === 1 ? "opacity-60" : "hover:bg-primary/80"
+                  }`}
                 onClick={goToPrevStep}
               >
                 Prev

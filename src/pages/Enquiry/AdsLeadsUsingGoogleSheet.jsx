@@ -139,7 +139,6 @@ const AdsLeadsUsingGoogleSheet = () => {
       );
 
       const json = await response.json();
-      console.log(json);
 
       FetchSpreadSheetFromDb();
     } catch {
@@ -245,8 +244,6 @@ const AdsLeadsUsingGoogleSheet = () => {
       });
 
       const tokenData = await response.json();
-      // console.log("Token Data:", tokenData.access_token);
-      console.log("Token Data:", tokenData);
       const accessToken = tokenData.access_token; // <-- 🟡 important
       const refreshToken = tokenData.refresh_token; // <-- 🟡 important
 
@@ -634,8 +631,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                 handleConnectGoogleTool(provider, data);
               }}
               onReject={(err) => {
-                console.log("error");
-                console.log(err);
+                console.error("Error connecting google", err);
               }}
             >
               Connect with google

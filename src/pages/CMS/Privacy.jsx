@@ -19,7 +19,6 @@ const Analytics = () => {
   const dispatch = useDispatch();
 
   const handleChangeJodit = (idx, name, value) => {
-    console.log("value", text);
     // const updatedTerms = [...termsAndCondition]; // Create a copy of the array
     // updatedTerms[idx][name] = value; // Update the value at the specified index
     // setTermsAndCondition(updatedTerms); // Update the state with the modified array

@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { MarketPlaceService } from "../../data/constant";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 const MarkInterestedPopup = ({
   open,
   setOpen,
@@ -37,10 +37,20 @@ const MarkInterestedPopup = ({
             numbers_of_guest: "",
           }
         );
-        console.log(response.data.Status);
-        console.log("Request raised successfully!");
+        // console.log(response.data.Status);
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Request raised successfully!',
+          confirmButtonText: 'OK',
+        })
       } catch (error) {
-        console.log("Error raising request!", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Something went wrong!',
+        });
+        // console.log("Error raising request!", error);
       } finally {
         setOpen(false);
       }
@@ -52,7 +62,6 @@ const MarkInterestedPopup = ({
     setOpen(false);
   };
 
-  console.log(selectedServices);
   return (
     open && (
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
@@ -87,11 +96,10 @@ const MarkInterestedPopup = ({
                       handleAddService(item);
                     }}
                     className={`bg-gray-200 px-3 font-medium py-1 tracking-wide rounded-full text-[12px] text-gray-700 
-                                        ${
-                                          selectedServices?.includes(item)
-                                            ? "border-2 border-orange-400"
-                                            : "border-2 border-transparent"
-                                        }
+                                        ${selectedServices?.includes(item)
+                        ? "border-2 border-orange-400"
+                        : "border-2 border-transparent"
+                      }
                                         
                                         `}
                   >
