@@ -41,6 +41,7 @@ const Eazobot = () => {
     bot_type: "",
     chat_flow: [],
   });
+
   const [isLoader, setIsLoader] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
@@ -59,9 +60,9 @@ const Eazobot = () => {
           fallback_message: chatbotData.fallback_message,
           chat_terminate_message: chatbotData.chat_terminate_message,
           bg_color: chatbotData.bg_color,
-          textcolor: chatbotData.textcolor,
-          buttoncolor: chatbotData.buttoncolor,
-          buttontextcolor: chatbotData.buttontextcolor,
+          text_color: chatbotData.textcolor,
+          button_color: chatbotData.buttoncolor,
+          button_text_color: chatbotData.buttontextcolor,
           active: chatbotData.active,
           avatar_url: chatbotData.avatar_url,
           enable_live_chat: chatbotData.enable_live_chat,
@@ -70,6 +71,7 @@ const Eazobot = () => {
           show_eazotel_branding: chatbotData.show_eazotel_branding,
           bot_type: "lead",
           chat_flow: chatbotData?.chat_flow,
+          redirection_url: "thankyou",
         },
       };
 
@@ -147,11 +149,10 @@ const Eazobot = () => {
       setChatbotData((prev) => ({
         ...prev,
         ...data?.Data,
-        bg_color: data?.Data?.theme?.bg_color,
+        bgcolor: data?.Data?.theme?.bg_color,
       }));
     }
   };
-
 
   useEffect(() => {
     getChatbotDetails();
@@ -164,8 +165,9 @@ const Eazobot = () => {
           <div className="flex justify-end px-4">
             <button
               disabled={isLoader}
-              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${isLoader && "opacity-40"
-                }`}
+              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${
+                isLoader && "opacity-40"
+              }`}
               onClick={handlePublish}
             >
               Publish {isLoader && <Loader size={20} color="#fff" />}
@@ -182,10 +184,11 @@ const Eazobot = () => {
         <button
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className={`px-4 py-2 rounded text-white transition ${currentStep === 0
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-primary hover:bg-primary/80"
-            }`}
+          className={`px-4 py-2 rounded text-white transition ${
+            currentStep === 0
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/80"
+          }`}
         >
           Previous
         </button>
@@ -193,10 +196,11 @@ const Eazobot = () => {
         <button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className={`px-4 py-2 rounded text-white transition ${currentStep === steps.length
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-primary hover:bg-primary/80"
-            }`}
+          className={`px-4 py-2 rounded text-white transition ${
+            currentStep === steps.length
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/80"
+          }`}
         >
           {currentStep === steps.length - 1 ? "Finish" : "Next"}
         </button>
