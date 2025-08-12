@@ -172,6 +172,8 @@ const AdsLeadsUsingGoogleSheet = () => {
             sheetid,
             json.sheets[0].properties.title
           );
+          localStorage.setItem("SheetName", json.sheets[0].properties.title);
+          localStorage.setItem("SheetId", sheetid);
         }
       } else {
         settokenExpire(true);
