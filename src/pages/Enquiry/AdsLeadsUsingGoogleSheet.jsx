@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 // import { LoginSocialGoogle } from "reactjs-social-login";
-import { LoginSocialGoogle } from "reactjs-social-login";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { BASE_URL } from "../../data/constant";
 import AdLeadsAnalytics from "./AdLeadsAnalytics";
 import DataContext from "../../context/DataContext";
@@ -224,33 +224,52 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
 
-  const handleConnectGoogleTool = async (provider, data) => {
-    try {
-      // console.log(data);
-      const tokenEndpoint = "https://oauth2.googleapis.com/token";
-      const response = await fetch(tokenEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          code: data.code,
-          client_id:
-            "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com",
-          client_secret: "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",
-          redirect_uri: window.location.origin,
-          grant_type: "authorization_code",
-        }),
-      });
+  // const handleConnectGoogleTool = async (provider, data) => {
+  //   try {
+  //     // console.log(data);
+  //     const tokenEndpoint = "https://oauth2.googleapis.com/token";
+  //     const response = await fetch(tokenEndpoint, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/x-www-form-urlencoded",
+  //       },
+  //       body: new URLSearchParams({
+  //         code: data.code,
+  //         client_id:
+  //           "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com",
+  //         client_secret: "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",
+  //         redirect_uri: window.location.origin,
+  //         grant_type: "authorization_code",
+  //       }),
+  //     });
 
-      const tokenData = await response.json();
-      const accessToken = tokenData.access_token; // <-- 🟡 important
-      const refreshToken = tokenData.refresh_token; // <-- 🟡 important
+  //     const tokenData = await response.json();
+  //     const accessToken = tokenData.access_token; // <-- 🟡 important
+  //     const refreshToken = tokenData.refresh_token; // <-- 🟡 important
+
+  //     setsheetaccessToken(accessToken);
+  //     updateAccessTokenDb(accessToken, refreshToken);
+
+  //     if (Spreadsheet.length != 0) {
+  //       FetchSheetofSpreadSheet(Spreadsheet[0].id);
+  //     }
+  //   } catch (error) {
+  //     console.error("Google login error:", error);
+  //     updateAccessTokenDb("None");
+  //   }
+  // };
+
+  const handleConnectGoogleTool = async (credentialResponse) => {
+    try {
+      console.log("Google auth response:", credentialResponse);
+
+      // The access token is now directly available in the credentialResponse
+      const accessToken = credentialResponse.credential;
 
       setsheetaccessToken(accessToken);
-      updateAccessTokenDb(accessToken, refreshToken);
+      updateAccessTokenDb(accessToken, ""); // Refresh token not available in this flow
 
-      if (Spreadsheet.length != 0) {
+      if (Spreadsheet.length !== 0) {
         FetchSheetofSpreadSheet(Spreadsheet[0].id);
       }
     } catch (error) {
@@ -420,9 +439,9 @@ const AdsLeadsUsingGoogleSheet = () => {
           ) : sheetaccessToken !== "None" && !tokenExpire ? (
             <button
               className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
-            // onClick={() => {
-            //   updateSheetData();
-            // }}
+              // onClick={() => {
+              //   updateSheetData();
+              // }}
             >
               <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>
               Connected
@@ -439,7 +458,9 @@ const AdsLeadsUsingGoogleSheet = () => {
             <table className="border bg-white ">
               <thead>
                 <tr className="tablerow bg-primary text-white">
-                  <th className="w-auto px-2 py-3 border font-medium capitalize">S.N</th>
+                  <th className="w-auto px-2 py-3 border font-medium capitalize">
+                    S.N
+                  </th>
                   {headerRow &&
                     headerRow.length > 0 &&
                     headerRow?.map((headerLabel, idx) => {
@@ -464,15 +485,18 @@ const AdsLeadsUsingGoogleSheet = () => {
 
                   return (
                     <tr
-                      className={`cursor-pointer ${isToday
-                        ? "bg-blue-100 text-gray-900"
-                        : "text-gray-600  "
-                        }`}
+                      className={`cursor-pointer ${
+                        isToday
+                          ? "bg-blue-100 text-gray-900"
+                          : "text-gray-600  "
+                      }`}
                       onClick={() => {
                         setSelectedRow(rowindex);
                       }}
                     >
-                      <p className="w-auto px-2 py-2 outline-none border-t border-gray-300 text-center text-black">{rowindex + 1}</p>
+                      <p className="w-auto px-2 py-2 outline-none border-t border-gray-300 text-center text-black">
+                        {rowindex + 1}
+                      </p>
                       {data?.map((head, index) => {
                         const phoneRegex = /^p:\+?\d{10,15}$/i;
                         const isPhone = phoneRegex.test(head);
@@ -489,7 +513,8 @@ const AdsLeadsUsingGoogleSheet = () => {
                                 className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                                 target="_blank"
                                 to={`https://wa.me/${phone}?text=${encodeURIComponent(
-                                  `Hello! ${""}👋\nWelcome to ${hotel?.Profile?.hotelName
+                                  `Hello! ${""}👋\nWelcome to ${
+                                    hotel?.Profile?.hotelName
                                   } 🌐\nHow can I assist you today?`
                                 )}`}
                               >
@@ -619,7 +644,7 @@ const AdsLeadsUsingGoogleSheet = () => {
           </div>
 
           {/* Connection Button */}
-          <button className="w-full max-w-xs mx-auto bg-white border border-gray-300 rounded-lg py-3 px-6 flex items-center justify-center text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">
+          {/* <button className="w-full max-w-xs mx-auto bg-white border border-gray-300 rounded-lg py-3 px-6 flex items-center justify-center text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">
             <FaGoogle className="text-xl mr-3" />
             <LoginSocialGoogle
               client_id="737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
@@ -636,7 +661,18 @@ const AdsLeadsUsingGoogleSheet = () => {
             >
               Connect with google
             </LoginSocialGoogle>
-          </button>
+          </button> */}
+
+          <GoogleOAuthProvider clientId="737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com">
+            <GoogleLogin
+              onSuccess={handleConnectGoogleTool}
+              onError={() => {
+                console.log("Login Failed");
+              }}
+              scope="https://www.googleapis.com/auth/spreadsheets"
+              useOneTap
+            />
+          </GoogleOAuthProvider>
 
           {/* Privacy Notice */}
           <div className="mt-6 text-xs text-gray-500 flex items-center justify-center">

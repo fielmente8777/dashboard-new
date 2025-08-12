@@ -27,6 +27,7 @@ import ChannelManager from "../pages/Manager/ChannelManager";
 import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
 import FrontDesk from "../pages/FrontDesk/FrontDesk";
 import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
+import TestPage from "../pages/TestPage";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -35,7 +36,7 @@ const Navigation = () => {
     <Routes>
       {/* Public */}
       {/* navigate to dashboard client  */}
-
+      {/* <Route path="/test" element={<TestPage />} /> */}
       <Route path="/" element={<ProtectedRoute />} replace>
         <Route index element={<RootRoute />} />
       </Route>

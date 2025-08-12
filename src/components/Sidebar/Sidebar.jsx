@@ -391,7 +391,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
-            <div className="animate-pulse h-10 bg-gray-200" />
+            <div className="animate-pulse h-10 bg-gray-200" key={index} />
           ))
           : maniuplateSideBarData?.map((item, index) => {
             if (authUser?.isAdmin) {
