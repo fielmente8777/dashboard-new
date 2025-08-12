@@ -54,8 +54,9 @@ const templatesByChannel = {
 const ChannelOption = ({ channel, selected, onSelect }) => (
   <div
     onClick={() => onSelect(channel.id)}
-    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${selected === channel.id ? "bg-primary text-white" : "bg-white"
-      } border-primary/75`}
+    className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${
+      selected === channel.id ? "bg-primary text-white" : "bg-white"
+    } border-primary/75`}
   >
     <div>
       <div className="flex gap-2 items-center">
@@ -77,10 +78,11 @@ const TemplateCard = ({ template, selected, onSelect }) => (
     </div>
     <button
       onClick={() => onSelect(template)}
-      className={`px-4 py-2 rounded ${selected?.id === template.id
+      className={`px-4 py-2 rounded ${
+        selected?.id === template.id
           ? "bg-green-600 text-white"
           : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
+      }`}
     >
       {selected?.id === template.id ? "Selected" : "Select"}
     </button>
@@ -92,7 +94,6 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-
   const handleSend = () => {
     const phone = formatPhoneNumber(lead.Contact);
     const message = encodeURIComponent(selectedTemplate?.content?.trim());
@@ -102,21 +103,22 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
       return;
     }
 
-    const isMobile =
-      typeof window !== "undefined" &&
-      /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) &&
-      !window.matchMedia("(hover: hover)").matches;
+    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
 
-    const url = isMobile
-      ? `https://api.whatsapp.com/send?phone=${phone}&text=${message}` // Opens app
-      : `https://web.whatsapp.com/send?phone=${phone}&text=${message}`; // Opens Web
+    // const isMobile =
+    //   typeof window !== "undefined" &&
+    //   /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+    //   !window.matchMedia("(hover: hover)").matches;
+
+    // const url = isMobile
+    //   ? `https://api.whatsapp.com/send?phone=${phone}&text=${message}` // Opens app
+    //   : `https://web.whatsapp.com/send?phone=${phone}&text=${message}`; // Opens Web
 
     window.open(url, "_blank");
     setOpen(false);
   };
 
   if (!open) return null;
-
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">

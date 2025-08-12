@@ -11,6 +11,9 @@ import jsonToCsvExport from "json-to-csv-export";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { MdDeleteOutline } from "react-icons/md";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -48,6 +51,32 @@ const Leads = () => {
 
   const [filterPopup, setFilterPopup] = useState(false);
 
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+
+  const setDateRange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+
+    if (start && end) {
+      // Normalize to full-day range
+      console.log("inn");
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const filtered = enquires.filter((item) => {
+        const createdAtDate = new Date(item.Created_at);
+        return createdAtDate >= startOfDay && createdAtDate <= endOfDay;
+      });
+
+      setFilteredEnquires(filtered);
+    }
+  };
+
   const createExportData = (apiData) => {
     return apiData.map((item) => {
       const message = item?.Message || "";
@@ -84,12 +113,12 @@ const Leads = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.length > 0) {
+    if (searchTerm.length > 0 && enquires.length > 0) {
       const filtered = enquires.filter(
         (enquery) =>
-          enquery.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          enquery.Contact.includes(searchTerm) ||
-          enquery.Message.toLowerCase().includes(searchTerm.toLowerCase())
+          enquery?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          enquery?.Contact?.includes(searchTerm) ||
+          enquery?.Message?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredEnquires(filtered);
     } else {
@@ -376,6 +405,22 @@ const Leads = () => {
             />
           </div>
 
+          <div className="border border-gray-300 rounded-md p-1.5">
+            <DatePicker
+              // maxDate={msg?.disabled ? new Date() : undefined}
+              className="outline-none"
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              required
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              // isClearable
+              // minDate={new Date()}
+            />
+          </div>
+
           {/* <div className="w-1/3">
             <button
               className="w-full px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between"
@@ -398,6 +443,9 @@ const Leads = () => {
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    #
+                  </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Date Added
                   </th>
@@ -447,6 +495,10 @@ const Leads = () => {
                         setIsPopupOpen(true);
                       }}
                     >
+                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                        {index + 1}
+                      </td>
+
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
                         {enquery?.Created_at
                           ? formatDateTime(enquery?.Created_at)
