@@ -92,11 +92,11 @@ export const SidebarData = [
         link: `enquiries-management/meta-leads`,
         icon: <SiGoogleads size={18} />,
       },
-      {
-        name: "Meta Ads Performance",
-        link: `enquiries-management/meta-analytics`,
-        icon: <SiGoogleadsense size={18} />,
-      },
+      // {
+      //   name: "Meta Ads Performance",
+      //   link: `enquiries-management/meta-analytics`,
+      //   icon: <SiGoogleadsense size={18} />,
+      // },
     ],
   },
   {
