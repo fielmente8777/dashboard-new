@@ -12,6 +12,7 @@ import Services from "../../components/Card/Services";
 import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import { BASE_URL } from "../../data/constant";
 import DataContext from "../../context/DataContext";
+import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
 
 const Dashboard = () => {
   const [enquires, setEnquires] = useState([]);
@@ -257,6 +258,8 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      <ReservationForm />
     </>
   );
 };
