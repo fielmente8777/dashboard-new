@@ -161,22 +161,27 @@ const Dashboard = () => {
     {
       amount: enquires?.length,
       lable: "Total Leads",
-      progress: 50,
-    },
-    {
-      amount: getTodayQuery(enquires).length,
-      lable: "Today Leads",
-      progress: 18,
-    },
-    {
-      amount: eazobotEnquiries?.length,
-      lable: "Eazbot Leads",
       progress: 100,
     },
     {
+      amount: getTodayQuery(enquires).length,
+      lable: "Today",
+      progress: 5.8,
+    },
+    {
+      amount: eazobotEnquiries?.length,
+      lable: "Eazbot",
+      progress: 67,
+    },
+    {
+      amount: enquires?.length - eazobotEnquiries.length,
+      lable: "Webform",
+      progress: 33,
+    },
+    {
       amount: convertedEnquiries,
-      lable: "Lead Conversion",
-      progress: 78,
+      lable: "Conversion Rate",
+      progress: 0,
     },
   ];
 
@@ -185,7 +190,7 @@ const Dashboard = () => {
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}

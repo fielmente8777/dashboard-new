@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import DataContext from "../../context/DataContext";
 import { FaSourcetree } from "react-icons/fa";
+import DashboardCard from "../../components/Card/DashboardCard";
 
 const AdLeadsAnalytics = ({ showTitle = true }) => {
   const { Leads, setLeads } = useContext(DataContext);
@@ -287,118 +288,43 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
           {/* Total Leads Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-orange-100 rounded-xl shadow-sm p-5 border border-blue-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-blue-600 mb-1">
-                  Total Meta Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {insights.totalLeads || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            {dateRange.start && (
-              <p className="text-xs text-blue-500 mt-2">
-                Since {dateRange.start.toLocaleDateString()}
-              </p>
-            )}
-          </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-pink-200 rounded-xl shadow-sm p-5 border border-blue-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-blue-600 mb-1">
-                  Instagram Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {leadFromIg || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            {dateRange.start && (
+          {/* {dateRange.start && (
               <p className="text-xs text-blue-500 mt-2">
                 Since {dateRange.start.toLocaleDateString()}
               </p>
-            )}
-          </div>
+            )} */}
 
-          <div className="bg-gradient-to-br from-blue-50 to-blue-300 rounded-xl shadow-sm p-5 border border-blue-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-blue-600 mb-1">
-                  Facebook Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {leadFromFb || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            {dateRange.start && (
-              <p className="text-xs text-blue-500 mt-2">
-                Since {dateRange.start.toLocaleDateString()}
-              </p>
-            )}
-          </div>
+          <DashboardCard
+            amount={insights.totalLeads || 0}
+            label={"Total Meta Leads"}
+            progress={"100"}
+          />
+
+          <DashboardCard
+            amount={leadFromIg || 0}
+            label={"Instagram"}
+            progress={"30"}
+          />
+
+
+          <DashboardCard
+            amount={leadFromFb || 0}
+            label={"Facebook"}
+            progress={"70"}
+          />
 
           {/* Qualified Leads Card */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm p-5 border border-green-100 transition-all hover:shadow-md hover:scale-[1.02]">
+          <div className="bg-white rounded-xl p-5 ">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-green-600 mb-1">
-                  Qualified Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
+
+                <p className="text-4xl font-bold text-primary/90">
                   {insights.qualifiedLeads || 0}
                 </p>
+                <h3 className="text-lg font-medium text-green-600 mb-1">
+                  Qualified
+                </h3>
               </div>
               <div className="p-3 rounded-lg bg-green-100 text-green-600">
                 <svg
@@ -419,11 +345,10 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
             </div>
             <div className="mt-2">
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                  insights.qualifiedLeads > 0
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${insights.qualifiedLeads > 0
+                  ? "bg-green-100 text-green-800"
+                  : "bg-gray-100 text-gray-800"
+                  }`}
               >
                 {insights.qualifiedLeads > 0
                   ? "Good progress"
@@ -433,54 +358,25 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
           </div>
 
           {/* Conversion Rate Card */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-sm p-5 border border-purple-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-purple-600 mb-1">
-                  Conversion Rate
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {insights.conversionRate || 0}%
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
-              <div
-                className="bg-purple-600 h-1.5 rounded-full"
-                style={{
-                  width: `${Math.min(100, insights.conversionRate || 0)}%`,
-                }}
-              ></div>
-            </div>
-          </div>
+
+          <DashboardCard
+            amount={insights.conversionRate === "0.0" ? insights.conversionRate.split('.')[0] : insights.conversionRate || 0}
+            label={"Conversion Rate"}
+            progress={"0"}
+          />
 
           {/* Top Location Card */}
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl shadow-sm p-5 border border-amber-100 transition-all hover:shadow-md hover:scale-[1.02]">
+          <div className="rounded-xl p-5 bg-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-amber-600 mb-1">
-                  Top Location
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
+
+                <p className="text-4xl font-bold text-primary/90">
                   {(chartData.locations && chartData.locations[0]?.name) ||
                     "N/A"}
                 </p>
+                <h3 className="text-lg font-medium text-amber-600 mb-1">
+                  Top Location
+                </h3>
               </div>
               <div className="p-3 rounded-lg bg-amber-100 text-amber-600">
                 <svg
@@ -565,11 +461,10 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-md ${
-                      activeTab === tab
-                        ? "border-blue-500 text-blue-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-md ${activeTab === tab
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>

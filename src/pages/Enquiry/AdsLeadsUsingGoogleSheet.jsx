@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 // import { LoginSocialGoogle } from "reactjs-social-login";
 import { LoginSocialGoogle } from "reactjs-social-login";
 import { BASE_URL } from "../../data/constant";
@@ -422,9 +422,9 @@ const AdsLeadsUsingGoogleSheet = () => {
           ) : sheetaccessToken !== "None" && !tokenExpire ? (
             <button
               className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
-              // onClick={() => {
-              //   updateSheetData();
-              // }}
+            // onClick={() => {
+            //   updateSheetData();
+            // }}
             >
               <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>
               Connected
@@ -468,11 +468,10 @@ const AdsLeadsUsingGoogleSheet = () => {
 
                   return (
                     <tr
-                      className={`cursor-pointer ${
-                        isToday
+                      className={`cursor-pointer ${isToday
                           ? "bg-blue-100 text-gray-900"
                           : "text-gray-600  "
-                      }`}
+                        }`}
                       onClick={() => {
                         setSelectedRow(rowindex);
                       }}
@@ -496,8 +495,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                                 className="w-auto px-2 py-2 outline-none  rounded-md text-black"
                                 target="_blank"
                                 to={`https://wa.me/${phone}?text=${encodeURIComponent(
-                                  `Hello! ${""}👋\nWelcome to ${
-                                    hotel?.Profile?.hotelName
+                                  `Hello! ${""}👋\nWelcome to ${hotel?.Profile?.hotelName
                                   } 🌐\nHow can I assist you today?`
                                 )}`}
                               >
