@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 
-export default function ReservationForm() {
+export default function ReservationForm({ data }) {
   const [form, setForm] = useState({
-    firstName: "",
+    firstName: data?.Name,
     lastName: "",
-    email: "",
-    phone: "",
+    email: data?.Email,
+    phone: data?.Contact,
     checkIn: "",
     checkOut: "",
     arrivalTime: "",
@@ -380,7 +380,7 @@ export default function ReservationForm() {
 
           {/* RIGHT SIDE */}
           <div className="space-y-6">
-            <div className="bg-white shadow-sm rounded-md p-4 space-y-2 text-sm sticky top-6">
+            <div className="bg-white shadow-sm rounded-md p-4 space-y-2 text-sm">
               <h2 className="font-semibold text-lg mb-2">Pricing Summary</h2>
               <div className="flex justify-between">
                 <span>Nights</span>
@@ -435,10 +435,6 @@ export default function ReservationForm() {
             </div>
           </div>
         </form>
-
-        <footer className="text-center text-xs text-slate-500 pt-4">
-          Made with React + Tailwind CSS
-        </footer>
       </div>
     </div>
   );

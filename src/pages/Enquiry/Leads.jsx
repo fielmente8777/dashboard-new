@@ -14,6 +14,7 @@ import { MdDeleteOutline } from "react-icons/md";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -53,6 +54,7 @@ const Leads = () => {
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [reserveData, setReserveData] = useState(null);
 
   const setDateRange = (dates) => {
     const [start, end] = dates;
@@ -447,6 +449,9 @@ const Leads = () => {
                     #
                   </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    Reserve
+                  </th>
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Date Added
                   </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
@@ -497,6 +502,16 @@ const Leads = () => {
                     >
                       <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
                         {index + 1}
+                      </td>
+
+                      <td
+                        className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReserveData(enquery);
+                        }}
+                      >
+                        Reserve
                       </td>
 
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
@@ -688,6 +703,19 @@ const Leads = () => {
                 Next →
               </button>
             </nav>
+          </div>
+        )}
+
+        {reserveData && (
+          <div className="fixed inset-0 z-50 overflow-auto">
+            <div
+              className="bg-white flex justify-end px-4 pt-2 text-2xl font-bold cursor-pointer"
+              onClick={() => setReserveData(null)}
+            >
+              X
+            </div>
+
+            <ReservationForm data={reserveData} />
           </div>
         )}
       </div>
