@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { FiEdit, FiEye, FiEyeOff } from "react-icons/fi";
+import {
+  FiChevronDown,
+  FiChevronRight,
+  FiEdit,
+  FiEye,
+  FiEyeOff,
+  FiTrash2,
+} from "react-icons/fi";
 
 // Supported input types for questions
 const INPUT_TYPES = [
@@ -14,6 +21,8 @@ const INPUT_TYPES = [
 
 const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   const [activeTab, setActiveTab] = useState("basic");
+  const [expandedIndex, setExpandedIndex] = useState(null);
+  const [editingOption, setEditingOption] = useState(null);
 
   console.log(chatbotData);
 
@@ -75,6 +84,68 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     }));
   };
 
+  const toggleExpand = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
+
+  // Toggle option active status
+  const toggleOptionStatus = (qIndex, oIndex) => {
+    setChatbotData((prev) => {
+      const updated = { ...prev };
+      updated.chat_flow[qIndex].options[oIndex].active =
+        !updated.chat_flow[qIndex].options[oIndex].active;
+      return updated;
+    });
+  };
+
+  // Handle option editing
+  const handleOptionChange = (qIndex, oIndex, field, newValue) => {
+    setChatbotData((prev) => {
+      const updated = { ...prev };
+      updated.chat_flow[qIndex].options[oIndex][field] = newValue;
+      return updated;
+    });
+  };
+
+  const addOption = (qIndex) => {
+    setChatbotData((prev) => {
+      const newData = { ...prev };
+      const options = newData.chat_flow[qIndex].options || [];
+      options.push({
+        label: "New Option",
+        value: "new_option",
+        active: true,
+      });
+      newData.chat_flow[qIndex].options = [...options];
+      return newData;
+    });
+
+    // immediately put new option into edit mode
+    setEditingOption({
+      index: qIndex,
+      oIndex: chatbotData.chat_flow[qIndex].options.length,
+    });
+  };
+
+  const removeOption = (qIndex, oIndex) => {
+    setChatbotData((prev) => {
+      const newData = { ...prev };
+      const options = newData.chat_flow[qIndex].options || [];
+
+      // remove by filtering out the option at oIndex
+      newData.chat_flow[qIndex].options = options.filter(
+        (_, i) => i !== oIndex
+      );
+
+      return newData;
+    });
+
+    // if you were editing the option being removed, reset editing
+    setEditingOption((prev) =>
+      prev && prev.index === qIndex && prev.oIndex === oIndex ? null : prev
+    );
+  };
+
   const deleteQuestion = (index) => {
     const updatedQuestions = chatbotData.chat_flow.filter(
       (_, i) => i !== index
@@ -82,6 +153,8 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     setChatbotData({ ...chatbotData, chat_flow: updatedQuestions });
     setIsEdit(true);
   };
+
+  console.log(chatbotData);
 
   return (
     <div className="px-4">
@@ -243,51 +316,263 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           {/* QUESTIONS LIST */}
           <div className="space-y-4">
             {chatbotData?.chat_flow?.map((q, index) => {
-              const isActive = q.active;
+              const isActive = q.active ?? true;
+              const isExpanded = expandedIndex === index;
 
               return (
-                <div
-                  key={index}
-                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
-                    isActive ? "bg-white" : "bg-gray-100 opacity-60"
-                  }`}
-                >
-                  <div>
-                    <div className="text-md font-medium text-gray-500">
-                      {q.question}{" "}
-                      <span className="text-gray-500">({q.type})</span>
+                <div className="flex flex-col">
+                  <div
+                    key={index}
+                    className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
+                      isActive ? "bg-white" : "bg-gray-100 opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-center gap-1">
+                      {q.options && q.options.length > 0 && (
+                        <button
+                          onClick={() => toggleExpand(index)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          {isExpanded ? (
+                            <FiChevronDown size={16} />
+                          ) : (
+                            <FiChevronRight size={16} />
+                          )}
+                        </button>
+                      )}
+
+                      <div>
+                        <div className="text-md font-medium text-gray-500">
+                          {q.question}{" "}
+                          <span className="text-gray-500">({q.type})</span>
+                        </div>
+                        <div className="text-sm text-gray-500 font-medium">
+                          Key: {q.key}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500 font-medium">
-                      Key: {q.key}
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    {/* Toggle Active Status */}
-                    <button
-                      onClick={() => toggleStatus(index)}
-                      className="text-gray-600 hover:text-gray-800 transition"
-                      title={isActive ? "Deactivate" : "Activate"}
-                    >
-                      {isActive ? <FiEye size={16} /> : <FiEyeOff size={16} />}
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {/* Toggle Active Status */}
+                      <button
+                        onClick={() => toggleStatus(index)}
+                        className="text-gray-600 hover:text-gray-800 transition"
+                        title={isActive ? "Deactivate" : "Activate"}
+                      >
+                        {isActive ? (
+                          <FiEye size={16} />
+                        ) : (
+                          <FiEyeOff size={16} />
+                        )}
+                      </button>
 
-                    {/* Edit Button */}
-                    <button
-                      onClick={() => startEditing(index)}
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      <FiEdit size={16} />
-                    </button>
+                      {/* Edit Button */}
+                      <button
+                        onClick={() => startEditing(index)}
+                        className="text-blue-600 hover:underline text-sm"
+                      >
+                        <FiEdit size={16} />
+                      </button>
 
-                    {/* Delete Button */}
-                    {/* <button
+                      {/* Delete Button */}
+                      {/* <button
                       onClick={() => deleteQuestion(index)}
                       className="text-red-500 hover:underline text-sm"
                     >
                       Delete
                     </button> */}
+                    </div>
                   </div>
+
+                  {isExpanded &&
+                    q.options &&
+                    q.options.length > 0 &&
+                    isActive && (
+                      <div className="mt-3 space-y-2">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => addOption(index)}
+                            className="text-green-600 text-sm font-medium hover:underline"
+                            disabled={!isActive}
+                          >
+                            + Add Option
+                          </button>
+                        </div>
+                        {q.options.map((opt, oIndex) => {
+                          const isOptionActive = opt.active ?? true;
+                          const isEditing =
+                            editingOption?.index === index &&
+                            editingOption?.oIndex === oIndex;
+
+                          return (
+                            <div
+                              key={oIndex}
+                              className={`flex gap-4 items-center justify-between p-3 border rounded-md ${
+                                isOptionActive
+                                  ? "bg-gray-50"
+                                  : "bg-gray-100 opacity-60"
+                              }`}
+                            >
+                              {/* Left side */}
+                              <div className="flex items-center gap-2 flex-1">
+                                {q.type === "radio" && (
+                                  <input type="radio" disabled />
+                                )}
+                                {q.type === "checkbox" && (
+                                  <input type="checkbox" disabled />
+                                )}
+                                {q.type === "select" && (
+                                  <span className="text-xs text-blue-500 px-2 py-1 border rounded">
+                                    Select Option
+                                  </span>
+                                )}
+
+                                {isEditing ? (
+                                  <div className="flex gap-2 w-full">
+                                    <input
+                                      type="text"
+                                      value={opt.label}
+                                      onChange={(e) =>
+                                        handleOptionChange(
+                                          index,
+                                          oIndex,
+                                          "label",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="border rounded px-2 py-2 text-sm w-1/2"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={opt.value}
+                                      onChange={(e) =>
+                                        handleOptionChange(
+                                          index,
+                                          oIndex,
+                                          "value",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="border rounded px-2 py-1 text-sm w-1/2"
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {opt.label}
+                                    </span>
+                                    <span className="text-xs text-gray-400">
+                                      ({opt.value})
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Right side actions */}
+                              <div className="flex items-center gap-3">
+                                <button
+                                  onClick={() =>
+                                    toggleOptionStatus(index, oIndex)
+                                  }
+                                  className="text-gray-600 hover:text-gray-800 transition"
+                                  disabled={!isActive} // disable if parent not active
+                                  title={
+                                    isOptionActive
+                                      ? "Hide Option"
+                                      : "Show Option"
+                                  }
+                                >
+                                  {isOptionActive ? (
+                                    <FiEye size={14} />
+                                  ) : (
+                                    <FiEyeOff size={14} />
+                                  )}
+                                </button>
+                                {isEditing ? (
+                                  <button
+                                    onClick={() => setEditingOption(null)}
+                                    className="text-green-600 text-xs font-medium"
+                                  >
+                                    Save
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() =>
+                                      setEditingOption({ index, oIndex })
+                                    }
+                                    className="text-blue-600 text-xs font-medium"
+                                    title="Edit Option"
+                                  >
+                                    <FiEdit size={14} />
+                                  </button>
+                                )}
+                                {/* Delete */}
+                                <button
+                                  onClick={() => removeOption(index, oIndex)}
+                                  className="text-red-600 hover:text-red-800 transition"
+                                  title="Remove Option"
+                                >
+                                  <FiTrash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                  {/* {isExpanded && q.options && q.options.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {q.options.map((opt, oIndex) => {
+                        const isOptionActive = opt.active ?? true;
+
+                        return (
+                          <div
+                            key={oIndex}
+                            className={`flex items-center justify-between p-2 border rounded-md ${
+                              isOptionActive
+                                ? "bg-gray-50"
+                                : "bg-gray-100 opacity-60"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              {q.type === "radio" && (
+                                <input type="radio" disabled />
+                              )}
+                              {q.type === "checkbox" && (
+                                <input type="checkbox" disabled />
+                              )}
+                              {q.type === "select" && (
+                                <span className="text-xs text-blue-500 px-2 py-1 border rounded">
+                                  Select Option
+                                </span>
+                              )}
+                              <span className="text-sm font-medium text-gray-700">
+                                {opt.label}
+                              </span>
+                              <span className="text-xs text-gray-400">
+                                ({opt.value})
+                              </span>
+                            </div>
+
+                            <button
+                              // onClick={() => toggleOptionStatus(qIndex, oIndex)}
+                              className="text-gray-600 hover:text-gray-800 transition"
+                              title={
+                                isOptionActive ? "Hide Option" : "Show Option"
+                              }
+                            >
+                              {isOptionActive ? (
+                                <FiEye size={14} />
+                              ) : (
+                                <FiEyeOff size={14} />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )} */}
                 </div>
               );
             })}

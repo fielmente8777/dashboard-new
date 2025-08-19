@@ -318,6 +318,13 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup size={22} />,
   },
 
+  {
+    name: "Settings",
+    // key: "Setting",
+    link: `setting`,
+    icon: <HiOutlineUserGroup size={22} />,
+  },
+
   // {
   //   name: "Social Media",
   //   key: "Social Media",

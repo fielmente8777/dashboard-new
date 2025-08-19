@@ -27,6 +27,7 @@ import ChannelManager from "../pages/Manager/ChannelManager";
 import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
 import FrontDesk from "../pages/FrontDesk/FrontDesk";
 import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
+import Setting from "../pages/Setting/Setting";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -73,6 +74,7 @@ const Navigation = () => {
         <Route path="pms-software" element={<ChannelManager />} />
         <Route path="sms-marketing" element={<EmailMarketing />} />
         <Route path="front-desk" element={<FrontDesk />} />
+        <Route path="setting" element={<Setting />} />
 
         {SidebarData?.map((data, index) => {
           if (!data?.subLinks)

@@ -145,18 +145,18 @@ const Navbar = () => {
               <RxDashboard size={22} />{" "}
               <p className="text-md font-semibold">Marketplace</p>
             </div>
-            <div>
+            {/* <div>
               <MdSettings
                 onClick={() => setIsChangePasswordPopupOpen(true)}
                 className="text-white"
                 size={24}
               />
-            </div>
+            </div> */}
             <button
               style={{
                 backgroundColor:
                   letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
+                    hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
                   ],
               }}
               onClick={() => setIsProfileOpen(true)}
@@ -185,10 +185,10 @@ const Navbar = () => {
             letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
           }
         />
-        <ChangePassword
+        {/* <ChangePassword
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
-        />
+        /> */}
       </div>
     </div>
   );

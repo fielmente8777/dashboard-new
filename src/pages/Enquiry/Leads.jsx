@@ -6,7 +6,7 @@ import { formatDateTime } from "../../services/formateDate";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import FilterPopup from "../../components/Popup/FilterPopup";
-import { FaFileExcel } from "react-icons/fa";
+import { FaFileExcel, FaTrash, FaTrashAlt } from "react-icons/fa";
 import jsonToCsvExport from "json-to-csv-export";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -55,6 +55,8 @@ const Leads = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [reserveData, setReserveData] = useState(null);
+
+  const [rowSelected, setRowSelected] = useState([]);
 
   const setDateRange = (dates) => {
     const [start, end] = dates;
@@ -227,6 +229,7 @@ const Leads = () => {
   );
 
   const handlePageChange = (page) => {
+    setRowSelected([]);
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
@@ -335,6 +338,40 @@ const Leads = () => {
       }
     }
   };
+  const handleRowSelect = (id) => {
+    setRowSelected((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    setRowSelected((prev) =>
+      prev.length === currentItems.length
+        ? []
+        : currentItems.map((item) => item._id)
+    );
+  };
+
+  const handleDeleteAll = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // 🔴 Call your delete API here
+        // Example:
+        // await axios.delete(`${BASE_URL}/delete/${id}`);
+
+        Swal.fire("Deleted!", "The record has been removed.", "success");
+      }
+    });
+  };
 
   return (
     <div className="cardShadow">
@@ -442,9 +479,25 @@ const Leads = () => {
 
         {!loading ? (
           <div className="overflow-auto">
+            {rowSelected?.length > 0 && (
+              <button
+                className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2"
+                onClick={handleDeleteAll}
+              >
+                Delete All <FaTrashAlt size={12} />
+              </button>
+            )}
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
+                  {/* <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    <input
+                      type="checkbox"
+                      onClick={handleSelectAll}
+                      checked={rowSelected.length === currentItems.length}
+                    />
+                  </th> */}
+
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     #
                   </th>
@@ -500,6 +553,16 @@ const Leads = () => {
                         setIsPopupOpen(true);
                       }}
                     >
+                      {/* <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={rowSelected.includes(enquery?._id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRowSelect(enquery?._id);
+                          }}
+                        />
+                      </td> */}
                       <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
                         {index + 1}
                       </td>
