@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from "react";
+import { extractBookingDates } from "../../utils/dateExtract";
+import { formatToDateInput } from "../../utils/formatDateInput";
+import { addReservation } from "../../services/api/bookingEngine";
 
 export default function ReservationForm({ data }) {
   const [form, setForm] = useState({
@@ -6,10 +9,10 @@ export default function ReservationForm({ data }) {
     lastName: "",
     email: data?.Email,
     phone: data?.Contact,
-    checkIn: "",
-    checkOut: "",
+    checkIn: formatToDateInput(extractBookingDates(data?.Message)?.checkIn),
+    checkOut: formatToDateInput(extractBookingDates(data?.Message)?.checkOut),
     arrivalTime: "",
-    adults: 2,
+    adults: 1,
     children: 0,
     rooms: 1,
     roomType: "Deluxe",
@@ -58,7 +61,7 @@ export default function ReservationForm({ data }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = {
       ...form,
@@ -66,8 +69,66 @@ export default function ReservationForm({ data }) {
       pricing: { subtotal, taxes, total, currency: form.currency },
       createdAt: new Date().toISOString(),
     };
-    setSubmitted(payload);
-    console.log("Reservation submitted", payload);
+
+    const formData = {
+      hId: localStorage.getItem("hid"),
+      ndid: localStorage.getItem("ndid"),
+      amount: 100,
+      currency: "INR",
+      guestInfo: {
+        guestName: "Divyanshu",
+        EmailId: "Divyanshu@gmail.com",
+        Phone: "9119059286",
+        City: "Dhampur",
+        Country: {
+          label: "IN",
+          code: "india",
+        },
+        address: "3425 Vivek Nagar Sultanpur",
+      },
+      roomNumbers: [],
+      Adults: 1,
+      Kids: 1,
+      Bookings: [{ RoomType: "5", Qty: 3 }],
+      payment: {
+        Status: "PENDING",
+        RefNo: "",
+        PaymentProvider: "RazorPay",
+        Mode: "Offline",
+      },
+      mealPlan: {
+        PackageId: "NA",
+        PackageName: "NA",
+        PackagePrice: "NA",
+        PackageType: "NA",
+      },
+      promocode: {
+        PromoId: "NA",
+        Code: "NA",
+        Discount: "NA",
+      },
+      packages: {
+        packageId: "NA",
+        packageName: "NA",
+        packagePrice: "NA",
+        specialRequest: "NA",
+      },
+      checkIn: "2024-02-06",
+      checkOut: "2024-02-07",
+      price: {
+        Principal: 800,
+        Tax: 100,
+        Total: 1000,
+        amountPay: 500,
+      },
+    };
+
+    try {
+      const response = await addReservation(formData);
+      console.log(response);
+    } catch (error) {}
+    // setSubmitted(payload);
+    // console.log("Reservation submitted", payload);
   };
 
   const handleReset = () => {
@@ -99,6 +160,8 @@ export default function ReservationForm({ data }) {
     });
     setSubmitted(null);
   };
+
+  console.log(data);
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 md:p-10">
@@ -150,14 +213,14 @@ export default function ReservationForm({ data }) {
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
-                <input
+                {/* <input
                   required
                   name="lastName"
                   placeholder="Last Name *"
                   value={form.lastName}
                   onChange={handleChange}
                   className="border p-2 rounded"
-                />
+                /> */}
                 <input
                   required
                   name="email"
@@ -176,13 +239,13 @@ export default function ReservationForm({ data }) {
                   className="border p-2 rounded"
                 />
                 <input
-                  name="address"
-                  placeholder="Address"
+                  name="aadhar"
+                  placeholder="Aadhar Card"
                   value={form.address}
                   onChange={handleChange}
                   className="border p-2 rounded md:col-span-2"
                 />
-                <input
+                {/* <input
                   name="company"
                   placeholder="Company"
                   value={form.company}
@@ -195,7 +258,7 @@ export default function ReservationForm({ data }) {
                   value={form.gstVat}
                   onChange={handleChange}
                   className="border p-2 rounded"
-                />
+                /> */}
               </div>
             </div>
 

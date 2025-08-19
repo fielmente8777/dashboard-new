@@ -15,6 +15,8 @@ const INPUT_TYPES = [
 const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   const [activeTab, setActiveTab] = useState("basic");
 
+  console.log(chatbotData);
+
   // Questions tab states
   const [editIndex, setEditIndex] = useState(null);
   const [editQuestion, setEditQuestion] = useState({
@@ -83,7 +85,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
 
   return (
     <div className="px-4">
-      <h2 className="text-lg font-semibold mb-6 text-gray-800">Configure Bot</h2>
+      <h2 className="text-lg font-semibold mb-6 text-gray-800">
+        Configure Bot
+      </h2>
 
       {/* Tabs */}
       <div className="flex space-x-4 mb-6">
@@ -91,8 +95,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-md font-medium ${activeTab === tab ? "bg-primary text-white" : "bg-gray-200"
-              }`}
+            className={`px-4 py-2 rounded-md font-medium ${
+              activeTab === tab ? "bg-primary text-white" : "bg-gray-200"
+            }`}
           >
             {tab === "basic" ? "Basic Setup" : "Questions"}
           </button>
@@ -104,7 +109,12 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           {/* BASIC SETUP FORM */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <lable htmlFor="terminate" className="font-medium text-md text-gray-500">Chat Terminate Message</lable>
+              <lable
+                htmlFor="terminate"
+                className="font-medium text-md text-gray-500"
+              >
+                Chat Terminate Message
+              </lable>
               <input
                 id="terminate"
                 type="text"
@@ -117,7 +127,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             </div>
 
             <div>
-              <lable htmlFor="fallback" className="font-medium text-gray-500" >Fallback Message</lable>
+              <lable htmlFor="fallback" className="font-medium text-gray-500">
+                Fallback Message
+              </lable>
               <input
                 id="fallback"
                 type="text"
@@ -129,7 +141,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               />
             </div>
             <div className="md:col-span-2">
-              <lable htmlFor="interval" className="font-medium text-gray-500" >Time Intetval</lable>
+              <lable htmlFor="interval" className="font-medium text-gray-500">
+                Time Intetval
+              </lable>
               <input
                 id="interval"
                 type="number"
@@ -234,15 +248,18 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               return (
                 <div
                   key={index}
-                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${isActive ? "bg-white" : "bg-gray-100 opacity-60"
-                    }`}
+                  className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
+                    isActive ? "bg-white" : "bg-gray-100 opacity-60"
+                  }`}
                 >
                   <div>
                     <div className="text-md font-medium text-gray-500">
                       {q.question}{" "}
                       <span className="text-gray-500">({q.type})</span>
                     </div>
-                    <div className="text-sm text-gray-500 font-medium">Key: {q.key}</div>
+                    <div className="text-sm text-gray-500 font-medium">
+                      Key: {q.key}
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">

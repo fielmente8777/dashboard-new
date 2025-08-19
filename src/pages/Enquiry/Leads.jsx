@@ -707,15 +707,19 @@ const Leads = () => {
         )}
 
         {reserveData && (
-          <div className="fixed inset-0 z-50 overflow-auto">
-            <div
-              className="bg-white flex justify-end px-4 pt-2 text-2xl font-bold cursor-pointer"
-              onClick={() => setReserveData(null)}
-            >
-              X
-            </div>
+          <div className="fixed inset-0 z-50 bg-black/50 overflow-auto hide-scrollbar">
+            <div className="max-w-7xl w-full p-2 mx-auto rounded-md">
+              <div
+                className="bg-white flex justify-end px-4 pt-2 text-2xl font-bold cursor-pointer rounded-t-md"
+                onClick={() => setReserveData(null)}
+              >
+                X
+              </div>
 
-            <ReservationForm data={reserveData} />
+              <div>
+                <ReservationForm data={reserveData} />
+              </div>
+            </div>
           </div>
         )}
       </div>
