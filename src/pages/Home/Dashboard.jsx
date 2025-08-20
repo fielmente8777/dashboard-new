@@ -21,6 +21,9 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const { Leads, setLeads } = useContext(DataContext);
 
+  const [dateRange, setDateRange] = useState(""); // default 7 days
+  // const [data, setData] = useState([]);
+
   // const navigate = useNavigate();
   // const location = useLocation();
   // const { setHomeNotifications, } = useContext(DataContext);
@@ -149,6 +152,26 @@ const Dashboard = () => {
     }
   };
 
+  const handleDateSelect = (e) => {
+    const { value } = e.target;
+    setDateRange(value);
+    const now = new Date();
+
+    let days = 7;
+    if (value === "30d") days = 30;
+    else if (value === "90d") days = 90;
+
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+
+    const filtered = enquires.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    setEnquires(filtered);
+  };
+
   useEffect(() => {
     fetchEnquires(localStorage.getItem("token"));
     FetchSheetsDataofSpreadSheet(
@@ -185,12 +208,29 @@ const Dashboard = () => {
     },
   ];
 
+  console.log(enquires);
+
   return (
     <>
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
+
+          <div className="flex items-center justify-between p-2">
+            <h2 className="text-lg font-semibold">Date Selected</h2>
+            <select
+              value={dateRange}
+              onChange={handleDateSelect}
+              className="border border-gray-400 shadow-md rounded-md px-3 py-2 text-sm outline-none cursor-pointer"
+            >
+              <option value="">Select Date</option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-6 gap-4 md:gap-6 mt-4">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}
@@ -199,6 +239,8 @@ const Dashboard = () => {
                 key={index}
               />
             ))}
+
+            <div>helo</div>
           </div>
 
           <div>
@@ -264,7 +306,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      <ReservationForm />
+      {/* <ReservationForm /> */}
     </>
   );
 };
