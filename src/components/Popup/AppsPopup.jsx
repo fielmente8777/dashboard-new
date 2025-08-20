@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { MdClose } from "react-icons/md";
 
 const AppsPopup = ({ open, setOpen, authUser }) => {
-
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -29,19 +28,18 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       key: "OTA Management",
       link: "ota-management",
     },
-    {
-      name: "Accounting",
-      icon: "💼",
-      key: "Accounting",
-      link: "accounting",
-    },
+    // {
+    //   name: "Accounting",
+    //   icon: "💼",
+    //   key: "Accounting",
+    //   link: "accounting",
+    // },
     {
       name: "GST Filing",
       icon: "🧾",
       key: "GST Filing",
       link: "gst-filing",
     },
-
 
     {
       name: "Performance Marketing",
@@ -80,12 +78,12 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
       key: "Influencer Marketing",
       link: "influencer-marketing",
     },
-    {
-      name: "Social Media",
-      icon: "📱",
-      key: "Social Media",
-      link: "social-media",
-    },
+    // {
+    //   name: "Social Media",
+    //   icon: "📱",
+    //   key: "Social Media",
+    //   link: "social-media",
+    // },
     {
       name: "Email Marketing",
       icon: "📧",
@@ -112,7 +110,6 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
     //   link: "lead-form/lead-gen-form",
     // },
     // { name: "Eazobot", icon: "🤖", key: "Eazobot", link: "eazobot" },
-
 
     // { name: "GRM", icon: "📊", key: "GRM", link: "grm/analytics" }, // Assuming GRM relates to reporting or analytics
   ];
@@ -186,7 +183,6 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
     //   link: "booking-engine",
     // },
 
-
     {
       name: "SMS Marketing",
       icon: "📲",
@@ -227,13 +223,12 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
     service.name.toLowerCase().includes(search.toLowerCase())
   );
 
-
   useEffect(() => {
     if (search.length < 1) {
       filteredPremium = peoplePlusServices;
-      filteredOther = otherServices
+      filteredOther = otherServices;
     }
-  }, [])
+  }, []);
 
   const handleOpenService = (service) => {
     // console.log(service.link)
@@ -267,8 +262,6 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
     navigate(service.link);
   };
 
-
-
   return (
     <>
       {open && (
@@ -285,7 +278,6 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
             className="text-[#575757] bg-white w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
           >
             <div className="relative flex items-center">
-
               <input
                 type="text"
                 autoFocus
@@ -295,60 +287,68 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                 placeholder="Search Services"
                 className="bg-white py-4 w-full px-5 outline-none border  "
               />
-              <MdClose onClick={() => setOpen(false)} className=" mr-2 md:mr-5 cursor-pointer text-2xl md:text-3xl absolute right-0" />
+              <MdClose
+                onClick={() => setOpen(false)}
+                className=" mr-2 md:mr-5 cursor-pointer text-2xl md:text-3xl absolute right-0"
+              />
             </div>
 
             <div className=" p-4 pb-20 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
-              {filteredPremium.length > 0 && <div>
-                <h2 className="font-semibold mb-2">Premium Services</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-6">
-                  {filteredPremium.map((service) => (
-                    <div
-                      key={service.name}
-                      className="relative group cursor-pointer  shadow bg-white hover:bg-white duration-75 rounded-md"
-                      onClick={() => {
-                        handleOpenService(service);
-                      }}
-                    >
-                      <div className="flex flex-col items-center justify-center py-6 px-1">
-                        <div className="text-2xl mb-2">{service.icon}</div>
-                        <span className="text-center">{service.name}</span>
-                      </div>
+              {filteredPremium.length > 0 && (
+                <div>
+                  <h2 className="font-semibold mb-2">Premium Services</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-6">
+                    {filteredPremium.map((service) => (
+                      <div
+                        key={service.name}
+                        className="relative group cursor-pointer  shadow bg-white hover:bg-white duration-75 rounded-md"
+                        onClick={() => {
+                          handleOpenService(service);
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center py-6 px-1">
+                          <div className="text-2xl mb-2">{service.icon}</div>
+                          <span className="text-center">{service.name}</span>
+                        </div>
 
-                      <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                        {service.name}
+                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                          {service.name}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>}
+              )}
 
-
-              {filteredOther.length > 0 && <div>
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-gray-800 font-semibold">Other Services</h2>
-                  {/* <span className="text-blue-600 text-sm cursor-pointer">Preference</span> */}
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                  {filteredOther.map((service) => (
-                    <div
-                      key={service.name}
-                      className=" relative group cursor-pointer shadow  bg-white hover:bg-white duration-300 rounded-md"
-                      onClick={() => {
-                        handleOpenService(service);
-                      }}
-                    >
-                      <div className="flex flex-col items-center justify-center py-6 px-1">
-                        <div className="text-2xl mb-2">{service.icon}</div>
-                        <span className="text-center">{service.name}</span>
+              {filteredOther.length > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="text-gray-800 font-semibold">
+                      Other Services
+                    </h2>
+                    {/* <span className="text-blue-600 text-sm cursor-pointer">Preference</span> */}
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                    {filteredOther.map((service) => (
+                      <div
+                        key={service.name}
+                        className=" relative group cursor-pointer shadow  bg-white hover:bg-white duration-300 rounded-md"
+                        onClick={() => {
+                          handleOpenService(service);
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center py-6 px-1">
+                          <div className="text-2xl mb-2">{service.icon}</div>
+                          <span className="text-center">{service.name}</span>
+                        </div>
+                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                          {service.name}
+                        </div>
                       </div>
-                      <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                        {service.name}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>}
+              )}
             </div>
           </div>
         </div>

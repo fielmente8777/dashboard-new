@@ -479,6 +479,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                       >
                         <Link
                           to={item.link}
+                          target={item?.target ? "_blank" : "_self"}
                           className={`flex gap-1 font-medium`}
                         >
                           {item?.icon}
@@ -487,6 +488,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                         {isOpen && (
                           <Link
                             to={item.link}
+                            target={item?.target ? "_blank" : "_self"}
                             className={`flex gap-1 font-medium text-nowrap`}
                           >
                             {item.name}

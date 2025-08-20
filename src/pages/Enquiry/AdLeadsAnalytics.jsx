@@ -22,6 +22,11 @@ import DashboardCard from "../../components/Card/DashboardCard";
 
 const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   const { Leads, setLeads } = useContext(DataContext);
+  const { leadsList, setLeadsLists } = useContext(DataContext);
+
+  console.log(leadsList);
+
+  // const [leadsLists, setLeadsLists] = useState([]);
   const [leadFromIg, setLeadFromIg] = useState();
   const [leadFromFb, setLeadFromFb] = useState();
   const [parsedData, setParsedData] = useState([]);
@@ -77,7 +82,36 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
     setLeadFromFb(filteredLeads2.length);
   }, [Leads]);
 
+  useEffect(() => {
+    if (rangeDate) {
+      if (rangeDate === "all") {
+        setLeads(leadsList);
+        return;
+      }
+      let now = new Date();
+      let days = 7;
+      if (rangeDate === "30d") days = 30;
+      else if (rangeDate === "90d") days = 90;
+
+      const cutoff = new Date();
+      cutoff.setDate(now.getDate() - days);
+
+      const filtered = leadsList.filter((item) => {
+        const createdDate = new Date(item[1]);
+        return createdDate >= cutoff;
+      });
+      setLeads(filtered);
+    }
+  }, [rangeDate]);
+
   console.log(Leads);
+  console.log(leadsList);
+
+  // useEffect(() => {
+  //   if (Leads) {
+  //     setLeadsLists(Leads);
+  //   }
+  // }, [Leads]);
 
   // Generate insights from data
   const generateInsights = (data, headers) => {

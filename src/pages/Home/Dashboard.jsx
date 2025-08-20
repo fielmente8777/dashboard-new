@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [eazobotEnquiriesList, setEazobotEnquiriesList] = useState(0);
 
   const [loading, setLoading] = useState(true);
-  const { Leads, setLeads } = useContext(DataContext);
+  const { Leads, setLeads, setLeadsList } = useContext(DataContext);
 
   const [dateRange, setDateRange] = useState(""); // default 7 days
   // const [data, setData] = useState([]);
@@ -104,6 +104,7 @@ const Dashboard = () => {
         // setsheetNamess(sheetname);
         // setsheetid(sheetid);
         setLeads(json.Message.values);
+        setLeadsList(json.Message.values);
         // settokenExpire(false);
       } else {
         // setLeads([]);
@@ -237,7 +238,9 @@ const Dashboard = () => {
               onChange={handleDateSelect}
               className="border border-gray-400 shadow-md rounded-md px-3 py-2 text-sm outline-none cursor-pointer"
             >
-              <option value="">Select Date</option>
+              <option value="" disabled>
+                Select Date
+              </option>
               <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days</option>
               <option value="90d">Last 90 Days</option>
