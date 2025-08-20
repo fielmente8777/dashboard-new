@@ -101,8 +101,9 @@ export const SidebarData = [
   },
   {
     name: "Social Media",
-    key: "Social Media",
-    link: `social-media`,
+    // key: "Social Media",
+    target: "_blank",
+    link: `https://social.eazotel.com`,
     icon: <TiSocialSkype size={24} />,
   },
   {
@@ -143,13 +144,6 @@ export const SidebarData = [
         icon: <MdBedroomParent size={18} />,
       },
     ],
-  },
-
-  {
-    name: "Account & Billing",
-    icon: <FaRobot size={24} />,
-    // key: "Accounting",
-    link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
   },
 
   {
@@ -329,6 +323,14 @@ export const SidebarData = [
     key: "User Management",
     link: `user-management/all-users`,
     icon: <HiOutlineUserGroup size={22} />,
+  },
+
+  {
+    name: "Account & Billing",
+    icon: <FaRobot size={24} />,
+    // key: "Accounting",
+    target: "_blank",
+    link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
   },
 
   {
