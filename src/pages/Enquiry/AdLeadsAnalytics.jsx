@@ -77,7 +77,10 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
     setLeadFromFb(filteredLeads2.length);
   }, [Leads]);
 
-  console.log(Leads);
+  useEffect(() => {
+    if (rangeDate) {
+    }
+  }, [rangeDate]);
 
   // Generate insights from data
   const generateInsights = (data, headers) => {

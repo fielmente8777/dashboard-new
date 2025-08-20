@@ -146,6 +146,13 @@ export const SidebarData = [
   },
 
   {
+    name: "Account & Billing",
+    icon: <FaRobot size={24} />,
+    // key: "Accounting",
+    link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
+  },
+
+  {
     name: "Guest Request Management",
     link: `guest-request-management`,
     key: "GRM",
