@@ -16,8 +16,11 @@ import ReservationForm from "../../components/ReservationForm/hotel_reservation_
 
 const Dashboard = () => {
   const [enquires, setEnquires] = useState([]);
+  const [enquiresList, setEnquiresList] = useState([]);
   const [convertedEnquiries, setConvertedEnquiries] = useState(0);
   const [eazobotEnquiries, setEazobotEnquiries] = useState(0);
+  const [eazobotEnquiriesList, setEazobotEnquiriesList] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const { Leads, setLeads } = useContext(DataContext);
 
@@ -119,6 +122,7 @@ const Dashboard = () => {
         hid,
       });
       setEnquires(response);
+      setEnquiresList(response);
       const converted = response?.filter((item) => {
         if (item?.status) {
           return item?.status.toLowerCase() === "converted";
@@ -144,6 +148,7 @@ const Dashboard = () => {
       });
 
       setEazobotEnquiries(fromEazobot);
+      setEazobotEnquiriesList(fromEazobot);
       setConvertedEnquiries(converted?.length);
     } catch (error) {
       console.error("Error fetching enquires:", error);
@@ -157,6 +162,11 @@ const Dashboard = () => {
     setDateRange(value);
     const now = new Date();
 
+    if (value === "all") {
+      setEnquires(enquiresList);
+      return;
+    }
+
     let days = 7;
     if (value === "30d") days = 30;
     else if (value === "90d") days = 90;
@@ -164,12 +174,18 @@ const Dashboard = () => {
     const cutoff = new Date();
     cutoff.setDate(now.getDate() - days);
 
-    const filtered = enquires.filter((item) => {
+    const filtered = enquiresList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    const filteredEazobot = eazobotEnquiriesList.filter((item) => {
       const createdDate = new Date(item.Created_at);
       return createdDate >= cutoff;
     });
 
     setEnquires(filtered);
+    setEazobotEnquiries(filteredEazobot);
   };
 
   useEffect(() => {
@@ -208,16 +224,14 @@ const Dashboard = () => {
     },
   ];
 
-  console.log(enquires);
-
   return (
     <>
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
 
-          <div className="flex items-center justify-between p-2">
-            <h2 className="text-lg font-semibold">Date Selected</h2>
+          <div className="flex items-center justify-end p-2">
+            {/* <h2 className="text-lg font-semibold">Date Selected</h2> */}
             <select
               value={dateRange}
               onChange={handleDateSelect}
@@ -227,10 +241,11 @@ const Dashboard = () => {
               <option value="7d">Last 7 Days</option>
               <option value="30d">Last 30 Days</option>
               <option value="90d">Last 90 Days</option>
+              <option value="all">All Time</option>
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 xxl:grid-cols-6 gap-4 md:gap-6 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xxl:grid-cols-6 gap-4 md:gap-6 mt-4">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}
@@ -239,12 +254,10 @@ const Dashboard = () => {
                 key={index}
               />
             ))}
-
-            <div>helo</div>
           </div>
 
           <div>
-            <AdLeadsAnalytics showTitle={false} />
+            <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} />
           </div>
           {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
             <div className="lg:col-span-3">

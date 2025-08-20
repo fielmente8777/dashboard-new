@@ -92,12 +92,18 @@ export const SidebarData = [
         link: `enquiries-management/meta-leads`,
         icon: <SiGoogleads size={18} />,
       },
-      // {
-      //   name: "Meta Ads Performance",
-      //   link: `enquiries-management/meta-analytics`,
-      //   icon: <SiGoogleadsense size={18} />,
-      // },
+      {
+        name: "Form",
+        link: `enquiries-management/lead-gen-form`,
+        icon: <SiGoogleadsense size={18} />,
+      },
     ],
+  },
+  {
+    name: "Social Media",
+    key: "Social Media",
+    link: `social-media`,
+    icon: <TiSocialSkype size={24} />,
   },
   {
     name: "Eazbot",
@@ -324,13 +330,6 @@ export const SidebarData = [
     link: `setting`,
     icon: <HiOutlineUserGroup size={22} />,
   },
-
-  // {
-  //   name: "Social Media",
-  //   key: "Social Media",
-  //   link: `social-media`,
-  //   icon: <TiSocialSkype size={24} />,
-  // },
 
   // {
   //   name: "Custom Website",

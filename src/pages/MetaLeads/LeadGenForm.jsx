@@ -339,6 +339,8 @@ const LeadGenForm = () => {
   // for rendering col span if editField exist or true
   const colSpan = editField ? "col-span-6" : "col-span-9";
 
+  console.log(isNewFormOpen);
+
   return (
     <div className="flex flex-col gap-4 p-4 overflow-hidden bg-white mb-10 cardShadow">
       {/* heading content  */}
@@ -575,9 +577,10 @@ const LeadGenForm = () => {
                   <div
                     className="relative flex items-center border h-36 rounded-lg bg-cover bg-center bg-no-repeat"
                     style={{
-                      backgroundImage: `url(${previewImageCover ||
+                      backgroundImage: `url(${
+                        previewImageCover ||
                         formData?.form_cms?.banner_image_url
-                        })`,
+                      })`,
                     }}
                   >
                     <div className="px-4 grid grid-cols-12 items-center z-40 relative">
@@ -865,8 +868,9 @@ const LeadGenForm = () => {
                     <button
                       disabled={!isLocalUpdate}
                       onClick={handleUpdateChanges}
-                      className={`relative inline-flex items-center justify-center px-6 py-2 mt-4 text-white font-semibold rounded-sm bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg overflow-hidden transition-all duration-300 group ${!isLocalUpdate && "opacity-40"
-                        }`}
+                      className={`relative inline-flex items-center justify-center px-6 py-2 mt-4 text-white font-semibold rounded-sm bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg overflow-hidden transition-all duration-300 group ${
+                        !isLocalUpdate && "opacity-40"
+                      }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                       <span className="relative z-10">Update Chagnges</span>
@@ -892,7 +896,7 @@ const LeadGenForm = () => {
       )}
 
       <Modal
-        isOpen={isNewFormOpen}
+        open={isNewFormOpen}
         onConfirm={handleCreateFormSubmit}
         onCancel={() => {
           setisNewFormOpen(false);
@@ -969,8 +973,9 @@ export const FormField = ({
     case "textarea":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-            }`}
+          className={`space-y-2 scale-[1] duration-300  ${
+            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+          }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -1018,8 +1023,9 @@ export const FormField = ({
     case "phone":
       return (
         <div
-          className={`space-y-2 scale-[1] duration-300  ${!isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
-            }`}
+          className={`space-y-2 scale-[1] duration-300  ${
+            !isVisible && "opacity-70 scale-[1] p-2 rounded-sm"
+          }`}
         >
           <div className="flex items-center justify-between">
             <label>{name}</label>
@@ -1040,10 +1046,11 @@ export const FormField = ({
               </button>
 
               <button
-                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${isVisible
-                  ? "hover:bg-[#618ae4] hover:text-white  "
-                  : "bg-gray-300 cursor-not-allowed"
-                  }`}
+                className={`text-sm size-6 rounded-full border border-gray-300 flex items-center justify-center duration-300 shadow-xl ${
+                  isVisible
+                    ? "hover:bg-[#618ae4] hover:text-white  "
+                    : "bg-gray-300 cursor-not-allowed"
+                }`}
                 title="Edit"
                 disabled={!isVisible}
                 onClick={(e) => editField(e, field, index)}
@@ -1059,10 +1066,11 @@ export const FormField = ({
                 onClick={(e) => deleteField(e, field)}
                 className={`text-sm size-6 
                    rounded-full border border-gray-300 flex items-center justify-center 
-                    ${isVisible
-                    ? "hover:bg-red-500 hover:text-white"
-                    : "bg-gray-300 cursor-not-allowed"
-                  }
+                    ${
+                      isVisible
+                        ? "hover:bg-red-500 hover:text-white"
+                        : "bg-gray-300 cursor-not-allowed"
+                    }
                     duration-300 shadow-xl `}
                 title="Delete"
                 disabled={!isVisible}

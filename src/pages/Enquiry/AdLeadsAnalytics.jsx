@@ -20,7 +20,7 @@ import DataContext from "../../context/DataContext";
 import { FaSourcetree } from "react-icons/fa";
 import DashboardCard from "../../components/Card/DashboardCard";
 
-const AdLeadsAnalytics = ({ showTitle = true }) => {
+const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   const { Leads, setLeads } = useContext(DataContext);
   const [leadFromIg, setLeadFromIg] = useState();
   const [leadFromFb, setLeadFromFb] = useState();
@@ -77,7 +77,7 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
     setLeadFromFb(filteredLeads2.length);
   }, [Leads]);
 
-  console.log(leadFromIg, leadFromFb);
+  console.log(Leads);
 
   // Generate insights from data
   const generateInsights = (data, headers) => {
@@ -307,7 +307,6 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
             progress={"30"}
           />
 
-
           <DashboardCard
             amount={leadFromFb || 0}
             label={"Facebook"}
@@ -318,7 +317,6 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
           <div className="bg-white rounded-xl p-5 ">
             <div className="flex items-center justify-between">
               <div>
-
                 <p className="text-4xl font-bold text-primary/90">
                   {insights.qualifiedLeads || 0}
                 </p>
@@ -345,10 +343,11 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
             </div>
             <div className="mt-2">
               <span
-                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${insights.qualifiedLeads > 0
-                  ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-800"
-                  }`}
+                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  insights.qualifiedLeads > 0
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+                }`}
               >
                 {insights.qualifiedLeads > 0
                   ? "Good progress"
@@ -360,7 +359,11 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
           {/* Conversion Rate Card */}
 
           <DashboardCard
-            amount={insights.conversionRate === "0.0" ? insights.conversionRate.split('.')[0] : insights.conversionRate || 0}
+            amount={
+              insights.conversionRate === "0.0"
+                ? insights.conversionRate.split(".")[0]
+                : insights.conversionRate || 0
+            }
             label={"Conversion Rate"}
             progress={"0"}
           />
@@ -369,7 +372,6 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
           <div className="rounded-xl p-5 bg-white">
             <div className="flex items-center justify-between">
               <div>
-
                 <p className="text-4xl font-bold text-primary/90">
                   {(chartData.locations && chartData.locations[0]?.name) ||
                     "N/A"}
@@ -461,10 +463,11 @@ const AdLeadsAnalytics = ({ showTitle = true }) => {
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-md ${activeTab === tab
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
+                    className={`whitespace-nowrap py-4 px-6 border-b-2 font-medium text-md ${
+                      activeTab === tab
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
