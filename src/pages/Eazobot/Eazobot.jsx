@@ -39,7 +39,7 @@ const Eazobot = () => {
     time_interval: "40",
     show_eazotel_branding: false,
     bot_type: "",
-    chat_flow: [],
+    // chat_flow: [],
   });
 
   const [isLoader, setIsLoader] = useState(false);
@@ -151,6 +151,9 @@ const Eazobot = () => {
         ...prev,
         ...data?.Data,
         bg_color: data?.Data?.theme?.bg_color,
+        button_text_color: data?.Data?.theme?.button_text_color,
+        text_color: data?.Data?.theme?.text_color,
+        button_color: data?.Data?.theme?.button_color,
       }));
     }
   };
@@ -158,6 +161,8 @@ const Eazobot = () => {
   useEffect(() => {
     getChatbotDetails();
   }, []);
+
+  console.log(chatbotData);
 
   return (
     <div className=" w-full mx-auto py-6">

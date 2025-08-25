@@ -1,5 +1,7 @@
 import { BASE_URL } from "../../data/constant";
 
+const url = "https://nexon.eazotel.com/eazotel/addcontacts";
+
 export const getLeadGenFromData = async (token, hId) => {
   try {
     const response = await fetch(
@@ -12,6 +14,24 @@ export const getLeadGenFromData = async (token, hId) => {
         },
       }
     );
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
+export const addLeadGenForm = async (formData) => {
+  try {
+    const response = await fetch(url, {
+      method: "POST", // or "POST" if you're sending data
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(formData),
+    });
     const result = await response.json();
     return result;
   } catch (error) {
@@ -92,6 +112,29 @@ export const deleteLeadGenForm = async (token, form_id) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+      }
+    );
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
+export const deleteLMultipleeadGenForm = async (leadsId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/eazotel/delete-multiple-contact-queries`,
+      {
+        method: "DELETE", // or "POST" if you're sending data
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          ids: leadsId,
+        }),
       }
     );
     const result = await response.json();

@@ -6,7 +6,7 @@ import { formatDateTime } from "../../services/formateDate";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import FilterPopup from "../../components/Popup/FilterPopup";
-import { FaFileExcel, FaTrash, FaTrashAlt } from "react-icons/fa";
+import { FaFileExcel, FaPlus, FaTrash, FaTrashAlt } from "react-icons/fa";
 import jsonToCsvExport from "json-to-csv-export";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -15,6 +15,12 @@ import { MdDeleteOutline } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
+import {
+  addLeadGenForm,
+  deleteLMultipleeadGenForm,
+} from "../../services/api/MetaLeads.api";
+import { useSelector } from "react-redux";
+import Loader from "../../components/Loader";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -35,8 +41,19 @@ export const extractBookingInfo = (input) => {
 };
 
 const Leads = () => {
+  const { user: hotel } = useSelector((state) => state.userProfile);
+
+  console.log(hotel);
+
   const [active, setActive] = useState(0);
-  const header = ["All Enquires", "Open Queries", "Contacted", "Converted"];
+  const header = [
+    "Open Queries",
+    "Contacted",
+    "Converted",
+    "Out Of Budget",
+    "Potential For Later",
+    "Dead Lead",
+  ];
   const [exportedData, setExportedData] = useState([]);
   const [enquires, setEnquires] = useState([]);
   const [filteredEnquires, setFilteredEnquires] = useState([]);
@@ -57,6 +74,8 @@ const Leads = () => {
   const [reserveData, setReserveData] = useState(null);
 
   const [rowSelected, setRowSelected] = useState([]);
+  const [newRow, setNewRow] = useState(null);
+  const [isLeadLoading, setIsLeadLoading] = useState(false);
 
   const setDateRange = (dates) => {
     const [start, end] = dates;
@@ -101,7 +120,11 @@ const Leads = () => {
     setLoading(true);
     try {
       const hid = handleLocalStorage("hid");
-      const response = await getAllClientEnquires({ token, hid });
+      const response = await getAllClientEnquires({
+        token,
+        hid,
+        status: "Open",
+      });
       const data = createExportData(response);
       setExportedData(data);
       setEnquires(response?.reverse());
@@ -138,9 +161,10 @@ const Leads = () => {
     setCurrentPage(1);
     const token = localStorage.getItem("token");
     const hid = handleLocalStorage("hid");
+
     try {
       let response;
-      switch (index) {
+      switch (index + 1) {
         case 0:
           response = await getAllClientEnquires({ token, hid });
           break;
@@ -161,9 +185,34 @@ const Leads = () => {
             status: "Converted",
           });
           break;
+
+        case 4:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Out Of Budget",
+          });
+          break;
+
+        case 5:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Potentail",
+          });
+          break;
+
+        case 6:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Dead Lead",
+          });
+          break;
         default:
           response = await getAllClientEnquires({ token, hid });
       }
+      console.log(response);
       setEnquires(response?.reverse());
     } catch (error) {
       console.error(error);
@@ -339,9 +388,17 @@ const Leads = () => {
     }
   };
   const handleRowSelect = (id) => {
-    setRowSelected((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
   };
 
   const handleSelectAll = () => {
@@ -362,20 +419,79 @@ const Leads = () => {
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        // 🔴 Call your delete API here
-        // Example:
-        // await axios.delete(`${BASE_URL}/delete/${id}`);
-
-        Swal.fire("Deleted!", "The record has been removed.", "success");
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchEnquires(localStorage.getItem("token"));
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
       }
     });
   };
 
+  const handleAddRow = () => {
+    setNewRow({
+      id: Date.now(), // temp id
+      name: "",
+      contact: "",
+      email: "",
+      status: "Open",
+      check_in: "",
+      check_out: "",
+      number_of_guest: "",
+      source: "Dashboard",
+      stages: "Open",
+      isReserved: false,
+    });
+  };
+
+  const handleSaveRow = async () => {
+    setIsLeadLoading(true);
+    if (!newRow?.name || !newRow?.contact || !newRow?.email) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const formData = {
+      Domain: hotel?.Profile?.domain,
+      Contact: newRow.contact,
+      email: newRow.email,
+      Description: "",
+      Name: newRow.name,
+      Remark: "",
+      Subject: null,
+      check_in: `${newRow.check_in}`,
+      check_out: `${newRow.check_out}`,
+      numbers_of_guest: ``,
+      created_from: newRow.source,
+    };
+
+    try {
+      const data = await addLeadGenForm(formData);
+      if (data?.Status) {
+        fetchEnquires(localStorage.getItem("token"));
+        Swal.fire("Success", data?.Message, "success");
+      }
+    } catch (error) {
+    } finally {
+      setIsLeadLoading(false);
+    }
+
+    // add new row at the start
+    // setCurrentItems([newRow, ...currentItems]);
+    // setNewRow(null);
+  };
+
+  const handleCancelRow = () => {
+    setNewRow(null);
+  };
+
   return (
     <div className="cardShadow">
-      <div className="flex flex-col lg:flex-row justify-between  bg-white">
+      <div className="flex flex-col lg:flex-col justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
           {header.map((item, index) => (
             <button
@@ -399,6 +515,7 @@ const Leads = () => {
             <MdRefresh size={25} />
           </div>
         </div>
+
         <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label
             htmlFor="itemsPerPage"
@@ -425,6 +542,14 @@ const Leads = () => {
           >
             <FaFileExcel />
             <span className="font-medium">Export</span>
+          </div>
+
+          <div
+            onClick={handleAddRow}
+            className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+          >
+            <FaPlus />
+            <span className="font-medium">Add Lead</span>
           </div>
         </div>
       </div>
@@ -490,13 +615,14 @@ const Leads = () => {
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
-                  {/* <th className="py-3 px-2 text-[14px] font-medium capitalize">
-                    <input
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    {/* <input
                       type="checkbox"
                       onClick={handleSelectAll}
                       checked={rowSelected.length === currentItems.length}
-                    />
-                  </th> */}
+                    /> */}
+                    Select
+                  </th>
 
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     #
@@ -540,6 +666,137 @@ const Leads = () => {
 
               {currentItems?.length > 0 ? (
                 <tbody>
+                  {newRow && (
+                    <tr className="bg-white text-sm border-b border-gray-200 text-[#575757]">
+                      <td className="py-2 px-2">-</td>
+                      <td className="text-black p-2">-</td>
+                      <td className="py-2 px-2">
+                        <select
+                          onChange={(e) => {
+                            setNewRow({
+                              ...newRow,
+                              isReserved: e.target.value,
+                            });
+                          }}
+                          value={newRow.isReserved}
+                        >
+                          {/* <option value="">Select</option> */}
+                          <option value={false}>Unreserved</option>
+                          <option value={true}>Reserved</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="text"
+                          className="outline-none"
+                          value={formatDateTime(new Date())}
+                          readOnly
+                          // onChange={(e) =>
+                          //   setNewRow({ ...newRow, date: e.target.value })
+                          // }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <select
+                          onChange={(e) => {
+                            setNewRow({ ...newRow, source: e.target.value });
+                          }}
+                          value={newRow.source}
+                        >
+                          {/* <option value="">Select</option> */}
+                          <option value="Dashboard">Dashboard</option>
+                          <option value="Eazbot">Eazbot</option>
+                          <option value="WebForm">WebForm</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          className="outline-none"
+                          value={newRow.name}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, name: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="number"
+                          placeholder="Contact"
+                          className="outline-none"
+                          value={newRow.contact}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, contact: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          className="outline-none"
+                          value={newRow.email}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, email: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="date"
+                          placeholder="Email"
+                          className="border px-2 py-1 rounded w-full"
+                          value={newRow.Email}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, check_in: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="date"
+                          placeholder="Email"
+                          className="border px-2 py-1 rounded w-full"
+                          value={newRow.Email}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, check_out: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <select
+                          onChange={(e) => {
+                            setNewRow({ ...newRow, stages: e.target.value });
+                          }}
+                          value={newRow.stages}
+                        >
+                          {/* <option value="">Select</option> */}
+                          <option value="Open">Open</option>
+                          <option value="Converted">Converted</option>
+                          <option value="Contacted">Converted</option>
+                          <option value="Out Of Budget">Out Of Budget</option>
+                          <option value="Potential">Potential for Later</option>
+                          <option value="Dead Lead">Dead Lead</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-2 flex gap-2">
+                        <button
+                          onClick={handleSaveRow}
+                          className="px-3 py-1 bg-green-500 text-white rounded flex items-center gap-1"
+                        >
+                          Save {isLeadLoading && <Loader color="#fff" />}
+                        </button>
+                        <button
+                          onClick={handleCancelRow}
+                          className="px-3 py-1 bg-gray-400 text-white rounded"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
@@ -553,7 +810,7 @@ const Leads = () => {
                         setIsPopupOpen(true);
                       }}
                     >
-                      {/* <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={rowSelected.includes(enquery?._id)}
@@ -562,7 +819,7 @@ const Leads = () => {
                             handleRowSelect(enquery?._id);
                           }}
                         />
-                      </td> */}
+                      </td>
                       <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
                         {index + 1}
                       </td>
@@ -574,7 +831,7 @@ const Leads = () => {
                           setReserveData(enquery);
                         }}
                       >
-                        Reserve
+                        Unreserved
                       </td>
 
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
@@ -586,7 +843,9 @@ const Leads = () => {
                         {/* kjhjkhk */}
                         {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "chat bot"
+                          : enquery?.created_from?.toLowerCase() === "Eazbot"
+                          ? "Eazbot"
+                          : enquery?.created_from === "Eazobt"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "eazobot"
                           ? "Eazbot"
@@ -654,6 +913,25 @@ const Leads = () => {
                           <option value="Open" className="bg-white  text-black">
                             Open
                           </option>
+
+                          <option
+                            value="Out Of Budget"
+                            className="bg-white  text-black"
+                          >
+                            Out Of Budget
+                          </option>
+                          <option
+                            value="Potential"
+                            className="bg-white  text-black"
+                          >
+                            Potential For Later
+                          </option>
+                          <option
+                            value="Dead Lead"
+                            className="bg-white  text-black"
+                          >
+                            Dead Lead
+                          </option>
                         </select>
                       </td>
 
@@ -674,7 +952,7 @@ const Leads = () => {
               ) : (
                 <tbody>
                   <tr className="bg-white text-gray-600 text-center border">
-                    <td colSpan={9} className="py-2">
+                    <td colSpan={12} className="py-2">
                       Data not found!
                     </td>
                   </tr>
