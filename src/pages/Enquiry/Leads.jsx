@@ -159,6 +159,10 @@ const Leads = () => {
     setLoading(true);
     setActive(index);
     setCurrentPage(1);
+    // setNewRow((prev) => ({
+    //   ...prev,
+    //   stages: header[index],
+    // }));
     const token = localStorage.getItem("token");
     const hid = handleLocalStorage("hid");
 
@@ -198,7 +202,7 @@ const Leads = () => {
           response = await getAllClientEnquires({
             token,
             hid,
-            status: "Potentail",
+            status: "Potential",
           });
           break;
 
@@ -478,6 +482,7 @@ const Leads = () => {
     } catch (error) {
     } finally {
       setIsLeadLoading(false);
+      setNewRow(null);
     }
 
     // add new row at the start
@@ -667,7 +672,7 @@ const Leads = () => {
               {currentItems?.length > 0 ? (
                 <tbody>
                   {newRow && (
-                    <tr className="bg-white text-sm border-b border-gray-200 text-[#575757]">
+                    <tr className="text-sm border-b border-gray-200 text-[#575757] bg-blue-50">
                       <td className="py-2 px-2">-</td>
                       <td className="text-black p-2">-</td>
                       <td className="py-2 px-2">
@@ -688,7 +693,7 @@ const Leads = () => {
                       <td className="py-2 px-2">
                         <input
                           type="text"
-                          className="outline-none"
+                          className="outline-none px-2 py-1"
                           value={formatDateTime(new Date())}
                           readOnly
                           // onChange={(e) =>
@@ -701,6 +706,7 @@ const Leads = () => {
                           onChange={(e) => {
                             setNewRow({ ...newRow, source: e.target.value });
                           }}
+                          className="outline-none px-2 py-1"
                           value={newRow.source}
                         >
                           {/* <option value="">Select</option> */}
@@ -713,7 +719,7 @@ const Leads = () => {
                         <input
                           type="text"
                           placeholder="Name"
-                          className="outline-none"
+                          className="outline-none px-2 py-1"
                           value={newRow.name}
                           onChange={(e) =>
                             setNewRow({ ...newRow, name: e.target.value })
@@ -724,7 +730,7 @@ const Leads = () => {
                         <input
                           type="number"
                           placeholder="Contact"
-                          className="outline-none"
+                          className="outline-none px-2 py-1"
                           value={newRow.contact}
                           onChange={(e) =>
                             setNewRow({ ...newRow, contact: e.target.value })
@@ -735,7 +741,7 @@ const Leads = () => {
                         <input
                           type="email"
                           placeholder="Email"
-                          className="outline-none"
+                          className="outline-none px-2 py-1"
                           value={newRow.email}
                           onChange={(e) =>
                             setNewRow({ ...newRow, email: e.target.value })
@@ -745,9 +751,9 @@ const Leads = () => {
                       <td className="py-2 px-2">
                         <input
                           type="date"
-                          placeholder="Email"
+                          placeholder="date"
                           className="border px-2 py-1 rounded w-full"
-                          value={newRow.Email}
+                          value={newRow.check_in}
                           onChange={(e) =>
                             setNewRow({ ...newRow, check_in: e.target.value })
                           }
@@ -758,27 +764,28 @@ const Leads = () => {
                           type="date"
                           placeholder="Email"
                           className="border px-2 py-1 rounded w-full"
-                          value={newRow.Email}
+                          value={newRow.check_out}
                           onChange={(e) =>
                             setNewRow({ ...newRow, check_out: e.target.value })
                           }
                         />
                       </td>
                       <td className="py-2 px-2">
-                        <select
+                        Open
+                        {/* <select
                           onChange={(e) => {
                             setNewRow({ ...newRow, stages: e.target.value });
                           }}
                           value={newRow.stages}
                         >
-                          {/* <option value="">Select</option> */}
+                          <option value="">Select</option>
                           <option value="Open">Open</option>
                           <option value="Converted">Converted</option>
                           <option value="Contacted">Converted</option>
                           <option value="Out Of Budget">Out Of Budget</option>
                           <option value="Potential">Potential for Later</option>
                           <option value="Dead Lead">Dead Lead</option>
-                        </select>
+                        </select> */}
                       </td>
                       <td className="py-2 px-2 flex gap-2">
                         <button
