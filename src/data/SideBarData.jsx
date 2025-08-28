@@ -40,7 +40,7 @@ import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
-import { SiGoogleads } from "react-icons/si";
+import { SiGoogleads } from "react-icons/si"; 
 
 export const SidebarData = [
   {
@@ -54,11 +54,11 @@ export const SidebarData = [
     link: `chat`,
     icon: <IoIosChatbubbles size={24} />,
     subLinks: [
-      // {
-      //   name: "Eazbot",
-      //   link: `channel/eb/chat`,
-      //   icon: <FaWhatsapp size={16} />,
-      // },
+        {
+          name: "Eazbot",
+          link: `channel/eb/chat`,
+          icon: <FaWhatsapp size={16} />,
+        },
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
