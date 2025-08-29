@@ -438,12 +438,11 @@ const Leads = () => {
       name: "",
       contact: "",
       email: "",
-      status: "Open",
+      status:"",
       check_in: "",
       check_out: "",
       number_of_guest: "",
       source: "Dashboard",
-      stages: "Open",
       isReserved: false,
     });
   };
@@ -467,6 +466,7 @@ const Leads = () => {
       check_out: `${newRow.check_out}`,
       numbers_of_guest: ``,
       created_from: newRow.source,
+      
     };
 
     try {
@@ -491,7 +491,7 @@ const Leads = () => {
 
   return (
     <div className="cardShadow">
-      <div className="flex flex-col lg:flex-col justify-between  bg-white">
+      <div className="flex flex-col lg:flex-row justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
           {header.map((item, index) => (
             <button
@@ -609,7 +609,7 @@ const Leads = () => {
                 className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2"
                 onClick={handleDeleteAll}
               >
-                Delete All <FaTrashAlt size={12} />
+                Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
               </button>
             )}
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
@@ -671,7 +671,8 @@ const Leads = () => {
                       <td className="py-2 px-2">-</td>
                       <td className="text-black p-2">-</td>
                       <td className="py-2 px-2">
-                        <select
+                        {newRow.isReserved?"Reserved":"Unreserved"}
+                        {/* <select
                           onChange={(e) => {
                             setNewRow({
                               ...newRow,
@@ -680,10 +681,10 @@ const Leads = () => {
                           }}
                           value={newRow.isReserved}
                         >
-                          {/* <option value="">Select</option> */}
+                          <option value="">Select</option>
                           <option value={false}>Unreserved</option>
                           <option value={true}>Reserved</option>
-                        </select>
+                        </select> */}
                       </td>
                       <td className="py-2 px-2">
                         <input
@@ -696,18 +697,19 @@ const Leads = () => {
                           // }
                         />
                       </td>
-                      <td className="py-2 px-2">
-                        <select
+                      <td className="py-2 px-2 font-medium">
+                        Dashboard
+                        {/* <select
                           onChange={(e) => {
                             setNewRow({ ...newRow, source: e.target.value });
                           }}
                           value={newRow.source}
                         >
-                          {/* <option value="">Select</option> */}
+                          <option value="">Select</option>
                           <option value="Dashboard">Dashboard</option>
                           <option value="Eazbot">Eazbot</option>
                           <option value="WebForm">WebForm</option>
-                        </select>
+                        </select> */}
                       </td>
                       <td className="py-2 px-2">
                         <input
@@ -765,13 +767,13 @@ const Leads = () => {
                         />
                       </td>
                       <td className="py-2 px-2">
+                        {/* {newRow.status} */}
                         <select
                           onChange={(e) => {
-                            setNewRow({ ...newRow, stages: e.target.value });
+                            setNewRow({ ...newRow, status: e.target.value });
                           }}
-                          value={newRow.stages}
+                          value={newRow.status}
                         >
-                          {/* <option value="">Select</option> */}
                           <option value="Open">Open</option>
                           <option value="Converted">Converted</option>
                           <option value="Contacted">Converted</option>
