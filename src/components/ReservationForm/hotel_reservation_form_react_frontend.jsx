@@ -4,33 +4,80 @@ import { formatToDateInput } from "../../utils/formatDateInput";
 import { addReservation } from "../../services/api/bookingEngine";
 
 export default function ReservationForm({ data }) {
-  const [form, setForm] = useState({
-    firstName: data?.Name,
-    lastName: "",
-    email: data?.Email,
-    phone: data?.Contact,
-    checkIn: formatToDateInput(extractBookingDates(data?.Message)?.checkIn),
-    checkOut: formatToDateInput(extractBookingDates(data?.Message)?.checkOut),
-    arrivalTime: "",
-    adults: 1,
-    children: 0,
-    rooms: 1,
-    roomType: "Deluxe",
-    ratePlan: "BAR",
-    ratePerNight: 5000,
-    currency: "INR",
-    paymentMethod: "Pay at Hotel",
-    depositCollected: 0,
-    idType: "",
-    idNumber: "",
-    company: "",
-    gstVat: "",
-    address: "",
-    specialRequests: "",
-    airportPickup: false,
-    marketingOptIn: true,
-  });
+  console.log(data);
+  // const [form, setForm] = useState({
+  //   firstName: data?.Name,
+  //   lastName: "",
+  //   email: data?.Email,
+  //   phone: data?.Contact,
+  //   checkIn: formatToDateInput(extractBookingDates(data?.Message)?.checkIn),
+  //   checkOut: formatToDateInput(extractBookingDates(data?.Message)?.checkOut),
+  //   arrivalTime: "",
+  //   adults: 1,
+  //   children: 0,
+  //   rooms: 1,
+  //   roomType: "Deluxe",
+  //   ratePlan: "BAR",
+  //   ratePerNight: 5000,
+  //   currency: "INR",
+  //   paymentMethod: "Pay at Hotel",
+  //   depositCollected: 0,
+  //   idType: "",
+  //   idNumber: "",
+  //   company: "",
+  //   gstVat: "",
+  //   address: "",
+  //   specialRequests: "",
+  //   airportPickup: false,
+  //   marketingOptIn: true,
+  // });
 
+  const [form, setForm] = useState({
+    // Guest details
+    guestName: data?.Name || "",
+    emailId: data?.Email || "",
+    phone: data?.Contact || "",
+    city: "",
+    address: "",
+    label: "",
+    value: "",
+
+    // Stay details
+    checkIn: "",
+    checkOut: "",
+    adults: 2,
+    kids: 0,
+    roomNumbers: [],
+    room_type: "Deluxe Suite",
+    quantity: 1,
+
+    // Package & promo
+    package_id: "",
+    package_name: "",
+    package_price: 0,
+    package_type: "",
+    code: "",
+    promo_id: "",
+    discount: 0,
+
+    // Payment
+    ref_no: "",
+    payment_provider: "Stripe",
+    mode: "Credit Card",
+    status: data?.Status || "Pending",
+    pay_id: "",
+
+    // Pricing
+    principal: 0,
+    total: 0,
+    tax: 0,
+    amountPay: 0,
+
+    // Preferences
+    special_request: "",
+    checked_in: false,
+    checked_out: false,
+  });
   const [submitted, setSubmitted] = useState(null);
 
   const nights = useMemo(() => {
@@ -52,12 +99,7 @@ export default function ReservationForm({ data }) {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : type === "number"
-            ? Number(value)
-            : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -70,110 +112,15 @@ export default function ReservationForm({ data }) {
       createdAt: new Date().toISOString(),
     };
 
-    const formData = {
-      hId: localStorage.getItem("hid"),
-      ndid: localStorage.getItem("ndid"),
-      amount: 100,
-      currency: "INR",
-      guestInfo: {
-        guestName: "Divyanshu",
-        EmailId: "Divyanshu@gmail.com",
-        Phone: "9119059286",
-        City: "Dhampur",
-        Country: {
-          label: "IN",
-          code: "india",
-        },
-        address: "3425 Vivek Nagar Sultanpur",
-      },
-      roomNumbers: [],
-      Adults: 1,
-      Kids: 1,
-      Bookings: [{ RoomType: "5", Qty: 3 }],
-      payment: {
-        Status: "PENDING",
-        RefNo: "",
-        PaymentProvider: "RazorPay",
-        Mode: "Offline",
-      },
-      mealPlan: {
-        PackageId: "NA",
-        PackageName: "NA",
-        PackagePrice: "NA",
-        PackageType: "NA",
-      },
-      promocode: {
-        PromoId: "NA",
-        Code: "NA",
-        Discount: "NA",
-      },
-      packages: {
-        packageId: "NA",
-        packageName: "NA",
-        packagePrice: "NA",
-        specialRequest: "NA",
-      },
-      checkIn: "2024-02-06",
-      checkOut: "2024-02-07",
-      price: {
-        Principal: 800,
-        Tax: 100,
-        Total: 1000,
-        amountPay: 500,
-      },
-    };
-
     try {
-      const response = await addReservation(
-        {
-          "roomNumbers": ["401", "402"],
-          "guestName": "John",
-          "emailId": "johndoe@example.com",
-          "phone": "+1-555-123-4567",
-          "city": "New York",
-          "label": "United States",
-          "value": "US",
-          "address": "123 Main Street, Manhattan",
-          "adults": 2,
-          "kids": 1,
-          "room_type": "Deluxe Suite",
-          "quantity": 1,
-          "ref_no": "PAYREF123456",
-          "payment_provider": "Stripe",
-          "mode": "Credit Card",
-          "status": "Pending",
-          "pay_id": "pi_3XYZ987",
-          "code": "SUMMER25",
-          "promo_id": "PROMO123",
-          "discount": 25,
-          "package_id": "PKG001",
-          "package_name": "Honeymoon Package",
-          "package_price": 199.99,
-          "package_type": "Meal Plan",
-          "special_request": "Airport pickup",
-          "checkIn": "2025-09-05T14:00:00Z",
-          "checkOut": "2025-09-10T11:00:00Z",
-          "checked_in": false,
-          "checked_out": false,
-          "principal": 500.00,
-          "total": 599.99,
-          "tax": 99.99,
-          "amountPay": 599.99
-        }
-
-      );
+      const response = await addReservation(form);
       console.log(response);
-    } catch (error) { }
+    } catch (error) {}
     // setSubmitted(payload);
     // console.log("Reservation submitted", payload);
   };
 
   const handleReset = () => {
-
-
-
-
-
     setForm({
       firstName: "",
       lastName: "",
@@ -203,7 +150,7 @@ export default function ReservationForm({ data }) {
     setSubmitted(null);
   };
 
-  console.log(data);
+  console.log(form);
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 md:p-10">
@@ -249,26 +196,18 @@ export default function ReservationForm({ data }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   required
-                  name="firstName"
-                  placeholder="First Name *"
-                  value={form.firstName}
+                  name="guestName"
+                  placeholder="Guest Name *"
+                  value={form.guestName}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
-                {/* <input
-                  required
-                  name="lastName"
-                  placeholder="Last Name *"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                /> */}
                 <input
                   required
-                  name="email"
+                  name="emailId"
                   type="email"
                   placeholder="Email *"
-                  value={form.email}
+                  value={form.emailId}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
@@ -281,26 +220,19 @@ export default function ReservationForm({ data }) {
                   className="border p-2 rounded"
                 />
                 <input
-                  name="aadhar"
-                  placeholder="Aadhar Card"
-                  value={form.address}
-                  onChange={handleChange}
-                  className="border p-2 rounded md:col-span-2"
-                />
-                {/* <input
-                  name="company"
-                  placeholder="Company"
-                  value={form.company}
+                  name="city"
+                  placeholder="City"
+                  value={form.city}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
                 <input
-                  name="gstVat"
-                  placeholder="GST/VAT"
-                  value={form.gstVat}
+                  name="address"
+                  placeholder="Address"
+                  value={form.address}
                   onChange={handleChange}
-                  className="border p-2 rounded"
-                /> */}
+                  className="border p-2 rounded md:col-span-2"
+                />
               </div>
             </div>
 
@@ -325,159 +257,219 @@ export default function ReservationForm({ data }) {
                   className="border p-2 rounded"
                 />
                 <input
-                  readOnly
-                  value={nights}
-                  className="border p-2 rounded bg-slate-100"
-                />
-                <input
                   type="number"
                   name="adults"
                   min={1}
-                  max={8}
                   value={form.adults}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
                 <input
                   type="number"
-                  name="children"
+                  name="kids"
                   min={0}
-                  max={8}
-                  value={form.children}
+                  value={form.kids}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
                 <input
-                  name="arrivalTime"
-                  type="time"
-                  value={form.arrivalTime}
+                  type="text"
+                  name="roomNumbers"
+                  placeholder="Room Numbers (comma separated)"
+                  value={form.roomNumbers}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      roomNumbers: e.target.value.split(","),
+                    }))
+                  }
+                  className="border p-2 rounded md:col-span-2"
+                />
+                <input
+                  name="room_type"
+                  placeholder="Room Type"
+                  value={form.room_type}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
-              </div>
-            </div>
-
-            {/* Room & Rate */}
-            <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
-              <h2 className="font-semibold text-lg">Room & Rate</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <select
-                  name="roomType"
-                  value={form.roomType}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                >
-                  <option>Deluxe</option>
-                  <option>Suite</option>
-                  <option>Villa</option>
-                  <option>Standard</option>
-                </select>
                 <input
                   type="number"
-                  name="rooms"
+                  name="quantity"
                   min={1}
-                  max={10}
-                  value={form.rooms}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <select
-                  name="ratePlan"
-                  value={form.ratePlan}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                >
-                  <option value="BAR">BAR</option>
-                  <option value="NRF">Non-Refundable</option>
-                  <option value="CORP">Corporate</option>
-                  <option value="PKG">Package</option>
-                </select>
-                <input
-                  type="number"
-                  name="ratePerNight"
-                  value={form.ratePerNight}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <select
-                  name="currency"
-                  value={form.currency}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                >
-                  <option value="INR">INR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="AED">AED</option>
-                </select>
-                <input
-                  type="number"
-                  name="depositCollected"
-                  value={form.depositCollected}
+                  value={form.quantity}
                   onChange={handleChange}
                   className="border p-2 rounded"
                 />
               </div>
             </div>
 
-            {/* ID & Preferences */}
+            {/* Package & Promo */}
             <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
-              <h2 className="font-semibold text-lg">ID & Preferences</h2>
+              <h2 className="font-semibold text-lg">Package & Promo</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <select
-                  name="idType"
-                  value={form.idType}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                >
-                  <option value="">Select</option>
-                  <option value="Aadhaar">Aadhaar</option>
-                  <option value="Passport">Passport</option>
-                  <option value="DL">Driver's Licence</option>
-                  <option value="PAN">PAN</option>
-                </select>
                 <input
-                  name="idNumber"
-                  value={form.idNumber}
+                  name="package_id"
+                  placeholder="Package ID"
+                  value={form.package_id}
                   onChange={handleChange}
-                  placeholder="ID Number"
                   className="border p-2 rounded"
                 />
-                <select
-                  name="paymentMethod"
-                  value={form.paymentMethod}
+                <input
+                  name="package_name"
+                  placeholder="Package Name"
+                  value={form.package_name}
                   onChange={handleChange}
                   className="border p-2 rounded"
-                >
-                  <option>Pay at Hotel</option>
-                  <option>Credit Card</option>
-                  <option>UPI</option>
-                  <option>Bank Transfer</option>
-                </select>
-                <textarea
-                  name="specialRequests"
-                  value={form.specialRequests}
+                />
+                <input
+                  type="number"
+                  name="package_price"
+                  placeholder="Package Price"
+                  value={form.package_price}
                   onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="package_type"
+                  placeholder="Package Type"
+                  value={form.package_type}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="code"
+                  placeholder="Promo Code"
+                  value={form.code}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="promo_id"
+                  placeholder="Promo ID"
+                  value={form.promo_id}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  name="discount"
+                  placeholder="Discount (%)"
+                  value={form.discount}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* Payment */}
+            <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
+              <h2 className="font-semibold text-lg">Payment</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  name="ref_no"
+                  placeholder="Reference No"
+                  value={form.ref_no}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="payment_provider"
+                  placeholder="Payment Provider"
+                  value={form.payment_provider}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="mode"
+                  placeholder="Mode"
+                  value={form.mode}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="status"
+                  placeholder="Status"
+                  value={form.status}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  name="pay_id"
+                  placeholder="Payment ID"
+                  value={form.pay_id}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
+              <h2 className="font-semibold text-lg">Pricing</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  type="number"
+                  name="principal"
+                  placeholder="Principal"
+                  value={form.principal}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  name="tax"
+                  placeholder="Tax"
+                  value={form.tax}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  name="total"
+                  placeholder="Total"
+                  value={form.total}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+                <input
+                  type="number"
+                  name="amountPay"
+                  placeholder="Amount Pay"
+                  value={form.amountPay}
+                  onChange={handleChange}
+                  className="border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* Preferences */}
+            <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
+              <h2 className="font-semibold text-lg">Preferences</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <textarea
+                  name="special_request"
                   placeholder="Special Requests"
-                  className="border p-2 rounded md:col-span-3"
+                  value={form.special_request}
+                  onChange={handleChange}
+                  className="border p-2 rounded md:col-span-2"
                 />
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    name="airportPickup"
-                    checked={form.airportPickup}
+                    name="checked_in"
+                    checked={form.checked_in}
                     onChange={handleChange}
                   />
-                  Need Airport Pickup
+                  Checked In
                 </label>
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    name="marketingOptIn"
-                    checked={form.marketingOptIn}
+                    name="checked_out"
+                    checked={form.checked_out}
                     onChange={handleChange}
                   />
-                  Opt-in to updates & offers
+                  Checked Out
                 </label>
               </div>
             </div>
@@ -485,46 +477,6 @@ export default function ReservationForm({ data }) {
 
           {/* RIGHT SIDE */}
           <div className="space-y-6">
-            <div className="bg-white shadow-sm rounded-md p-4 space-y-2 text-sm">
-              <h2 className="font-semibold text-lg mb-2">Pricing Summary</h2>
-              <div className="flex justify-between">
-                <span>Nights</span>
-                <span>{nights}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Rooms</span>
-                <span>{form.rooms}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Rate / Night</span>
-                <span>
-                  {form.currency} {form.ratePerNight.toLocaleString()}
-                </span>
-              </div>
-              <hr className="my-2" />
-              <div className="flex justify-between font-medium">
-                <span>Subtotal</span>
-                <span>
-                  {form.currency} {subtotal.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Taxes (12%)</span>
-                <span>
-                  {form.currency} {taxes.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-base font-semibold">
-                <span>Total</span>
-                <span>
-                  {form.currency} {total.toLocaleString()}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 pt-2">
-                * Example tax 12% GST
-              </p>
-            </div>
-
             <div className="bg-white shadow-sm rounded-md p-4">
               <h2 className="font-semibold text-lg mb-2">Submission Preview</h2>
               {submitted ? (
