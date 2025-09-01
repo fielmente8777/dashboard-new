@@ -56,8 +56,8 @@ export default function ReservationForm({ data }) {
         type === "checkbox"
           ? checked
           : type === "number"
-          ? Number(value)
-          : value,
+            ? Number(value)
+            : value,
     }));
   };
 
@@ -124,14 +124,56 @@ export default function ReservationForm({ data }) {
     };
 
     try {
-      const response = await addReservation(formData);
+      const response = await addReservation(
+        {
+          "roomNumbers": ["401", "402"],
+          "guestName": "John",
+          "emailId": "johndoe@example.com",
+          "phone": "+1-555-123-4567",
+          "city": "New York",
+          "label": "United States",
+          "value": "US",
+          "address": "123 Main Street, Manhattan",
+          "adults": 2,
+          "kids": 1,
+          "room_type": "Deluxe Suite",
+          "quantity": 1,
+          "ref_no": "PAYREF123456",
+          "payment_provider": "Stripe",
+          "mode": "Credit Card",
+          "status": "Pending",
+          "pay_id": "pi_3XYZ987",
+          "code": "SUMMER25",
+          "promo_id": "PROMO123",
+          "discount": 25,
+          "package_id": "PKG001",
+          "package_name": "Honeymoon Package",
+          "package_price": 199.99,
+          "package_type": "Meal Plan",
+          "special_request": "Airport pickup",
+          "checkIn": "2025-09-05T14:00:00Z",
+          "checkOut": "2025-09-10T11:00:00Z",
+          "checked_in": false,
+          "checked_out": false,
+          "principal": 500.00,
+          "total": 599.99,
+          "tax": 99.99,
+          "amountPay": 599.99
+        }
+
+      );
       console.log(response);
-    } catch (error) {}
+    } catch (error) { }
     // setSubmitted(payload);
     // console.log("Reservation submitted", payload);
   };
 
   const handleReset = () => {
+
+
+
+
+
     setForm({
       firstName: "",
       lastName: "",

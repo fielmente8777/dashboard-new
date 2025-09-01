@@ -48,10 +48,11 @@ export const addRoom = async (formData, hid) => {
 
 export const addReservation = async (data) => {
   try {
-    const res = await axios.post(`${BASE_URL}/payment/create_order`, data, {
+    const res = await axios.post(`${BASE_URL}/reservation/create?hid=${handleLocalStorage("hid")}`, data, {
       headers: {
         Accept: "application/json, text/plain, */*",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${handleLocalStorage("token")}`,
       },
     });
     const result = res?.data;
