@@ -288,7 +288,6 @@ export const SidebarData = [
     key: "Leads Form",
     icon: <MdLeaderboard size={24} />,
     link: `lead-form/lead-gen-form`,
-    key: "Leads Form",
     // subLinks: [
     //   {
     //     name: "My Form",
