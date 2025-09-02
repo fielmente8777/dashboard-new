@@ -18,9 +18,17 @@ import {
 } from "recharts";
 import DataContext from "../../context/DataContext";
 import { FaSourcetree } from "react-icons/fa";
+import DashboardCard from "../../components/Card/DashboardCard";
 
-const AdLeadsAnalytics = () => {
+const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   const { Leads, setLeads } = useContext(DataContext);
+  const { leadsList, setLeadsLists } = useContext(DataContext);
+
+  console.log(leadsList);
+
+  // const [leadsLists, setLeadsLists] = useState([]);
+  const [leadFromIg, setLeadFromIg] = useState();
+  const [leadFromFb, setLeadFromFb] = useState();
   const [parsedData, setParsedData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [insights, setInsights] = useState({});
@@ -59,7 +67,51 @@ const AdLeadsAnalytics = () => {
         });
       }
     }
+
+    const filteredLeads = Leads.filter((leadRow) => {
+      const platform = leadRow[11]; // assuming platform is always at index 11
+      return platform === "ig";
+    });
+
+    const filteredLeads2 = Leads.filter((leadRow) => {
+      const platform = leadRow[11]; // assuming platform is always at index 11
+      return platform === "fb";
+    });
+
+    setLeadFromIg(filteredLeads.length);
+    setLeadFromFb(filteredLeads2.length);
   }, [Leads]);
+
+  useEffect(() => {
+    if (rangeDate) {
+      if (rangeDate === "all") {
+        setLeads(leadsList);
+        return;
+      }
+      let now = new Date();
+      let days = 7;
+      if (rangeDate === "30d") days = 30;
+      else if (rangeDate === "90d") days = 90;
+
+      const cutoff = new Date();
+      cutoff.setDate(now.getDate() - days);
+
+      const filtered = leadsList.filter((item) => {
+        const createdDate = new Date(item[1]);
+        return createdDate >= cutoff;
+      });
+      setLeads(filtered);
+    }
+  }, [rangeDate]);
+
+  console.log(Leads);
+  console.log(leadsList);
+
+  // useEffect(() => {
+  //   if (Leads) {
+  //     setLeadsLists(Leads);
+  //   }
+  // }, [Leads]);
 
   // Generate insights from data
   const generateInsights = (data, headers) => {
@@ -243,75 +295,68 @@ const AdLeadsAnalytics = () => {
     <div className="min-h-screen">
       <div className=" mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <h1 className="text-2xl md:text-lg font-semibold text-gray-900">
-                Lead Analytics Dashboard
-              </h1>
-              <p className="text-gray-600 mt-2">
-                {dateRange.start && dateRange.end
-                  ? `Data from ${dateRange.start.toLocaleDateString()} to ${dateRange.end.toLocaleDateString()}`
-                  : "Analyzing lead data"}
-              </p>
-            </div>
-            {/* <div className="flex space-x-3">
+        {showTitle && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+              <div className="mb-4 md:mb-0">
+                <h1 className="text-2xl md:text-lg font-semibold text-gray-900">
+                  Lead Analytics Dashboard
+                </h1>
+                <p className="text-gray-600 mt-2">
+                  {dateRange.start && dateRange.end
+                    ? `Data from ${dateRange.start.toLocaleDateString()} to ${dateRange.end.toLocaleDateString()}`
+                    : "Analyzing lead data"}
+                </p>
+              </div>
+              {/* <div className="flex space-x-3">
                             <button
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 Export Report
                             </button>
                         </div> */}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
           {/* Total Leads Card */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm p-5 border border-blue-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-blue-600 mb-1">
-                  Total Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {insights.totalLeads || 0}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-            </div>
-            {dateRange.start && (
+
+          {/* {dateRange.start && (
               <p className="text-xs text-blue-500 mt-2">
                 Since {dateRange.start.toLocaleDateString()}
               </p>
-            )}
-          </div>
+            )} */}
+
+          <DashboardCard
+            amount={insights.totalLeads || 0}
+            label={"Total Meta Leads"}
+            progress={"100"}
+          />
+
+          <DashboardCard
+            amount={leadFromIg || 0}
+            label={"Instagram"}
+            progress={"30"}
+          />
+
+          <DashboardCard
+            amount={leadFromFb || 0}
+            label={"Facebook"}
+            progress={"70"}
+          />
 
           {/* Qualified Leads Card */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm p-5 border border-green-100 transition-all hover:shadow-md hover:scale-[1.02]">
+          <div className="bg-white rounded-xl p-5 ">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-green-600 mb-1">
-                  Qualified Leads
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
+                <p className="text-4xl font-bold text-primary/90">
                   {insights.qualifiedLeads || 0}
                 </p>
+                <h3 className="text-lg font-medium text-green-600 mb-1">
+                  Qualified
+                </h3>
               </div>
               <div className="p-3 rounded-lg bg-green-100 text-green-600">
                 <svg
@@ -346,54 +391,28 @@ const AdLeadsAnalytics = () => {
           </div>
 
           {/* Conversion Rate Card */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-sm p-5 border border-purple-100 transition-all hover:shadow-md hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-purple-600 mb-1">
-                  Conversion Rate
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
-                  {insights.conversionRate || 0}%
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                  />
-                </svg>
-              </div>
-            </div>
-            <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
-              <div
-                className="bg-purple-600 h-1.5 rounded-full"
-                style={{
-                  width: `${Math.min(100, insights.conversionRate || 0)}%`,
-                }}
-              ></div>
-            </div>
-          </div>
+
+          <DashboardCard
+            amount={
+              insights.conversionRate === "0.0"
+                ? insights.conversionRate.split(".")[0]
+                : insights.conversionRate || 0
+            }
+            label={"Conversion Rate"}
+            progress={"0"}
+          />
 
           {/* Top Location Card */}
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl shadow-sm p-5 border border-amber-100 transition-all hover:shadow-md hover:scale-[1.02]">
+          <div className="rounded-xl p-5 bg-white">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-amber-600 mb-1">
-                  Top Location
-                </h3>
-                <p className="text-3xl font-bold text-gray-800">
+                <p className="text-4xl font-bold text-primary/90">
                   {(chartData.locations && chartData.locations[0]?.name) ||
                     "N/A"}
                 </p>
+                <h3 className="text-lg font-medium text-amber-600 mb-1">
+                  Top Location
+                </h3>
               </div>
               <div className="p-3 rounded-lg bg-amber-100 text-amber-600">
                 <svg

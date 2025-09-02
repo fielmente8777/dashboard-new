@@ -22,7 +22,7 @@ export const getChatbotData = async ({ ndid, hid }) => {
 };
 
 export const createChatbotData = async ({ hid, chatbotData }) => {
-  console.log("vbnkml,", chatbotData)
+  console.log("vbnkml,", hid, chatbotData)
   try {
     const response = await fetch(`${BASE_URL}/leadeazbot/create?hid=${hid}`, {
       method: "POST", // or "POST" if you're sending data
@@ -33,6 +33,7 @@ export const createChatbotData = async ({ hid, chatbotData }) => {
       body: JSON.stringify(chatbotData),
     });
     const result = await response.json();
+    console.log(result)
     return result;
   } catch (error) {
     console.error("Error getting applicants:", error);

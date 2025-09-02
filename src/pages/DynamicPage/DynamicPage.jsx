@@ -62,6 +62,7 @@ import Facebook from "../ConversationalTool/Facebook/Facebook";
 // import Eazbot from "../Eazobot/Eazbot";
 import Eazbot from "../Eazobot/Eazobot";
 import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
+import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -116,6 +117,9 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/enquiries-management/lead-gen-form`]: (
+      <LeadGenFormTable />
+    ),
     [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
       <AdsLeadsUsingGoogleSheet />
     ),
@@ -140,6 +144,7 @@ const DynamicPage = () => {
 
     // Feedback, Reports, Analytics, Help
     [`${BASE_PATH}/${hid}/lead-form/lead-gen-form`]: <LeadGenForm />,
+
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
     [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,

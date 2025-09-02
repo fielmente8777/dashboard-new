@@ -25,7 +25,7 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     <div className="space-y-6 p-4">
       <h2 className="text-lg font-semibold text-gray-600">Bot Profile</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         {/* Bot Name */}
         <div>
           <label className="block text-md font-medium text-gray-500 mb-1">
@@ -43,20 +43,35 @@ const BotProfileStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
         </div>
 
         {/* Bot Title */}
-        {/* <div>
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bot Title
+            Contact
           </label>
           <input
             type="text"
-            name="bot_name"
-            value={botTitle}
+            name="contact"
+            value={chatbotData.contact}
             onChange={handleChange}
             // onChange={(e) => setBotTitle(e.target.value)}
-            placeholder="e.g. Your AI Assistant"
+            placeholder="Contact"
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
           />
-        </div> */}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-md font-medium text-gray-500 mb-1">
+          Email
+        </label>
+        <input
+          type="email"
+          value={chatbotData.email}
+          name="email"
+          // onChange={(e) => setBotName(e.target.value)}
+          onChange={handleChange}
+          placeholder="Enter your email"
+          className="w-full px-4 py-2 border text-md outline-none rounded-md"
+        />
       </div>
 
       {/* Intro Text */}

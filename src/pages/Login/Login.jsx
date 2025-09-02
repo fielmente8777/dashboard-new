@@ -20,6 +20,7 @@ import {
   GoogleOAuthProvider,
   GoogleLogin,
 } from "@react-oauth/google";
+import Logo from "../../assets/companylogo.b.png";
 import { verify } from "../../utils/verify";
 
 const Login = () => {
@@ -193,8 +194,8 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center">
-      <div className="max-w-[1500px] w-full grid lg:grid-cols-2 items-center gap-4">
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white">
+      {/* <div className="max-w-[1500px] w-full grid lg:grid-cols-2 items-center gap-4">
         <div className="aspect-[4/4]">
           <img
             src="/LoginImage.png"
@@ -324,10 +325,7 @@ const Login = () => {
                     // useOneTap={true}
                     />
 
-                    {/* <GoogleLoginButton
-                      handleSuccess={handleSuccess}
-                      handleFailure={handleFailure}
-                    /> */}
+                  
                   </div>
                 </GoogleOAuthProvider>
               </div>
@@ -346,6 +344,146 @@ const Login = () => {
             </div>
           </form>
         </div>
+      </div> */}
+      <div className="bg-white w-full shadow-md px-5 md:px-20 py-2">
+        <div className="w-28 h-10 -ml-2">
+          <img
+            src={Logo}
+            alt="logo"
+            className="h-full w-full object-contain"
+          />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col w-full h-full">
+
+
+        <form onSubmit={handleSubmit} className="md:mt-14 w-full self-center md:max-w-[400px]">
+        <h1 className="text-2xl font-medium">Sign In</h1>
+
+            <div className="space-y-6 mt-6">
+              <div className="flex flex-col gap-2">
+                {/* <label
+                  htmlFor=""
+                  className="font-medium text-text-black text-sm"
+                >
+                  Email
+                </label> */}
+
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="Email"
+                  className="px-4 py-3 font-medium bg-[#f1f1f1] rounded-md  text-sm outline-none placeholder:text-gray-600 shadow-sm"
+                  onChange={handleChange}
+                  value={formData.email}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {/* <label
+                  htmlFor=""
+                  className="font-medium text-text-black text-sm"
+                >
+                  Password
+                </label> */}
+
+                <div className="w-full relative">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className="px-4 py-3 bg-[#f1f1f1] font-medium rounded-md  text-sm outline-none placeholder:text-gray-600 shadow-sm w-full"
+                    onChange={handleChange}
+                    value={formData.password}
+                  />
+
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                    {showPassword ? (
+                      <AiOutlineEye
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
+                    ) : (
+                      <HiOutlineEyeOff
+                        size={20}
+                        onClick={togglePassword}
+                        className="text-gray-400"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-1">
+                    <input type="checkbox" id="remember" className="mt-1" />
+                    <label
+                      htmlFor="remember"
+                      className="text-sm text-text-black font-medium"
+                    >
+                      Remember Me
+                    </label>
+                  </div>
+
+                  <p
+                    onClick={() => setForget(true)}
+                    className="cursor-pointer text-sm text-secondary  inline-block font-medium"
+                  >
+                    Forgot Password
+                  </p>
+                </div> */}
+              </div>
+
+              <div className="flex">
+                <button className="bg-[#159aff] rounded-md text-white py-3 text-sm shadow-md w-full flex justify-center gap-3 items-center">
+                  Sign In <SignInIcon />
+                  {spinnerLoader && <Loader size={18} color="white" />}
+                </button>
+              </div>
+
+              <div className="">
+                <GoogleOAuthProvider
+                  clientId={
+                    "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
+                  }
+                // clientSecret={"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"}
+                >
+                  <div className="flex justify-center w-full rounded-md">
+                    <GoogleLogin
+                      onSuccess={handleSuccess}
+                      onError={handleFailure}
+                      disabled={loading}
+                      text="continue_with"
+                      width="700px"
+                      // type="icon"
+                      type="standard"
+                      theme="outline"
+                      size="large"
+                      shape="rectangular"
+                    // useOneTap={true}
+                    />
+
+                  
+                  </div>
+                </GoogleOAuthProvider>
+              </div>
+
+              {/* <div>
+                <p className="text-md font-medium text-text-gray -mt-4">
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    to="/signin"
+                    className="text-secondary font-medium inline-block"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
+              </div> */}
+            </div>
+            </form>
+      </div>
+      <div>
+        <img className="bottom-0" src="https://static.zohocdn.com/social/images/client-page-bottom-illustration.7f6ab18523b6339974100afa454a7b46.png" alt="image"/>
       </div>
     </div>
   );

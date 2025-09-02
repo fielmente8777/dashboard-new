@@ -32,6 +32,7 @@ const GlobalDataProvider = () => {
   }, [token]);
 
   useEffect(() => {
+    console.log(hotel);
     if (hotel?.Data?.ndid) {
       localStorage.setItem("ndid", hotel.Data.ndid);
     }

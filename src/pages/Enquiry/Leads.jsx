@@ -6,11 +6,21 @@ import { formatDateTime } from "../../services/formateDate";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
 import FilterPopup from "../../components/Popup/FilterPopup";
-import { FaFileExcel } from "react-icons/fa";
+import { FaFileExcel, FaPlus, FaTrash, FaTrashAlt } from "react-icons/fa";
 import jsonToCsvExport from "json-to-csv-export";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { MdDeleteOutline } from "react-icons/md";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
+import {
+  addLeadGenForm,
+  deleteLMultipleeadGenForm,
+} from "../../services/api/MetaLeads.api";
+import { useSelector } from "react-redux";
+import Loader from "../../components/Loader";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -31,8 +41,19 @@ export const extractBookingInfo = (input) => {
 };
 
 const Leads = () => {
+  const { user: hotel } = useSelector((state) => state.userProfile);
+
+  console.log(hotel);
+
   const [active, setActive] = useState(0);
-  const header = ["All Enquires", "Open Queries", "Contacted", "Converted"];
+  const header = [
+    "Open Queries",
+    "Contacted",
+    "Converted",
+    "Out Of Budget",
+    "Potential For Later",
+    "Dead Lead",
+  ];
   const [exportedData, setExportedData] = useState([]);
   const [enquires, setEnquires] = useState([]);
   const [filteredEnquires, setFilteredEnquires] = useState([]);
@@ -47,6 +68,37 @@ const Leads = () => {
   const [open, setOpen] = useState(false);
 
   const [filterPopup, setFilterPopup] = useState(false);
+
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [reserveData, setReserveData] = useState(null);
+
+  const [rowSelected, setRowSelected] = useState([]);
+  const [newRow, setNewRow] = useState(null);
+  const [isLeadLoading, setIsLeadLoading] = useState(false);
+
+  const setDateRange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+
+    if (start && end) {
+      // Normalize to full-day range
+      console.log("inn");
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const filtered = enquires.filter((item) => {
+        const createdAtDate = new Date(item.Created_at);
+        return createdAtDate >= startOfDay && createdAtDate <= endOfDay;
+      });
+
+      setFilteredEnquires(filtered);
+    }
+  };
 
   const createExportData = (apiData) => {
     return apiData.map((item) => {
@@ -68,7 +120,11 @@ const Leads = () => {
     setLoading(true);
     try {
       const hid = handleLocalStorage("hid");
-      const response = await getAllClientEnquires({ token, hid });
+      const response = await getAllClientEnquires({
+        token,
+        hid,
+        status: "Open",
+      });
       const data = createExportData(response);
       setExportedData(data);
       setEnquires(response?.reverse());
@@ -84,12 +140,12 @@ const Leads = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm.length > 0) {
+    if (searchTerm.length > 0 && enquires.length > 0) {
       const filtered = enquires.filter(
         (enquery) =>
-          enquery.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          enquery.Contact.includes(searchTerm) ||
-          enquery.Message.toLowerCase().includes(searchTerm.toLowerCase())
+          enquery?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          enquery?.Contact?.includes(searchTerm) ||
+          enquery?.Message?.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredEnquires(filtered);
     } else {
@@ -103,11 +159,16 @@ const Leads = () => {
     setLoading(true);
     setActive(index);
     setCurrentPage(1);
+    // setNewRow((prev) => ({
+    //   ...prev,
+    //   stages: header[index],
+    // }));
     const token = localStorage.getItem("token");
     const hid = handleLocalStorage("hid");
+
     try {
       let response;
-      switch (index) {
+      switch (index + 1) {
         case 0:
           response = await getAllClientEnquires({ token, hid });
           break;
@@ -128,9 +189,34 @@ const Leads = () => {
             status: "Converted",
           });
           break;
+
+        case 4:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Out Of Budget",
+          });
+          break;
+
+        case 5:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Potential",
+          });
+          break;
+
+        case 6:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Dead Lead",
+          });
+          break;
         default:
           response = await getAllClientEnquires({ token, hid });
       }
+      console.log(response);
       setEnquires(response?.reverse());
     } catch (error) {
       console.error(error);
@@ -196,6 +282,7 @@ const Leads = () => {
   );
 
   const handlePageChange = (page) => {
+    setRowSelected([]);
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
@@ -304,6 +391,109 @@ const Leads = () => {
       }
     }
   };
+  const handleRowSelect = (id) => {
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
+  };
+
+  const handleSelectAll = () => {
+    setRowSelected((prev) =>
+      prev.length === currentItems.length
+        ? []
+        : currentItems.map((item) => item._id)
+    );
+  };
+
+  const handleDeleteAll = () => {
+    alert("We are working on it")
+    // Swal.fire({
+    //   title: "Are you sure?",
+    //   text: `This will permanently delete ${"this record"}.`,
+    //   icon: "warning",
+    //   showCancelButton: true,
+    //   confirmButtonColor: "#d33",
+    //   cancelButtonColor: "#3085d6",
+    //   confirmButtonText: "Yes, delete it!",
+    //   cancelButtonText: "Cancel",
+    // }).then(async (result) => {
+    //   if (result.isConfirmed) {
+    //     const data = await deleteLMultipleeadGenForm(rowSelected);
+    //     if (data?.Status) {
+    //       fetchEnquires(localStorage.getItem("token"));
+    //       Swal.fire("Deleted!", "The record has been removed.", "success");
+    //     } else {
+    //       Swal.fire("Error!", data?.Message, "error");
+    //     }
+    //   }
+    // });
+  };
+
+  const handleAddRow = () => {
+    setNewRow({
+      id: Date.now(), // temp id
+      name: "",
+      contact: "",
+      email: "",
+      status:"",
+      check_in: "",
+      check_out: "",
+      number_of_guest: "",
+      source: "Dashboard",
+      isReserved: false,
+    });
+  };
+
+  const handleSaveRow = async () => {
+    setIsLeadLoading(true);
+    if (!newRow?.name || !newRow?.contact || !newRow?.email) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const formData = {
+      Domain: hotel?.Profile?.domain,
+      Contact: newRow.contact,
+      email: newRow.email,
+      Description: "",
+      Name: newRow.name,
+      Remark: "",
+      Subject: null,
+      check_in: `${newRow.check_in}`,
+      check_out: `${newRow.check_out}`,
+      numbers_of_guest: ``,
+      created_from: newRow.source,
+      
+    };
+
+    try {
+      const data = await addLeadGenForm(formData);
+      if (data?.Status) {
+        fetchEnquires(localStorage.getItem("token"));
+        Swal.fire("Success", data?.Message, "success");
+      }
+    } catch (error) {
+    } finally {
+      setIsLeadLoading(false);
+      setNewRow(null);
+    }
+
+    // add new row at the start
+    // setCurrentItems([newRow, ...currentItems]);
+    // setNewRow(null);
+  };
+
+  const handleCancelRow = () => {
+    setNewRow(null);
+  };
 
   return (
     <div className="cardShadow">
@@ -331,6 +521,7 @@ const Leads = () => {
             <MdRefresh size={25} />
           </div>
         </div>
+
         <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label
             htmlFor="itemsPerPage"
@@ -358,6 +549,14 @@ const Leads = () => {
             <FaFileExcel />
             <span className="font-medium">Export</span>
           </div>
+
+          <div
+            onClick={handleAddRow}
+            className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+          >
+            <FaPlus />
+            <span className="font-medium">Add Lead</span>
+          </div>
         </div>
       </div>
 
@@ -373,6 +572,22 @@ const Leads = () => {
               placeholder="Search clients by name, contact or message"
               className=" px-3 pl-2 lg:pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
               onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="border border-gray-300 rounded-md p-1.5">
+            <DatePicker
+              // maxDate={msg?.disabled ? new Date() : undefined}
+              className="outline-none"
+              selectsRange
+              startDate={startDate}
+              endDate={endDate}
+              required
+              onChange={(update) => {
+                setDateRange(update);
+              }}
+              // isClearable
+              // minDate={new Date()}
             />
           </div>
 
@@ -395,9 +610,32 @@ const Leads = () => {
 
         {!loading ? (
           <div className="overflow-auto">
+            {rowSelected?.length > 0 && (
+              <button
+                className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2"
+                onClick={handleDeleteAll}
+              >
+                Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+              </button>
+            )}
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b">
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    {/* <input
+                      type="checkbox"
+                      onClick={handleSelectAll}
+                      checked={rowSelected.length === currentItems.length}
+                    /> */}
+                    Select
+                  </th>
+
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    #
+                  </th>
+                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    Reserve
+                  </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Date Added
                   </th>
@@ -434,6 +672,138 @@ const Leads = () => {
 
               {currentItems?.length > 0 ? (
                 <tbody>
+                  {newRow && (
+                    <tr className="text-sm border-b border-gray-200 text-[#575757] bg-blue-50">
+                      <td className="py-2 px-2">-</td>
+                      <td className="text-black p-2">-</td>
+                      <td className="py-2 px-2">
+                        {newRow.isReserved?"Reserved":"Unreserved"}
+                        {/* <select
+                          onChange={(e) => {
+                            setNewRow({
+                              ...newRow,
+                              isReserved: e.target.value,
+                            });
+                          }}
+                          value={newRow.isReserved}
+                        >
+                          <option value="">Select</option>
+                          <option value={false}>Unreserved</option>
+                          <option value={true}>Reserved</option>
+                        </select> */}
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="text"
+                          className="outline-none px-2 py-1"
+                          value={formatDateTime(new Date())}
+                          readOnly
+                          // onChange={(e) =>
+                          //   setNewRow({ ...newRow, date: e.target.value })
+                          // }
+                        />
+                      </td>
+                      <td className="py-2 px-2 font-medium">
+                        Dashboard
+                        {/* <select
+                          onChange={(e) => {
+                            setNewRow({ ...newRow, source: e.target.value });
+                          }}
+                          className="outline-none px-2 py-1"
+                          value={newRow.source}
+                        >
+                          <option value="">Select</option>
+                          <option value="Dashboard">Dashboard</option>
+                          <option value="Eazbot">Eazbot</option>
+                          <option value="WebForm">WebForm</option>
+                        </select> */}
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          className="outline-none px-2 py-1"
+                          value={newRow.name}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, name: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="number"
+                          placeholder="Contact"
+                          className="outline-none px-2 py-1"
+                          value={newRow.contact}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, contact: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          className="outline-none px-2 py-1"
+                          value={newRow.email}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, email: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="date"
+                          placeholder="date"
+                          className="border px-2 py-1 rounded w-full"
+                          value={newRow.check_in}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, check_in: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        <input
+                          type="date"
+                          placeholder="Email"
+                          className="border px-2 py-1 rounded w-full"
+                          value={newRow.check_out}
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, check_out: e.target.value })
+                          }
+                        />
+                      </td>
+                      <td className="py-2 px-2">
+                        Open
+                        {/* <select
+                          onChange={(e) => {
+                            setNewRow({ ...newRow, status: e.target.value });
+                          }}
+                          value={newRow.status}
+                        >
+                          <option value="">Select</option>
+                          <option value="Open">Open</option>
+                          <option value="Out Of Budget">Out Of Budget</option>
+                          <option value="Dead Lead">Dead Lead</option>
+                        </select> */}
+                      </td>
+                      <td className="py-2 px-2 flex gap-2">
+                        <button
+                          onClick={handleSaveRow}
+                          className="px-3 py-1 bg-green-500 text-white rounded flex items-center gap-1"
+                        >
+                          Save {isLeadLoading && <Loader color="#fff" />}
+                        </button>
+                        <button
+                          onClick={handleCancelRow}
+                          className="px-3 py-1 bg-gray-400 text-white rounded"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
@@ -447,6 +817,30 @@ const Leads = () => {
                         setIsPopupOpen(true);
                       }}
                     >
+                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={rowSelected.includes(enquery?._id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRowSelect(enquery?._id);
+                          }}
+                        />
+                      </td>
+                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                        {index + 1}
+                      </td>
+
+                      <td
+                        className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setReserveData(enquery);
+                        }}
+                      >
+                        Unreserved
+                      </td>
+
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
                         {enquery?.Created_at
                           ? formatDateTime(enquery?.Created_at)
@@ -456,7 +850,9 @@ const Leads = () => {
                         {/* kjhjkhk */}
                         {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "chat bot"
+                          : enquery?.created_from?.toLowerCase() === "Eazbot"
+                          ? "Eazbot"
+                          : enquery?.created_from === "Eazobt"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "eazobot"
                           ? "Eazbot"
@@ -524,6 +920,25 @@ const Leads = () => {
                           <option value="Open" className="bg-white  text-black">
                             Open
                           </option>
+
+                          <option
+                            value="Out Of Budget"
+                            className="bg-white  text-black"
+                          >
+                            Out Of Budget
+                          </option>
+                          <option
+                            value="Potential"
+                            className="bg-white  text-black"
+                          >
+                            Potential For Later
+                          </option>
+                          <option
+                            value="Dead Lead"
+                            className="bg-white  text-black"
+                          >
+                            Dead Lead
+                          </option>
                         </select>
                       </td>
 
@@ -544,7 +959,7 @@ const Leads = () => {
               ) : (
                 <tbody>
                   <tr className="bg-white text-gray-600 text-center border">
-                    <td colSpan={9} className="py-2">
+                    <td colSpan={12} className="py-2">
                       Data not found!
                     </td>
                   </tr>
@@ -636,6 +1051,23 @@ const Leads = () => {
                 Next →
               </button>
             </nav>
+          </div>
+        )}
+
+        {reserveData && (
+          <div className="fixed inset-0 z-50 bg-black/50 overflow-auto hide-scrollbar">
+            <div className="max-w-7xl w-full p-2 mx-auto rounded-md">
+              <div
+                className="bg-white flex justify-end px-4 pt-2 text-2xl font-bold cursor-pointer rounded-t-md"
+                onClick={() => setReserveData(null)}
+              >
+                X
+              </div>
+
+              <div>
+                <ReservationForm data={reserveData} />
+              </div>
+            </div>
           </div>
         )}
       </div>

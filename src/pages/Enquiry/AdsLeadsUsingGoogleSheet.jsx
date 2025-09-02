@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 // import { LoginSocialGoogle } from "reactjs-social-login";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { LoginSocialGoogle } from "reactjs-social-login";
 import { BASE_URL } from "../../data/constant";
 import AdLeadsAnalytics from "./AdLeadsAnalytics";
 import DataContext from "../../context/DataContext";
@@ -21,6 +21,8 @@ import { useSelector } from "react-redux";
 
 const AdsLeadsUsingGoogleSheet = () => {
   const { Leads, setLeads } = useContext(DataContext);
+  const { leadsLists, setLeadsList } = useContext(DataContext);
+
   const [Spreadsheet, setSpreadsheet] = useState([]);
   const [id, setid] = useState("");
   const [sheetName, setSheetName] = useState("");
@@ -111,6 +113,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         setsheetNamess(sheetname);
         setsheetid(sheetid);
         setLeads(json.Message.values);
+        setLeadsList(json.Message.values);
         settokenExpire(false);
       } else {
         setLeads([]);
@@ -172,6 +175,8 @@ const AdsLeadsUsingGoogleSheet = () => {
             sheetid,
             json.sheets[0].properties.title
           );
+          localStorage.setItem("SheetName", json.sheets[0].properties.title);
+          localStorage.setItem("SheetId", sheetid);
         }
       } else {
         settokenExpire(true);
@@ -224,52 +229,33 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
 
-  // const handleConnectGoogleTool = async (provider, data) => {
-  //   try {
-  //     // console.log(data);
-  //     const tokenEndpoint = "https://oauth2.googleapis.com/token";
-  //     const response = await fetch(tokenEndpoint, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //       },
-  //       body: new URLSearchParams({
-  //         code: data.code,
-  //         client_id:
-  //           "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com",
-  //         client_secret: "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",
-  //         redirect_uri: window.location.origin,
-  //         grant_type: "authorization_code",
-  //       }),
-  //     });
-
-  //     const tokenData = await response.json();
-  //     const accessToken = tokenData.access_token; // <-- 🟡 important
-  //     const refreshToken = tokenData.refresh_token; // <-- 🟡 important
-
-  //     setsheetaccessToken(accessToken);
-  //     updateAccessTokenDb(accessToken, refreshToken);
-
-  //     if (Spreadsheet.length != 0) {
-  //       FetchSheetofSpreadSheet(Spreadsheet[0].id);
-  //     }
-  //   } catch (error) {
-  //     console.error("Google login error:", error);
-  //     updateAccessTokenDb("None");
-  //   }
-  // };
-
-  const handleConnectGoogleTool = async (credentialResponse) => {
+  const handleConnectGoogleTool = async (provider, data) => {
     try {
-      console.log("Google auth response:", credentialResponse);
+      // console.log(data);
+      const tokenEndpoint = "https://oauth2.googleapis.com/token";
+      const response = await fetch(tokenEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          code: data.code,
+          client_id:
+            "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com",
+          client_secret: "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",
+          redirect_uri: window.location.origin,
+          grant_type: "authorization_code",
+        }),
+      });
 
-      // The access token is now directly available in the credentialResponse
-      const accessToken = credentialResponse.credential;
+      const tokenData = await response.json();
+      const accessToken = tokenData.access_token; // <-- 🟡 important
+      const refreshToken = tokenData.refresh_token; // <-- 🟡 important
 
       setsheetaccessToken(accessToken);
-      updateAccessTokenDb(accessToken, ""); // Refresh token not available in this flow
+      updateAccessTokenDb(accessToken, refreshToken);
 
-      if (Spreadsheet.length !== 0) {
+      if (Spreadsheet.length != 0) {
         FetchSheetofSpreadSheet(Spreadsheet[0].id);
       }
     } catch (error) {
@@ -644,7 +630,7 @@ const AdsLeadsUsingGoogleSheet = () => {
           </div>
 
           {/* Connection Button */}
-          {/* <button className="w-full max-w-xs mx-auto bg-white border border-gray-300 rounded-lg py-3 px-6 flex items-center justify-center text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">
+          <button className="w-full max-w-xs mx-auto bg-white border border-gray-300 rounded-lg py-3 px-6 flex items-center justify-center text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">
             <FaGoogle className="text-xl mr-3" />
             <LoginSocialGoogle
               client_id="737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
@@ -661,18 +647,7 @@ const AdsLeadsUsingGoogleSheet = () => {
             >
               Connect with google
             </LoginSocialGoogle>
-          </button> */}
-
-          <GoogleOAuthProvider clientId="737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com">
-            <GoogleLogin
-              onSuccess={handleConnectGoogleTool}
-              onError={() => {
-                console.log("Login Failed");
-              }}
-              scope="https://www.googleapis.com/auth/spreadsheets"
-              useOneTap
-            />
-          </GoogleOAuthProvider>
+          </button>
 
           {/* Privacy Notice */}
           <div className="mt-6 text-xs text-gray-500 flex items-center justify-center">
@@ -695,7 +670,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         </div>
       )}
 
-      {selectedRow && (
+      {/* {selectedRow && (
         <div className="fixed inset-0 bg-black/80 backdrop:blur-md z-[9999] overflow-auto">
           <div className="max-w-5xl mx-auto p-8 bg-white shadow-xl rounded-xl mt-10">
             <div className="flex items-center justify-between">
@@ -753,7 +728,7 @@ const AdsLeadsUsingGoogleSheet = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

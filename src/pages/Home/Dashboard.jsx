@@ -5,16 +5,27 @@ import TemperatureCard from "../../components/Card/TemperatureCard";
 import MiniLineChartCard from "../../components/Card/MiniLineChartCard";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getTodayQuery } from "../../utils/getDataInRange";
 import Review from "../../components/Card/Review";
 import Services from "../../components/Card/Services";
+import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
+import { BASE_URL } from "../../data/constant";
+import DataContext from "../../context/DataContext";
+import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
 
 const Dashboard = () => {
   const [enquires, setEnquires] = useState([]);
+  const [enquiresList, setEnquiresList] = useState([]);
   const [convertedEnquiries, setConvertedEnquiries] = useState(0);
   const [eazobotEnquiries, setEazobotEnquiries] = useState(0);
+  const [eazobotEnquiriesList, setEazobotEnquiriesList] = useState(0);
+
   const [loading, setLoading] = useState(true);
+  const { Leads, setLeads, setLeadsList } = useContext(DataContext);
+
+  const [dateRange, setDateRange] = useState(""); // default 7 days
+  // const [data, setData] = useState([]);
 
   // const navigate = useNavigate();
   // const location = useLocation();
@@ -73,6 +84,37 @@ const Dashboard = () => {
 
   const { user } = useSelector((state) => state?.userProfile);
 
+  const FetchSheetsDataofSpreadSheet = async (sheetid, sheetname) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/leadmanagement/getSheetDetailLead/${localStorage.getItem(
+          "token"
+        )}/${sheetid}/${sheetname}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json, text/plain, /",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const json = await response.json();
+      // console.log(json);
+      if (json.Status) {
+        // setsheetNamess(sheetname);
+        // setsheetid(sheetid);
+        setLeads(json.Message.values);
+        setLeadsList(json.Message.values);
+        // settokenExpire(false);
+      } else {
+        // setLeads([]);
+        // settokenExpire(true);
+      }
+    } catch {
+      // alert("Some Problem update token");
+    }
+  };
+
   const fetchEnquires = async (token) => {
     const hid = handleLocalStorage("hid");
     try {
@@ -81,6 +123,7 @@ const Dashboard = () => {
         hid,
       });
       setEnquires(response);
+      setEnquiresList(response);
       const converted = response?.filter((item) => {
         if (item?.status) {
           return item?.status.toLowerCase() === "converted";
@@ -106,6 +149,7 @@ const Dashboard = () => {
       });
 
       setEazobotEnquiries(fromEazobot);
+      setEazobotEnquiriesList(fromEazobot);
       setConvertedEnquiries(converted?.length);
     } catch (error) {
       console.error("Error fetching enquires:", error);
@@ -114,30 +158,70 @@ const Dashboard = () => {
     }
   };
 
+  const handleDateSelect = (e) => {
+    const { value } = e.target;
+    setDateRange(value);
+    const now = new Date();
+
+    if (value === "all") {
+      setEnquires(enquiresList);
+      return;
+    }
+
+    let days = 7;
+    if (value === "30d") days = 30;
+    else if (value === "90d") days = 90;
+
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+
+    const filtered = enquiresList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    const filteredEazobot = eazobotEnquiriesList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    setEnquires(filtered);
+    setEazobotEnquiries(filteredEazobot);
+  };
+
   useEffect(() => {
     fetchEnquires(localStorage.getItem("token"));
+    FetchSheetsDataofSpreadSheet(
+      localStorage.getItem("SheetId"),
+      localStorage.getItem("SheetName")
+    );
   }, []);
 
   const data = [
     {
       amount: enquires?.length,
       lable: "Total Leads",
-      progress: 50,
-    },
-    {
-      amount: getTodayQuery(enquires).length,
-      lable: "Today Leads",
-      progress: 18,
-    },
-    {
-      amount: eazobotEnquiries?.length,
-      lable: "Eazbot Leads",
       progress: 100,
     },
     {
+      amount: getTodayQuery(enquires).length,
+      lable: "Today",
+      progress: 5.8,
+    },
+    {
+      amount: eazobotEnquiries?.length,
+      lable: "Eazbot",
+      progress: 67,
+    },
+    {
+      amount: enquires?.length - eazobotEnquiries.length,
+      lable: "Webform",
+      progress: 33,
+    },
+    {
       amount: convertedEnquiries,
-      lable: "Lead Conversion",
-      progress: 78,
+      lable: "Conversion Rate",
+      progress: 0,
     },
   ];
 
@@ -146,7 +230,25 @@ const Dashboard = () => {
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
+
+          <div className="flex items-center justify-end p-2">
+            {/* <h2 className="text-lg font-semibold">Date Selected</h2> */}
+            <select
+              value={dateRange}
+              onChange={handleDateSelect}
+              className="border border-gray-400 shadow-md rounded-md px-3 py-2 text-sm outline-none cursor-pointer"
+            >
+              <option value="" disabled>
+                Select Date
+              </option>
+              <option value="7d">Last 7 Days</option>
+              <option value="30d">Last 30 Days</option>
+              <option value="90d">Last 90 Days</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xxl:grid-cols-6 gap-4 md:gap-6 mt-4">
             {data?.map((item, index) => (
               <DashboardCard
                 amount={item.amount}
@@ -156,16 +258,20 @@ const Dashboard = () => {
               />
             ))}
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
+
+          <div>
+            <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} />
+          </div>
+          {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
             <div className="lg:col-span-3">
               <AnalyticsCard />
             </div>
             <div className="md:hidden lg:block lg:col-span-2">
               <TemperatureCard />
             </div>
-          </div>
+          </div> */}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
             <Review />
             <div className="hidden md:block lg:hidden">
               <TemperatureCard />
@@ -182,7 +288,7 @@ const Dashboard = () => {
                 lastWeekData={[25, 30, 22, 40, 33, 38]}
               />
             </div>
-          </div>
+          </div> */}
         </div>
       ) : (
         <div className="flex flex-col gap-5 hide-scrollbar px-4">
@@ -215,6 +321,8 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* <ReservationForm /> */}
     </>
   );
 };
