@@ -2,9 +2,17 @@ import React, { useState, useMemo } from "react";
 import { extractBookingDates } from "../../utils/dateExtract";
 import { formatToDateInput } from "../../utils/formatDateInput";
 import { addReservation } from "../../services/api/bookingEngine";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import Loader from "../Loader";
+import Swal from "sweetalert2";
+import axios from "axios";
 
-export default function ReservationForm({ data }) {
-  console.log(data);
+export default function ReservationForm({
+  data,
+  setReserveData,
+  fetchEnquires,
+}) {
   // const [form, setForm] = useState({
   //   firstName: data?.Name,
   //   lastName: "",
@@ -32,6 +40,11 @@ export default function ReservationForm({ data }) {
   //   marketingOptIn: true,
   // });
 
+  const [dateRange, setDateRange] = useState([new Date(), new Date()]);
+  const [startDate, endDate] = dateRange;
+
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     // Guest details
     guestName: data?.Name || "",
@@ -45,7 +58,7 @@ export default function ReservationForm({ data }) {
     // Stay details
     checkIn: "",
     checkOut: "",
-    adults: 2,
+    adults: 1,
     kids: 0,
     roomNumbers: [],
     room_type: "Deluxe Suite",
@@ -103,20 +116,83 @@ export default function ReservationForm({ data }) {
     }));
   };
 
+  const handleStatusChange = async (lead, status) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        "https://nexon.eazotel.com/eazotel/edit-contact-query",
+        {
+          token: localStorage.getItem("token"),
+          Contact: lead.Contact,
+          Email: lead.Email,
+          Message: lead.Email,
+          Name: lead.Name,
+          Remark: lead.Remark,
+          Subject: lead.Subject,
+          id: lead._id,
+          converted_by: lead.converted_by,
+          created_from: lead.created_from,
+          is_convertable: true,
+          is_converted: false,
+          ndid: lead.ndid,
+          status: status,
+        }
+      );
+
+      const result = await response.data;
+
+      if (result.Status) {
+        setReserveData(null);
+        fetchEnquires(localStorage.getItem("token"));
+      }
+
+      // Swal.fire({
+      //   icon: "success",
+      //   title: "Query Status Updated!",
+      //   text: result.Message || "Query has been updated successfully.",
+      //   timer: 600,
+      //   showConfirmButton: false,
+      // }).then(() => {
+      //   if (result.Status) {
+      //     handleTabClick(active);
+      //     // fetchEnquires(localStorage.getItem("token"));
+      //   }
+      // });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error updating Query Status",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    console.log(new Date(startDate).toLocaleDateString("en-CA"));
     const payload = {
       ...form,
-      nights,
-      pricing: { subtotal, taxes, total, currency: form.currency },
-      createdAt: new Date().toISOString(),
+      checkIn: new Date(startDate).toLocaleDateString("en-CA"),
+      checkOut: new Date(endDate).toLocaleDateString("en-CA"),
+      // nights,
+      // pricing: { subtotal, taxes, total, currency: form.currency },
+      // createdAt: new Date().toISOString(),
     };
 
     try {
-      const response = await addReservation(form);
-      console.log(response);
-    } catch (error) {}
-    // setSubmitted(payload);
+      const response = await addReservation(payload);
+      if (response.Status) {
+        handleStatusChange(data, "Resereved");
+      }
+      Swal.fire("Success", response?.Data);
+    } catch (error) {
+    } finally {
+      // setLoading(false);
+    }
+    setSubmitted(payload);
     // console.log("Reservation submitted", payload);
   };
 
@@ -150,8 +226,7 @@ export default function ReservationForm({ data }) {
     setSubmitted(null);
   };
 
-  console.log(form);
-
+  console.log(startDate, endDate);
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 md:p-10">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -170,15 +245,16 @@ export default function ReservationForm({ data }) {
             <button
               type="button"
               onClick={handleReset}
-              className="px-4 py-2 border rounded-md hover:bg-slate-100"
+              className="px-4 py-2 border rounded-md hover:bg-slate-200"
             >
               Reset
             </button>
             <button
+              disabled={loading}
               form="reservation-form"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center gap-2"
             >
-              Save Reservation
+              Save Reservation {loading && <Loader size={20} color="#fff" />}
             </button>
           </div>
         </header>
@@ -233,6 +309,22 @@ export default function ReservationForm({ data }) {
                   onChange={handleChange}
                   className="border p-2 rounded md:col-span-2"
                 />
+
+                <input
+                  name="label"
+                  placeholder="Country"
+                  value={form.label}
+                  onChange={handleChange}
+                  className="border p-2 rounded md:col-span-2"
+                />
+
+                {/* <input
+                  name="address"
+                  placeholder="Address"
+                  value={form.address}
+                  onChange={handleChange}
+                  className="border p-2 rounded md:col-span-2"
+                /> */}
               </div>
             </div>
 
@@ -240,66 +332,101 @@ export default function ReservationForm({ data }) {
             <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
               <h2 className="font-semibold text-lg">Stay Details</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  required
-                  name="checkIn"
-                  type="date"
-                  value={form.checkIn}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  required
-                  name="checkOut"
-                  type="date"
-                  value={form.checkOut}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="adults"
-                  min={1}
-                  value={form.adults}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="kids"
-                  min={0}
-                  value={form.kids}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="text"
-                  name="roomNumbers"
-                  placeholder="Room Numbers (comma separated)"
-                  value={form.roomNumbers}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      roomNumbers: e.target.value.split(","),
-                    }))
-                  }
-                  className="border p-2 rounded md:col-span-2"
-                />
-                <input
-                  name="room_type"
-                  placeholder="Room Type"
-                  value={form.room_type}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="quantity"
-                  min={1}
-                  value={form.quantity}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Check-In & Check-Out
+                  </label>
+                  <div className="">
+                    <DatePicker
+                      // maxDate={msg?.disabled ? new Date() : undefined}
+                      // inline
+                      selectsRange
+                      startDate={startDate}
+                      endDate={endDate}
+                      // required
+                      onChange={(update) => {
+                        setDateRange(update);
+                      }}
+                      // isClearable
+                      minDate={new Date()}
+                      className="w-full border py-2 px-3 rounded"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Adults
+                  </label>
+                  <input
+                    type="number"
+                    name="adults"
+                    min={1}
+                    value={form.adults}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Kids
+                  </label>
+                  <input
+                    type="number"
+                    name="kids"
+                    min={0}
+                    value={form.kids}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Room Numbers
+                  </label>
+                  <input
+                    type="text"
+                    name="roomNumbers"
+                    placeholder="Room No (comma separated)"
+                    value={form.roomNumbers}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        roomNumbers: e.target.value.split(","),
+                      }))
+                    }
+                    className="border p-2 rounded md:col-span-2 "
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Room Type
+                  </label>
+                  <input
+                    name="room_type"
+                    placeholder="Room Type"
+                    value={form.room_type}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="" className="font-medium">
+                    Room Quantity
+                  </label>
+                  <input
+                    type="number"
+                    name="quantity"
+                    min={1}
+                    value={form.quantity}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
               </div>
             </div>
 
@@ -307,138 +434,253 @@ export default function ReservationForm({ data }) {
             <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
               <h2 className="font-semibold text-lg">Package & Promo</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  name="package_id"
-                  placeholder="Package ID"
-                  value={form.package_id}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="package_name"
-                  placeholder="Package Name"
-                  value={form.package_name}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="package_price"
-                  placeholder="Package Price"
-                  value={form.package_price}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="package_type"
-                  placeholder="Package Type"
-                  value={form.package_type}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="code"
-                  placeholder="Promo Code"
-                  value={form.code}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="promo_id"
-                  placeholder="Promo ID"
-                  value={form.promo_id}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="discount"
-                  placeholder="Discount (%)"
-                  value={form.discount}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="package_id"
+                    className="font-medium text-gray-700"
+                  >
+                    Package ID
+                  </label>
+                  <input
+                    id="package_id"
+                    name="package_id"
+                    placeholder="Package ID"
+                    value={form.package_id}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="package_name"
+                    className="font-medium text-gray-700"
+                  >
+                    Package Name
+                  </label>
+                  <input
+                    id="package_name"
+                    name="package_name"
+                    placeholder="Package Name"
+                    value={form.package_name}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="package_price"
+                    className="font-medium text-gray-700"
+                  >
+                    Package Price ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="package_price"
+                    name="package_price"
+                    placeholder="Package Price"
+                    value={form.package_price}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="package_type"
+                    className="font-medium text-gray-700"
+                  >
+                    Package Type
+                  </label>
+                  <select
+                    id="package_type"
+                    name="package_type"
+                    value={form.package_type}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Package Type</option>
+                    <option value="family">Family Vacation</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="luxury">Luxury Getaway</option>
+                    <option value="cultural">Cultural Experience</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="code" className="font-medium text-gray-700">
+                    Promo Code
+                  </label>
+                  <input
+                    id="code"
+                    name="code"
+                    placeholder="Promo Code"
+                    value={form.code}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="promo_id"
+                    className="font-medium text-gray-700"
+                  >
+                    Promo ID
+                  </label>
+                  <input
+                    id="promo_id"
+                    name="promo_id"
+                    placeholder="Promo ID"
+                    value={form.promo_id}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="discount"
+                    className="font-medium text-gray-700"
+                  >
+                    Discount (%)
+                  </label>
+                  <input
+                    type="number"
+                    id="discount"
+                    name="discount"
+                    placeholder="Discount (%)"
+                    min="0"
+                    max="100"
+                    value={form.discount}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Payment */}
-            <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
+            {/* <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
               <h2 className="font-semibold text-lg">Payment</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  name="ref_no"
-                  placeholder="Reference No"
-                  value={form.ref_no}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="payment_provider"
-                  placeholder="Payment Provider"
-                  value={form.payment_provider}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="mode"
-                  placeholder="Mode"
-                  value={form.mode}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="status"
-                  placeholder="Status"
-                  value={form.status}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  name="pay_id"
-                  placeholder="Payment ID"
-                  value={form.pay_id}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="status" className="font-medium text-gray-700">
+                    Payment Status
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={form.status}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="pay_id" className="font-medium text-gray-700">
+                    Payment ID
+                  </label>
+                  <input
+                    id="pay_id"
+                    name="pay_id"
+                    placeholder="Payment ID"
+                    value={form.pay_id}
+                    onChange={handleChange}
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="payment_date"
+                    className="font-medium text-gray-700"
+                  >
+                    Payment Date
+                  </label>
+                  <input
+                    type="date"
+                    id="payment_date"
+                    name="payment_date"
+                    className="border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Pricing */}
             <div className="bg-white shadow-sm rounded-md p-4 space-y-4">
               <h2 className="font-semibold text-lg">Pricing</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  type="number"
-                  name="principal"
-                  placeholder="Principal"
-                  value={form.principal}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="tax"
-                  placeholder="Tax"
-                  value={form.tax}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="total"
-                  placeholder="Total"
-                  value={form.total}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
-                <input
-                  type="number"
-                  name="amountPay"
-                  placeholder="Amount Pay"
-                  value={form.amountPay}
-                  onChange={handleChange}
-                  className="border p-2 rounded"
-                />
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="principal"
+                    className="font-medium text-gray-700"
+                  >
+                    Principal
+                  </label>
+                  <input
+                    type="number"
+                    id="principal"
+                    name="principal"
+                    placeholder="Principal"
+                    value={form.principal}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="tax" className="font-medium text-gray-700">
+                    Tax
+                  </label>
+                  <input
+                    type="number"
+                    id="tax"
+                    name="tax"
+                    placeholder="Tax"
+                    value={form.tax}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="total" className="font-medium text-gray-700">
+                    Total
+                  </label>
+                  <input
+                    type="number"
+                    id="total"
+                    name="total"
+                    placeholder="Total"
+                    value={form.total}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label
+                    htmlFor="amountPay"
+                    className="font-medium text-gray-700"
+                  >
+                    Amount Pay
+                  </label>
+                  <input
+                    type="number"
+                    id="amountPay"
+                    name="amountPay"
+                    placeholder="Amount Pay"
+                    value={form.amountPay}
+                    onChange={handleChange}
+                    className="border p-2 rounded"
+                  />
+                </div>
               </div>
             </div>
 
@@ -476,7 +718,7 @@ export default function ReservationForm({ data }) {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="space-y-6">
+          {/* <div className="space-y-6">
             <div className="bg-white shadow-sm rounded-md p-4">
               <h2 className="font-semibold text-lg mb-2">Submission Preview</h2>
               {submitted ? (
@@ -490,7 +732,7 @@ export default function ReservationForm({ data }) {
                 </p>
               )}
             </div>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

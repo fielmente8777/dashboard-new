@@ -414,7 +414,7 @@ const Leads = () => {
   };
 
   const handleDeleteAll = () => {
-    alert("We are working on it")
+    alert("We are working on it");
     // Swal.fire({
     //   title: "Are you sure?",
     //   text: `This will permanently delete ${"this record"}.`,
@@ -443,7 +443,7 @@ const Leads = () => {
       name: "",
       contact: "",
       email: "",
-      status:"",
+      status: "",
       check_in: "",
       check_out: "",
       number_of_guest: "",
@@ -471,7 +471,6 @@ const Leads = () => {
       check_out: `${newRow.check_out}`,
       numbers_of_guest: ``,
       created_from: newRow.source,
-      
     };
 
     try {
@@ -497,7 +496,7 @@ const Leads = () => {
 
   return (
     <div className="cardShadow">
-      <div className="flex flex-col lg:flex-row justify-between  bg-white">
+      <div className="flex flex-col justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
           {header.map((item, index) => (
             <button
@@ -615,7 +614,8 @@ const Leads = () => {
                 className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2"
                 onClick={handleDeleteAll}
               >
-                Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+                Delete <span>{rowSelected.length}</span>{" "}
+                <FaTrashAlt size={12} />
               </button>
             )}
             <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
@@ -673,11 +673,11 @@ const Leads = () => {
               {currentItems?.length > 0 ? (
                 <tbody>
                   {newRow && (
-                    <tr className="text-sm border-b border-gray-200 text-[#575757] bg-blue-50">
+                    <tr className="text-sm border-b border-gray-200 text-[#575757] bg-blue-100">
                       <td className="py-2 px-2">-</td>
                       <td className="text-black p-2">-</td>
                       <td className="py-2 px-2">
-                        {newRow.isReserved?"Reserved":"Unreserved"}
+                        {newRow.isReserved ? "Reserved" : "Unreserved"}
                         {/* <select
                           onChange={(e) => {
                             setNewRow({
@@ -1065,7 +1065,11 @@ const Leads = () => {
               </div>
 
               <div>
-                <ReservationForm data={reserveData} />
+                <ReservationForm
+                  data={reserveData}
+                  setReserveData={setReserveData}
+                  fetchEnquires={fetchEnquires}
+                />
               </div>
             </div>
           </div>

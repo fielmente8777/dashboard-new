@@ -71,6 +71,8 @@ const ReservationDesk = () => {
     fetchBookingsData();
   }, []);
 
+  console.log(bookingData);
+
   const resetFilters = () => {
     setFilters({
       dateType: "booking",
@@ -373,14 +375,14 @@ const ReservationDesk = () => {
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
-                      // onClick={() => handleInfoPopup(row)}
+                        // onClick={() => handleInfoPopup(row)}
                       >
                         {" "}
                         <a>{row?.bookingId}</a>{" "}
                       </td>
                       <td
                         className="py-3 px-4 text-[14px]  text-[#575757]"
-                      // onClick={() => handleInfoPopupII(row)}
+                        // onClick={() => handleInfoPopupII(row)}
                       >
                         {row?.guestInfo?.guestName}
                       </td>
@@ -439,20 +441,20 @@ const ReservationDesk = () => {
                             // }}
                             className="badge bg-success"
                           >
-                            Checked In
+                            Yes
                           </span>
                         ) : (
                           <button
                             className="btn btn-primary"
-                          // onClick={() => {
-                          //     BookingCehckinStatus(
-                          //         row.bookingId,
-                          //         "true",
-                          //         "false"
-                          //     );
-                          // }}
+                            // onClick={() => {
+                            //     BookingCehckinStatus(
+                            //         row.bookingId,
+                            //         "true",
+                            //         "false"
+                            //     );
+                            // }}
                           >
-                            Check In
+                            No
                           </button>
                         )}
                       </td>
@@ -461,21 +463,21 @@ const ReservationDesk = () => {
                           "-"
                         ) : row.isCheckedIn === true &&
                           row.isCheckedOut === true ? (
-                          <span className="badge bg-danger">Checked Out</span>
+                          <span className="badge bg-danger">Yes</span>
                         ) : row.isCheckedIn === false ? (
                           "-"
                         ) : (
                           <button
                             className="btn btn-primary"
-                          // onClick={() => {
-                          //     BookingCehckinStatus(
-                          //         row.bookingId,
-                          //         "true",
-                          //         "true"
-                          //     );
-                          // }}
+                            // onClick={() => {
+                            //     BookingCehckinStatus(
+                            //         row.bookingId,
+                            //         "true",
+                            //         "true"
+                            //     );
+                            // }}
                           >
-                            Check Out
+                            No
                           </button>
                         )}
                       </td>
@@ -525,11 +527,13 @@ const ReservationDesk = () => {
                 </button>
             </div> */}
 
-      {openInfoPopUpIII && <BookingDetailsPopup
-        infoData={chechinData}
-        setopenInfoPopUpIII={setopenInfoPopUpIII}
-        openInfoPopUpIII={openInfoPopUpIII}
-      />}
+      {openInfoPopUpIII && (
+        <BookingDetailsPopup
+          infoData={chechinData}
+          setopenInfoPopUpIII={setopenInfoPopUpIII}
+          openInfoPopUpIII={openInfoPopUpIII}
+        />
+      )}
     </div>
   );
 };
