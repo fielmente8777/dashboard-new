@@ -301,6 +301,10 @@ const Leads = () => {
   ];
 
   const handleStatusChange = async (lead, status) => {
+    if (status === "Reserved") {
+      setReserveData(lead);
+      return;
+    }
     try {
       const response = await axios.post(
         "https://nexon.eazotel.com/eazotel/edit-contact-query",
@@ -633,9 +637,9 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     #
                   </th>
-                  <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                  {/* <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Reserve
-                  </th>
+                  </th> */}
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Date Added
                   </th>
@@ -831,7 +835,7 @@ const Leads = () => {
                         {index + 1}
                       </td>
 
-                      <td
+                      {/* <td
                         className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -839,7 +843,7 @@ const Leads = () => {
                         }}
                       >
                         Unreserved
-                      </td>
+                      </td> */}
 
                       <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
                         {enquery?.Created_at
@@ -938,6 +942,13 @@ const Leads = () => {
                             className="bg-white  text-black"
                           >
                             Dead Lead
+                          </option>
+
+                          <option
+                            value="Reserved"
+                            className="bg-white  text-black"
+                          >
+                            Reserved
                           </option>
                         </select>
                       </td>
