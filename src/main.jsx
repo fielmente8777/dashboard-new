@@ -5,11 +5,9 @@ import App from "./App.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
 import { BrowserRouter } from "react-router-dom";
 import GlobalDataProvider from "./context/GlobalDataProvider.jsx";
-import WhatsApp from "./components/Contacts/WhtasApp.jsx";
 import { Provider } from "react-redux";
-import  store  from "./redux/Store.js";
-
-
+import store from "./redux/Store.js";
+import Whatsapp from "./components/Contacts/WhtasApp.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -17,7 +15,7 @@ createRoot(document.getElementById("root")).render(
       <DataProvider>
         <BrowserRouter>
           <GlobalDataProvider />
-          <WhatsApp whatsAppNumber="+919501868775" />
+          <Whatsapp whatsAppNumber={"+919501868775"} />
           <App />
         </BrowserRouter>
       </DataProvider>
