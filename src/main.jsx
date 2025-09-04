@@ -5,7 +5,7 @@ import App from "./App.jsx";
 import { DataProvider } from "./context/DataContext.jsx";
 import { BrowserRouter } from "react-router-dom";
 import GlobalDataProvider from "./context/GlobalDataProvider.jsx";
-import WhatsApp from "./pages/ConversationalTool/WhatsApp/WhatsApp.jsx";
+import WhatsApp from "./components/Contacts/WhtasApp.jsx";
 import { Provider } from "react-redux";
 import  store  from "./redux/Store.js";
 
