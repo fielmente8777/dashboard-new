@@ -12,6 +12,7 @@ import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
 import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
+import ProfileDropDown from "../Popup/ProfileDropDown";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -165,25 +166,29 @@ const Navbar = () => {
               <p className="text-2xl font-semibold">
                 {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
               </p>
-              {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
             </button>
+            {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
           </div>
         </div>
         <div
           onClick={() => setOpen(true)}
-          className="bg-[#0088ff]a text-white sm:hidden p-1 rounded-md"
+          className="bg-[#0088ff] text-white sm:hidden p-1 rounded-md"
         >
           <RxDashboard size={22} />{" "}
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
 
-        <ProfilePopup
+        {/* <ProfilePopup
           isProfileOpen={isProfileOpen}
           setIsProfileOpen={setIsProfileOpen}
           Color={
             letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
           }
+        /> */}
+        <ProfileDropDown
+          isProfileOpen={isProfileOpen}
+          setIsProfileOpen={setIsProfileOpen}
         />
         {/* <ChangePassword
           isOpen={isChangePasswordPopupOpen}

@@ -22,6 +22,8 @@ const GlobalDataProvider = () => {
     authUser,
   } = useSelector((state) => state.userProfile);
 
+  console.log("aaya");
+
   useEffect(() => {
     if (token) {
       dispatch(fetchWebsiteData(token, HID));

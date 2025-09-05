@@ -1,25 +1,23 @@
-import { useContext, useEffect, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
+import { CiLocationOn } from "react-icons/ci";
+import { FaAlignRight } from "react-icons/fa";
+import { IoIosLogOut } from "react-icons/io";
+import { MdAddBusiness } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import Logo from "../../assets/companylogo.b.png";
+import DataContext from "../../context/DataContext";
+import { BASE_PATH } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
-import { CiLocationOn } from "react-icons/ci";
-import { MdAddBusiness } from "react-icons/md";
-import AddLocationForm from "../Popup/AddLocationForm";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { BASE_PATH } from "../../data/constant";
+import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
+import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { setHid } from "../../redux/slice/UserSlice";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
-import Swal from "sweetalert2";
-import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
-import { FaAlignRight } from "react-icons/fa";
-import Logo from "../../assets/companylogo.b.png";
-import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
-import { IoClose } from "react-icons/io5";
-import { FiLogOut } from "react-icons/fi";
-import DataContext from "../../context/DataContext";
 import { removeCookie } from "../../utils/handleCookies";
-import { IoIosLogOut } from "react-icons/io";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import AddLocationForm from "../Popup/AddLocationForm";
 
 const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   const [openMenus, setOpenMenus] = useState({});
@@ -153,6 +151,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   useEffect(() => {
     if (authUser && hotel) {
       const hid = handleLocalStorage("hid");
+      console.log(hid);
       if (authUser?.isAdmin && hid && hotel) {
         if (
           hotel.Profile &&
@@ -172,7 +171,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
         }
       }
     }
-  }, [hotel, authUser]);
+  }, [hotel, authUser, hid]);
 
   // const handleLogout = () => {
   //   localStorage.clear();
@@ -223,7 +222,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   });
 
   return (
-    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white relative ">
+    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white relative border border-gray-50">
       <div className="flex justify-between items-center mb-4">
         {isOpen && (
           <div>

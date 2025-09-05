@@ -46,7 +46,7 @@ const Navigation = () => {
       <Route path="/onboarding/form" element={<OnboardingForm />} />
 
       {/* Route for /dashboard/client */}
-      <Route path={`${dashboardRootPath}/:ndid/*`} element={<ProtectedRoute />}>
+      <Route path={`${dashboardRootPath}/:ndid`} element={<ProtectedRoute />}>
         <Route index element={<Dashboard />} />
         <Route path="whatsapp-marketing" element={<WhatsappMarketing />} />
         <Route path="social-media" element={<SocialMedia />} />
@@ -74,7 +74,7 @@ const Navigation = () => {
         <Route path="pms-software" element={<ChannelManager />} />
         <Route path="sms-marketing" element={<EmailMarketing />} />
         <Route path="front-desk" element={<FrontDesk />} />
-        <Route path="setting" element={<Setting />} />
+        <Route path="profile" element={<Setting />} />
 
         {SidebarData?.map((data, index) => {
           if (!data?.subLinks)
