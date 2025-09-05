@@ -496,26 +496,24 @@ const Leads = () => {
 
   return (
     <div className="cardShadow">
-      <div className="flex flex-col justify-between  bg-white">
+      <div className="flex flex-col lg:flex-row justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
           {header.map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] whitespace-nowrap  ${
-                active === index
+              className={`text-[14px] whitespace-nowrap  ${active === index
                   ? "border-b-2 border-[#575757]"
                   : "border-b-2 border-transparent"
-              } px-4 py-3 bg-white font-medium text-[#575757]`}
+                } px-4 py-3 bg-white font-medium text-[#575757]`}
             >
               {item}
             </button>
           ))}
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
-            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
-              loading ? "animate-spin" : ""
-            } `}
+            className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""
+              } `}
           >
             <MdRefresh size={25} />
           </div>
@@ -585,8 +583,8 @@ const Leads = () => {
               onChange={(update) => {
                 setDateRange(update);
               }}
-              // isClearable
-              // minDate={new Date()}
+            // isClearable
+            // minDate={new Date()}
             />
           </div>
 
@@ -698,9 +696,9 @@ const Leads = () => {
                           className="outline-none px-2 py-1"
                           value={formatDateTime(new Date())}
                           readOnly
-                          // onChange={(e) =>
-                          //   setNewRow({ ...newRow, date: e.target.value })
-                          // }
+                        // onChange={(e) =>
+                        //   setNewRow({ ...newRow, date: e.target.value })
+                        // }
                         />
                       </td>
                       <td className="py-2 px-2 font-medium">
@@ -807,11 +805,10 @@ const Leads = () => {
                   {currentItems.map((enquery, index) => (
                     <tr
                       key={index}
-                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
-                        enquery?.status === "Open"
+                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
                           ? " text-[#575757]"
                           : "text-[#575757]"
-                      }`}
+                        }`}
                       onClick={() => {
                         setSelectedLead(enquery);
                         setIsPopupOpen(true);
@@ -851,16 +848,16 @@ const Leads = () => {
                         {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "Eazbot"
-                          ? "Eazbot"
-                          : enquery?.created_from === "Eazobt"
-                          ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "eazobot"
-                          ? "Eazbot"
-                          : enquery?.created_from === "Website"
-                          ? "Webform"
-                          : enquery?.created_from === null
-                          ? "Webform"
-                          : "Webform"}
+                            ? "Eazbot"
+                            : enquery?.created_from === "Eazobt"
+                              ? "Eazbot"
+                              : enquery?.created_from?.toLowerCase() === "eazobot"
+                                ? "Eazbot"
+                                : enquery?.created_from === "Website"
+                                  ? "Webform"
+                                  : enquery?.created_from === null
+                                    ? "Webform"
+                                    : "Webform"}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         {/* {enquery?.Name.slice(0, 15)} */}
@@ -880,13 +877,13 @@ const Leads = () => {
                         {enquery?.check_in
                           ? enquery.check_in
                           : extractBookingInfo(enquery?.Message)?.checkIn ||
-                            "-"}
+                          "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_out
                           ? enquery.check_out
                           : extractBookingInfo(enquery?.Message)?.checkOut ||
-                            "-"}
+                          "-"}
                       </td>
                       {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
                         {enquery?.status}
@@ -986,11 +983,10 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className={`px-3 py-1.5 text-sm rounded-md transition-all whitespace-nowrap duration-200
-          ${
-            currentPage === 1
-              ? "text-gray-300 cursor-not-allowed"
-              : "hover:bg-gray-100 text-gray-700"
-          }`}
+          ${currentPage === 1
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "hover:bg-gray-100 text-gray-700"
+                  }`}
               >
                 ← Previous
               </button>
@@ -1025,11 +1021,10 @@ const Leads = () => {
                         key={item}
                         onClick={() => handlePageChange(item)}
                         className={`px-3 py-1.5 text-sm rounded-md font-medium transition-all duration-200
-                  ${
-                    currentPage === item
-                      ? "bg-primary text-white shadow-sm"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  ${currentPage === item
+                            ? "bg-primary text-white shadow-sm"
+                            : "text-gray-700 hover:bg-gray-100"
+                          }`}
                       >
                         {item}
                       </button>
@@ -1042,11 +1037,10 @@ const Leads = () => {
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className={`px-3 py-1.5 text-sm rounded-md whitespace-nowrap transition-all duration-200
-          ${
-            currentPage === totalPages
-              ? "text-gray-300 cursor-not-allowed"
-              : "hover:bg-gray-100 text-gray-700"
-          }`}
+          ${currentPage === totalPages
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "hover:bg-gray-100 text-gray-700"
+                  }`}
               >
                 Next →
               </button>
