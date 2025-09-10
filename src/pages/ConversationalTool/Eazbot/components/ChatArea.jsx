@@ -1,40 +1,38 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BsImage } from "react-icons/bs";
-import axios from "axios";
+import { useEffect, useRef } from "react";
 
-const ChatArea = ({ name, chat, messages, setMessages }) => {
+const ChatArea = ({ name, chat, messages }) => {
   const chatEndRef = useRef(null);
-  const [responseMessage, setResponseMessage] = useState("");
+  // const [responseMessage, setResponseMessage] = useState("");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
-  const handleSubmit = async () => {
-    const message = {
-      senderType: "user",
-      message: responseMessage,
-    };
-    try {
-      // const sendMessageResponse = await axios.post(
-      //   "http://localhost:4000/api/chat/send-message",
-      //   {
-      //     ndid: localStorage.getItem("ndid"), // unique website/client ID
-      //     guestId: chat?.guestId, // guest user ID
-      //     botId: localStorage.getItem("ndid"), // admin ID (can be placeholder initially)
-      //     senderId: localStorage.getItem("ndid"), // who is sending this message
-      //     senderType: "bot", // "guest", "admin", or "bot"
-      //     message: responseMessage,
-      //   }
-      // );
+  // const handleSubmit = async () => {
+  //   const message = {
+  //     senderType: "user",
+  //     message: responseMessage,
+  //   };
+  //   try {
+  //     // const sendMessageResponse = await axios.post(
+  //     //   "http://localhost:4000/api/chat/send-message",
+  //     //   {
+  //     //     ndid: localStorage.getItem("ndid"), // unique website/client ID
+  //     //     guestId: chat?.guestId, // guest user ID
+  //     //     botId: localStorage.getItem("ndid"), // admin ID (can be placeholder initially)
+  //     //     senderId: localStorage.getItem("ndid"), // who is sending this message
+  //     //     senderType: "bot", // "guest", "admin", or "bot"
+  //     //     message: responseMessage,
+  //     //   }
+  //     // );
 
-      setMessages((prev) => [...prev, message]);
+  //     setMessages((prev) => [...prev, message]);
 
-      setResponseMessage("");
-    } catch (error) {
-      console.error("Error sending message", error.message);
-    }
-  };
+  //     setResponseMessage("");
+  //   } catch (error) {
+  //     console.error("Error sending message", error.message);
+  //   }
+  // };
 
   if (!chat)
     return (
