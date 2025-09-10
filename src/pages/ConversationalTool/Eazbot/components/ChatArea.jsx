@@ -1,34 +1,40 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BsImage } from "react-icons/bs";
-import axios from "axios"
+import axios from "axios";
 
 const ChatArea = ({ chat, messages, setMessages }) => {
   const chatEndRef = useRef(null);
-
   const [responseMessage, setResponseMessage] = useState("");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
-
   const handleSubmit = async () => {
+    const message = {
+      senderType: "user",
+      message: responseMessage,
+    };
     try {
+      // const sendMessageResponse = await axios.post(
+      //   "http://localhost:4000/api/chat/send-message",
+      //   {
+      //     ndid: localStorage.getItem("ndid"), // unique website/client ID
+      //     guestId: chat?.guestId, // guest user ID
+      //     botId: localStorage.getItem("ndid"), // admin ID (can be placeholder initially)
+      //     senderId: localStorage.getItem("ndid"), // who is sending this message
+      //     senderType: "bot", // "guest", "admin", or "bot"
+      //     message: responseMessage,
+      //   }
+      // );
 
-      const sendMessageResponse = await axios.post('http://localhost:4000/api/chat/send-message',
-        {
-          ndid: localStorage.getItem('ndid'),                // unique website/client ID
-          guestId: chat?.guestId,              // guest user ID
-          botId: localStorage.getItem('ndid'),              // admin ID (can be placeholder initially)
-          senderId: localStorage.getItem('ndid'),           // who is sending this message
-          senderType: "bot",             // "guest", "admin", or "bot"
-          message: responseMessage
-        });
+      setMessages((prev) => [...prev, message]);
+
+      setResponseMessage("");
     } catch (error) {
       console.error("Error sending message", error.message);
     }
-  }
-
+  };
 
   if (!chat)
     return (
@@ -93,24 +99,26 @@ const ChatArea = ({ chat, messages, setMessages }) => {
         ))} */}
         {messages?.map((message, index) => {
           return (
-            <div key={index} >
-
-              {message?.senderType === "bot" && <div className="flex justify-end mt-1">
-                <div className="bg-teal-600 rounded-2xl rounded-tr-sm p-4 text-white border text-left ">
-                  {message?.message}
+            <div key={index}>
+              {message?.senderType === "bot" && (
+                <div className="flex justify-end mt-1">
+                  <div className="bg-teal-600 rounded-2xl rounded-tr-sm p-4 text-white border text-left ">
+                    {message?.message}
+                  </div>
                 </div>
-              </div>}
+              )}
 
-
-              {message?.senderType === "guest" && <div className="flex max-w-sm mt-1">
-                <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
-                  {message?.message}
-                </div></div>}
+              {message?.senderType === "user" && (
+                <div className="flex max-w-sm mt-1">
+                  <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
+                    {message?.message}
+                  </div>
+                </div>
+              )}
             </div>
-          )
+          );
         })}
         <div ref={chatEndRef} />
-
       </div>
 
       {/* Chat Input Area */}
@@ -119,7 +127,7 @@ const ChatArea = ({ chat, messages, setMessages }) => {
                     Intervene
                 </button>
             </div> */}
-      <div className="bg-white border-t border-gray-200 p-4 flex items-center">
+      {/* <div className="bg-white border-t border-gray-200 p-4 flex items-center">
         <input
           type="text"
           value={responseMessage}
@@ -127,10 +135,13 @@ const ChatArea = ({ chat, messages, setMessages }) => {
           placeholder="Type a message..."
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 mr-4"
         />
-        <button onClick={handleSubmit} className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        <button
+          onClick={handleSubmit}
+          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+        >
           Send
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };
