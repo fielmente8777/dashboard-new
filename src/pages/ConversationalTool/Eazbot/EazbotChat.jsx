@@ -13,18 +13,16 @@ const EazbotChat = () => {
 
   const getAllChats = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/chat/get-all-chats`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch(`http://127.0.0.1:5000/leadeazbot/chats  `, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       const result = await response.json();
-      setContacts(result.data);
+      // console.log(result);
+      setContacts(result.Data);
     } catch (error) {
       console.error("Error fetching data", error.message);
     }
@@ -48,21 +46,22 @@ const EazbotChat = () => {
     socket.on("newMessage", (newMessage) => {
       getAllChats();
 
-      if (selectedContact?.guestId === newMessage.senderId) {
-        setMessages((prev) => [...prev, newMessage]);
-      }
+      setMessages([contacts[0].messages]);
+      // if (selectedContact?.guestId === newMessage.senderId) {
+      //   setMessages((prev) => [...prev, newMessage]);
+      // }
 
-      setContacts((prevContacts) => {
-        return prevContacts.map((chat) => {
-          if (chat.guestId === newMessage.senderId) {
-            return {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-            };
-          }
-          return chat;
-        });
-      });
+      // setContacts((prevContacts) => {
+      //   return prevContacts.map((chat) => {
+      //     if (chat.guestId === newMessage.senderId) {
+      //       return {
+      //         ...chat,
+      //         messages: [...chat.messages, newMessage],
+      //       };
+      //     }
+      //     return chat;
+      //   });
+      // });
     });
 
     return () => {
@@ -72,14 +71,16 @@ const EazbotChat = () => {
 
   useEffect(() => {
     if (!selectedContact) return;
-    const chat = contacts.find((c) => c.guestId === selectedContact.guestId);
-    setMessages(chat?.messages || []);
+    const chat = contacts.find((c) => c.chat_id === selectedContact.chat_id);
+    setMessages(chat?.chats || []);
   }, [selectedContact, contacts]);
 
   const selectedChat = useMemo(() => {
     if (!selectedContact || !contacts.length) return null;
-    return contacts.find((chat) => chat.guestId === selectedContact.guestId);
+    return contacts.find((chat) => chat.chat_id === selectedContact.chat_id);
   }, [selectedContact, contacts]);
+
+  console.log(selectedChat);
 
   return (
     <div className="h-[calc(100vh-8.2vh)] bg-gray-50 flex flex-col">
@@ -93,11 +94,12 @@ const EazbotChat = () => {
           setSelectedContact={setSelectedContact}
         />
         <ChatArea
-          chat={selectedChat}
+          chat={selectedChat?.chats}
           messages={messages}
           setMessages={setMessages}
         />
-        {/* <ProfilePanel chat={selectedChat} /> */}
+
+        {selectedChat && <ProfilePanel selectedContact={selectedChat} />}
       </div>
     </div>
   );
