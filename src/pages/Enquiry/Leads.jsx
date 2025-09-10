@@ -498,40 +498,40 @@ const Leads = () => {
   const handleCancelRow = () => {
     setNewRow(null);
   };
-  const [btnLength, setBtnLength] = useState(header.length);
+  // const [btnLength, setBtnLength] = useState(header.length);
 
-  useEffect(() => {
-    const updateBtnLength = () => {
-      let length;
+  // useEffect(() => {
+  //   const updateBtnLength = () => {
+  //     let length;
 
-      if (window.innerWidth <= 768) {
-        length = 3; // mobile (sm)
-      } else if (window.innerWidth < 1024) {
-        length = 4; // tablet (md)
-      } else {
-        length = header.length; // desktop (lg+)
-      }
+  //     if (window.innerWidth <= 768) {
+  //       length = 3; // mobile (sm)
+  //     } else if (window.innerWidth < 1024) {
+  //       length = 4; // tablet (md)
+  //     } else {
+  //       length = header.length; // desktop (lg+)
+  //     }
 
-      setBtnLength(length);
-    };
+  //     setBtnLength(length);
+  //   };
 
-    // run on mount
-    updateBtnLength();
+  //   // run on mount
+  //   updateBtnLength();
 
-    // update on resize
-    window.addEventListener("resize", updateBtnLength);
-    return () => window.removeEventListener("resize", updateBtnLength);
-  }, [header]);
+  //   // update on resize
+  //   window.addEventListener("resize", updateBtnLength);
+  //   return () => window.removeEventListener("resize", updateBtnLength);
+  // }, [header]);
 
   return (
     <div className="cardShadow">
       <div className="flex flex-col justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
-          {header.slice(0, btnLength).map((item, index) => (
+          {header.map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] whitespace-nowrap  max-md:hidden ${
+              className={`text-[14px] whitespace-nowrap ${
                 active === index
                   ? "border-b-2 border-[#575757]"
                   : "border-b-2 border-transparent"
@@ -540,7 +540,7 @@ const Leads = () => {
               {item}
             </button>
           ))}
-          <div className="min-md:hidden">
+          {/* <div className="min-lg:hidden">
             <button
               type="button"
               className="px-4 py-3 bg-white"
@@ -567,7 +567,7 @@ const Leads = () => {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
             className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${
