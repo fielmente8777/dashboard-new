@@ -34,18 +34,17 @@ const Navigation = () => {
 
   return (
     <Routes>
-      {/* Public */}
-      {/* navigate to dashboard client  */}
-
-      <Route path="/" element={<ProtectedRoute />} replace>
-        <Route index element={<RootRoute />} />
-      </Route>
-      {/* Route for auth */}
+      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/onboarding/form" element={<OnboardingForm />} />
 
-      {/* Route for /dashboard/client */}
+      {/* Protected Routes */}
+      <Route path="/" element={<ProtectedRoute />}>
+        <Route index element={<RootRoute />} />
+      </Route>
+
+      {/* Dashboard Routes with Error Handling */}
       <Route path={`${dashboardRootPath}/:ndid`} element={<ProtectedRoute />}>
         <Route index element={<Dashboard />} />
         <Route path="whatsapp-marketing" element={<WhatsappMarketing />} />
@@ -55,48 +54,59 @@ const Navigation = () => {
         <Route path="ota-management" element={<OTAOptimization />} />
         <Route path="accounting" element={<Accounting />} />
         <Route path="gst-filing" element={<GSTFiling />} />
-        <Route
-          path="performance-marketing"
-          element={<PerformanceMarketing />}
-        />
-
+        <Route path="performance-marketing" element={<PerformanceMarketing />} />
         <Route path="pr" element={<PublicRelation />} />
         <Route path="linktree-setup" element={<Linktree />} />
         <Route path="google-listing" element={<GMBProfile />} />
-        <Route path="google-map-itrations" element={<GoogleMapItiration />} />
+        <Route path="google-map-iterations" element={<GoogleMapItiration />} />
         <Route path="influencer-marketing" element={<InfluencerMarketing />} />
         <Route path="email-marketing" element={<EmailMarketing />} />
         <Route path="conversational-tool" element={<ConversationalTool />} />
         <Route path="custom-website" element={<Website />} />
         <Route path="seo" element={<Seo />} />
         <Route path="channel-manager" element={<ChannelManager />} />
-        {/* <Route path="leads-management" element={<Leads />} /> */}
         <Route path="pms-software" element={<ChannelManager />} />
         <Route path="sms-marketing" element={<EmailMarketing />} />
         <Route path="front-desk" element={<FrontDesk />} />
         <Route path="profile" element={<Setting />} />
 
+        {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {
-          if (!data?.subLinks)
+          if (!data?.subLinks) {
             return (
-              <Route key={index} path={data?.link} element={<DynamicPage />} />
-            );
-
-          return data?.subLinks?.map((subLinks) => {
-            return (
-              <Route
-                key={index}
-                path={subLinks?.link}
-                element={<DynamicPage />}
+              <Route 
+                key={`main-${index}-${data.link}`} 
+                path={encodeRoutePath(data.link)} 
+                element={<DynamicPage />} 
               />
             );
-          });
+          }
+
+          return data.subLinks?.map((subLink, subIndex) => (
+            <Route
+              key={`sub-${index}-${subIndex}-${subLink.link}`}
+              path={encodeRoutePath(subLink.link)}
+              element={<DynamicPage />}
+            />
+          ));
         })}
       </Route>
 
+      {/* Catch-all route with error handling */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
+};
+
+// Helper function to safely encode route paths
+const encodeRoutePath = (path) => {
+  try {
+    // Remove any malformed URI sequences
+    return path.replace(/[^\w\-/]/g, '').replace(/\/+/g, '/');
+  } catch (error) {
+    console.warn('Error encoding path:', path, error);
+    return '/'; // Fallback to home
+  }
 };
 
 export default Navigation;

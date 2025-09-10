@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { MdRefresh } from "react-icons/md";
+import React, { useCallback, useEffect, useState } from "react";
+import { MdClose, MdRefresh } from "react-icons/md";
 import LeadPopup, { formatPhoneNumber } from "../../components/Popup/LeadPopup";
 import { Arrow, Filter, Search } from "../../icons/icon";
 import { formatDateTime } from "../../services/formateDate";
@@ -39,6 +39,14 @@ export const extractBookingInfo = (input) => {
 
   return booking;
 };
+const header = [
+  "Open Queries",
+  "Contacted",
+  "Converted",
+  "Out Of Budget",
+  "Potential For Later",
+  "Dead Lead",
+];
 
 const Leads = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
@@ -46,14 +54,7 @@ const Leads = () => {
   console.log(hotel);
 
   const [active, setActive] = useState(0);
-  const header = [
-    "Open Queries",
-    "Contacted",
-    "Converted",
-    "Out Of Budget",
-    "Potential For Later",
-    "Dead Lead",
-  ];
+
   const [exportedData, setExportedData] = useState([]);
   const [enquires, setEnquires] = useState([]);
   const [filteredEnquires, setFilteredEnquires] = useState([]);
@@ -497,16 +498,40 @@ const Leads = () => {
   const handleCancelRow = () => {
     setNewRow(null);
   };
+  const [btnLength, setBtnLength] = useState(header.length);
+
+  useEffect(() => {
+    const updateBtnLength = () => {
+      let length;
+
+      if (window.innerWidth <= 768) {
+        length = 3; // mobile (sm)
+      } else if (window.innerWidth < 1024) {
+        length = 4; // tablet (md)
+      } else {
+        length = header.length; // desktop (lg+)
+      }
+
+      setBtnLength(length);
+    };
+
+    // run on mount
+    updateBtnLength();
+
+    // update on resize
+    window.addEventListener("resize", updateBtnLength);
+    return () => window.removeEventListener("resize", updateBtnLength);
+  }, [header]);
 
   return (
     <div className="cardShadow">
       <div className="flex flex-col justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
-          {header.map((item, index) => (
+          {header.slice(0, btnLength).map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
-              className={`text-[14px] whitespace-nowrap  ${
+              className={`text-[14px] whitespace-nowrap  max-md:hidden ${
                 active === index
                   ? "border-b-2 border-[#575757]"
                   : "border-b-2 border-transparent"
@@ -515,6 +540,34 @@ const Leads = () => {
               {item}
             </button>
           ))}
+          <div className="min-md:hidden">
+            <button
+              type="button"
+              className="px-4 py-3 bg-white"
+              onClick={() => setFilterPopup(!filterPopup)}
+            >
+              {filterPopup ? <MdClose  /> : <Filter size={25} />}
+            </button>
+            <div
+              className={`w-[80%] h-full bg-white flex flex-col gap-2 fixed top-[7rem] transition-all duration-300 ease-in-out z-50 ${
+                filterPopup ? "right-2" : "right-[-100%]"
+              }`}
+            >
+              {header.map((item, index) => (
+                <button
+                  onClick={() => handleTabClick(index)}
+                  key={index}
+                  className={`text-[14px] whitespace-nowrap ${
+                    active === index
+                      ? "border-l-2 border-[#575757]"
+                      : "border-l-2 border-transparent"
+                  } px-4 py-3 bg-white font-medium text-[#575757]`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
             className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${

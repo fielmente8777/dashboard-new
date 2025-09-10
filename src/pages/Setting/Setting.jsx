@@ -8,6 +8,8 @@ import Loader from "../../components/Loader";
 import { useSelector } from "react-redux";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { FaHotel } from "react-icons/fa";
+import { BsPencil, BsTrash } from "react-icons/bs";
+import TrashBin from "../../components/Icon/TrashBin";
 
 const Setting = () => {
   // const [formData, setFormData] = useState({
@@ -116,7 +118,7 @@ const Setting = () => {
   if (!hotel?.Profile) return null;
   return (
     <div className="min-h-screen bg-gray-100 p-6 space-y-2.5">
-      <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
         {/* Profile info */}
 
         {/* user type and email */}
@@ -195,12 +197,22 @@ const Setting = () => {
         >
           {profile.hotels &&
             Object.entries(profile.hotels).map(([hid, h]) => (
-              <div key={hid} className="p-2 rounded-md bg-blue-50 transition">
+              <div key={hid} className="p-2 rounded-md bg-blue-50 transition relative">
                 <p className="font-medium text-gray-800">{h.local}</p>
                 <p className="text-sm text-gray-500">
                   {h.city}, {h.state}, {h.country}
                 </p>
                 <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
+                {/* delete & update */}
+                <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
+                  <button className="text-gray-950 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
+                    <BsPencil className="text-sm" />
+                  </button>
+                  <button className="">
+                    {/* <BsTrash className="text-sm" /> */}
+                    <TrashBin />
+                  </button>
+                </div>
               </div>
             ))}
         </div>

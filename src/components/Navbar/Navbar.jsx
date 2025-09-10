@@ -101,7 +101,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50">
-      <div className="h-[8vh] z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
+      <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">

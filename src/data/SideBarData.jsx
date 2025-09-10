@@ -40,7 +40,7 @@ import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
-import { SiGoogleads } from "react-icons/si"; 
+import { SiGoogleads } from "react-icons/si";
 
 export const SidebarData = [
   {
@@ -54,11 +54,11 @@ export const SidebarData = [
     link: `chat`,
     icon: <IoIosChatbubbles size={24} />,
     subLinks: [
-        {
-          name: "Eazbot",
-          link: `channel/eb/chat`,
-          icon: <FaWhatsapp size={16} />,
-        },
+      {
+        name: "Eazbot",
+        link: `channel/eb/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
@@ -317,27 +317,27 @@ export const SidebarData = [
     icon: <MdUnsubscribe size={22} />,
   },
 
-  {
-    name: "User Management",
-    key: "User Management",
-    link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
+  // {
+  //   name: "User Management",
+  //   key: "User Management",
+  //   link: `user-management/all-users`,
+  //   icon: <HiOutlineUserGroup size={22} />,
+  // },
 
-  {
-    name: "Account & Billing",
-    icon: <FaRobot size={24} />,
-    // key: "Accounting",
-    target: "_blank",
-    link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
-  },
+  // {
+  //   name: "Account & Billing",
+  //   icon: <FaRobot size={24} />,
+  //   // key: "Accounting",
+  //   target: "_blank",
+  //   link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
+  // },
 
-  {
-    name: "Settings",
-    // key: "Setting",
-    link: `setting`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
+  // {
+  //   name: "Settings",
+  //   // key: "Setting",
+  //   link: `setting`,
+  //   icon: <HiOutlineUserGroup size={22} />,
+  // },
 
   // {
   //   name: "Custom Website",
