@@ -94,6 +94,7 @@ const EazbotChat = () => {
           setSelectedContact={setSelectedContact}
         />
         <ChatArea
+          name={selectedChat?.name}
           chat={selectedChat?.chats}
           messages={messages}
           setMessages={setMessages}

@@ -29,6 +29,7 @@ const ProfilePanel = ({ selectedContact }) => {
             <h3 className="text-lg font-semibold text-gray-900">
               {/* {selectedContact} */}
             </h3>
+            <p className="capitalize">{selectedContact?.name}</p>
             <p className="text-sm text-gray-500">{selectedContact?.phone}</p>
           </div>
         </div>
@@ -41,7 +42,7 @@ const ProfilePanel = ({ selectedContact }) => {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Email</span>
-            <span className="text-gray-900">{selectedContact?.email}</span>
+            <span className="text-gray-900">{selectedContact?.email!==null && undefined?selectedContact.email:"Null"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Active</span>
@@ -49,16 +50,22 @@ const ProfilePanel = ({ selectedContact }) => {
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Check In</span>
-            <span className="text-gray-900">{selectedContact?.check_in}</span>
+            <span className="text-gray-900">{selectedContact?.check_in !==null && undefined? selectedContact.check_in:"Null"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Check Out</span>
-            <span className="text-gray-900">{selectedContact?.check_out}</span>
+            <span className="text-gray-900">{selectedContact.check_out!==null && undefined? selectedContact.check_out:"Null"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Created From</span>
             <span className="text-gray-900">
-              {selectedContact?.created_from}
+              {selectedContact?.created_from==="eazobot"? "Eazobot" : "Eazbot"}
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Source URL</span>
+            <span className="text-gray-900">
+              {selectedContact?.source_url!==null? "/landing-page": "/website"}
             </span>
           </div>
 
