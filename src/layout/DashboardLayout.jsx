@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }) {
           style={{
             width: isOpen ? ` ${sideBarWidth}px` : "70px",
           }}
-          className={`${
+          className={`md:block hidden ${
             isSmooth ? "transition-all duration-300" : ""
           } overflow-hidden bg-white sm:overflow-hidden border`}
         >
@@ -26,6 +26,25 @@ export default function DashboardLayout({ children }) {
               sideBarWidth={sideBarWidth}
               setSidebarWidth={setSidebarWidth}
               setIsSmooth={setIsSmooth}
+            />
+          </div>
+        </div>
+
+        <div
+          // style={{
+          //   width: isOpen ? ` ${sideBarWidth}px` : "70px",
+          // }}
+          className={`md:hidden block ${
+            isSmooth ? "transition-all duration-300" : ""
+          } overflow-hidden bg-white sm:overflow-hidden border`}
+        >
+          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
+          <div>
+            <Sidebar
+              sideBarWidth={sideBarWidth}
+              setSidebarWidth={setSidebarWidth}
+              setIsSmooth={setIsSmooth}
+              isMobile={true}
             />
           </div>
         </div>

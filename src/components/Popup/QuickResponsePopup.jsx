@@ -122,9 +122,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-white rounded shadow-lg flex min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
+      <div className="bg-white rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
         {/* Left Panel */}
-        <div className="w-64 bg-gray-100 p-4 space-y-6">
+        <div className="md:w-64 w-full bg-gray-100 p-4 space-y-6">
           <div>
             <h2 className="text-lg font-bold">Send Quick Response to</h2>
             <p className="text-gray-700">{lead?.Name}</p>

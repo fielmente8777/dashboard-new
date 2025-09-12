@@ -1,6 +1,12 @@
 import { useContext, useEffect, useState } from "react";
+import { LoginSocialGoogle } from "reactjs-social-login";
 // import { LoginSocialGoogle } from "reactjs-social-login";
-// import { LoginSocialGoogle } from "reactjs-social-login";
+
+import {
+  useGoogleLogin,
+  GoogleOAuthProvider,
+  GoogleLogin,
+} from "@react-oauth/google";
 import { BASE_URL } from "../../data/constant";
 import AdLeadsAnalytics from "./AdLeadsAnalytics";
 import DataContext from "../../context/DataContext";
@@ -632,6 +638,31 @@ const AdsLeadsUsingGoogleSheet = () => {
           {/* Connection Button */}
           <button className="w-full max-w-xs mx-auto bg-white border border-gray-300 rounded-lg py-3 px-6 flex items-center justify-center text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-sm hover:shadow-md">
             <FaGoogle className="text-xl mr-3" />
+
+            <div className="">
+              <GoogleOAuthProvider
+                clientId={
+                  "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
+                }
+                // clientSecret={"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"}
+              >
+                <div className="flex justify-center w-full rounded-md">
+                  {/* <GoogleLogin
+                    // onSuccess={({da})=>{}}
+                    onError={handleFailure}
+                    disabled={loading}
+                    text="continue_with"
+                    width="700px"
+                    // type="icon"
+                    type="standard"
+                    theme="outline"
+                    size="large"
+                    shape="rectangular"
+                    // useOneTap={true}
+                  /> */}
+                </div>
+              </GoogleOAuthProvider>
+            </div>
             <LoginSocialGoogle
               client_id="737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
               scope="https://www.googleapis.com/auth/spreadsheets"

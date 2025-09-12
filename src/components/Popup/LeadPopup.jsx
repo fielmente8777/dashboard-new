@@ -12,6 +12,7 @@ import { FaPhone } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
 import QuickResponsePopup from "./QuickResponsePopup";
 import { useState } from "react";
+import { IoMdArrowRoundBack } from "react-icons/io";
 
 export const formatPhoneNumber = (phone) => {
   let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
@@ -134,25 +135,29 @@ const LeadPopup = ({
   return (
     <div
       // onClick={onClose}
-      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-    // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+      className={`fixed cursor-pointer z-50 inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
+      // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
-      <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm w-[60%] ">
+      <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-medium text-[#575757] capitalize">
+          <h2 className="text-xl font-medium text-[#575757] capitalize flex items-center gap-1.5">
+            <span className="md:hidden block" onClick={onClose}>
+              <IoMdArrowRoundBack />
+            </span>
             {lead?.Name}
           </h2>
           <button
             onClick={onClose}
-            className="text-[#575757]/70 text-2xl hover:text-[#575757]"
+            className="text-[#575757]/70 text-2xl hover:text-[#575757] md:block hidden"
           >
             &times;
           </button>
         </div>
         {/* <div className="bg-purple-500 text-white px-4 py-2 font-medium uppercase rounded-sm w-max mb-4">Uncontacted</div> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2  gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2  gap-4">
           <div>
             <h1 className="font-medium text-[#575757]">Customer Info</h1>
             <div className=" grid gap-4 shadow-sm p-4 rounded-sm mt-2 text-base bg-white divide-y">
@@ -202,8 +207,8 @@ const LeadPopup = ({
                         {lead?.check_in
                           ? lead?.check_in
                           : extractBookingInfo(lead?.Message)?.checkIn
-                            ? extractBookingInfo(lead?.Message)?.checkIn
-                            : "-"}
+                          ? extractBookingInfo(lead?.Message)?.checkIn
+                          : "-"}
                       </p>
                     </div>
 
@@ -215,8 +220,8 @@ const LeadPopup = ({
                         {lead?.check_out
                           ? lead?.check_out
                           : extractBookingInfo(lead?.Message)?.checkOut
-                            ? extractBookingInfo(lead?.Message)?.checkOut
-                            : "-"}
+                          ? extractBookingInfo(lead?.Message)?.checkOut
+                          : "-"}
                       </p>
                     </div>
 
@@ -229,8 +234,8 @@ const LeadPopup = ({
                           {lead?.number_of_guest
                             ? lead?.number_of_guest
                             : extractBookingInfo(lead?.Message)?.guests
-                              ? extractBookingInfo(lead?.Message)?.guests
-                              : "-"}
+                            ? extractBookingInfo(lead?.Message)?.guests
+                            : "-"}
                         </p>
                       </div>
                     </div>
@@ -265,11 +270,11 @@ const LeadPopup = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 items-center mt-3">
-          <div className="flex justify-between gap-5">
-            <div className=" gap-4">
+        <div className="grid lg:grid-cols-2 items-center mt-3">
+          <div className="flex xl:flex-row flex-col justify-between gap-5">
+            <div className="gap-4">
               <select
-                className="py-2 px-3 gap-2 w-[150px] bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
+                className="py-2  px-3 gap-2 xl:w-[150px] w-full bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
                 onChange={(e) => handleQueryStatus(e.target.value)}
                 value={lead.status || ""}
               >
@@ -306,7 +311,7 @@ const LeadPopup = ({
             )}
           </div>
 
-          <div className="flex justify-end items-center gap-5">
+          <div className="flex justify-end items-center gap-5 lg:mt-0 mt-4">
             <button
               className="bg-red-900 hover:bg-red-900/90 text-white px-4 py-2 rounded-sm"
               onClick={() => handleDelete(lead._id, lead.Email)}

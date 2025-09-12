@@ -408,7 +408,7 @@ const Scheduler = () => {
 
   return (
     <div>
-      <div className="toolbar">
+      <div className="toolbar my-4">
         <Zoom onChange={(args) => zoomChange(args)} />
         <button
           className="btn b-0"

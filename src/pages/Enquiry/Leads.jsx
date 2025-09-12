@@ -51,8 +51,6 @@ const header = [
 const Leads = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
 
-  console.log(hotel);
-
   const [active, setActive] = useState(0);
 
   const [exportedData, setExportedData] = useState([]);
@@ -160,6 +158,7 @@ const Leads = () => {
     setLoading(true);
     setActive(index);
     setCurrentPage(1);
+
     // setNewRow((prev) => ({
     //   ...prev,
     //   stages: header[index],
@@ -410,36 +409,37 @@ const Leads = () => {
     }
   };
 
-  const handleSelectAll = () => {
-    setRowSelected((prev) =>
-      prev.length === currentItems.length
-        ? []
-        : currentItems.map((item) => item._id)
-    );
-  };
+  // const handleSelectAll = () => {
+  //   setRowSelected((prev) =>
+  //     prev.length === currentItems.length
+  //       ? []
+  //       : currentItems.map((item) => item._id)
+  //   );
+  // };
 
   const handleDeleteAll = () => {
-    alert("We are working on it");
-    // Swal.fire({
-    //   title: "Are you sure?",
-    //   text: `This will permanently delete ${"this record"}.`,
-    //   icon: "warning",
-    //   showCancelButton: true,
-    //   confirmButtonColor: "#d33",
-    //   cancelButtonColor: "#3085d6",
-    //   confirmButtonText: "Yes, delete it!",
-    //   cancelButtonText: "Cancel",
-    // }).then(async (result) => {
-    //   if (result.isConfirmed) {
-    //     const data = await deleteLMultipleeadGenForm(rowSelected);
-    //     if (data?.Status) {
-    //       fetchEnquires(localStorage.getItem("token"));
-    //       Swal.fire("Deleted!", "The record has been removed.", "success");
-    //     } else {
-    //       Swal.fire("Error!", data?.Message, "error");
-    //     }
-    //   }
-    // });
+    // alert("We are working on it");
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchEnquires(localStorage.getItem("token"));
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+          setRowSelected([]);
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
+      }
+    });
   };
 
   const handleAddRow = () => {
@@ -498,55 +498,55 @@ const Leads = () => {
   const handleCancelRow = () => {
     setNewRow(null);
   };
-  // const [btnLength, setBtnLength] = useState(header.length);
+  const [btnLength, setBtnLength] = useState(header.length);
 
-  // useEffect(() => {
-  //   const updateBtnLength = () => {
-  //     let length;
+  useEffect(() => {
+    const updateBtnLength = () => {
+      let length;
 
-  //     if (window.innerWidth <= 768) {
-  //       length = 3; // mobile (sm)
-  //     } else if (window.innerWidth < 1024) {
-  //       length = 4; // tablet (md)
-  //     } else {
-  //       length = header.length; // desktop (lg+)
-  //     }
+      if (window.innerWidth <= 768) {
+        length = 3; // mobile (sm)
+      } else if (window.innerWidth < 1024) {
+        length = 4; // tablet (md)
+      } else {
+        length = header.length; // desktop (lg+)
+      }
 
-  //     setBtnLength(length);
-  //   };
+      setBtnLength(length);
+    };
 
-  //   // run on mount
-  //   updateBtnLength();
+    // run on mount
+    updateBtnLength();
 
-  //   // update on resize
-  //   window.addEventListener("resize", updateBtnLength);
-  //   return () => window.removeEventListener("resize", updateBtnLength);
-  // }, [header]);
+    // update on resize
+    window.addEventListener("resize", updateBtnLength);
+    return () => window.removeEventListener("resize", updateBtnLength);
+  }, [header]);
 
   return (
     <div className="cardShadow">
       <div className="flex flex-col justify-between  bg-white">
         <div className="flex flex-wrap mt-4">
-          {header.map((item, index) => (
+          {header.slice(0, btnLength).map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
               key={index}
               className={`text-[14px] whitespace-nowrap ${
                 active === index
-                  ? "border-b-2 border-[#575757]"
+                  ? "border-b-2 !border-[#575757]"
                   : "border-b-2 border-transparent"
-              } px-4 py-3 bg-white font-medium text-[#575757]`}
+              } px-4 py-3 bg-white font-medium text-[#575757] hidden sm:block`}
             >
               {item}
             </button>
           ))}
-          {/* <div className="min-lg:hidden">
+          <div className="min-lg:hidden">
             <button
               type="button"
               className="px-4 py-3 bg-white"
               onClick={() => setFilterPopup(!filterPopup)}
             >
-              {filterPopup ? <MdClose  /> : <Filter size={25} />}
+              {filterPopup ? <MdClose /> : <Filter size={25} />}
             </button>
             <div
               className={`w-[80%] h-full bg-white flex flex-col gap-2 fixed top-[7rem] transition-all duration-300 ease-in-out z-50 ${
@@ -567,7 +567,7 @@ const Leads = () => {
                 </button>
               ))}
             </div>
-          </div> */}
+          </div>
           <div
             onClick={() => fetchEnquires(localStorage.getItem("token"))}
             className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${

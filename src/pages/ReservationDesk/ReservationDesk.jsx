@@ -166,7 +166,7 @@ const ReservationDesk = () => {
         </div> */}
       </div>
       {/* filters fields tabs */}
-      <div className="flex items-center gap-4 mt-4">
+      <div className="flex sm:flex-row flex-col sm:items-center gap-4 mt-4">
         {filterData.map((filter) => (
           <div className="flex gap-1 items-center">
             <input
@@ -186,7 +186,7 @@ const ReservationDesk = () => {
       <div className="border p-5 rounded-md mt-4">
         {filters === "date range" && (
           <div>
-            <div className="grid grid-cols-2 gap-8 max-w-xl items-center">
+            <div className="grid sm:grid-cols-2 gap-8 max-w-xl items-center">
               {/* <div className="flex flex-col gap-2">
                 <label htmlFor="">Booking Date From:</label>
                 <div

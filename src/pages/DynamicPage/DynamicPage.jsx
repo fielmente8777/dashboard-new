@@ -54,7 +54,7 @@ import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
-import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+// import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
 import Instagram from "../ConversationalTool/Instagram/Instagram";
@@ -63,6 +63,7 @@ import Facebook from "../ConversationalTool/Facebook/Facebook";
 import Eazbot from "../Eazobot/Eazobot";
 import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
 import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
+import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 
 const DynamicPage = () => {
   const location = useLocation();

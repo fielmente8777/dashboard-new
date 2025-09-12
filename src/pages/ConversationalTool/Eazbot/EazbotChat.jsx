@@ -11,6 +11,7 @@ const EazbotChat = () => {
   const [activeTab, setActiveTab] = useState("ACTIVE");
   const [contacts, setContacts] = useState([]);
   const [messages, setMessages] = useState([]); // ✅ Add this state
+  const [isPhoneView, setIsPhoneView] = useState(false);
 
   const getAllChats = async () => {
     try {
@@ -81,13 +82,20 @@ const EazbotChat = () => {
     return contacts.find((chat) => chat.chat_id === selectedContact.chat_id);
   }, [selectedContact, contacts]);
 
-  console.log(selectedChat);
+  useEffect(() => {
+    if (window.screen.width < 1024) {
+      setIsPhoneView(true);
+    }
+  }, []);
+
+  console.log(isPhoneView);
 
   return (
     <div className="h-[calc(100vh-8.2vh)] bg-gray-50 flex flex-col">
       {/* <Header /> */}
       <div className="flex-1 flex overflow-hidden">
         <SidebarChat
+          isPhoneView={isPhoneView}
           contacts={contacts}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -99,6 +107,7 @@ const EazbotChat = () => {
           chat={selectedChat?.chats}
           messages={messages}
           setMessages={setMessages}
+          setSelectedContact={setSelectedContact}
         />
 
         {selectedChat && <ProfilePanel selectedContact={selectedChat} />}

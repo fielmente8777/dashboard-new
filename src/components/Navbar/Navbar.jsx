@@ -13,6 +13,8 @@ import AppsPopup from "../Popup/AppsPopup";
 import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
 import ProfileDropDown from "../Popup/ProfileDropDown";
+import { toggleSideBar } from "../../redux/slice/SidebarToggle";
+import { FaAlignRight } from "react-icons/fa";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -100,8 +102,14 @@ const Navbar = () => {
   };
 
   return (
-    <div className="sticky top-0 z-50">
+    <div className="sticky left-0 top-0">
       <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
+        <div
+          onClick={() => dispatch(toggleSideBar())}
+          className={`size-8 bg-blue-100 rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
+        >
+          <FaAlignRight color="#000" />
+        </div>
         <Greeting name={hotel?.Profile?.hotelName} />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -153,28 +161,46 @@ const Navbar = () => {
                 size={24}
               />
             </div> */}
-            <button
-              style={{
-                backgroundColor:
-                  letterColorMap[
-                    hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                  ],
-              }}
-              onClick={() => setIsProfileOpen(true)}
-              className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
-            >
-              <p className="text-2xl font-semibold">
-                {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
-              </p>
-            </button>
+
             {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
           </div>
+          <button
+            style={{
+              backgroundColor:
+                letterColorMap[
+                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
+                ],
+            }}
+            onClick={() => setIsProfileOpen(true)}
+            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
+          >
+            <p className="text-2xl font-semibold">
+              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+            </p>
+          </button>
         </div>
-        <div
-          onClick={() => setOpen(true)}
-          className="bg-[#0088ff] text-white sm:hidden p-1 rounded-md"
-        >
-          <RxDashboard size={22} />{" "}
+
+        <div className="flex items-center gap-2.5 sm:hidden">
+          <div
+            onClick={() => setOpen(true)}
+            className="bg-[#0088ff] text-white sm:hidden p-1 rounded-md"
+          >
+            <RxDashboard size={22} />{" "}
+          </div>
+          <button
+            style={{
+              backgroundColor:
+                letterColorMap[
+                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
+                ],
+            }}
+            onClick={() => setIsProfileOpen(true)}
+            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
+          >
+            <p className="text-2xl font-semibold">
+              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+            </p>
+          </button>
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />

@@ -1,40 +1,40 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BsImage } from "react-icons/bs";
-import axios from "axios";
+import { useEffect, useRef } from "react";
 
-const ChatArea = ({name, chat, messages, setMessages }) => {
+import { GrFormPreviousLink } from "react-icons/gr";
+
+const ChatArea = ({ name, chat, messages, setSelectedContact }) => {
   const chatEndRef = useRef(null);
-  const [responseMessage, setResponseMessage] = useState("");
+  // const [responseMessage, setResponseMessage] = useState("");
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages]);
 
-  const handleSubmit = async () => {
-    const message = {
-      senderType: "user",
-      message: responseMessage,
-    };
-    try {
-      // const sendMessageResponse = await axios.post(
-      //   "http://localhost:4000/api/chat/send-message",
-      //   {
-      //     ndid: localStorage.getItem("ndid"), // unique website/client ID
-      //     guestId: chat?.guestId, // guest user ID
-      //     botId: localStorage.getItem("ndid"), // admin ID (can be placeholder initially)
-      //     senderId: localStorage.getItem("ndid"), // who is sending this message
-      //     senderType: "bot", // "guest", "admin", or "bot"
-      //     message: responseMessage,
-      //   }
-      // );
+  // const handleSubmit = async () => {
+  //   const message = {
+  //     senderType: "user",
+  //     message: responseMessage,
+  //   };
+  //   try {
+  //     // const sendMessageResponse = await axios.post(
+  //     //   "http://localhost:4000/api/chat/send-message",
+  //     //   {
+  //     //     ndid: localStorage.getItem("ndid"), // unique website/client ID
+  //     //     guestId: chat?.guestId, // guest user ID
+  //     //     botId: localStorage.getItem("ndid"), // admin ID (can be placeholder initially)
+  //     //     senderId: localStorage.getItem("ndid"), // who is sending this message
+  //     //     senderType: "bot", // "guest", "admin", or "bot"
+  //     //     message: responseMessage,
+  //     //   }
+  //     // );
 
-      setMessages((prev) => [...prev, message]);
+  //     setMessages((prev) => [...prev, message]);
 
-      setResponseMessage("");
-    } catch (error) {
-      console.error("Error sending message", error.message);
-    }
-  };
+  //     setResponseMessage("");
+  //   } catch (error) {
+  //     console.error("Error sending message", error.message);
+  //   }
+  // };
 
   if (!chat)
     return (
@@ -47,7 +47,13 @@ const ChatArea = ({name, chat, messages, setMessages }) => {
       {/* Chat Header */}
       <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold capitalize">
+          <h2 className="text-lg font-semibold capitalize flex items-center gap-1.5">
+            <span
+              onClick={() => setSelectedContact(null)}
+              className="md:hidden block"
+            >
+              <GrFormPreviousLink size={22} />
+            </span>{" "}
             {name}
           </h2>
           <button className="text-teal-100 hover:text-white text-sm">
@@ -97,35 +103,47 @@ const ChatArea = ({name, chat, messages, setMessages }) => {
           </div>
         ))} */}
         {messages?.map((message, index) => {
-            return (
+          return (
             <div key={index}>
               {message?.senderType === "bot" && (
-              <div className="flex justify-end items-end mt-1 flex-col ">
-                <div className="bg-[#2e3b61]/80 rounded-2xl max-w-[80%] rounded-tr-sm p-4 text-white border text-left ">
-                {message?.message}
+                <div className="flex justify-end">
+                  <div className="flex justify-end items-end mt-1 flex-col max-w-xl w-full">
+                    <div className="bg-[#2e3b61]/80 rounded-2xl max-w-[80%] rounded-tr-sm p-4 text-white border text-left ">
+                      <div
+                        dangerouslySetInnerHTML={{ __html: message?.message }}
+                      />
+                    </div>
+                    <p className="text-gray-400 text-xs mt-1">
+                      {message?.created_at
+                        ? new Date(message.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : ""}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-gray-400 text-xs mt-1">
-                {message?.created_at
-                  ? new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : ""}
-                </p>
-              </div>
               )}
 
               {message?.senderType === "user" && (
-              <div className="flex w-fit flex-col max-w-[60%] mt-1">
-                <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
-                {message?.message}
+                <div className="flex w-fit flex-col max-w-[60%] mt-1">
+                  <div className="bg-teal-600 w-auto rounded-2xl rounded-tl-sm p-4 text-white">
+                    <div
+                      dangerouslySetInnerHTML={{ __html: message?.message }}
+                    />
+                  </div>
+                  <p className="text-gray-400 text-xs ml-2 self-end">
+                    {message?.created_at
+                      ? new Date(message.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </p>
                 </div>
-                <p className="text-gray-400 text-xs ml-2 self-end">
-                {message?.created_at
-                  ? new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : ""}
-                </p>
-              </div>
               )}
             </div>
-            );
+          );
         })}
         <div ref={chatEndRef} />
       </div>
