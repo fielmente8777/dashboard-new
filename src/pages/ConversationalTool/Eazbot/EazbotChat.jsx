@@ -4,6 +4,7 @@ import ChatArea from "./components/ChatArea";
 import ProfilePanel from "./components/ProfilePanel";
 import Header from "./components/Header";
 import { io } from "socket.io-client";
+import { BASE_URL } from "../../../data/constant";
 
 const EazbotChat = () => {
   const [selectedContact, setSelectedContact] = useState();
@@ -13,7 +14,7 @@ const EazbotChat = () => {
 
   const getAllChats = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:5000/leadeazbot/chats  `, {
+      const response = await fetch(`${BASE_URL}/leadeazbot/chats  `, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
