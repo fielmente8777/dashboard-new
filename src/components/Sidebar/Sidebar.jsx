@@ -19,7 +19,7 @@ import { removeCookie } from "../../utils/handleCookies";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import AddLocationForm from "../Popup/AddLocationForm";
 
-const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
+const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -222,7 +222,12 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
   });
 
   return (
-    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white relative border border-gray-50">
+    <div
+      className="p-3  flex flex-col h-screen overflow-hidden shadow-md bg-white md:relative fixed left-0 z-[99999] border border-gray-50"
+      style={{
+        left: isMobile ? (isOpen ? "0px" : "100%") : null,
+      }}
+    >
       <div className="flex justify-between items-center mb-4">
         {isOpen && (
           <div>
@@ -421,6 +426,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                           setSidebarActiveIndex(null);
                           toggleMenu(index);
                           dispatch(open());
+                          // if(isMobile){
+                          //   dispatch(close());
+                          // }
                         }}
                         className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
                           pathLocation?.pathname
@@ -516,6 +524,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
                                 <Link
                                   onClick={() => {
                                     setSidebarActiveIndex(index);
+                                    if (isMobile) {
+                                      dispatch(close());
+                                    }
                                   }}
                                   to={subLink.link}
                                   key={index}
@@ -694,9 +705,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth }) => {
         onMouseDown={handleResize}
       />
 
-      <div className="md:hidden block cursor-pointer" onClick={handleLogout}>
+      {/* <div className="md:hidden block cursor-pointer" onClick={handleLogout}>
         <IoIosLogOut size={32} />
-      </div>
+      </div> */}
     </div>
   );
 };

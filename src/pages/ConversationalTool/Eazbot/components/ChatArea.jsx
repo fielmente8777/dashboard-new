@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-const ChatArea = ({ name, chat, messages }) => {
+import { GrFormPreviousLink } from "react-icons/gr";
+
+const ChatArea = ({ name, chat, messages, setSelectedContact }) => {
   const chatEndRef = useRef(null);
   // const [responseMessage, setResponseMessage] = useState("");
 
@@ -45,7 +47,15 @@ const ChatArea = ({ name, chat, messages }) => {
       {/* Chat Header */}
       <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold capitalize">{name}</h2>
+          <h2 className="text-lg font-semibold capitalize flex items-center gap-1.5">
+            <span
+              onClick={() => setSelectedContact(null)}
+              className="md:hidden block"
+            >
+              <GrFormPreviousLink size={22} />
+            </span>{" "}
+            {name}
+          </h2>
           <button className="text-teal-100 hover:text-white text-sm">
             Chat Profile
           </button>

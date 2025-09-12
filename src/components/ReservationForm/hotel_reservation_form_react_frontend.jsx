@@ -2,9 +2,10 @@ import React, { useState, useMemo } from "react";
 import { extractBookingDates } from "../../utils/dateExtract";
 import { formatToDateInput } from "../../utils/formatDateInput";
 import { addReservation } from "../../services/api/bookingEngine";
+import Swal from "sweetalert2";
+import Loader from "../Loader";
 
-export default function ReservationForm({ data }) {
-  console.log(data);
+export default function ReservationForm({ data, setReserveData }) {
   // const [form, setForm] = useState({
   //   firstName: data?.Name,
   //   lastName: "",
@@ -79,6 +80,7 @@ export default function ReservationForm({ data }) {
     checked_out: false,
   });
   const [submitted, setSubmitted] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const nights = useMemo(() => {
     if (!form.checkIn || !form.checkOut) return 0;
@@ -105,17 +107,36 @@ export default function ReservationForm({ data }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...form,
-      nights,
-      pricing: { subtotal, taxes, total, currency: form.currency },
-      createdAt: new Date().toISOString(),
-    };
+    setLoading(true);
+    // const payload = {
+    //   ...form,
+    //   nights,
+    //   pricing: { subtotal, taxes, total, currency: form.currency },
+    //   createdAt: new Date().toISOString(),
+    // };
 
     try {
       const response = await addReservation(form);
-      console.log(response);
-    } catch (error) {}
+      if (response.Status) {
+        Swal.fire({
+          title: "Success",
+          text: response?.Data,
+          icon: "success",
+          confirmButtonText: "Close",
+        });
+        setReserveData(null);
+      }
+    } catch (error) {
+      console.log(error);
+      Swal.fire({
+        title: "Error",
+        text: "Something went wrong",
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+    } finally {
+      setLoading(false);
+    }
     // setSubmitted(payload);
     // console.log("Reservation submitted", payload);
   };
@@ -175,10 +196,11 @@ export default function ReservationForm({ data }) {
               Reset
             </button>
             <button
+              disabled={loading}
               form="reservation-form"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-1.5"
             >
-              Save Reservation
+              Save Reservation {loading && <Loader color="#fff" />}
             </button>
           </div>
         </header>

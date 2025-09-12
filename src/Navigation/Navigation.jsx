@@ -28,6 +28,7 @@ import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarke
 import FrontDesk from "../pages/FrontDesk/FrontDesk";
 import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
 import Setting from "../pages/Setting/Setting";
+import Usermanagement from "../pages/UserMgmt/Usermanagement";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -54,7 +55,10 @@ const Navigation = () => {
         <Route path="ota-management" element={<OTAOptimization />} />
         <Route path="accounting" element={<Accounting />} />
         <Route path="gst-filing" element={<GSTFiling />} />
-        <Route path="performance-marketing" element={<PerformanceMarketing />} />
+        <Route
+          path="performance-marketing"
+          element={<PerformanceMarketing />}
+        />
         <Route path="pr" element={<PublicRelation />} />
         <Route path="linktree-setup" element={<Linktree />} />
         <Route path="google-listing" element={<GMBProfile />} />
@@ -69,15 +73,16 @@ const Navigation = () => {
         <Route path="sms-marketing" element={<EmailMarketing />} />
         <Route path="front-desk" element={<FrontDesk />} />
         <Route path="profile" element={<Setting />} />
+        <Route path="user-management/all-users" element={<Usermanagement />} />
 
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {
           if (!data?.subLinks) {
             return (
-              <Route 
-                key={`main-${index}-${data.link}`} 
-                path={encodeRoutePath(data.link)} 
-                element={<DynamicPage />} 
+              <Route
+                key={`main-${index}-${data.link}`}
+                path={encodeRoutePath(data.link)}
+                element={<DynamicPage />}
               />
             );
           }
@@ -102,10 +107,10 @@ const Navigation = () => {
 const encodeRoutePath = (path) => {
   try {
     // Remove any malformed URI sequences
-    return path.replace(/[^\w\-/]/g, '').replace(/\/+/g, '/');
+    return path.replace(/[^\w\-/]/g, "").replace(/\/+/g, "/");
   } catch (error) {
-    console.warn('Error encoding path:', path, error);
-    return '/'; // Fallback to home
+    console.warn("Error encoding path:", path, error);
+    return "/"; // Fallback to home
   }
 };
 

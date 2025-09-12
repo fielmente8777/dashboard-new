@@ -383,7 +383,7 @@ const Scheduler = () => {
     fetchRoomsData();
     if (bookingData) {
       bookingData?.Details?.map((book) => {
-        book.roomNumbers.map((num) => {
+        book?.roomNumbers?.map((num) => {
           let e = {
             id: eventIdCounter++,
             type: "bookings",
@@ -408,7 +408,7 @@ const Scheduler = () => {
 
   return (
     <div>
-      <div className="toolbar">
+      <div className="toolbar my-4">
         <Zoom onChange={(args) => zoomChange(args)} />
         <button
           className="btn b-0"
