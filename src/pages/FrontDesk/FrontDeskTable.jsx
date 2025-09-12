@@ -383,7 +383,7 @@ const Scheduler = () => {
     fetchRoomsData();
     if (bookingData) {
       bookingData?.Details?.map((book) => {
-        book.roomNumbers.map((num) => {
+        book?.roomNumbers?.map((num) => {
           let e = {
             id: eventIdCounter++,
             type: "bookings",

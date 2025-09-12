@@ -49,8 +49,6 @@ export const DataProvider = ({ children }) => {
         }
       );
 
-      console.log(response);
-
       if (!response.ok) {
         console.error(`Error: ${response.status} - ${response.statusText}`);
       } else {
@@ -58,7 +56,7 @@ export const DataProvider = ({ children }) => {
         setRoomsData(responseData.data);
       }
     } catch (error) {
-      //console.log('Error:', error);
+      console.log('Error:', error);
     }
   };
 
