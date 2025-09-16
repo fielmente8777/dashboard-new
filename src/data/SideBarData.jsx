@@ -304,12 +304,12 @@ export const SidebarData = [
     icon: <MdPayment size={22} />,
   },
 
-  {
-    name: "Front Desk",
-    key: "Front Desk",
-    link: `front-desk`,
-    icon: <HiOutlineUserGroup />,
-  },
+  // {
+  //   name: "Front Desk",
+  //   key: "Front Desk",
+  //   link: `front-desk`,
+  //   icon: <HiOutlineUserGroup />,
+  // },
 
   {
     name: "Newsletter",
