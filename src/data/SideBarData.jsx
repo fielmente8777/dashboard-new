@@ -304,6 +304,20 @@ export const SidebarData = [
     icon: <MdPayment size={22} />,
   },
 
+  {
+    name: "AI Sales Agent",
+    // key: "",
+    link: `ai-sales-agent`,
+    icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Knowledge Base",
+    // key: "",
+    link: `knowledge-base`,
+    icon: <HiOutlineUserGroup />,
+  },
+
   // {
   //   name: "Front Desk",
   //   key: "Front Desk",
