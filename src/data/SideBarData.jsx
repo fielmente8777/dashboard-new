@@ -311,6 +311,13 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
 
+  {
+    name: "Knowledge Base",
+    // key: "",
+    link: `knowledge-base`,
+    icon: <HiOutlineUserGroup />,
+  },
+
   // {
   //   name: "Front Desk",
   //   key: "Front Desk",

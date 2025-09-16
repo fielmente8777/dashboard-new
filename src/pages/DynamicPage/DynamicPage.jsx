@@ -65,6 +65,7 @@ import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
 import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
 import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
+import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -203,6 +204,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
 
     [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
+    [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
   };
 
   return (
