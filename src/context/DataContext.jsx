@@ -49,8 +49,6 @@ export const DataProvider = ({ children }) => {
         }
       );
 
-      console.log(response);
-
       if (!response.ok) {
         console.error(`Error: ${response.status} - ${response.statusText}`);
       } else {

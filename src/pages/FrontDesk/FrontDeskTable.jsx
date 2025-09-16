@@ -368,7 +368,7 @@ const Scheduler = () => {
 
     const events = event;
 
-    getScheduler().update({
+    getScheduler()?.update({
       resources,
       events,
     });

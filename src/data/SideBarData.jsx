@@ -305,11 +305,18 @@ export const SidebarData = [
   },
 
   {
-    name: "Front Desk",
-    key: "Front Desk",
-    link: `front-desk`,
+    name: "AI Sales Agent",
+    // key: "",
+    link: `ai-sales-agent`,
     icon: <HiOutlineUserGroup />,
   },
+
+  // {
+  //   name: "Front Desk",
+  //   key: "Front Desk",
+  //   link: `front-desk`,
+  //   icon: <HiOutlineUserGroup />,
+  // },
 
   {
     name: "Newsletter",
