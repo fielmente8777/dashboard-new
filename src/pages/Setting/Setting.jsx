@@ -10,6 +10,9 @@ import { RiArrowDownSLine } from "react-icons/ri";
 import { FaHotel } from "react-icons/fa";
 import { BsPencil, BsTrash } from "react-icons/bs";
 import TrashBin from "../../components/Icon/TrashBin";
+import Eazobot from "../Eazobot/Eazobot";
+
+const Tabs = ["Profile", "Chatbot"];
 
 const Setting = () => {
   // const [formData, setFormData] = useState({
@@ -20,7 +23,7 @@ const Setting = () => {
   //   newPassword: "",
   //   confirmPassword: "",
   // });
-
+  const [activeTab, setActiveTab] = useState(0);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
@@ -113,123 +116,168 @@ const Setting = () => {
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const profile = hotel?.Profile;
 
-  console.log("profile", authUser);
-
   if (!hotel?.Profile) return null;
   return (
-    <div className="min-h-screen bg-gray-100 p-6 space-y-2.5">
-      <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
-        {/* Profile info */}
-
-        {/* user type and email */}
-        <div className="flex space-x-4">
-          <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-white">
-            <p className="text-3xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
-            </p>
-          </div>
-          <div>
-            <div className="font-semibold text-lg capitalize">
-              {authUser?.userName}
-            </div>
-            <div className="text-sm text-gray-500 capitalize">
-              Role: {authUser?.role}
-            </div>
-            <div className="text-sm text-gray-600">{authUser?.emailId}</div>
-          </div>
-        </div>
-        {/* Organization */}
-        <div className="space-y-1 flex gap-4">
-          <h3 className="font-semibold text-gray-700">Organization:</h3>
-
-          <div className="">
-            <p className="text-gray-800 font-medium">{profile.hotelName}</p>
-            <p className="text-sm text-gray-600 break-words">
-              {profile.hotelDescription}{" "}
-            </p>
-          </div>
-        </div>
-        {/* Contact */}
-        <div className="space-y-1">
-          <p className="text-sm text-gray-500">
-            <span className="font-semibold text-gray-700 ">Domain:</span>{" "}
-            {profile.domain}
-          </p>
-          <p className="text-sm text-gray-500">
-            <span className="font-semibold text-gray-700">Email:</span>{" "}
-            {profile.hotelEmail}
-          </p>
-          <p className="text-sm text-gray-500">
-            <span className="font-semibold text-gray-700">Phone:</span>{" "}
-            {profile.hotelPhone}
-          </p>
-        </div>
-        {/* Subscription */}
-        <div className="space-y-1">
-          <div className="flex gap-4">
-            <h3 className="font-semibold text-gray-700">Subscription Plan</h3>
-            <p className="text-gray-800 font-medium">{profile.plan?.name}</p>
-          </div>
-          <p className="text-sm text-gray-500">
-            <b>Active from :</b> {profile.plan?.activationDate} to{" "}
-            {profile.plan?.expiryDate}
-          </p>
-        </div>
+    <div>
+      <div className="flex flex-wrap gap-2 bg-gray-100 p-2 rounded-xl">
+        {Tabs.map((tab, index) => (
+          <button
+            key={index}
+            onClick={() => setActiveTab(index)}
+            className={`relative px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300
+              ${
+                activeTab === index
+                  ? "bg-primary text-white shadow-md"
+                  : "text-gray-600 hover:bg-primary/10 hover:text-primary"
+              }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
-      {/* Hotels */}
-      <div className="bg-white p-8 rounded-2xl shadow-lg">
-        <div
-          className="flex items-center  cursor-pointer"
-          onClick={() => setIsDropDownOpen(isDropDownOpen === 1 ? null : 1)}
-        >
-          <h3 className="font-bold text-3xl text-gray-800 flex items-center gap-4">
-            <FaHotel className="text-2xl" />
-            Hotels
-          </h3>
-          <span className="ml-auto">
-            <RiArrowDownSLine className={`${isDropDownOpen === 1 ? "rotate-180 " : "" } text-2xl transform transition duration-300 ease-in-out`} />
-          </span>
-        </div>
-        <div
-          className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 ${
-            isDropDownOpen === 1 ? "block" : "hidden"
-          }`}
-        >
-          {profile.hotels &&
-            Object.entries(profile.hotels).map(([hid, h]) => (
-              <div key={hid} className="p-2 rounded-md bg-blue-50 transition relative">
-                <p className="font-medium text-gray-800">{h.local}</p>
-                <p className="text-sm text-gray-500">
-                  {h.city}, {h.state}, {h.country}
+      {activeTab === 0 && (
+        <div className="min-h-screen bg-gray-100 p-3 space-y-2.5">
+          <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
+            {/* Profile info */}
+
+            {/* user type and email */}
+            <div className="flex space-x-4">
+              <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-white">
+                <p className="text-3xl font-semibold">
+                  {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
                 </p>
-                <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
-                {/* delete & update */}
-                <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
-                  <button className="text-gray-950 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
-                    <BsPencil className="text-sm" />
-                  </button>
-                  <button className="">
-                    {/* <BsTrash className="text-sm" /> */}
-                    <TrashBin />
-                  </button>
-                </div>
               </div>
-            ))}
-        </div>
-      </div>
-      <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8">
-        {/* password change section */}
-        <div className="">
-          <div className={`flex items-center cursor-pointer ${isDropDownOpen === 2 ? "border-b pb-4 mb-6" : ""}`} onClick={() => setIsDropDownOpen(isDropDownOpen === 2 ? null : 2)} >
-            <h1 className="text-3xl font-bold text-gray-800 ">⚙️ Settings</h1>
-            <span className="ml-auto">
-              <RiArrowDownSLine className={`${isDropDownOpen === 2 ? "rotate-180 " : "" } text-2xl transform transition duration-300 ease-in-out`} />
-            </span>
-          </div>
+              <div>
+                <div className="font-semibold text-lg capitalize">
+                  {authUser?.userName}
+                </div>
+                <div className="text-sm text-gray-500 capitalize">
+                  Role: {authUser?.role}
+                </div>
+                <div className="text-sm text-gray-600">{authUser?.emailId}</div>
+              </div>
+            </div>
+            {/* Organization */}
+            <div className="space-y-1 flex gap-4">
+              <h3 className="font-semibold text-gray-700">Organization:</h3>
 
-          <form className={`space-y-10 ${isDropDownOpen === 2 ? "block" : "hidden"}`} onSubmit={handleConfirmSubmit} >
-            {/* Profile Info */}
-            {/* <section>
+              <div className="">
+                <p className="text-gray-800 font-medium">{profile.hotelName}</p>
+                <p className="text-sm text-gray-600 break-words">
+                  {profile.hotelDescription}{" "}
+                </p>
+              </div>
+            </div>
+            {/* Contact */}
+            <div className="space-y-1">
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-700 ">Domain:</span>{" "}
+                {profile.domain}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-700">Email:</span>{" "}
+                {profile.hotelEmail}
+              </p>
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-700">Phone:</span>{" "}
+                {profile.hotelPhone}
+              </p>
+            </div>
+            {/* Subscription */}
+            <div className="space-y-1">
+              <div className="flex gap-4">
+                <h3 className="font-semibold text-gray-700">
+                  Subscription Plan
+                </h3>
+                <p className="text-gray-800 font-medium">
+                  {profile.plan?.name}
+                </p>
+              </div>
+              <p className="text-sm text-gray-500">
+                <b>Active from :</b> {profile.plan?.activationDate} to{" "}
+                {profile.plan?.expiryDate}
+              </p>
+            </div>
+          </div>
+          {/* Hotels */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg">
+            <div
+              className="flex items-center  cursor-pointer"
+              onClick={() => setIsDropDownOpen(isDropDownOpen === 1 ? null : 1)}
+            >
+              <h3 className="font-bold text-3xl text-gray-800 flex items-center gap-4">
+                <FaHotel className="text-2xl" />
+                Hotels
+              </h3>
+              <span className="ml-auto">
+                <RiArrowDownSLine
+                  className={`${
+                    isDropDownOpen === 1 ? "rotate-180 " : ""
+                  } text-2xl transform transition duration-300 ease-in-out`}
+                />
+              </span>
+            </div>
+            <div
+              className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 ${
+                isDropDownOpen === 1 ? "block" : "hidden"
+              }`}
+            >
+              {profile.hotels &&
+                Object.entries(profile.hotels).map(([hid, h]) => (
+                  <div
+                    key={hid}
+                    className="p-2 rounded-md bg-blue-50 transition relative"
+                  >
+                    <p className="font-medium text-gray-800">{h.local}</p>
+                    <p className="text-sm text-gray-500">
+                      {h.city}, {h.state}, {h.country}
+                    </p>
+                    <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
+                    {/* delete & update */}
+                    <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
+                      <button className="text-gray-950 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
+                        <BsPencil className="text-sm" />
+                      </button>
+                      <button className="">
+                        {/* <BsTrash className="text-sm" /> */}
+                        <TrashBin />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8">
+            {/* password change section */}
+            <div className="">
+              <div
+                className={`flex items-center cursor-pointer ${
+                  isDropDownOpen === 2 ? "border-b pb-4 mb-6" : ""
+                }`}
+                onClick={() =>
+                  setIsDropDownOpen(isDropDownOpen === 2 ? null : 2)
+                }
+              >
+                <h1 className="text-3xl font-bold text-gray-800 ">
+                  ⚙️ Settings
+                </h1>
+                <span className="ml-auto">
+                  <RiArrowDownSLine
+                    className={`${
+                      isDropDownOpen === 2 ? "rotate-180 " : ""
+                    } text-2xl transform transition duration-300 ease-in-out`}
+                  />
+                </span>
+              </div>
+
+              <form
+                className={`space-y-10 ${
+                  isDropDownOpen === 2 ? "block" : "hidden"
+                }`}
+                onSubmit={handleConfirmSubmit}
+              >
+                {/* Profile Info */}
+                {/* <section>
             <h2 className="text-xl font-semibold text-gray-700 mb-4">
               👤 Profile Information
             </h2>
@@ -275,161 +323,163 @@ const Setting = () => {
             </div>
           </section> */}
 
-            {/* Change Password */}
-            <section>
-              <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                🔑 Change Password
-              </h2>
+                {/* Change Password */}
+                <section>
+                  <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                    🔑 Change Password
+                  </h2>
 
-              <div
-              // onClick={onClose}
-              // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-              >
-                <div className="bg-white rounded-lg overflow-hidden w-full ">
-                  <div className="flex relative flex-col justify-between mb-4">
-                    {/* <button
+                  <div
+                  // onClick={onClose}
+                  // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                  >
+                    <div className="bg-white rounded-lg overflow-hidden w-full ">
+                      <div className="flex relative flex-col justify-between mb-4">
+                        {/* <button
                     // onClick={onClose}
                     className="text-[#575757]/70 absolute right-2 top-2 text-2xl hover:text-[#575757]"
                   >
                     &times;
                   </button> */}
-                    {/* <div className="h-60 ">
+                        {/* <div className="h-60 ">
                     <img
                       src="/3099593.jpg"
                       alt="illustration"
                       className="w-full h-full"
                     />
                   </div> */}
-                    {/* <h1 className="text-3xl font-semibold">Reset Password</h1> */}
-                    <div>
-                      <p className="text-sm text-[#575757]/70">
-                        Please kindly set your new password
-                      </p>
+                        {/* <h1 className="text-3xl font-semibold">Reset Password</h1> */}
+                        <div>
+                          <p className="text-sm text-[#575757]/70">
+                            Please kindly set your new password
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <div
+                          // onSubmit={handleConfirmSubmit}
+                          className="flex flex-col gap-4"
+                        >
+                          <div className="flex flex-col gap-1">
+                            <label
+                              htmlFor="currentPassword"
+                              className="font-medium text-[#575757]/90"
+                            >
+                              Current Password
+                            </label>
+                            <div className="w-full relative">
+                              <input
+                                name="password"
+                                type={showCurrentPassword ? "text" : "password"}
+                                placeholder="Enter your current password"
+                                className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
+                                onChange={(e) => setOldPassword(e.target.value)}
+                                value={oldPassword}
+                              />
+
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                                {showCurrentPassword ? (
+                                  <AiOutlineEye
+                                    size={20}
+                                    onClick={toggleCurrentPassword}
+                                    className="text-gray-400"
+                                  />
+                                ) : (
+                                  <HiOutlineEyeOff
+                                    size={20}
+                                    onClick={toggleCurrentPassword}
+                                    className="text-gray-400"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label
+                              htmlFor="newPassword"
+                              className="font-medium text-[#575757]/90"
+                            >
+                              New Password
+                            </label>
+                            <div className="w-full relative">
+                              <input
+                                name="password"
+                                type={showNewPassword ? "text" : "password"}
+                                placeholder="Enter your new password"
+                                className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                value={newPassword}
+                              />
+
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                                {showNewPassword ? (
+                                  <AiOutlineEye
+                                    size={20}
+                                    onClick={toggleNewPassword}
+                                    className="text-gray-400"
+                                  />
+                                ) : (
+                                  <HiOutlineEyeOff
+                                    size={20}
+                                    onClick={toggleNewPassword}
+                                    className="text-gray-400"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label
+                              htmlFor="confirmPassword"
+                              className="font-medium text-[#575757]/90 "
+                            >
+                              Re-enter Password
+                            </label>
+                            <div className="w-full relative">
+                              <input
+                                name="password"
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Enter your confirm password"
+                                className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
+                                onChange={(e) =>
+                                  setConfirmPassword(e.target.value)
+                                }
+                                value={confirmPassword}
+                              />
+
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                                {showConfirmPassword ? (
+                                  <AiOutlineEye
+                                    size={20}
+                                    onClick={toggleConfirmPassword}
+                                    className="text-gray-400"
+                                  />
+                                ) : (
+                                  <HiOutlineEyeOff
+                                    size={20}
+                                    onClick={toggleConfirmPassword}
+                                    className="text-gray-400"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            disabled={isLoading}
+                            type="submit"
+                            className="bg-primary/90 text-white py-2 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 justify-center"
+                          >
+                            Confirm{" "}
+                            {isLoading && <Loader size={20} color="white" />}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="p-4">
-                    <div
-                      // onSubmit={handleConfirmSubmit}
-                      className="flex flex-col gap-4"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="currentPassword"
-                          className="font-medium text-[#575757]/90"
-                        >
-                          Current Password
-                        </label>
-                        <div className="w-full relative">
-                          <input
-                            name="password"
-                            type={showCurrentPassword ? "text" : "password"}
-                            placeholder="Enter your current password"
-                            className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                            onChange={(e) => setOldPassword(e.target.value)}
-                            value={oldPassword}
-                          />
-
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                            {showCurrentPassword ? (
-                              <AiOutlineEye
-                                size={20}
-                                onClick={toggleCurrentPassword}
-                                className="text-gray-400"
-                              />
-                            ) : (
-                              <HiOutlineEyeOff
-                                size={20}
-                                onClick={toggleCurrentPassword}
-                                className="text-gray-400"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="newPassword"
-                          className="font-medium text-[#575757]/90"
-                        >
-                          New Password
-                        </label>
-                        <div className="w-full relative">
-                          <input
-                            name="password"
-                            type={showNewPassword ? "text" : "password"}
-                            placeholder="Enter your new password"
-                            className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            value={newPassword}
-                          />
-
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                            {showNewPassword ? (
-                              <AiOutlineEye
-                                size={20}
-                                onClick={toggleNewPassword}
-                                className="text-gray-400"
-                              />
-                            ) : (
-                              <HiOutlineEyeOff
-                                size={20}
-                                onClick={toggleNewPassword}
-                                className="text-gray-400"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-1">
-                        <label
-                          htmlFor="confirmPassword"
-                          className="font-medium text-[#575757]/90 "
-                        >
-                          Re-enter Password
-                        </label>
-                        <div className="w-full relative">
-                          <input
-                            name="password"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Enter your confirm password"
-                            className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            value={confirmPassword}
-                          />
-
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                            {showConfirmPassword ? (
-                              <AiOutlineEye
-                                size={20}
-                                onClick={toggleConfirmPassword}
-                                className="text-gray-400"
-                              />
-                            ) : (
-                              <HiOutlineEyeOff
-                                size={20}
-                                onClick={toggleConfirmPassword}
-                                className="text-gray-400"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        disabled={isLoading}
-                        type="submit"
-                        className="bg-primary/90 text-white py-2 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 justify-center"
-                      >
-                        Confirm{" "}
-                        {isLoading && <Loader size={20} color="white" />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-gray-600 font-medium mb-2">
                   Current Password
@@ -469,10 +519,10 @@ const Setting = () => {
                 />
               </div>
             </div> */}
-            </section>
+                </section>
 
-            {/* Save Button */}
-            {/* <div className="flex justify-end">
+                {/* Save Button */}
+                {/* <div className="flex justify-end">
             <button
               type="submit"
               className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all"
@@ -480,9 +530,17 @@ const Setting = () => {
               Save Changes
             </button>
           </div> */}
-          </form>
+              </form>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {activeTab === 1 && (
+        <div className="p-3">
+          <Eazobot />
+        </div>
+      )}
     </div>
   );
 };

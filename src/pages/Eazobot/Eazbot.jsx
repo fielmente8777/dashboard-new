@@ -124,18 +124,20 @@ const Eazobot = () => {
           <React.Fragment key={step.id}>
             <div className="flex items-center">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step.completed
-                  ? "bg-green-500 text-white"
-                  : step.id === currentStep
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  step.completed
+                    ? "bg-green-500 text-white"
+                    : step.id === currentStep
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-600"
-                  }`}
+                }`}
               >
                 {step.completed ? <FiCheck size={16} /> : step.id}
               </div>
               <span
-                className={`ml-2 text-sm font-medium ${step.id === currentStep ? "text-blue-600" : "text-gray-600"
-                  }`}
+                className={`ml-2 text-sm font-medium ${
+                  step.id === currentStep ? "text-blue-600" : "text-gray-600"
+                }`}
               >
                 {step.title}
               </span>
@@ -191,10 +193,11 @@ const Eazobot = () => {
           {platforms.map((platform) => (
             <div
               key={platform.id}
-              className={`border-2 rounded-lg p-6 cursor-pointer transition-colors ${platform.selected
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-200 hover:border-gray-300"
-                }`}
+              className={`border-2 rounded-lg p-6 cursor-pointer transition-colors ${
+                platform.selected
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
               onClick={() => setConfig({ ...config, platform: platform.id })}
             >
               <div className="text-3xl mb-4">{platform.icon}</div>
@@ -243,10 +246,11 @@ const Eazobot = () => {
                 <button
                   key={color}
                   onClick={() => setConfig({ ...config, color })}
-                  className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${config.color === color
-                    ? "border-gray-400"
-                    : "border-transparent"
-                    }`}
+                  className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${
+                    config.color === color
+                      ? "border-gray-400"
+                      : "border-transparent"
+                  }`}
                   style={{ backgroundColor: color }}
                 >
                   {config.color === color && (
@@ -363,10 +367,11 @@ const Eazobot = () => {
 
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div
-                className={`border-2 rounded-lg p-6 cursor-pointer ${config.audience === "all"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200"
-                  }`}
+                className={`border-2 rounded-lg p-6 cursor-pointer ${
+                  config.audience === "all"
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200"
+                }`}
                 onClick={() => setConfig({ ...config, audience: "all" })}
               >
                 <h3 className="font-semibold text-gray-900 mb-2">
@@ -379,10 +384,11 @@ const Eazobot = () => {
               </div>
 
               <div
-                className={`border-2 rounded-lg p-6 cursor-pointer ${config.audience === "custom"
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200"
-                  }`}
+                className={`border-2 rounded-lg p-6 cursor-pointer ${
+                  config.audience === "custom"
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200"
+                }`}
                 onClick={() => setConfig({ ...config, audience: "custom" })}
               >
                 <h3 className="font-semibold text-gray-900 mb-2">
@@ -586,10 +592,11 @@ const Eazobot = () => {
                 </pre>
                 <button
                   onClick={copyScript}
-                  className={`absolute top-2 right-2 px-3 py-1 rounded text-sm font-medium transition-colors ${scriptCopied
-                    ? "bg-green-500 text-white"
-                    : "bg-blue-500 text-white hover:bg-blue-600"
-                    }`}
+                  className={`absolute top-2 right-2 px-3 py-1 rounded text-sm font-medium transition-colors ${
+                    scriptCopied
+                      ? "bg-green-500 text-white"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
                 >
                   {scriptCopied ? "Copied!" : "Copy this code"}
                 </button>

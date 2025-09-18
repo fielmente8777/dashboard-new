@@ -66,6 +66,7 @@ import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
 import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
 import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
+import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -205,6 +206,10 @@ const DynamicPage = () => {
 
     [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
+
+    [`${BASE_PATH}/${hid}/email-marketing-management`]: (
+      <EmailMarketingManagement />
+    ),
   };
 
   return (

@@ -1,143 +1,142 @@
-import React, { useEffect, useState } from "react";
-import { JsonEditor } from "json-edit-react";
+import { useState } from "react";
+
 import axios from "axios";
+import KnowledgeBaseForm from "./KnowledgeBaseForm";
+
 const KnowledgeBase = () => {
-  const [jsondata,setJsonData]=useState()
-  // const jsonData = {
-  //   description:
-  //     "Explore Naturoville, Rishikesh's premier Ayurvedic & Retreat. Rejuvenate your mind and body at the best wellness center in Rishikesh.",
-  //   headings: {
-  //     h1: ["Welcome to Our Wellness Center"],
-  //     h2: [
-  //       "Our Unique Approach to Holistic Healing & Wellness",
-  //       "Explore Our Signature Therapies & Treatments",
-  //       "Facilities & Activities",
-  //       "Explore Our Wellness Programs",
-  //       "Accommodation",
-  //       "Path to better stays!",
-  //     ],
-  //     h3: [
-  //       "Ayurveda & Naturopathy Focus",
-  //       "Integrated Healing Infrastructure",
-  //       "Spiritual Natural Environment",
-  //       "Sustainable Wellness",
-  //       "Ayurveda & Naturopathy Focus",
-  //       "Integrated Healing Infrastructure",
-  //       "Spiritual Natural Environment",
-  //       "Sustainable Wellness",
-  //       "Kizhi & Patra Potli",
-  //       "Kizhi & Patra Potli",
-  //       "Abhyanga",
-  //       "Abhyanga",
-  //       "Akshi Tarpan",
-  //       "Akshi Tarpan",
-  //       "Pizhichil (Oil Bath)",
-  //       "Pizhichil (Oil Bath)",
-  //       "Shirodhara",
-  //       "Shirodhara",
-  //       "Kizhi & Patra Potli",
-  //       "Kizhi & Patra Potli",
-  //       "Abhyanga",
-  //       "Abhyanga",
-  //       "Akshi Tarpan",
-  //       "Akshi Tarpan",
-  //       "Pizhichil (Oil Bath)",
-  //       "Pizhichil (Oil Bath)",
-  //       "Shirodhara",
-  //       "Shirodhara",
-  //       "Kizhi & Patra Potli",
-  //       "Kizhi & Patra Potli",
-  //       "Abhyanga",
-  //       "Abhyanga",
-  //       "Akshi Tarpan",
-  //       "Akshi Tarpan",
-  //       "Pizhichil (Oil Bath)",
-  //       "Pizhichil (Oil Bath)",
-  //       "Shirodhara",
-  //       "Shirodhara",
-  //       "Kizhi & Patra Potli",
-  //       "Kizhi & Patra Potli",
-  //       "Abhyanga",
-  //       "Abhyanga",
-  //       "Akshi Tarpan",
-  //       "Akshi Tarpan",
-  //       "Pizhichil (Oil Bath)",
-  //       "Pizhichil (Oil Bath)",
-  //       "Shirodhara",
-  //       "Shirodhara",
-  //       "Detox & Panchakarma Therapy",
-  //       "Weight Management Program",
-  //       "Diabetes Management",
-  //       "Arthritis & Pain Relief",
-  //       "Depression & Stress Management",
-  //       "Anti-Ageing & Skin Rejuvenation",
-  //       "Shakti â Womenâs Wellness",
-  //       "Geriatric Wellness (Senior Citizen Focused)",
-  //       "Natural Immunization Boosting",
-  //       "Spine, Neck & Joint Care",
-  //       "Garden View Room with Balcony",
-  //       "Premium Nature View Room",
-  //       "Executive Garden View Suite",
-  //       "Garden View Room with Balcony",
-  //       "Premium Nature View Room",
-  //       "Executive Garden View Suite",
-  //       "Appreciation From Our Guests!",
-  //       "Diwan Chand",
-  //       "Jasleen Anand",
-  //       "Krishna Murthy",
-  //       "Pragya Mittal",
-  //       "Sonam Wangmo",
-  //       "Contact Us",
-  //     ],
-  //   },
-  //   links: [
-  //     "",
-  //     "https://www.facebook.com/Naturovillewellnessrishikesh/",
-  //     "tel: ‪+91 95208 90993‬ ",
-  //     "mailto:marketing@naturovillespa.com",
-  //     "mailto:sales@naturovillespa.com",
-  //     "tel:‪+91 91493 61935‬",
-  //     "https://www.eazotel.com/",
-  //     "tel:+91 95208 90993",
-  //     "https://wa.me/+919520890995?text=Hello",
-  //     "https://www.instagram.com/naturovillewellness/#",
-  //   ],
-  //   title:
-  //     "Best Ayurveda Wellness & Panchkarma Center in Rishikesh | Naturoville",
-  //   url: "https://www.naturovillewellnessresort.com/",
-  // };
+  const [jsondata, setJsonData] = useState(null);
+  const [url, setUrl] = useState("");
+  const [activeTab, setActiveTab] = useState("url"); // "url" or "manual"
+  const [loading, setLoading] = useState(false);
 
-  const fetchData = async () => {
-    const { data } = await axios.post(
-      "http://127.0.0.1:5000/leadeazbot/create-knowledge-base",
-      {
-        urls: ["https://www.naturovillewellnessresort.com/"],
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+  const fetchData = async (link) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.post(
+        "http://127.0.0.1:5000/leadeazbot/create-knowledge-base",
+        {
+          urls: [link],
         },
-      }
-    );
-    console.log("APi response",data);
-    setJsonData(data?.Data[0])
-
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("API response", data);
+      setJsonData(data?.Data?.[0]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (url.trim()) {
+      fetchData(url);
+    }
+  };
+
+  const handleFormSave = async (formData) => {
+    setLoading(true);
+    try {
+      // You can send this form data to your API
+      const { data } = await axios.post(
+        "http://127.0.0.1:5000/leadeazbot/create-knowledge-base",
+        {
+          manualData: formData,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Form data saved:", data);
+      setJsonData(formData); // Display the form data
+    } catch (error) {
+      console.error("Error saving form data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="p-2">
-      Knowledge Base
+    <div className="p-4 space-y-6">
+      <h1 className="text-2xl font-bold">Knowledge Base</h1>
 
-      {/* <h1>Enter Url to get data</h1>
-      <div>
-        <input type="url" value={url} className="py-2 px-4 rounded-md outline-none"/>
-      </div> */}
-      {jsondata&&<JsonEditor data={jsondata} />}
+      {/* Tab Navigation */}
+      <div className="flex border-b border-gray-200">
+        <button
+          onClick={() => setActiveTab("url")}
+          className={`px-4 py-2 font-medium ${
+            activeTab === "url"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Import from URL
+        </button>
+        <button
+          onClick={() => setActiveTab("manual")}
+          className={`px-4 py-2 font-medium ${
+            activeTab === "manual"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Manual Entry
+        </button>
+      </div>
+
+      {/* URL Input Tab */}
+      {activeTab === "url" && (
+        <div className="space-y-4">
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
+              type="url"
+              placeholder="Enter website link..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="flex-1 border rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              disabled={!url.trim() || loading}
+              className="px-6 py-2 rounded-md bg-blue-600 text-white disabled:bg-gray-400"
+            >
+              {loading ? "Fetching..." : "Fetch"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Manual Entry Tab */}
+      {activeTab === "manual" && (
+        <div>
+          <KnowledgeBaseForm onSave={handleFormSave} initialData={jsondata} />
+        </div>
+      )}
+
+      {/* JSON Viewer */}
+      {jsondata && (
+        <div className="border rounded-md p-4">
+          <h2 className="text-lg font-semibold mb-3">Data Preview</h2>
+          <JsonEditor data={jsondata} />
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Processing...</span>
+        </div>
+      )}
     </div>
   );
 };

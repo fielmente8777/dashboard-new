@@ -106,10 +106,16 @@ export const SidebarData = [
     link: `https://social.eazotel.com`,
     icon: <TiSocialSkype size={24} />,
   },
+  // {
+  //   name: "Eazbot",
+  //   // key: "Eazobot",
+  //   link: `eazbot`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
   {
-    name: "Eazbot",
+    name: "Email Marketing",
     // key: "Eazobot",
-    link: `eazbot`,
+    link: `email-marketing-management`,
     icon: <IoIosChatbubbles size={24} />,
   },
   {
