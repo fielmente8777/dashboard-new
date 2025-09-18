@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
+import { FaCircle, FaEye, FaHotel, FaPlay } from "react-icons/fa";
 import CallDetails from "./CallDetails";
+import { getAiSalesAgentCall } from "../../services/api/AiSales.api";
 
 export default function AiSaleAgent() {
-  const [selectedHotel, setSelectedHotel] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [showAudioModal, setShowAudioModal] = useState(false);
@@ -38,23 +39,91 @@ export default function AiSaleAgent() {
 
   // Simulated call data
   const [calls, setCalls] = useState([
-    [
-      "abc123456789",
-      "Grand Plaza Hotel",
-      "+1234567890",
-      "completed",
-      180,
-      "10:30 AM",
-    ],
-    [
-      "xyz987654321",
-      "Ocean View Resort",
-      "+9876543210",
-      "active",
-      60,
-      "10:45 AM",
-    ],
-    ["lmn456789123", "Grand Plaza Hotel", null, "failed", null, "11:00 AM"],
+    {
+      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+      call_sid: "CAbac97eb2bb77ff2497b77251dcf51295",
+      call_from: "‪+18454421865‬",
+      call_to: "‪+919528295631‬",
+      guest_name: "",
+      status: "initiated",
+      start_time: null,
+      end_time: null,
+      transcript: [
+        {
+          speaker: "AI",
+          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
+          timestamp: "2025-09-17T11:41:33.553000",
+        },
+        {
+          speaker: "Customer",
+          text: "I want to book a room.",
+          timestamp: "2025-09-17T11:41:52.086000",
+        },
+        {
+          speaker: "AI",
+          text: "I apologize, but I'm having technical difficulties. Please call back in a moment or speak with our front desk at Test multi.",
+          timestamp: "2025-09-17T11:41:52.658000",
+        },
+        {
+          speaker: "AI",
+          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
+          timestamp: "2025-09-17T11:41:33.553000",
+        },
+        {
+          speaker: "Customer",
+          text: "I want to book a room.",
+          timestamp: "2025-09-17T11:41:52.086000",
+        },
+        {
+          speaker: "AI",
+          text: "I apologize, but I'm having technical difficulties. Please call back in a moment or speak with our front desk at Test multi.",
+          timestamp: "2025-09-17T11:41:52.658000",
+        },
+      ],
+      recording_url: null,
+      created_at: "2025-09-17T11:11:05.942000",
+      updated_at: "2025-09-17T11:11:06.280000",
+    },
+    {
+      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+      call_sid: "CAf9c5e5b82a3e80a59e15ad814e334fea",
+      call_from: "‪+18454421865‬",
+      call_to: "‪+919528295631‬",
+      guest_name: "",
+      status: "initiated",
+      start_time: null,
+      end_time: null,
+      transcript: [
+        {
+          speaker: "AI",
+          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
+          timestamp: "2025-09-17T11:28:08.388000",
+        },
+      ],
+      recording_url: null,
+      created_at: "2025-09-17T11:28:08.129000",
+      updated_at: "2025-09-17T11:28:08.388000",
+    },
+    {
+      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+      call_sid: "CA2c586f0e263e51934bdcae5ab9c70609",
+      call_from: "‪+18454421865‬",
+      call_to: "‪+919528295631‬",
+      guest_name: "",
+      status: "initiated",
+      start_time: null,
+      end_time: null,
+      transcript: [
+        {
+          speaker: "AI",
+          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
+          timestamp: "2025-09-17T11:37:15.476000",
+        },
+      ],
+      recording_url: null,
+      created_at: "2025-09-17T11:37:15.166000",
+      updated_at: "2025-09-17T11:37:15.476000",
+    },
   ]);
 
   useEffect(() => {
@@ -126,13 +195,17 @@ export default function AiSaleAgent() {
     link.click();
   };
 
-  const dummyCall = {
-    callInfo: [123, "Hotel Taj", "+123456789", "completed", 65, "2025-09-16"],
-    conversation: [
-      ["Customer", "Hello, I want to book a room.", "10:00"],
-      ["AI", "Sure, for what dates?", "10:01"],
-    ],
+  const getAiSalesAgentApiCall = async () => {
+    const formBody = {
+      limit: 10,
+    };
+    const response = await getAiSalesAgentCall(formBody);
+    console.log(response);
   };
+
+  useEffect(() => {
+    getAiSalesAgentApiCall();
+  }, []);
 
   return (
     <div className="p-2">
@@ -196,10 +269,9 @@ export default function AiSaleAgent() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      {/* <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Call Status
@@ -234,7 +306,7 @@ export default function AiSaleAgent() {
             <i className="fas fa-refresh mr-2"></i>Refresh
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Calls Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -247,8 +319,8 @@ export default function AiSaleAgent() {
               <tr>
                 {[
                   "Call ID",
-                  "Hotel",
-                  "Customer Phone",
+                  "From",
+                  "To",
                   "Status",
                   "Duration",
                   "Time",
@@ -263,79 +335,99 @@ export default function AiSaleAgent() {
                 ))}
               </tr>
             </thead>
+
             <tbody className="bg-white divide-y divide-gray-200">
-              {calls.map((call, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {call[0].slice(0, 8)}...
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <i className="fas fa-hotel text-blue-600 mr-2"></i>
-                      <div className="text-sm font-medium text-gray-900">
-                        {call[1]}
+              {calls.map((call, idx) => {
+                const duration =
+                  call.start_time && call.end_time
+                    ? Math.round(
+                        (new Date(call.end_time) - new Date(call.start_time)) /
+                          1000
+                      )
+                    : null;
+
+                return (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                    {/* Call ID */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {call.call_sid.slice(0, 8)}...
+                    </td>
+
+                    {/* From */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm font-medium text-gray-900">
+                        <FaHotel className="text-blue-600 mr-2" />
+                        {call.call_from || "Unknown"}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {call[2] || "Unknown"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        call[3] === "completed"
-                          ? "bg-green-100 text-green-800"
-                          : call[3] === "active"
-                          ? "bg-blue-100 text-blue-800"
-                          : call[3] === "failed"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      <i
-                        className="fas fa-circle mr-1"
-                        style={{ fontSize: 8 }}
-                      ></i>
-                      {call[3]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {call[4] ? `${call[4]}s` : "-"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-500">{call[5]}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => setSelectedCall(dummyCall)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      <i className="fas fa-eye mr-1"></i>View Details
-                    </button>
-                    <button
-                      className="text-green-600 hover:text-green-900"
-                      onClick={() => playRecording(call[0])}
-                    >
-                      <i className="fas fa-play mr-1"></i>Play
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+
+                    {/* To */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {call.call_to || "Unknown"}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          call.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : call.status === "active"
+                            ? "bg-blue-100 text-blue-800"
+                            : call.status === "failed"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        <FaCircle className="mr-1" size={8} />
+                        {call.status}
+                      </span>
+                    </td>
+
+                    {/* Duration */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {duration ? `${duration}s` : "-"}
+                    </td>
+
+                    {/* Time */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(call.created_at).toLocaleString()}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => setSelectedCall(call)}
+                        className="text-blue-600 hover:text-blue-900 mr-4 flex items-center"
+                      >
+                        <FaEye className="mr-1" /> View Details
+                      </button>
+                      <button
+                        onClick={() => playRecording(call.recording_url)}
+                        className="text-green-600 hover:text-green-900 flex items-center"
+                      >
+                        <FaPlay className="mr-1" /> Play
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
 
           {selectedCall && (
             <CallDetails
-              callInfo={selectedCall.callInfo}
-              conversation={selectedCall.conversation}
+              call={selectedCall}
+              onClose={() => setSelectedCall(null)}
             />
           )}
+
+          {/* {selectedCall && (
+            <CallDetail
+              call={selectedCall.callInfo}
+              // conversation={selectedCall.conversation}
+            />
+          )} */}
         </div>
       </div>
 
@@ -378,7 +470,7 @@ export default function AiSaleAgent() {
 
       {/* Audio Modal */}
       {showAudioModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Call Recording</h3>
@@ -386,7 +478,8 @@ export default function AiSaleAgent() {
                 onClick={() => setShowAudioModal(false)}
                 className="text-gray-400 hover:text-gray-600"
               >
-                <i className="fas fa-times"></i>
+                {/* <i className="fas fa-times"></i> */}
+                <span className="font-bold text-black">X</span>
               </button>
             </div>
             <div className="space-y-4">

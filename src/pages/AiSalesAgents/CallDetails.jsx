@@ -1,13 +1,23 @@
 import React from "react";
 
-const CallDetails = ({ callInfo, conversation }) => {
+const CallDetails = ({ call, onClose }) => {
+  if (!call) return null;
+
+  console.log(call);
+
+  // Calculate duration if both start_time and end_time exist
+  const duration =
+    call.start_time && call.end_time
+      ? Math.round((new Date(call.end_time) - new Date(call.start_time)) / 1000)
+      : null;
+
   return (
-    <div className="fixed inset-0 bg-black/60 overflow-auto py-4">
-      <div className="max-w-6xl mx-auto px-4 py-8 bg-white rounded-md">
+    <div className="fixed inset-0 bg-black/60 overflow-auto py-4 z-50">
+      <div className="max-w-6xl mx-auto px-4 py-8 bg-white rounded-md shadow-lg">
         {/* Header with Back Button */}
         <div className="mb-6">
           <button
-            onClick={() => window.history.back()}
+            onClick={onClose}
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
             <i className="fas fa-arrow-left mr-2"></i>
@@ -20,7 +30,7 @@ const CallDetails = ({ callInfo, conversation }) => {
                   <i className="fas fa-phone-alt text-blue-600 mr-3"></i>
                   Call Details
                 </h1>
-                <p className="text-gray-600 mt-1">Call ID: {callInfo[0]}</p>
+                <p className="text-gray-600 mt-1">Call ID: {call.call_sid}</p>
               </div>
               <div className="flex items-center space-x-4">
                 <button
@@ -47,38 +57,40 @@ const CallDetails = ({ callInfo, conversation }) => {
             </h2>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Hotel:</span>
-                <span className="font-medium">{callInfo[1]}</span>
+                <span className="text-gray-600">From:</span>
+                <span className="font-medium">{call.call_from}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Customer Phone:</span>
-                <span className="font-medium">{callInfo[2] || "Unknown"}</span>
+                <span className="text-gray-600">To:</span>
+                <span className="font-medium">{call.call_to}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    callInfo[3] === "completed"
+                    call.status === "completed"
                       ? "bg-green-100 text-green-800"
-                      : callInfo[3] === "active"
+                      : call.status === "active"
                       ? "bg-blue-100 text-blue-800"
-                      : callInfo[3] === "failed"
+                      : call.status === "failed"
                       ? "bg-red-100 text-red-800"
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {callInfo[3]}
+                  {call.status}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Duration:</span>
                 <span className="font-medium">
-                  {callInfo[4] ? `${callInfo[4]} seconds` : "-"}
+                  {duration ? `${duration} seconds` : "-"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Started:</span>
-                <span className="font-medium">{callInfo[5]}</span>
+                <span className="text-gray-600">Created:</span>
+                <span className="font-medium">
+                  {new Date(call.created_at).toLocaleString()}
+                </span>
               </div>
             </div>
           </div>
@@ -92,29 +104,24 @@ const CallDetails = ({ callInfo, conversation }) => {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Total Messages:</span>
-                <span className="font-medium">{conversation.length}</span>
+                <span className="font-medium">{call.transcript.length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Customer Messages:</span>
                 <span className="font-medium">
-                  {conversation.filter((c) => c[0] === "Customer").length}
+                  {call.transcript.filter((t) => t.speaker === "Customer")
+                    .length || 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">AI Responses:</span>
                 <span className="font-medium">
-                  {conversation.filter((c) => c[0] === "AI").length}
+                  {call.transcript.filter((t) => t.speaker === "AI").length}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Avg Response Time:</span>
                 <span className="font-medium">~2.3s</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Booking Intent:</span>
-                <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                  Detected
-                </span>
               </div>
             </div>
           </div>
@@ -135,9 +142,6 @@ const CallDetails = ({ callInfo, conversation }) => {
               <button className="w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors flex items-center justify-center">
                 <i className="fas fa-file-alt mr-2"></i>Export Transcript
               </button>
-              <button className="w-full bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors flex items-center justify-center">
-                <i className="fas fa-user-plus mr-2"></i>Follow Up
-              </button>
             </div>
           </div>
         </div>
@@ -152,22 +156,22 @@ const CallDetails = ({ callInfo, conversation }) => {
           </div>
           <div className="p-6">
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {conversation.map(([speaker, message, timestamp], idx) => (
+              {call.transcript.map((t, idx) => (
                 <div
                   key={idx}
                   className={`flex ${
-                    speaker === "AI" ? "justify-start" : "justify-end"
+                    t.speaker === "AI" ? "justify-start" : "justify-end"
                   }`}
                 >
                   <div
                     className={`max-w-xs lg:max-w-md ${
-                      speaker === "AI"
+                      t.speaker === "AI"
                         ? "bg-blue-100 text-blue-900"
                         : "bg-gray-100 text-gray-900"
                     } rounded-lg px-4 py-2`}
                   >
                     <div className="flex items-center mb-1">
-                      {speaker === "AI" ? (
+                      {t.speaker === "AI" ? (
                         <>
                           <i className="fas fa-robot mr-2 text-blue-600"></i>
                           <span className="text-xs font-semibold text-blue-600">
@@ -183,10 +187,10 @@ const CallDetails = ({ callInfo, conversation }) => {
                         </>
                       )}
                       <span className="text-xs text-gray-500 ml-auto">
-                        {timestamp}
+                        {new Date(t.timestamp).toLocaleTimeString()}
                       </span>
                     </div>
-                    <p className="text-sm">{message}</p>
+                    <p className="text-sm">{t.text}</p>
                   </div>
                 </div>
               ))}
