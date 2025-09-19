@@ -927,7 +927,7 @@ const Leads = () => {
                         {formatPhoneNumber(enquery?.Contact)}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery?.Email}
+                        {enquery?.Email === "undefined" ? "-" : enquery?.Email}
                       </td>
 
                       {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
