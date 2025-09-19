@@ -38,93 +38,7 @@ export default function AiSaleAgent() {
   const audioPlayerRef = useRef(null);
 
   // Simulated call data
-  const [calls, setCalls] = useState([
-    {
-      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-      call_sid: "CAbac97eb2bb77ff2497b77251dcf51295",
-      call_from: "‪+18454421865‬",
-      call_to: "‪+919528295631‬",
-      guest_name: "",
-      status: "initiated",
-      start_time: null,
-      end_time: null,
-      transcript: [
-        {
-          speaker: "AI",
-          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
-          timestamp: "2025-09-17T11:41:33.553000",
-        },
-        {
-          speaker: "Customer",
-          text: "I want to book a room.",
-          timestamp: "2025-09-17T11:41:52.086000",
-        },
-        {
-          speaker: "AI",
-          text: "I apologize, but I'm having technical difficulties. Please call back in a moment or speak with our front desk at Test multi.",
-          timestamp: "2025-09-17T11:41:52.658000",
-        },
-        {
-          speaker: "AI",
-          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
-          timestamp: "2025-09-17T11:41:33.553000",
-        },
-        {
-          speaker: "Customer",
-          text: "I want to book a room.",
-          timestamp: "2025-09-17T11:41:52.086000",
-        },
-        {
-          speaker: "AI",
-          text: "I apologize, but I'm having technical difficulties. Please call back in a moment or speak with our front desk at Test multi.",
-          timestamp: "2025-09-17T11:41:52.658000",
-        },
-      ],
-      recording_url: null,
-      created_at: "2025-09-17T11:11:05.942000",
-      updated_at: "2025-09-17T11:11:06.280000",
-    },
-    {
-      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-      call_sid: "CAf9c5e5b82a3e80a59e15ad814e334fea",
-      call_from: "‪+18454421865‬",
-      call_to: "‪+919528295631‬",
-      guest_name: "",
-      status: "initiated",
-      start_time: null,
-      end_time: null,
-      transcript: [
-        {
-          speaker: "AI",
-          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
-          timestamp: "2025-09-17T11:28:08.388000",
-        },
-      ],
-      recording_url: null,
-      created_at: "2025-09-17T11:28:08.129000",
-      updated_at: "2025-09-17T11:28:08.388000",
-    },
-    {
-      ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-      call_sid: "CA2c586f0e263e51934bdcae5ab9c70609",
-      call_from: "‪+18454421865‬",
-      call_to: "‪+919528295631‬",
-      guest_name: "",
-      status: "initiated",
-      start_time: null,
-      end_time: null,
-      transcript: [
-        {
-          speaker: "AI",
-          text: "Hello! Thank you for calling Test multi. I'm your AI assistant and I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today?",
-          timestamp: "2025-09-17T11:37:15.476000",
-        },
-      ],
-      recording_url: null,
-      created_at: "2025-09-17T11:37:15.166000",
-      updated_at: "2025-09-17T11:37:15.476000",
-    },
-  ]);
+  const [calls, setCalls] = useState([]);
 
   useEffect(() => {
     loadStats();
@@ -197,10 +111,13 @@ export default function AiSaleAgent() {
 
   const getAiSalesAgentApiCall = async () => {
     const formBody = {
-      limit: 10,
+      skip:0,
+      limit: 100,
+
     };
     const response = await getAiSalesAgentCall(formBody);
-    console.log(response);
+    setCalls(response)
+    // console.log(response);
   };
 
   useEffect(() => {
@@ -318,9 +235,9 @@ export default function AiSaleAgent() {
             <thead className="bg-gray-50">
               <tr>
                 {[
-                  "Call ID",
-                  "From",
-                  "To",
+                  // "Call ID",
+                  "Hotel Number",
+                  "Guest Number",
                   "Status",
                   "Duration",
                   "Time",
@@ -337,7 +254,7 @@ export default function AiSaleAgent() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {calls.map((call, idx) => {
+              {calls?.map((call, idx) => {
                 const duration =
                   call.start_time && call.end_time
                     ? Math.round(
@@ -349,9 +266,9 @@ export default function AiSaleAgent() {
                 return (
                   <tr key={idx} className="hover:bg-gray-50 transition-colors">
                     {/* Call ID */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {call.call_sid.slice(0, 8)}...
-                    </td>
+                    </td> */}
 
                     {/* From */}
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -369,7 +286,7 @@ export default function AiSaleAgent() {
                     {/* Status */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
                           call.status === "completed"
                             ? "bg-green-100 text-green-800"
                             : call.status === "active"
@@ -386,7 +303,9 @@ export default function AiSaleAgent() {
 
                     {/* Duration */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {duration ? `${duration}s` : "-"}
+                      {typeof call?.duration === "number"
+                        ? `${Math.floor(call.duration / 60)} min ${call.duration % 60} sec`
+                        : "-"}
                     </td>
 
                     {/* Time */}
@@ -432,7 +351,7 @@ export default function AiSaleAgent() {
       </div>
 
       {/* Activity Feed */}
-      <div className="mt-8 bg-white rounded-lg shadow-md">
+      {/* <div className="mt-8 bg-white rounded-lg shadow-md">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
             Live Activity Feed
@@ -466,7 +385,7 @@ export default function AiSaleAgent() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Audio Modal */}
       {showAudioModal && (

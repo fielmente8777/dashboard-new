@@ -1,13 +1,14 @@
-import { BASE_URL } from "../../data/constant";
+import { NEW_BASE_URL } from "../../data/constant";
 
 // hanlde api for getting all applicants
 export const getAiSalesAgentCall = async (body) => {
+  console.log(body)
   const token = localStorage.getItem("token");
   try {
     const params = new URLSearchParams();
-    if (body.limit) params.append("limit", "1");
+    // if (body.limit) params.append("limit", "1");
     const response = await fetch(
-      `${BASE_URL}/api/v1/calls?${params.toString()}`,
+      `${NEW_BASE_URL}/api/v1/calls?skip=${body.skip}&limit=${body.limit}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
@@ -17,7 +18,9 @@ export const getAiSalesAgentCall = async (body) => {
       }
     );
     const result = await response.json();
-    return result?.Data;
+    console.log(result.data)
+    return result?.data;
+  
   } catch (error) {
     console.error("Error getting applicants:", error);
     throw error;
