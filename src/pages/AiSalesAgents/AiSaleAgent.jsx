@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaCircle, FaEye, FaHotel, FaPlay } from "react-icons/fa";
 import CallDetails from "./CallDetails";
 import { getAiSalesAgentCall } from "../../services/api/AiSales.api";
+import { NEW_BASE_URL } from "../../data/constant";
 
 export default function AiSaleAgent() {
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -50,10 +51,19 @@ export default function AiSaleAgent() {
   }, [calls]);
 
   const loadStats = () => {
-    const completed = calls?.filter((c) => c[3] === "completed").length;
+    // const completed = calls?.filter((c) => c[3] === "completed").length;
+    const completed = calls?.filter((c) => c.status === "completed").length;
+
     const active = calls?.filter((c) => c[3] === "active").length;
     setCompletedCalls(completed);
     setActiveCalls(active);
+
+    const averageDuration =
+      calls.reduce((acc, call) => acc + (call.duration || 0), 0) / calls.length;
+
+    if (averageDuration) {
+      setAvgDuration(averageDuration);
+    }
 
     const completedWithDuration = calls.filter(
       (c) => c[3] === "completed" && c[4]
@@ -66,7 +76,8 @@ export default function AiSaleAgent() {
       const avgSeconds = Math.round(
         totalDuration / completedWithDuration.length
       );
-      setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
+      // setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
+      setAvgDuration(averageDuration);
     }
 
     const totalCalls = calls?.length;
@@ -98,9 +109,11 @@ export default function AiSaleAgent() {
   };
 
   const playRecording = (callSid) => {
-    setCurrentRecordingUrl(`/api/recording/${callSid}`);
+    setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/play/${callSid}`);
     setShowAudioModal(true);
   };
+
+  console.log(currentRecordingUrl);
 
   const downloadRecording = () => {
     const link = document.createElement("a");
@@ -323,7 +336,9 @@ export default function AiSaleAgent() {
                         <FaEye className="mr-1" /> View Details
                       </button>
                       <button
-                        onClick={() => playRecording(call.recording_url)}
+                        onClick={() =>
+                          playRecording(call?.call_record_data?.recording_sid)
+                        }
                         className="text-green-600 hover:text-green-900 flex items-center"
                       >
                         <FaPlay className="mr-1" /> Play
@@ -403,10 +418,15 @@ export default function AiSaleAgent() {
               </button>
             </div>
             <div className="space-y-4">
-              <audio controls className="w-full" ref={audioPlayerRef}>
+              {/* <audio controls className="w-full" ref={audioPlayerRef}>
                 <source src={currentRecordingUrl} type="audio/mpeg" />
                 Your browser does not support the audio element.
+              </audio> */}
+
+              <audio controls>
+                <source src={currentRecordingUrl} type="audio/mpeg" />
               </audio>
+
               <div className="flex justify-end">
                 <button
                   onClick={downloadRecording}
