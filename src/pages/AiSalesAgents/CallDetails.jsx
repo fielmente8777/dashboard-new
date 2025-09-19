@@ -12,25 +12,23 @@ const CallDetails = ({ call, onClose }) => {
       : null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 overflow-auto py-4 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-8 bg-white rounded-md shadow-lg">
+    <div className="absolute left-0 top-0 w-full flex justify-center items-center h-screen bg-black/60 overflow-auto z-[99999]">
+      <div className="max-w-6xl mx-auto h-[70vh] px-4 bg-white rounded-md shadow-lg">
         {/* Header with Back Button */}
-        <div className="mb-6">
+        <div className="">
           <button
             onClick={onClose}
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
+            className="inline-flex items-center text-primary hover:text-blue-800 py-3"
           >
-            <i className="fas fa-arrow-left mr-2"></i>
-            Back to Dashboard
+            Back
           </button>
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg border p-3">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  <i className="fas fa-phone-alt text-blue-600 mr-3"></i>
+                <h1 className="text-lg font-semibold text-gray-900">
                   Call Details
                 </h1>
-                <p className="text-gray-600 mt-1">Call ID: {call.call_sid}</p>
+                <p className="text-gray-600 text-sm mt-1">Call ID: {call.call_sid}</p>
               </div>
               <div className="flex items-center space-x-4">
                 <button
@@ -46,13 +44,14 @@ const CallDetails = ({ call, onClose }) => {
             </div>
           </div>
         </div>
+      <div className="w-full flex justify-between gap-3 mt-2">
 
         {/* Call Information Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="w-[60%] grid grid-cols-1 lg:grid-cols-2 gap-3">
           {/* Basic Info */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <i className="fas fa-info-circle text-blue-600 mr-2"></i>
+          <div className="bg-white rounded-lg border p-3">
+            <h2 className="text-md font-semibold text-gray-900 mb-4 flex">
+              <i className="fas fa-info-circle text-blue-600"></i>
               Call Information
             </h2>
             <div className="space-y-3">
@@ -96,9 +95,9 @@ const CallDetails = ({ call, onClose }) => {
           </div>
 
           {/* Call Analytics */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <i className="fas fa-chart-line text-green-600 mr-2"></i>
+          <div className="bg-white rounded-lg border p-3">
+            <h2 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+              <i className="fas fa-chart-line text-green-600"></i>
               Call Analytics
             </h2>
             <div className="space-y-3">
@@ -127,9 +126,9 @@ const CallDetails = ({ call, onClose }) => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <i className="fas fa-bolt text-yellow-600 mr-2"></i>
+          <div className="bg-white rounded-lg border p-3">
+            <h2 className="text-md font-semibold text-gray-900 mb-4 flex items-center">
+              <i className="fas fa-bolt text-yellow-600"></i>
               Quick Actions
             </h2>
             <div className="space-y-3">
@@ -147,15 +146,15 @@ const CallDetails = ({ call, onClose }) => {
         </div>
 
         {/* Conversation Transcript */}
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-              <i className="fas fa-comments text-blue-600 mr-3"></i>
+        <div className="bg-white w-[40%] rounded-lg border h-full">
+          <div className="border-b border-gray-200 p-3">
+            <h2 className="text-md font-semibold text-gray-900 flex items-center">
+              <i className="fas fa-comments text-blue-600"></i>
               Conversation Transcript
             </h2>
           </div>
-          <div className="p-6">
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="p-3 h-full">
+            <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-hidden">
               {call.transcript.map((t, idx) => (
                 <div
                   key={idx}
@@ -197,6 +196,7 @@ const CallDetails = ({ call, onClose }) => {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

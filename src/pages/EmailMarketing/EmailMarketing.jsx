@@ -118,8 +118,8 @@ const EmailMarketingManagement = () => {
   };
 
   return (
-    <div className="p-6 shadow-lg rounded-2xl mx-auto mt-10 bg-white">
-      <h2 className="text-xl font-semibold mb-4">📧 Email Marketing</h2>
+    <div className="p-4 mx-auto bg-white">
+      <h2 className="text-lg font-semibold mb-4">📧 Email Marketing</h2>
 
       {/* Email List */}
       <div className="border rounded-lg p-4 mb-4">
@@ -215,7 +215,7 @@ const EmailMarketingManagement = () => {
 
       {/* Edit Modal */}
       {isEditing && editTemplate && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-[99999]">
           <div className="bg-white p-6 rounded-xl shadow-lg max-w-3xl w-full">
             <h3 className="text-lg font-semibold mb-4">
               Edit Template – {editTemplate.title}
@@ -274,7 +274,7 @@ const EmailMarketingManagement = () => {
 
       {/* Create Template Modal */}
       {isCreating && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 bg-opacity-40 z-[99999]">
           <div className="bg-white p-6 rounded-xl shadow-lg max-w-3xl w-full">
             <h3 className="text-lg font-semibold mb-4">Create New Template</h3>
 

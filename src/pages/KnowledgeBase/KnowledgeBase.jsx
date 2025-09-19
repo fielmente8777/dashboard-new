@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import axios from "axios";
 import KnowledgeBaseForm from "./KnowledgeBaseForm";
-
+import { JsonEditor } from 'json-edit-react'
 const KnowledgeBase = () => {
   const [jsondata, setJsonData] = useState(null);
   const [url, setUrl] = useState("");

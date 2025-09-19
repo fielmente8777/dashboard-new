@@ -3,6 +3,8 @@ import { FaCircle, FaEye, FaHotel, FaPlay } from "react-icons/fa";
 import CallDetails from "./CallDetails";
 import { getAiSalesAgentCall } from "../../services/api/AiSales.api";
 import { MdClose, MdRefresh } from "react-icons/md";
+import { NEW_BASE_URL } from "../../data/constant";
+
 export default function AiSaleAgent() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -51,10 +53,20 @@ export default function AiSaleAgent() {
   }, [calls]);
 
   const loadStats = () => {
-    const completed = calls?.filter((c) => c[3] === "completed").length;
+    // const completed = calls?.filter((c) => c[3] === "completed").length;
+    const completed = calls?.filter((c) => c.status === "completed").length;
+
     const active = calls?.filter((c) => c[3] === "active").length;
     setCompletedCalls(completed);
     setActiveCalls(active);
+
+    const averageDuration =
+      calls.reduce((acc, call) => acc + (call.duration || 0), 0) / calls.length;
+
+    if (averageDuration) {
+
+      setAvgDuration(averageDuration/60);
+    }
 
     const completedWithDuration = calls.filter(
       (c) => c[3] === "completed" && c[4]
@@ -67,7 +79,8 @@ export default function AiSaleAgent() {
       const avgSeconds = Math.round(
         totalDuration / completedWithDuration.length
       );
-      setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
+      // setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
+      setAvgDuration(averageDuration);
     }
 
     const totalCalls = calls?.length;
@@ -99,9 +112,11 @@ export default function AiSaleAgent() {
   };
 
   const playRecording = (callSid) => {
-    setCurrentRecordingUrl(`/api/recording/${callSid}`);
+    setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/play/${callSid}`);
     setShowAudioModal(true);
   };
+
+  console.log(currentRecordingUrl);
 
   const downloadRecording = () => {
     const link = document.createElement("a");
@@ -133,14 +148,13 @@ export default function AiSaleAgent() {
   }, []);
 
   return (
-    <div className="p-2">
+    <div className="">
       {/* Header */}
-      <div className="mb-8">
-        <div className="bg-white  py-6 px-4">
+      <div className="mb-4">
+        <div className="bg-white py-6 px-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-lg font-semibold text-gray-900">
-                <i className="fas fa-phone-alt text-blue-600"></i>
                 Hotel AI Voice Agent Dashboard
               </h1>
               <p className="text-gray-600 mt-2">
@@ -156,7 +170,7 @@ export default function AiSaleAgent() {
                 <div className="text-sm text-gray-500">Total Calls</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-primary">
                   {activeCalls}
                 </div>
                 <div className="text-sm text-gray-500">Active Now</div>
@@ -167,7 +181,7 @@ export default function AiSaleAgent() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-4 px-4">
         <StatCard
           icon="fa-phone"
           title="Completed Calls"
@@ -235,8 +249,8 @@ export default function AiSaleAgent() {
       </div> */}
 
       {/* Calls Table */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 flex justify-between items-center py-4 border-b border-gray-200 b">
+      <div className="overflow-hidden px-4">
+        <div className="px-6 bg-white  flex justify-between items-center py-4 border-b border-gray-200 b">
           <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
           <div
             onClick={() => getAiSalesAgentApiCall()}
@@ -291,7 +305,7 @@ export default function AiSaleAgent() {
                     {/* From */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm font-medium text-gray-900">
-                        <FaHotel className="text-blue-600 mr-2" />
+                        <FaHotel className="text-primary mr-2" />
                         {call.call_from || "Unknown"}
                       </div>
                     </td>
@@ -342,7 +356,9 @@ export default function AiSaleAgent() {
                         <FaEye className="mr-1" /> View Details
                       </button>
                       <button
-                        onClick={() => playRecording(call.recording_url)}
+                        onClick={() =>
+                          playRecording(call?.call_record_data?.recording_sid)
+                        }
                         className="text-green-600 hover:text-green-900 flex items-center"
                       >
                         <FaPlay className="mr-1" /> Play
@@ -354,12 +370,10 @@ export default function AiSaleAgent() {
 
               :
               [1,2,3,4,5,6,7,8].map((item)=>(
-                <td key={item} className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm h-5 bg-red-900 font-medium text-gray-900">
-                        {/* <FaHotel className="text-blue-600 mr-2" />
-                        {call.call_from || "Unknown"} */}
-                      </div>
-                    </td>
+                <tr key={item}>
+                  <td  className="px-6 py-4 whitespace-nowrap"></td>
+
+                </tr>
               ))
             
             }
@@ -421,7 +435,7 @@ export default function AiSaleAgent() {
 
       {/* Audio Modal */}
       {showAudioModal && (
-        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-[99999]">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Call Recording</h3>
@@ -434,10 +448,15 @@ export default function AiSaleAgent() {
               </button>
             </div>
             <div className="space-y-4">
-              <audio controls className="w-full" ref={audioPlayerRef}>
+              {/* <audio controls className="w-full" ref={audioPlayerRef}>
                 <source src={currentRecordingUrl} type="audio/mpeg" />
                 Your browser does not support the audio element.
+              </audio> */}
+
+              <audio controls>
+                <source src={currentRecordingUrl} type="audio/mpeg" />
               </audio>
+
               <div className="flex justify-end">
                 <button
                   onClick={downloadRecording}
@@ -456,15 +475,16 @@ export default function AiSaleAgent() {
 
 // Reusable Stat Card
 function StatCard({ icon, title, value, color }) {
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <div className="bg-white p-6 rounded-lg">
       <div className="flex items-center">
         <div className={`p-3 bg-${color}-100 rounded-full`}>
           <i className={`fas ${icon} text-${color}-600`}></i>
         </div>
         <div className="ml-4">
           <h3 className="text-md font-semibold text-gray-900">{title}</h3>
-          <p className={`text-2xl font-bold text-${color}-600`}>{value}</p>
+          <p className={`text-2xl font-bold text-${color}-600`}>{title==="Avg Duration"?`${value} sec`: value}</p>
         </div>
       </div>
     </div>
