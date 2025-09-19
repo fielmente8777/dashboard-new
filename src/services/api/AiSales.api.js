@@ -2,7 +2,6 @@ import { NEW_BASE_URL } from "../../data/constant";
 
 // hanlde api for getting all applicants
 export const getAiSalesAgentCall = async (body) => {
-  console.log(body)
   const token = localStorage.getItem("token");
   try {
     const params = new URLSearchParams();
@@ -18,9 +17,8 @@ export const getAiSalesAgentCall = async (body) => {
       }
     );
     const result = await response.json();
-    console.log(result.data)
+    console.log(result.data);
     return result?.data;
-  
   } catch (error) {
     console.error("Error getting applicants:", error);
     throw error;

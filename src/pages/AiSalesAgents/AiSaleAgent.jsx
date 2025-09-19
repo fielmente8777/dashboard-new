@@ -50,8 +50,8 @@ export default function AiSaleAgent() {
   }, [calls]);
 
   const loadStats = () => {
-    const completed = calls.filter((c) => c[3] === "completed").length;
-    const active = calls.filter((c) => c[3] === "active").length;
+    const completed = calls?.filter((c) => c[3] === "completed").length;
+    const active = calls?.filter((c) => c[3] === "active").length;
     setCompletedCalls(completed);
     setActiveCalls(active);
 
@@ -69,12 +69,12 @@ export default function AiSaleAgent() {
       setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
     }
 
-    const totalCalls = calls.length;
+    const totalCalls = calls?.length;
     if (totalCalls > 0) {
       setSuccessRate(`${Math.round((completed / totalCalls) * 100)}%`);
     }
 
-    setBookingCount(calls.filter((c) => c[4] && c[4] > 120).length);
+    setBookingCount(calls?.filter((c) => c[4] && c[4] > 120).length);
   };
 
   const updateActivityFeed = () => {
@@ -111,12 +111,11 @@ export default function AiSaleAgent() {
 
   const getAiSalesAgentApiCall = async () => {
     const formBody = {
-      skip:0,
+      skip: 0,
       limit: 100,
-
     };
     const response = await getAiSalesAgentCall(formBody);
-    setCalls(response)
+    setCalls(response);
     // console.log(response);
   };
 
@@ -142,7 +141,7 @@ export default function AiSaleAgent() {
             <div className="flex items-center space-x-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {calls.length}
+                  {calls?.length}
                 </div>
                 <div className="text-sm text-gray-500">Total Calls</div>
               </div>
@@ -304,7 +303,9 @@ export default function AiSaleAgent() {
                     {/* Duration */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {typeof call?.duration === "number"
-                        ? `${Math.floor(call.duration / 60)} min ${call.duration % 60} sec`
+                        ? `${Math.floor(call.duration / 60)} min ${
+                            call.duration % 60
+                          } sec`
                         : "-"}
                     </td>
 
