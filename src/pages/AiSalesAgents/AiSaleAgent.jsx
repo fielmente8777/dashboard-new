@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { FaCircle, FaEye, FaHotel, FaPlay } from "react-icons/fa";
 import CallDetails from "./CallDetails";
 import { getAiSalesAgentCall } from "../../services/api/AiSales.api";
-
+import { MdClose, MdRefresh } from "react-icons/md";
 export default function AiSaleAgent() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -34,6 +34,7 @@ export default function AiSaleAgent() {
     },
   ]);
   const [selectedCall, setSelectedCall] = useState(null);
+  const [loading,setLoading]=useState(true)
 
   const audioPlayerRef = useRef(null);
 
@@ -110,13 +111,21 @@ export default function AiSaleAgent() {
   };
 
   const getAiSalesAgentApiCall = async () => {
-    const formBody = {
-      skip: 0,
-      limit: 100,
-    };
-    const response = await getAiSalesAgentCall(formBody);
-    setCalls(response);
-    // console.log(response);
+    setLoading(true)
+    try {
+      const formBody = {
+          skip: 0,
+          limit: 100,
+       };
+      const response = await getAiSalesAgentCall(formBody);
+      setCalls(response);
+      console.log("Record data",response?.call_record_data);
+    } catch (error) {
+      console.error("Error fetching call")
+    } finally{
+      setLoading(false)
+    }
+    
   };
 
   useEffect(() => {
@@ -139,6 +148,7 @@ export default function AiSaleAgent() {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+             
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {calls?.length}
@@ -226,9 +236,18 @@ export default function AiSaleAgent() {
 
       {/* Calls Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 flex justify-between items-center py-4 border-b border-gray-200 b">
           <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
+          <div
+            onClick={() => getAiSalesAgentApiCall()}
+            className={`flex justify-end items-center font-medium rounded-md gap-1 py-1 border text-[#575757] px-3 cursor-pointer ${
+              loading ? "animate-spin" : ""
+            } `}
+          >
+             <MdRefresh size={18} />Refresh
+          </div>
         </div>
+         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -253,7 +272,7 @@ export default function AiSaleAgent() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {calls?.map((call, idx) => {
+              {!loading? calls?.map((call, idx) => {
                 const duration =
                   call.start_time && call.end_time
                     ? Math.round(
@@ -331,7 +350,19 @@ export default function AiSaleAgent() {
                     </td>
                   </tr>
                 );
-              })}
+              })
+
+              :
+              [1,2,3,4,5,6,7,8].map((item)=>(
+                <td key={item} className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center text-sm h-5 bg-red-900 font-medium text-gray-900">
+                        {/* <FaHotel className="text-blue-600 mr-2" />
+                        {call.call_from || "Unknown"} */}
+                      </div>
+                    </td>
+              ))
+            
+            }
             </tbody>
           </table>
 
