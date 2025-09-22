@@ -190,8 +190,7 @@ const LeadPopup = ({
     ],
     call_record_data: {
       recording_sid: "RE9c1e23d54999aa0ef106d2d5999dc903",
-      recording_url:
-        "https://api.twilio.com/2010-04-01/Accounts/ACdba9654d134ccab055611b8f22ced780/Recordings/RE9c1e23d54999aa0ef106d2d5999dc903",
+      recording_url: "",
       recording_status: "completed",
       recording_duration: "53",
       recording_updated_at: "2025-09-22T10:48:43.404788",
