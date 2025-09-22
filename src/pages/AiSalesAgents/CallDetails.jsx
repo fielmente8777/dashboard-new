@@ -19,16 +19,16 @@ const CallDetails = ({ call, onClose }) => {
   if (!call) return null;
 
   return (
-    <div className="absolute left-0 top-0 w-full flex justify-center items-center h-screen bg-black/60 overflow-auto z-[99999]">
-      <div className="max-w-6xl mx-auto min-h-[70vh] px-4 bg-white rounded-md shadow-lg">
+    <div className="w-full flex justify-center items-center">
+      <div className="max-w-6xl mx-auto px-4 bg-white rounded-md shadow-lg">
         {/* Header with Back Button */}
         <div className="">
-          <button
+          {/* <button
             onClick={onClose}
             className="inline-flex items-center text-primary hover:text-blue-800 py-3"
           >
             Back
-          </button>
+          </button> */}
           <div className="bg-white rounded-lg border p-3">
             <div className="flex items-center justify-between">
               <div>
