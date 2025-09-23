@@ -1,21 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import axios from "axios";
 import KnowledgeBaseForm from "./KnowledgeBaseForm";
-import { JsonEditor } from 'json-edit-react'
+import { JsonEditor } from "json-edit-react";
 const KnowledgeBase = () => {
   const [jsondata, setJsonData] = useState(null);
   const [url, setUrl] = useState("");
   const [activeTab, setActiveTab] = useState("url"); // "url" or "manual"
   const [loading, setLoading] = useState(false);
+  const [kbLoading, setKbLoading] = useState(false);
 
   const fetchData = async (link) => {
     setLoading(true);
     try {
       const { data } = await axios.post(
-        "http://127.0.0.1:5000/leadeazbot/create-knowledge-base",
+        `http://127.0.0.1:8000/api/v1/knowledgebase/create`,
         {
-          urls: [link],
+          url: link,
         },
         {
           headers: {
@@ -25,7 +26,7 @@ const KnowledgeBase = () => {
         }
       );
       console.log("API response", data);
-      setJsonData(data?.Data?.[0]);
+      setJsonData(data?.data?.knowledge_base);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -64,6 +65,30 @@ const KnowledgeBase = () => {
       setLoading(false);
     }
   };
+
+  const fetchKnowledgeBaseData = async () => {
+    setKbLoading(true);
+    try {
+      const { data } = await axios.get(
+        "http://127.0.0.1:8000/api/v1/knowledgebase",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setJsonData(data?.data?.knowledge_base);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setKbLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchKnowledgeBaseData();
+  }, []);
 
   return (
     <div className="p-4 space-y-6">
@@ -123,7 +148,20 @@ const KnowledgeBase = () => {
       )}
 
       {/* JSON Viewer */}
-      {jsondata && (
+      {/* {!jsondata && (
+        <div className="border rounded-md p-4">
+          <h2 className="text-lg font-semibold mb-3">Data Preview</h2>
+          <p>No data available.</p>
+        </div>
+      )} */}
+      {kbLoading ? (
+        <div>Loading...</div>
+      ) : !jsondata ? (
+        <div className="border rounded-md p-4">
+          <h2 className="text-lg font-semibold mb-3">Data Preview</h2>
+          <p>No data available.</p>
+        </div>
+      ) : (
         <div className="border rounded-md p-4">
           <h2 className="text-lg font-semibold mb-3">Data Preview</h2>
           <JsonEditor data={jsondata} />
