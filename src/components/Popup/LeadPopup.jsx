@@ -17,7 +17,7 @@ import CallDetails from "../../pages/AiSalesAgents/CallDetails";
 
 const Tabs = ["All Details", "Call Details"];
 
-const formatPhoneNumber = (phone) => {
+export const formatPhoneNumber = (phone) => {
   let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
 
   if (cleaned.length === 10) {
