@@ -189,7 +189,7 @@ const LeadPopup = ({
       },
     ],
     call_record_data: {
-      recording_sid: "RE9c1e23d54999aa0ef106d2d5999dc903",
+      recording_sid: "",
       recording_url: "",
       recording_status: "completed",
       recording_duration: "53",
