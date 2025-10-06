@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { Arrow } from "../../icons/icon";
@@ -14,6 +14,7 @@ import QuickResponsePopup from "./QuickResponsePopup";
 import { useState } from "react";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import CallDetails from "../../pages/AiSalesAgents/CallDetails";
+import { NEW_BASE_URL } from "../../data/constant";
 
 const Tabs = ["All Details", "Call Details"];
 
@@ -37,14 +38,13 @@ const LeadPopup = ({
 }) => {
   console.log(lead);
   const [quickResponePopup, setQuickResponePopup] = useState(false);
-
+  const [callDetails, setCallDetails] = useState(null);
+  const [callDetailsLoading, setCallDetailsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabChange = (index) => {
     setActiveTab(index);
   };
-
-  if (!lead) return null;
 
   // console.log(lead)
   const handleDelete = async (id, email) => {
@@ -142,64 +142,91 @@ const LeadPopup = ({
     }
   };
 
-  const callDetails = {
-    ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-    call_sid: "CA49997f6b9640e8a706d807d5c6d79e40",
-    call_from: "+18454421865",
-    call_to: "+919528295631",
-    guest_name: "Abhijeet",
-    status: "completed",
-    start_time: "2025-09-22T10:48:39.008000",
-    end_time: null,
-    transcript: [
-      {
-        speaker: "AI",
-        text: "Hello Abhijeet ! Thank you for calling Test multi. We have recieved you query for room booking from 27-09-2025 to 29-09-2025.I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today? Do you want to confirm you reservation",
-        timestamp: "2025-09-22T10:47:54.881000",
-      },
-      {
-        speaker: "Customer",
-        text: "yes, I want to confirm",
-        timestamp: "2025-09-22T10:48:21.727000",
-      },
-      {
-        speaker: "AI",
-        text: "Hello Thanks you for calling me",
-        timestamp: "2025-09-22T10:48:21.872000",
-      },
-      {
-        speaker: "Customer",
-        text: "Hello, how are you?",
-        timestamp: "2025-09-22T10:48:28.296000",
-      },
-      {
-        speaker: "AI",
-        text: "Hello Thanks you for calling me",
-        timestamp: "2025-09-22T10:48:28.428000",
-      },
-      {
-        speaker: "Customer",
-        text: "Can you please reply on McCreery?",
-        timestamp: "2025-09-22T10:48:34.806000",
-      },
-      {
-        speaker: "AI",
-        text: "Hello Thanks you for calling me",
-        timestamp: "2025-09-22T10:48:34.936000",
-      },
-    ],
-    call_record_data: {
-      recording_sid: "",
-      recording_url: "",
-      recording_status: "completed",
-      recording_duration: "53",
-      recording_updated_at: "2025-09-22T10:48:43.404788",
-    },
-    duration: 53,
-    created_at: "2025-09-22T10:47:54.755000",
-    updated_at: "2025-09-22T10:48:43.477000",
+  // const callDetails = {
+  //   ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+  //   call_sid: "CA49997f6b9640e8a706d807d5c6d79e40",
+  //   call_from: "+18454421865",
+  //   call_to: "+919528295631",
+  //   guest_name: "Abhijeet",
+  //   status: "completed",
+  //   start_time: "2025-09-22T10:48:39.008000",
+  //   end_time: null,
+  //   transcript: [
+  //     {
+  //       speaker: "AI",
+  //       text: "Hello Abhijeet ! Thank you for calling Test multi. We have recieved you query for room booking from 27-09-2025 to 29-09-2025.I'm here to help you with reservations and answer any questions about our hotel. How can I assist you today? Do you want to confirm you reservation",
+  //       timestamp: "2025-09-22T10:47:54.881000",
+  //     },
+  //     {
+  //       speaker: "Customer",
+  //       text: "yes, I want to confirm",
+  //       timestamp: "2025-09-22T10:48:21.727000",
+  //     },
+  //     {
+  //       speaker: "AI",
+  //       text: "Hello Thanks you for calling me",
+  //       timestamp: "2025-09-22T10:48:21.872000",
+  //     },
+  //     {
+  //       speaker: "Customer",
+  //       text: "Hello, how are you?",
+  //       timestamp: "2025-09-22T10:48:28.296000",
+  //     },
+  //     {
+  //       speaker: "AI",
+  //       text: "Hello Thanks you for calling me",
+  //       timestamp: "2025-09-22T10:48:28.428000",
+  //     },
+  //     {
+  //       speaker: "Customer",
+  //       text: "Can you please reply on McCreery?",
+  //       timestamp: "2025-09-22T10:48:34.806000",
+  //     },
+  //     {
+  //       speaker: "AI",
+  //       text: "Hello Thanks you for calling me",
+  //       timestamp: "2025-09-22T10:48:34.936000",
+  //     },
+  //   ],
+  //   call_record_data: {
+  //     recording_sid: "",
+  //     recording_url: "",
+  //     recording_status: "completed",
+  //     recording_duration: "53",
+  //     recording_updated_at: "2025-09-22T10:48:43.404788",
+  //   },
+  //   duration: 53,
+  //   created_at: "2025-09-22T10:47:54.755000",
+  //   updated_at: "2025-09-22T10:48:43.477000",
+  // };
+
+  const fetchCallData = async () => {
+    setCallDetailsLoading(true);
+    try {
+      const response = await axios.get(
+        `${NEW_BASE_URL}/api/v1/call/${lead?.guest_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const result = await response.data;
+      setCallDetails(result?.data);
+      setCallDetailsLoading(false);
+    } catch (error) {
+      console.log(error);
+      setCallDetailsLoading(false);
+    }
   };
 
+  useEffect(() => {
+    if (lead) {
+      fetchCallData();
+    }
+  }, [lead]);
+
+  if (!lead) return null;
   return (
     <div
       // onClick={onClose}
@@ -210,7 +237,11 @@ const LeadPopup = ({
     >
       <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
         <button
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            setCallDetails(null);
+            setActiveTab(0);
+          }}
           className="inline-flex items-center text-primary hover:text-blue-800 py-3"
         >
           Back
@@ -388,7 +419,7 @@ const LeadPopup = ({
                           }`}
                         >
                           <div
-                            className={`max-w-xs lg:max-w-md ${
+                            className={`max-w-xs lg:max-w-90 ${
                               t.speaker === "bot"
                                 ? "bg-blue-100 text-blue-900"
                                 : "bg-gray-100 text-gray-900"
@@ -486,7 +517,9 @@ const LeadPopup = ({
           </>
         )}
 
-        {activeTab === 1 && <CallDetails call={callDetails} />}
+        {activeTab === 1 && (
+          <CallDetails call={callDetails} isLoading={callDetailsLoading} />
+        )}
       </div>
 
       <QuickResponsePopup

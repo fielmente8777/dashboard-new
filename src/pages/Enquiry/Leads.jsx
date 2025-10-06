@@ -578,7 +578,7 @@ const Leads = () => {
           </div>
         </div>
 
-        <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label
             htmlFor="itemsPerPage"
             className="text-sm font-medium whitespace-nowrap text-gray-700"
@@ -613,41 +613,44 @@ const Leads = () => {
             <FaPlus />
             <span className="font-medium">Add Lead</span>
           </div>
-        </div>
+        </div> */}
       </div>
 
-      <div className="bg-white p-4  mb-10">
-        <div className="flex justify-between items-center mb-4 gap-2 ">
-          {/* <div className="relative w-3/4"> */}
-          <div className="relative w-full">
-            <span className="absolute top-3.5 left-2 -z-10">
-              <Search />
-            </span>
-            <input
-              type="text"
-              placeholder="Search clients by name, contact or message"
-              className=" px-3 pl-2 lg:pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      <div className="bg-white p-4 mb-10">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center gap-2 max-w-3xl w-full">
+            {/* <div className="relative w-3/4"> */}
+            <div className="relative w-full">
+              <span className="absolute top-3.5 left-2 -z-10">
+                <Search />
+              </span>
+              <input
+                type="text"
+                placeholder="Search clients by name, contact or message"
+                className=" px-3 pl-2 lg:pl-8 w-full py-2 text-[14px] border rounded-md outline-none"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-          <div className="border border-gray-300 rounded-md p-1.5">
-            <DatePicker
-              // maxDate={msg?.disabled ? new Date() : undefined}
-              className="outline-none"
-              selectsRange
-              startDate={startDate}
-              endDate={endDate}
-              required
-              onChange={(update) => {
-                setDateRange(update);
-              }}
-              // isClearable
-              // minDate={new Date()}
-            />
-          </div>
+            <div className="border border-gray-300 rounded-md p-1.5">
+              <DatePicker
+                // maxDate={msg?.disabled ? new Date() : undefined}
+                className="outline-none "
+                selectsRange
+                startDate={startDate}
+                endDate={endDate}
+                required
+                onChange={(update) => {
+                  setDateRange(update);
+                }}
+                popperClassName="!z-10"
+                placeholderText="Select date range"
+                // isClearable
+                // minDate={new Date()}
+              />
+            </div>
 
-          {/* <div className="w-1/3">
+            {/* <div className="w-1/3">
             <button
               className="w-full px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between"
               onClick={() => setFilterPopup(true)}
@@ -662,6 +665,44 @@ const Leads = () => {
 
             <FilterPopup open={filterPopup} setOpen={setOpen} />
           </div> */}
+          </div>
+
+          <div className=" py-2 px-4 flex flex-col sm:flex-row sm:items-center gap-4">
+            <label
+              htmlFor="itemsPerPage"
+              className="text-sm font-medium whitespace-nowrap text-gray-700"
+            >
+              Items per page:
+            </label>
+            <select
+              id="itemsPerPage"
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="border  sm:w-fit border-gray-300 rounded-md px-1 lg:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+
+            <div
+              onClick={() => jsonToCsvExport({ data: exportedData, headers })}
+              className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+            >
+              <FaFileExcel />
+              <span className="font-medium">Export</span>
+            </div>
+
+            <div
+              onClick={handleAddRow}
+              className="bg-green-500 whitespace-nowrap w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+            >
+              <FaPlus />
+              <span className="font-medium">Add Lead</span>
+            </div>
+          </div>
         </div>
 
         {!loading ? (

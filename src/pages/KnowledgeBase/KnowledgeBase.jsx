@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import KnowledgeBaseForm from "./KnowledgeBaseForm";
 import { JsonEditor } from "json-edit-react";
+import { NEW_BASE_URL } from "../../data/constant";
 const KnowledgeBase = () => {
   const [jsondata, setJsonData] = useState(null);
   const [url, setUrl] = useState("");
@@ -14,7 +15,7 @@ const KnowledgeBase = () => {
     setLoading(true);
     try {
       const { data } = await axios.post(
-        `http://127.0.0.1:8000/api/v1/knowledgebase/create`,
+        `${NEW_BASE_URL}/api/v1/knowledgebase/create`,
         {
           url: link,
         },
@@ -69,15 +70,12 @@ const KnowledgeBase = () => {
   const fetchKnowledgeBaseData = async () => {
     setKbLoading(true);
     try {
-      const { data } = await axios.get(
-        "http://127.0.0.1:8000/api/v1/knowledgebase",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const { data } = await axios.get(`${NEW_BASE_URL}/api/v1/knowledgebase`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       setJsonData(data?.data?.knowledge_base);
     } catch (error) {
       console.log(error);

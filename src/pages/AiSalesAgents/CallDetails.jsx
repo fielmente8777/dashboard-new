@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { NEW_BASE_URL } from "../../data/constant";
+import { FaPhone } from "react-icons/fa";
 
-const CallDetails = ({ call, onClose }) => {
+const CallDetails = ({ call, backButton, onClose, isLoading }) => {
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentRecordingUrl, setCurrentRecordingUrl] = useState("");
 
   // Calculate duration if both start_time and end_time exist
   const duration =
-    call.start_time && call.end_time
+    call?.start_time && call?.end_time
       ? Math.round((new Date(call.end_time) - new Date(call.start_time)) / 1000)
       : null;
 
@@ -16,19 +17,40 @@ const CallDetails = ({ call, onClose }) => {
     setShowAudioModal(true);
   };
 
-  if (!call) return null;
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-40 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center shadow-sm">
+        <FaPhone className="h-10 w-10 text-gray-400 mb-3" />
+        <h3 className="text-lg font-semibold text-gray-700">Loading...</h3>
+      </div>
+    );
+  }
+
+  if (!call) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-40 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center shadow-sm">
+        <FaPhone className="h-10 w-10 text-gray-400 mb-3" />
+        <h3 className="text-lg font-semibold text-gray-700">No Call History</h3>
+        <p className="text-sm text-gray-500 mt-1">
+          We couldn’t find any records of your calls.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full flex justify-center items-center">
+    <div className="w-full flex justify-center items-center ">
       <div className="max-w-6xl mx-auto px-4 bg-white rounded-md shadow-lg">
         {/* Header with Back Button */}
         <div className="">
-          {/* <button
-            onClick={onClose}
-            className="inline-flex items-center text-primary hover:text-blue-800 py-3"
-          >
-            Back
-          </button> */}
+          {backButton && (
+            <button
+              onClick={onClose}
+              className="inline-flex items-center text-primary hover:text-blue-800 py-3"
+            >
+              Back
+            </button>
+          )}
           <div className="bg-white rounded-lg border p-3">
             <div className="flex items-center justify-between">
               <div>
