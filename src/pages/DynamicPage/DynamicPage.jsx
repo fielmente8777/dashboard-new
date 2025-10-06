@@ -67,6 +67,8 @@ import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
 import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
 import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
+import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
+import VisitorActivity from "../WebsiteTracker/VisitorActivity";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -205,6 +207,8 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
 
     [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
+    [`${BASE_PATH}/${hid}/website-tracking/visitors`]: <WebsiteTracker />,
+    [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
 
     [`${BASE_PATH}/${hid}/email-marketing-management`]: (

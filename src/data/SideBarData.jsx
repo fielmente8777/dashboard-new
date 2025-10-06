@@ -59,23 +59,41 @@ export const SidebarData = [
   //       link: `channel/eb/chat`,
   //       icon: <FaWhatsapp size={16} />,
   //     },
-  //     // {
-  //     //   name: "WhatsApp",
-  //     //   link: `channel/wa/chat`,
-  //     //   icon: <FaWhatsapp size={16} />,
-  //     // },
-  //     // {
-  //     //   name: "Instagram",
-  //     //   link: `channel/ig/chat`,
-  //     //   icon: <FaInstagram size={16} />,
-  //     // },
-  //     // {
-  //     //   name: "Facebook",
-  //     //   link: `channel/fb/chat`,
-  //     //   icon: <FaFacebook size={16} />,
-  //     // },
+  //     {
+  //       name: "WhatsApp",
+  //       link: `channel/wa/chat`,
+  //       icon: <FaWhatsapp size={16} />,
+  //     },
+  //     {
+  //       name: "Instagram",
+  //       link: `channel/ig/chat`,
+  //       icon: <FaInstagram size={16} />,
+  //     },
+  //     {
+  //       name: "Facebook",
+  //       link: `channel/fb/chat`,
+  //       icon: <FaFacebook size={16} />,
+  //     },
   //   ],
   // },
+  {
+    name: "Website Tracking",
+    // key: "",
+    link: `website-tracking`,
+    icon: <MdAnalytics size={24} />,
+    subLinks: [
+      {
+        name: "Visitors",
+        link: `website-tracking/visitors`,
+        icon: <MdLeaderboard size={18} />,
+      },
+      {
+        name: "Activities",
+        link: `website-tracking/activities`,
+        icon: <MdLeaderboard size={18} />,
+      },
+    ],
+  },
   {
     name: "Enquiries Management",
     link: `enquiries-management`,
@@ -92,11 +110,11 @@ export const SidebarData = [
         link: `enquiries-management/meta-leads`,
         icon: <SiGoogleads size={18} />,
       },
-      {
-        name: "Form",
-        link: `enquiries-management/lead-gen-form`,
-        icon: <SiGoogleadsense size={18} />,
-      },
+      // {
+      //   name: "Form",
+      //   link: `enquiries-management/lead-gen-form`,
+      //   icon: <SiGoogleadsense size={18} />,
+      // },
     ],
   },
   {
@@ -119,7 +137,7 @@ export const SidebarData = [
   //   icon: <IoIosChatbubbles size={24} />,
   // },
   {
-    name: "Email Marketing",
+    name: "EazeMail",
     // key: "Eazobot",
     link: `email-marketing-management`,
     icon: <IoIosChatbubbles size={24} />,
@@ -169,11 +187,11 @@ export const SidebarData = [
         link: `grm/all-requests`,
         icon: <FaCodePullRequest size={16} />,
       },
-      {
-        name: "Emergency Request",
-        link: `grm/emergency-request`,
-        icon: <MdEmergencyShare size={18} />,
-      },
+      // {
+      //   name: "Emergency Request",
+      //   link: `grm/emergency-request`,
+      //   icon: <MdEmergencyShare size={18} />,
+      // },
       {
         name: "GRM Settings",
         link: `grm/settings`,
