@@ -211,9 +211,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
 
-    [`${BASE_PATH}/${hid}/email-marketing-management`]: (
+    [`${BASE_PATH}/${hid}/eazmail`]: (
       <EmailMarketingManagement />
     ),
+   
   };
 
   return (

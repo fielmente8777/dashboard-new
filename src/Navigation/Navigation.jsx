@@ -29,6 +29,7 @@ import FrontDesk from "../pages/FrontDesk/FrontDesk";
 import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
 import Setting from "../pages/Setting/Setting";
 import Usermanagement from "../pages/UserMgmt/Usermanagement";
+import Integration from "../pages/AppIntegration/Integration";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -74,6 +75,7 @@ const Navigation = () => {
         <Route path="front-desk" element={<FrontDesk />} />
         <Route path="profile" element={<Setting />} />
         <Route path="user-management/all-users" element={<Usermanagement />} />
+        <Route path="integration" element={<Integration />} />
 
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {

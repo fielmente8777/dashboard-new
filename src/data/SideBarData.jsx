@@ -139,7 +139,7 @@ export const SidebarData = [
   {
     name: "EazeMail",
     // key: "Eazobot",
-    link: `email-marketing-management`,
+    link: `eazmail`,
     icon: <IoIosChatbubbles size={24} />,
   },
   {
