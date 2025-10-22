@@ -46,6 +46,10 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
       link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
     },
     {
+      name: "Integration",
+      link: "integration",
+    },
+    {
       name: "Sign Out",
       onClick: handleLogout,
     },

@@ -69,6 +69,10 @@ import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
 import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
 import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
 import VisitorActivity from "../WebsiteTracker/VisitorActivity";
+import MetaLeads from "../Meta/MetaLeads";
+import MetaMessages from "../Meta/MetaMessage";
+import MetaConnections from "../Meta/MetaConnection";
+import MetaSettings from "../Meta/MetaSetting";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -211,9 +215,12 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
 
-    [`${BASE_PATH}/${hid}/email-marketing-management`]: (
-      <EmailMarketingManagement />
-    ),
+    [`${BASE_PATH}/${hid}/eazmail`]: <EmailMarketingManagement />,
+
+    [`${BASE_PATH}/${hid}/meta/leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/meta/messages`]: <MetaMessages />,
+    [`${BASE_PATH}/${hid}/meta/connections`]: <MetaConnections />,
+    [`${BASE_PATH}/${hid}/meta/settings`]: <MetaSettings />,
   };
 
   return (

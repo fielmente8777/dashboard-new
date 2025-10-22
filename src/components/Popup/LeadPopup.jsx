@@ -5,7 +5,7 @@ import { Arrow } from "../../icons/icon";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { extractBookingInfo } from "../../pages/Enquiry/Leads";
-import { MdMailOutline } from "react-icons/md";
+import { MdMailOutline, MdOutlineClose } from "react-icons/md";
 import { MdMail } from "react-icons/md";
 import { FaPhoneFlip } from "react-icons/fa6";
 import { FaPhone } from "react-icons/fa6";
@@ -36,7 +36,7 @@ const LeadPopup = ({
   handleTabClick,
   activeIndex,
 }) => {
-  console.log(lead);
+  const [note, setNote] = useState(lead?.note || "");
   const [quickResponePopup, setQuickResponePopup] = useState(false);
   const [callDetails, setCallDetails] = useState(null);
   const [callDetailsLoading, setCallDetailsLoading] = useState(false);
@@ -113,6 +113,7 @@ const LeadPopup = ({
           is_converted: false,
           ndid: lead.ndid,
           status: status,
+          note: note,
         }
       );
 
@@ -236,30 +237,33 @@ const LeadPopup = ({
       // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
       <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
-        <button
-          onClick={() => {
-            onClose();
-            setCallDetails(null);
-            setActiveTab(0);
-          }}
-          className="inline-flex items-center text-primary hover:text-blue-800 py-3"
-        >
-          Back
-        </button>
-        <div className="text-black my-4 space-x-3">
-          {Tabs?.map((tab, index) => (
-            <button
-              key={index}
-              onClick={() => handleTabChange(index)}
-              className={`text-base font-medium ${
-                index === activeTab
-                  ? "bg-primary text-white px-4 py-2 rounded-md"
-                  : "text-[#575757]/70"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="flex justify-between py-3">
+          <div className="text-black space-x-3">
+            {Tabs?.map((tab, index) => (
+              <button
+                key={index}
+                onClick={() => handleTabChange(index)}
+                className={`text-base font-medium ${
+                  index === activeTab
+                    ? "bg-primary text-white px-4 py-2 rounded-md"
+                    : "text-[#575757]/70"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              onClose();
+              setCallDetails(null);
+              setActiveTab(0);
+            }}
+            className="inline-flex items-center text-primary hover:text-blue-800"
+          >
+            <MdOutlineClose size={28} />
+          </button>
         </div>
 
         {activeTab === 0 && (
@@ -397,63 +401,78 @@ const LeadPopup = ({
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg border h-full">
-                <div className="border-b border-gray-200 p-3">
-                  <h2 className="text-md font-semibold text-gray-900 flex items-center">
-                    <i className="fas fa-comments text-blue-600"></i>
-                    Conversations
-                  </h2>
-                </div>
-                <div className="p-3 h-full">
-                  <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-hidden">
-                    {!lead?.chats || lead?.chats?.length === 0 ? (
-                      <div>No conversation found</div>
-                    ) : (
-                      lead?.chats?.map((t, idx) => (
-                        <div
-                          key={idx}
-                          className={`flex ${
-                            t.senderType === "bot"
-                              ? "justify-start"
-                              : "justify-end"
-                          }`}
-                        >
-                          <div
-                            className={`max-w-xs lg:max-w-90 ${
-                              t.speaker === "bot"
-                                ? "bg-blue-100 text-blue-900"
-                                : "bg-gray-100 text-gray-900"
-                            } rounded-lg px-4 py-2`}
-                          >
-                            <div className="flex items-center mb-1">
-                              {t.senderType === "bot" ? (
-                                <>
-                                  <i className="fas fa-robot mr-2 text-blue-600"></i>
-                                  <span className="text-xs font-semibold text-blue-600">
-                                    AI Agent
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <i className="fas fa-user mr-2 text-gray-600"></i>
-                                  <span className="text-xs font-semibold text-gray-600">
-                                    Customer
-                                  </span>
-                                </>
-                              )}
-                              <span className="text-xs text-gray-500 ml-auto">
-                                {new Date(t.created_at).toLocaleTimeString()}
-                              </span>
-                            </div>
-                            <div
-                              className="text-sm"
-                              dangerouslySetInnerHTML={{ __html: t.message }}
-                            />
-                          </div>
-                        </div>
-                      ))
-                    )}
+              <div className="space-y-2">
+                <div className="bg-white rounded-lg border h-68">
+                  <div className="border-b border-gray-200 p-3">
+                    <h2 className="text-md font-semibold text-gray-900 flex items-center">
+                      <i className="fas fa-comments text-blue-600"></i>
+                      Conversations
+                    </h2>
                   </div>
+                  <div className="p-3 h-full">
+                    <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-hidden">
+                      {!lead?.chats || lead?.chats?.length === 0 ? (
+                        <div>No conversation found</div>
+                      ) : (
+                        lead?.chats?.map((t, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex ${
+                              t.senderType === "bot"
+                                ? "justify-start"
+                                : "justify-end"
+                            }`}
+                          >
+                            <div
+                              className={`max-w-xs lg:max-w-90 ${
+                                t.speaker === "bot"
+                                  ? "bg-blue-100 text-blue-900"
+                                  : "bg-gray-100 text-gray-900"
+                              } rounded-lg px-4 py-2`}
+                            >
+                              <div className="flex items-center mb-1">
+                                {t.senderType === "bot" ? (
+                                  <>
+                                    <i className="fas fa-robot mr-2 text-blue-600"></i>
+                                    <span className="text-xs font-semibold text-blue-600">
+                                      AI Agent
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fas fa-user mr-2 text-gray-600"></i>
+                                    <span className="text-xs font-semibold text-gray-600">
+                                      Customer
+                                    </span>
+                                  </>
+                                )}
+                                <span className="text-xs text-gray-500 ml-auto">
+                                  {new Date(t.created_at).toLocaleTimeString()}
+                                </span>
+                              </div>
+                              <div
+                                className="text-sm"
+                                dangerouslySetInnerHTML={{ __html: t.message }}
+                              />
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <label htmlFor="" className="text-gray-600 font-medium">
+                    Notes
+                  </label>
+                  <textarea
+                    onChange={(e) => setNote(e.target.value)}
+                    value={note}
+                    rows={5}
+                    placeholder="Enter notes"
+                    className="w-full border border-gray-400 mt-1 outline-none rounded-sm p-3"
+                  />
                 </div>
               </div>
             </div>

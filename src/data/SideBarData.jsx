@@ -124,6 +124,34 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
   {
+    name: "Meta",
+    key: "",
+    link: `meta`,
+    icon: <FaFacebook size={24} />,
+    subLinks: [
+      {
+        name: "Meta Connections",
+        link: `meta/connections`,
+        icon: <FaFacebook size={18} />,
+      },
+      {
+        name: "Meta Leads",
+        link: `meta/leads`,
+        icon: <SiGoogleads size={18} />,
+      },
+      {
+        name: "Meta Messages",
+        link: `meta/messages`,
+        icon: <IoIosChatbubbles size={18} />,
+      },
+      {
+        name: "Meta Settings",
+        link: `meta/settings`,
+        icon: <IoMdSettings size={18} />,
+      },
+    ],
+  },
+  {
     name: "Social Media",
     // key: "Social Media",
     target: "_blank",
@@ -139,7 +167,7 @@ export const SidebarData = [
   {
     name: "EazeMail",
     // key: "Eazobot",
-    link: `email-marketing-management`,
+    link: `eazmail`,
     icon: <IoIosChatbubbles size={24} />,
   },
   {

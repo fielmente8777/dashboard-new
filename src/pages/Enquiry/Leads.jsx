@@ -45,6 +45,7 @@ const header = [
   "Converted",
   "Out Of Budget",
   "Potential For Later",
+  "Quotation Provided",
   "Dead Lead",
 ];
 
@@ -168,7 +169,7 @@ const Leads = () => {
 
     try {
       let response;
-      switch (index + 1) {
+      switch (Number(index) + 1) {
         case 0:
           response = await getAllClientEnquires({ token, hid });
           break;
@@ -202,11 +203,19 @@ const Leads = () => {
           response = await getAllClientEnquires({
             token,
             hid,
-            status: "Potential",
+            status: "Potential For Later",
           });
           break;
 
         case 6:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Quotation Provided",
+          });
+          break;
+
+        case 7:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -526,7 +535,7 @@ const Leads = () => {
   return (
     <div className="cardShadow">
       <div className="flex flex-col justify-between  bg-white">
-        <div className="flex flex-wrap mt-4">
+        {/* <div className="flex flex-wrap mt-4">
           {header.slice(0, btnLength).map((item, index) => (
             <button
               onClick={() => handleTabClick(index)}
@@ -576,7 +585,7 @@ const Leads = () => {
           >
             <MdRefresh size={25} />
           </div>
-        </div>
+        </div> */}
 
         {/* <div className=" py-2 px-4 mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <label
@@ -620,6 +629,22 @@ const Leads = () => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex justify-between items-center gap-2 max-w-3xl w-full">
             {/* <div className="relative w-3/4"> */}
+            <div>
+              <select
+                className="border border-gray-300 rounded-md px-4 py-2"
+                onChange={(e) => handleTabClick(e.target.value)}
+              >
+                {header.map((item, index) => (
+                  <option
+                    value={index}
+                    key={index}
+                    // onClick={() => handleTabClick(index)}
+                  >
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="relative w-full">
               <span className="absolute top-3.5 left-2 -z-10">
                 <Search />
@@ -1030,6 +1055,13 @@ const Leads = () => {
                             className="bg-white  text-black"
                           >
                             Potential For Later
+                          </option>
+
+                          <option
+                            value="Quotation Provided"
+                            className="bg-white  text-black"
+                          >
+                            Quotation Provided
                           </option>
                           <option
                             value="Dead Lead"
