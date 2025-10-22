@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MdMail } from "react-icons/md";
 import { SiAnalogue } from "react-icons/si";
 import { IoLogoWhatsapp } from "react-icons/io";
@@ -89,7 +89,7 @@ function Integration() {
 
           //   console.log(data);
 
-          window.open(`${NEW_BASE_URL}/api/v1/auth/meta/start`, "MetaConnect");
+          window.open(`${NEW_BASE_URL}/api/v1/auth/meta/start/?ndid=${localStorage.getItem("ndid")}`, "MetaConnect");
 
           // setConnected(true);
         } catch (error) {
@@ -115,6 +115,27 @@ function Integration() {
     );
   };
 
+
+  const checkIntegrationStatus = async() => {
+    try {
+      const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      console.log(data)
+      return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
+    } catch (error) {
+      console.log(error);
+    } 
+  }
+
+  useEffect(()=>{
+    checkIntegrationStatus();
+  },[])
   return (
     <div className="bg-[#f7f7f7]">
       {/* Header */}
