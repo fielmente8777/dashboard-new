@@ -6,6 +6,12 @@ import { NEW_BASE_URL } from "../../data/constant";
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
 function Integration() {
+  const [integrationStatus, setIntegrationStauts] = useState({
+    WebsiteTracking: false,
+    gmail: false,
+    google_analytics: false,
+    meta: true,
+  });
   const [integrations, setIntegrations] = useState([
     {
       id: "gmail",
@@ -18,7 +24,7 @@ function Integration() {
       color: "bg-red-500",
     },
     {
-      id: "analytics",
+      id: "google_analytics",
       name: "Google Analytics",
       description: "Track website metrics and user analytics in real time.",
       icon: <SiAnalogue className="w-10 h-10" />,
@@ -37,7 +43,7 @@ function Integration() {
       color: "bg-green-500",
     },
     {
-      id: "webtrack",
+      id: "WebsiteTracking",
       name: "Website Tracking",
       description:
         "Connect website tracking code to your website and get Website Engagement",
@@ -48,7 +54,7 @@ function Integration() {
     },
 
     {
-      id: "meta leads",
+      id: "meta",
       name: "Meta Leads",
       description:
         "Connect website tracking code to your website and get Website Engagement",
@@ -80,7 +86,7 @@ function Integration() {
   });
 
   const toggleIntegration = (id) => {
-    if (id === "meta leads") {
+    if (id === "meta") {
       const handleConnect = async () => {
         try {
           //   const { data } = await axios.get(
@@ -89,7 +95,12 @@ function Integration() {
 
           //   console.log(data);
 
-          window.open(`${NEW_BASE_URL}/api/v1/auth/meta/start/?ndid=${localStorage.getItem("ndid")}`, "MetaConnect");
+          window.open(
+            `${NEW_BASE_URL}/api/v1/auth/meta/start/?ndid=${localStorage.getItem(
+              "ndid"
+            )}`,
+            "MetaConnect"
+          );
 
           // setConnected(true);
         } catch (error) {
@@ -115,27 +126,27 @@ function Integration() {
     );
   };
 
-
-  const checkIntegrationStatus = async() => {
+  const checkIntegrationStatus = async () => {
     try {
       const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       const data = await response.json();
-      console.log(data)
+      setIntegrationStauts(data.result);
       return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
     } catch (error) {
       console.log(error);
-    } 
-  }
+    }
+  };
 
-  useEffect(()=>{
+  useEffect(() => {
     checkIntegrationStatus();
-  },[])
+  }, []);
+
   return (
     <div className="bg-[#f7f7f7]">
       {/* Header */}
@@ -189,51 +200,53 @@ function Integration() {
 
         {/* Integration Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredIntegrations?.map((integration) => (
-            <div
-              key={integration.id}
-              className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
-            >
-              <div className="p-6">
-                {/* Icon */}
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`${integration.color} text-white p-3 rounded-sm`}
-                  >
-                    {integration?.icon}
+          {filteredIntegrations?.map((integration) => {
+            const status = integrationStatus[integration.id];
+
+            return (
+              <div
+                key={integration.id}
+                className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+              >
+                <div className="p-6">
+                  {/* Icon */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div
+                      className={`${integration.color} text-white p-3 rounded-sm`}
+                    >
+                      {integration?.icon}
+                    </div>
+                    {status && (
+                      <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
+                        Connected
+                      </span>
+                    )}
                   </div>
-                  {integration.status === "connected" && (
-                    <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
-                      Connected
-                    </span>
-                  )}
+
+                  {/* Content */}
+                  <h3 className="text-base font-semibold text-gray-900 mb-2">
+                    {integration.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
+                    {integration.description}
+                  </p>
+
+                  {/* Action Button */}
+                  <button
+                    onClick={() => toggleIntegration(integration.id)}
+                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
+                      status
+                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                  >
+                    {status ? "Disconnect" : "Connect"}
+                    {/* <ChevronRight className="w-4 h-4" /> */}
+                  </button>
                 </div>
-
-                {/* Content */}
-                <h3 className="text-base font-semibold text-gray-900 mb-2">
-                  {integration.name}
-                </h3>
-                <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
-                  {integration.description}
-                </p>
-
-                {/* Action Button */}
-                <button
-                  onClick={() => toggleIntegration(integration.id)}
-                  className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
-                    integration.status === "connected"
-                      ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  {integration.status === "connected"
-                    ? "Disconnect"
-                    : "Connect"}
-                  {/* <ChevronRight className="w-4 h-4" /> */}
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Empty State */}
