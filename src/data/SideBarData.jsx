@@ -76,24 +76,24 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  {
-    name: "Website Tracking",
-    // key: "",
-    link: `website-tracking`,
-    icon: <MdAnalytics size={24} />,
-    subLinks: [
-      {
-        name: "Visitors",
-        link: `website-tracking/visitors`,
-        icon: <MdLeaderboard size={18} />,
-      },
-      {
-        name: "Activities",
-        link: `website-tracking/activities`,
-        icon: <MdLeaderboard size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Website Tracking",
+  //   // key: "",
+  //   link: `website-tracking`,
+  //   icon: <MdAnalytics size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Visitors",
+  //       link: `website-tracking/visitors`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //     {
+  //       name: "Activities",
+  //       link: `website-tracking/activities`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //   ],
+  // },
   {
     name: "Enquiries Management",
     link: `enquiries-management`,
@@ -117,40 +117,40 @@ export const SidebarData = [
       // },
     ],
   },
-  {
-    name: "AI Sales Agent",
-    // key: "",
-    link: `ai-sales-agent`,
-    icon: <HiOutlineUserGroup />,
-  },
-  {
-    name: "Meta",
-    key: "",
-    link: `meta`,
-    icon: <FaFacebook size={24} />,
-    subLinks: [
-      {
-        name: "Meta Connections",
-        link: `meta/connections`,
-        icon: <FaFacebook size={18} />,
-      },
-      {
-        name: "Meta Leads",
-        link: `meta/leads`,
-        icon: <SiGoogleads size={18} />,
-      },
-      {
-        name: "Meta Messages",
-        link: `meta/messages`,
-        icon: <IoIosChatbubbles size={18} />,
-      },
-      {
-        name: "Meta Settings",
-        link: `meta/settings`,
-        icon: <IoMdSettings size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "AI Sales Agent",
+  //   // key: "",
+  //   link: `ai-sales-agent`,
+  //   icon: <HiOutlineUserGroup />,
+  // },
+  // {
+  //   name: "Meta",
+  //   key: "",
+  //   link: `meta`,
+  //   icon: <FaFacebook size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Meta Connections",
+  //       link: `meta/connections`,
+  //       icon: <FaFacebook size={18} />,
+  //     },
+  //     {
+  //       name: "Meta Leads",
+  //       link: `meta/leads`,
+  //       icon: <SiGoogleads size={18} />,
+  //     },
+  //     {
+  //       name: "Meta Messages",
+  //       link: `meta/messages`,
+  //       icon: <IoIosChatbubbles size={18} />,
+  //     },
+  //     {
+  //       name: "Meta Settings",
+  //       link: `meta/settings`,
+  //       icon: <IoMdSettings size={18} />,
+  //     },
+  //   ],
+  // },
   {
     name: "Social Media",
     // key: "Social Media",
@@ -164,12 +164,12 @@ export const SidebarData = [
   //   link: `eazbot`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  {
-    name: "EazeMail",
-    // key: "Eazobot",
-    link: `eazmail`,
-    icon: <IoIosChatbubbles size={24} />,
-  },
+  // {
+  //   name: "EazeMail",
+  //   // key: "Eazobot",
+  //   link: `eazmail`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
   {
     name: "Booking Engine",
     key: "Booking Engine",

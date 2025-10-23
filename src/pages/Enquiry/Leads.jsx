@@ -40,6 +40,7 @@ export const extractBookingInfo = (input) => {
   return booking;
 };
 const header = [
+  "All",
   "Open Queries",
   "Contacted",
   "Converted",
@@ -69,8 +70,8 @@ const Leads = () => {
 
   const [filterPopup, setFilterPopup] = useState(false);
 
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [reserveData, setReserveData] = useState(null);
 
   const [rowSelected, setRowSelected] = useState([]);
@@ -123,7 +124,7 @@ const Leads = () => {
       const response = await getAllClientEnquires({
         token,
         hid,
-        status: "Open",
+        // status: "Open",
       });
       const data = createExportData(response);
       setExportedData(data);
@@ -173,17 +174,17 @@ const Leads = () => {
         case 0:
           response = await getAllClientEnquires({ token, hid });
           break;
-        case 1:
+        case 2:
           response = await getAllClientEnquires({ token, hid, status: "Open" });
           break;
-        case 2:
+        case 3:
           response = await getAllClientEnquires({
             token,
             hid,
             status: "Contacted",
           });
           break;
-        case 3:
+        case 4:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -191,7 +192,7 @@ const Leads = () => {
           });
           break;
 
-        case 4:
+        case 5:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -199,7 +200,7 @@ const Leads = () => {
           });
           break;
 
-        case 5:
+        case 6:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -207,7 +208,7 @@ const Leads = () => {
           });
           break;
 
-        case 6:
+        case 7:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -215,7 +216,7 @@ const Leads = () => {
           });
           break;
 
-        case 7:
+        case 8:
           response = await getAllClientEnquires({
             token,
             hid,
@@ -657,22 +658,38 @@ const Leads = () => {
               />
             </div>
 
-            <div className="border border-gray-300 rounded-md p-1.5">
-              <DatePicker
-                // maxDate={msg?.disabled ? new Date() : undefined}
-                className="outline-none "
-                selectsRange
-                startDate={startDate}
-                endDate={endDate}
-                required
-                onChange={(update) => {
-                  setDateRange(update);
-                }}
-                popperClassName="!z-10"
-                placeholderText="Select date range"
-                // isClearable
-                // minDate={new Date()}
-              />
+            <div className="flex items-center gap-2">
+              <div className="border border-gray-300 rounded-md p-1.5">
+                <DatePicker
+                  // maxDate={msg?.disabled ? new Date() : undefined}
+                  className="outline-none "
+                  selectsRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  required
+                  onChange={(update) => {
+                    setDateRange(update);
+                  }}
+                  popperClassName="!z-10"
+                  placeholderText="Select date range"
+                  // isClearable
+                  // minDate={new Date()}
+                />
+              </div>
+
+              {startDate && endDate && (
+                <span
+                  className="text-[#575757] text-[14px] font-semibold cursor-pointer"
+                  onClick={() => {
+                    setStartDate(null);
+                    setEndDate(null);
+
+                    fetchEnquires(localStorage.getItem("token"));
+                  }}
+                >
+                  Clear
+                </span>
+              )}
             </div>
 
             {/* <div className="w-1/3">
@@ -693,12 +710,12 @@ const Leads = () => {
           </div>
 
           <div className=" py-2 px-4 flex flex-col sm:flex-row sm:items-center gap-4">
-            <label
+            {/* <label
               htmlFor="itemsPerPage"
               className="text-sm font-medium whitespace-nowrap text-gray-700"
             >
               Items per page:
-            </label>
+            </label> */}
             <select
               id="itemsPerPage"
               value={itemsPerPage}
