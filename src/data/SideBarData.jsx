@@ -95,7 +95,7 @@ export const SidebarData = [
     ],
   },
   {
-    name: "Enquiries Management",
+    name: "Leads Management",
     link: `enquiries-management`,
     key: "Enquiries Management",
     icon: <MdAnalytics size={24} />,

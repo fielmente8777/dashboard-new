@@ -40,6 +40,7 @@ export const extractBookingInfo = (input) => {
   return booking;
 };
 const header = [
+"All Leads",
   "Open Queries",
   "Contacted",
   "Converted",

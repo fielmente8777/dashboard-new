@@ -10,8 +10,9 @@ function Integration() {
     WebsiteTracking: false,
     gmail: false,
     google_analytics: false,
-    meta: true,
+    meta: false,
   });
+  const [loading,setLoading]=useState(true);
   const [integrations, setIntegrations] = useState([
     {
       id: "gmail",
@@ -19,7 +20,7 @@ function Integration() {
       description:
         "Sync your inbox and manage emails directly from your dashboard.",
       icon: <MdMail className="w-10 h-10" />,
-      status: "connected",
+      status: "not-connected",
       category: "Communication",
       color: "bg-red-500",
     },
@@ -136,13 +137,18 @@ function Integration() {
         },
       });
       const data = await response.json();
-      setIntegrationStauts(data.result);
+      if(data.result){
+        setIntegrationStauts(data?.result);
+
+      }
       return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
     } catch (error) {
       console.log(error);
     }
+    finally{
+      setLoading(false)
+    }
   };
-
   useEffect(() => {
     checkIntegrationStatus();
   }, []);
@@ -199,7 +205,7 @@ function Integration() {
         </div>
 
         {/* Integration Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {!loading?<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredIntegrations?.map((integration) => {
             const status = integrationStatus[integration.id];
 
@@ -247,7 +253,7 @@ function Integration() {
               </div>
             );
           })}
-        </div>
+        </div>:"Loading..."}
 
         {/* Empty State */}
         {filteredIntegrations.length === 0 && (
