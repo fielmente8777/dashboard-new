@@ -14,7 +14,7 @@ import QuickResponsePopup from "./QuickResponsePopup";
 import { useState } from "react";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import CallDetails from "../../pages/AiSalesAgents/CallDetails";
-import { NEW_BASE_URL } from "../../data/constant";
+import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 
 const Tabs = ["All Details", "Call Details"];
 
@@ -36,12 +36,16 @@ const LeadPopup = ({
   handleTabClick,
   activeIndex,
 }) => {
-  const [note, setNote] = useState(lead?.note || "");
+  console.log(lead?.note);
+  const [note, setNote] = useState();
   const [quickResponePopup, setQuickResponePopup] = useState(false);
   const [callDetails, setCallDetails] = useState(null);
   const [callDetailsLoading, setCallDetailsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
+  useEffect(() => {
+    setNote(lead?.note || "");
+  }, [lead]);
   const handleTabChange = (index) => {
     setActiveTab(index);
   };
@@ -220,6 +224,23 @@ const LeadPopup = ({
       setCallDetailsLoading(false);
     }
   };
+
+
+  const updateNote = async (id) => {
+
+    console.log("Updating note for id:", id, "with note:", note);
+    try {
+      await axios.put(`${BASE_URL}/eazotel/add-note/${id}`, {
+        token: localStorage.getItem("token"),
+        note: note,
+      });
+    } catch (error) {
+      console.error("Error updating note:", error);
+    }
+  }
+
+
+  console.log(lead)
 
   useEffect(() => {
     if (lead) {
@@ -474,6 +495,7 @@ const LeadPopup = ({
                     className="w-full border border-gray-400 mt-1 outline-none rounded-sm p-3"
                   />
                 </div>
+                <button onClick={()=>updateNote(lead._id)} className="pt-2 px-4 bg-red-500">Save</button>
               </div>
             </div>
 
