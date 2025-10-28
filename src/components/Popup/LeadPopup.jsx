@@ -18,6 +18,16 @@ import { NEW_BASE_URL } from "../../data/constant";
 
 const Tabs = ["All Details", "Call Details"];
 
+const header = [
+  { label: "Open Queries", value: "Open" },
+  { label: "Contacted", value: "Contacted" },
+  { label: "Converted", value: "Converted" },
+  { label: "Out Of Budget", value: "Out Of Budget" },
+  { label: "Potential For Later", value: "Potential For Later" },
+  { label: "Quotation Provided", value: "Quotation Provided" },
+  { label: "Dead Lead", value: "Dead Lead" },
+];
+
 export const formatPhoneNumber = (phone) => {
   let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
 
@@ -48,6 +58,7 @@ const LeadPopup = ({
 
   // console.log(lead)
   const handleDelete = async (id, email) => {
+    onClose();
     const confirmation = await Swal.fire({
       title: "Are you sure?",
       text: `Do you really want to delete user: ${email}? This action cannot be undone.`,
@@ -480,7 +491,7 @@ const LeadPopup = ({
             <div className="grid lg:grid-cols-2 items-center mt-3">
               <div className="flex xl:flex-row flex-col justify-between gap-5">
                 <div className="gap-4">
-                  <select
+                  {/* <select
                     className="py-2  px-3 gap-2 xl:w-[150px] w-full bg-green-600 rounded-sm flex items-center capitalize text-base font-medium text-white"
                     onChange={(e) => handleQueryStatus(e.target.value)}
                     value={lead.status || ""}
@@ -497,6 +508,20 @@ const LeadPopup = ({
                     <option value="Open" className="bg-white  text-black">
                       Open
                     </option>
+                  </select> */}
+
+                  <select
+                    className="border border-gray-300 rounded-md px-4 py-2"
+                    onChange={(e) => handleQueryStatus(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Select
+                    </option>
+                    {header.map((item, index) => (
+                      <option value={item.value} key={index}>
+                        {item.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

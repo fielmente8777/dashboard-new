@@ -8,7 +8,7 @@ import Loader from "../../components/Loader";
 import { useSelector } from "react-redux";
 import { RiArrowDownSLine } from "react-icons/ri";
 import { FaHotel } from "react-icons/fa";
-import { BsPencil, BsTrash } from "react-icons/bs";
+import { BsPencil, BsPencilFill, BsTrash, BsTrash2 } from "react-icons/bs";
 import TrashBin from "../../components/Icon/TrashBin";
 import Eazobot from "../Eazobot/Eazobot";
 
@@ -23,6 +23,34 @@ const Setting = () => {
   //   newPassword: "",
   //   confirmPassword: "",
   // });
+
+  const hotels = [
+    {
+      id: "1",
+      name: "Soul Storries Mussoorie",
+      city: "Mussoorie",
+      state: "Uttarakhand",
+      country: "India",
+      pinCode: "248179",
+    },
+    {
+      id: "2",
+      name: "Soul Storries Dhanaulti",
+      city: "Dhanaulti",
+      state: "Uttarakhand",
+      country: "India",
+      pinCode: "248180",
+    },
+    {
+      id: "3",
+      name: "Soul Storries Rishikesh",
+      city: "Rishikesh",
+      state: "Uttarakhand",
+      country: "India",
+      pinCode: "249201",
+    },
+  ];
+
   const [activeTab, setActiveTab] = useState(0);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -198,6 +226,20 @@ const Setting = () => {
                 {profile.plan?.expiryDate}
               </p>
             </div>
+
+            <div>
+              <select
+                name=""
+                id=""
+                className="border border-gray-300 px-4 py-2"
+              >
+                {hotels?.map((h) => (
+                  <option key={h._id} value={h._id}>
+                    {h.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           {/* Hotels */}
           <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -205,10 +247,12 @@ const Setting = () => {
               className="flex items-center  cursor-pointer"
               onClick={() => setIsDropDownOpen(isDropDownOpen === 1 ? null : 1)}
             >
-              <h3 className="font-bold text-3xl text-gray-800 flex items-center gap-4">
-                <FaHotel className="text-2xl" />
-                Hotels
-              </h3>
+              <div>
+                <h3 className="font-bold text-3xl text-gray-800 flex items-center gap-4">
+                  <FaHotel className="text-2xl" />
+                  Hotels
+                </h3>
+              </div>
               <span className="ml-auto">
                 <RiArrowDownSLine
                   className={`${
@@ -217,6 +261,7 @@ const Setting = () => {
                 />
               </span>
             </div>
+
             <div
               className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 ${
                 isDropDownOpen === 1 ? "block" : "hidden"
@@ -247,6 +292,7 @@ const Setting = () => {
                 ))}
             </div>
           </div>
+
           <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8">
             {/* password change section */}
             <div className="">

@@ -8,16 +8,49 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Logo from "../../assets/companylogo.b.png";
 import DataContext from "../../context/DataContext";
-import { BASE_PATH } from "../../data/constant";
+import { BASE_PATH, BASE_URL } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
 import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
 import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
-import { setHid } from "../../redux/slice/UserSlice";
+import {
+  fetchAuthUserProfile,
+  fetchUserProfile,
+  setHid,
+} from "../../redux/slice/UserSlice";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 import { removeCookie } from "../../utils/handleCookies";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import AddLocationForm from "../Popup/AddLocationForm";
+import axios from "axios";
+
+// const token = "";
+
+const allProfiles = [
+  {
+    id: "2",
+    name: "Soul Stories",
+    ndid: "4f14df46-bcfa-43da-8d99-0c6c414445ba",
+    hid: "71711659",
+    token:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6InNvdWxzdG9yaWVzczAxQGdtYWlsLmNvbSIsImV4cCI6MTc2Mjg2MDI5MS40MzQ2ODh9.BfVEgIg24SvQIubFCt6oMrTmSPWI5eJ6I5Ap1_A_GsU",
+  },
+  {
+    id: "1",
+    name: "Test Multi",
+    ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+    hid: "11974255",
+    token:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6ImFiaGlqZWV0QGVhem90ZWwuY29tIiwiR29vZ2xlX0lkIjoiMTExOTUwMTk5NDc2MzQyMTIyODY2IiwiZXhwIjoxNzYyODU4Nzk1Ljg0ODg1NH0.FkeJxgM6n28gNn8xA-C5rGO75iKcMddpBT5gk9uYHVc",
+  },
+
+  {
+    id: "3",
+    name: "Avr",
+    ndid: "5617a084-5783-4bac-b299-bdb6e8e471bd",
+    hid: "11974258",
+  },
+];
 
 const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   const [openMenus, setOpenMenus] = useState({});
@@ -173,6 +206,24 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     }
   }, [hotel, authUser, hid]);
 
+  const fetchAllClients = async () => {
+    try {
+      const { data } = await axios.get(`${BASE_URL}/admin/get-all-clients`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${handleLocalStorage("token")}`,
+        },
+      });
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllClients();
+  }, []);
+
   // const handleLogout = () => {
   //   localStorage.clear();
   //   removeCookie("token");
@@ -191,6 +242,27 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     // setTimeout(() => {
     navigate("/login");
     // }, 1000)
+  };
+
+  const handleProfileSwitch = (profile) => {
+    const { hid, token, ndid } = profile;
+
+    let authToken = token;
+
+    console.log(hid);
+
+    setTimeout(() => {
+      // dispatch(setHid(hid));
+      // dispatch(fetchWebsiteData(authToken, hid));
+      // dispatch(fetchUserProfile(authToken));
+      // dispatch(fetchAuthUserProfile(authToken));
+
+      localStorage.setItem("token", authToken);
+      localStorage.setItem("hid", hid);
+      localStorage.setItem("ndid", ndid);
+      navigate("/");
+    }, 1000);
+    // setTimeout(())
   };
 
   const maniuplateSideBarData = SidebarData?.map((item) => {
@@ -297,6 +369,17 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               >
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
+                    <div>
+                      {allProfiles?.map((profile, index) => (
+                        <div
+                          onClick={() => {
+                            handleProfileSwitch(profile);
+                          }}
+                        >
+                          <h2>{profile?.name}</h2>
+                        </div>
+                      ))}
+                    </div>
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(
                         ([key, value]) => {

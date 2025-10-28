@@ -168,6 +168,8 @@ const Leads = () => {
     const token = localStorage.getItem("token");
     const hid = handleLocalStorage("hid");
 
+    console.log(index);
+
     try {
       let response;
       switch (Number(index) + 1) {
