@@ -370,7 +370,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
                     <div>
-                      {allProfiles?.map((profile, index) => (
+                      {/* {allProfiles?.map((profile) => (
                         <div
                           onClick={() => {
                             handleProfileSwitch(profile);
@@ -378,7 +378,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                         >
                           <h2>{profile?.name}</h2>
                         </div>
-                      ))}
+                      ))} */}
                     </div>
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(

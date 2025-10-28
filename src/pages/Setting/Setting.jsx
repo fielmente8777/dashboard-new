@@ -24,33 +24,6 @@ const Setting = () => {
   //   confirmPassword: "",
   // });
 
-  const hotels = [
-    {
-      id: "1",
-      name: "Soul Storries Mussoorie",
-      city: "Mussoorie",
-      state: "Uttarakhand",
-      country: "India",
-      pinCode: "248179",
-    },
-    {
-      id: "2",
-      name: "Soul Storries Dhanaulti",
-      city: "Dhanaulti",
-      state: "Uttarakhand",
-      country: "India",
-      pinCode: "248180",
-    },
-    {
-      id: "3",
-      name: "Soul Storries Rishikesh",
-      city: "Rishikesh",
-      state: "Uttarakhand",
-      country: "India",
-      pinCode: "249201",
-    },
-  ];
-
   const [activeTab, setActiveTab] = useState(0);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -227,7 +200,7 @@ const Setting = () => {
               </p>
             </div>
 
-            <div>
+            {/* <div>
               <select
                 name=""
                 id=""
@@ -239,7 +212,7 @@ const Setting = () => {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
           </div>
           {/* Hotels */}
           <div className="bg-white p-8 rounded-2xl shadow-lg">
