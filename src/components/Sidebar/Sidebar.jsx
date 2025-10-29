@@ -1,4 +1,4 @@
-import { use, useContext, useEffect, useState } from "react";
+import { use, useContext, useEffect, useMemo, useState } from "react";
 import { CiLocationOn } from "react-icons/ci";
 import { FaAlignRight } from "react-icons/fa";
 import { IoIosLogOut } from "react-icons/io";
@@ -53,6 +53,9 @@ const allProfiles = [
 ];
 
 const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { Leads, setLeads, setLeadsList } = useContext(DataContext);
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
@@ -66,6 +69,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   } = useSelector((state) => state.userProfile);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
+  const [allClients, setAllClients] = useState([]);
   const { setAuth } = useContext(DataContext);
   const { isOpen } = useSelector((state) => state.toggle);
 
@@ -214,7 +218,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
           Authorization: `Bearer ${handleLocalStorage("token")}`,
         },
       });
-      console.log(data);
+      setAllClients(data?.data);
     } catch (error) {
       console.log(error);
     }
@@ -223,6 +227,32 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   useEffect(() => {
     fetchAllClients();
   }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm.toLowerCase());
+    }, 300); // debounce delay (300ms)
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const filteredClients = useMemo(() => {
+    if (!debouncedSearch) return allClients;
+    return allClients.filter((profile) => {
+      const hotel = Object.values(profile?.hotels || {})[0];
+      const valuesToSearch = [
+        profile?.hotelName,
+        hotel?.name,
+        hotel?.city,
+        hotel?.state,
+        hotel?.country,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return valuesToSearch.includes(debouncedSearch);
+    });
+  }, [allClients, debouncedSearch]);
 
   // const handleLogout = () => {
   //   localStorage.clear();
@@ -244,12 +274,48 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     // }, 1000)
   };
 
-  const handleProfileSwitch = (profile) => {
-    const { hid, token, ndid } = profile;
+  const handleProfileSwitch = async (profile) => {
+    const { ndid, hotels, hotelEmail } = profile;
 
-    let authToken = token;
+    const hid = Object.keys(hotels)[0];
 
-    console.log(hid);
+    try {
+      setLeads([]);
+      setDebouncedSearch("");
+      localStorage.removeItem("SheetId");
+      localStorage.removeItem("SheetName");
+      const { data } = await axios.post(
+        `${BASE_URL}/admin/switch-account`,
+        {
+          Email: hotelEmail,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${handleLocalStorage("token")}`,
+          },
+        }
+      );
+
+      if (data?.Status) {
+        const authToken = data?.Token;
+
+        localStorage.setItem("token", authToken);
+        localStorage.setItem("hid", hid);
+        localStorage.setItem("ndid", ndid);
+
+        // dispatch(setHid(hid));
+        // dispatch(fetchWebsiteData(authToken, hid));
+        // dispatch(fetchUserProfile(authToken));
+        // dispatch(fetchAuthUserProfile(authToken));
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    // let authToken = token;
+
+    // console.log(hid);
 
     setTimeout(() => {
       // dispatch(setHid(hid));
@@ -257,12 +323,11 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       // dispatch(fetchUserProfile(authToken));
       // dispatch(fetchAuthUserProfile(authToken));
 
-      localStorage.setItem("token", authToken);
-      localStorage.setItem("hid", hid);
-      localStorage.setItem("ndid", ndid);
+      // localStorage.setItem("token", authToken);
+      // localStorage.setItem("hid", hid);
+      // localStorage.setItem("ndid", ndid);
       navigate("/");
     }, 1000);
-    // setTimeout(())
   };
 
   const maniuplateSideBarData = SidebarData?.map((item) => {
@@ -370,15 +435,40 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
                     <div>
-                      {allProfiles?.map((profile, index) => (
-                        <div
-                          onClick={() => {
-                            handleProfileSwitch(profile);
-                          }}
-                        >
-                          <h2>{profile?.name}</h2>
-                        </div>
-                      ))}
+                      <input
+                        type="text"
+                        placeholder="search"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      {filteredClients?.map((profile) => {
+                        const hotel = Object.values(profile?.hotels)[0];
+                        return (
+                          <div
+                            className="bg-gray-200 cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-3"
+                            onClick={() => {
+                              handleProfileSwitch(profile);
+                            }}
+                          >
+                            <h2>{profile?.hotelName}</h2>
+                            <p className="text-xs text-gray-500 flex items-center">
+                              <CiLocationOn />
+                              <span>
+                                {hotel?.city}
+                                {hotel.city && ", "}
+                                {hotel?.state}
+                                {hotel.state && ", "}
+                                {hotel?.country}
+                              </span>
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(
@@ -464,7 +554,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                   </div>
                 )}
 
-                {authUser?.isAdmin && (
+                {authUser?.isAdmin && authUser?.role !== "owner" && (
                   <button
                     onClick={(e) => handleAddNewLocation(e)}
                     className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"

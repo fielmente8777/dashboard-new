@@ -52,6 +52,8 @@ const LeadPopup = ({
   const [callDetails, setCallDetails] = useState(null);
   const [callDetailsLoading, setCallDetailsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isNoteUpdateLoading, setIsNoteUpdateLoading] = useState(false);
 
   useEffect(() => {
     setNote(lead?.note || "");
@@ -236,10 +238,8 @@ const LeadPopup = ({
     }
   };
 
-
   const updateNote = async (id) => {
-
-    console.log("Updating note for id:", id, "with note:", note);
+    setIsNoteUpdateLoading(true);
     try {
       await axios.put(`${BASE_URL}/eazotel/add-note/${id}`, {
         token: localStorage.getItem("token"),
@@ -247,11 +247,13 @@ const LeadPopup = ({
       });
     } catch (error) {
       console.error("Error updating note:", error);
+    } finally {
+      setIsNoteUpdateLoading(false);
+      setIsEdit(false);
     }
-  }
+  };
 
-
-  console.log(lead)
+  console.log(lead);
 
   useEffect(() => {
     if (lead) {
@@ -499,14 +501,24 @@ const LeadPopup = ({
                     Notes
                   </label>
                   <textarea
-                    onChange={(e) => setNote(e.target.value)}
+                    onChange={(e) => {
+                      setIsEdit(true);
+                      setNote(e.target.value);
+                    }}
                     value={note}
                     rows={5}
                     placeholder="Enter notes"
                     className="w-full border border-gray-400 mt-1 outline-none rounded-sm p-3"
                   />
                 </div>
-                <button onClick={()=>updateNote(lead._id)} className="pt-2 px-4 bg-red-500">Save</button>
+                {isEdit && (
+                  <button
+                    onClick={() => updateNote(lead._id)}
+                    className="px-6 py-1 bg-green-600 rounded-md text-white"
+                  >
+                    {isNoteUpdateLoading ? "Please wait..." : "Save"}
+                  </button>
+                )}
               </div>
             </div>
 

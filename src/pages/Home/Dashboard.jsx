@@ -69,7 +69,7 @@ const Dashboard = () => {
       setEnquiresList(response);
       const converted = response?.filter((item) => {
         if (item?.status) {
-          return item?.status.toLowerCase() === "converted";
+          return String(item?.status).toLowerCase() === "converted";
         }
 
         return false;
@@ -157,7 +157,8 @@ const Dashboard = () => {
       progress: 67,
     },
     {
-      amount: enquires?.length - eazobotEnquiries.length,
+      amount: enquires?.length - eazobotEnquiries?.length,
+      // (Array.isArray(eazobotEnquiries) ? eazobotEnquiries.length : 0),
       lable: "Webform",
       progress: 33,
     },
