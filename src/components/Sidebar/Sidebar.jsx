@@ -211,6 +211,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   }, [hotel, authUser, hid]);
 
   const fetchAllClients = async () => {
+    if (!authUser?.isAdmin && authUser?.role !== "owner") return;
     try {
       const { data } = await axios.get(`${BASE_URL}/admin/get-all-clients`, {
         headers: {
@@ -434,7 +435,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               >
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
-                    <div>
+                    {authUser?.isAdmin && authUser?.role === "owner" && (<div>
                       <input
                         type="text"
                         placeholder="search"
@@ -444,7 +445,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
                       />
-                    </div>
+                    </div>)}
                     <div className="space-y-2">
                       {filteredClients?.map((profile) => {
                         const hotel = Object.values(profile?.hotels)[0];
