@@ -32,16 +32,16 @@ function Integration() {
       category: "Analytics",
       color: "bg-orange-500",
     },
-    {
-      id: "whatsapp",
-      name: "WhatsApp Business",
-      description:
-        "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
-      icon: <IoLogoWhatsapp className="w-10 h-10" />,
-      status: "not-connected",
-      category: "Communication",
-      color: "bg-green-500",
-    },
+    // {
+    //   id: "whatsapp",
+    //   name: "WhatsApp Business",
+    //   description:
+    //     "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
+    //   icon: <IoLogoWhatsapp className="w-10 h-10" />,
+    //   status: "not-connected",
+    //   category: "Communication",
+    //   color: "bg-green-500",
+    // },
     {
       id: "WebsiteTracking",
       name: "Website Tracking",
@@ -147,6 +147,9 @@ function Integration() {
     checkIntegrationStatus();
   }, []);
 
+
+  console.log(filteredIntegrations)
+
   return (
     <div className="bg-[#f7f7f7]">
       {/* Header */}
@@ -198,21 +201,25 @@ function Integration() {
           </div>
         </div>
 
+
         {/* Integration Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredIntegrations?.map((integration) => {
-            const status = integrationStatus[integration.id];
+            // console.log(integration)
+            const status = integrationStatus[integration?.id]??false;
+
+            console.log(status)
 
             return (
               <div
-                key={integration.id}
+                key={integration?.id}
                 className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
               >
                 <div className="p-6">
                   {/* Icon */}
                   <div className="flex items-start justify-between mb-4">
                     <div
-                      className={`${integration.color} text-white p-3 rounded-sm`}
+                      className={`${integration?.color} text-white p-3 rounded-sm`}
                     >
                       {integration?.icon}
                     </div>
