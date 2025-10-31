@@ -54,7 +54,7 @@ const TemperatureCard = () => {
     fetchWeatherData();
   }, []);
 
-  const [weatherCondition, setWeatherCondition] = useState("Rainy");
+  const [weatherCondition, setWeatherCondition] = useState("Sunny");
   return (
     <div className="relative rounded-xl cardShadow w-full h-[300px] lg:h-full transition-all duration-500 ease-in-out ">
       {/* <div className={`rounded-xl cardShadow p-5 w-full h-full transition-all duration-500 ease-in-out ${weatherCondition === 'Sunny' ? 'bg-yellow-100 shadow-yellow-300'
@@ -68,10 +68,10 @@ const TemperatureCard = () => {
           weatherCondition === "Rainy"
             ? RainVideo
             : weatherCondition === "Cloudy"
-              ? CouldVideo
-              : weatherCondition === "Sunny"
-                ? SummerVideo
-                : ""
+            ? CouldVideo
+            : weatherCondition === "Sunny"
+            ? SummerVideo
+            : ""
         }
         autoPlay
         loop

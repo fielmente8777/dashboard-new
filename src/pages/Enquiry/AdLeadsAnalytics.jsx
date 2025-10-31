@@ -292,7 +292,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="">
       <div className=" mx-auto">
         {/* Header */}
         {showTitle && (
@@ -489,7 +489,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
                 )} */}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        {/* <div className="bg-white rounded-lg shadow-sm mb-6">
           <div className="border-b border-gray-200">
             <nav className="flex overflow-x-auto">
               {["overview", "sources", "geographics", "budget", "timeline"].map(
@@ -509,240 +509,220 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
               )}
             </nav>
           </div>
-
-          <div className="p-6">
-            {/* Overview Tab */}
-            {activeTab === "overview" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Lead Sources */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">Lead Sources</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData.leadSources}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                        >
-                          {chartData?.leadSources?.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Top Locations */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">Top Locations</h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.locations} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={100} />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#82ca9d" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Guest Counts */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Guest Count Distribution
-                  </h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.guestCounts}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Budget Ranges */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Budget Preferences
-                  </h3>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.budgetRanges}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#ffc658" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Sources Tab */}
-            {activeTab === "sources" && (
-              <div className="grid grid-cols-1 gap-6">
-                {/* Campaign Performance */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Campaign Performance
-                  </h3>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.campaigns}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar
-                          dataKey="value"
-                          fill="#8884d8"
-                          name="Leads Generated"
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Demographics Tab */}
-            {activeTab === "geographics" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Location Distribution */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Location Distribution
-                  </h3>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.locations} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" width={120} />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#82ca9d" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Guest Counts */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Guest Count Analysis
-                  </h3>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData.guestCounts}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                        >
-                          {chartData?.guestCounts?.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Budget Tab */}
-            {activeTab === "budget" && (
-              <div className="grid grid-cols-1 gap-6">
-                {/* Budget Preferences */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Budget Preferences
-                  </h3>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData.budgetRanges}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#ffc658" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Timeline Tab */}
-            {activeTab === "timeline" && (
-              <div className="grid grid-cols-1 gap-6">
-                {/* Leads Over Time */}
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h3 className="text-md font-semibold mb-4">
-                    Leads Over Time
-                  </h3>
-                  <div className="h-96">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={Object.entries(chartData.leadsOverTime || {})
-                          ?.map(([date, count]) => ({
-                            date,
-                            count,
-                          }))
-                          .sort((a, b) => new Date(a.date) - new Date(b.date))}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Area
-                          type="monotone"
-                          dataKey="count"
-                          stroke="#8884d8"
-                          fill="#8884d8"
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
 
 export default AdLeadsAnalytics;
+
+{
+  /* <div className="p-6">
+ 
+  {activeTab === "overview" && (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+     
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h3 className="text-md font-semibold mb-4">Lead Sources</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData.leadSources}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) =>
+                  `${name} ${(percent * 100).toFixed(0)}%`
+                }
+              >
+                {chartData?.leadSources?.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+    
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h3 className="text-md font-semibold mb-4">Top Locations</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData.locations} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" width={100} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+   
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h3 className="text-md font-semibold mb-4">Guest Count Distribution</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData.guestCounts}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h3 className="text-md font-semibold mb-4">Budget Preferences</h3>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData.budgetRanges}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#ffc658" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  )}
+
+
+  // {activeTab === "sources" && (
+  //   <div className="grid grid-cols-1 gap-6">
+  //     {/* Campaign Performance */
+}
+//     <div className="bg-white p-4 rounded-lg border border-gray-200">
+//       <h3 className="text-md font-semibold mb-4">Campaign Performance</h3>
+//       <div className="h-96">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <BarChart data={chartData.campaigns}>
+//             <CartesianGrid strokeDasharray="3 3" />
+//             <XAxis dataKey="name" />
+//             <YAxis />
+//             <Tooltip />
+//             <Legend />
+//             <Bar dataKey="value" fill="#8884d8" name="Leads Generated" />
+//           </BarChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+//   </div>
+// )}
+
+// {activeTab === "geographics" && (
+//   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+//     <div className="bg-white p-4 rounded-lg border border-gray-200">
+//       <h3 className="text-md font-semibold mb-4">Location Distribution</h3>
+//       <div className="h-96">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <BarChart data={chartData.locations} layout="vertical">
+//             <CartesianGrid strokeDasharray="3 3" />
+//             <XAxis type="number" />
+//             <YAxis dataKey="name" type="category" width={120} />
+//             <Tooltip />
+//             <Bar dataKey="value" fill="#82ca9d" />
+//           </BarChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+
+//     <div className="bg-white p-4 rounded-lg border border-gray-200">
+//       <h3 className="text-md font-semibold mb-4">Guest Count Analysis</h3>
+//       <div className="h-96">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <PieChart>
+//             <Pie
+//               data={chartData.guestCounts}
+//               cx="50%"
+//               cy="50%"
+//               outerRadius={100}
+//               fill="#8884d8"
+//               dataKey="value"
+//               label={({ name, percent }) =>
+//                 `${name} ${(percent * 100).toFixed(0)}%`
+//               }
+//             >
+//               {chartData?.guestCounts?.map((entry, index) => (
+//                 <Cell
+//                   key={`cell-${index}`}
+//                   fill={COLORS[index % COLORS.length]}
+//                 />
+//               ))}
+//             </Pie>
+//             <Tooltip />
+//           </PieChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+//   </div>
+// )}
+
+// {activeTab === "budget" && (
+//   <div className="grid grid-cols-1 gap-6">
+
+//     <div className="bg-white p-4 rounded-lg border border-gray-200">
+//       <h3 className="text-md font-semibold mb-4">Budget Preferences</h3>
+//       <div className="h-96">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <BarChart data={chartData.budgetRanges}>
+//             <CartesianGrid strokeDasharray="3 3" />
+//             <XAxis dataKey="name" />
+//             <YAxis />
+//             <Tooltip />
+//             <Bar dataKey="value" fill="#ffc658" />
+//           </BarChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+//   </div>
+// )}
+
+// {activeTab === "timeline" && (
+//   <div className="grid grid-cols-1 gap-6">
+
+//     <div className="bg-white p-4 rounded-lg border border-gray-200">
+//       <h3 className="text-md font-semibold mb-4">Leads Over Time</h3>
+//       <div className="h-96">
+//         <ResponsiveContainer width="100%" height="100%">
+//           <AreaChart
+//             data={Object.entries(chartData.leadsOverTime || {})
+//               ?.map(([date, count]) => ({
+//                 date,
+//                 count,
+//               }))
+//               .sort((a, b) => new Date(a.date) - new Date(b.date))}
+//           >
+//             <CartesianGrid strokeDasharray="3 3" />
+//             <XAxis dataKey="date" />
+//             <YAxis />
+//             <Tooltip />
+//             <Area
+//               type="monotone"
+//               dataKey="count"
+//               stroke="#8884d8"
+//               fill="#8884d8"
+//             />
+//           </AreaChart>
+//         </ResponsiveContainer>
+//       </div>
+//     </div>
+//   </div>
+// )}
+// </div>; */}

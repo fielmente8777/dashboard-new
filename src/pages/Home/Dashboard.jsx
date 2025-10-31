@@ -206,16 +206,16 @@ const Dashboard = () => {
           <div>
             <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} />
           </div>
-          {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 border">
             <div className="lg:col-span-3">
               <AnalyticsCard />
             </div>
             <div className="md:hidden lg:block lg:col-span-2">
               <TemperatureCard />
             </div>
-          </div> */}
+          </div>
 
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
             <Review />
             <div className="hidden md:block lg:hidden">
               <TemperatureCard />
@@ -232,7 +232,7 @@ const Dashboard = () => {
                 lastWeekData={[25, 30, 22, 40, 33, 38]}
               />
             </div>
-          </div> */}
+          </div>
         </div>
       ) : (
         <div className="flex flex-col gap-5 hide-scrollbar px-4">

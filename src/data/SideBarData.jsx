@@ -151,13 +151,13 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  {
-    name: "Social Media",
-    // key: "Social Media",
-    target: "_blank",
-    link: `https://social.eazotel.com`,
-    icon: <TiSocialSkype size={24} />,
-  },
+  // {
+  //   name: "Social Media",
+  //   // key: "Social Media",
+  //   target: "_blank",
+  //   link: `https://social.eazotel.com`,
+  //   icon: <TiSocialSkype size={24} />,
+  // },
   // {
   //   name: "Eazbot",
   //   // key: "Eazobot",
@@ -204,29 +204,29 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "Guest Request Management",
-    link: `guest-request-management`,
-    key: "GRM",
-    icon: <MdOutlineSos size={26} />,
-    subLinks: [
-      {
-        name: "All Requests",
-        link: `grm/all-requests`,
-        icon: <FaCodePullRequest size={16} />,
-      },
-      // {
-      //   name: "Emergency Request",
-      //   link: `grm/emergency-request`,
-      //   icon: <MdEmergencyShare size={18} />,
-      // },
-      {
-        name: "GRM Settings",
-        link: `grm/settings`,
-        icon: <IoMdSettings size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Guest Request Management",
+  //   link: `guest-request-management`,
+  //   key: "GRM",
+  //   icon: <MdOutlineSos size={26} />,
+  //   subLinks: [
+  //     {
+  //       name: "All Requests",
+  //       link: `grm/all-requests`,
+  //       icon: <FaCodePullRequest size={16} />,
+  //     },
+  //     // {
+  //     //   name: "Emergency Request",
+  //     //   link: `grm/emergency-request`,
+  //     //   icon: <MdEmergencyShare size={18} />,
+  //     // },
+  //     {
+  //       name: "GRM Settings",
+  //       link: `grm/settings`,
+  //       icon: <IoMdSettings size={18} />,
+  //     },
+  //   ],
+  // },
   {
     name: "Reservation Desk",
     link: `reservation-desk`,
@@ -241,119 +241,119 @@ export const SidebarData = [
     // ],
   },
 
-  {
-    name: "Content Management system",
-    link: ``,
-    key: "CMS",
-    icon: <SiPayloadcms size={24} />,
-    subLinks: [
-      {
-        name: "Profile and Links",
-        link: `cms/profile-and-links`,
-        icon: <RiFolderUserFill size={22} />,
-      },
-      {
-        name: "Gallery",
-        link: `cms/gallery`,
-        icon: <RiGalleryFill size={22} />,
-      },
-      {
-        name: "Offers",
-        link: `cms/offers`,
-        icon: <BiSolidOffer size={22} />,
-      },
-      {
-        name: "Events",
-        link: `cms/events`,
-        icon: <MdEventSeat size={22} />,
-      },
-      {
-        name: "Blogs",
-        link: `cms/blogs`,
-        icon: <FaBloggerB size={22} />,
-      },
-      {
-        name: "Faq",
-        link: `cms/faq`,
-        icon: <FaQuestion size={22} />,
-      },
-      // {
-      //   name: "Newsletter",
-      //   link: `cms/newsletter`,
-      //   icon: <FaQuestion size={22} />,
-      // },
-      {
-        name: "Privacy Policy",
-        link: `cms/privacy-policy`,
-        icon: <MdPrivacyTip size={22} />,
-      },
-      {
-        name: "Terms & Conditions",
-        link: `cms/terms-and-conditions`,
-        icon: <MdPolicy size={22} />,
-      },
-      {
-        name: "Cancellation and refund Policy",
-        link: `cms/cancellation-and-refund-policy`,
-        icon: <MdOutlineFreeCancellation size={22} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Content Management system",
+  //   link: ``,
+  //   key: "CMS",
+  //   icon: <SiPayloadcms size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Profile and Links",
+  //       link: `cms/profile-and-links`,
+  //       icon: <RiFolderUserFill size={22} />,
+  //     },
+  //     {
+  //       name: "Gallery",
+  //       link: `cms/gallery`,
+  //       icon: <RiGalleryFill size={22} />,
+  //     },
+  //     {
+  //       name: "Offers",
+  //       link: `cms/offers`,
+  //       icon: <BiSolidOffer size={22} />,
+  //     },
+  //     {
+  //       name: "Events",
+  //       link: `cms/events`,
+  //       icon: <MdEventSeat size={22} />,
+  //     },
+  //     {
+  //       name: "Blogs",
+  //       link: `cms/blogs`,
+  //       icon: <FaBloggerB size={22} />,
+  //     },
+  //     {
+  //       name: "Faq",
+  //       link: `cms/faq`,
+  //       icon: <FaQuestion size={22} />,
+  //     },
+  //     // {
+  //     //   name: "Newsletter",
+  //     //   link: `cms/newsletter`,
+  //     //   icon: <FaQuestion size={22} />,
+  //     // },
+  //     {
+  //       name: "Privacy Policy",
+  //       link: `cms/privacy-policy`,
+  //       icon: <MdPrivacyTip size={22} />,
+  //     },
+  //     {
+  //       name: "Terms & Conditions",
+  //       link: `cms/terms-and-conditions`,
+  //       icon: <MdPolicy size={22} />,
+  //     },
+  //     {
+  //       name: "Cancellation and refund Policy",
+  //       link: `cms/cancellation-and-refund-policy`,
+  //       icon: <MdOutlineFreeCancellation size={22} />,
+  //     },
+  //   ],
+  // },
 
-  {
-    name: "Human Resources Management",
-    link: `human-resources-management`,
-    key: "HRM",
-    icon: <GrResources size={24} />,
-    subLinks: [
-      {
-        name: "Applications",
-        link: `human-resources-management/applications`,
-        icon: <FaFilePdf size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Human Resources Management",
+  //   link: `human-resources-management`,
+  //   key: "HRM",
+  //   icon: <GrResources size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Applications",
+  //       link: `human-resources-management/applications`,
+  //       icon: <FaFilePdf size={18} />,
+  //     },
+  //   ],
+  // },
 
-  {
-    name: "Analytics & Reporting",
-    key: "Analytics Reporting",
-    link: ``,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "HRM Analytics",
-        link: `human-resources-management/analytics`,
-        key: "HRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        key: "Enquiries Management",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GRM Analytics",
-        link: `grm/analytics`,
-        key: "GRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Analytics & Reporting",
+  //   key: "Analytics Reporting",
+  //   link: ``,
+  //   icon: <SiAnalogue size={22} />,
+  //   subLinks: [
+  //     {
+  //       name: "HRM Analytics",
+  //       link: `human-resources-management/analytics`,
+  //       key: "HRM",
+  //       icon: <SiGoogleanalytics size={16} />,
+  //     },
+  //     {
+  //       name: "Enquiries Analytics",
+  //       link: `enquiries-management/enquiries-analytics`,
+  //       key: "Enquiries Management",
+  //       icon: <SiGoogleanalytics size={16} />,
+  //     },
+  //     {
+  //       name: "GRM Analytics",
+  //       link: `grm/analytics`,
+  //       key: "GRM",
+  //       icon: <SiGoogleanalytics size={16} />,
+  //     },
+  //   ],
+  // },
 
-  {
-    name: "Lead Gen Form",
-    key: "Leads Form",
-    icon: <MdLeaderboard size={24} />,
-    link: `lead-form/lead-gen-form`,
-    // subLinks: [
-    //   {
-    //     name: "My Form",
-    //     link: `lead-form/lead-gen-form`,
-    //     icon: <SiGoogleforms size={16} />,
-    //   },
-    // ],
-  },
+  // {
+  //   name: "Lead Gen Form",
+  //   key: "Leads Form",
+  //   icon: <MdLeaderboard size={24} />,
+  //   link: `lead-form/lead-gen-form`,
+  //   // subLinks: [
+  //   //   {
+  //   //     name: "My Form",
+  //   //     link: `lead-form/lead-gen-form`,
+  //   //     icon: <SiGoogleforms size={16} />,
+  //   //   },
+  //   // ],
+  // },
 
   {
     name: "Payment Gateway",

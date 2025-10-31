@@ -60,6 +60,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({});
+  const [currentProfile, setCurrentProfile] = useState(null);
   const {
     user: hotel,
     authUser,
@@ -211,7 +212,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   }, [hotel, authUser, hid]);
 
   const fetchAllClients = async () => {
-    if (!authUser?.isAdmin && authUser?.role !== "owner") return;
+    // if (!authUser?.isAdmin && authUser?.role !== "owner") return;
     try {
       const { data } = await axios.get(`${BASE_URL}/admin/get-all-clients`, {
         headers: {
@@ -265,20 +266,24 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   //   // }, 1000)
   // };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    removeCookie("token");
-    setAuth(false);
-    dispatch(setHid(null));
-    // setTimeout(() => {
-    navigate("/login");
-    // }, 1000)
-  };
+  // const handleLogout = () => {
+  //   localStorage.clear();
+  //   removeCookie("token");
+  //   setAuth(false);
+  //   dispatch(setHid(null));
+  //   // setTimeout(() => {
+  //   navigate("/login");
+  //   // }, 1000)
+  // };
 
   const handleProfileSwitch = async (profile) => {
     const { ndid, hotels, hotelEmail } = profile;
-
     const hid = Object.keys(hotels)[0];
+    setCurrentProfile(profile);
+
+    if (currentProfile?.hotelName === profile?.hotelName) {
+      return;
+    }
 
     try {
       setLeads([]);
@@ -435,42 +440,50 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               >
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
-                    {authUser?.isAdmin && authUser?.role === "owner" && (<div>
-                      <input
-                        type="text"
-                        placeholder="search"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
-                      />
-                    </div>)}
-                    <div className="space-y-2">
-                      {filteredClients?.map((profile) => {
-                        const hotel = Object.values(profile?.hotels)[0];
-                        return (
-                          <div
-                            className="bg-gray-200 cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-3"
-                            onClick={() => {
-                              handleProfileSwitch(profile);
-                            }}
-                          >
-                            <h2>{profile?.hotelName}</h2>
-                            <p className="text-xs text-gray-500 flex items-center">
-                              <CiLocationOn />
-                              <span>
-                                {hotel?.city}
-                                {hotel.city && ", "}
-                                {hotel?.state}
-                                {hotel.state && ", "}
-                                {hotel?.country}
-                              </span>
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {authUser?.isAdmin && authUser?.role === "owner" && (
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="search"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
+                        />
+                      </div>
+                    )}
+                    {authUser?.role === "owner" && (
+                      <div className="space-y-2">
+                        {filteredClients?.map((profile) => {
+                          const hotel = Object.values(profile?.hotels)[0];
+                          return (
+                            <div
+                              className={`${
+                                currentProfile?.hotelName === profile?.hotelName
+                                  ? "bg-gray-300 opacity-80"
+                                  : "bg-gray-200"
+                              }  cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-3`}
+                              onClick={() => {
+                                handleProfileSwitch(profile);
+                              }}
+                            >
+                              <h2>{profile?.hotelName}</h2>
+                              <p className="text-xs text-gray-500 flex items-center">
+                                <CiLocationOn />
+                                <span>
+                                  {hotel?.city}
+                                  {hotel.city && ", "}
+                                  {hotel?.state}
+                                  {hotel.state && ", "}
+                                  {hotel?.country}
+                                </span>
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(
                         ([key, value]) => {
