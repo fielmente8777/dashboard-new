@@ -134,11 +134,11 @@ export const SidebarData = [
   //       link: `meta/connections`,
   //       icon: <FaFacebook size={18} />,
   //     },
-  //     {
-  //       name: "Meta Leads",
-  //       link: `meta/leads`,
-  //       icon: <SiGoogleads size={18} />,
-  //     },
+  //     // {
+  //     //   name: "Meta Leads",
+  //     //   link: `meta/leads`,
+  //     //   icon: <SiGoogleads size={18} />,
+  //     // },
   //     {
   //       name: "Meta Messages",
   //       link: `meta/messages`,
@@ -151,13 +151,13 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  // {
-  //   name: "Social Media",
-  //   // key: "Social Media",
-  //   target: "_blank",
-  //   link: `https://social.eazotel.com`,
-  //   icon: <TiSocialSkype size={24} />,
-  // },
+  {
+    name: "Social Media",
+    // key: "Social Media",
+    target: "_blank",
+    link: `https://social.eazotel.com`,
+    icon: <TiSocialSkype size={24} />,
+  },
   // {
   //   name: "Eazbot",
   //   // key: "Eazobot",

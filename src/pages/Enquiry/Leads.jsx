@@ -793,9 +793,9 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Email
                   </th>
-                  {/* <th className="py-3 px-4 text-[14px] font-medium capitalize">
-                    Message
-                  </th> */}
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                    Number of Guests
+                  </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
                     Check In
                   </th>
@@ -845,9 +845,9 @@ const Leads = () => {
                           // }
                         />
                       </td>
-                      <td className="py-2 px-2 font-medium">
+                      {/* <td className="py-2 px-2 font-medium">
                         Dashboard
-                        {/* <select
+                        <select
                           onChange={(e) => {
                             setNewRow({ ...newRow, source: e.target.value });
                           }}
@@ -858,8 +858,8 @@ const Leads = () => {
                           <option value="Dashboard">Dashboard</option>
                           <option value="Eazbot">Eazbot</option>
                           <option value="WebForm">WebForm</option>
-                        </select> */}
-                      </td>
+                        </select>
+                      </td> */}
                       <td className="py-2 px-2">
                         <input
                           type="text"
@@ -882,7 +882,7 @@ const Leads = () => {
                           }
                         />
                       </td>
-                      <td className="py-2 px-2">
+                      {/* <td className="py-2 px-2">
                         <input
                           type="email"
                           placeholder="Email"
@@ -892,7 +892,8 @@ const Leads = () => {
                             setNewRow({ ...newRow, email: e.target.value })
                           }
                         />
-                      </td>
+                      </td> */}
+
                       <td className="py-2 px-2">
                         <input
                           type="date"
@@ -1013,6 +1014,12 @@ const Leads = () => {
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.Email === "undefined" ? "-" : enquery?.Email}
+                      </td>
+
+                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                        {enquery?.numberOfGuest == ""
+                          ? "-"
+                          : enquery?.numberOfGuest}
                       </td>
 
                       {/* <td className="py-3 px-2 text-[14px] text-[#575757]">

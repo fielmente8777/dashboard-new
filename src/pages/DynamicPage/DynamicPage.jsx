@@ -130,9 +130,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/enquiries-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
-      <AdsLeadsUsingGoogleSheet />
-    ),
+    // [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
+    //   <AdsLeadsUsingGoogleSheet />
+    // ),
+    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: <MetaLeads />,
     [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: (
       <AdLeadsAnalytics />
     ),
