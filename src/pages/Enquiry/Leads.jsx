@@ -48,6 +48,7 @@ const header = [
   "Potential For Later",
   "Quotation Provided",
   "Dead Lead",
+  "Date Sold Out",
 ];
 
 const Leads = () => {
@@ -223,6 +224,14 @@ const Leads = () => {
             token,
             hid,
             status: "Dead Lead",
+          });
+          break;
+
+        case 9:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Date Sold Out",
           });
           break;
         default:
@@ -1094,6 +1103,13 @@ const Leads = () => {
                             className="bg-white  text-black"
                           >
                             Dead Lead
+                          </option>
+
+                          <option
+                            value="Date Sold Out"
+                            className="bg-white  text-black"
+                          >
+                            Date Sold Out
                           </option>
 
                           <option

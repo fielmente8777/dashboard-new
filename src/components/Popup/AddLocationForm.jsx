@@ -137,7 +137,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
             <div>
               <div className="w-full">
                 <label htmlFor="local" className="font-medium text-primary/70">
-                  Local
+                  Hotel Name
                 </label>
                 <input
                   id="local"

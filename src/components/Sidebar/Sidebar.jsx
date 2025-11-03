@@ -416,7 +416,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
           >
             <div className="w-full">
               <p className="text-[16px] capitalize text-white font-medium">
-                {hotel?.Profile?.hotelName || "Eazotel"}
+                {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                {currentLocation?.local}
               </p>
 
               {currentLocation?.city &&
@@ -506,7 +507,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               }}
                             >
                               <h2 className="text-[16px] font-medium">
-                                {hotel?.Profile?.hotelName || "Eazotel"}
+                                {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                                {value?.local}
                               </h2>
 
                               <p className="text-sm gap-1 text-gray-500 flex items-center">
@@ -529,6 +531,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                     {authUser?.assigned_location?.map((location, index) => {
                       if (hotel?.Profile?.hotels[location?.hid]) {
                         const value = hotel?.Profile?.hotels[location?.hid];
+                        console.log(value);
                         const isCurrentLocation =
                           value?.city === currentLocation?.city &&
                           value?.state === currentLocation?.state &&
@@ -548,7 +551,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                             }}
                           >
                             <h2 className="text-[16px] font-medium">
-                              {hotel?.Profile?.hotelName || "Eazotel"}
+                              {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                              {value?.local}
                             </h2>
 
                             <p className="text-xs text-gray-500 flex items-center">

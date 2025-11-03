@@ -26,6 +26,7 @@ const header = [
   { label: "Potential For Later", value: "Potential For Later" },
   { label: "Quotation Provided", value: "Quotation Provided" },
   { label: "Dead Lead", value: "Dead Lead" },
+  { label: "Date Sold Out", value: "Date Sold Out" },
 ];
 
 export const formatPhoneNumber = (phone) => {
@@ -270,7 +271,7 @@ const LeadPopup = ({
       }`}
       // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
-      <div className="bg-[#f8f8fb] px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
+      <div className="bg-[#f8f8fb]   px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
         <div className="flex justify-between py-3">
           <div className="text-black space-x-3">
             {Tabs?.map((tab, index) => (
@@ -436,13 +437,14 @@ const LeadPopup = ({
               </div>
 
               <div className="space-y-2">
-                <div className="bg-white rounded-lg border h-68">
+                <div className="bg-white rounded-lg border h-68 overflow-auto">
                   <div className="border-b border-gray-200 p-3">
                     <h2 className="text-md font-semibold text-gray-900 flex items-center">
                       <i className="fas fa-comments text-blue-600"></i>
                       Conversations
                     </h2>
                   </div>
+
                   <div className="p-3 h-full">
                     <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-hidden">
                       {!lead?.chats || lead?.chats?.length === 0 ? (
@@ -496,20 +498,36 @@ const LeadPopup = ({
                   </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-2">
                   <label htmlFor="" className="text-gray-600 font-medium">
                     Notes
                   </label>
-                  <textarea
-                    onChange={(e) => {
-                      setIsEdit(true);
-                      setNote(e.target.value);
-                    }}
-                    value={note}
-                    rows={5}
-                    placeholder="Enter notes"
-                    className="w-full border border-gray-400 mt-1 outline-none rounded-sm p-3"
-                  />
+
+                  <div>
+                    <textarea
+                      onChange={(e) => {
+                        setIsEdit(true);
+                        setNote(e.target.value);
+                      }}
+                      value={note?.text}
+                      rows={2}
+                      placeholder="Enter notes"
+                      className="w-full border border-gray-400 bg-white mt-1 outline-none rounded-sm p-3"
+                    />
+                    {note?.updated_at && (
+                      <p className="text-xs text-gray-600 font-medium">
+                        Note Updated at :{" "}
+                        {new Date(note?.updated_at).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }
+                        )}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {isEdit && (
                   <button
@@ -577,19 +595,40 @@ const LeadPopup = ({
                 )}
               </div>
 
-              <div className="flex justify-end items-center gap-5 lg:mt-0 mt-4">
-                <button
-                  className="bg-red-900 hover:bg-red-900/90 text-white px-4 py-2 rounded-sm"
-                  onClick={() => handleDelete(lead._id, lead.Email)}
-                >
-                  Delete
-                </button>
-                <button
-                  className="bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-4 py-2 rounded-sm"
-                  onClick={onClose}
-                >
-                  Close
-                </button>
+              <div>
+                <div className="flex justify-end items-center gap-5 lg:mt-0 mt-4">
+                  <button
+                    className="bg-red-900 hover:bg-red-900/90 text-white px-4 py-2 rounded-sm"
+                    onClick={() => handleDelete(lead._id, lead.Email)}
+                  >
+                    Delete
+                  </button>
+                  <button
+                    className="bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-4 py-2 rounded-sm"
+                    onClick={onClose}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="flex flex-col items-end mt-2">
+                  <p className="text-xs text-gray-600 font-medium">
+                    Created at :{" "}
+                    {new Date(lead?.Created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+
+                  <p className="text-xs text-gray-600 font-medium">
+                    Updated at :{" "}
+                    {new Date(lead?.updated_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
           </>
