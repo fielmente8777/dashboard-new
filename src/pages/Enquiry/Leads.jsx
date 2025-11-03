@@ -79,6 +79,18 @@ const Leads = () => {
   const [newRow, setNewRow] = useState(null);
   const [isLeadLoading, setIsLeadLoading] = useState(false);
 
+  const [lead, setLead] = useState({
+    Domain: "",
+    hId: localStorage.getItem("hid"),
+    email: "",
+    name: "",
+    contact: "",
+    Description: "",
+    check_in: "",
+    check_out: "",
+    created_from: "webform",
+  });
+
   const setDateRange = (dates) => {
     const [start, end] = dates;
     setStartDate(start);
@@ -438,6 +450,8 @@ const Leads = () => {
   //   );
   // };
 
+  const handleCloseModal = () => setNewRow(false);
+
   const handleDeleteAll = () => {
     // alert("We are working on it");
     Swal.fire({
@@ -480,23 +494,24 @@ const Leads = () => {
 
   const handleSaveRow = async () => {
     setIsLeadLoading(true);
-    if (!newRow?.name || !newRow?.contact || !newRow?.email) {
+    if (!lead?.name || !lead?.contact || !lead?.email) {
       alert("Please fill all fields");
+      setIsLeadLoading(false);
       return;
     }
 
     const formData = {
       Domain: hotel?.Profile?.domain,
-      Contact: newRow.contact,
-      email: newRow.email,
+      Contact: lead.contact,
+      email: lead.email,
       Description: "",
-      Name: newRow.name,
+      Name: lead.name,
       Remark: "",
       Subject: null,
-      check_in: `${newRow.check_in}`,
-      check_out: `${newRow.check_out}`,
+      check_in: `${lead.check_in}`,
+      check_out: `${lead.check_out}`,
       numbers_of_guest: ``,
-      created_from: newRow.source,
+      created_from: lead.created_from,
     };
 
     try {
@@ -506,6 +521,7 @@ const Leads = () => {
         Swal.fire("Success", data?.Message, "success");
       }
     } catch (error) {
+      console.log(error);
     } finally {
       setIsLeadLoading(false);
       setNewRow(null);
@@ -823,13 +839,13 @@ const Leads = () => {
 
               {currentItems?.length > 0 ? (
                 <tbody>
-                  {newRow && (
+                  {/* {newRow && (
                     <tr className="text-sm border-b border-gray-200 text-[#575757] bg-blue-100">
                       <td className="py-2 px-2">-</td>
                       <td className="text-black p-2">-</td>
                       <td className="py-2 px-2">
                         {newRow.isReserved ? "Reserved" : "Unreserved"}
-                        {/* <select
+                        <select
                           onChange={(e) => {
                             setNewRow({
                               ...newRow,
@@ -841,7 +857,7 @@ const Leads = () => {
                           <option value="">Select</option>
                           <option value={false}>Unreserved</option>
                           <option value={true}>Reserved</option>
-                        </select> */}
+                        </select>
                       </td>
                       <td className="py-2 px-2">
                         <input
@@ -849,12 +865,12 @@ const Leads = () => {
                           className="outline-none px-2 py-1"
                           value={formatDateTime(new Date())}
                           readOnly
-                          // onChange={(e) =>
-                          //   setNewRow({ ...newRow, date: e.target.value })
-                          // }
+                          onChange={(e) =>
+                            setNewRow({ ...newRow, date: e.target.value })
+                          }
                         />
                       </td>
-                      {/* <td className="py-2 px-2 font-medium">
+                      <td className="py-2 px-2 font-medium">
                         Dashboard
                         <select
                           onChange={(e) => {
@@ -868,7 +884,7 @@ const Leads = () => {
                           <option value="Eazbot">Eazbot</option>
                           <option value="WebForm">WebForm</option>
                         </select>
-                      </td> */}
+                      </td>
                       <td className="py-2 px-2">
                         <input
                           type="text"
@@ -891,7 +907,7 @@ const Leads = () => {
                           }
                         />
                       </td>
-                      {/* <td className="py-2 px-2">
+                      <td className="py-2 px-2">
                         <input
                           type="email"
                           placeholder="Email"
@@ -901,7 +917,7 @@ const Leads = () => {
                             setNewRow({ ...newRow, email: e.target.value })
                           }
                         />
-                      </td> */}
+                      </td>
 
                       <td className="py-2 px-2">
                         <input
@@ -927,7 +943,7 @@ const Leads = () => {
                       </td>
                       <td className="py-2 px-2">
                         Open
-                        {/* <select
+                        <select
                           onChange={(e) => {
                             setNewRow({ ...newRow, status: e.target.value });
                           }}
@@ -937,7 +953,7 @@ const Leads = () => {
                           <option value="Open">Open</option>
                           <option value="Out Of Budget">Out Of Budget</option>
                           <option value="Dead Lead">Dead Lead</option>
-                        </select> */}
+                        </select>
                       </td>
                       <td className="py-2 px-2 flex gap-2">
                         <button
@@ -954,7 +970,7 @@ const Leads = () => {
                         </button>
                       </td>
                     </tr>
-                  )}
+                  )} */}
 
                   {currentItems.map((enquery, index) => (
                     <tr
@@ -1145,6 +1161,189 @@ const Leads = () => {
                 </tbody>
               )}
             </table>
+
+            {newRow && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black/60 bg-opacity-40 z-50 px-4">
+                <div className="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative animate-fadeIn">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                    Add New Lead
+                  </h2>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Domain */}
+                    {/* <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Domain
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter domain"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.Domain}
+                        onChange={(e) =>
+                          setLead({ ...lead, Domain: e.target.value })
+                        }
+                      />
+                    </div> */}
+
+                    {/* hId */}
+                    {/* <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        hId
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter hId"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        // value={lead.hId}
+                        // onChange={(e) =>
+                        //   setLead({ ...lead, hId: e.target.value })
+                        // }
+                      />
+                    </div> */}
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="Enter email"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.email}
+                        onChange={(e) =>
+                          setLead({ ...lead, email: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter name"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.name}
+                        onChange={(e) =>
+                          setLead({ ...lead, name: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Contact
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="Enter contact"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.contact}
+                        onChange={(e) =>
+                          setLead({ ...lead, contact: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {/* Created From */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Created From
+                      </label>
+                      <select
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.created_from}
+                        onChange={(e) =>
+                          setLead({ ...lead, created_from: e.target.value })
+                        }
+                      >
+                        <option value="" disabled>
+                          Select
+                        </option>
+                        {/* <option value="eazbot">Eazbot</option>
+                        <option value="dashboard">Dashboard</option> */}
+                        <option value="webform" selected>
+                          Web Form
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Check In */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Check In
+                      </label>
+                      <input
+                        type="date"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.check_in}
+                        onChange={(e) =>
+                          setLead({ ...lead, check_in: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {/* Check Out */}
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Check Out
+                      </label>
+                      <input
+                        type="date"
+                        className="border rounded px-2 py-1 w-full outline-none"
+                        value={lead.check_out}
+                        onChange={(e) =>
+                          setLead({ ...lead, check_out: e.target.value })
+                        }
+                      />
+                    </div>
+
+                    {/* Description */}
+                    <div className="col-span-2">
+                      <label className="block text-sm text-gray-600 mb-1">
+                        Description
+                      </label>
+                      <textarea
+                        placeholder="Enter description"
+                        className="border rounded px-2 py-1 w-full outline-none h-20 resize-none"
+                        value={lead.Description}
+                        onChange={(e) =>
+                          setLead({ ...lead, Description: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex justify-end gap-3 mt-6">
+                    <button
+                      onClick={handleCloseModal}
+                      className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveRow}
+                      // disabled={isLeadLoading}
+                      className="px-4 py-2 bg-green-600 text-white rounded flex items-center gap-2 hover:bg-green-700 disabled:opacity-60"
+                    >
+                      {isLeadLoading ? (
+                        <>
+                          Saving <Loader color="#fff" />
+                        </>
+                      ) : (
+                        "Save"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
