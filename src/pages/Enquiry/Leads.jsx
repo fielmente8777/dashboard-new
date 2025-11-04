@@ -654,12 +654,12 @@ const Leads = () => {
       </div>
 
       <div className="bg-white p-4 mb-10">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex justify-between items-center gap-2 max-w-3xl w-full">
+        <div className="flex lg:flex-row flex-col justify-between lg:items-center mb-4">
+          <div className="flex lg:flex-row flex-col justify-between lg:items-center gap-2 max-w-3xl w-full">
             {/* <div className="relative w-3/4"> */}
             <div>
               <select
-                className="border border-gray-300 rounded-md px-4 py-2"
+                className="border border-gray-300 rounded-md px-4 py-2 lg:w-fit w-full"
                 onChange={(e) => handleTabClick(e.target.value)}
               >
                 {header.map((item, index) => (
@@ -673,6 +673,7 @@ const Leads = () => {
                 ))}
               </select>
             </div>
+
             <div className="relative w-full">
               <span className="absolute top-3.5 left-2 -z-10">
                 <Search />
@@ -686,10 +687,10 @@ const Leads = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="border border-gray-300 rounded-md p-1.5">
+              <div className="border border-gray-300 rounded-md p-1.5 w-full">
                 <DatePicker
                   // maxDate={msg?.disabled ? new Date() : undefined}
-                  className="outline-none "
+                  className="outline-none w-full"
                   selectsRange
                   startDate={startDate}
                   endDate={endDate}
@@ -736,7 +737,7 @@ const Leads = () => {
           </div> */}
           </div>
 
-          <div className=" py-2 px-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="py-2 lg:px-4 flex flex-col sm:flex-row sm:items-center gap-4">
             {/* <label
               htmlFor="itemsPerPage"
               className="text-sm font-medium whitespace-nowrap text-gray-700"
