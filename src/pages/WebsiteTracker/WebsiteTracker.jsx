@@ -34,7 +34,7 @@ const WebsiteTracker = () => {
     },[])
 
 
-    console.log(visitors)
+    // console.log(visitors)
     return (
         <div className="p-4">
         <h1 className="text-md font-medium mb-4">Visitors</h1>

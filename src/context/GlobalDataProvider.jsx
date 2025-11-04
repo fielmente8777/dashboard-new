@@ -22,7 +22,7 @@ const GlobalDataProvider = () => {
     authUser,
   } = useSelector((state) => state.userProfile);
 
-  console.log("aaya");
+  // console.log("aaya");
 
   useEffect(() => {
     if (token) {
@@ -34,7 +34,7 @@ const GlobalDataProvider = () => {
   }, [token]);
 
   useEffect(() => {
-    console.log(hotel);
+    // console.log(hotel);
     if (hotel?.Data?.ndid) {
       localStorage.setItem("ndid", hotel.Data.ndid);
     }

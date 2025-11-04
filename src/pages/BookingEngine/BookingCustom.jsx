@@ -33,7 +33,7 @@ const BookingCustom = () => {
       );
       const json = await response.json();
       if (json.Status) {
-        console.log(json)
+        // console.log(json)
         // setgateway(json.Details.Gateway);
         // setAboutusEngine(json.Details.AboutUs);
         // setCancellationPolicyEngine(json.Details.CancellationPolicy);

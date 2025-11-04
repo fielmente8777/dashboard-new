@@ -24,7 +24,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   const { Leads, setLeads } = useContext(DataContext);
   const { leadsList, setLeadsLists } = useContext(DataContext);
 
-  console.log(leadsList);
+  // console.log(leadsList);
 
   // const [leadsLists, setLeadsLists] = useState([]);
   const [leadFromIg, setLeadFromIg] = useState();
@@ -104,8 +104,8 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
     }
   }, [rangeDate]);
 
-  console.log(Leads);
-  console.log(leadsList);
+  // console.log(Leads);
+  // console.log(leadsList);
 
   // useEffect(() => {
   //   if (Leads) {

@@ -76,7 +76,7 @@ const Eazobot = () => {
       };
 
       const data = await createChatbotData(chatbotFormData);
-      console.log(data);
+      // console.log(data);
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -162,7 +162,7 @@ const Eazobot = () => {
     getChatbotDetails();
   }, []);
 
-  console.log(chatbotData);
+  // console.log(chatbotData);
 
   return (
     <div className=" w-full mx-auto py-6">

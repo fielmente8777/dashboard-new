@@ -47,7 +47,7 @@ const LeadPopup = ({
   handleTabClick,
   activeIndex,
 }) => {
-  console.log(lead?.note);
+  // console.log(lead?.note);
   const [note, setNote] = useState();
   const [quickResponePopup, setQuickResponePopup] = useState(false);
   const [callDetails, setCallDetails] = useState(null);
@@ -234,7 +234,7 @@ const LeadPopup = ({
       setCallDetails(result?.data);
       setCallDetailsLoading(false);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setCallDetailsLoading(false);
     }
   };
@@ -254,7 +254,7 @@ const LeadPopup = ({
     }
   };
 
-  console.log(lead);
+  // console.log(lead);
 
   useEffect(() => {
     if (lead) {

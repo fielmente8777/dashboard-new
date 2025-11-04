@@ -339,7 +339,7 @@ const LeadGenForm = () => {
   // for rendering col span if editField exist or true
   const colSpan = editField ? "col-span-6" : "col-span-9";
 
-  console.log(isNewFormOpen);
+  // console.log(isNewFormOpen);
 
   return (
     <div className="flex flex-col gap-4 p-4 overflow-hidden bg-white mb-10 cardShadow">

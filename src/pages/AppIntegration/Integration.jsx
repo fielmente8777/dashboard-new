@@ -85,7 +85,7 @@ function Integration() {
     return matchesCategory && matchesSearch;
   });
 
-  console.log(filteredIntegrations);
+  // console.log(filteredIntegrations);
 
   const toggleIntegration = (id) => {
     if (id === "meta") {
@@ -106,7 +106,7 @@ function Integration() {
 
           // setConnected(true);
         } catch (error) {
-          console.log(error);
+          // console.log(error);
         }
       };
       handleConnect();
@@ -138,11 +138,11 @@ function Integration() {
         },
       });
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       setIntegrationStauts(data.result?.docs);
       return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -207,7 +207,7 @@ function Integration() {
             // console.log(integration)
             const status = integrationStatus[integration?.id] ?? false;
 
-            console.log(status);
+            // console.log(status);
 
             return (
               <div
