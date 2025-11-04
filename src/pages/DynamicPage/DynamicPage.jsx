@@ -73,6 +73,7 @@ import MetaLeads from "../Meta/MetaLeads";
 import MetaMessages from "../Meta/MetaMessage";
 import MetaConnections from "../Meta/MetaConnection";
 import MetaSettings from "../Meta/MetaSetting";
+import Calls from "../Calls/Calls";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -211,7 +212,9 @@ const DynamicPage = () => {
     // pms
     [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
 
-    [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
+    // [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
+    [`${BASE_PATH}/${hid}/calls-management`]: <Calls />,
+
     [`${BASE_PATH}/${hid}/website-tracking/visitors`]: <WebsiteTracker />,
     [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,

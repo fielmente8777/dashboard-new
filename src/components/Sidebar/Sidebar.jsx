@@ -203,13 +203,19 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
           hotel.Profile &&
           Object.keys(hotel?.Profile?.hotels ?? {}).length > 0
         ) {
-          const assignedLocation = authUser?.assigned_location[0];
+          const assignedLocation =
+            authUser?.assignedLocation &&
+            authUser?.assigned_location[
+              Object.keys(hotel?.Profile?.hotels?.length)
+            ];
           const currentLoaction = hotel?.Profile?.hotels[assignedLocation?.hid];
           setCurrentLocation(currentLoaction);
         }
       }
     }
   }, [hotel, authUser, hid]);
+
+  console.log(currentLocation);
 
   const fetchAllClients = async () => {
     // if (!authUser?.isAdmin && authUser?.role !== "owner") return;

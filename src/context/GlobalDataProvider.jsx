@@ -43,7 +43,7 @@ const GlobalDataProvider = () => {
       const hotelKeys = Object.keys(hotel.Profile.hotels);
       if (authUser?.isAdmin) {
         if (hotelKeys.length > 0) {
-          dispatch(setHid(hotelKeys[0]));
+          dispatch(setHid(hotelKeys[hotelKeys.length - 1]));
         }
       } else {
         dispatch(setHid(authUser?.assigned_location[0]?.hid));

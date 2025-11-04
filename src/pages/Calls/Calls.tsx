@@ -1,11 +1,57 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaCircle, FaEye, FaHotel, FaPlay } from "react-icons/fa";
-import CallDetails from "./CallDetails";
+// import CallDetails from "./CallDetails";
 import { getAiSalesAgentCall } from "../../services/api/AiSales.api";
 import { MdClose, MdRefresh } from "react-icons/md";
 import { NEW_BASE_URL } from "../../data/constant";
 
-export default function AiSaleAgent() {
+import axios from "axios";
+
+const callsData = [
+  {
+    Sid: "c2728072397208eca50a4cfcd3e619b4",
+    DateCreated: "2025-11-04 13:44:34",
+    DateUpdated: "2025-11-04 13:45:26",
+    AccountSid: "ebcmussoorie1",
+    To: "09901712596",
+    From: "08273832570",
+    PhoneNumber: "01143078316",
+    PhoneNumberSid: "01143078316",
+    Status: "completed",
+    StartTime: "2025-11-04 13:44:34",
+    EndTime: "2025-11-04 13:45:10",
+    Duration: 37,
+    Price: 0,
+    Direction: "inbound",
+    AnsweredBy: "human",
+    Uri: "/v1/Accounts/ebcmussoorie1/Calls/c2728072397208eca50a4cfcd3e619b4",
+    CustomField: "N/A",
+    RecordingUrl: "",
+  },
+  {
+    Sid: "d902066973b66074ccb30052ac5119b4",
+    DateCreated: "2025-11-04 13:41:08",
+    DateUpdated: "2025-11-04 13:42:32",
+    AccountSid: "ebcmussoorie1",
+    To: "08434592232",
+    From: "08273832570",
+    PhoneNumber: "01143078316",
+    PhoneNumberSid: "01143078316",
+    Status: "completed",
+    StartTime: "2025-11-04 13:41:08",
+    EndTime: "2025-11-04 13:42:17",
+    Duration: 70,
+    Price: 0.55,
+    Direction: "inbound",
+    AnsweredBy: "human",
+    Uri: "/v1/Accounts/ebcmussoorie1/Calls/d902066973b66074ccb30052ac5119b4",
+    CustomField: "N/A",
+    RecordingUrl:
+      "https://recordings.exotel.com/exotelrecordings/ebcmussoorie1/d902066973b66074ccb30052ac5119b4.mp3",
+  },
+];
+
+export default function Calls() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [showAudioModal, setShowAudioModal] = useState(false);
@@ -36,59 +82,12 @@ export default function AiSaleAgent() {
     },
   ]);
   const [selectedCall, setSelectedCall] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const audioPlayerRef = useRef(null);
 
   // Simulated call data
   const [calls, setCalls] = useState([]);
-
-  useEffect(() => {
-    loadStats();
-    const interval = setInterval(() => {
-      loadStats();
-      updateActivityFeed();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [calls]);
-
-  const loadStats = () => {
-    // const completed = calls?.filter((c) => c[3] === "completed").length;
-    const completed = calls?.filter((c) => c.status === "completed").length;
-
-    const active = calls?.filter((c) => c[3] === "active").length;
-    setCompletedCalls(completed);
-    setActiveCalls(active);
-
-    const averageDuration =
-      calls.reduce((acc, call) => acc + (call.duration || 0), 0) / calls.length;
-
-    if (averageDuration) {
-      setAvgDuration(averageDuration / 60);
-    }
-
-    const completedWithDuration = calls.filter(
-      (c) => c[3] === "completed" && c[4]
-    );
-    if (completedWithDuration.length > 0) {
-      const totalDuration = completedWithDuration.reduce(
-        (sum, c) => sum + c[4],
-        0
-      );
-      const avgSeconds = Math.round(
-        totalDuration / completedWithDuration.length
-      );
-      // setAvgDuration(`${Math.floor(avgSeconds / 60)}m ${avgSeconds % 60}s`);
-      setAvgDuration(averageDuration);
-    }
-
-    const totalCalls = calls?.length;
-    if (totalCalls > 0) {
-      setSuccessRate(`${Math.round((completed / totalCalls) * 100)}%`);
-    }
-
-    setBookingCount(calls?.filter((c) => c[4] && c[4] > 120).length);
-  };
 
   const updateActivityFeed = () => {
     const messages = [
@@ -110,19 +109,7 @@ export default function AiSaleAgent() {
     ]);
   };
 
-  const playRecording = (callSid) => {
-    setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/play/${callSid}`);
-    setShowAudioModal(true);
-  };
-
   // console.log(currentRecordingUrl);
-
-  const downloadRecording = () => {
-    const link = document.createElement("a");
-    link.href = currentRecordingUrl;
-    link.download = `call-recording-${Date.now()}.mp3`;
-    link.click();
-  };
 
   const getAiSalesAgentApiCall = async () => {
     setLoading(true);
@@ -141,9 +128,51 @@ export default function AiSaleAgent() {
     }
   };
 
+  const getAllCalls = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${NEW_BASE_URL}/api/v1/call/getall`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      console.log(data);
+      // const response = await getAllCallsApiCall();
+      // setCalls(response);
+      // console.log("Record data", response?.call_record_data);
+    } catch (error) {
+      console.error("Error fetching call");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getAiSalesAgentApiCall();
+    // getAiSalesAgentApiCall();
+    getAllCalls();
   }, []);
+
+  const columns = [
+    "Sid",
+    // "DateCreated",
+    // "DateUpdated",
+    "AccountSid",
+    "From",
+    "To",
+    "PhoneNumber",
+    // "PhoneNumberSid",
+    "Status",
+    "StartTime",
+    "EndTime",
+    "Duration",
+    "Price",
+    "Direction",
+    // "AnsweredBy",
+    // "Uri",
+    // "CustomField",
+    // "RecordingUrl",
+    // "Actions",
+  ];
 
   return (
     <div className="">
@@ -263,21 +292,13 @@ export default function AiSaleAgent() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {[
-                  // "Call ID",
-                  "Hotel Number",
-                  "Guest Number",
-                  "Status",
-                  "Duration",
-                  "Time",
-                  "Actions",
-                ].map((col) => (
+                {columns.map((col) => (
                   <th
                     key={col}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-4 py-3 text-left font-medium text-gray-600 uppercase tracking-wider whitespace-nowrap"
                   >
                     {col}
                   </th>
@@ -286,103 +307,99 @@ export default function AiSaleAgent() {
             </thead>
 
             <tbody className="bg-white divide-y divide-gray-200">
-              {!loading
-                ? calls?.map((call, idx) => {
-                    const duration =
-                      call.start_time && call.end_time
-                        ? Math.round(
-                            (new Date(call.end_time) -
-                              new Date(call.start_time)) /
-                              1000
-                          )
-                        : null;
-
-                    return (
-                      <tr
-                        key={idx}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        {/* Call ID */}
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {call.call_sid.slice(0, 8)}...
+              {callsData.map((call, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-2 text-gray-900">{call.Sid}</td>
+                  {/* <td className="px-4 py-2 text-gray-900">
+                      {call.DateCreated}
+                    </td> */}
+                  {/* <td className="px-4 py-2 text-gray-900">
+                      {call.DateUpdated}
+                    </td> */}
+                  <td className="px-4 py-2 text-gray-900">{call.AccountSid}</td>
+                  <td className="px-4 py-2 text-gray-900">{call.From}</td>
+                  <td className="px-4 py-2 text-gray-900">{call.To}</td>
+                  <td className="px-4 py-2 text-gray-900">
+                    {call.PhoneNumber}
+                  </td>
+                  {/* <td className="px-4 py-2 text-gray-900">
+                      {call.PhoneNumberSid}
                     </td> */}
 
-                        {/* From */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm font-medium text-gray-900">
-                            <FaHotel className="text-primary mr-2" />
-                            {call.call_from || "Unknown"}
-                          </div>
-                        </td>
+                  {/* Status */}
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
+                        call.Status === "completed"
+                          ? "bg-green-100 text-green-800"
+                          : call.Status === "in-progress"
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      <FaCircle className="mr-1" size={8} />
+                      {call.Status}
+                    </span>
+                  </td>
 
-                        {/* To */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {call.call_to || "Unknown"}
-                        </td>
+                  <td className="px-4 py-2 text-gray-900">
+                    {new Date(call.StartTime).toLocaleTimeString()}
+                  </td>
+                  <td className="px-4 py-2 text-gray-900">
+                    {new Date(call.EndTime).toLocaleTimeString()}
+                  </td>
+                  <td className="px-4 py-2 text-gray-900">
+                    {`${Math.floor(call.Duration / 60)} min ${
+                      call.Duration % 60
+                    } sec`}
+                  </td>
+                  <td className="px-4 py-2 text-gray-900">{call.Price}</td>
+                  <td className="px-4 py-2 text-gray-900">{call.Direction}</td>
+                  {/* <td className="px-4 py-2 text-gray-900">{call.AnsweredBy}</td> */}
+                  {/* <td className="px-4 py-2 text-gray-900 break-all">
+                      {call.Uri}
+                    </td> */}
+                  {/* <td className="px-4 py-2 text-gray-900">
+                      {call.CustomField}
+                    </td> */}
 
-                        {/* Status */}
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
-                              call.status === "completed"
-                                ? "bg-green-100 text-green-800"
-                                : call.status === "active"
-                                ? "bg-blue-100 text-blue-800"
-                                : call.status === "failed"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            <FaCircle className="mr-1" size={8} />
-                            {call.status}
-                          </span>
-                        </td>
+                  {/* Recording */}
+                  {/* <td className="px-4 py-2 text-gray-900">
+                      {call.RecordingUrl ? (
+                        <a
+                          href={call.RecordingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Recording Link
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td> */}
 
-                        {/* Duration */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {typeof call?.duration === "number"
-                            ? `${Math.floor(call.duration / 60)} min ${
-                                call.duration % 60
-                              } sec`
-                            : "-"}
-                        </td>
-
-                        {/* Time */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(call.created_at).toLocaleString()}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => setSelectedCall(call)}
-                            className="text-blue-600 hover:text-blue-900 mr-4 flex items-center"
-                          >
-                            <FaEye className="mr-1" /> View Details
-                          </button>
-                          <button
-                            onClick={() =>
-                              playRecording(
-                                call?.call_record_data?.recording_sid
-                              )
-                            }
-                            className="text-green-600 hover:text-green-900 flex items-center"
-                          >
-                            <FaPlay className="mr-1" /> Play
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                : [1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-                    <tr key={item}>
-                      <td className="px-6 py-4 whitespace-nowrap"></td>
-                    </tr>
-                  ))}
+                  {/* Actions */}
+                  {/* <td className="px-4 py-2 whitespace-nowrap flex items-center gap-3">
+                      <button
+                        // onClick={() => viewDetails(call)}
+                        className="text-blue-600 hover:text-blue-800 flex items-center"
+                      >
+                        <FaEye className="mr-1" /> View
+                      </button>
+                      <button
+                        // onClick={() => playRecording(call.RecordingUrl)}
+                        className="text-green-600 hover:text-green-800 flex items-center"
+                      >
+                        <FaPlay className="mr-1" /> Play
+                      </button>
+                    </td> */}
+                </tr>
+              ))}
             </tbody>
           </table>
 
-          {selectedCall && (
+          {/* {selectedCall && (
             <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60">
               <CallDetails
                 call={selectedCall}
@@ -390,7 +407,7 @@ export default function AiSaleAgent() {
                 backButton
               />
             </div>
-          )}
+          )} */}
 
           {/* {selectedCall && (
             <CallDetail

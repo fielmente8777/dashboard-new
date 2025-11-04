@@ -123,34 +123,41 @@ export const SidebarData = [
   //   link: `ai-sales-agent`,
   //   icon: <HiOutlineUserGroup />,
   // },
-  // {
-  //   name: "Meta",
-  //   key: "",
-  //   link: `meta`,
-  //   icon: <FaFacebook size={24} />,
-  //   subLinks: [
-  //     {
-  //       name: "Meta Connections",
-  //       link: `meta/connections`,
-  //       icon: <FaFacebook size={18} />,
-  //     },
-  //     // {
-  //     //   name: "Meta Leads",
-  //     //   link: `meta/leads`,
-  //     //   icon: <SiGoogleads size={18} />,
-  //     // },
-  //     {
-  //       name: "Meta Messages",
-  //       link: `meta/messages`,
-  //       icon: <IoIosChatbubbles size={18} />,
-  //     },
-  //     {
-  //       name: "Meta Settings",
-  //       link: `meta/settings`,
-  //       icon: <IoMdSettings size={18} />,
-  //     },
-  //   ],
-  // },
+
+  {
+    name: "Calls Management",
+    // key: "",
+    link: `calls-management`,
+    icon: <HiOutlineUserGroup />,
+  },
+  {
+    name: "Meta",
+    key: "",
+    link: `meta`,
+    icon: <FaFacebook size={24} />,
+    subLinks: [
+      {
+        name: "Meta Connections",
+        link: `meta/connections`,
+        icon: <FaFacebook size={18} />,
+      },
+      // {
+      //   name: "Meta Leads",
+      //   link: `meta/leads`,
+      //   icon: <SiGoogleads size={18} />,
+      // },
+      {
+        name: "Meta Messages",
+        link: `meta/messages`,
+        icon: <IoIosChatbubbles size={18} />,
+      },
+      {
+        name: "Meta Settings",
+        link: `meta/settings`,
+        icon: <IoMdSettings size={18} />,
+      },
+    ],
+  },
   {
     name: "Social Media",
     // key: "Social Media",
