@@ -122,7 +122,7 @@ function PricePackage() {
         );
 
         const json = await response.json();
-        console.log(json);
+        // console.log(json);
 
         if (json.Status === true) {
           AdsPackagesAPI();
@@ -153,7 +153,7 @@ function PricePackage() {
       );
 
       const json = await response.json();
-      console.log(json);
+      // console.log(json);
 
       if (json.Status === true) {
         AdsPackagesAPI();

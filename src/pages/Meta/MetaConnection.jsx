@@ -18,7 +18,7 @@ export default function MetaConnections() {
 
       // setConnected(true);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

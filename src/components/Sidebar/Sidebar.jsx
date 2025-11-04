@@ -189,7 +189,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   useEffect(() => {
     if (authUser && hotel) {
       const hid = handleLocalStorage("hid");
-      console.log(hid);
+      // console.log(hid);
       if (authUser?.isAdmin && hid && hotel) {
         if (
           hotel.Profile &&
@@ -222,7 +222,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       });
       setAllClients(data?.data);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -316,7 +316,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
         // dispatch(fetchAuthUserProfile(authToken));
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
 
     // let authToken = token;
@@ -531,7 +531,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                     {authUser?.assigned_location?.map((location, index) => {
                       if (hotel?.Profile?.hotels[location?.hid]) {
                         const value = hotel?.Profile?.hotels[location?.hid];
-                        console.log(value);
+                        // console.log(value);
                         const isCurrentLocation =
                           value?.city === currentLocation?.city &&
                           value?.state === currentLocation?.state &&

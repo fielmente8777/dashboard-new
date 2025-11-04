@@ -19,7 +19,7 @@ const websiteDataSlice = createSlice({
     },
 
     getWebsiteDataSucccess: (state, action) => {
-      console.log(action.payload);
+      // console.log(action.payload);
       state.loading = false;
       state.hotels = action.payload;
     },
@@ -29,9 +29,9 @@ const websiteDataSlice = createSlice({
     },
     fetchCurrentLocationWebsiteData: (state, action) => {
       const { data, hid } = action.payload;
-      console.log(hid);
+      // console.log(hid);
       const currentLocationWebsiteData = data[String(hid)];
-      console.log(currentLocationWebsiteData);
+      // console.log(currentLocationWebsiteData);
       state.loading = false;
       state.currentLoactionWebsiteData = currentLocationWebsiteData;
     },

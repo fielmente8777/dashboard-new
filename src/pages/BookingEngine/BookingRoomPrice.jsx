@@ -90,7 +90,7 @@ const BookingRoomPrice = () => {
 
     setInventoryBulkupdate(updatedBulkUpdate);
 
-    console.log(updatedBulkUpdate);
+    // console.log(updatedBulkUpdate);
   };
 
   const BulkUpdateToDatabase = async () => {

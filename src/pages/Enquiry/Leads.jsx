@@ -98,7 +98,7 @@ const Leads = () => {
 
     if (start && end) {
       // Normalize to full-day range
-      console.log("inn");
+      // console.log("inn");
       const startOfDay = new Date(start);
       startOfDay.setHours(0, 0, 0, 0);
 
@@ -181,7 +181,7 @@ const Leads = () => {
     const token = localStorage.getItem("token");
     const hid = handleLocalStorage("hid");
 
-    console.log(index);
+    // console.log(index);
 
     try {
       let response;
@@ -249,7 +249,7 @@ const Leads = () => {
         default:
           response = await getAllClientEnquires({ token, hid });
       }
-      console.log(response);
+      // console.log(response);
       setEnquires(response?.reverse());
     } catch (error) {
       console.error(error);
@@ -521,7 +521,7 @@ const Leads = () => {
         Swal.fire("Success", data?.Message, "success");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsLeadLoading(false);
       setNewRow(null);
@@ -1164,7 +1164,7 @@ const Leads = () => {
             </table>
 
             {newRow && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black/60 bg-opacity-40 z-50 px-4">
+              <div className="fixed inset-0 flex items-center justify-center bg-black/60 bg-opacity-40 z-[99999] px-4">
                 <div className="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative animate-fadeIn">
                   <h2 className="text-lg font-semibold mb-4 text-gray-800">
                     Add New Lead

@@ -127,7 +127,7 @@ export default function ReservationForm({ data, setReserveData }) {
         setReserveData(null);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       Swal.fire({
         title: "Error",
         text: "Something went wrong",
@@ -171,7 +171,7 @@ export default function ReservationForm({ data, setReserveData }) {
     setSubmitted(null);
   };
 
-  console.log(form);
+  // console.log(form);
 
   return (
     <div className="min-h-screen w-full bg-slate-50 p-6 md:p-10">

@@ -26,7 +26,7 @@ const KnowledgeBase = () => {
           },
         }
       );
-      console.log("API response", data);
+      // console.log("API response", data);
       setJsonData(data?.data?.knowledge_base);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -58,7 +58,7 @@ const KnowledgeBase = () => {
           },
         }
       );
-      console.log("Form data saved:", data);
+      // console.log("Form data saved:", data);
       setJsonData(formData); // Display the form data
     } catch (error) {
       console.error("Error saving form data:", error);
@@ -78,7 +78,7 @@ const KnowledgeBase = () => {
       });
       setJsonData(data?.data?.knowledge_base);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setKbLoading(false);
     }

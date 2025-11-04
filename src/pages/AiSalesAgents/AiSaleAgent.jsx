@@ -115,7 +115,7 @@ export default function AiSaleAgent() {
     setShowAudioModal(true);
   };
 
-  console.log(currentRecordingUrl);
+  // console.log(currentRecordingUrl);
 
   const downloadRecording = () => {
     const link = document.createElement("a");
@@ -133,7 +133,7 @@ export default function AiSaleAgent() {
       };
       const response = await getAiSalesAgentCall(formBody);
       setCalls(response);
-      console.log("Record data", response?.call_record_data);
+      // console.log("Record data", response?.call_record_data);
     } catch (error) {
       console.error("Error fetching call");
     } finally {

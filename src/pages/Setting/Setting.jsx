@@ -105,7 +105,7 @@ const Setting = () => {
         title: "Oops...",
         text: "Something went wrong!",
       });
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsLoading(false);
     }

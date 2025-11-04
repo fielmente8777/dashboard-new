@@ -46,7 +46,7 @@ const VisitorActivity = () => {
         return "Local";
     }
 
-    console.log(sessions)
+    // console.log(sessions)
     return (
         <div className="p-4">
         <h1 className="text-md font-medium mb-4">Visitor Activites</h1>

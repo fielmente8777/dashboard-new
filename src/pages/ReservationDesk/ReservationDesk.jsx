@@ -71,7 +71,7 @@ const ReservationDesk = () => {
     fetchBookingsData();
   }, []);
 
-  console.log(bookingData);
+  // console.log(bookingData);
 
   const resetFilters = () => {
     setFilters({

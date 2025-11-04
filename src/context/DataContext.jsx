@@ -56,7 +56,7 @@ export const DataProvider = ({ children }) => {
         setRoomsData(responseData.data);
       }
     } catch (error) {
-      console.log('Error:', error);
+      // console.log('Error:', error);
     }
   };
 
@@ -101,7 +101,7 @@ export const DataProvider = ({ children }) => {
       // }
 
       if (!response?.data) {
-        console.log("data not found");
+        // console.log("data not found");
       } else {
         setTotalRequests(response.data?.data.length);
         setRequestsData(response.data?.data);

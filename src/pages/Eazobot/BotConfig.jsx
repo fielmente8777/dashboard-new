@@ -24,7 +24,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
   const [expandedIndex, setExpandedIndex] = useState(null);
   const [editingOption, setEditingOption] = useState(null);
 
-  console.log(chatbotData);
+  // console.log(chatbotData);
 
   // Questions tab states
   const [editIndex, setEditIndex] = useState(null);
@@ -154,7 +154,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
     setIsEdit(true);
   };
 
-  console.log(chatbotData);
+  // console.log(chatbotData);
 
   return (
     <div className="px-4">
