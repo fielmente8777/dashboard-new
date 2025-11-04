@@ -1163,7 +1163,7 @@ const Leads = () => {
             </table>
 
             {newRow && (
-              <div className="fixed inset-0 flex items-center justify-center bg-black/60 bg-opacity-40 z-50 px-4">
+              <div className="fixed inset-0 flex items-center justify-center bg-black/60 bg-opacity-40 z-[99999] px-4">
                 <div className="bg-white w-full max-w-3xl rounded-xl shadow-xl p-6 relative animate-fadeIn">
                   <h2 className="text-lg font-semibold mb-4 text-gray-800">
                     Add New Lead

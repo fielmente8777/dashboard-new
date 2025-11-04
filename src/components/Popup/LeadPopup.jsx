@@ -271,7 +271,7 @@ const LeadPopup = ({
       }`}
       // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
-      <div className="bg-[#f8f8fb]   px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
+      <div className="bg-[#f8f8fb] max-md:overflow-y-auto  px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
         <div className="flex justify-between py-3">
           <div className="text-black space-x-3">
             {Tabs?.map((tab, index) => (
