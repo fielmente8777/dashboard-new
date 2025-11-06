@@ -509,7 +509,7 @@ const LeadPopup = ({
                         setIsEdit(true);
                         setNote(e.target.value);
                       }}
-                      value={note?.text}
+                      value={note?.text || note}
                       rows={2}
                       placeholder="Enter notes"
                       className="w-full border border-gray-400 bg-white mt-1 outline-none rounded-sm p-3"
