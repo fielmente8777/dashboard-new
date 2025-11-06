@@ -64,7 +64,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
         <li key={index}>
           {route.link && (
             <Link
-              to={route.link}
+              to={route.link} // integraion
               target={route.target}
               onClick={() => setIsProfileOpen(false)}
               className="block py-2 px-3 font-medium hover:bg-slate-100"

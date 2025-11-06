@@ -215,8 +215,6 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     }
   }, [hotel, authUser, hid]);
 
-  console.log(currentLocation);
-
   const fetchAllClients = async () => {
     // if (!authUser?.isAdmin && authUser?.role !== "owner") return;
     try {

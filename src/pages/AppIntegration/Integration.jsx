@@ -1,36 +1,55 @@
 import { useEffect, useState } from "react";
-import { MdMail } from "react-icons/md";
-import { SiAnalogue } from "react-icons/si";
-import { IoLogoWhatsapp } from "react-icons/io";
-import { NEW_BASE_URL } from "../../data/constant";
+import { MdMail, MdOutlineTrackChanges } from "react-icons/md";
+import { SiAnalogue, SiGoogleanalytics } from "react-icons/si";
+import { FaMeta } from "react-icons/fa6";
+import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
+import { BASE_PATH, NEW_BASE_URL } from "../../data/constant";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import Loader from "../../components/Loader";
+
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
 function Integration() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    apiKey: "",
+    authToken: "",
+    subDomain: "",
+    accountSID: "",
+  });
+
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
+
   const [integrationStatus, setIntegrationStauts] = useState({
     WebsiteTracking: false,
     gmail: false,
     google_analytics: false,
     meta: false,
+    exotel: false,
   });
+
   const [integrations, setIntegrations] = useState([
     {
       id: "gmail",
       name: "Gmail",
       description:
         "Sync your inbox and manage emails directly from your dashboard.",
-      icon: <MdMail className="w-10 h-10" />,
+      icon: <MailIcon className="" />,
       status: "connected",
       category: "Communication",
-      color: "bg-red-500",
+      color: "",
     },
     {
       id: "google_analytics",
       name: "Google Analytics",
       description: "Track website metrics and user analytics in real time.",
-      icon: <SiAnalogue className="w-10 h-10" />,
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
       category: "Analytics",
-      color: "bg-orange-500",
+      color: "",
     },
     // {
     //   id: "whatsapp",
@@ -47,10 +66,10 @@ function Integration() {
       name: "Website Tracking",
       description:
         "Connect website tracking code to your website and get Website Engagement",
-      icon: <IoLogoWhatsapp className="w-10 h-10" />,
+      icon: <MdOutlineTrackChanges className="w-10 h-10" color="#2D1953" />,
       status: "not-connected",
       category: "Analytics",
-      color: "bg-orange-500",
+      color: "",
     },
 
     {
@@ -58,10 +77,22 @@ function Integration() {
       name: "Meta Leads",
       description:
         "Connect website tracking code to your website and get Website Engagement",
-      icon: <IoLogoWhatsapp className="w-10 h-10" />,
+      icon: <FaMeta className="w-10 h-10" color="#0281F0" />,
       status: "not-connected",
       category: "Analytics",
-      color: "bg-orange-500",
+      color: "",
+    },
+
+    {
+      id: "exotel",
+      name: "Exotel",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
+      // icon: <ExotelIcon />,
+      img: "/exotel.jpg",
+      status: "not-connected",
+      category: "Analytics",
+      color: "bg-white",
     },
   ]);
 
@@ -84,6 +115,11 @@ function Integration() {
       integration.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   // console.log(filteredIntegrations);
 
@@ -111,6 +147,8 @@ function Integration() {
       };
       handleConnect();
       return;
+    } else if (id === "exotel") {
+      setShowSidebar(true);
     }
     setIntegrations(
       integrations.map((integration) => {
@@ -142,7 +180,36 @@ function Integration() {
       setIntegrationStauts(data.result?.docs);
       return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
     } catch (error) {
-      // console.log(error);
+      console.log(error);
+    }
+  };
+
+  const handleConnect = async (e) => {
+    e.preventDefault();
+    setIsCreateConnectLoading(true);
+    // handle connect logic here
+    console.log(formData);
+    try {
+      const { data } = await axios.post(
+        `${NEW_BASE_URL}/api/v1/call/auth/connect`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (data?.success) {
+        setShowSidebar(false);
+        navigate(`${BASE_PATH}/${handleLocalStorage("hid")}/calls-management`);
+        // getConnectStatus();
+      }
+      // setTimeout(() => {}, 2000);
+      // getConnectStatus();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsCreateConnectLoading(false);
     }
   };
 
@@ -218,9 +285,15 @@ function Integration() {
                   {/* Icon */}
                   <div className="flex items-start justify-between mb-4">
                     <div
-                      className={`${integration?.color} text-white p-3 rounded-sm`}
+                      className={`${integration?.color} text-white  rounded-sm`}
                     >
-                      {integration?.icon}
+                      <div>
+                        {integration?.img ? (
+                          <img src={integration?.img} className="w-16 -ml-2" />
+                        ) : (
+                          integration?.icon
+                        )}
+                      </div>
                     </div>
                     {status && (
                       <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
@@ -239,7 +312,11 @@ function Integration() {
 
                   {/* Action Button */}
                   <button
-                    onClick={() => toggleIntegration(integration.id)}
+                    onClick={() => {
+                      if (!status) {
+                        toggleIntegration(integration.id);
+                      }
+                    }}
                     className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
                       status
                         ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -264,8 +341,137 @@ function Integration() {
           </div>
         )}
       </div>
+
+      {showSidebar && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Connect Your Account
+              </h2>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <IoIosClose size={30} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form
+              onSubmit={handleConnect}
+              className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  API Key
+                </label>
+                <input
+                  type="text"
+                  name="apiKey"
+                  value={formData.apiKey}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your API Key"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Auth Token
+                </label>
+                <input
+                  type="password"
+                  name="authToken"
+                  value={formData.authToken}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Auth Token"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Subdomain
+                </label>
+                <input
+                  type="text"
+                  name="subDomain"
+                  value={formData.subDomain}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Subdomain"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Account SID
+                </label>
+                <input
+                  type="text"
+                  name="accountSID"
+                  value={formData.accountSID}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Account SID"
+                  required
+                />
+              </div>
+
+              <div className="pt-6">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4"
+                >
+                  Connect {isCreateConnectLoading && <Loader color="#fff" />}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default Integration;
+
+const MailIcon = () => {
+  return (
+    <svg
+      width="45"
+      height="45"
+      viewBox="0 0 512 512"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M34.909 448.047H116.364V250.229L63.026 157.091L0 162.956V413.138C0 432.425 15.622 448.047 34.909 448.047Z"
+        fill="#0085F7"
+      />
+      <path
+        d="M395.636 448.047H477.091C496.378 448.047 512 432.425 512 413.138V162.956L449.065 157.091L395.637 250.229V448.047H395.636Z"
+        fill="#00A94B"
+      />
+      <path
+        d="M395.636 98.956L347.789 190.259L395.636 250.229L512 162.956V116.411C512 73.269 462.749 48.629 428.218 74.52L395.636 98.956Z"
+        fill="#FFBC00"
+      />
+      <path
+        fill-rule="evenodd"
+        clip-rule="evenodd"
+        d="M116.364 250.229L70.771 153.919L116.364 98.956L256 203.683L395.636 98.956V250.229L256 354.956L116.364 250.229Z"
+        fill="#FF4131"
+      />
+      <path
+        d="M0 116.411V162.956L116.364 250.229V98.956L83.782 74.52C49.251 48.629 0 73.269 0 116.411Z"
+        fill="#E51C19"
+      />
+    </svg>
+  );
+};
