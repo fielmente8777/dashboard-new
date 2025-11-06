@@ -504,6 +504,7 @@ const Leads = () => {
       Domain: hotel?.Profile?.domain,
       Contact: lead.contact,
       email: lead.email,
+      hId: localStorage.getItem("hid"),
       Description: "",
       Name: lead.name,
       Remark: "",
@@ -686,7 +687,7 @@ const Leads = () => {
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full">
               <div className="border border-gray-300 rounded-md p-1.5 w-full">
                 <DatePicker
                   // maxDate={msg?.disabled ? new Date() : undefined}
