@@ -101,6 +101,8 @@ const Navbar = () => {
     // }, 1000)
   };
 
+  console.log(hotel);
+
   return (
     <div className="sticky left-0 top-0">
       <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
@@ -110,7 +112,9 @@ const Navbar = () => {
         >
           <FaAlignRight color="#000" />
         </div>
-        <Greeting name={hotel?.Profile?.hotelName} />
+        <Greeting
+          name={hotel?.Profile?.hotels[localStorage?.getItem("hid")]?.local}
+        />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
         <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
