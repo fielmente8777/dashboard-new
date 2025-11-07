@@ -1018,7 +1018,7 @@ const Leads = () => {
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
                         {/* kjhjkhk */}
-                        {enquery?.created_from?.toLowerCase() === "chatbot"
+                        {/* {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "Eazbot"
                           ? "Eazbot"
@@ -1030,7 +1030,8 @@ const Leads = () => {
                           ? "Webform"
                           : enquery?.created_from === null
                           ? "Webform"
-                          : "Webform"}
+                          : "Webform"} */}
+                        {enquery?.created_from}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         {/* {enquery?.Name.slice(0, 15)} */}
@@ -1271,6 +1272,22 @@ const Leads = () => {
                         <option value="dashboard">Dashboard</option> */}
                         <option value="webform" selected>
                           Web Form
+                        </option>
+                        <option value="WhatsApp campaign" selected>
+                          WhatsApp campaign
+                        </option>
+                        <option value="WhatsApp organic" selected>
+                          WhatsApp organic
+                        </option>
+                        <option value="phone call" selected>
+                          Phone call
+                        </option>
+                        <option value="Instagram" selected>
+                          Instagram
+                        </option>
+
+                        <option value="Facebook" selected>
+                          Facebook
                         </option>
                       </select>
                     </div>
