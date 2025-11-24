@@ -105,21 +105,22 @@ export default function Calls() {
     }
   };
 
-  const playRecording = async (callSid) => {
+  const playRecording = async (callUrl) => {
     // console.log(recordingUrl);
     // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
+    setCurrentRecordingUrl(callUrl);
 
     try {
-      const { data } = await axios.get(
-        `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      console.log(data);
-      setCurrentRecordingUrl(data?.result?.docs);
+      // const { data } = await axios.get(
+      //   `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //   }
+      // );
+      // console.log(data);
+      // setCurrentRecordingUrl(data?.result?.docs);
     } catch (error) {
       console.log(error);
     }
@@ -307,7 +308,7 @@ export default function Calls() {
                       <td className="px-4 py-2 text-gray-900 flex justify-center">
                         <span
                           className="cursor-pointer "
-                          onClick={() => playRecording(call?.Sid)}
+                          onClick={() => playRecording(call?.RecordingUrl)}
                         >
                           {/* {call?.recordingUrl} */}
                           <IoIosPlayCircle size={20} />

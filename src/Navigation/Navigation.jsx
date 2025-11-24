@@ -30,6 +30,7 @@ import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
 import Setting from "../pages/Setting/Setting";
 import Usermanagement from "../pages/UserMgmt/Usermanagement";
 import Integration from "../pages/AppIntegration/Integration";
+import Settings from "../pages/Grm/Settings";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -65,7 +66,7 @@ const Navigation = () => {
         <Route path="google-listing" element={<GMBProfile />} />
         <Route path="google-map-iterations" element={<GoogleMapItiration />} />
         <Route path="influencer-marketing" element={<InfluencerMarketing />} />
-        <Route path="email-marketing" element={<EmailMarketing />} />
+        {/* <Route path="email-marketing" element={<EmailMarketing />} /> */}
         <Route path="conversational-tool" element={<ConversationalTool />} />
         <Route path="custom-website" element={<Website />} />
         <Route path="seo" element={<Seo />} />
@@ -76,6 +77,7 @@ const Navigation = () => {
         <Route path="profile" element={<Setting />} />
         <Route path="user-management/all-users" element={<Usermanagement />} />
         <Route path="integration" element={<Integration />} />
+        <Route path="qr-code" element={<Settings />} />
 
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {

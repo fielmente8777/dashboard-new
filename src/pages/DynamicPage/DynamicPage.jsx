@@ -66,7 +66,6 @@ import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
 import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
 import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
-import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
 import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
 import VisitorActivity from "../WebsiteTracker/VisitorActivity";
 import MetaLeads from "../Meta/MetaLeads";
@@ -74,6 +73,8 @@ import MetaMessages from "../Meta/MetaMessage";
 import MetaConnections from "../Meta/MetaConnection";
 import MetaSettings from "../Meta/MetaSetting";
 import Calls from "../Calls/Calls";
+import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
+import Contacts from "../Contacts/Contacts";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -160,7 +161,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
     [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
-    [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketingManagement />,
     [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
 
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
@@ -225,6 +226,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/meta/messages`]: <MetaMessages />,
     [`${BASE_PATH}/${hid}/meta/connections`]: <MetaConnections />,
     [`${BASE_PATH}/${hid}/meta/settings`]: <MetaSettings />,
+    [`${BASE_PATH}/${hid}/contacts`]: <Contacts />,
   };
 
   return (

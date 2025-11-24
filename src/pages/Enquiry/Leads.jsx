@@ -49,6 +49,7 @@ const header = [
   "Quotation Provided",
   "Dead Lead",
   "Date Sold Out",
+  "Duplicate",
 ];
 
 const Leads = () => {
@@ -244,6 +245,14 @@ const Leads = () => {
             token,
             hid,
             status: "Date Sold Out",
+          });
+          break;
+
+        case 10:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Duplicate",
           });
           break;
         default:
@@ -811,6 +820,10 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Source
                   </th>
+
+                  {/* <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    Source Url
+                  </th> */}
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Name
                   </th>
@@ -820,7 +833,7 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Email
                   </th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
                     Number of Guests
                   </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
@@ -1017,8 +1030,7 @@ const Leads = () => {
                           : ""}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
-                        {/* kjhjkhk */}
-                        {/* {enquery?.created_from?.toLowerCase() === "chatbot"
+                        {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "Eazbot"
                           ? "Eazbot"
@@ -1030,9 +1042,15 @@ const Leads = () => {
                           ? "Webform"
                           : enquery?.created_from === null
                           ? "Webform"
-                          : "Webform"} */}
-                        {enquery?.created_from}
+                          : "Webform"}
                       </td>
+                      {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                        <span title={enquery?.source_url || "Landing Page"}>
+                          {(enquery?.source_url?.length ?? 0) > 60
+                            ? `${enquery?.source_url.slice(0, 40)}...`
+                            : enquery?.source_url || "Landing Page"}
+                        </span>
+                      </td> */}
                       <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         {/* {enquery?.Name.slice(0, 15)} */}
                         {enquery?.Name?.substring(0, 15)}
@@ -1044,10 +1062,17 @@ const Leads = () => {
                         {enquery?.Email === "undefined" ? "-" : enquery?.Email}
                       </td>
 
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                      <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
                         {enquery?.numberOfGuest == ""
                           ? "-"
-                          : enquery?.numberOfGuest}
+                          : enquery?.numberOfGuest
+                          ? enquery?.numberOfGuest
+                          : isNaN(
+                              extractBookingInfo(enquery?.Message)?.guests
+                            ) ||
+                            extractBookingInfo(enquery?.Message)?.guests === 0
+                          ? "-"
+                          : extractBookingInfo(enquery?.Message)?.guests}
                       </td>
 
                       {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
@@ -1055,13 +1080,17 @@ const Leads = () => {
                       </td> */}
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_in
-                          ? enquery.check_in
+                          ? enquery?.check_in === "undefined"
+                            ? "-"
+                            : enquery.check_in
                           : extractBookingInfo(enquery?.Message)?.checkIn ||
                             "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_out
-                          ? enquery.check_out
+                          ? enquery?.check_out === "undefined"
+                            ? "-"
+                            : enquery.check_out
                           : extractBookingInfo(enquery?.Message)?.checkOut ||
                             "-"}
                       </td>
@@ -1129,6 +1158,13 @@ const Leads = () => {
                             className="bg-white  text-black"
                           >
                             Date Sold Out
+                          </option>
+
+                          <option
+                            value="Duplicate"
+                            className="bg-white  text-black"
+                          >
+                            Duplicate
                           </option>
 
                           <option

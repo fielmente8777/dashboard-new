@@ -6,6 +6,10 @@ export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 
 // export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
 
+export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
+
+// export const SALES_AGEENT_BASE_URL = "http://127.0.0.1:8000";
+
 export const room_type_name = {
   1: "DELUXE",
   2: "SUPER DELUXE",
