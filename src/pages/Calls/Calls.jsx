@@ -503,7 +503,7 @@ export default function Calls() {
               </audio> */}
 
               <audio controls>
-                <source src={currentRecordingUrl} type="audio/mpeg" />
+                <source src={currentRecordingUrl} type="audio/mp3" />
               </audio>
 
               {/* <div className="flex justify-end">

@@ -171,12 +171,12 @@ export const SidebarData = [
   //   link: `eazbot`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  // {
-  //   name: "EazeMail",
-  //   // key: "Eazobot",
-  //   link: `eazmail`,
-  //   icon: <IoIosChatbubbles size={24} />,
-  // },
+  {
+    name: "EazeMail",
+    // key: "Eazobot",
+    link: `eazmail`,
+    icon: <IoIosChatbubbles size={24} />,
+  },
   {
     name: "Booking Engine",
     key: "Booking Engine",

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { BASE_URL } from "../data/constant";
+import { BASE_URL, NEW_BASE_URL } from "../data/constant";
 
 const DataContext = createContext({});
 
@@ -20,6 +20,13 @@ export const DataProvider = ({ children }) => {
   const [emergencyNotifications, setEmergencyNotifications] = useState([]);
   const [Leads, setLeads] = useState([]);
   const [leadsList, setLeadsList] = useState([]);
+  const [integrationStatus, setIntegrationStauts] = useState({
+    WebsiteTracking: false,
+    gmail: false,
+    google_analytics: false,
+    meta: false,
+    exotel: false,
+  });
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
@@ -30,10 +37,11 @@ export const DataProvider = ({ children }) => {
 
   const socket = io(host, {
     transports: ["websocket"], // Ensure WebSocket transport is used
-    reconnectionAttempts: 5, // Optional: retry connection attempts
-    reconnectionDelay: 1000, // Optional: retry delay (in ms)
+    reconnectionAttempts: 1, // Optional: retry connection attempts
+    reconnectionDelay: 10000, // Optional: retry delay (in ms)
   });
 
+  
   const fetchRoomsData = async () => {
     try {
       const response = await fetch(
@@ -157,41 +165,57 @@ export const DataProvider = ({ children }) => {
     setCancelledRequests(cancelledRequests);
   };
 
-  useEffect(() => {
-    // localStorage.setItem('ndid', "f80fb327-020b-4fc7-a085-f2ae10edabe9");
-    // localStorage.setItem('hid', "11960126");
+  const checkIntegrationStatus = async () => {
+    try {
+      const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = await response.json();
+      setIntegrationStauts(data.result?.docs);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    socket.on("newRequest", (newRequest) => {
-      setRequestsData((prevRequests) => [...prevRequests, newRequest]);
-      setTotalRequests((totalRequests) => totalRequests + 1);
-      setPendingRequests((pendingRequests) => pendingRequests + 1);
-      setEditButton(true);
-      setHomeNotifications((prevNotifications) => [
-        ...prevNotifications,
-        { message: `New request from ${newRequest.guestName}` },
-      ]);
-    });
+  // useEffect(() => {
+  //   // localStorage.setItem('ndid', "f80fb327-020b-4fc7-a085-f2ae10edabe9");
+  //   // localStorage.setItem('hid', "11960126");
 
-    socket.on("newEmergencyRequest", (newEmergencyRequest) => {
-      setEmergencyRequestData((emergencyRequestData) => [
-        ...emergencyRequestData,
-        newEmergencyRequest,
-      ]);
-      setEditButton(true);
-      setEmergencyNotifications((prevNotifications) => [
-        ...prevNotifications,
-        { message: `New request from ${newEmergencyRequest.guestName}` },
-      ]);
-    });
+  //   socket.on("newRequest", (newRequest) => {
+  //     setRequestsData((prevRequests) => [...prevRequests, newRequest]);
+  //     setTotalRequests((totalRequests) => totalRequests + 1);
+  //     setPendingRequests((pendingRequests) => pendingRequests + 1);
+  //     setEditButton(true);
+  //     setHomeNotifications((prevNotifications) => [
+  //       ...prevNotifications,
+  //       { message: `New request from ${newRequest.guestName}` },
+  //     ]);
+  //   });
 
-    getAllRequest();
-    getEmergencyRequest();
+  //   socket.on("newEmergencyRequest", (newEmergencyRequest) => {
+  //     setEmergencyRequestData((emergencyRequestData) => [
+  //       ...emergencyRequestData,
+  //       newEmergencyRequest,
+  //     ]);
+  //     setEditButton(true);
+  //     setEmergencyNotifications((prevNotifications) => [
+  //       ...prevNotifications,
+  //       { message: `New request from ${newEmergencyRequest.guestName}` },
+  //     ]);
+  //   });
 
-    return () => {
-      socket.off("newRequest");
-      socket.off("newEmergencyRequest");
-    };
-  }, []);
+  //   getAllRequest();
+  //   getEmergencyRequest();
+
+  //   return () => {
+  //     socket.off("newRequest");
+  //     socket.off("newEmergencyRequest");
+  //   };
+  // }, []);
 
   return (
     <DataContext.Provider
@@ -234,6 +258,8 @@ export const DataProvider = ({ children }) => {
         setLeads,
         leadsList,
         setLeadsList,
+        integrationStatus, setIntegrationStauts,
+        checkIntegrationStatus
       }}
     >
       {children}

@@ -346,7 +346,10 @@ import { CiStar } from "react-icons/ci";
 
 // export default EmailMarketingManagement;
 
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { Link, redirect } from "react-router-dom";
+import axios from "axios";
+import DataContext from "../../context/DataContext";
 // import {
 //   Search,
 //   SlidersHorizontal,
@@ -369,6 +372,7 @@ import { useState } from "react";
 // } from 'lucide-react';
 
 function EmailMarketingManagement() {
+  const {integrationStatus, setIntegrationStauts,checkIntegrationStatus}=useContext(DataContext)
   const [emails] = useState([
     {
       id: 1,
@@ -541,8 +545,11 @@ function EmailMarketingManagement() {
       read: true,
     },
   ]);
-
   const [selectedEmails, setSelectedEmails] = useState([]);
+
+  const getMails=async()=>{
+      const response=await axios.get(`https:localhost:8000/api/v1/emails?hotel_id=""`)
+  }
 
   const toggleEmailSelection = (id) => {
     setSelectedEmails((prev) =>
@@ -558,8 +565,18 @@ function EmailMarketingManagement() {
     );
   };
 
+
+  console.log(integrationStatus)
+
+  useEffect(()=>{
+    checkIntegrationStatus()
+  },[])
+
   return (
-    <div className="h-screen flex flex-col bg-white fixed">
+
+    <div>
+
+    {integrationStatus.gmail?<div className="h-screen flex flex-col bg-white fixed">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-4 flex-1">
@@ -757,6 +774,12 @@ function EmailMarketingManagement() {
         </main>
       </div>
     </div>
+    :
+    <div>
+      <Link to={`/dashboard/client/${localStorage.getItem("hid")}/integration`}>Connect Gmail </Link>
+    </div>}
+    </div>
+
   );
 }
 

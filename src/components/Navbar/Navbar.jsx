@@ -101,7 +101,7 @@ const Navbar = () => {
     // }, 1000)
   };
 
-  console.log(hotel);
+  // console.log(hotel);
 
   return (
     <div className="sticky left-0 top-0">

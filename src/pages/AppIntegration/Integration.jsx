@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MdMail, MdOutlineTrackChanges } from "react-icons/md";
 import { SiAnalogue, SiGoogleanalytics } from "react-icons/si";
 import { FaMeta } from "react-icons/fa6";
@@ -8,11 +8,14 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
+import DataContext from "../../context/DataContext";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
+
 function Integration() {
   const navigate = useNavigate();
+  const {integrationStatus, setIntegrationStauts,checkIntegrationStatus}=useContext(DataContext)
   const [formData, setFormData] = useState({
     apiKey: "",
     authToken: "",
@@ -23,13 +26,13 @@ function Integration() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
 
-  const [integrationStatus, setIntegrationStauts] = useState({
-    WebsiteTracking: false,
-    gmail: false,
-    google_analytics: false,
-    meta: false,
-    exotel: false,
-  });
+  // const [integrationStatus, setIntegrationStauts] = useState({
+  //   WebsiteTracking: false,
+  //   gmail: false,
+  //   google_analytics: false,
+  //   meta: false,
+  //   exotel: false,
+  // });
 
   const [integrations, setIntegrations] = useState([
     {
@@ -150,6 +153,20 @@ function Integration() {
     } else if (id === "exotel") {
       setShowSidebar(true);
     }
+    else if(id="gmail"){
+      const handleConnection=async()=>{
+        try {
+          // console.log("Connecting with google")
+          const response=await axios.get(`http://localhost:8000/api/v1/emails/google/login`)
+          // console.log(response.data);
+          window.location.href = response.data.auth_url;
+        } catch (error) {
+          console.error("Error connecting google:", error)
+        }
+      }
+      handleConnection()
+      return;
+    }
     setIntegrations(
       integrations.map((integration) => {
         if (integration.id === id) {
@@ -166,23 +183,7 @@ function Integration() {
     );
   };
 
-  const checkIntegrationStatus = async () => {
-    try {
-      const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const data = await response.json();
-      // console.log(data);
-      setIntegrationStauts(data.result?.docs);
-      return data; // assuming the API returns { status: 'connected' } or { status: 'not-connected' }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  
 
   const handleConnect = async (e) => {
     e.preventDefault();
