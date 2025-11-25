@@ -6,3 +6,14 @@ export const formatDate = (date) => {
 
   return `${year}-${month}-${day}`;
 };
+
+export const formatDateByDay = (date) => {
+  const d = new Date(date);
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const dayName = days[d.getDay()];
+  const dayNumber = d.getDate().toString().padStart(2, "0");
+
+  return `${dayName} ${dayNumber}`;
+};

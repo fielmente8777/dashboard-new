@@ -22,6 +22,7 @@ import { IoMdCheckmarkCircle } from "react-icons/io";
 import { FaPowerOff } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Loader from "../../components/Loader";
 
 // import AuthContext from '../../Context/AuthProvider';
 
@@ -29,6 +30,8 @@ const AdsLeadsUsingGoogleSheet = () => {
   const { Leads, setLeads } = useContext(DataContext);
   const { leadsLists, setLeadsList } = useContext(DataContext);
 
+  const [isChange, setisChange] = useState(false);
+  const [isChangeLoading, setisChangeLoading] = useState(false);
   const [Spreadsheet, setSpreadsheet] = useState([]);
   const [id, setid] = useState("");
   const [sheetName, setSheetName] = useState("");
@@ -63,7 +66,6 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   }
   const ChangeSpreadsheetFetchData = (spreadsheetid) => {
-    // console.log(spreadsheetid);
     setsheetid(spreadsheetid);
     FetchSheetofSpreadSheet(spreadsheetid);
   };
@@ -71,6 +73,7 @@ const AdsLeadsUsingGoogleSheet = () => {
     const spreadid = document.getElementById("spreadsheet").value;
     setsheetNamess(sheetname);
     setsheetid(spreadid);
+    localStorage.setItem("SheetName", sheetname);
     FetchSheetsDataofSpreadSheet(spreadid, sheetname);
   };
 
@@ -114,13 +117,15 @@ const AdsLeadsUsingGoogleSheet = () => {
         }
       );
       const json = await response.json();
-      // console.log(json);
+
       if (json.Status) {
         setsheetNamess(sheetname);
         setsheetid(sheetid);
         setLeads(json.Message.values);
         setLeadsList(json.Message.values);
         settokenExpire(false);
+
+        // localStorage.setItem("token", json.Message.token);
       } else {
         setLeads([]);
         settokenExpire(true);
@@ -129,6 +134,7 @@ const AdsLeadsUsingGoogleSheet = () => {
       // alert("Some Problem update token");
     }
   };
+
   const updateAccessTokenDb = async (gtoken, refreshToken) => {
     try {
       const response = await fetch(
@@ -155,7 +161,6 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
   const FetchSheetofSpreadSheet = async (sheetid) => {
-    // console.log("ncxzxnjkndsjjk", sheetid);
     try {
       const response = await fetch(
         `${BASE_URL}/leadmanagement/getsheetName/${sheetid}/${localStorage.getItem(
@@ -258,6 +263,8 @@ const AdsLeadsUsingGoogleSheet = () => {
       const accessToken = tokenData.access_token; // <-- 🟡 important
       const refreshToken = tokenData.refresh_token; // <-- 🟡 important
 
+      console.log(refreshToken);
+
       setsheetaccessToken(accessToken);
       updateAccessTokenDb(accessToken, refreshToken);
 
@@ -314,18 +321,21 @@ const AdsLeadsUsingGoogleSheet = () => {
 
   const getColumn = (column, rowindex, columnindex, newContent) => {
     // alert(column)
+    // console.log(columnindex);
+    // console.log(column);
+    // console.log(newContent);
     setLeads((prevData) => {
       const updatedState = [...prevData];
-      updatedState[rowindex][columnindex] = newContent;
+      updatedState[Leads?.length - rowindex - 1][columnindex] = newContent;
       return updatedState;
     });
     // alert(sheetid)
-    // updateSheetData()
+    // updateSheetData();
   };
 
   const updateSheetData = async () => {
     const sheet = sheetid;
-    alert(sheet);
+    setisChangeLoading(true);
     try {
       const response = await fetch(
         `${BASE_URL}/leadmanagement/updateSheet/${localStorage.getItem(
@@ -348,10 +358,12 @@ const AdsLeadsUsingGoogleSheet = () => {
       );
 
       const json = await response.json();
-      // console.log(json);
+      console.log(json);
       FetchSheetsDataofSpreadSheet(sheetid, sheetNamess);
     } catch {
       alert("Some Problem update token");
+    } finally {
+      setisChangeLoading(false);
     }
   };
 
@@ -384,37 +396,64 @@ const AdsLeadsUsingGoogleSheet = () => {
 
   const notShowIndexContent = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+  const header = [
+    { label: "Open Queries", value: "Open" },
+    { label: "Contacted", value: "Contacted" },
+    { label: "Converted", value: "Converted" },
+    { label: "Out Of Budget", value: "Out Of Budget" },
+    { label: "Potential For Later", value: "Potential For Later" },
+    { label: "Quotation Provided", value: "Quotation Provided" },
+    { label: "Dead Lead", value: "Dead Lead" },
+    { label: "Date Sold Out", value: "Date Sold Out" },
+    { label: "Duplicate", value: "Duplicate" },
+  ];
+
   return (
     <div className="bg-white">
-      <div className="py-4">
-        <div className="flex justify-between gap-2 border-b-2 pb-2 w-full px-2 items-center mb-4">
-          {/* {sheetaccessToken !== "None" && (
-            <div className="rounded-full flex items-center gap-1 text-green-800 border px-3 py-2 border-gray-500 shadow-md">
-              <p className="font-semibold">Connected</p>
+      {sheetaccessToken !== "None" && (
+        <div className="flex justify-between p-2 gap-5 items-center  text-slate-900 py-4">
+          {sheetaccessToken !== "None" ? (
+            <div className="w-fit flex gap-2">
+              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200 min-w-32">
+                <select
+                  className="outline-none bg-transparent w-full px-4"
+                  id="spreadsheet"
+                  onChange={(event) =>
+                    ChangeSpreadsheetFetchData(event.target.value)
+                  }
+                >
+                  {Spreadsheet.reverse().map((spread) => (
+                    <option
+                      key={spread.id}
+                      value={spread.id}
+                      className="py-4 text-gray-700"
+                    >
+                      {spread.Name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <span className="mt-[2px]">
-                <IoMdCheckmarkCircle />
-              </span>
+              <div className="pr-2 py-2 rounded-sm shadow-sm outline-none border border-gray-200">
+                <select
+                  className="outline-none bg-transparent px-4"
+                  onChange={(event) => ChangeSheetFetchData(event.target.value)}
+                >
+                  {Sheets.map((sheet) => (
+                    <option
+                      key={sheet.properties.title}
+                      value={sheet.properties.title}
+                      className="text-gray-700"
+                    >
+                      {sheet.properties.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )} */}
-
-          <div>
-            {sheetaccessToken !== "None" && !tokenExpire && (
-              <p className="font-medium text-lg  text-gray-500">
-                {Spreadsheet[0]?.Name}
-              </p>
-            )}
-
-            {/* {Spreadsheet.reverse().map((spread) => (
-              <option
-                key={spread.id}
-                value={spread.id}
-                className="py-4 text-gray-700"
-              >
-                {spread.Name}
-              </option>
-            ))} */}
-          </div>
+          ) : (
+            ""
+          )}
 
           {sheetaccessToken !== "None" && tokenExpire ? (
             <button
@@ -429,20 +468,67 @@ const AdsLeadsUsingGoogleSheet = () => {
               </span>
             </button>
           ) : sheetaccessToken !== "None" && !tokenExpire ? (
-            <button
-              className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
-              // onClick={() => {
-              //   updateSheetData();
-              // }}
-            >
-              <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>
-              Connected
-            </button>
+            <div className="flex gap-2.5">
+              <button
+                className=" bg-green-600 flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full"
+                // onClick={() => {
+                //   updateSheetData();
+                // }}
+              >
+                <p className="h-3 w-3 rounded-full bg-red-400 animate-pulse"></p>
+                Connected
+              </button>
+
+              {isChange && (
+                <button
+                  disabled={isChangeLoading}
+                  className="bg-primary flex justify-center items-center gap-1 px-4 py-2 font-medium text-white rounded-full disabled:opacity-35"
+                  onClick={() => {
+                    updateSheetData();
+                  }}
+                >
+                  Save Changes {isChangeLoading && <Loader color="#fff" />}
+                </button>
+              )}
+            </div>
           ) : (
             ""
           )}
+
+          {/* {sheetaccessToken !== "None" ? (
+            <div className="flex justify-end items-center gap-2">
+              <input
+                type="text"
+                value={sheetName}
+                onChange={(e) => {
+                  setSheetName(e.target.value);
+                }}
+                placeholder="Sheet Name"
+                className="placeholder:text-gray-600  w-[14rem] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
+              />
+              <input
+                type="text"
+                value={id}
+                onChange={(e) => {
+                  setid(e.target.value);
+                }}
+                placeholder="Enter sheet Id or Url"
+                className="placeholder:text-gray-600 w-[200px] py-2 px-2 outline-none bg-gray-200 border border-gray-300 rounded-sm text-black"
+              />
+              <button
+                className=" bg-[#00C899] py-2 px-4 text-white rounded-full font-semibold"
+                onClick={() => {
+                  AddSpreadSheet();
+                }}
+              >
+                Add <span className="font-bold text-lg">+</span>
+              </button>
+            </div>
+          ) : (
+            ""
+          )} */}
         </div>
-      </div>
+      )}
 
       {sheetaccessToken !== "None" ? (
         <div className="h-full w-full overflow-scroll">
@@ -459,7 +545,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                       if (notShowIndexContent.includes(idx)) return null;
                       return (
                         <th
-                          className="w-auto px-2 py-3 border font-medium capitalize"
+                          className="w-auto px-2 py-3 border font-medium capitalize whitespace-nowrap"
                           key={headerLabel}
                         >
                           {headerLabel}
@@ -491,10 +577,85 @@ const AdsLeadsUsingGoogleSheet = () => {
                       </p>
                       {data?.map((head, index) => {
                         const phoneRegex = /^p:\+?\d{10,15}$/i;
+                        const isoDateRegex =
+                          /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:?\d{2})?)?$/;
                         const isPhone = phoneRegex.test(head);
-                        const isDate = Date.parse(head);
+                        const isDate =
+                          typeof head === "string" &&
+                          isoDateRegex.test(head) &&
+                          !isNaN(Date.parse(head));
 
                         if (notShowIndexContent.includes(index)) return null;
+
+                        if (
+                          headerRow[index].toLowerCase() === "note" ||
+                          headerRow[index].toLowerCase() === "notes" ||
+                          headerRow[index].toLowerCase() === "stages" ||
+                          headerRow[index].toLowerCase() === "stage"
+                        ) {
+                          return (
+                            <td className="border border-gray-300">
+                              <p className="w-auto px-2 py-2 outline-none  rounded-md text-black">
+                                {headerRow[index].toLowerCase() === "stage" ? (
+                                  <select
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => {
+                                      setisChange(true);
+                                      getColumn(
+                                        `${
+                                          alphabet[String(index)] +
+                                          String(rowindex)
+                                        }`,
+                                        rowindex,
+                                        index,
+                                        e.target.value
+                                      );
+                                    }}
+                                    value={head}
+                                  >
+                                    {header.map((stage) => {
+                                      return (
+                                        <option value={stage.value}>
+                                          {stage.label}
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
+                                ) : (
+                                  <input
+                                    className="w-auto px-2 py-2 outline-none  rounded-md text-black"
+                                    type="text"
+                                    value={head}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                    }}
+                                    placeholder={
+                                      headerRow[index].toLowerCase() === "note"
+                                        ? "Add Note"
+                                        : headerRow[index].toLowerCase() ===
+                                          "notes"
+                                        ? "Add Note"
+                                        : "Stages"
+                                    }
+                                    onChange={(e) => {
+                                      setisChange(true);
+                                      getColumn(
+                                        `${
+                                          alphabet[String(index)] +
+                                          String(rowindex)
+                                        }`,
+                                        rowindex,
+                                        index,
+                                        e.target.value
+                                      );
+                                    }}
+                                  />
+                                )}
+                              </p>
+                              yes
+                            </td>
+                          );
+                        }
 
                         if (isPhone) {
                           const phone = head.replace("p:", "");
@@ -516,7 +677,7 @@ const AdsLeadsUsingGoogleSheet = () => {
                           );
                         }
 
-                        if (!isNaN(isDate)) {
+                        if (isDate) {
                           // const isToday =
                           //   new Date(head).toDateString() ===
                           //   new Date().toDateString();
@@ -646,21 +807,32 @@ const AdsLeadsUsingGoogleSheet = () => {
                 }
                 // clientSecret={"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"}
               >
-                <div className="flex justify-center w-full rounded-md">
-                  {/* <GoogleLogin
-                    // onSuccess={({da})=>{}}
-                    onError={handleFailure}
+                {/* <div className="flex justify-center w-full rounded-md">
+                  <GoogleLogin
+                    onSuccess={(response) => {
+                      // Here you get the authorization code
+                      console.log(response);
+                      const authCode = response.code;
+                      console.log("Auth Code:", authCode);
+                      handleConnectGoogleTool(authCode);
+                    }}
+                    flow="auth-code"
+                    redirect_uri="postmessage"
+                    // onError={handleFailure}
                     disabled={loading}
                     text="continue_with"
                     width="700px"
+                    access_type="offline"
+                    prompt="consent"
                     // type="icon"
                     type="standard"
                     theme="outline"
                     size="large"
                     shape="rectangular"
+                    scope="https://www.googleapis.com/auth/spreadsheets"
                     // useOneTap={true}
-                  /> */}
-                </div>
+                  />
+                </div> */}
               </GoogleOAuthProvider>
             </div>
             <LoginSocialGoogle
@@ -701,7 +873,7 @@ const AdsLeadsUsingGoogleSheet = () => {
         </div>
       )}
 
-      {/* {selectedRow && (
+      {(selectedRow || selectedRow === 0) && (
         <div className="fixed inset-0 bg-black/80 backdrop:blur-md z-[9999] overflow-auto">
           <div className="max-w-5xl mx-auto p-8 bg-white shadow-xl rounded-xl mt-10">
             <div className="flex items-center justify-between">
@@ -726,6 +898,8 @@ const AdsLeadsUsingGoogleSheet = () => {
                   if (notShowIndexContent.includes(index)) return null;
 
                   const value = bodyData[selectedRow]?.[index] || "-";
+
+                  console.log(value);
 
                   // Regex to match a phone number (basic international or local)
                   const isPhoneNumber =
@@ -759,7 +933,7 @@ const AdsLeadsUsingGoogleSheet = () => {
             </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

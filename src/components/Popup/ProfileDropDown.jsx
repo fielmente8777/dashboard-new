@@ -50,6 +50,10 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
       link: "integration",
     },
     {
+      name: "QR Code",
+      link: "qr-code",
+    },
+    {
       name: "Sign Out",
       onClick: handleLogout,
     },

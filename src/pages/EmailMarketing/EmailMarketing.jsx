@@ -1,7 +1,7 @@
 // import { useState } from "react";
 // import JoditEditor from "jodit-react";
 // import { FiEdit2 } from "react-icons/fi";
-import { CiStar } from "react-icons/ci";
+// import { CiStar } from "react-icons/ci";
 
 // const mockUsers = [
 //   { id: 1, name: "Sushil KC", email: "sushil@example.com" },
@@ -117,6 +117,13 @@ import { CiStar } from "react-icons/ci";
 //     setIsCreating(false);
 //     setNewTemplate({ id: "", title: "", subject: "", body: "", footer: "" });
 //   };
+
+
+//   console.log(integrationStatus)
+
+//   useEffect(()=>{
+//     checkIntegrationStatus()
+//   },[])
 
 //   return (
 //     <div className="p-4 mx-auto bg-white">
@@ -341,15 +348,18 @@ import { CiStar } from "react-icons/ci";
 //         </div>
 //       )}
 //     </div>
+//     :
+//     <div>
+//       <Link to={`/dashboard/client/${localStorage.getItem("hid")}/integration`}>Connect Gmail </Link>
+//     </div>}
+//     </div>
+
 //   );
 // };
 
 // export default EmailMarketingManagement;
 
-import { useContext, useEffect, useState } from "react";
-import { Link, redirect } from "react-router-dom";
-import axios from "axios";
-import DataContext from "../../context/DataContext";
+import { useState } from "react";
 // import {
 //   Search,
 //   SlidersHorizontal,
@@ -372,7 +382,6 @@ import DataContext from "../../context/DataContext";
 // } from 'lucide-react';
 
 function EmailMarketingManagement() {
-  const {integrationStatus, setIntegrationStauts,checkIntegrationStatus}=useContext(DataContext)
   const [emails] = useState([
     {
       id: 1,
@@ -545,11 +554,8 @@ function EmailMarketingManagement() {
       read: true,
     },
   ]);
-  const [selectedEmails, setSelectedEmails] = useState([]);
 
-  const getMails=async()=>{
-      const response=await axios.get(`https:localhost:8000/api/v1/emails?hotel_id=""`)
-  }
+  const [selectedEmails, setSelectedEmails] = useState([]);
 
   const toggleEmailSelection = (id) => {
     setSelectedEmails((prev) =>
@@ -565,18 +571,8 @@ function EmailMarketingManagement() {
     );
   };
 
-
-  console.log(integrationStatus)
-
-  useEffect(()=>{
-    checkIntegrationStatus()
-  },[])
-
   return (
-
-    <div>
-
-    {integrationStatus.gmail?<div className="h-screen flex flex-col bg-white fixed">
+    <div className="h-screen flex flex-col bg-white fixed">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
         <div className="flex items-center gap-4 flex-1">
@@ -774,12 +770,6 @@ function EmailMarketingManagement() {
         </main>
       </div>
     </div>
-    :
-    <div>
-      <Link to={`/dashboard/client/${localStorage.getItem("hid")}/integration`}>Connect Gmail </Link>
-    </div>}
-    </div>
-
   );
 }
 

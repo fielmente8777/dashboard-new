@@ -49,6 +49,7 @@ const header = [
   "Quotation Provided",
   "Dead Lead",
   "Date Sold Out",
+  "Duplicate",
 ];
 
 const Leads = () => {
@@ -141,7 +142,8 @@ const Leads = () => {
       });
       const data = createExportData(response);
       setExportedData(data);
-      setEnquires(response?.reverse());
+      const quer= response.filter((enq)=> enq.Contact && enq.Contact!=="undefined");
+      setEnquires(quer?.reverse());
     } catch (error) {
       console.error("Error fetching enquires:", error);
     } finally {
@@ -244,6 +246,14 @@ const Leads = () => {
             token,
             hid,
             status: "Date Sold Out",
+          });
+          break;
+
+        case 10:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Duplicate",
           });
           break;
         default:
@@ -811,6 +821,10 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Source
                   </th>
+
+                  {/* <th className="py-3 px-2 text-[14px] font-medium capitalize">
+                    Source Url
+                  </th> */}
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Name
                   </th>
@@ -820,7 +834,7 @@ const Leads = () => {
                   <th className="py-3 px-2 text-[14px] font-medium capitalize">
                     Email
                   </th>
-                  <th className="py-3 px-4 text-[14px] font-medium capitalize">
+                  <th className="py-3 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
                     Number of Guests
                   </th>
                   <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
@@ -974,8 +988,10 @@ const Leads = () => {
                     </tr>
                   )} */}
 
-                  {currentItems.map((enquery, index) => (
-                    <tr
+                  {currentItems.map((enquery, index) => {
+                    if (!enquery.Contact || enquery.Contact==="undefined") return null;
+                    return (
+                      <tr
                       key={index}
                       className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
                         enquery?.status === "Open"
@@ -1017,7 +1033,6 @@ const Leads = () => {
                           : ""}
                       </td>
                       <td className="py-3 px-2 text-[14px] font-semibold">
-                        {/* kjhjkhk */}
                         {enquery?.created_from?.toLowerCase() === "chatbot"
                           ? "Eazbot"
                           : enquery?.created_from?.toLowerCase() === "Eazbot"
@@ -1032,6 +1047,13 @@ const Leads = () => {
                           ? "Webform"
                           : "Webform"}
                       </td>
+                      {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                        <span title={enquery?.source_url || "Landing Page"}>
+                          {(enquery?.source_url?.length ?? 0) > 60
+                            ? `${enquery?.source_url.slice(0, 40)}...`
+                            : enquery?.source_url || "Landing Page"}
+                        </span>
+                      </td> */}
                       <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         {/* {enquery?.Name.slice(0, 15)} */}
                         {enquery?.Name?.substring(0, 15)}
@@ -1043,10 +1065,17 @@ const Leads = () => {
                         {enquery?.Email === "undefined" ? "-" : enquery?.Email}
                       </td>
 
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
+                      <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
                         {enquery?.numberOfGuest == ""
                           ? "-"
-                          : enquery?.numberOfGuest}
+                          : enquery?.numberOfGuest
+                          ? enquery?.numberOfGuest
+                          : isNaN(
+                              extractBookingInfo(enquery?.Message)?.guests
+                            ) ||
+                            extractBookingInfo(enquery?.Message)?.guests === 0
+                          ? "-"
+                          : extractBookingInfo(enquery?.Message)?.guests}
                       </td>
 
                       {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
@@ -1054,13 +1083,17 @@ const Leads = () => {
                       </td> */}
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_in
-                          ? enquery.check_in
+                          ? enquery?.check_in === "undefined"
+                            ? "-"
+                            : enquery.check_in
                           : extractBookingInfo(enquery?.Message)?.checkIn ||
                             "-"}
                       </td>
                       <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.check_out
-                          ? enquery.check_out
+                          ? enquery?.check_out === "undefined"
+                            ? "-"
+                            : enquery.check_out
                           : extractBookingInfo(enquery?.Message)?.checkOut ||
                             "-"}
                       </td>
@@ -1131,6 +1164,13 @@ const Leads = () => {
                           </option>
 
                           <option
+                            value="Duplicate"
+                            className="bg-white  text-black"
+                          >
+                            Duplicate
+                          </option>
+
+                          <option
                             value="Reserved"
                             className="bg-white  text-black"
                           >
@@ -1151,7 +1191,9 @@ const Leads = () => {
                         </span>
                       </td>
                     </tr>
-                  ))}
+                    )
+                     
+                  })}
                 </tbody>
               ) : (
                 <tbody>
@@ -1271,6 +1313,22 @@ const Leads = () => {
                         <option value="dashboard">Dashboard</option> */}
                         <option value="webform" selected>
                           Web Form
+                        </option>
+                        <option value="WhatsApp campaign" selected>
+                          WhatsApp campaign
+                        </option>
+                        <option value="WhatsApp organic" selected>
+                          WhatsApp organic
+                        </option>
+                        <option value="phone call" selected>
+                          Phone call
+                        </option>
+                        <option value="Instagram" selected>
+                          Instagram
+                        </option>
+
+                        <option value="Facebook" selected>
+                          Facebook
                         </option>
                       </select>
                     </div>

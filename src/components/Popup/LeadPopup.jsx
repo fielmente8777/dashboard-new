@@ -27,6 +27,7 @@ const header = [
   { label: "Quotation Provided", value: "Quotation Provided" },
   { label: "Dead Lead", value: "Dead Lead" },
   { label: "Date Sold Out", value: "Date Sold Out" },
+  { label: "Duplicate", value: "Duplicate" },
 ];
 
 export const formatPhoneNumber = (phone) => {
@@ -412,6 +413,15 @@ const LeadPopup = ({
                         <FaUser size={22} />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex gap-1.5">
+                    <strong>Source Url:</strong>
+                    <span title={lead?.source_url || "Landing Page"}>
+                      {(lead?.source_url?.length ?? 0) > 60
+                        ? `${lead?.source_url.slice(0, 40)}...`
+                        : lead?.source_url || "Landing Page"}
+                    </span>
                   </div>
                 </div>
 

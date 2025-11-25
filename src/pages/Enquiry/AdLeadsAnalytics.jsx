@@ -403,7 +403,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
           />
 
           {/* Top Location Card */}
-          <div className="rounded-xl p-5 bg-white">
+          {/* <div className="rounded-xl p-5 bg-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-4xl font-bold text-primary/90">
@@ -446,7 +446,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
                 %)
               </p>
             )}
-          </div>
+          </div> */}
         </div>
 
         {/* Filters */}

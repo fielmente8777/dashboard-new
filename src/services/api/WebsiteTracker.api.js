@@ -1,4 +1,4 @@
-import { NEW_BASE_URL } from "../../data/constant";
+import { NEW_BASE_URL, SALES_AGEENT_BASE_URL } from "../../data/constant";
 
 // hanlde api for getting all applicants
 export const getAllVisitors = async (body) => {
@@ -7,7 +7,7 @@ export const getAllVisitors = async (body) => {
     const params = new URLSearchParams();
     // if (body.limit) params.append("limit", "1");
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/webtrack/visitors?skip=${body.skip}&limit=${body.limit}`,
+      `${SALES_AGEENT_BASE_URL}/api/v1/webtrack/visitors?skip=${body.skip}&limit=${body.limit}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
@@ -30,7 +30,7 @@ export const getAllVisitorsActivities = async (body) => {
     const params = new URLSearchParams();
     // if (body.limit) params.append("limit", "1");
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/webtrack/sessions?skip=${body.skip}&limit=${body.limit}`,
+      `${SALES_AGEENT_BASE_URL}/api/v1/webtrack/sessions?skip=${body.skip}&limit=${body.limit}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
