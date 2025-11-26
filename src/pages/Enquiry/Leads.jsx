@@ -50,6 +50,7 @@ const header = [
   "Dead Lead",
   "Date Sold Out",
   "Duplicate",
+  "Hot",
 ];
 
 const Leads = () => {
@@ -142,7 +143,9 @@ const Leads = () => {
       });
       const data = createExportData(response);
       setExportedData(data);
-      const quer= response.filter((enq)=> enq.Contact && enq.Contact!=="undefined");
+      const quer = response.filter(
+        (enq) => enq.Contact && enq.Contact !== "undefined"
+      );
       setEnquires(quer?.reverse());
     } catch (error) {
       console.error("Error fetching enquires:", error);
@@ -221,7 +224,7 @@ const Leads = () => {
           response = await getAllClientEnquires({
             token,
             hid,
-            status: "Potential For Later",
+            status: "Potential",
           });
           break;
 
@@ -254,6 +257,14 @@ const Leads = () => {
             token,
             hid,
             status: "Duplicate",
+          });
+          break;
+
+        case 11:
+          response = await getAllClientEnquires({
+            token,
+            hid,
+            status: "Hot",
           });
           break;
         default:
@@ -989,35 +1000,36 @@ const Leads = () => {
                   )} */}
 
                   {currentItems.map((enquery, index) => {
-                    if (!enquery.Contact || enquery.Contact==="undefined") return null;
+                    if (!enquery.Contact || enquery.Contact === "undefined")
+                      return null;
                     return (
                       <tr
-                      key={index}
-                      className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
-                        enquery?.status === "Open"
-                          ? " text-[#575757]"
-                          : "text-[#575757]"
-                      }`}
-                      onClick={() => {
-                        setSelectedLead(enquery);
-                        setIsPopupOpen(true);
-                      }}
-                    >
-                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
-                        <input
-                          type="checkbox"
-                          checked={rowSelected.includes(enquery?._id)}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRowSelect(enquery?._id);
-                          }}
-                        />
-                      </td>
-                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
-                        {index + 1}
-                      </td>
+                        key={index}
+                        className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                          enquery?.status === "Open"
+                            ? " text-[#575757]"
+                            : "text-[#575757]"
+                        }`}
+                        onClick={() => {
+                          setSelectedLead(enquery);
+                          setIsPopupOpen(true);
+                        }}
+                      >
+                        <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={rowSelected.includes(enquery?._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRowSelect(enquery?._id);
+                            }}
+                          />
+                        </td>
+                        <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                          {index + 1}
+                        </td>
 
-                      {/* <td
+                        {/* <td
                         className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1027,172 +1039,183 @@ const Leads = () => {
                         Unreserved
                       </td> */}
 
-                      <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
-                        {enquery?.Created_at
-                          ? formatDateTime(enquery?.Created_at)
-                          : ""}
-                      </td>
-                      <td className="py-3 px-2 text-[14px] font-semibold">
-                        {enquery?.created_from?.toLowerCase() === "chatbot"
-                          ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "Eazbot"
-                          ? "Eazbot"
-                          : enquery?.created_from === "Eazobt"
-                          ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "eazobot"
-                          ? "Eazbot"
-                          : enquery?.created_from === "Website"
-                          ? "Webform"
-                          : enquery?.created_from === null
-                          ? "Webform"
-                          : "Webform"}
-                      </td>
-                      {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                        <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
+                          {enquery?.Created_at
+                            ? formatDateTime(enquery?.Created_at)
+                            : ""}
+                        </td>
+                        <td className="py-3 px-2 text-[14px] font-semibold">
+                          {enquery?.created_from?.toLowerCase() === "chatbot"
+                            ? "Eazbot"
+                            : enquery?.created_from?.toLowerCase() === "Eazbot"
+                            ? "Eazbot"
+                            : enquery?.created_from === "Eazobt"
+                            ? "Eazbot"
+                            : enquery?.created_from?.toLowerCase() === "eazobot"
+                            ? "Eazbot"
+                            : enquery?.created_from === "Website"
+                            ? "Webform"
+                            : enquery?.created_from === null
+                            ? "Webform"
+                            : "Webform"}
+                        </td>
+                        {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         <span title={enquery?.source_url || "Landing Page"}>
                           {(enquery?.source_url?.length ?? 0) > 60
                             ? `${enquery?.source_url.slice(0, 40)}...`
                             : enquery?.source_url || "Landing Page"}
                         </span>
                       </td> */}
-                      <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
-                        {/* {enquery?.Name.slice(0, 15)} */}
-                        {enquery?.Name?.substring(0, 15)}
-                      </td>
-                      <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
-                        {formatPhoneNumber(enquery?.Contact)}
-                      </td>
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery?.Email === "undefined" ? "-" : enquery?.Email}
-                      </td>
+                        <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                          {/* {enquery?.Name.slice(0, 15)} */}
+                          {enquery?.Name?.substring(0, 15)}
+                        </td>
+                        <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
+                          {formatPhoneNumber(enquery?.Contact)}
+                        </td>
+                        <td className="py-3 px-2 text-[14px] text-[#575757]">
+                          {enquery?.Email === "undefined"
+                            ? "-"
+                            : enquery?.Email}
+                        </td>
 
-                      <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
-                        {enquery?.numberOfGuest == ""
-                          ? "-"
-                          : enquery?.numberOfGuest
-                          ? enquery?.numberOfGuest
-                          : isNaN(
-                              extractBookingInfo(enquery?.Message)?.guests
-                            ) ||
-                            extractBookingInfo(enquery?.Message)?.guests === 0
-                          ? "-"
-                          : extractBookingInfo(enquery?.Message)?.guests}
-                      </td>
+                        <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
+                          {enquery?.numberOfGuest == ""
+                            ? "-"
+                            : enquery?.numberOfGuest
+                            ? enquery?.numberOfGuest
+                            : isNaN(
+                                extractBookingInfo(enquery?.Message)?.guests
+                              ) ||
+                              extractBookingInfo(enquery?.Message)?.guests === 0
+                            ? "-"
+                            : extractBookingInfo(enquery?.Message)?.guests}
+                        </td>
 
-                      {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
+                        {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.Message}
                       </td> */}
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery?.check_in
-                          ? enquery?.check_in === "undefined"
-                            ? "-"
-                            : enquery.check_in
-                          : extractBookingInfo(enquery?.Message)?.checkIn ||
-                            "-"}
-                      </td>
-                      <td className="py-3 px-2 text-[14px] text-[#575757]">
-                        {enquery?.check_out
-                          ? enquery?.check_out === "undefined"
-                            ? "-"
-                            : enquery.check_out
-                          : extractBookingInfo(enquery?.Message)?.checkOut ||
-                            "-"}
-                      </td>
-                      {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                        <td className="py-3 px-2 text-[14px] text-[#575757]">
+                          {enquery?.check_in
+                            ? enquery?.check_in === "undefined"
+                              ? "-"
+                              : enquery.check_in
+                            : extractBookingInfo(enquery?.Message)?.checkIn ||
+                              "-"}
+                        </td>
+                        <td className="py-3 px-2 text-[14px] text-[#575757]">
+                          {enquery?.check_out
+                            ? enquery?.check_out === "undefined"
+                              ? "-"
+                              : enquery.check_out
+                            : extractBookingInfo(enquery?.Message)?.checkOut ||
+                              "-"}
+                        </td>
+                        {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
                         {enquery?.status}
                       </td> */}
 
-                      <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
-                        <select
-                          className="outline-none py-2 bg-gray-50 cursor-pointer"
-                          defaultValue={enquery?.status}
-                          value={enquery?.status}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => {
-                            handleStatusChange(enquery, e.target.value);
-                          }}
-                        >
-                          <option disabled className="text-gray-500 bg-white">
-                            Select Status
-                          </option>
-                          <option
-                            value="Converted"
-                            className="bg-white text-black"
+                        <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                          <select
+                            className="outline-none py-2 bg-gray-50 cursor-pointer"
+                            defaultValue={enquery?.status}
+                            value={enquery?.status}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              handleStatusChange(enquery, e.target.value);
+                            }}
                           >
-                            Converted
-                          </option>
-                          <option
-                            value="Contacted"
-                            className="bg-white  text-black"
-                          >
-                            Contacted
-                          </option>
-                          <option value="Open" className="bg-white  text-black">
-                            Open
-                          </option>
+                            <option disabled className="text-gray-500 bg-white">
+                              Select Status
+                            </option>
+                            <option
+                              value="Converted"
+                              className="bg-white text-black"
+                            >
+                              Converted
+                            </option>
+                            <option
+                              value="Contacted"
+                              className="bg-white  text-black"
+                            >
+                              Contacted
+                            </option>
+                            <option
+                              value="Open"
+                              className="bg-white  text-black"
+                            >
+                              Open
+                            </option>
 
-                          <option
-                            value="Out Of Budget"
-                            className="bg-white  text-black"
-                          >
-                            Out Of Budget
-                          </option>
-                          <option
-                            value="Potential"
-                            className="bg-white  text-black"
-                          >
-                            Potential For Later
-                          </option>
+                            <option
+                              value="Out Of Budget"
+                              className="bg-white  text-black"
+                            >
+                              Out Of Budget
+                            </option>
+                            <option
+                              value="Potential"
+                              className="bg-white  text-black"
+                            >
+                              Potential For Later
+                            </option>
 
-                          <option
-                            value="Quotation Provided"
-                            className="bg-white  text-black"
-                          >
-                            Quotation Provided
-                          </option>
-                          <option
-                            value="Dead Lead"
-                            className="bg-white  text-black"
-                          >
-                            Dead Lead
-                          </option>
+                            <option
+                              value="Quotation Provided"
+                              className="bg-white  text-black"
+                            >
+                              Quotation Provided
+                            </option>
+                            <option
+                              value="Dead Lead"
+                              className="bg-white  text-black"
+                            >
+                              Dead Lead
+                            </option>
 
-                          <option
-                            value="Date Sold Out"
-                            className="bg-white  text-black"
-                          >
-                            Date Sold Out
-                          </option>
+                            <option
+                              value="Date Sold Out"
+                              className="bg-white  text-black"
+                            >
+                              Date Sold Out
+                            </option>
 
-                          <option
-                            value="Duplicate"
-                            className="bg-white  text-black"
-                          >
-                            Duplicate
-                          </option>
+                            <option
+                              value="Duplicate"
+                              className="bg-white  text-black"
+                            >
+                              Duplicate
+                            </option>
 
-                          <option
-                            value="Reserved"
-                            className="bg-white  text-black"
-                          >
-                            Reserved
-                          </option>
-                        </select>
-                      </td>
+                            <option
+                              value="Reserved"
+                              className="bg-white  text-black"
+                            >
+                              Reserved
+                            </option>
 
-                      <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
-                        <span
-                          className="flex justify-center"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(enquery._id, enquery.Email);
-                          }}
-                        >
-                          <MdDeleteOutline size={22} color="#df4545" />
-                        </span>
-                      </td>
-                    </tr>
-                    )
-                     
+                            <option
+                              value="Hot"
+                              className="bg-white  text-black"
+                            >
+                              Hot
+                            </option>
+                          </select>
+                        </td>
+
+                        <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                          <span
+                            className="flex justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(enquery._id, enquery.Email);
+                            }}
+                          >
+                            <MdDeleteOutline size={22} color="#df4545" />
+                          </span>
+                        </td>
+                      </tr>
+                    );
                   })}
                 </tbody>
               ) : (
@@ -1309,8 +1332,7 @@ const Leads = () => {
                         <option value="" disabled>
                           Select
                         </option>
-                        {/* <option value="eazbot">Eazbot</option>
-                        <option value="dashboard">Dashboard</option> */}
+
                         <option value="webform" selected>
                           Web Form
                         </option>

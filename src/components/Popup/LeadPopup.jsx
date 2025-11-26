@@ -23,11 +23,12 @@ const header = [
   { label: "Contacted", value: "Contacted" },
   { label: "Converted", value: "Converted" },
   { label: "Out Of Budget", value: "Out Of Budget" },
-  { label: "Potential For Later", value: "Potential For Later" },
+  { label: "Potential For Later", value: "Potential" },
   { label: "Quotation Provided", value: "Quotation Provided" },
   { label: "Dead Lead", value: "Dead Lead" },
   { label: "Date Sold Out", value: "Date Sold Out" },
   { label: "Duplicate", value: "Duplicate" },
+  { label: "Hot", value: "Hot" },
 ];
 
 export const formatPhoneNumber = (phone) => {
@@ -573,6 +574,7 @@ const LeadPopup = ({
                   </select> */}
 
                   <select
+                    value={lead.status || ""}
                     className="border border-gray-300 rounded-md px-4 py-2"
                     onChange={(e) => handleQueryStatus(e.target.value)}
                   >
