@@ -157,8 +157,8 @@ function Integration() {
       const handleConnection=async()=>{
         try {
           // console.log("Connecting with google")
-          const response=await axios.get(`http://localhost:8000/api/v1/emails/google/login`)
-          // console.log(response.data);
+          const response=await axios.get(`http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem('ndid')}`)
+          console.log(response.data);
           window.location.href = response.data.auth_url;
         } catch (error) {
           console.error("Error connecting google:", error)
