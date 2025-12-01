@@ -368,6 +368,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     };
   });
 
+  // console.log(authUser);
+  // console.log(hotel);
+  // console.log(currentLocation);
   return (
     <div
       className="p-3  flex flex-col h-screen overflow-hidden shadow-md bg-white md:relative fixed left-0 z-[99999] border border-gray-50"
@@ -495,7 +498,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                           const isCurrentLocation =
                             value?.city === currentLocation?.city &&
                             value?.state === currentLocation?.state &&
-                            value?.country === currentLocation?.country;
+                            value?.country === currentLocation?.country &&
+                            value?.local === currentLocation?.local &&
+                            value?.pinCode === currentLocation?.pinCode;
 
                           return (
                             <div
