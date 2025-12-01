@@ -61,7 +61,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
 
   return (
     <div
-      className={`nav-profile-dropdown ${isProfileOpen ? "active" : ""}`}
+      className={`nav-profile-dropdown  ${isProfileOpen ? "active" : ""}`}
       ref={dropdownRef}
     >
       {routs.map((route, index) => (

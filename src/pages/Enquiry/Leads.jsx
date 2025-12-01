@@ -191,7 +191,7 @@ const Leads = () => {
     try {
       let response;
       switch (Number(index) + 1) {
-        case 0:
+        case 1:
           response = await getAllClientEnquires({ token, hid });
           break;
         case 2:
@@ -270,8 +270,13 @@ const Leads = () => {
         default:
           response = await getAllClientEnquires({ token, hid });
       }
-      // console.log(response);
-      setEnquires(response?.reverse());
+
+      const quer = response.filter(
+        (enq) => enq.Contact && enq.Contact !== "undefined"
+      );
+      setEnquires(quer?.reverse());
+
+      // setEnquires([...response.reverse()]);
     } catch (error) {
       console.error(error);
     } finally {
@@ -810,7 +815,7 @@ const Leads = () => {
             )}
             <div className="max-h-[700px] overflow-y-auto flex flex-col items-start">
               <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
-                <thead className="sticky top-0 bg-[#0a3a75] z-10">
+                <thead className="sticky top-0 bg-[#0a3a75]">
                   <tr className="border-b">
                     <th className="py-3 px-2 text-[14px] font-medium capitalize">
                       {/* <input

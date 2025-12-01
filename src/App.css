@@ -12,9 +12,9 @@
   transform: translateY(-10px);
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 9999999 !important;
+  z-index: 99999 ;
 }
-
+ 
 .nav-profile-dropdown.active {
   opacity: 1;
   transform: translateY(0);

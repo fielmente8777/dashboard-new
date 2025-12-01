@@ -118,7 +118,6 @@
 //     setNewTemplate({ id: "", title: "", subject: "", body: "", footer: "" });
 //   };
 
-
 //   console.log(integrationStatus)
 
 //   useEffect(()=>{
@@ -359,8 +358,9 @@
 
 // export default EmailMarketingManagement;
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CiStar } from "react-icons/ci";
+import { getEmails } from "../../services/api/Email.api";
 // import {
 //   Search,
 //   SlidersHorizontal,
@@ -571,6 +571,19 @@ function EmailMarketingManagement() {
       selectedEmails.length === emails.length ? [] : emails.map((e) => e.id)
     );
   };
+
+  const fetchEmails = async () => {
+    try {
+      const response = await getEmails();
+      console.log(response);
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmails();
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-white fixed">
