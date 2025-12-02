@@ -12,10 +12,10 @@ import DataContext from "../../context/DataContext";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
-
 function Integration() {
   const navigate = useNavigate();
-  const {integrationStatus, setIntegrationStauts,checkIntegrationStatus}=useContext(DataContext)
+  const { integrationStatus, setIntegrationStauts, checkIntegrationStatus } =
+    useContext(DataContext);
   const [formData, setFormData] = useState({
     apiKey: "",
     authToken: "",
@@ -23,7 +23,11 @@ function Integration() {
     accountSID: "",
   });
 
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showOtpLessSidebar, setOtpLessSidebar] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
 
   // const [integrationStatus, setIntegrationStauts] = useState({
@@ -97,6 +101,18 @@ function Integration() {
       category: "Analytics",
       color: "bg-white",
     },
+
+    {
+      id: "otp-less",
+      name: "OTP-Less",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
+      // icon: <OtpIcon />,
+      img: "/otp.png",
+      status: "not-connected",
+      category: "Analytics",
+      color: "bg-white",
+    },
   ]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -152,19 +168,24 @@ function Integration() {
       return;
     } else if (id === "exotel") {
       setShowSidebar(true);
-    }
-    else if(id="gmail"){
-      const handleConnection=async()=>{
+    } else if (id === "otp-less") {
+      setOtpLessSidebar(true);
+    } else if (id === "gmail") {
+      const handleConnection = async () => {
         try {
           // console.log("Connecting with google")
-          const response=await axios.get(`http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem('ndid')}`)
+          const response = await axios.get(
+            `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
+              "ndid"
+            )}`
+          );
           console.log(response.data);
           window.location.href = response.data.auth_url;
         } catch (error) {
-          console.error("Error connecting google:", error)
+          console.error("Error connecting google:", error);
         }
-      }
-      handleConnection()
+      };
+      handleConnection();
       return;
     }
     setIntegrations(
@@ -182,8 +203,6 @@ function Integration() {
       })
     );
   };
-
-  
 
   const handleConnect = async (e) => {
     e.preventDefault();
@@ -290,7 +309,14 @@ function Integration() {
                     >
                       <div>
                         {integration?.img ? (
-                          <img src={integration?.img} className="w-16 -ml-2" />
+                          <img
+                            src={integration?.img}
+                            className={`${
+                              integration.id === "otp-less"
+                                ? "w-40 -ml-4"
+                                : "w-16 -ml-2"
+                            }  object-contain`}
+                          />
                         ) : (
                           integration?.icon
                         )}
@@ -436,6 +462,70 @@ function Integration() {
           </div>
         </div>
       )}
+
+      {showOtpLessSidebar && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Connect Your Account
+              </h2>
+              <button
+                onClick={() => setOtpLessSidebar(false)}
+                className="text-gray-500 hover:text-gray-800"
+              >
+                <IoIosClose size={30} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form
+              onSubmit={handleConnect}
+              className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Client Id
+                </label>
+                <input
+                  type="text"
+                  name="apiKey"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Client Id"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Client Secret
+                </label>
+                <input
+                  type="password"
+                  name="authToken"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Client Secret"
+                  required
+                />
+              </div>
+
+              <div className="pt-6">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4"
+                >
+                  Connect {isCreateConnectLoading && <Loader color="#fff" />}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -473,6 +563,20 @@ const MailIcon = () => {
         d="M0 116.411V162.956L116.364 250.229V98.956L83.782 74.52C49.251 48.629 0 73.269 0 116.411Z"
         fill="#E51C19"
       />
+    </svg>
+  );
+};
+
+const OtpIcon = () => {
+  return (
+    <svg
+      style={{ width: "100%", height: "100%" }} // FIXED
+      viewBox="0 0 124 32"
+      preserveAspectRatio="none"
+      width="100%"
+      height="100%"
+    >
+      <use xlinkHref="#svg-1758876604_7570" /> {/* FIXED */}
     </svg>
   );
 };

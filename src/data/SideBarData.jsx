@@ -105,7 +105,7 @@ export const SidebarData = [
         link: `enquiries-management/enquiries`,
         icon: <MdLeaderboard size={18} />,
       },
-      
+
       {
         name: "Meta Leads",
         link: `enquiries-management/meta-leads`,
@@ -177,12 +177,12 @@ export const SidebarData = [
   //   link: `eazbot`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  {
-    name: "EazeMail",
-    // key: "Eazobot",
-    link: `eazmail`,
-    icon: <IoIosChatbubbles size={24} />,
-  },
+  // {
+  //   name: "EazeMail",
+  //   // key: "Eazobot",
+  //   link: `eazmail`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
   {
     name: "Booking Engine",
     key: "Booking Engine",
