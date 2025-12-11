@@ -3,7 +3,7 @@ import { MdMail, MdOutlineTrackChanges } from "react-icons/md";
 import { SiAnalogue, SiGoogleanalytics } from "react-icons/si";
 import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
-import { BASE_PATH, NEW_BASE_URL } from "../../data/constant";
+import { BASE_PATH, BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
@@ -21,6 +21,7 @@ function Integration() {
     authToken: "",
     subDomain: "",
     accountSID: "",
+    virtualNumber:""
   });
 
   const [clientId, setClientId] = useState("");
@@ -233,6 +234,28 @@ function Integration() {
     }
   };
 
+
+  const handleOtpLessConnect=async(e)=>{
+    e.preventDefault()
+    try{
+      const { data } = await axios.post(
+        `${BASE_URL}/otp/connect`,
+        {
+          "client_id":clientId,
+          "client_secret":clientSecret
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      console.log("Response data",data)
+    }
+    catch(err){
+      console.log("Error:",err)
+    }
+  }
   useEffect(() => {
     checkIntegrationStatus();
   }, []);
@@ -449,6 +472,20 @@ function Integration() {
                   required
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Exotel Phone Number
+                </label>
+                <input
+                  type="text"
+                  name="virtualNumber"
+                  value={formData.virtualNumber}
+                  onChange={handleChange}
+                  className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter your Account SID"
+                  required
+                />
+              </div>
 
               <div className="pt-6">
                 <button
@@ -481,7 +518,7 @@ function Integration() {
 
             {/* Form */}
             <form
-              onSubmit={handleConnect}
+              onSubmit={handleOtpLessConnect}
               className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
             >
               <div>
