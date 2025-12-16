@@ -13,6 +13,7 @@ import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import { BASE_URL } from "../../data/constant";
 import DataContext from "../../context/DataContext";
 import ReservationForm from "../../components/ReservationForm/hotel_reservation_form_react_frontend";
+import ClarityDashboard from "../Clarity/ClarityDashboard";
 
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
@@ -174,6 +175,7 @@ const Dashboard = () => {
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
+          <ClarityDashboard />
 
           <div className="flex items-center justify-end p-2">
             {/* <h2 className="text-lg font-semibold">Date Selected</h2> */}
