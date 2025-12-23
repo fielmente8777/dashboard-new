@@ -59,16 +59,16 @@ function Integration() {
       category: "Analytics",
       color: "",
     },
-    // {
-    //   id: "whatsapp",
-    //   name: "WhatsApp Business",
-    //   description:
-    //     "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
-    //   icon: <IoLogoWhatsapp className="w-10 h-10" />,
-    //   status: "not-connected",
-    //   category: "Communication",
-    //   color: "bg-green-500",
-    // },
+    {
+      id: "whatsapp",
+      name: "WhatsApp Business",
+      description:
+        "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
+      icon: <IoLogoWhatsapp className="w-10 h-10" />,
+      status: "not-connected",
+      category: "Communication",
+      color: "bg-green-500",
+    },
     {
       id: "WebsiteTracking",
       name: "Website Tracking",
