@@ -175,7 +175,7 @@ const Dashboard = () => {
       {!loading ? (
         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
           {/*   */}
-          <ClarityDashboard />
+          {/* <ClarityDashboard /> */}
 
           <div className="flex items-center justify-end p-2">
             {/* <h2 className="text-lg font-semibold">Date Selected</h2> */}

@@ -21,7 +21,7 @@ function Integration() {
     authToken: "",
     subDomain: "",
     accountSID: "",
-    virtualNumber:""
+    virtualNumber: "",
   });
 
   const [clientId, setClientId] = useState("");
@@ -43,6 +43,16 @@ function Integration() {
     {
       id: "gmail",
       name: "Gmail",
+      description:
+        "Sync your inbox and manage emails directly from your dashboard.",
+      icon: <MailIcon className="" />,
+      status: "connected",
+      category: "Communication",
+      color: "",
+    },
+    {
+      id: "gmb",
+      name: "GMB",
       description:
         "Sync your inbox and manage emails directly from your dashboard.",
       icon: <MailIcon className="" />,
@@ -188,6 +198,35 @@ function Integration() {
       };
       handleConnection();
       return;
+    } else if (id === "gmb") {
+      const handleConnection = async () => {
+        try {
+          // console.log("Connecting with google");
+          // const response = await axios.post(
+          //   `http://localhost:8000/api/v1/google-ads/auth/google/start`,
+          //   {},
+          //   {
+          //     headers: {
+          //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+          //       "Content-Type": "application/json",
+          //     },
+          //   }
+          // );
+          // console.log(response.data);
+          // window.location.href = response.data.auth_url;
+          // await axios.get(
+          //   "http://localhost:8000/api/v1/google-ads/auth/google/start"
+          // );
+          window.open(
+            "http://localhost:8000/api/v1/google-ads/auth/google/start",
+            "_blank"
+          );
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
+      return;
     }
     setIntegrations(
       integrations.map((integration) => {
@@ -234,15 +273,14 @@ function Integration() {
     }
   };
 
-
-  const handleOtpLessConnect=async(e)=>{
-    e.preventDefault()
-    try{
+  const handleOtpLessConnect = async (e) => {
+    e.preventDefault();
+    try {
       const { data } = await axios.post(
         `${BASE_URL}/otp/connect`,
         {
-          "client_id":clientId,
-          "client_secret":clientSecret
+          client_id: clientId,
+          client_secret: clientSecret,
         },
         {
           headers: {
@@ -250,12 +288,11 @@ function Integration() {
           },
         }
       );
-      console.log("Response data",data)
+      console.log("Response data", data);
+    } catch (err) {
+      console.log("Error:", err);
     }
-    catch(err){
-      console.log("Error:",err)
-    }
-  }
+  };
   useEffect(() => {
     checkIntegrationStatus();
   }, []);

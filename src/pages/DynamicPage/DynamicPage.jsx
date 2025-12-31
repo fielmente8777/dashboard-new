@@ -76,6 +76,10 @@ import Calls from "../Calls/Calls";
 import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
 import Contacts from "../Contacts/Contacts";
 import EazbotEnquiries from "../Enquiry/EazbotEnquiries";
+import Overview from "../Gmb/Overview";
+import Ranks from "../Gmb/Rank";
+import Keywords from "../Gmb/Keyword";
+import Reviews from "../Gmb/Review";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -130,7 +134,9 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/eazbot-visitors`]: <EazbotEnquiries />,
+    [`${BASE_PATH}/${hid}/enquiries-management/eazbot-visitors`]: (
+      <EazbotEnquiries />
+    ),
     [`${BASE_PATH}/${hid}/enquiries-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
@@ -214,6 +220,12 @@ const DynamicPage = () => {
 
     // pms
     [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
+
+    // gmb
+    [`${BASE_PATH}/${hid}/gmb/overview`]: <Overview />,
+    [`${BASE_PATH}/${hid}/gmb/keywords`]: <Keywords />,
+    [`${BASE_PATH}/${hid}/gmb/rank`]: <Ranks />,
+    [`${BASE_PATH}/${hid}/gmb/reviews`]: <Reviews />,
 
     // [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
     [`${BASE_PATH}/${hid}/calls-management`]: <Calls />,
