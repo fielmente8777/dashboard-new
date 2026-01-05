@@ -201,26 +201,19 @@ function Integration() {
     } else if (id === "gmb") {
       const handleConnection = async () => {
         try {
-          // console.log("Connecting with google");
-          // const response = await axios.post(
-          //   `http://localhost:8000/api/v1/google-ads/auth/google/start`,
-          //   {},
-          //   {
-          //     headers: {
-          //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-          //       "Content-Type": "application/json",
-          //     },
-          //   }
-          // );
-          // console.log(response.data);
-          // window.location.href = response.data.auth_url;
-          // await axios.get(
-          //   "http://localhost:8000/api/v1/google-ads/auth/google/start"
-          // );
-          window.open(
-            "http://localhost:8000/api/v1/google-ads/auth/google/start",
-            "_blank"
+          const response = await axios.get(
+            `http://localhost:8000/api/v1/gmb/connect`,
+            {
+              params: {
+                ndid: localStorage.getItem("ndid"),
+              },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                "Content-Type": "application/json",
+              },
+            }
           );
+          window.open(response.data.url, "_blank");
         } catch (error) {
           console.error("Error connecting google:", error);
         }
@@ -247,8 +240,6 @@ function Integration() {
   const handleConnect = async (e) => {
     e.preventDefault();
     setIsCreateConnectLoading(true);
-    // handle connect logic here
-    console.log(formData);
     try {
       const { data } = await axios.post(
         `${NEW_BASE_URL}/api/v1/call/auth/connect`,
