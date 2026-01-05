@@ -10,10 +10,16 @@ import {
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
+  FaRankingStar,
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
-import { MdEmergencyShare, MdOutlineSos, MdUnsubscribe } from "react-icons/md";
+import {
+  MdEmergencyShare,
+  MdOutlineReviews,
+  MdOutlineSos,
+  MdUnsubscribe,
+} from "react-icons/md";
 import { SiGoogleanalytics } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
@@ -41,6 +47,7 @@ import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
+import { CiViewBoard } from "react-icons/ci";
 
 export const SidebarData = [
   {
@@ -170,6 +177,35 @@ export const SidebarData = [
     target: "_blank",
     link: `https://social.eazotel.com`,
     icon: <TiSocialSkype size={24} />,
+  },
+
+  {
+    name: "GMB",
+    // key: "gmb",
+    icon: <MdLeaderboard size={24} />,
+    // link: `lead-form/lead-gen-form`,
+    subLinks: [
+      {
+        name: "Overview",
+        link: `gmb/overview`,
+        icon: <CiViewBoard size={16} />,
+      },
+      {
+        name: "Rank",
+        link: `gmb/rank`,
+        icon: <FaRankingStar size={16} />,
+      },
+      {
+        name: "Keywords",
+        link: `gmb/keywords`,
+        icon: <SiGoogleforms size={16} />,
+      },
+      {
+        name: "Reviews",
+        link: `gmb/reviews`,
+        icon: <MdOutlineReviews size={16} />,
+      },
+    ],
   },
   // {
   //   name: "Eazbot",

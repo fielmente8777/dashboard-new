@@ -21,7 +21,7 @@ function Integration() {
     authToken: "",
     subDomain: "",
     accountSID: "",
-    virtualNumber:""
+    virtualNumber: "",
   });
 
   const [clientId, setClientId] = useState("");
@@ -43,6 +43,16 @@ function Integration() {
     {
       id: "gmail",
       name: "Gmail",
+      description:
+        "Sync your inbox and manage emails directly from your dashboard.",
+      icon: <MailIcon className="" />,
+      status: "connected",
+      category: "Communication",
+      color: "",
+    },
+    {
+      id: "gmb",
+      name: "GMB",
       description:
         "Sync your inbox and manage emails directly from your dashboard.",
       icon: <MailIcon className="" />,
@@ -188,6 +198,28 @@ function Integration() {
       };
       handleConnection();
       return;
+    } else if (id === "gmb") {
+      const handleConnection = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/api/v1/gmb/connect`,
+            {
+              params: {
+                ndid: localStorage.getItem("ndid"),
+              },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          window.open(response.data.url, "_blank");
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
+      return;
     }
     setIntegrations(
       integrations.map((integration) => {
@@ -208,8 +240,6 @@ function Integration() {
   const handleConnect = async (e) => {
     e.preventDefault();
     setIsCreateConnectLoading(true);
-    // handle connect logic here
-    console.log(formData);
     try {
       const { data } = await axios.post(
         `${NEW_BASE_URL}/api/v1/call/auth/connect`,
@@ -234,15 +264,14 @@ function Integration() {
     }
   };
 
-
-  const handleOtpLessConnect=async(e)=>{
-    e.preventDefault()
-    try{
+  const handleOtpLessConnect = async (e) => {
+    e.preventDefault();
+    try {
       const { data } = await axios.post(
         `${BASE_URL}/otp/connect`,
         {
-          "client_id":clientId,
-          "client_secret":clientSecret
+          client_id: clientId,
+          client_secret: clientSecret,
         },
         {
           headers: {
@@ -250,12 +279,11 @@ function Integration() {
           },
         }
       );
-      console.log("Response data",data)
+      console.log("Response data", data);
+    } catch (err) {
+      console.log("Error:", err);
     }
-    catch(err){
-      console.log("Error:",err)
-    }
-  }
+  };
   useEffect(() => {
     checkIntegrationStatus();
   }, []);
