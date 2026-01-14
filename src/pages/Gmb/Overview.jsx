@@ -100,7 +100,29 @@ export function Overview() {
     },
   ];
 
-  const getData = async () => {
+
+  const completeGoogleConnect = async () => {
+  try {
+    const response = await fetch(
+      "http://localhost:8000/api/v1/gmb/complete-connect",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+    getData();
+
+    console.log("Google fully connected:", data);
+  } catch (error) {
+    console.error("Complete connect failed:", error);
+  }
+};
+const getData = async () => {
     const response = await fetch("http://localhost:8000/api/v1/gmb/sync", {
       headers: {
         "Content-Type": "application/json",
@@ -110,10 +132,10 @@ export function Overview() {
     const data = await response.json();
     console.log(data);
   };
+useEffect(() => {
+  completeGoogleConnect();
+}, []);
 
-  useEffect(() => {
-    getData();
-  }, []);
 
   return (
     <div className="flex-1 bg-gray-50 overflow-y-auto">
