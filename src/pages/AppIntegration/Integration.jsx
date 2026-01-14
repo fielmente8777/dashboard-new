@@ -157,22 +157,22 @@ function Integration() {
     if (id === "meta") {
       const handleConnect = async () => {
         try {
-          //   const { data } = await axios.get(
-          //     `${NEW_BASE_URL}/api/v1/auth/meta/start`
-          //   );
-
-          //   console.log(data);
-
-          window.open(
-            `${NEW_BASE_URL}/api/v1/auth/meta/start/?ndid=${localStorage.getItem(
-              "ndid"
-            )}`,
-            "MetaConnect"
+          const { data } = await axios.post(
+            `${"https://28b36928ef70.ngrok-free.app"}/api/v1/whatsapp/meta/connect`,
+            {},
+            {
+              headers: {
+                "x-ndid": localStorage.getItem("ndid"),
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
           );
+
+          window.open(data?.signupUrl, "_blank");
 
           // setConnected(true);
         } catch (error) {
-          // console.log(error);
+          console.log(error);
         }
       };
       handleConnect();
