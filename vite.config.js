@@ -15,6 +15,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
+    allowedHosts:true,
     hmr: {
       overlay: false, // Disable HMR overlay to prevent errors
     },

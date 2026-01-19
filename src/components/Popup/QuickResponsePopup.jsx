@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { formatPhoneNumber } from "./LeadPopup";
 import { MdClose } from "react-icons/md";
+import axios from "axios";
 
 // Step 1: Define channels
 const channels = [
@@ -94,28 +95,38 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const phone = formatPhoneNumber(lead.Contact);
-    const message = encodeURIComponent(selectedTemplate?.content?.trim());
+    const message = selectedTemplate?.content?.trim();
 
     if (!phone || !message) {
       console.error("Phone number or message is missing");
       return;
     }
 
-    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+    try {
+      const { data } = await axios.post(
+        "http://localhost:4000/api/send-message",
+        { ndid: lead.ndid, phone: phone, name: lead.Name, message: message }
+      );
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
 
-    // const isMobile =
-    //   typeof window !== "undefined" &&
-    //   /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) &&
-    //   !window.matchMedia("(hover: hover)").matches;
+    // const url = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
 
-    // const url = isMobile
-    //   ? `https://api.whatsapp.com/send?phone=${phone}&text=${message}` // Opens app
-    //   : `https://web.whatsapp.com/send?phone=${phone}&text=${message}`; // Opens Web
+    // // const isMobile =
+    // //   typeof window !== "undefined" &&
+    // //   /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) &&
+    // //   !window.matchMedia("(hover: hover)").matches;
 
-    window.open(url, "_blank");
-    setOpen(false);
+    // // const url = isMobile
+    // //   ? `https://api.whatsapp.com/send?phone=${phone}&text=${message}` // Opens app
+    // //   : `https://web.whatsapp.com/send?phone=${phone}&text=${message}`; // Opens Web
+
+    // window.open(url, "_blank");
+    // setOpen(false);
   };
 
   if (!open) return null;

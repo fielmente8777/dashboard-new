@@ -157,22 +157,23 @@ function Integration() {
     if (id === "meta") {
       const handleConnect = async () => {
         try {
-          //   const { data } = await axios.get(
-          //     `${NEW_BASE_URL}/api/v1/auth/meta/start`
-          //   );
+          // const { data } = await axios.post(
+          //   `${"https://442c5fb1d529.ngrok-free.app"}/api/v1/whatsapp/meta/connect`,
+          //   {},
+          //   {
+          //     headers: {
+          //       "x-ndid": localStorage.getItem("ndid"),
+          //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+          //     },
+          //   }
+          // );
 
-          //   console.log(data);
-
-          window.open(
-            `${NEW_BASE_URL}/api/v1/auth/meta/start/?ndid=${localStorage.getItem(
-              "ndid"
-            )}`,
-            "MetaConnect"
-          );
+          // window.open(data?.signupUrl, "_blank");
+          launchWhatsAppSignup()
 
           // setConnected(true);
         } catch (error) {
-          // console.log(error);
+          console.log(error);
         }
       };
       handleConnect();
@@ -327,11 +328,10 @@ function Integration() {
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                  selectedFilter === category
+                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
                     ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {category}
               </button>
@@ -362,11 +362,10 @@ function Integration() {
                         {integration?.img ? (
                           <img
                             src={integration?.img}
-                            className={`${
-                              integration.id === "otp-less"
+                            className={`${integration.id === "otp-less"
                                 ? "w-40 -ml-4"
                                 : "w-16 -ml-2"
-                            }  object-contain`}
+                              }  object-contain`}
                           />
                         ) : (
                           integration?.icon
@@ -395,11 +394,10 @@ function Integration() {
                         toggleIntegration(integration.id);
                       }
                     }}
-                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
-                      status
+                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${status
                         ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                         : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
+                      }`}
                   >
                     {status ? "Disconnect" : "Connect"}
                     {/* <ChevronRight className="w-4 h-4" /> */}

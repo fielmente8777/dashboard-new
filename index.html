@@ -32,6 +32,84 @@
       <p id="currentTime"></p>
       
       <script type="module" src="/src/main.jsx"></script>
+      <script>
+    window.addEventListener('message', (event) => {
+      if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") {
+        return;
+      }
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          // if user finishes the Embedded Signup flow
+          if (data.event === 'FINISH') {
+            const {phone_number_id, waba_id} = data.data;
+            
+            console.log("Phone number ID ", phone_number_id, " WhatsApp business account ID ", waba_id);
+            try {
+              const ndid=localStorage.getItem("ndid")
+              const apiResponse =  fetch("https://442c5fb1d529.ngrok-free.app/api/v1/whatsapp/meta/savecredentials", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  phoneNumberId:phone_number_id,
+                  wabaId:waba_id,
+                  ndid
+                })
+              });
+
+              const result =  apiResponse.json();
+              console.log("Backend response:", result);
+            } catch (err) {
+              console.error("API error:", err);
+            }
+            // if user cancels the Embedded Signup flow
+          } else if (data.event === 'CANCEL') {
+            const {current_step} = data.data;
+            console.warn("Cancel at ", current_step);
+            // if user reports an error during the Embedded Signup flow
+          } else if (data.event === 'ERROR') {
+            const {error_message} = data.data;
+            console.error("error ", error_message);
+          }
+        }
+        document.getElementById("session-info-response").textContent = JSON.stringify(data, null, 2);
+      } catch {
+        console.log('Non JSON Responses', event.data);
+      }
+    });
+  </script>
+
+      <script>
+        const fbLoginCallback = (sdkResponse) => {
+        console.log("SDK response:", sdkResponse);
+
+        
+      };
+
+    const launchWhatsAppSignup = () => {
+      // Launch Facebook login
+      FB.login(fbLoginCallback, {
+        config_id: '741696518563737', // configuration ID goes here
+        response_type: 'code', // must be set to 'code' for System User access token
+        override_default_response_type: true, // when true, any response types passed in the "response_type" will take precedence over the default types
+        extras: {"version":"v3"}
+      });
+    }
+  </script>
+
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '795982533478808',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v24.0'
+      });
+    };
+  </script>
+  <script async defer crossorigin="anonymous"
+    src="https://connect.facebook.net/en_US/sdk.js">
+  </script>
 
   </body>
 </html>
