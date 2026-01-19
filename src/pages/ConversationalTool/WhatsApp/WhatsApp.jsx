@@ -4,6 +4,8 @@ import SidebarChat from "./components/SidebarChat";
 import ChatArea from "./components/ChatArea";
 import ProfilePanel from "./components/ProfilePanel";
 import { BASE_URL } from "../../../data/constant";
+import axios from "axios";
+import { getContacts } from "../../../services/api/contact.api";
 
 const WhatsApp = () => {
   const [selectedContact, setSelectedContact] = useState("KATESHIYAD77");
@@ -11,26 +13,34 @@ const WhatsApp = () => {
 
   const [contacts, setContacts] = useState([]);
 
-  const getContacts = async () => {
+  const getContactsData = async () => {
     // API call to fetch contacts will be here
     try {
-      const response = await fetch(`${BASE_URL}/contact`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const result = await response.json();
-      console.log(result);
-      setContacts(result.Data.reverse());
+      const token = localStorage.getItem("token");
+      const response = await getContacts(token);
+
+      setContacts(response);
     } catch (error) {
       console.error("Error fetching contacts:", error);
     }
   };
 
+  const handleSendMessageWhatsapp = async (selectedContacted, message) => {
+    const { phone, name } = selectedContacted;
+    const ndid = localStorage.getItem("ndid");
+    try {
+      const { data } = await axios.post(
+        "http://localhost:4000/api/send-message",
+        { ndid: ndid, phone: phone, name: name, message: message }
+      );
+      console.log(data);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };
+
   useEffect(() => {
-    getContacts();
+    getContactsData();
   }, []);
 
   return (
@@ -44,8 +54,11 @@ const WhatsApp = () => {
           selectedContact={selectedContact}
           setSelectedContact={setSelectedContact}
         />
-        <ChatArea selectedContact={selectedContact} />
-        <ProfilePanel selectedContact={selectedContact} />
+        <ChatArea
+          selectedContact={selectedContact}
+          onSubmit={handleSendMessageWhatsapp}
+        />
+        {/* <ProfilePanel selectedContact={selectedContact} /> */}
       </div>
     </div>
   );

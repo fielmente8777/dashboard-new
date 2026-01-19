@@ -61,8 +61,8 @@ function Integration() {
       color: "",
     },
     {
-      id: "google_analytics",
-      name: "Google Analytics",
+      id: "google_ads_analytics",
+      name: "Google Adds Analytics",
       description: "Track website metrics and user analytics in real time.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
@@ -157,15 +157,8 @@ function Integration() {
     if (id === "meta") {
       const handleConnect = async () => {
         try {
-          const { data } = await axios.post(
-            `${"https://28b36928ef70.ngrok-free.app"}/api/v1/whatsapp/meta/connect`,
-            {},
-            {
-              headers: {
-                "x-ndid": localStorage.getItem("ndid"),
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
+          const { data } = await axios.get(
+            `${"https://cb19a62a4264.ngrok-free.app"}/api/v1/auth/meta/start`,
           );
 
           window.open(data?.signupUrl, "_blank");
@@ -187,8 +180,8 @@ function Integration() {
           // console.log("Connecting with google")
           const response = await axios.get(
             `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
-              "ndid"
-            )}`
+              "ndid",
+            )}`,
           );
           console.log(response.data);
           window.location.href = response.data.auth_url;
@@ -211,7 +204,7 @@ function Integration() {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 "Content-Type": "application/json",
               },
-            }
+            },
           );
           window.open(response.data.url, "_blank");
         } catch (error) {
@@ -220,6 +213,20 @@ function Integration() {
       };
       handleConnection();
       return;
+    } else if (id === "google_ads_analytics") {
+      const handleConnection = async () => {
+        try {
+          // console.log("Connecting with google")
+          const { data } = await axios.get(
+            `http://localhost:8000/api/v1/google-ads/auth/google/start`,
+          );
+
+          window.open(data.googleAuthUrl, "_blank");
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
     }
     setIntegrations(
       integrations.map((integration) => {
@@ -233,7 +240,7 @@ function Integration() {
           };
         }
         return integration;
-      })
+      }),
     );
   };
 
@@ -248,7 +255,7 @@ function Integration() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       if (data?.success) {
         setShowSidebar(false);
@@ -277,7 +284,7 @@ function Integration() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       console.log("Response data", data);
     } catch (err) {

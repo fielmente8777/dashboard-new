@@ -1,112 +1,3 @@
-import React from "react";
-
-const contacts = [
-  {
-    id: "1",
-    name: "ALOK",
-    message: "New inquiry about packages.",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "2",
-    name: "RIYA",
-    message: "Can you share details about your rooms?",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "3",
-    name: "AMIT",
-    message: "Need help with my booking.",
-    time: "",
-    unread: 4,
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "NEHA GUPTA",
-    message: "Hello there!",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "5",
-    name: "RAJIV",
-    message: "Any new offers this week?",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "6",
-    name: "ANITA MEHRA",
-    message: "Are you open to collaboration?",
-    time: "",
-    unread: 2,
-    status: "active",
-  },
-  {
-    id: "7",
-    name: "KARAN SETHI",
-    message: "What are your current packages?",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "8",
-    name: "ZENSTAY",
-    message: "Need more info on your amenities.",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "9",
-    name: "TRAVELBUG93",
-    message: "Hi there!",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "10",
-    name: "PRIYA SINGH",
-    message: "Loved your resort images! Let’s connect.",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "11",
-    name: "NITIN",
-    message: "Hi, can we talk?",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "12",
-    name: "ARJUN DAS",
-    message: "Tell me more about your location.",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-  {
-    id: "13",
-    name: "RUBINA KHAN",
-    message: "Please share rates for next month.",
-    time: "",
-    unread: 1,
-    status: "active",
-  },
-];
-
 const SidebarChat = ({
   contacts,
   activeTab,
@@ -119,8 +10,6 @@ const SidebarChat = ({
     { id: "REQUESTING", label: "REQUESTING", count: 5 },
     { id: "INTERVENED", label: "INTERVENED", count: 1 },
   ];
-
-  console.log(contacts);
 
   const getAvatarColor = (name) => {
     const colors = [
@@ -157,12 +46,12 @@ const SidebarChat = ({
 
       {/* Contact List */}
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
-        {contacts.map((contact) => (
+        {contacts?.map((contact) => (
           <div
             key={contact.id}
-            onClick={() => setSelectedContact(contact.name)}
+            onClick={() => setSelectedContact(contact)}
             className={`flex items-center p-4 border-b border-gray-100 cursor-pointer transition-colors ${
-              selectedContact === contact.name
+              selectedContact?.name === contact?.name
                 ? "bg-teal-50 border-l-4 border-l-teal-500"
                 : "hover:bg-gray-50"
             }`}

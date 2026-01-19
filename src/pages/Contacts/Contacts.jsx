@@ -3,6 +3,7 @@ import { BASE_URL } from "../../data/constant";
 import { formatDateByDay } from "../../utils/formateData";
 import AddContactPopup from "../../components/Popup/AddContactPopup";
 import { MdDelete } from "react-icons/md";
+import { getContacts } from "../../services/api/contact.api";
 const Contacts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -12,27 +13,21 @@ const Contacts = () => {
 
   const [isEdit, setIsEdit] = useState(false);
 
-  const getContacts = async () => {
+  const getContactsData = async () => {
     // API call to fetch contacts will be here
     try {
-      console.log("first");
-      const response = await fetch(`${BASE_URL}/contact`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const result = await response.json();
-      console.log(result);
-      setContacts(result.Data.reverse());
+      const token = localStorage.getItem("token");
+      const res = await getContacts(token);
+
+      console.log(res);
+      setContacts(res);
     } catch (error) {
       console.error("Error fetching contacts:", error);
     }
   };
 
   useEffect(() => {
-    getContacts();
+    getContactsData();
   }, []);
 
   const lastIndex = currentPage * itemsPerPage;

@@ -61,26 +61,26 @@ export const SidebarData = [
     link: `chat`,
     icon: <IoIosChatbubbles size={24} />,
     subLinks: [
-      {
-        name: "Eazbot",
-        link: `channel/eb/chat`,
-        icon: <FaWhatsapp size={16} />,
-      },
+      // {
+      //   name: "Eazbot",
+      //   link: `channel/eb/chat`,
+      //   icon: <FaWhatsapp size={16} />,
+      // },
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
         icon: <FaWhatsapp size={16} />,
       },
-      {
-        name: "Instagram",
-        link: `channel/ig/chat`,
-        icon: <FaInstagram size={16} />,
-      },
-      {
-        name: "Facebook",
-        link: `channel/fb/chat`,
-        icon: <FaFacebook size={16} />,
-      },
+      // {
+      //   name: "Instagram",
+      //   link: `channel/ig/chat`,
+      //   icon: <FaInstagram size={16} />,
+      // },
+      // {
+      //   name: "Facebook",
+      //   link: `channel/fb/chat`,
+      //   icon: <FaFacebook size={16} />,
+      // },
     ],
   },
   {
