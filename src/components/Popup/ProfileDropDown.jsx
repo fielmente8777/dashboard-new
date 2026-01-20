@@ -18,9 +18,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setIsProfileOpen]);
 
   const handleLogout = () => {
@@ -32,61 +30,57 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
   };
 
   const routs = [
-    {
-      name: "Profile",
-      link: "profile",
-    },
-    {
-      name: "User Management",
-      link: "user-management/all-users",
-    },
+    { name: "Profile", link: "profile" },
+    { name: "User Management", link: "user-management/all-users" },
     {
       name: "Account & Billing",
       target: "_blank",
       link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
     },
-    {
-      name: "Integration",
-      link: "integration",
-    },
-    {
-      name: "QR Code",
-      link: "qr-code",
-    },
-    {
-      name: "Sign Out",
-      onClick: handleLogout,
-    },
+    { name: "Integration", link: "integration" },
+    { name: "QR Code", link: "qr-code" },
+    { name: "Sign Out", onClick: handleLogout },
   ];
 
   return (
     <div
-      className={`nav-profile-dropdown  ${isProfileOpen ? "active" : ""}`}
       ref={dropdownRef}
+      className={`
+        absolute top-[110%] right-4 min-w-[180px]
+        bg-white rounded-lg shadow-xl py-2
+        transition-all duration-300 ease-in-out
+        z-50
+        ${
+          isProfileOpen
+            ? "opacity-100 translate-y-0 pointer-events-auto visible"
+            : "opacity-0 -translate-y-2 pointer-events-none invisible"
+        }
+      `}
     >
-      {routs.map((route, index) => (
-        <li key={index}>
-          {route.link && (
-            <Link
-              to={route.link} // integraion
-              target={route.target}
-              onClick={() => setIsProfileOpen(false)}
-              className="block py-2 px-3 font-medium hover:bg-slate-100"
-            >
-              {route.name}
-            </Link>
-          )}
-          {!route.link && (
-            <button
-              type="button"
-              className="block py-2 px-3 font-medium hover:bg-slate-100 w-full text-left"
-              onClick={route.onClick}
-            >
-              {route.name}
-            </button>
-          )}
-        </li>
-      ))}
+      <ul>
+        {routs.map((route, index) => (
+          <li key={index} className="list-none">
+            {route.link ? (
+              <Link
+                to={route.link}
+                target={route.target}
+                onClick={() => setIsProfileOpen(false)}
+                className="block px-3 py-2 font-medium hover:bg-slate-100"
+              >
+                {route.name}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={route.onClick}
+                className="block w-full text-left px-3 py-2 font-medium hover:bg-slate-100"
+              >
+                {route.name}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

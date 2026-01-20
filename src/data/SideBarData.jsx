@@ -112,6 +112,11 @@ export const SidebarData = [
         link: `enquiries-management/enquiries`,
         icon: <MdLeaderboard size={18} />,
       },
+      {
+        name: "Google Leads webhook",
+        link: `enquiries-management/google-leads-webhook`,
+        icon: <MdLeaderboard size={18} />,
+      },
 
       {
         name: "Meta Leads",

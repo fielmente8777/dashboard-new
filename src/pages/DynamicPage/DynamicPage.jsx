@@ -80,6 +80,7 @@ import Overview from "../Gmb/Overview";
 import Ranks from "../Gmb/Rank";
 import Keywords from "../Gmb/Keyword";
 import Reviews from "../Gmb/Review";
+import GoogleLeadsWebhook from "../Enquiry/GoogleLeadsWebhook";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -134,6 +135,7 @@ const DynamicPage = () => {
       <LeadAnalytics />
     ),
     [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/enquiries-management/google-leads-webhook`]: <GoogleLeadsWebhook />,
     [`${BASE_PATH}/${hid}/enquiries-management/eazbot-visitors`]: (
       <EazbotEnquiries />
     ),
