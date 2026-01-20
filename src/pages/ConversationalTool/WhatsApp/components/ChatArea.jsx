@@ -1,14 +1,26 @@
 import React from "react";
 import { BsImage } from "react-icons/bs";
 
-const ChatArea = ({ selectedContact }) => {
+const ChatArea = ({ selectedContact, onSubmit }) => {
+  const [messageValue, setMessageValue] = React.useState("");
+  const [messages, setMessages] = React.useState([]);
+  const handleSendMessage = () => {
+    const message = {
+      text: messageValue,
+      sender: "user",
+      name: selectedContact?.name,
+    };
+    setMessages((prevMessages) => [...prevMessages, message]);
+    if (onSubmit) onSubmit(selectedContact, messageValue);
+    setMessageValue("");
+  };
   return (
     <div className="flex-1 flex flex-col bg-gray-50 ">
       {/* Chat Header */}
       <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">
-            {selectedContact} (+919328405012)
+            {selectedContact?.phone} (+919328405012)
           </h2>
           <button className="text-teal-100 hover:text-white text-sm">
             Chat Profile
@@ -25,7 +37,7 @@ const ChatArea = ({ selectedContact }) => {
         </div>
 
         {/* Message */}
-        {[1, 2, 3, 4, 5].map((item) => (
+        {/* {[1, 2, 3, 4, 5].map((item) => (
           <div key={item} className="flex items-start mb-6">
             <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium mr-3">
               K
@@ -55,6 +67,30 @@ const ChatArea = ({ selectedContact }) => {
               <p className="text-sm">Is there any upcoming packages?</p>
             </div>
           </div>
+        ))} */}
+
+        {messages?.map((message, index) => (
+          <div
+            key={index}
+            className={`flex items-start mb-6 ${
+              message.sender === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium mr-3 ${
+                message.sender === "user" ? "order-2" : "order-1"
+              }`}
+            >
+              {message?.name?.charAt(0)}
+            </div>
+            <div
+              className={`bg-teal-600 rounded-2xl rounded-tl-sm p-4 max-w-sm text-white ${
+                message.sender === "user" ? "order-1" : "order-2"
+              }`}
+            >
+              <p className="text-sm">{message.text}</p>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -68,9 +104,14 @@ const ChatArea = ({ selectedContact }) => {
         <input
           type="text"
           placeholder="Type a message..."
+          value={messageValue}
+          onChange={(e) => setMessageValue(e.target.value)}
           className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 mr-4"
         />
-        <button className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+        <button
+          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+          onClick={handleSendMessage}
+        >
           Send
         </button>
       </div>

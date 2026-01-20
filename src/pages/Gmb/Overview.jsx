@@ -100,35 +100,18 @@ export function Overview() {
     },
   ];
 
-
-  const completeGoogleConnect = async () => {
-  try {
+  const getData = async () => {
     const response = await fetch(
-      "http://localhost:8000/api/v1/gmb/complete-connect",
+      "http://localhost:8000/api/v1/google-ads/sync",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     );
 
-    const data = await response.json();
-    getData();
-
-    console.log("Google fully connected:", data);
-  } catch (error) {
-    console.error("Complete connect failed:", error);
-  }
-};
-const getData = async () => {
-    const response = await fetch("http://localhost:8000/api/v1/gmb/sync", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
     const data = await response.json();
     console.log(data);
   };
@@ -185,10 +168,10 @@ useEffect(() => {
                         metric.color === "blue"
                           ? "bg-blue-100 text-blue-600"
                           : metric.color === "yellow"
-                          ? "bg-yellow-100 text-yellow-600"
-                          : metric.color === "green"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-purple-100 text-purple-600"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : metric.color === "green"
+                              ? "bg-green-100 text-green-600"
+                              : "bg-purple-100 text-purple-600"
                       }`}
                   >
                     <Icon size={22} />
