@@ -55,52 +55,52 @@ export const SidebarData = [
     link: ``,
     icon: <MdDashboard size={24} />,
   },
-  {
-    name: "Live Chat",
-    key: "Conversational Tool",
-    link: `chat`,
-    icon: <IoIosChatbubbles size={24} />,
-    subLinks: [
-      // {
-      //   name: "Eazbot",
-      //   link: `channel/eb/chat`,
-      //   icon: <FaWhatsapp size={16} />,
-      // },
-      {
-        name: "WhatsApp",
-        link: `channel/wa/chat`,
-        icon: <FaWhatsapp size={16} />,
-      },
-      // {
-      //   name: "Instagram",
-      //   link: `channel/ig/chat`,
-      //   icon: <FaInstagram size={16} />,
-      // },
-      // {
-      //   name: "Facebook",
-      //   link: `channel/fb/chat`,
-      //   icon: <FaFacebook size={16} />,
-      // },
-    ],
-  },
-  {
-    name: "Website Tracking",
-    // key: "",
-    link: `website-tracking`,
-    icon: <MdAnalytics size={24} />,
-    subLinks: [
-      {
-        name: "Visitors",
-        link: `website-tracking/visitors`,
-        icon: <MdLeaderboard size={18} />,
-      },
-      {
-        name: "Activities",
-        link: `website-tracking/activities`,
-        icon: <MdLeaderboard size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Live Chat",
+  //   key: "Conversational Tool",
+  //   link: `chat`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  //   subLinks: [
+  //     // {
+  //     //   name: "Eazbot",
+  //     //   link: `channel/eb/chat`,
+  //     //   icon: <FaWhatsapp size={16} />,
+  //     // },
+  //     {
+  //       name: "WhatsApp",
+  //       link: `channel/wa/chat`,
+  //       icon: <FaWhatsapp size={16} />,
+  //     },
+  //     // {
+  //     //   name: "Instagram",
+  //     //   link: `channel/ig/chat`,
+  //     //   icon: <FaInstagram size={16} />,
+  //     // },
+  //     // {
+  //     //   name: "Facebook",
+  //     //   link: `channel/fb/chat`,
+  //     //   icon: <FaFacebook size={16} />,
+  //     // },
+  //   ],
+  // },
+  // {
+  //   name: "Website Tracking",
+  //   // key: "",
+  //   link: `website-tracking`,
+  //   icon: <MdAnalytics size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Visitors",
+  //       link: `website-tracking/visitors`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //     {
+  //       name: "Activities",
+  //       link: `website-tracking/activities`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //   ],
+  // },
   {
     name: "Enquiries Management",
     link: `enquiries-management`,

@@ -158,7 +158,12 @@ function Integration() {
       const handleConnect = async () => {
         try {
           const { data } = await axios.get(
-            `${"https://cb19a62a4264.ngrok-free.app"}/api/v1/auth/meta/start`,
+            `https://262dae41ccde.ngrok-free.app/api/v1/auth/meta/start`,
+            {
+              headers: {
+                "ngrok-skip-browser-warning": "true",
+              },
+            },
           );
 
           window.open(data?.signupUrl, "_blank");
