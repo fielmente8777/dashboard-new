@@ -158,7 +158,7 @@ function Integration() {
       const handleConnect = async () => {
         try {
           const { data } = await axios.get(
-            `${"https://262dae41ccde.ngrok-free.app"}/api/v1/auth/meta/start`,
+            `https://262dae41ccde.ngrok-free.app/api/v1/auth/meta/start`,
             {
               headers: {
                 "ngrok-skip-browser-warning": "true",
@@ -224,7 +224,7 @@ function Integration() {
         try {
           // console.log("Connecting with google")
           const { data } = await axios.get(
-            `http://localhost:8000/api/v1/google-ads/auth/google/start`,
+            `http://localhost:8000/api/v1/google-ads/auth/google/start?ndid=${localStorage.getItem("ndid")}`,
           );
 
           window.open(data.googleAuthUrl, "_blank");
