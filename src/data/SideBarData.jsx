@@ -130,6 +130,12 @@ export const SidebarData = [
       // },
     ],
   },
+  {
+    name: "Google Ads Insights",
+    // key: "",
+    link: `google-ads-insights`,
+    icon: <HiOutlineUserGroup />,
+  },
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -179,34 +185,34 @@ export const SidebarData = [
     icon: <TiSocialSkype size={24} />,
   },
 
-  {
-    name: "GMB",
-    // key: "gmb",
-    icon: <MdLeaderboard size={24} />,
-    // link: `lead-form/lead-gen-form`,
-    subLinks: [
-      {
-        name: "Overview",
-        link: `gmb/overview`,
-        icon: <CiViewBoard size={16} />,
-      },
-      {
-        name: "Rank",
-        link: `gmb/rank`,
-        icon: <FaRankingStar size={16} />,
-      },
-      {
-        name: "Keywords",
-        link: `gmb/keywords`,
-        icon: <SiGoogleforms size={16} />,
-      },
-      {
-        name: "Reviews",
-        link: `gmb/reviews`,
-        icon: <MdOutlineReviews size={16} />,
-      },
-    ],
-  },
+  // {
+  //   name: "GMB",
+  //   // key: "gmb",
+  //   icon: <MdLeaderboard size={24} />,
+  //   // link: `lead-form/lead-gen-form`,
+  //   subLinks: [
+  //     {
+  //       name: "Overview",
+  //       link: `gmb/overview`,
+  //       icon: <CiViewBoard size={16} />,
+  //     },
+  //     {
+  //       name: "Rank",
+  //       link: `gmb/rank`,
+  //       icon: <FaRankingStar size={16} />,
+  //     },
+  //     {
+  //       name: "Keywords",
+  //       link: `gmb/keywords`,
+  //       icon: <SiGoogleforms size={16} />,
+  //     },
+  //     {
+  //       name: "Reviews",
+  //       link: `gmb/reviews`,
+  //       icon: <MdOutlineReviews size={16} />,
+  //     },
+  //   ],
+  // },
   // {
   //   name: "Eazbot",
   //   // key: "Eazobot",

@@ -80,6 +80,7 @@ import Overview from "../Gmb/Overview";
 import Ranks from "../Gmb/Rank";
 import Keywords from "../Gmb/Keyword";
 import Reviews from "../Gmb/Review";
+import GoogleAdsInsights from "../GoogleAdsInsights/GoogleAdsInsights";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -87,7 +88,7 @@ const DynamicPage = () => {
   const routeComponents = {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
-
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,
