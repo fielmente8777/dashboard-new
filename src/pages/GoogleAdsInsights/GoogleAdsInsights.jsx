@@ -1,10 +1,31 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BASE_PATH } from "../../data/constant";
+import axios from "axios";
 
 export default function GoogleAdsInsights() {
-  const [connected, setConnected] = useState(false);
+  const [connected, setConnected] = useState(true);
   const [selectedCampaign, setSelectedCampaign] = useState("all");
+
+  const handleSyncAdsData=async()=>{
+    try {
+        const response=await axios.get("http://localhost:8000/api/v1/google-ads/sync",{
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        console.log(response);
+    } catch (error) {
+      console.log("Error in syncing data");
+    }
+  }
+
+
+
+
+
 
   const accountSummary = {
     impressions: 125430,
@@ -39,7 +60,7 @@ export default function GoogleAdsInsights() {
       ],
     },
   ];
-
+  
   const activeCampaign =
     selectedCampaign === "all"
       ? null
@@ -71,6 +92,7 @@ export default function GoogleAdsInsights() {
   // ---------------- CONNECTED ----------------
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+    <button onClick={handleSyncAdsData}>Sync Ads Data</button>
       <h1 className="text-2xl font-semibold mb-6">Google Ads Dashboard</h1>
 
       {/* Account Summary */}
