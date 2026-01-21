@@ -1,31 +1,47 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BASE_PATH } from "../../data/constant";
 import axios from "axios";
+import DataContext from "../../context/DataContext";
 
 export default function GoogleAdsInsights() {
-  const [connected, setConnected] = useState(true);
+  const {
+    integrationStatus,
+    checkIntegrationStatus,
+    isLoadingIntegrationStatus,
+  } = useContext(DataContext);
+  const [loading, setLoading] = useState(false);
+  const [loadingSync, setLoadingSync] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState("all");
-
-  const handleSyncAdsData=async()=>{
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState("");
+  const handleSyncAdsData = async () => {
+    setLoadingSync(true);
     try {
-        const response=await axios.get("http://localhost:8000/api/v1/google-ads/sync",{
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/google-ads/sync",
+        {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        });
+        },
+      );
 
-        console.log(response);
+      // assuming response.data.accounts is the array
+      const accountsData = response?.data?.result?.clientAccounts || [];
+      setAccounts(accountsData);
+
+      // auto-select first account
+      if (accountsData.length > 0) {
+        setSelectedAccount(accountsData[0].accountId);
+      }
     } catch (error) {
-      console.log("Error in syncing data");
+      console.log("Error in syncing data", error);
+    } finally {
+      setLoadingSync(false);
     }
-  }
-
-
-
-
-
+  };
 
   const accountSummary = {
     impressions: 125430,
@@ -60,30 +76,94 @@ export default function GoogleAdsInsights() {
       ],
     },
   ];
-  
+
   const activeCampaign =
     selectedCampaign === "all"
       ? null
       : campaigns.find((c) => c.id === selectedCampaign);
 
-  // ---------------- NOT CONNECTED ----------------
-  if (!connected) {
+  useEffect(() => {
+    checkIntegrationStatus();
+  }, []);
+
+  if (isLoadingIntegrationStatus) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="rounded-xl bg-white p-8 shadow-md text-center">
-          <h2 className="text-xl font-semibold mb-2">
-            Google Ads Not Connected
+      <div className="min-h-screen bg-gray-50 p-6">
+        {/* Header */}
+        <div className="mb-6 flex justify-between items-center">
+          <div className="h-8 w-64 rounded bg-gray-200 animate-pulse" />
+          <div className="h-9 w-36 rounded bg-gray-200 animate-pulse" />
+        </div>
+
+        {/* Stat cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 rounded-xl bg-white shadow">
+              <div className="p-4 space-y-3">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Table skeleton */}
+        <div className="rounded-xl bg-white shadow p-4">
+          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mb-4" />
+          {[1, 2, 3, 4, 5].map((row) => (
+            <div key={row} className="flex justify-between py-3 border-t">
+              <div className="h-4 w-40 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ---------------- NOT CONNECTED ----------------
+  if (!integrationStatus.googleAdsInsight) {
+    return (
+      <div className=" flex items-center justify-center py-12">
+        <div className="max-w-md w-full rounded-2xl bg-white p-8 shadow-lg border border-gray-100 text-center">
+          {/* Icon */}
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
+            <svg
+              className="h-7 w-7 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 12h18M12 3v18" />
+            </svg>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Connect Google Ads
           </h2>
-          <p className="text-gray-500 mb-6">
-            Connect your Google Ads account to view insights
+
+          {/* Description */}
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+            Connect your Google Ads account to start tracking campaigns,
+            performance metrics, and conversion insights — all in one place.
           </p>
+
+          {/* CTA */}
           <Link
             to={`${BASE_PATH}/${localStorage.getItem("hid")}/integration`}
-            // onClick={() => setConnected(true)}
-            className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700"
+            className="mt-8 inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Connect Google Ads
           </Link>
+
+          {/* Helper text */}
+          <p className="mt-4 text-xs text-gray-400">
+            Secure OAuth connection • No data shared without permission
+          </p>
         </div>
       </div>
     );
@@ -92,7 +172,34 @@ export default function GoogleAdsInsights() {
   // ---------------- CONNECTED ----------------
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-    <button onClick={handleSyncAdsData}>Sync Ads Data</button>
+      <div className="flex justify-between items-center">
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-2">
+            Select Google Ads Account
+          </label>
+
+          <select
+            className="w-72 rounded-lg border px-3 py-2 text-black"
+            value={selectedAccount}
+            onChange={(e) => setSelectedAccount(e.target.value)}
+          >
+            <option value="">Select an account</option>
+
+            {accounts?.map((account) => (
+              <option key={account.accountId} value={account.accountId}>
+                {account?.customer_client?.descriptive_name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          disabled={loadingSync}
+          onClick={handleSyncAdsData}
+          className="bg-primary text-white px-3 py-1.5 rounded-sm disabled:opacity-80"
+        >
+          {loadingSync ? "Synching..." : " Sync Ads Data"}
+        </button>
+      </div>
       <h1 className="text-2xl font-semibold mb-6">Google Ads Dashboard</h1>
 
       {/* Account Summary */}

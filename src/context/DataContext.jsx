@@ -8,7 +8,6 @@ const DataContext = createContext({});
 export const DataProvider = ({ children }) => {
   const [auth, setAuth] = useState(false);
   const [totalRequests, setTotalRequests] = useState();
-  const [emergencyRequests, setEmergencyRequests] = useState();
   const [emergencyRequestData, setEmergencyRequestData] = useState([]);
   const [requestData, setRequestsData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,11 +25,15 @@ export const DataProvider = ({ children }) => {
     google_analytics: false,
     meta: false,
     exotel: false,
+    googleAdsInsight: false,
   });
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
   const [editButton, setEditButton] = useState(false);
+
+  const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
+    useState(false);
 
   // const host = "http://localhost:8000"
   const host = "https://hmsbackend-7pyp.onrender.com";
@@ -41,12 +44,11 @@ export const DataProvider = ({ children }) => {
     reconnectionDelay: 10000, // Optional: retry delay (in ms)
   });
 
-  
   const fetchRoomsData = async () => {
     try {
       const response = await fetch(
         `${BASE_URL}/room/${localStorage.getItem(
-          "token"
+          "token",
         )}/${localStorage.getItem("hid")}`,
         {
           method: "GET",
@@ -54,7 +56,7 @@ export const DataProvider = ({ children }) => {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -72,7 +74,7 @@ export const DataProvider = ({ children }) => {
     try {
       const bookingDataResponse = await fetch(
         `${BASE_URL}/booking/bookings/${localStorage.getItem(
-          "token"
+          "token",
         )}/${localStorage.getItem("hid")}`,
         {
           method: "GET",
@@ -80,7 +82,7 @@ export const DataProvider = ({ children }) => {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (bookingDataResponse.ok) {
@@ -140,32 +142,33 @@ export const DataProvider = ({ children }) => {
 
   const howManyPendingRequest = (data) => {
     const pendingRequests = data?.filter(
-      (request) => request.status === "Pending"
+      (request) => request.status === "Pending",
     ).length;
     setPendingRequests(pendingRequests);
   };
 
   const howManyInProgressRequest = (data) => {
     const inProgressRequests = data?.filter(
-      (request) => request.status === "In Progress"
+      (request) => request.status === "In Progress",
     ).length;
     setInProgressRequests(inProgressRequests);
   };
 
   const howManyCompletedRequest = (data) => {
     const completedRequests = data?.filter(
-      (request) => request.status === "Completed"
+      (request) => request.status === "Completed",
     ).length;
     setCompletedRequests(completedRequests);
   };
   const howManyCancelledRequest = (data) => {
     const cancelledRequests = data?.filter(
-      (request) => request.status === "Cancelled"
+      (request) => request.status === "Cancelled",
     ).length;
     setCancelledRequests(cancelledRequests);
   };
 
   const checkIntegrationStatus = async () => {
+    setIsLoadingIntegrationStatus(true);
     try {
       const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
         method: "GET",
@@ -178,6 +181,8 @@ export const DataProvider = ({ children }) => {
       setIntegrationStauts(data.result?.docs);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoadingIntegrationStatus(false);
     }
   };
 
@@ -258,8 +263,10 @@ export const DataProvider = ({ children }) => {
         setLeads,
         leadsList,
         setLeadsList,
-        integrationStatus, setIntegrationStauts,
-        checkIntegrationStatus
+        integrationStatus,
+        setIntegrationStauts,
+        checkIntegrationStatus,
+        isLoadingIntegrationStatus,
       }}
     >
       {children}

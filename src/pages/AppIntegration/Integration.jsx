@@ -14,8 +14,7 @@ import DataContext from "../../context/DataContext";
 
 function Integration() {
   const navigate = useNavigate();
-  const { integrationStatus, setIntegrationStauts, checkIntegrationStatus } =
-    useContext(DataContext);
+  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [formData, setFormData] = useState({
     apiKey: "",
     authToken: "",
@@ -61,7 +60,7 @@ function Integration() {
       color: "",
     },
     {
-      id: "google_ads_analytics",
+      id: "googleAdsInsight",
       name: "Google Adds Analytics",
       description: "Track website metrics and user analytics in real time.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
@@ -298,24 +297,25 @@ function Integration() {
     }
   };
 
-  const getAccout=async()=>{
+  const getAccout = async () => {
     try {
-        const result=await axios.get("https://262dae41ccde.ngrok-free.app/api/v1/meta/accounts",
-          {
-             headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                "Content-Type": "application/json",
-              },
-          }
-        )
-        console.log(result);
+      const result = await axios.get(
+        "https://262dae41ccde.ngrok-free.app/api/v1/meta/accounts",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      console.log(result);
     } catch (error) {
       console.log(error);
     }
-  }
+  };
   useEffect(() => {
     checkIntegrationStatus();
-    getAccout()
+    getAccout();
   }, []);
 
   return (
@@ -357,10 +357,11 @@ function Integration() {
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
+                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                  selectedFilter === category
                     ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                }`}
               >
                 {category}
               </button>
@@ -373,8 +374,6 @@ function Integration() {
           {filteredIntegrations?.map((integration) => {
             // console.log(integration)
             const status = integrationStatus[integration?.id] ?? false;
-
-            // console.log(status);
 
             return (
               <div
@@ -391,10 +390,11 @@ function Integration() {
                         {integration?.img ? (
                           <img
                             src={integration?.img}
-                            className={`${integration.id === "otp-less"
+                            className={`${
+                              integration.id === "otp-less"
                                 ? "w-40 -ml-4"
                                 : "w-16 -ml-2"
-                              }  object-contain`}
+                            }  object-contain`}
                           />
                         ) : (
                           integration?.icon
@@ -423,10 +423,11 @@ function Integration() {
                         toggleIntegration(integration.id);
                       }
                     }}
-                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${status
+                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
+                      status
                         ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                         : "bg-blue-600 text-white hover:bg-blue-700"
-                      }`}
+                    }`}
                   >
                     {status ? "Disconnect" : "Connect"}
                     {/* <ChevronRight className="w-4 h-4" /> */}
