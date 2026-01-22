@@ -218,7 +218,7 @@ function Integration() {
       };
       handleConnection();
       return;
-    } else if (id === "google_ads_analytics") {
+    } else if (id === "googleAdsInsight") {
       const handleConnection = async () => {
         try {
           // console.log("Connecting with google")

@@ -1,7 +1,8 @@
 import axios from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 import { io } from "socket.io-client";
 import { BASE_URL, NEW_BASE_URL } from "../data/constant";
+import { is24HoursCompletedFnc } from "../utils/is24Hours";
 
 const DataContext = createContext({});
 
@@ -25,8 +26,12 @@ export const DataProvider = ({ children }) => {
     google_analytics: false,
     meta: false,
     exotel: false,
-    googleAdsInsight: false,
+    googleAdsInsight: {
+      status: false,
+      lastSyncTime: null,
+    },
   });
+  const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
@@ -178,7 +183,12 @@ export const DataProvider = ({ children }) => {
         },
       });
       const data = await response.json();
-      setIntegrationStauts(data.result?.docs);
+      const isCompleted = is24HoursCompletedFnc(
+        data.result?.docs?.googleAdsInsight?.lastSyncTime,
+      );
+
+      setIs24HoursCompleted(isCompleted);
+      setIntegrationStauts(data?.result?.docs);
     } catch (error) {
       console.log(error);
     } finally {
@@ -267,6 +277,7 @@ export const DataProvider = ({ children }) => {
         setIntegrationStauts,
         checkIntegrationStatus,
         isLoadingIntegrationStatus,
+        is24HoursCompleted,
       }}
     >
       {children}

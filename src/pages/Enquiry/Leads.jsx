@@ -144,7 +144,7 @@ const Leads = () => {
       const data = createExportData(response);
       setExportedData(data);
       const quer = response.filter(
-        (enq) => enq.Contact && enq.Contact !== "undefined"
+        (enq) => enq.Contact && enq.Contact !== "undefined",
       );
       setEnquires(quer?.reverse());
     } catch (error) {
@@ -164,7 +164,7 @@ const Leads = () => {
         (enquery) =>
           enquery?.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           enquery?.Contact?.includes(searchTerm) ||
-          enquery?.Message?.toLowerCase().includes(searchTerm.toLowerCase())
+          enquery?.Message?.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredEnquires(filtered);
     } else {
@@ -272,7 +272,7 @@ const Leads = () => {
       }
 
       const quer = response.filter(
-        (enq) => enq.Contact && enq.Contact !== "undefined"
+        (enq) => enq.Contact && enq.Contact !== "undefined",
       );
       setEnquires(quer?.reverse());
 
@@ -337,7 +337,7 @@ const Leads = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = filteredEnquires.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   const handlePageChange = (page) => {
@@ -382,7 +382,7 @@ const Leads = () => {
           is_converted: false,
           ndid: lead.ndid,
           status: status,
-        }
+        },
       );
 
       const result = await response.data;
@@ -427,7 +427,7 @@ const Leads = () => {
           {
             token: localStorage.getItem("token"),
             id: id,
-          }
+          },
         );
 
         const result = await response.data;
@@ -457,7 +457,7 @@ const Leads = () => {
   const handleRowSelect = (id) => {
     if (rowSelected.length < 10) {
       setRowSelected((prev) =>
-        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
       );
     } else {
       if (rowSelected.includes(id)) {
@@ -1054,18 +1054,21 @@ const Leads = () => {
                             {enquery?.created_from?.toLowerCase() === "chatbot"
                               ? "Eazbot"
                               : enquery?.created_from?.toLowerCase() ===
-                                "Eazbot"
-                              ? "Eazbot"
-                              : enquery?.created_from === "Eazobt"
-                              ? "Eazbot"
-                              : enquery?.created_from?.toLowerCase() ===
-                                "eazobot"
-                              ? "Eazbot"
-                              : enquery?.created_from === "Website"
-                              ? "Webform"
-                              : enquery?.created_from === null
-                              ? "Webform"
-                              : "Webform"}
+                                  "Eazbot"
+                                ? "Eazbot"
+                                : enquery?.created_from === "Eazobt"
+                                  ? "Eazbot"
+                                  : enquery?.created_from?.toLowerCase() ===
+                                      "eazobot"
+                                    ? "Eazbot"
+                                    : enquery?.created_from === "Website"
+                                      ? "Webform"
+                                      : enquery?.created_from?.toLowerCase() ===
+                                          "google_ads"
+                                        ? "Google Lead Form"
+                                        : enquery?.created_from === null
+                                          ? "Webform"
+                                          : "Webform"}
                           </td>
                           {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                         <span title={enquery?.source_url || "Landing Page"}>
@@ -1091,14 +1094,16 @@ const Leads = () => {
                             {enquery?.numberOfGuest == ""
                               ? "-"
                               : enquery?.numberOfGuest
-                              ? enquery?.numberOfGuest
-                              : isNaN(
-                                  extractBookingInfo(enquery?.Message)?.guests
-                                ) ||
-                                extractBookingInfo(enquery?.Message)?.guests ===
-                                  0
-                              ? "-"
-                              : extractBookingInfo(enquery?.Message)?.guests}
+                                ? enquery?.numberOfGuest
+                                : isNaN(
+                                      extractBookingInfo(enquery?.Message)
+                                        ?.guests,
+                                    ) ||
+                                    extractBookingInfo(enquery?.Message)
+                                      ?.guests === 0
+                                  ? "-"
+                                  : extractBookingInfo(enquery?.Message)
+                                      ?.guests}
                           </td>
 
                           {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
@@ -1506,7 +1511,7 @@ const Leads = () => {
                       >
                         {item}
                       </button>
-                    )
+                    ),
                   )}
               </div>
 
