@@ -69,6 +69,15 @@ function Integration() {
       color: "",
     },
     {
+      id: "googleAnalytics",
+      name: "Google Analytics",
+      description: "Track website metrics and user analytics in real time.",
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
+      status: "not-connected",
+      category: "Analytics",
+      color: "",
+    },
+    {
       id: "whatsapp",
       name: "WhatsApp Business",
       description:
@@ -152,56 +161,66 @@ function Integration() {
 
   // console.log(filteredIntegrations);
 
+  const BASE_URL = "https://262dae41ccde.ngrok-free.app/api/v1";
+  const LOCAL_BASE_URL = "http://localhost:8000/api/v1";
+
+  const openNewTab = (url) => window.open(url, "_blank", "noopener,noreferrer");
+
   const toggleIntegration = (id) => {
-    if (id === "meta") {
-      const handleConnect = async () => {
-        try {
-          const { data } = await axios.get(
-            `https://262dae41ccde.ngrok-free.app/api/v1/auth/meta/start`,
-            {
+    switch (id) {
+      case "meta": {
+        const handleConnect = async () => {
+          try {
+            const { data } = await axios.get(`${BASE_URL}/auth/meta/start`, {
               headers: {
                 "ngrok-skip-browser-warning": "true",
               },
-            },
-          );
+            });
 
-          window.open(data?.signupUrl, "_blank");
-          // launchWhatsAppSignup()
+            openNewTab(data?.signupUrl);
+          } catch (error) {
+            console.log(error);
+          }
+        };
 
-          // setConnected(true);
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      handleConnect();
-      return;
-    } else if (id === "exotel") {
-      setShowSidebar(true);
-    } else if (id === "otp-less") {
-      setOtpLessSidebar(true);
-    } else if (id === "gmail") {
-      const handleConnection = async () => {
-        try {
-          // console.log("Connecting with google")
-          const response = await axios.get(
-            `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
-              "ndid",
-            )}`,
-          );
-          console.log(response.data);
-          window.location.href = response.data.auth_url;
-        } catch (error) {
-          console.error("Error connecting google:", error);
-        }
-      };
-      handleConnection();
-      return;
-    } else if (id === "gmb") {
-      const handleConnection = async () => {
-        try {
-          const response = await axios.get(
-            `http://localhost:8000/api/v1/gmb/connect`,
-            {
+        handleConnect();
+        return;
+      }
+
+      case "exotel":
+        setShowSidebar(true);
+        return;
+
+      case "otp-less":
+        setOtpLessSidebar(true);
+        return;
+
+      case "gmail": {
+        const handleConnection = async () => {
+          try {
+            const response = await axios.get(
+              `${LOCAL_BASE_URL}/emails/google/login`,
+              {
+                params: {
+                  ndid: localStorage.getItem("ndid"),
+                },
+              },
+            );
+
+            window.location.href = response.data.auth_url;
+          } catch (error) {
+            console.error("Error connecting google:", error);
+          }
+        };
+
+        handleConnection();
+        return;
+      }
+
+      case "gmb": {
+        const handleConnection = async () => {
+          try {
+            const response = await axios.get(`${LOCAL_BASE_URL}/gmb/connect`, {
               params: {
                 ndid: localStorage.getItem("ndid"),
               },
@@ -209,45 +228,201 @@ function Integration() {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 "Content-Type": "application/json",
               },
-            },
-          );
-          window.open(response.data.url, "_blank");
-        } catch (error) {
-          console.error("Error connecting google:", error);
-        }
-      };
-      handleConnection();
-      return;
-    } else if (id === "googleAdsInsight") {
-      const handleConnection = async () => {
-        try {
-          // console.log("Connecting with google")
-          const { data } = await axios.get(
-            `http://localhost:8000/api/v1/google-ads/auth/google/start?ndid=${localStorage.getItem("ndid")}`,
-          );
+            });
 
-          window.open(data.googleAuthUrl, "_blank");
-        } catch (error) {
-          console.error("Error connecting google:", error);
-        }
-      };
-      handleConnection();
+            openNewTab(response.data.url);
+          } catch (error) {
+            console.error("Error connecting google:", error);
+          }
+        };
+
+        handleConnection();
+        return;
+      }
+
+      case "googleAdsInsight": {
+        const handleConnection = async () => {
+          try {
+            const { data } = await axios.get(
+              `${LOCAL_BASE_URL}/google-ads/auth/google/start`,
+              {
+                params: {
+                  ndid: localStorage.getItem("ndid"),
+                },
+              },
+            );
+
+            openNewTab(data.googleAuthUrl);
+          } catch (error) {
+            console.error("Error connecting google:", error);
+          }
+        };
+
+        handleConnection();
+        return;
+      }
+
+      case "googleAnalytics": {
+        const handleConnection = async () => {
+          try {
+            const { data } = await axios.get(
+              `${LOCAL_BASE_URL}/google-analytics/auth/google-analytics/start`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              },
+            );
+
+            openNewTab(data.result.authUrl);
+            console.log(data);
+          } catch (error) {
+            console.error("Error connecting google:", error);
+          }
+        };
+
+        handleConnection();
+        return;
+      }
+
+      default:
+        break;
     }
+
+    // fallback status toggle
     setIntegrations(
-      integrations.map((integration) => {
-        if (integration.id === id) {
-          return {
-            ...integration,
-            status:
-              integration.status === "connected"
-                ? "not-connected"
-                : "connected",
-          };
-        }
-        return integration;
-      }),
+      integrations.map((integration) =>
+        integration.id === id
+          ? {
+              ...integration,
+              status:
+                integration.status === "connected"
+                  ? "not-connected"
+                  : "connected",
+            }
+          : integration,
+      ),
     );
   };
+
+  // const toggleIntegration = (id) => {
+  //   if (id === "meta") {
+  //     const handleConnect = async () => {
+  //       try {
+  //         const { data } = await axios.get(
+  //           `https://262dae41ccde.ngrok-free.app/api/v1/auth/meta/start`,
+  //           {
+  //             headers: {
+  //               "ngrok-skip-browser-warning": "true",
+  //             },
+  //           },
+  //         );
+
+  //         window.open(data?.signupUrl, "_blank");
+  //         // launchWhatsAppSignup()
+
+  //         // setConnected(true);
+  //       } catch (error) {
+  //         console.log(error);
+  //       }
+  //     };
+  //     handleConnect();
+  //     return;
+  //   } else if (id === "exotel") {
+  //     setShowSidebar(true);
+  //   } else if (id === "otp-less") {
+  //     setOtpLessSidebar(true);
+  //   } else if (id === "gmail") {
+  //     const handleConnection = async () => {
+  //       try {
+  //         // console.log("Connecting with google")
+  //         const response = await axios.get(
+  //           `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
+  //             "ndid",
+  //           )}`,
+  //         );
+  //         console.log(response.data);
+  //         window.location.href = response.data.auth_url;
+  //       } catch (error) {
+  //         console.error("Error connecting google:", error);
+  //       }
+  //     };
+  //     handleConnection();
+  //     return;
+  //   } else if (id === "gmb") {
+  //     const handleConnection = async () => {
+  //       try {
+  //         const response = await axios.get(
+  //           `http://localhost:8000/api/v1/gmb/connect`,
+  //           {
+  //             params: {
+  //               ndid: localStorage.getItem("ndid"),
+  //             },
+  //             headers: {
+  //               Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //               "Content-Type": "application/json",
+  //             },
+  //           },
+  //         );
+  //         window.open(response.data.url, "_blank");
+  //       } catch (error) {
+  //         console.error("Error connecting google:", error);
+  //       }
+  //     };
+  //     handleConnection();
+  //     return;
+  //   } else if (id === "googleAdsInsight") {
+  //     const handleConnection = async () => {
+  //       try {
+  //         // console.log("Connecting with google")
+  //         const { data } = await axios.get(
+  //           `http://localhost:8000/api/v1/google-ads/auth/google/start?ndid=${localStorage.getItem("ndid")}`,
+  //         );
+
+  //         window.open(data.googleAuthUrl, "_blank");
+  //       } catch (error) {
+  //         console.error("Error connecting google:", error);
+  //       }
+  //     };
+  //     handleConnection();
+  //   } else if (id === "googleAnalytics") {
+  //     const handleConnection = async () => {
+  //       try {
+  //         // console.log("Connecting with google")
+  //         const { data } = await axios.get(
+  //           `http://localhost:8000/api/v1/google-analytics/auth/google-analytics/start`,
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //             },
+  //           },
+  //         );
+  //         window.open(data.result.authUrl, "_blank");
+  //         console.log(data)
+  //       } catch (error) {
+  //         console.error("Error connecting google:", error);
+  //       }
+  //     };
+  //     handleConnection();
+  //     // window.location.href =
+  //     //   "http://localhost:8000/api/v1/google-analytics/start";
+  //     // return;
+  //   }
+  //   setIntegrations(
+  //     integrations.map((integration) => {
+  //       if (integration.id === id) {
+  //         return {
+  //           ...integration,
+  //           status:
+  //             integration.status === "connected"
+  //               ? "not-connected"
+  //               : "connected",
+  //         };
+  //       }
+  //       return integration;
+  //     }),
+  //   );
+  // };
 
   const handleConnect = async (e) => {
     e.preventDefault();
