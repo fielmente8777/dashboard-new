@@ -1,0 +1,56 @@
+export const BASE_PATH = "/dashboard/client";
+export const BASE_URL = "https://nexon.eazotel.com";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "https://de2feb9c66e0.ngrok-free.app";
+
+// export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
+
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+
+// export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
+
+export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
+export const WS_BASE_URL = "ws://localhost:8000";
+
+export const room_type_name = {
+  1: "DELUXE",
+  2: "SUPER DELUXE",
+  3: "SUITE",
+  4: "PREMIUM",
+  5: "Premiere Retreat",
+  6: "Elite Suite",
+  7: "Grand Deluxe",
+  8: "Imperial Suite",
+  9: "Supreme Retreat",
+  10: "Royal Deluxe",
+  11: "Prestige Suite",
+  12: "Exclusive Retreat",
+};
+
+export const MarketPlaceService = [
+  "OTA Listing",
+  "OTA Optimization",
+  "OTA Management",
+  "Accounting",
+  "GST Filing",
+  "Performance Marketing",
+  "Public Relations (PR)",
+  "Linktree Setup",
+  "Google Listing",
+  "Google Map Iterations",
+  "Influencer Marketing",
+  "Social Media",
+  "Email Marketing",
+  "WhatsApp Marketing",
+  "Conversational Tool",
+  "Custom Website",
+  "SEO",
+  "Channel Manager",
+  "Leads Management",
+  "PMS Software",
+  "SMS Marketing",
+];
+
+export const WEBSOCKET_EVENTS = {
+  WHATSAPP_NEW_MESSAGE: "WHATSAPP_NEW_MESSAGE",
+};

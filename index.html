@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Revolutionize Guest Services with Our Hotel Management System"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+     <!-- <link rel="manifest" href="/manifest.json" /> -->
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>Eazotel Dashboard</title>
+  </head>
+  <body>
+    <div id="root"></div>
+     <body>
+      <p id="currentTime"></p>
+      
+      <script type="module" src="/src/main.jsx"></script>
+      <script>
+    window.addEventListener('message', (event) => {
+      if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") {
+        return;
+      }
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          // if user finishes the Embedded Signup flow
+          if (data.event === 'FINISH') {
+            const {phone_number_id, waba_id} = data.data;
+            
+            console.log("Phone number ID ", phone_number_id, " WhatsApp business account ID ", waba_id);
+            try {
+              const ndid=localStorage.getItem("ndid")
+              const apiResponse =  fetch("https://442c5fb1d529.ngrok-free.app/api/v1/whatsapp/meta/savecredentials", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  phoneNumberId:phone_number_id,
+                  wabaId:waba_id,
+                  ndid
+                })
+              });
+
+              const result =  apiResponse.json();
+              console.log("Backend response:", result);
+            } catch (err) {
+              console.error("API error:", err);
+            }
+            // if user cancels the Embedded Signup flow
+          } else if (data.event === 'CANCEL') {
+            const {current_step} = data.data;
+            console.warn("Cancel at ", current_step);
+            // if user reports an error during the Embedded Signup flow
+          } else if (data.event === 'ERROR') {
+            const {error_message} = data.data;
+            console.error("error ", error_message);
+          }
+        }
+        document.getElementById("session-info-response").textContent = JSON.stringify(data, null, 2);
+      } catch {
+        console.log('Non JSON Responses', event.data);
+      }
+    });
+  </script>
+
+      <script>
+        const fbLoginCallback = (sdkResponse) => {
+        console.log("SDK response:", sdkResponse);
+
+        
+      };
+
+    const launchWhatsAppSignup = () => {
+      // Launch Facebook login
+      FB.login(fbLoginCallback, {
+        config_id: '741696518563737', // configuration ID goes here
+        response_type: 'code', // must be set to 'code' for System User access token
+        override_default_response_type: true, // when true, any response types passed in the "response_type" will take precedence over the default types
+        extras: {"version":"v3"}
+      });
+    }
+  </script>
+
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '795982533478808',
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v24.0'
+      });
+    };
+  </script>
+  <script async defer crossorigin="anonymous"
+    src="https://connect.facebook.net/en_US/sdk.js">
+  </script>
+
+  </body>
+</html>

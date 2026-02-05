@@ -1,0 +1,229 @@
+import { useState } from "react";
+import { MdDeleteOutline } from "react-icons/md";
+import Swal from "sweetalert2";
+import { useDispatch, useSelector } from "react-redux";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import { BASE_URL } from "../../data/constant";
+import Loader from "../../components/Loader";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+
+const Analytics = () => {
+  const [openIndex, setOpenIndex] = useState(null);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loadingAddFaq, setLoadingAddFaq] = useState(false);
+  // const []
+
+  const dispatch = useDispatch();
+
+  const { currentLoactionWebsiteData, loading } = useSelector(
+    (state) => state?.hotelsWebsiteData
+  );
+
+  // handle delete faq function here
+  const deleteFaq = async (que, ans, index) => {
+    const confirmation = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you really want to delete this ${que}? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+    if (confirmation.isConfirmed) {
+      try {
+        const response = await fetch(`${BASE_URL}/cms/operation/Faq`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: localStorage.getItem("token"),
+            operation: "remove",
+            question: que,
+            answer: ans,
+            index: index,
+            hid: String(handleLocalStorage("hid")),
+          }),
+        });
+        const data = await response.json();
+
+        if (data?.Status) {
+          dispatch(
+            fetchWebsiteData(
+              handleLocalStorage("token"),
+              handleLocalStorage("hid")
+            )
+          );
+          Swal.fire({
+            icon: "success",
+            title: "Deleted!",
+            text: data.Message || "User has been deleted successfully.",
+            timer: 600,
+            showConfirmButton: false,
+          });
+        }
+
+        console.log("FAQ deleted successfully:", data);
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Faq API error. Please try again.",
+        });
+      }
+    }
+  };
+
+  // handle add faq function
+  const addFaq = async () => {
+    if (question === "" || answer === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Please fill in all fields.",
+      });
+      return;
+    }
+
+    let obj = {
+      token: localStorage.getItem("token"),
+      operation: "append",
+      question: question,
+      answer: answer,
+      index: 0,
+      hid: String(handleLocalStorage("hid")),
+    };
+
+    try {
+      setLoadingAddFaq(true);
+      obj["token"] = localStorage.getItem("token");
+      const url = `${BASE_URL}/cms/operation/Faq`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(obj),
+      });
+      const resp = await response.json();
+      if (resp.Status === true) {
+        dispatch(
+          fetchWebsiteData(
+            handleLocalStorage("token"),
+            handleLocalStorage("hid")
+          )
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: resp.Message || "FAQ added successfully.",
+        }).then(() => {
+          setAnswer("");
+          setQuestion("");
+        });
+        return true;
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: resp.Message || "Failed to add FAQ.",
+        });
+        return false;
+      }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while adding the FAQ.",
+      });
+      return false;
+    } finally {
+      setLoadingAddFaq(false);
+    }
+  };
+
+  const toggleAccordion = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  return (
+    <div className="bg-white">
+      <div className="bg-white p-4">
+        <h2 className="text-sm font-semibold text-[#575757]">
+          Frequently ask questions
+        </h2>
+      </div>
+      <div className="px-4">
+        {!loading ? (
+          <>
+            {currentLoactionWebsiteData &&
+            currentLoactionWebsiteData?.Faq?.length > 0 ? (
+              currentLoactionWebsiteData?.Faq.map((faq, index) => (
+                <div key={index} className="border-b border-gray-200">
+                  <button
+                    className="w-full flex justify-between items-center text-left text-sm py-3 font-medium text-[#333] focus:outline-none"
+                    onClick={() => toggleAccordion(index)}
+                  >
+                    {faq.Question}{" "}
+                    {openIndex === index && (
+                      <MdDeleteOutline
+                        size={20}
+                        onClick={() =>
+                          deleteFaq(faq.Question, faq.Answer, index)
+                        }
+                        className="text-red-500 mt-[2px]"
+                      />
+                    )}
+                  </button>
+                  {openIndex === index && (
+                    <div className="pb-4 text-sm text-gray-600">
+                      {faq.Answer}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No FAQs available.</p>
+            )}
+          </>
+        ) : (
+          <p className="h-[50dvh] animate-pulse bg-gray-100 mt-2"></p>
+        )}
+
+        <div className="mt-4 rounded">
+          <h2 className="text-sm font-semibold text-[#575757] mt-4">Add FAQ</h2>
+
+          <div className="flex flex-col gap-4 mt-4">
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Question"
+              className="border border-gray-300 p-2 rounded outline-none"
+            />
+            <textarea
+              placeholder="Answer"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              maxLength={500}
+              className="border border-gray-300 p-2 rounded outline-none"
+              rows="4"
+            />
+            <button
+              disabled={loadingAddFaq}
+              onClick={addFaq}
+              className="bg-[#0a3a75] disabled:opacity-75 text-white py-2 px-4 rounded flex items-center gap-4 justify-center"
+            >
+              Add FAQ {loadingAddFaq && <Loader size={20} color="#fff" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Analytics;
