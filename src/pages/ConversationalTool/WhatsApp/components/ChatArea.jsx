@@ -1,114 +1,87 @@
-import React from "react";
-import { BsImage } from "react-icons/bs";
+import { useEffect, useRef, useState } from "react";
+import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 
-const ChatArea = ({ selectedContact, messages, onSubmit }) => {
-  const [messageValue, setMessageValue] = React.useState("");
+const ChatArea = ({ selectedContact, messages, onSubmit, loadingMessage }) => {
+  const [messageValue, setMessageValue] = useState("");
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView();
+  }, [messages]);
+
   const handleSendMessage = (e) => {
     e.preventDefault();
-    const messagePayload = {
+    if (!messageValue.trim()) return;
+
+    onSubmit({
       text: messageValue,
       sender: "me",
-      name: selectedContact?.name,
-    };
+      createdAt: new Date(),
+    });
 
-    if (onSubmit) onSubmit(selectedContact, messagePayload);
     setMessageValue("");
   };
+
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 ">
-      {/* Chat Header */}
-      <div className="bg-teal-600 text-white px-6 py-4 border-none border-red-200">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            {selectedContact?.phone} (+919328405012)
-          </h2>
-          <button className="text-teal-100 hover:text-white text-sm">
-            Chat Profile
-          </button>
-        </div>
+    <div className="flex-1 flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-teal-600 text-white px-6 py-4">
+        <h2 className="text-lg font-semibold">{selectedContact?.name}</h2>
       </div>
 
-      {/* Chat Messages */}
+      {/* Messages */}
+
       <div className="flex-1 p-6 overflow-y-auto scrollbar-hidden">
-        <div className="flex justify-center mb-4">
-          <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full">
-            22/07/2025
-          </span>
-        </div>
-
-        {/* Message */}
-        {/* {[1, 2, 3, 4, 5].map((item) => (
-          <div key={item} className="flex items-start mb-6">
-            <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium mr-3">
-              K
-            </div>
-            <div className="bg-teal-600 rounded-2xl rounded-tl-sm p-4 max-w-sm text-white">
-              <div className="flex items-center text-teal-100 text-xs mb-2">
-                <BsImage className="mr-1" />
-                Message via ad
-              </div>
-              <div className="bg-white rounded-lg p-2 mb-3">
-                <img
-                  src="https://plus.unsplash.com/premium_photo-1676823547752-1d24e8597047?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bGl2aW5nJTIwcm9vbXxlbnwwfHwwfHx8MA%3D%3D"
-                  alt="Resort"
-                  className="w-full h-40 object-cover rounded"
-                />
-              </div>
-              <p className="text-sm font-medium mb-2">
-                Looking for your next goa ge...
-              </p>
-              <p className="text-xs text-teal-100 mb-2">
-                Escape to Nature. Indulge in Lu...
-              </p>
-              <p className="text-xs text-teal-100 mb-2">fb.me</p>
-              <p className="text-xs text-teal-100 mb-3">
-                Ad ID: 120225047748280256
-              </p>
-              <p className="text-sm">Is there any upcoming packages?</p>
-            </div>
+        {loadingMessage ? (
+          <div className="flex-1 p-6 space-y-4 overflow-hidden">
+            <MessageSkeleton align="left" />
+            <MessageSkeleton align="right" />
+            <MessageSkeleton align="left" />
+            <MessageSkeleton align="right" />
+            <MessageSkeleton align="left" />
           </div>
-        ))} */}
+        ) : (
+          <div>
+            {messages?.length > 0 ? (
+              messages?.map((message, index) => {
+                const isMe = message.sender === "me";
 
-        {messages?.map((message, index) => (
-          <div
-            key={index}
-            className={`flex items-start mb-6 ${
-              message.sender === "me" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white font-medium mr-3 ${
-                message.sender === "me" ? "order-2" : "order-1"
-              }`}
-            >
-              {message?.name?.charAt(0)}
-            </div>
-            <div
-              className={`bg-teal-600 rounded-2xl rounded-tl-sm p-4 max-w-sm text-white ${
-                message.sender === "me" ? "order-1" : "order-2"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-            </div>
+                return (
+                  <div
+                    key={index}
+                    className={`flex mb-4 ${isMe ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`rounded-2xl p-3 max-w-sm ${
+                        isMe
+                          ? "bg-gray-200 border text-gray-900"
+                          : "bg-teal-600 text-white"
+                      }`}
+                    >
+                      <p className="text-sm">{message.text}</p>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-center text-gray-400">No conversation yet</p>
+            )}
+            <div ref={bottomRef} />
           </div>
-        ))}
+        )}
       </div>
 
-      <form
-        onSubmit={handleSendMessage}
-        className="bg-white border-t border-gray-200 p-4 flex items-center"
-      >
+      {/* Input */}
+      <form onSubmit={handleSendMessage} className="bg-white border-t p-4 flex">
         <input
-          type="text"
-          placeholder="Type a message..."
           value={messageValue}
           onChange={(e) => setMessageValue(e.target.value)}
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 mr-4"
+          placeholder="Type a message..."
+          className="flex-1 border rounded-lg px-4 py-2 mr-4"
         />
         <button
           type="submit"
-          className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-          onClick={handleSendMessage}
+          className="bg-teal-600 text-white px-6 py-2 rounded-lg"
         >
           Send
         </button>

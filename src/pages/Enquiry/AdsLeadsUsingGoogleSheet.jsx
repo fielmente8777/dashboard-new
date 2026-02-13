@@ -30,6 +30,9 @@ const AdsLeadsUsingGoogleSheet = () => {
   const [forms, setForms] = useState([]);
   const [leads, setLeads] = useState([]);
 
+  const [afterCursor, setAfterCursor] = useState(null);
+  const [beforeCursor, setBeforeCursor] = useState(null);
+
   const [selectedPageId, setSelectedPageId] = useState("");
   const [selectedFormId, setSelectedFormId] = useState("");
 
@@ -75,12 +78,15 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
 
-  const fetchLeads = async (pageId, formId) => {
+  const fetchLeads = async (pageId, formId, cursor) => {
     setLoadingLeads(true);
     try {
-      const response = await getMetaLeads(pageId, formId);
+      const response = await getMetaLeads(pageId, formId, cursor);
       if (response?.success) {
         setLeads(response?.result?.docs?.leads || []);
+        const cursors = response?.result?.paging?.cursors;
+        setAfterCursor(cursors?.after || null);
+        setBeforeCursor(cursors?.before || null);
       }
     } finally {
       setLoadingLeads(false);
@@ -289,6 +295,34 @@ async function sendToGoogleSheets(leads) {
           </table>
         )}
       </div>
+
+      {(afterCursor || beforeCursor) && (
+        <div className="flex justify-start gap-3 pt-4">
+          <button
+            disabled={!beforeCursor || loadingLeads}
+            onClick={() =>
+              fetchLeads(selectedPageId, selectedFormId, {
+                before: beforeCursor,
+              })
+            }
+            className="px-4 py-2 border rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <button
+            disabled={!afterCursor || loadingLeads}
+            onClick={() =>
+              fetchLeads(selectedPageId, selectedFormId, {
+                after: afterCursor,
+              })
+            }
+            className="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
