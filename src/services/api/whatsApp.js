@@ -17,6 +17,42 @@ export const sendWhatsAppMessage = async (payload) => {
   return data;
 };
 
+export const getWhatsappConversation = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations/all`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  // console.log(response);
+
+  const data = await response.json();
+  return data;
+};
+
+export const getWhatsappConversationMessages = async (conversationId) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${conversationId}/messages`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
 export const getWhatsappAccountDetails = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/account/connection/details`,
@@ -24,6 +60,7 @@ export const getWhatsappAccountDetails = async () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     },

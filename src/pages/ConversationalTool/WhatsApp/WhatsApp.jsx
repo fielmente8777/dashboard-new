@@ -1,122 +1,225 @@
-import React, { useEffect, useState } from "react";
-import Header from "./components/Header";
-import SidebarChat from "./components/SidebarChat";
-import ChatArea from "./components/ChatArea";
-import ProfilePanel from "./components/ProfilePanel";
-import {
-  BASE_URL,
-  WEBSOCKET_EVENTS,
-  WS_BASE_URL,
-} from "../../../data/constant";
-import axios from "axios";
-import { getContacts } from "../../../services/api/contact.api";
-import { sendWhatsAppMessage } from "../../../services/api/whatsApp";
+import { useEffect, useRef, useState } from "react";
 import WebSocketClient from "../../../config/websocketClient";
+import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
+import normalizePhone from "../../../utils/normalizePhone";
+
 import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
+import {
+  getWhatsappConversation,
+  getWhatsappConversationMessages,
+  sendWhatsAppMessage,
+} from "../../../services/api/whatsApp";
+import ChatArea from "./components/ChatArea";
+import SidebarChat from "./components/SidebarChat";
 
 const WhatsApp = () => {
-  const wsRef = React.useRef(null);
-  const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [selectedContact, setSelectedContact] = useState("KATESHIYAD77");
-  const [activeTab, setActiveTab] = useState("ACTIVE");
-  const [contacts, setContacts] = useState([]);
+  const wsRef = useRef(null);
 
-  const getContactsData = async () => {
-    // API call to fetch contacts will be here
+  const [loading, setLoading] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  // const [selectedConversationId, setSelectedConversationId] = useState(null);
+
+  // 🔹 Fetch contacts → build conversations
+  const getWhatsappConversations = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await getContacts(token);
+      const response = await getWhatsappConversation();
 
-      setContacts(response);
-      setSelectedContact(response[0]);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
+      if (response?.success && response?.responseStatusCode === 200) {
+        const list = response.result.conversations.map((c) => ({
+          id: c._id,
+          phone: c.phone,
+          name: c.name,
+          profile_image: c.profile_image,
+          messages: [],
+          lastMessage: c.last_message || null,
+          unreadCount: c.unread_count || 0,
+          updatedAt: c.updatedAt,
+        }));
+
+        setConversations(list);
+        setSelectedConversation(list[0]);
+      }
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
+  // 🔹 Sidebar click
+  const handleSelectConversation = (conversation) => {
+    setSelectedConversation(conversation);
+    // setSelectedConversation(conversation);
 
-  const handleSelectContact = (contact) => {
-    setSelectedContact(contact);
+    // clear unread
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversation.id ? { ...c, unreadCount: 0 } : c,
+      ),
+    );
   };
 
-  const handleSendMessageWhatsapp = async (
-    selectedContacted,
-    messagePayload,
-  ) => {
-    // setMessages([...messages, messagePayload]);
-    // const { phone, name } = selectedContacted;
-    // const ndid = localStorage.getItem("ndid");
+  const handleSendMessage = async (text) => {
+    if (!selectedConversation) return;
+    const message = {
+      text: text?.text,
+      sender: "me",
+      createdAt: new Date(),
+    };
 
-    // const cleanPhone = phone.replace(/[^\d]/g, "");
-
-    // const payload = {
-    //   phoneNumber: cleanPhone,
-    //   name,
-    //   message: messagePayload?.text,
-    //   ndid,
-    // };
+    setConversations((prev) => {
+      const updated = prev.map((c) => {
+        if (c.id === selectedConversation.id) {
+          return {
+            ...c,
+            messages: [...c.messages, message],
+            lastMessage: message,
+          };
+        }
+        return c;
+      });
+      return updated;
+    });
 
     try {
-      const response = await sendWhatsAppMessage();
+      const response = await sendWhatsAppMessage({
+        text: text?.text,
+        phone: selectedConversation.phone,
+      });
+
       console.log(response);
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error(error);
     }
   };
 
-  useEffect(() => {
-    getContactsData();
-  }, []);
-
+  // 🔹 WebSocket incoming messages
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      if (serverResponse.event === WEBSOCKET_EVENTS["WHATSAPP_NEW_MESSAGE"]) {
-        const { data } = serverResponse;
-        console.log(data);
-        const incomingMessage = {
-          text: data?.text,
-          sender: data?.sender,
-        };
-        console.log(selectedContact);
-        if (selectedContact?.phone === data?.from) {
-          console.log("aaya");
-          setMessages((prevMessages) => [...prevMessages, incomingMessage]);
+      if (serverResponse.event !== WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE)
+        return;
+
+      const { data } = serverResponse;
+      const fromPhone = normalizePhone(data.from);
+
+      setConversations((prev) => {
+        let updatedConversation = null;
+
+        const updated = prev.map((conv) => {
+          if (normalizePhone(conv.contact.phone) !== fromPhone) return conv;
+
+          const message = {
+            text: data.text,
+            sender: "contact",
+            createdAt: new Date(),
+          };
+
+          const isActive = conv.id === selectedConversation?.id;
+
+          updatedConversation = {
+            ...conv,
+            messages: [...conv.messages, message],
+            lastMessage: message,
+            updatedAt: new Date(),
+            unreadCount: isActive ? 0 : conv.unreadCount + 1,
+          };
+
+          return updatedConversation;
+        });
+
+        if (!updatedConversation) return prev;
+
+        // ✅ Auto-open ONLY if none selected or same chat
+        if (
+          !selectedConversation?.id ||
+          selectedConversation?.id === updatedConversation.id
+        ) {
+          setSelectedConversation(updatedConversation);
         }
-      }
+
+        // move to top
+        return [
+          updatedConversation,
+          ...updated.filter((c) => c.id !== updatedConversation.id),
+        ];
+      });
+
+      // if (selectedConversation?.contact?.phone === data.from) {
+      //   setSelectedConversation((prev) => ({
+      //     ...prev,
+      //     messages: [
+      //       ...prev.messages,
+      //       { text: data.text, sender: "contact", createdAt: new Date() },
+      //     ],
+      //     lastMessage: {
+      //       text: data.text,
+      //       sender: "contact",
+      //       createdAt: new Date(),
+      //     },
+      //   }));
+      // }
     });
 
-    return () => {
-      wsRef.current?.close();
+    return () => wsRef.current?.close();
+  }, [selectedConversation]);
+
+  useEffect(() => {
+    // if (!selectedConversation?.id) return;
+
+    const loadMessages = async (conversationId) => {
+      setLoadingMessages(true);
+      try {
+        const response = await getWhatsappConversationMessages(conversationId);
+
+        if (response?.success && response?.responseStatusCode === 200) {
+          const messages = response?.result?.messages;
+          setConversations((prev) =>
+            prev.map((c) =>
+              c.id === selectedConversation.id
+                ? {
+                    ...c,
+                    messages,
+                    lastMessage: messages[messages.length - 1] || null,
+                    unreadCount: 0,
+                  }
+                : c,
+            ),
+          );
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoadingMessages(false);
+      }
     };
-  }, [selectedContact]);
+
+    loadMessages(selectedConversation?.id);
+  }, [selectedConversation?.id]);
+
+  useEffect(() => {
+    getWhatsappConversations();
+  }, []);
+
+  if (loading) return <WhatesAppChatSkeleton />;
 
   return (
-    <div className="h-[calc(100vh-8.2vh)] bg-gray-50 flex flex-col">
-      {/* <Header /> */}
-      {loading ? (
-        <WhatesAppChatSkeleton />
-      ) : (
-        <div className="flex-1 flex overflow-hidden">
-          <SidebarChat
-            contacts={contacts}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            selectedContact={selectedContact}
-            handleSelectContact={handleSelectContact}
-          />
-          <ChatArea
-            selectedContact={selectedContact}
-            onSubmit={handleSendMessageWhatsapp}
-            messages={messages}
-          />
-          {/* <ProfilePanel selectedContact={selectedContact} /> */}
-        </div>
-      )}
+    <div className="h-[calc(100vh-9.8vh)] flex bg-gray-50">
+      <SidebarChat
+        conversations={conversations}
+        selectedConversationId={selectedConversation}
+        onSelect={handleSelectConversation}
+      />
+
+      <ChatArea
+        selectedContact={selectedConversation}
+        messages={selectedConversation?.messages}
+        onSubmit={handleSendMessage}
+        loadingMessage={loadingMessages}
+      />
     </div>
   );
 };

@@ -58,7 +58,7 @@ export const getMetaLeads = async (pageId, formId, cursor) => {
   }
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/leads?${params.toString()}`,
+      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${pageId}&formId=${formId}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {

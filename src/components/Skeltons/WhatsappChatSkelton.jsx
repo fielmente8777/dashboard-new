@@ -2,7 +2,7 @@ const Skeleton = ({ className = "" }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
-const MessageSkeleton = ({ align = "left" }) => (
+export const MessageSkeleton = ({ align = "left" }) => (
   <div
     className={`flex ${align === "right" ? "justify-end" : "justify-start"}`}
   >

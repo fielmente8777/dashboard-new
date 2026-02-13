@@ -6,24 +6,24 @@ import {
 } from "../../services/api/MetaLeads.api";
 
 /* Clean labels for headers */
-const FIELD_LABELS = {
-  id: "ID",
-  created_time: "Created Time",
-  full_name: "Full Name",
-  phone_number: "Phone Number",
-  job_title: "Job Title",
-  email: "Email",
-  city: "City",
-  are_you_looking_to_booking_for: "Guests",
-  what_kind_of_room_are_you_looking_to_reserve: "Room Type",
-  what_time_during_the_day_would_you_like_to_be_contacted_by_our_team:
-    "Contact Time",
-  what_is_your_preferred_check_in_date: "Check-in Date",
-  preferred_check_out_date: "Check-out Date",
-  do_you_want_to_include_breakfast: "Budget",
-  are_you_interested_in_booking_a_stay_at_sparv_aulakhs_resort_goa:
-    "Interested",
-};
+// const FIELD_LABELS = {
+//   id: "ID",
+//   created_time: "Created Time",
+//   full_name: "Full Name",
+//   phone_number: "Phone Number",
+//   job_title: "Job Title",
+//   email: "Email",
+//   city: "City",
+//   are_you_looking_to_booking_for: "Guests",
+//   what_kind_of_room_are_you_looking_to_reserve: "Room Type",
+//   what_time_during_the_day_would_you_like_to_be_contacted_by_our_team:
+//     "Contact Time",
+//   what_is_your_preferred_check_in_date: "Check-in Date",
+//   preferred_check_out_date: "Check-out Date",
+//   do_you_want_to_include_breakfast: "Budget",
+//   are_you_interested_in_booking_a_stay_at_sparv_aulakhs_resort_goa:
+//     "Interested",
+// };
 
 const AdsLeadsUsingGoogleSheet = () => {
   const [pages, setPages] = useState([]);
@@ -132,15 +132,74 @@ const AdsLeadsUsingGoogleSheet = () => {
     return Object.keys(normalizedLeads[0]);
   }, [normalizedLeads]);
 
+  const visibleHeaders = tableHeaders.filter(h => h !== "id");
+
   useEffect(() => {
     fetchMetaPages();
   }, []);
 
   /* ---------------- UI ---------------- */
 
+
+  function formatLeads(leads) {
+  return leads.map(lead => {
+    const fields = {};
+    
+    lead.field_data.forEach(field => {
+      fields[field.name] = field.values[0] || "";
+    });
+
+    return {
+      "Lead ID": lead.id,
+      "Full Name": fields.full_name || "",
+      "Phone Number": fields.phone_number || "",
+      "Email": fields.email || "",
+      "when_would_you_like_to_check_in": fields["when_would_you_like_to_check_in?"] || "",
+      "how_many_days_would_you_like_to_stay_with_us": fields["how_many_days_would_you_like_to_stay_with_us?"] || "",
+      "Created Time": lead.created_time
+    };
+  });
+}
+async function sendToGoogleSheets(leads) {
+  const formatted = formatLeads(leads);
+
+  await fetch("https://docs.google.com/spreadsheets/d/1KpR9SWJd4nPJh45YCiTSOLI-QyZ6WfqcpgyQMh1BC9o/edit?gid=0#gid=0", {
+    method: "POST",
+    body: JSON.stringify(formatted),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  alert("Leads sent to Google Sheets!");
+}
+  function exportToCSV(leads) {
+  const formatted = formatLeads(leads);
+
+  const headers = Object.keys(formatted[0]).join(",");
+  const rows = formatted.map(obj =>
+    Object.values(obj).map(v => `"${v}"`).join(",")
+  );
+
+  const csvContent = [headers, ...rows].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "meta_leads.csv";
+  a.click();
+}
+
   return (
     <div className="bg-white rounded-xl shadow border p-6 space-y-6">
       <h2 className="text-lg font-semibold text-gray-800">Meta Lead Forms</h2>
+      {/* <button onClick={() => exportToCSV(leads)}>
+        Export Leads to Excel
+      </button>
+      <button onClick={() => sendToGoogleSheets(leads)}>
+        Send Leads to Google Sheets
+      </button> */}
+
 
       {/* SELECTION ROW */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -202,11 +261,11 @@ const AdsLeadsUsingGoogleSheet = () => {
                 {tableHeaders.map((h) => (
                   <th
                     key={h}
-                    className="px-3 py-3 text-left font-semibold text-xs text-white
-                               min-w-[160px] max-w-[260px]"
+                    className="px-3 py-3 text-left font-semibold text-xs text-white min-w-[160px] max-w-[260px]"
                   >
-                    <div className="line-clamp-2">
-                      {FIELD_LABELS[h] || h.replaceAll("_", " ")}
+                    <div className="line-clamp-2 capitalize">
+                      {h.replaceAll("_", " ")}
+                      {/* {FIELD_LABELS[h] || h.replaceAll("_", " ")} */}
                     </div>
                   </th>
                 ))}
@@ -214,21 +273,24 @@ const AdsLeadsUsingGoogleSheet = () => {
             </thead>
             <tbody>
               {normalizedLeads.map((row, i) => (
-                <tr
-                  key={row.id || i}
-                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition"
-                >
-                  {tableHeaders.map((h) => (
-                    <td
-                      key={h}
-                      className="px-3 py-2 text-gray-800
-                                 min-w-[160px] max-w-[260px]"
-                    >
-                      <div className="line-clamp-2">{row[h] || "-"}</div>
-                    </td>
-                  ))}
-                </tr>
-              ))}
+                  <tr
+                    key={i} // since id removed from display
+                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 transition"
+                  >
+                    {/* 🔢 Serial Number Cell */}
+                    <td className="px-3 py-2 font-medium text-gray-600">{i + 1}</td>
+
+                    {visibleHeaders.map((h) => (
+                      <td
+                        key={h}
+                        className="px-3 py-2 text-gray-800
+                                  min-w-[160px] max-w-[260px]"
+                      >
+                        <div className="line-clamp-2">{row[h] || "-"}</div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
             </tbody>
           </table>
         )}

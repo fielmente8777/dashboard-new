@@ -83,6 +83,10 @@ import GoogleAdsInsights from "../GoogleAdsInsights/GoogleAdsInsights";
 import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates";
 import WhatsAppBusiness from "../Channels/Whatsapp/WhatsAppBusiness";
 import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+import AllLeads from "../Enquiry/AllLeads";
+import GoogleAds from "../Enquiry/GoogleAds";
+import EazbotLeads from "../Enquiry/EazbotEnquiries";
+import WebformLeads from "../Enquiry/WebformLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -133,24 +137,31 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
 
     // Enquiries Management
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries-analytics`]: (
+    [`${BASE_PATH}/${hid}/leads-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/eazbot-visitors`]: (
+    
+    [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
+    [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
+
+
+    [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/leads-management/eazbot-visitors`]: (
       <EazbotEnquiries />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/lead-gen-form`]: (
+    [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
+    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
       <AdsLeadsUsingGoogleSheet />
     ),
-    // [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: <MetaLeads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: (
+    // [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/meta-analytics`]: (
       <AdLeadsAnalytics />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/leads-management/settings`]: <Feedback />,
 
     // Human Resources Management
     [`${BASE_PATH}/${hid}/human-resources-management/analytics`]: (
