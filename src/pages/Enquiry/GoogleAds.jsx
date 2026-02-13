@@ -2,23 +2,28 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '../../services/formateDate';
-import { getLeads } from '../../services/api/leads.api';
-import { formatPhoneNumber } from '../../components/Popup/LeadPopup';
+import { getLeads, UpdateLeadStatus } from '../../services/api/leads.api';
+import LeadPopup, { formatPhoneNumber } from '../../components/Popup/LeadPopup';
 import { useSelector } from 'react-redux';
 import { extractBookingInfo } from './Leads';
 import { Search } from '../../icons/icon';
 import DatePicker from 'react-datepicker';
 import { FaFileExcel, FaPlus } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 const GoogleAds = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
-
+const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1)
   const fetchAllLeads = async () => {
     try {
-      const response = await getLeads(`page=1&limit=10&created_from=google_ads`);
+      const query = `page=${page}&limit=${limit}&created_from=google_ads`
+      const response = await getLeads(query);
       setAllLeads(response.leads);
     }
     catch (error) {
@@ -26,33 +31,59 @@ const GoogleAds = () => {
     }
   }
 
-    const setDateRange = (dates) => {
-      const [start, end] = dates;
-      setStartDate(start);
-      setEndDate(end);
+  const setDateRange = (dates) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
 
-      if (start && end) {
-          // Normalize to full-day range
-          // console.log("inn");
-          const startOfDay = new Date(start);
-          startOfDay.setHours(0, 0, 0, 0);
+    if (start && end) {
+      // Normalize to full-day range
+      // console.log("inn");
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
 
-          const endOfDay = new Date(end);
-          endOfDay.setHours(23, 59, 59, 999);
+      const endOfDay = new Date(end);
+      endOfDay.setHours(23, 59, 59, 999);
 
-          const filtered = allLeads.filter((item) => {
-              const createdAtDate = new Date(item.Created_at);
-              return createdAtDate >= startOfDay && createdAtDate <= endOfDay;
-          });
+      const filtered = allLeads.filter((item) => {
+        const createdAtDate = new Date(item.Created_at);
+        return createdAtDate >= startOfDay && createdAtDate <= endOfDay;
+      });
 
-          setAllLeads(filtered);
-      }
-    };
+      setAllLeads(filtered);
+    }
+  };
 
+  const handleStatusChange = async (lead, status) => {
+    try {
+
+      const { data } = await UpdateLeadStatus(lead, status);
+      console.log("Handle lead status", data);
+
+      Swal.fire({
+        icon: "success",
+        title: "Query Status Updated!",
+        text: data.Message || "Query has been updated successfully.",
+        timer: 600,
+        showConfirmButton: false,
+      }).then(() => {
+        if (data.Status) {
+          // handleTabClick(active);
+          fetchAllLeads()
+        }
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error updating Query Status",
+      });
+    }
+  }
 
   useEffect(() => {
     fetchAllLeads();
-  }, []);
+  }, [limit, page]);
   return (
     <div className='w-full'>
       <div className="flex lg:flex-row flex-col justify-between lg:items-center my-2">
@@ -121,20 +152,18 @@ const GoogleAds = () => {
         </div>
 
         <div className="py-2 lg:px-4 flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* <label
-                          htmlFor="itemsPerPage"
-                          className="text-sm font-medium whitespace-nowrap text-gray-700"
-                        >
-                          Items per page:
-                        </label> */}
-          <div
-            onClick={() => jsonToCsvExport({ data: exportedData, headers })}
-            className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
+          <select
+            id="itemsPerPage"
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="border  sm:w-fit border-gray-300 rounded-md px-1 lg:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <FaFileExcel />
-            <span className="font-medium">Export</span>
-          </div>
-
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
           <div
             // onClick={handleAddRow}
             className="bg-green-500 whitespace-nowrap w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
@@ -213,8 +242,8 @@ const GoogleAds = () => {
                 <tr
                   key={index}
                   className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                      ? " text-[#575757]"
-                      : "text-[#575757]"
+                    ? " text-[#575757]"
+                    : "text-[#575757]"
                     }`}
                   onClick={() => {
                     setSelectedLead(enquery);
@@ -316,9 +345,9 @@ const GoogleAds = () => {
                       defaultValue={enquery?.status}
                       value={enquery?.status}
                       onClick={(e) => e.stopPropagation()}
-                    // onChange={(e) => {
-                    //   handleStatusChange(enquery, e.target.value);
-                    // }}
+                      onChange={(e) => {
+                        handleStatusChange(enquery, e.target.value);
+                      }}
                     >
                       <option
                         disabled
@@ -426,6 +455,17 @@ const GoogleAds = () => {
           </tbody>
         )}
       </table>
+
+       <LeadPopup
+                    isOpen={isPopupOpen}
+                    onClose={() => setIsPopupOpen(false)}
+                    lead={selectedLead}
+                    fetchEnquires={fetchAllLeads}
+                    // handleTabClick={""}
+                    // activeIndex={active}
+                    show={!hotel?.Profile?.websiteType}
+                  />
+      
 
     </div>
   )

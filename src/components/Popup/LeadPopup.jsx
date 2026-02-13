@@ -104,7 +104,7 @@ const LeadPopup = ({
           }
         });
 
-        onClose();
+        // onClose();
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -148,9 +148,9 @@ const LeadPopup = ({
         showConfirmButton: false,
       }).then(() => {
         if (result.Status) {
-          handleTabClick(activeIndex);
+          // handleTabClick(activeIndex);
 
-          // fetchEnquires(localStorage.getItem('token'));
+          fetchEnquires();
         }
       });
 

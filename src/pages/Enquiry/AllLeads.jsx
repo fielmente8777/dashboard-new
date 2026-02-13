@@ -1,23 +1,33 @@
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '../../services/formateDate';
-import { getLeads } from '../../services/api/leads.api';
-import { formatPhoneNumber } from '../../components/Popup/LeadPopup';
+import { getLeads, UpdateLeadStatus } from '../../services/api/leads.api';
+import LeadPopup, { formatPhoneNumber } from '../../components/Popup/LeadPopup';
 import { useSelector } from 'react-redux';
 import { extractBookingInfo } from './Leads';
 import { Search } from '../../icons/icon';
 import DatePicker from 'react-datepicker';
 import { FaFileExcel, FaPlus } from 'react-icons/fa';
-
+import { createExportData } from '../../utils/exportLeadData';
+import jsonToCsvExport from "json-to-csv-export";
+import Swal from 'sweetalert2';
 const AllLeads = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [limit,setLimit]=useState(100);
+  const [page,setPage]=useState(1);
   const [allLeads, setAllLeads] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const[exportedData,setExportedData]=useState("")
 
   const fetchAllLeads = async () => {
     try {
-      const response = await getLeads(`page=1&limit=10`);
+      const query=`page=${page}&limit=${limit}`
+      const response = await getLeads(query);
       setAllLeads(response.leads);
+      const data=createExportData(response.leads)
+      setExportedData(data)
     }
     catch (error) {
       console.error("Error fetching all leads:", error);
@@ -47,9 +57,50 @@ const AllLeads = () => {
     }
   };
 
+  const headers = [
+    { key: "Name", label: "Name" },
+    { key: "Contact", label: "Contact" },
+    { key: "Email", label: "Email" },
+    { key: "check_in", label: "Check In" },
+    { key: "check_out", label: "Check Out" },
+    { key: "number_of_guest", label: "Number of Guest" },
+    // { key: "Message", label: "Message" },
+    { key: "created_from", label: "Lead Source" },
+    { key: "status", label: "Status" },
+  ];
+
+
+  const handleStatusChange=async(lead,status)=>{
+    try {
+
+      const {data}=await UpdateLeadStatus(lead,status);
+      console.log("Handle lead status",data);
+
+      Swal.fire({
+        icon: "success",
+        title: "Query Status Updated!",
+        text: data.Message || "Query has been updated successfully.",
+        timer: 600,
+        showConfirmButton: false,
+      }).then(() => {
+        if (data.Status) {
+          // handleTabClick(active);
+          fetchAllLeads()
+        }
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error updating Query Status",
+      });
+    }
+  } 
+
+
   useEffect(() => {
     fetchAllLeads();
-  }, []);
+  }, [limit,page]);
   return (
     <div className='w-full'>
       <div className="flex lg:flex-row flex-col justify-between lg:items-center my-2">
@@ -65,7 +116,7 @@ const AllLeads = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
+       
           <div className="flex items-center gap-2">
             <div className="border border-gray-300 rounded-md p-1.5">
               <DatePicker
@@ -100,30 +151,22 @@ const AllLeads = () => {
             )}
           </div>
 
-          {/* <div className="w-1/3">
-                  <button
-                    className="w-full px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between"
-                    onClick={() => setFilterPopup(true)}
-                  >
-                    <span className="flex items-center gap-2">
-                      <Filter className="w-2 h-2" /> Filter
-                    </span>
-                    <span className="text-[#575757] text-[14px] font-semibold rotate-180">
-                      <Arrow />
-                    </span>
-                  </button>
-      
-                  <FilterPopup open={filterPopup} setOpen={setOpen} />
-                </div> */}
+          
         </div>
 
         <div className="py-2 lg:px-4 flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* <label
-                    htmlFor="itemsPerPage"
-                    className="text-sm font-medium whitespace-nowrap text-gray-700"
-                  >
-                    Items per page:
-                  </label> */}
+             <select
+              id="itemsPerPage"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="border  sm:w-fit border-gray-300 rounded-md px-1 lg:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
           <div
             onClick={() => jsonToCsvExport({ data: exportedData, headers })}
             className="bg-green-500 w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
@@ -179,19 +222,19 @@ const AllLeads = () => {
               Email
             </th>
             {!hotel?.Profile?.websiteType && (
-              <th className="py-3 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
+              <th className="py-3 px-4 text-[14px] text-start font-medium capitalize whitespace-nowrap">
                 Number of Guests
               </th>
             )}
 
             {!hotel?.Profile?.websiteType && (
-              <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
+              <th className="py-3 px-2 text-[14px] text-start font-medium capitalize whitespace-nowrap">
                 Check In
               </th>
             )}
 
             {!hotel?.Profile?.websiteType && (
-              <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
+              <th className="py-3 px-2 text-[14px] text-start font-medium capitalize whitespace-nowrap">
                 Check Out
               </th>
             )}
@@ -344,9 +387,9 @@ const AllLeads = () => {
                       defaultValue={enquery?.status}
                       value={enquery?.status}
                       onClick={(e) => e.stopPropagation()}
-                    // onChange={(e) => {
-                    //   handleStatusChange(enquery, e.target.value);
-                    // }}
+                      onChange={(e) => {
+                        handleStatusChange(enquery, e.target.value);
+                      }}
                     >
                       <option
                         disabled
@@ -454,6 +497,17 @@ const AllLeads = () => {
           </tbody>
         )}
       </table>
+
+
+      <LeadPopup
+              isOpen={isPopupOpen}
+              onClose={() => setIsPopupOpen(false)}
+              lead={selectedLead}
+              fetchEnquires={fetchAllLeads}
+              // handleTabClick={""}
+              // activeIndex={active}
+              show={!hotel?.Profile?.websiteType}
+            />
 
     </div>
   )
