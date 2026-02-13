@@ -10,7 +10,7 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
       "bg-pink-500",
       "bg-indigo-500",
     ];
-    return colors[name.charCodeAt(0) % colors.length];
+    return colors[name?.charCodeAt(0) % colors.length];
   };
 
   return (
@@ -21,7 +21,7 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
             <div
               key={conv.id}
               onClick={() => onSelect(conv)}
-              className={`flex items-center p-4 border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`flex items-center p-3 border-b border-gray-100 cursor-pointer transition-colors ${
                 selectedConversation?.id === conv.id
                   ? "bg-primary/10 border-l-4 border-l-teal-500"
                   : "hover:bg-gray-50"
@@ -34,10 +34,10 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
                     conv?.name,
                   )}`}
                 >
-                  {conv?.name.charAt(0).toUpperCase()}
+                  {conv?.name?.charAt(0).toUpperCase()}
                 </div>
 
-                {conv.unreadCount > 0 && (
+                {conv?.unreadCount > 0 && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                     {conv?.unreadCount}
                   </div>
