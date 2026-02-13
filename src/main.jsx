@@ -15,10 +15,10 @@ createRoot(document.getElementById("root")).render(
       <DataProvider>
         <BrowserRouter>
           <GlobalDataProvider />
-          <Whatsapp whatsAppNumber={"+919501868775"} />
+          {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
           <App />
         </BrowserRouter>
       </DataProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );

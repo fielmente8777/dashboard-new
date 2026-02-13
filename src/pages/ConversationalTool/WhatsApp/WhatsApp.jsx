@@ -62,10 +62,11 @@ const WhatsApp = () => {
     );
   };
 
-  const handleSendMessage = async (text) => {
+  const handleSendMessage = async (data) => {
     if (!selectedConversation) return;
+
     const message = {
-      text: text?.text,
+      text: data?.text,
       sender: "me",
       createdAt: new Date(),
     };
@@ -85,10 +86,18 @@ const WhatsApp = () => {
     });
 
     try {
-      const response = await sendWhatsAppMessage({
-        text: text?.text,
-        phone: selectedConversation.phone,
-      });
+      const formData = new FormData();
+      formData.append("phone", selectedConversation.phone);
+      console.log(data);
+
+      if (data?.text) {
+        formData.append("text", data.text);
+      }
+
+      if (data?.file) {
+        formData.append("file", data.file); // 👈 KEY LINE
+      }
+      const response = await sendWhatsAppMessage(formData);
 
       console.log(response);
     } catch (error) {
@@ -101,6 +110,24 @@ const WhatsApp = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
+      ) {
+        const { data } = serverResponse;
+        const conversation = {
+          id: data._id,
+          phone: data.phone,
+          name: data.name,
+          profile_image: data.profile_image,
+          messages: [],
+          lastMessage: null,
+          unreadCount: 0,
+          updatedAt: new Date(),
+        };
+        setConversations((prev) => [conversation, ...prev]);
+        setSelectedConversation(conversation);
+      }
+
       if (serverResponse.event !== WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE)
         return;
 
@@ -111,10 +138,11 @@ const WhatsApp = () => {
         let updatedConversation = null;
 
         const updated = prev.map((conv) => {
-          if (normalizePhone(conv.contact.phone) !== fromPhone) return conv;
+          if (normalizePhone(conv.phone) !== fromPhone) return conv;
 
           const message = {
             text: data.text,
+            ...(data?.image && { image: data.image }),
             sender: "contact",
             createdAt: new Date(),
           };

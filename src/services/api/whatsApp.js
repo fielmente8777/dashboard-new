@@ -6,10 +6,9 @@ export const sendWhatsAppMessage = async (payload) => {
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(payload),
+      body: payload,
     },
   );
 
