@@ -47,7 +47,7 @@ export const getMetaLeads = async (pageId, formId) => {
   const token = localStorage.getItem("token");
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${"137655242755921"}&formId=${formId}`,
+      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${pageId}&formId=${formId}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {

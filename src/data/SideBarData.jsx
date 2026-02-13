@@ -126,27 +126,47 @@ export const SidebarData = [
   //   ],
   // },
   {
-    name: "Enquiries Management",
-    link: `enquiries-management`,
+    name: "Leads Management",
+    link: `leads-management`,
     key: "Enquiries Management",
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
-        name: "Enquiries",
-        link: `enquiries-management/enquiries`,
+        name:"All Leads",
+        link: `leads-management/all-leads`,
         icon: <MdLeaderboard size={18} />,
       },
-
       {
         name: "Meta Leads",
-        link: `enquiries-management/meta-leads`,
+        link: `leads-management/meta-leads`,
         icon: <SiGoogleads size={18} />,
       },
       {
-        name: "Eazbot Visitors",
-        link: `enquiries-management/eazbot-visitors`,
+        name: "Google Ads Leads",
+        link: `leads-management/google-ads-leads`,
+        icon: <SiGoogleads size={18} />,
+      },
+      {
+        name:"Webform Leads",
+        link: `leads-management/webform-leads`,
         icon: <MdLeaderboard size={18} />,
       },
+      {
+        name:"Eazbot Leads",
+        link: `leads-management/eazbot-leads`,
+        icon: <MdLeaderboard size={18} />,
+      },
+
+      // {
+      //   name: "Enquiries",
+      //   link: `enquiries-management/enquiries`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
+      // {
+      //   name: "Eazbot Visitors",
+      //   link: `enquiries-management/eazbot-visitors`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
       // {
       //   name: "Form",
       //   link: `enquiries-management/lead-gen-form`,
