@@ -1,7 +1,8 @@
 export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-export const NEW_BASE_URL = "https://de2feb9c66e0.ngrok-free.app";
+export const NEW_BASE_URL =
+  "https://d375-2401-4900-b877-e936-dc10-1893-d788-97ff.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
 

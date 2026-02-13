@@ -43,11 +43,22 @@ export const getMetaForms = async (pageId) => {
   }
 };
 
-export const getMetaLeads = async (pageId, formId) => {
+export const getMetaLeads = async (pageId, formId, cursor) => {
   const token = localStorage.getItem("token");
+  console.log(cursor);
+
+  const params = new URLSearchParams({
+    pageId,
+    formId,
+    // limit: String(limit),
+  });
+
+  if (cursor?.after) {
+    params.append("after", cursor?.after);
+  }
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${"137655242755921"}&formId=${formId}`,
+      `${NEW_BASE_URL}/api/v1/meta/leads?${params.toString()}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {

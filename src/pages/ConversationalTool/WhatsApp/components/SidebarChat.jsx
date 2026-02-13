@@ -3,7 +3,7 @@ const SidebarChat = ({
   // activeTab,
   // setActiveTab,
   selectedContact,
-  setSelectedContact,
+  handleSelectContact,
 }) => {
   // const tabs = [
   //   { id: "ACTIVE", label: "ACTIVE", count: 0 },
@@ -49,7 +49,7 @@ const SidebarChat = ({
         {contacts?.map((contact) => (
           <div
             key={contact.id}
-            onClick={() => setSelectedContact(contact)}
+            onClick={() => handleSelectContact(contact)}
             className={`flex items-center p-4 border-b border-gray-100 cursor-pointer transition-colors ${
               selectedContact?.name === contact?.name
                 ? "bg-teal-50 border-l-4 border-l-teal-500"
