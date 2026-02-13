@@ -11,6 +11,7 @@ import {
 } from "../../../services/api/whatsApp";
 import ChatArea from "./components/ChatArea";
 import SidebarChat from "./components/SidebarChat";
+import ProfilePanel from "./components/ProfilePanel";
 
 const WhatsApp = () => {
   const wsRef = useRef(null);
@@ -220,6 +221,7 @@ const WhatsApp = () => {
         onSubmit={handleSendMessage}
         loadingMessage={loadingMessages}
       />
+      <ProfilePanel selectedContact={selectedConversation}/>
     </div>
   );
 };

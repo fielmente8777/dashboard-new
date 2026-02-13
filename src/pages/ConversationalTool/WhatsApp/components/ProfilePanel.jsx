@@ -22,11 +22,11 @@ const ProfilePanel = ({ selectedContact }) => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-            K
+            {selectedContact?.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
-              {selectedContact}
+              {selectedContact?.name}
             </h3>
             <p className="text-sm text-gray-500">+919328405012</p>
           </div>
@@ -86,19 +86,19 @@ const ProfilePanel = ({ selectedContact }) => {
       {/* Expandable Sections */}
       <div className="flex-1 overflow-y-auto">
         {/* Payments Section */}
-        <div className="border-b border-gray-200">
+        {/* <div className="border-b border-gray-200">
           <button
             onClick={() => toggleSection("payments")}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
           >
             <span className="text-sm font-medium text-gray-700">Payments</span>
-            {expandedSections.payments ? (
+            {expandedSections?.payments ? (
               <BsChevronUp className="text-gray-400" />
             ) : (
               <BsChevronDown className="text-gray-400" />
             )}
           </button>
-          {expandedSections.payments && (
+          {expandedSections?.payments && (
             <div className="px-4 pb-4">
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
@@ -112,32 +112,32 @@ const ProfilePanel = ({ selectedContact }) => {
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Campaigns Section */}
-        <div className="border-b border-gray-200">
+        {/* <div className="border-b border-gray-200">
           <button
             onClick={() => toggleSection("campaigns")}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
           >
             <span className="text-sm font-medium text-gray-700">Campaigns</span>
-            {expandedSections.campaigns ? (
+            {expandedSections?.campaigns ? (
               <BsChevronUp className="text-gray-400" />
             ) : (
               <BsChevronDown className="text-gray-400" />
             )}
           </button>
-          {expandedSections.campaigns && (
+          {expandedSections?.campaigns && (
             <div className="px-4 pb-4">
               <p className="text-xs text-gray-400 text-center py-4">
                 No campaigns
               </p>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Attributes Section */}
-        <div className="border-b border-gray-200">
+        {/* <div className="border-b border-gray-200">
           <button
             onClick={() => toggleSection("attributes")}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
@@ -158,10 +158,10 @@ const ProfilePanel = ({ selectedContact }) => {
               </p>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Tags Section */}
-        <div>
+        {/* <div>
           <button
             onClick={() => toggleSection("tags")}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
@@ -178,7 +178,7 @@ const ProfilePanel = ({ selectedContact }) => {
               <p className="text-xs text-gray-400 text-center py-4">No tags</p>
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
