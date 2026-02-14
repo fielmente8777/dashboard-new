@@ -31,11 +31,19 @@ export const DataProvider = ({ children }) => {
       lastSyncTime: null,
     },
   });
-  const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
   const [editButton, setEditButton] = useState(false);
+
+
+  // whatsapp
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
+
+
+
 
   const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
     useState(false);
@@ -43,11 +51,11 @@ export const DataProvider = ({ children }) => {
   // const host = "http://localhost:8000"
   const host = "https://hmsbackend-7pyp.onrender.com";
 
-  const socket = io(host, {
-    transports: ["websocket"], // Ensure WebSocket transport is used
-    reconnectionAttempts: 1, // Optional: retry connection attempts
-    reconnectionDelay: 10000, // Optional: retry delay (in ms)
-  });
+  // const socket = io(host, {
+  //   transports: ["websocket"], // Ensure WebSocket transport is used
+  //   reconnectionAttempts: 1, // Optional: retry connection attempts
+  //   reconnectionDelay: 10000, // Optional: retry delay (in ms)
+  // });
 
   const fetchRoomsData = async () => {
     try {
@@ -236,7 +244,7 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider
       value={{
-        socket,
+        // socket,
         host,
         auth,
         setAuth,
@@ -279,6 +287,10 @@ export const DataProvider = ({ children }) => {
         checkIntegrationStatus,
         isLoadingIntegrationStatus,
         is24HoursCompleted,
+        selectedConversation, 
+        setSelectedConversation,
+        conversations,
+         setConversations
       }}
     >
       {children}

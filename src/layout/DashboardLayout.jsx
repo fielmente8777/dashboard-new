@@ -19,7 +19,7 @@ export default function DashboardLayout({ children }) {
           }}
           className={`md:block hidden ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden border`}
+          } overflow-hidden bg-white sm:overflow-hidden`}
         >
           {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }) {
           // }}
           className={`md:hidden block ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden border`}
+          } overflow-hidden bg-white sm:overflow-hidden`}
         >
           {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
@@ -50,7 +50,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
+        <div className="flex-1 flex  flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
           <Navbar />
 
           <div className="overflow-auto flex-1 scrollbar-hidden">

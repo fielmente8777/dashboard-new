@@ -19,9 +19,9 @@ const Greeting = ({ name }) => {
         {getGreet()},{" "}
         {name && <span className="text-[#fd5c01] capitalize">{name}</span>}
       </h1>
-      <p className="font-medium text-white mt-1 hidden md:block">
+      {/* <p className="font-medium text-white mt-1 hidden md:block">
         Here’s an update on what’s happening with your property!
-      </p>
+      </p> */}
     </div>
   );
 };

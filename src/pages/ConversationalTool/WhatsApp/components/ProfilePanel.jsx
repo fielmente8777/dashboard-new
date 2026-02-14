@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
+import { formatDateByOnlyDay, formateDateInTimeIS } from "../../../../utils/formateData";
 
 const ProfilePanel = ({ selectedContact }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -16,19 +17,22 @@ const ProfilePanel = ({ selectedContact }) => {
     }));
   };
 
+
+  console.log(selectedContact);
+
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
       {/* Profile Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center mb-4">
-          <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
+          <div className="w-12 h-12 border text-gray-600 border-gray-900 bg-green-200 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
             {selectedContact?.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
               {selectedContact?.name}
             </h3>
-            <p className="text-sm text-gray-500">+919328405012</p>
+            <p className="text-sm text-gray-600 font-medium ">+{selectedContact.phone}</p>
           </div>
         </div>
 
@@ -36,13 +40,13 @@ const ProfilePanel = ({ selectedContact }) => {
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
-            <span className="text-gray-900">Requesting</span>
+            <span className="text-gray-600 bg-green-200 px-4 rounded-2xl font-medium text-sm">{selectedContact.status==="ACTIVE"?"Active":"Inactive"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Active</span>
-            <span className="text-gray-900">7/22/2025, 8:35 AM</span>
+            <span className="text-gray-900">{`${formatDateByOnlyDay(selectedContact.last_message?.created_at)} ${formateDateInTimeIS(selectedContact.last_message?.created_at)} `}</span>
           </div>
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">Template Messages</span>
             <span className="text-gray-900">0</span>
           </div>
@@ -57,29 +61,41 @@ const ProfilePanel = ({ selectedContact }) => {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Source</span>
             <span className="text-gray-900">AD</span>
-          </div>
+          </div> */}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">First Message</span>
-            <span className="text-gray-900">-</span>
+            <span className="text-gray-600">Last Message</span>
+            <span className="text-gray-900">{selectedContact.last_message.text}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">WA Conversation</span>
-            <span className="text-gray-900">Inactive</span>
+            <span className="text-gray-900">{selectedContact.status==="ACTIVE"?"Active":"Inactive"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">MAU Status</span>
-            <span className="text-gray-900">Active</span>
+            <span className="text-gray-900">{selectedContact.status==="ACTIVE"?"Active":"Inactive"}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Incoming</span>
-            <span className="text-gray-900">Allowed</span>
+            <span className="text-gray-900">{selectedContact.status==="ACTIVE"?"Allowed":"Not Allowed"}</span>
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Opted In</span>
-            <div className="w-10 h-6 bg-teal-500 rounded-full relative">
-              <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 transition-transform"></div>
+
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" class="sr-only peer" checked={selectedContact.status === "ACTIVE"}/>
+                <div class="w-11 h-6 bg-gray-300 rounded-full peer 
+                            peer-checked:bg-teal-500 
+                            transition-colors duration-300"></div>
+                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
+                            transition-transform duration-300 
+                            peer-checked:translate-x-5"></div>
+              </label>
             </div>
-          </div>
+
+
+
+
+              
         </div>
       </div>
 

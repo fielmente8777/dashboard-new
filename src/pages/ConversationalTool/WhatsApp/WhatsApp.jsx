@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import WebSocketClient from "../../../config/websocketClient";
 import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
 import normalizePhone from "../../../utils/normalizePhone";
@@ -12,15 +12,15 @@ import {
 import ChatArea from "./components/ChatArea";
 import SidebarChat from "./components/SidebarChat";
 import ProfilePanel from "./components/ProfilePanel";
+import DataContext from "../../../context/DataContext";
 
 const WhatsApp = () => {
   const wsRef = useRef(null);
-
+  const {
+      conversations, setConversations, selectedConversation, setSelectedConversation
+    } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  // const [selectedConversationId, setSelectedConversationId] = useState(null);
 
   // 🔹 Fetch contacts → build conversations
   const getWhatsappConversations = async () => {
@@ -28,21 +28,23 @@ const WhatsApp = () => {
     try {
       const response = await getWhatsappConversation();
 
-      if (response?.success && response?.responseStatusCode === 200) {
-        const list = response.result.conversations.map((c) => ({
-          id: c._id,
-          phone: c.phone,
-          name: c.name,
-          profile_image: c.profile_image,
-          messages: [],
-          lastMessage: c.last_message || null,
-          unreadCount: c.unread_count || 0,
-          updatedAt: c.updatedAt,
-        }));
+      console.log(response);
+      // if (response?.success && response?.responseStatusCode === 200) {
+      //   const list = response.result.conversations.map((c) => ({
+      //     id: c._id,
+      //     phone: c.phone,
+      //     name: c.name,
+      //     profile_image: c.profile_image,
+      //     messages: [],
+      //     lastMessage: c.last_message || null,
+      //     unreadCount: c.unread_count || 0,
+      //     updatedAt: c.updatedAt,
+      //   }));
 
-        setConversations(list);
-        setSelectedConversation(list[0]);
-      }
+      //   // setSelectedConversation(list[0]);
+      // }
+      setConversations(response?.result?.conversations);
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -62,48 +64,6 @@ const WhatsApp = () => {
     );
   };
 
-  const handleSendMessage = async (data) => {
-    if (!selectedConversation) return;
-
-    const message = {
-      text: data?.text,
-      sender: "me",
-      createdAt: new Date(),
-    };
-
-    setConversations((prev) => {
-      const updated = prev.map((c) => {
-        if (c.id === selectedConversation.id) {
-          return {
-            ...c,
-            messages: [...c.messages, message],
-            lastMessage: message,
-          };
-        }
-        return c;
-      });
-      return updated;
-    });
-
-    try {
-      const formData = new FormData();
-      formData.append("phone", selectedConversation.phone);
-      console.log(data);
-
-      if (data?.text) {
-        formData.append("text", data.text);
-      }
-
-      if (data?.file) {
-        formData.append("file", data.file); // 👈 KEY LINE
-      }
-      const response = await sendWhatsAppMessage(formData);
-
-      console.log(response);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   // 🔹 WebSocket incoming messages
   useEffect(() => {
@@ -119,115 +79,17 @@ const WhatsApp = () => {
           phone: data.phone,
           name: data.name,
           profile_image: data.profile_image,
-          messages: [],
           lastMessage: null,
           unreadCount: 0,
           updatedAt: new Date(),
         };
         setConversations((prev) => [conversation, ...prev]);
-        setSelectedConversation(conversation);
       }
-
-      if (serverResponse.event !== WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE)
-        return;
-
-      const { data } = serverResponse;
-      const fromPhone = normalizePhone(data.from);
-
-      setConversations((prev) => {
-        let updatedConversation = null;
-
-        const updated = prev.map((conv) => {
-          if (normalizePhone(conv.phone) !== fromPhone) return conv;
-
-          const message = {
-            text: data.text,
-            ...(data?.image && { image: data.image }),
-            sender: "contact",
-            createdAt: new Date(),
-          };
-
-          const isActive = conv.id === selectedConversation?.id;
-
-          updatedConversation = {
-            ...conv,
-            messages: [...conv.messages, message],
-            lastMessage: message,
-            updatedAt: new Date(),
-            unreadCount: isActive ? 0 : conv.unreadCount + 1,
-          };
-
-          return updatedConversation;
-        });
-
-        if (!updatedConversation) return prev;
-
-        // ✅ Auto-open ONLY if none selected or same chat
-        if (
-          !selectedConversation?.id ||
-          selectedConversation?.id === updatedConversation.id
-        ) {
-          setSelectedConversation(updatedConversation);
-        }
-
-        // move to top
-        return [
-          updatedConversation,
-          ...updated.filter((c) => c.id !== updatedConversation.id),
-        ];
-      });
-
-      // if (selectedConversation?.contact?.phone === data.from) {
-      //   setSelectedConversation((prev) => ({
-      //     ...prev,
-      //     messages: [
-      //       ...prev.messages,
-      //       { text: data.text, sender: "contact", createdAt: new Date() },
-      //     ],
-      //     lastMessage: {
-      //       text: data.text,
-      //       sender: "contact",
-      //       createdAt: new Date(),
-      //     },
-      //   }));
-      // }
     });
 
     return () => wsRef.current?.close();
   }, [selectedConversation]);
 
-  useEffect(() => {
-    // if (!selectedConversation?.id) return;
-
-    const loadMessages = async (conversationId) => {
-      setLoadingMessages(true);
-      try {
-        const response = await getWhatsappConversationMessages(conversationId);
-
-        if (response?.success && response?.responseStatusCode === 200) {
-          const messages = response?.result?.messages;
-          setConversations((prev) =>
-            prev.map((c) =>
-              c.id === selectedConversation.id
-                ? {
-                    ...c,
-                    messages,
-                    lastMessage: messages[messages.length - 1] || null,
-                    unreadCount: 0,
-                  }
-                : c,
-            ),
-          );
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoadingMessages(false);
-      }
-    };
-
-    loadMessages(selectedConversation?.id);
-  }, [selectedConversation?.id]);
 
   useEffect(() => {
     getWhatsappConversations();
@@ -235,23 +97,64 @@ const WhatsApp = () => {
 
   if (loading) return <WhatesAppChatSkeleton />;
 
+  // console.log(selectedConversation);
   return (
-    <div className="h-[calc(100vh-9.8vh)] flex bg-gray-50">
-      <SidebarChat
-        conversations={conversations}
-        selectedConversationId={selectedConversation}
-        onSelect={handleSelectConversation}
-      />
+    <div className="h-[calc(100vh-6.2vh)] flex bg-gray-50">
+      <SidebarChat/>
 
-      <ChatArea
-        selectedContact={selectedConversation}
-        messages={selectedConversation?.messages}
-        onSubmit={handleSendMessage}
-        loadingMessage={loadingMessages}
-      />
-      <ProfilePanel selectedContact={selectedConversation}/>
+      {selectedConversation ? 
+      <ChatArea      /> :
+        <Fallback />
+      }
+
+
+      {selectedConversation && <ProfilePanel selectedContact={selectedConversation} />}
     </div>
   );
 };
 
 export default WhatsApp;
+
+
+
+
+
+const Fallback = () => {
+  return (
+    <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-green-50 to-teal-50 px-6 text-center">
+
+      {/* Icon Circle */}
+      <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 animate-pulse">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12 text-teal-500"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 20l1.3-3.9A7.6 7.6 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+          />
+        </svg>
+      </div>
+
+      {/* Heading */}
+      <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+        Welcome to WhatsApp
+      </h2>
+
+      {/* Subtext */}
+      <p className="text-gray-500 max-w-sm leading-relaxed">
+        Select a conversation from the left panel to start chatting.
+        Your messages will appear here.
+      </p>
+
+      {/* Decorative Divider */}
+      <div className="mt-8 w-24 h-1 bg-teal-400 rounded-full opacity-60"></div>
+
+    </div>
+  )
+}

@@ -1,4 +1,7 @@
-const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
+import { useContext } from "react";
+import DataContext from "../../../../context/DataContext";
+
+const SidebarChat = () => {
   const getAvatarColor = (name) => {
     const colors = [
       "bg-teal-500",
@@ -13,19 +16,35 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
     return colors[name?.charCodeAt(0) % colors.length];
   };
 
+  const {
+    conversations, setConversations, selectedConversation, setSelectedConversation
+  } = useContext(DataContext);
+
+
+  console.log(conversations);
+
+  const handleSelectConversation=(conv)=>{
+    setSelectedConversation(conv)
+  }
+
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-80  border-b border-l border-r border-gray-200 flex flex-col bg-white">
+      <div className="px-4 py-3 shadow-sm h-16 flex">
+        <input type="search" placeholder="Search conversations..." className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"/>
+
+      </div>
+
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
         {conversations && conversations?.length > 0 ? (
           conversations?.map((conv) => (
             <div
-              key={conv.id}
-              onClick={() => onSelect(conv)}
-              className={`flex items-center p-3 border-b border-gray-100 cursor-pointer transition-colors ${
-                selectedConversation?.id === conv.id
-                  ? "bg-primary/10 border-l-4 border-l-teal-500"
+              key={conv._id}
+              onClick={() => handleSelectConversation(conv)}
+              // onClick={() => setSelectedConversationId(conv._id)}
+              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${selectedConversation?._id === conv._id
+                  ? "bg-teal-100/20"
                   : "hover:bg-gray-50"
-              }`}
+                }`}
             >
               {/* Avatar */}
               <div className="relative">
@@ -37,16 +56,16 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
                   {conv?.name?.charAt(0).toUpperCase()}
                 </div>
 
-                {conv?.unreadCount > 0 && (
+                {conv?.unread_count > 0 && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                    {conv?.unreadCount}
+                    {conv?.unread_count}
                   </div>
                 )}
               </div>
 
               {/* Info */}
               <div className="ml-3 flex-1 min-w-0">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between">
                   <p className="text-sm font-medium text-gray-900 truncat flex flex-col">
                     {conv?.name}
 
@@ -61,7 +80,7 @@ const SidebarChat = ({ conversations, selectedConversation, onSelect }) => {
                 </div>
 
                 <p className="text-sm text-gray-500 truncate mt-1">
-                  {conv.lastMessage?.text || "No messages yet"}
+                  {conv.last_message?.text || "No messages yet"}
                 </p>
               </div>
             </div>

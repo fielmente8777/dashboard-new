@@ -42,6 +42,7 @@ const WhatsAppBusiness = () => {
   const fetchAccountDetails = useCallback(async () => {
     try {
       const response = await getWhatsappAccountDetails();
+      console.log(response);
       setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);
@@ -59,7 +60,7 @@ const WhatsAppBusiness = () => {
     }
   }, [integrationStatus]);
 
-  if (isLoadingIntegrationStatus && !accountDetails) {
+  if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
   }
 
@@ -187,6 +188,10 @@ const PhoneNumberCard = ({ phoneNumber }) => {
           <FaWhatsapp className="w-4 h-4 text-green-600" />
           <h3 className="text-sm font-semibold text-gray-900">Phone Number</h3>
         </div>
+
+        <span className="text-sm">
+          Quality Rating: <span className="bg-green-300 px-3 font-medium text-sm py-1 rounded-2xl">{phoneNumber.qualityRating==="GREEN"?"Green":phoneNumber.qualityRating}</span>
+        </span>
 
         <span
           className={`text-xs font-medium px-2 py-0.5 rounded-full ${messageStatusColor}`}
