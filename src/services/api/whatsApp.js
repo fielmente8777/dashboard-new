@@ -1,20 +1,23 @@
 import { NEW_BASE_URL } from "../../data/constant";
 
 export const sendWhatsAppMessage = async (payload) => {
+  const isFormData = payload instanceof FormData;
+
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/messages/send`,
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
-      body: payload,
-    },
+      body: isFormData ? payload : JSON.stringify(payload),
+    }
   );
 
-  const data = await response.json();
-  return data;
+  return await response.json();
 };
+
 
 export const getWhatsappConversation = async () => {
   const response = await fetch(

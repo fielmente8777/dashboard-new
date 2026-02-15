@@ -26,64 +26,117 @@ const ChatArea = () => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
   }, [messageList]);
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!selectedConversation) return;
 
-    const message = {
-      text: messageValue,
-      sender: "me",
-      createdAt: new Date(),
-    };
-
-    setMessageList((prev) => [...prev, message])
-
     try {
+      // =============================
+      // 🚀 TEMPLATE SELECTED
+      // =============================
+      if (selectedTemplate) {
+
+        const templateParams =
+          selectedTemplate.components?.[0]?.example?.body_text?.[0] || [];
+
+        const templateText =
+          selectedTemplate.components?.find(c => c.type === "BODY")?.text || "";
+
+        // Render text instantly
+        let renderedBody = templateText;
+
+        templateParams.forEach((param, index) => {
+          renderedBody = renderedBody.replace(`{{${index + 1}}}`, param);
+        });
+
+        const templatePayload = {
+          phone: selectedConversation.phone,
+          templateName: selectedTemplate.name,
+          templateLanguage: selectedTemplate.language || "en",
+          templateParams: templateParams
+        };
+
+        console.log("tempalte payload", templatePayload);
+        // Optimistic message matches DB structure
+        const optimisticMessage = {
+          _id: `temp-${Date.now()}`, // temporary id
+          conversationId: selectedConversation._id,
+          from: "me",
+          to: selectedConversation.phone,
+          sender: "me",
+          direction: "outbound",
+          messageType: "template",
+          body: renderedBody,
+          template: {
+            name: selectedTemplate.name,
+            language: selectedTemplate.language || "en",
+            parameters: templateParams
+          },
+          status: "pending",
+          timestamp: new Date(),
+          createdAt: new Date()
+        };
+
+        // Push instantly to UI (optimistic update)
+        setMessageList(prev => [
+          ...prev,optimisticMessage ]);
+
+        await sendWhatsAppMessage(templatePayload);
+
+        setSelectedTemplate(null);
+        setTemplateClick(false);
+        return;
+      }
+
+      // =============================
+      // 🚀 NORMAL MESSAGE
+      // =============================
       const formData = new FormData();
-      formData.append("phone", selectedConversation?.phone);
-      console.log(messageValue, file);
+      formData.append("phone", selectedConversation.phone);
 
       if (messageValue) {
         formData.append("text", messageValue);
       }
 
       if (file) {
-        formData.append("file", file); // 👈 KEY LINE
+        formData.append("file", file);
       }
 
+      // Optimistic UI
+      setMessageList(prev => [
+        ...prev,
+        {
+          sender: "me",
+          type: "text",
+          text: messageValue,
+          createdAt: new Date()
+        }
+      ]);
 
-      setMessageValue("")
-      // api will take time so before that we can empty msg field
-      const response = await sendWhatsAppMessage(formData);
-      // if (!response.succes) {
-      //   loadMessages(selectedConversation?._id);
-      // }
+      setMessageValue("");
 
-      console.log(response);
+      await sendWhatsAppMessage(formData);
+
     } catch (error) {
       console.error(error);
     }
   };
+
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
 
-      console.log("Server response ", serverResponse);
+      // console.log("Server response ", serverResponse);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
       ) {
         const { data } = serverResponse;
+        // console.log(data);
         const fromPhone = normalizePhone(data.from);
-        if(normalizePhone(selectedConversation.phone)!==fromPhone) return;
-        const message = {
-          text: data.text,
-          ...(data?.image && { image: data?.image }),
-          sender: "contact",
-          createdAt: new Date(),
-        };
+        if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
+        const message = { ...data };
         setMessageList((prev) => [...prev, message])
       }
     });
@@ -93,22 +146,22 @@ const ChatArea = () => {
 
 
   const loadMessages = async (conversationId) => {
-      setLoadingMessages(true);
-      try {
-        const response = await getWhatsappConversationMessages(conversationId);
-        // setMessageList(response?.result?.messages)
+    setLoadingMessages(true);
+    try {
+      const response = await getWhatsappConversationMessages(conversationId);
+      // setMessageList(response?.result?.messages)
 
-        if (response?.success && response?.responseStatusCode === 200) {
-          setMessageList(response?.result?.messages)
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoadingMessages(false);
+      if (response?.success && response?.responseStatusCode === 200) {
+        setMessageList(response?.result?.messages)
       }
-    };
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
 
-    
+
   useEffect(() => {
     loadMessages(selectedConversation?._id);
   }, [selectedConversation?._id]);
@@ -129,12 +182,13 @@ const ChatArea = () => {
   }, [])
 
 
-  const handleTemplate=(value)=>{
+  const handleTemplate = (value) => {
     setSelectedTemplate(null);
     setTemplateClick(value);
   }
 
-  console.log("selected cnvo",selectedConversation);
+
+  // console.log("selected cnvo", selectedConversation);
 
   return (
     <div className="flex-1 flex flex-col ">
@@ -177,16 +231,27 @@ const ChatArea = () => {
                         }`}
                     >
                       {/* TEXT */}
-                      {message.text && (
+                      {message.messageType === "text" && message.body && (
                         <p className="text-sm whitespace-pre-wrap">
-                          {message.text}
+                          {message.body}
                         </p>
+                      )}
+                      {message.messageType === "template" && message.template.name && (
+                        <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
+                          <p className="text-xs text-gray-500 mb-1 capitalize">
+                            {message.template?.name}
+                          </p>
+
+                          <p className="text-sm">
+                            {message.body ? message.body : <span className="text-xs text-zinc-400">No text defined</span>}
+                          </p>
+                        </div>
                       )}
 
                       {/* IMAGE */}
-                      {message.image?.id && (
+                      {message.messageType &&message.media?.id && (
                         <img
-                          src={`${NEW_BASE_URL}/api/v1/whatsapp/media/${message.image.id}?ndid=${localStorage.getItem("ndid")}`}
+                          src={`${NEW_BASE_URL}/api/v1/whatsapp/media/${message.media.id}?ndid=${localStorage.getItem("ndid")}`}
                           alt="WhatsApp"
                           className="mt-2 rounded-lg w-full"
                         />
@@ -230,7 +295,7 @@ const ChatArea = () => {
           {!templateClick ? <span onClick={() => handleTemplate(true)} className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500">
             <MdChat className="" /> Templates
           </span> :
-            <span onClick={() =>handleTemplate(false) } className=" cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500">
+            <span onClick={() => handleTemplate(false)} className=" cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500">
               Close Templates <MdClose /></span>}
         </div>
 

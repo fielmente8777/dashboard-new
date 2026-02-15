@@ -143,7 +143,7 @@ const Fallback = () => {
 
       {/* Heading */}
       <h2 className="text-2xl font-semibold text-gray-700 mb-2">
-        Welcome to WhatsApp
+        Welcome to Eaz-WhatsApp
       </h2>
 
       {/* Subtext */}
