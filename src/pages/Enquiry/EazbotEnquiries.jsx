@@ -250,6 +250,8 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                   {allLeads?.length > 0 ? (
                           <tbody>
                             {allLeads.map((enquery, index) => {
+                              if (!enquery.Contact || enquery.Contact === "undefined")
+                                return null;
                               return (
                                 <tr
                                   key={index}

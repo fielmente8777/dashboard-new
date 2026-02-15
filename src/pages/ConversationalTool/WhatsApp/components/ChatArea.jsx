@@ -79,7 +79,7 @@ const ChatArea = () => {
 
         // Push instantly to UI (optimistic update)
         setMessageList(prev => [
-          ...prev,optimisticMessage ]);
+          ...prev, optimisticMessage]);
 
         await sendWhatsAppMessage(templatePayload);
 
@@ -102,16 +102,28 @@ const ChatArea = () => {
         formData.append("file", file);
       }
 
-      // Optimistic UI
-      setMessageList(prev => [
-        ...prev,
-        {
-          sender: "me",
-          type: "text",
-          text: messageValue,
-          createdAt: new Date()
-        }
-      ]);
+      // Build optimistic message
+      const optimisticMessage = {
+        _id: `temp-${Date.now()}`,
+        conversationId: selectedConversation._id,
+        from: "me",
+        to: selectedConversation.phone,
+        sender: "me",
+        direction: "outbound",
+        messageType: file ? "image" : "text",
+        body: file ? null : messageValue,
+        media: file
+          ? {
+            url: URL.createObjectURL(file), // 👈 show preview instantly
+            mimeType: file.type,
+          }
+          : undefined,
+        status: "pending",
+        timestamp: new Date(),
+        createdAt: new Date()
+      };
+      // Push optimistic message
+      setMessageList(prev => [...prev, optimisticMessage]);
 
       setMessageValue("");
 
@@ -249,7 +261,7 @@ const ChatArea = () => {
                       )}
 
                       {/* IMAGE */}
-                      {message.messageType &&message.media?.id && (
+                      {message.messageType && message.media?.id && (
                         <img
                           src={`${NEW_BASE_URL}/api/v1/whatsapp/media/${message.media.id}?ndid=${localStorage.getItem("ndid")}`}
                           alt="WhatsApp"
@@ -376,123 +388,3 @@ const ChatArea = () => {
 };
 
 export default ChatArea;
-
-// import { useEffect, useRef, useState } from "react";
-// import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
-// import { NEW_BASE_URL } from "../../../../data/constant";
-
-// const ChatArea = ({ selectedContact, messages, onSubmit, loadingMessage }) => {
-//   const [messageValue, setMessageValue] = useState("");
-//   const bottomRef = useRef(null);
-
-//   useEffect(() => {
-//     bottomRef.current?.scrollIntoView();
-//   }, [messages]);
-
-//   const handleSendMessage = (e) => {
-//     e.preventDefault();
-//     if (!messageValue.trim()) return;
-
-//     onSubmit({
-//       text: messageValue,
-//       sender: "me",
-//       createdAt: new Date(),
-//     });
-
-//     setMessageValue("");
-//   };
-
-//   return (
-//     <div className="flex-1 flex flex-col bg-gray-50">
-//       {/* Header */}
-//       <div className="bg-teal-600 text-white px-6 py-4">
-//         <h2 className="text-lg font-semibold">{selectedContact?.name}</h2>
-//       </div>
-
-//       {/* Messages */}
-
-//       <div className="flex-1 p-6 overflow-y-auto scrollbar-hidden">
-//         {loadingMessage ? (
-//           <div className="flex-1 p-6 space-y-4 overflow-hidden">
-//             <MessageSkeleton align="left" />
-//             <MessageSkeleton align="right" />
-//             <MessageSkeleton align="left" />
-//             <MessageSkeleton align="right" />
-//             <MessageSkeleton align="left" />
-//           </div>
-//         ) : (
-//           <div>
-//             {messages?.length > 0 ? (
-//               messages?.map((message, index) => {
-//                 const isMe = message.sender === "me";
-//                 // const image = message.image;
-
-//                 return (
-//                   <div
-//                     key={index}
-//                     className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2`}
-//                   >
-//                     <div
-//                       className={`max-w-xs rounded-lg px-2 py-1 ${
-//                         !isMe
-//                           ? "bg-teal-600 border text-white"
-//                           : "bg-white border"
-//                       }`}
-//                     >
-//                       {/* ✅ TEXT MESSAGE */}
-//                       {message.text && (
-//                         <p className="text-sm whitespace-pre-wrap">
-//                           {message.text}
-//                         </p>
-//                       )}
-
-//                       {/* ✅ IMAGE MESSAGE */}
-//                       {message.image?.url && (
-//                         <div className="w-full">
-//                           <img
-//                             src={`${NEW_BASE_URL}/api/v1/whatsapp/media/${message.image.id}?ndid=${localStorage.getItem("ndid")}`}
-//                             alt="WhatsApp Image"
-//                             className="mt-2 rounded-lg max-w-xs w-full h-full"
-//                           />
-//                         </div>
-//                       )}
-
-//                       {/* Timestamp */}
-//                       <div className="text-[10px] text-white text-right mt-1">
-//                         {new Date(message.createdAt).toLocaleTimeString([], {
-//                           hour: "2-digit",
-//                           minute: "2-digit",
-//                         })}
-//                       </div>
-//                     </div>
-//                   </div>
-//                 );
-//               })
-//             ) : (
-//               <p className="text-center text-gray-400">No conversation yet</p>
-//             )}
-//             <div ref={bottomRef} />
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Input */}
-//       <form onSubmit={handleSendMessage} className="bg-white border-t p-4 flex">
-//         <input
-//           value={messageValue}
-//           onChange={(e) => setMessageValue(e.target.value)}
-//           placeholder="Type a message..."
-//           className="flex-1 border rounded-lg px-4 py-2 mr-4"
-//         />
-//         <button
-//           type="submit"
-//           className="bg-teal-600 text-white px-6 py-2 rounded-lg"
-//         >
-//           Send
-//         </button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default ChatArea;

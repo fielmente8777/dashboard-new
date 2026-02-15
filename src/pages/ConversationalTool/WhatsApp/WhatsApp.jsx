@@ -1,26 +1,28 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import WebSocketClient from "../../../config/websocketClient";
 import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
-import normalizePhone from "../../../utils/normalizePhone";
 
 import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
 import {
   getWhatsappConversation,
-  getWhatsappConversationMessages,
-  sendWhatsAppMessage,
 } from "../../../services/api/whatsApp";
 import ChatArea from "./components/ChatArea";
 import SidebarChat from "./components/SidebarChat";
 import ProfilePanel from "./components/ProfilePanel";
 import DataContext from "../../../context/DataContext";
+import { connectWhatsapp } from "../../../services/api/Integration";
 
 const WhatsApp = () => {
   const wsRef = useRef(null);
   const {
-      conversations, setConversations, selectedConversation, setSelectedConversation
-    } = useContext(DataContext);
+    integrationStatus,
+    checkIntegrationStatus, setConversations, selectedConversation
+  } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
-  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  useEffect(() => {
+    checkIntegrationStatus();
+  }, []);
 
   // 🔹 Fetch contacts → build conversations
   const getWhatsappConversations = async () => {
@@ -51,19 +53,6 @@ const WhatsApp = () => {
       setLoading(false);
     }
   };
-  // 🔹 Sidebar click
-  const handleSelectConversation = (conversation) => {
-    setSelectedConversation(conversation);
-    // setSelectedConversation(conversation);
-
-    // clear unread
-    setConversations((prev) =>
-      prev.map((c) =>
-        c.id === conversation.id ? { ...c, unreadCount: 0 } : c,
-      ),
-    );
-  };
-
 
   // 🔹 WebSocket incoming messages
   useEffect(() => {
@@ -95,20 +84,83 @@ const WhatsApp = () => {
     getWhatsappConversations();
   }, []);
 
+  const handleWhatsappConnect = async () => {
+      try {
+        const response = await connectWhatsapp();
+  
+        if (response?.success && response?.responseStatusCode) {
+          window.open(response?.result?.docs?.signupUrl, "_blank");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+
+
+    console.log(integrationStatus);
   if (loading) return <WhatesAppChatSkeleton />;
 
-  // console.log(selectedConversation);
   return (
     <div className="h-[calc(100vh-6.2vh)] flex bg-gray-50">
-      <SidebarChat/>
+      {integrationStatus?.metaWhatsapp?
+        <>
 
-      {selectedConversation ? 
-      <ChatArea      /> :
-        <Fallback />
+          <SidebarChat />
+
+          {selectedConversation ?
+            <ChatArea /> :
+            <Fallback />
+          }
+          {selectedConversation && <ProfilePanel selectedContact={selectedConversation} />}
+        </>
+        :
+        <div className="flex w-full justify-center py-12">
+          <div>
+
+          <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
+            {/* Icon */}
+            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+              <svg
+                className="h-7 w-7 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M3 21l1.5-4.5A8.5 8.5 0 1 1 21 12a8.5 8.5 0 0 1-8.5 8.5H3z" />
+              </svg>
+            </div>
+
+            {/* Heading */}
+            <h2 className="text-2xl font-semibold text-gray-900">
+              Connect WhatsApp Business
+            </h2>
+
+            {/* Description */}
+            <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+              Connect your WhatsApp Business account to send messages, manage
+              conversations, automate notifications, and engage with customers
+              directly from your dashboard.
+            </p>
+
+            {/* CTA */}
+            <button
+              onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              <span>Connect WhatsApp Business</span>
+            </button>
+
+            {/* Helper text */}
+            <p className="mt-4 text-xs text-gray-400">
+              Secure Meta OAuth • Embedded signup • Official WhatsApp Cloud API
+            </p>
+          </div>
+          </div>
+
+        </div>
       }
-
-
-      {selectedConversation && <ProfilePanel selectedContact={selectedConversation} />}
     </div>
   );
 };

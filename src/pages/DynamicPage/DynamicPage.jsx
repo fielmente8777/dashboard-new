@@ -142,21 +142,22 @@ const DynamicPage = () => {
     ),
     
     [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
+        [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
+      <AdsLeadsUsingGoogleSheet />
+    ),
     [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
-    [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
     [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
 
 
-    [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/leads-management/eazbot-visitors`]: (
+    // [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: (
       <EazbotEnquiries />
     ),
     [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
-    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
-      <AdsLeadsUsingGoogleSheet />
-    ),
+
     // [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
     [`${BASE_PATH}/${hid}/leads-management/meta-analytics`]: (
       <AdLeadsAnalytics />
@@ -199,8 +200,8 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
 
     // whatsapp
-    [`${BASE_PATH}/${hid}/channel/whatsapp`]: <WhatsAppBusiness />,
-    [`${BASE_PATH}/${hid}/channel/whatsapp/template/create`]: (
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: <WhatsAppBusiness />,
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]: (
       <WhatsAppMessageTemplate />
     ),
 

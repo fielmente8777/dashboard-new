@@ -201,7 +201,7 @@ export default function WhatsAppMessageTemplate() {
   if (!integrationStatus?.metaWhatsapp) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="max-w-md w-full rounded-2xl bg-white p-8 shadow-lg border border-gray-100 text-center">
+        <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
           {/* Icon */}
           <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
             <svg

@@ -10,7 +10,7 @@ import { FaFileExcel, FaPlus } from 'react-icons/fa';
 import { createExportData } from '../../utils/exportLeadData';
 import jsonToCsvExport from "json-to-csv-export";
 import Swal from 'sweetalert2';
-const AllLeads = () => {
+const AllVisitors = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
@@ -251,8 +251,8 @@ const AllLeads = () => {
         {allLeads?.length > 0 ? (
           <tbody>
             {allLeads.map((enquery, index) => {
-              if (!enquery.Contact || enquery.Contact === "undefined")
-                return null;
+              // if (!enquery.Contact || enquery.Contact === "undefined")
+              //   return null;
               return (
                 <tr
                   key={index}
@@ -279,6 +279,16 @@ const AllLeads = () => {
                     {index + 1}
                   </td>
 
+                  {/* <td
+                                className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setReserveData(enquery);
+                                }}
+                              >
+                                Unreserved
+                              </td> */}
+
                   <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
                     {enquery?.Created_at
                       ? formatDateTime(enquery?.Created_at)
@@ -304,7 +314,15 @@ const AllLeads = () => {
                                   ? "Webform"
                                   : "Webform"}
                   </td>
+                  {/* <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                                <span title={enquery?.source_url || "Landing Page"}>
+                                  {(enquery?.source_url?.length ?? 0) > 60
+                                    ? `${enquery?.source_url.slice(0, 40)}...`
+                                    : enquery?.source_url || "Landing Page"}
+                                </span>
+                              </td> */}
                   <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
+                    {/* {enquery?.Name.slice(0, 15)} */}
                     {enquery?.Name?.substring(0, 15)}
                   </td>
                   <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
@@ -334,7 +352,9 @@ const AllLeads = () => {
                     </td>
                   )}
 
-                 
+                  {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
+                                {enquery?.Message}
+                              </td> */}
                   {!hotel?.Profile?.websiteType && (
                     <td className="py-3 px-2 text-[14px] text-[#575757]">
                       {enquery?.check_in
@@ -356,6 +376,10 @@ const AllLeads = () => {
                           ?.checkOut || "-"}
                     </td>
                   )}
+
+                  {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                                {enquery?.status}
+                              </td> */}
 
                   <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
                     <select
@@ -447,6 +471,18 @@ const AllLeads = () => {
                       </option>
                     </select>
                   </td>
+
+                  {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
+                                    <span
+                                      className="flex justify-center"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(enquery._id, enquery.Email);
+                                      }}
+                                    >
+                                      <MdDeleteOutline size={22} color="#df4545" />
+                                    </span>
+                                  </td> */}
                 </tr>
               );
             })}
@@ -477,4 +513,4 @@ const AllLeads = () => {
   )
 }
 
-export default AllLeads
+export default AllVisitors
