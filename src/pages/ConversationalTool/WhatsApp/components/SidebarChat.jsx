@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import DataContext from "../../../../context/DataContext";
+import { markMessageAsRead } from "../../../../services/api/whatsApp";
 
 const SidebarChat = () => {
   const getAvatarColor = (name) => {
@@ -23,10 +24,28 @@ const SidebarChat = () => {
     setSelectedConversation,
   } = useContext(DataContext);
 
-  console.log(conversations);
+  const handleSelectConversation = async (conv) => {
+    try {
+      setConversations((prevConversations) => {
+        return prevConversations.map((item) => {
+          if (item._id === conv._id) {
+            return {
+              ...item,
+              unread_count: 0,
+            };
+          }
+          return item;
+        });
+      });
 
-  const handleSelectConversation = (conv) => {
-    setSelectedConversation(conv);
+      setSelectedConversation(conv);
+
+      if (conv.unread_count > 0) {
+        await markMessageAsRead(conv._id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

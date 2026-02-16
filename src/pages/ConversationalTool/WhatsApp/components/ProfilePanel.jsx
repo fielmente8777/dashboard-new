@@ -69,7 +69,7 @@ const ProfilePanel = ({ selectedContact }) => {
             <span className="text-gray-600">Last Message</span>
             <span className="text-gray-900">{selectedContact?.last_message?.text}</span>
           </div>
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">WA Conversation</span>
             <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
           </div>
@@ -80,7 +80,7 @@ const ProfilePanel = ({ selectedContact }) => {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Incoming</span>
             <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Allowed":"Not Allowed"}</span>
-          </div>
+          </div> */}
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Opted In</span>
 

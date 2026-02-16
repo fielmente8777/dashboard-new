@@ -447,7 +447,7 @@ export default function WhatsAppMessageTemplate() {
         )}
       </div>
 
-      <div>Sample Template</div>
+      {/* <div>Sample Template</div> */}
 
       {/* CREATE MODAL */}
       {open && (

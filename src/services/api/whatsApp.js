@@ -14,12 +14,27 @@ export const sendWhatsAppMessage = async (payload) => {
         ...(isFormData ? {} : { "Content-Type": "application/json" }),
       },
       body: isFormData ? payload : JSON.stringify(payload),
-    }
+    },
   );
 
   return await response.json();
 };
 
+export const markMessageAsRead = async (conversationId) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${conversationId}/read`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  return await response.json();
+};
 
 export const getWhatsappConversation = async () => {
   const response = await fetch(
