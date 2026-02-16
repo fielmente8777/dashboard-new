@@ -9,6 +9,7 @@ import normalizePhone from "../../../../utils/normalizePhone";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
+  const textareaRef = useRef(null);
   const { conversations, setConversations, selectedConversation, setSelectedConversation } = useContext(DataContext);
 
   const [messageList, setMessageList] = useState([])
@@ -200,6 +201,21 @@ const ChatArea = () => {
   }
 
 
+   const handleChange = (e) => {
+    const el = textareaRef.current;
+    setMessageValue(e.target.value);
+
+    // Reset height to recalculate
+    el.style.height = "auto";
+
+    const lineHeight = 24; // adjust if needed
+    const maxRows = 8;
+    const maxHeight = lineHeight * maxRows;
+
+    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+  };
+
+
   // console.log("selected cnvo", selectedConversation);
 
   return (
@@ -207,7 +223,7 @@ const ChatArea = () => {
       {/* Header */}
       <div className="bg-white flex items-center px-6 h-16 shadow-sm">
         <div className="w-12 h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
-          {selectedConversation?.name.charAt(0).toUpperCase()}
+          {selectedConversation?.name?.charAt(0)?.toUpperCase()}
         </div>
         <div>
           <h3 className="text-lg font-semibold ">
@@ -346,11 +362,20 @@ const ChatArea = () => {
           />
 
           {/* Text Input */}
-          <input
+          {/* <textarea
             value={messageValue}
             onChange={(e) => setMessageValue(e.target.value)}
             placeholder="Type a message"
-            className="flex-1 bg-zinc-100 rounded-lg  px-4 py-2 focus:outline-none focus:border-teal-500"
+            rows={messageValue.length}
+            className="flex-1 bg-zinc-100 resize-none rounded-lg  px-4 py-2 focus:outline-none focus:border-teal-500"
+          /> */}
+          <textarea
+            ref={textareaRef}
+            value={messageValue}
+            onChange={handleChange}
+            placeholder="Type a message"
+            rows={1}
+            className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
           />
 
           {/* Send Button */}
