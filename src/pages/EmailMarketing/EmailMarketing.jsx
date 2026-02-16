@@ -575,7 +575,7 @@ function EmailMarketingManagement() {
   const fetchEmails = async () => {
     try {
       const response = await getEmails();
-      console.log(response);
+      // console.log(response);
     } catch (error) {
       console.error("Error fetching emails:", error);
     }

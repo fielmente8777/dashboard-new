@@ -78,7 +78,7 @@ const EazbotLeads = () => {
   const handleStatusChange = async (lead, status) => {
     try {
       const { data } = await UpdateLeadStatus(lead, status);
-      console.log("Handle lead status", data);
+      // console.log("Handle lead status", data);
 
       Swal.fire({
         icon: "success",

@@ -589,7 +589,7 @@ const Leads = () => {
     return () => window.removeEventListener("resize", updateBtnLength);
   }, [header]);
 
-  console.log(hotel);
+  // console.log(hotel);
 
   return (
     <div className="cardShadow">

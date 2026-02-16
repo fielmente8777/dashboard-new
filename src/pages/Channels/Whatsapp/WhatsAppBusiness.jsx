@@ -35,14 +35,14 @@ const WhatsAppBusiness = () => {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
   const fetchAccountDetails = useCallback(async () => {
     try {
       const response = await getWhatsappAccountDetails();
-      console.log(response);
+      // console.log(response);
       setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);

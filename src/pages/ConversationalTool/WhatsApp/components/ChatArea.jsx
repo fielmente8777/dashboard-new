@@ -64,7 +64,7 @@ const ChatArea = () => {
           templateParams: templateParams,
         };
 
-        console.log("tempalte payload", templatePayload);
+        // console.log("tempalte payload", templatePayload);
         // Optimistic message matches DB structure
         const optimisticMessage = {
           _id: `temp-${Date.now()}`, // temporary id
@@ -166,7 +166,7 @@ const ChatArea = () => {
         setMessageList(response?.result?.messages);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setLoadingMessages(false);
     }
@@ -183,7 +183,7 @@ const ChatArea = () => {
         setTemplates(response?.result?.docs?.data || []);
       }
     } catch (error) {
-      console.log("Error", error);
+      // console.log("Error", error);
     }
   };
 

@@ -96,7 +96,7 @@ const WhatsApp = () => {
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
-        console.log(data);
+        // console.log(data);
         const conversation = {
           id: data._id,
           phone: data.phone,
@@ -107,7 +107,7 @@ const WhatsApp = () => {
           updatedAt: new Date(),
         };
 
-        console.log(typeof localStorage.getItem("ndid"));
+        // console.log(typeof localStorage.getItem("ndid"));
 
         if (data?.ndid === localStorage.getItem("ndid")) {
           playNotification();
@@ -116,7 +116,7 @@ const WhatsApp = () => {
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
       ) {
-        console.log(data);
+        // console.log(data);
         // if (data?.ndid !== localStorage.getItem("ndid")) return;
         playNotification();
         setConversations((prev) =>
@@ -141,7 +141,7 @@ const WhatsApp = () => {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

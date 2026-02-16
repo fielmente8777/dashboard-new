@@ -194,7 +194,7 @@ export const DataProvider = ({ children }) => {
       setIs24HoursCompleted(isCompleted);
       setIntegrationStauts(data?.result?.docs);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsLoadingIntegrationStatus(false);
     }

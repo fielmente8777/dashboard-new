@@ -75,7 +75,7 @@ export default function WhatsAppMessageTemplate() {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -143,7 +143,7 @@ export default function WhatsAppMessageTemplate() {
 
       if (response?.error) {
         const metaError = response.error;
-        console.log(metaError);
+        // console.log(metaError);
 
         return Swal.fire({
           icon: "error",
@@ -164,10 +164,10 @@ export default function WhatsAppMessageTemplate() {
         fetchTemplates();
       }
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       const metaError = err?.response?.data?.error;
 
-      console.log(metaError);
+      // console.log(metaError);
 
       if (metaError) {
         Swal.fire({

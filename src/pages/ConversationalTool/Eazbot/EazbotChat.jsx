@@ -88,7 +88,7 @@ const EazbotChat = () => {
     }
   }, []);
 
-  console.log(isPhoneView);
+  // console.log(isPhoneView);
 
   return (
     <div className="h-[calc(100vh-8.2vh)] bg-gray-50 flex flex-col">

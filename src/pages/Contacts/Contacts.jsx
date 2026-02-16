@@ -19,7 +19,7 @@ const Contacts = () => {
       const token = localStorage.getItem("token");
       const res = await getContacts(token);
 
-      console.log(res);
+      // console.log(res);
       setContacts(res);
     } catch (error) {
       console.error("Error fetching contacts:", error);
@@ -65,7 +65,7 @@ const Contacts = () => {
         getContacts();
       }
     } catch (error) {
-      console.log("Error:", error);
+      // console.log("Error:", error);
     } finally {
       setLoading(false);
     }
