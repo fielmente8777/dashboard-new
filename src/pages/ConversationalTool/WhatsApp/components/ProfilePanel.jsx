@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
-import { formatDateByOnlyDay, formateDateInTimeIS } from "../../../../utils/formateData";
+import {
+  formatDateByOnlyDay,
+  formateDateInTimeIS,
+} from "../../../../utils/formateData";
 
 const ProfilePanel = ({ selectedContact }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -85,17 +88,15 @@ const ProfilePanel = ({ selectedContact }) => {
                 <input type="checkbox" class="sr-only peer" checked={selectedContact?.status === "ACTIVE"}/>
                 <div class="w-11 h-6 bg-gray-300 rounded-full peer 
                             peer-checked:bg-teal-500 
-                            transition-colors duration-300"></div>
-                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
+                            transition-colors duration-300"
+              ></div>
+              <div
+                class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
                             transition-transform duration-300 
-                            peer-checked:translate-x-5"></div>
-              </label>
-            </div>
-
-
-
-
-              
+                            peer-checked:translate-x-5"
+              ></div>
+            </label>
+          </div>
         </div>
       </div>
 

@@ -17,21 +17,26 @@ const SidebarChat = () => {
   };
 
   const {
-    conversations, setConversations, selectedConversation, setSelectedConversation
+    conversations,
+    setConversations,
+    selectedConversation,
+    setSelectedConversation,
   } = useContext(DataContext);
-
 
   console.log(conversations);
 
-  const handleSelectConversation=(conv)=>{
-    setSelectedConversation(conv)
-  }
+  const handleSelectConversation = (conv) => {
+    setSelectedConversation(conv);
+  };
 
   return (
     <div className="w-80  border-b border-l border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
-        <input type="search" placeholder="Search conversations..." className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"/>
-
+        <input
+          type="search"
+          placeholder="Search conversations..."
+          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
@@ -41,10 +46,11 @@ const SidebarChat = () => {
               key={conv._id}
               onClick={() => handleSelectConversation(conv)}
               // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${selectedConversation?._id === conv._id
+              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedConversation?._id === conv._id
                   ? "bg-teal-100/20"
                   : "hover:bg-gray-50"
-                }`}
+              }`}
             >
               {/* Avatar */}
               <div className="relative">

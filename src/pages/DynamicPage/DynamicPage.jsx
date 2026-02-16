@@ -87,6 +87,7 @@ import AllLeads from "../Enquiry/AllLeads";
 import GoogleAds from "../Enquiry/GoogleAds";
 import EazbotLeads from "../Enquiry/EazbotEnquiries";
 import WebformLeads from "../Enquiry/WebformLeads";
+import AllVisitors from "../Enquiry/AllVisitors";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -140,20 +141,17 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/leads-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
-    
+
     [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
-        [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
+    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
       <AdsLeadsUsingGoogleSheet />
     ),
     [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
     [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
     [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
 
-
     // [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: (
-      <EazbotEnquiries />
-    ),
+    [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: <AllVisitors />,
     [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
@@ -200,10 +198,11 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
 
     // whatsapp
-    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: <WhatsAppBusiness />,
-    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]: (
-      <WhatsAppMessageTemplate />
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: (
+      <WhatsAppBusiness />
     ),
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]:
+      <WhatsAppMessageTemplate />,
 
     // Marketplace services
     [`${BASE_PATH}/${hid}/custom-website`]: <Website />,
