@@ -1,23 +1,35 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
-import { NEW_BASE_URL, WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../../data/constant";
+import {
+  NEW_BASE_URL,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../../../data/constant";
 import DataContext from "../../../../context/DataContext";
-import { getWhatsappConversationMessages, getWhatsAppMessageTemplates, sendWhatsAppMessage } from "../../../../services/api/whatsApp";
+import {
+  getWhatsappConversationMessages,
+  getWhatsAppMessageTemplates,
+  sendWhatsAppMessage,
+} from "../../../../services/api/whatsApp";
 import { MdChat, MdClose } from "react-icons/md";
 import WebSocketClient from "../../../../config/websocketClient";
 import normalizePhone from "../../../../utils/normalizePhone";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
-  const { conversations, setConversations, selectedConversation, setSelectedConversation } = useContext(DataContext);
+  const {
+    conversations,
+    setConversations,
+    selectedConversation,
+    setSelectedConversation,
+  } = useContext(DataContext);
 
-  const [messageList, setMessageList] = useState([])
-  const [messageLoading, setLoadingMessages] = useState(true)
+  const [messageList, setMessageList] = useState([]);
+  const [messageLoading, setLoadingMessages] = useState(true);
   const [messageValue, setMessageValue] = useState("");
   const [file, setFile] = useState(null);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
-
 
   const [templateClick, setTemplateClick] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -35,12 +47,12 @@ const ChatArea = () => {
       // 🚀 TEMPLATE SELECTED
       // =============================
       if (selectedTemplate) {
-
         const templateParams =
           selectedTemplate.components?.[0]?.example?.body_text?.[0] || [];
 
         const templateText =
-          selectedTemplate.components?.find(c => c.type === "BODY")?.text || "";
+          selectedTemplate.components?.find((c) => c.type === "BODY")?.text ||
+          "";
 
         // Render text instantly
         let renderedBody = templateText;
@@ -53,7 +65,7 @@ const ChatArea = () => {
           phone: selectedConversation.phone,
           templateName: selectedTemplate.name,
           templateLanguage: selectedTemplate.language || "en",
-          templateParams: templateParams
+          templateParams: templateParams,
         };
 
         console.log("tempalte payload", templatePayload);
@@ -70,16 +82,15 @@ const ChatArea = () => {
           template: {
             name: selectedTemplate.name,
             language: selectedTemplate.language || "en",
-            parameters: templateParams
+            parameters: templateParams,
           },
           status: "pending",
           timestamp: new Date(),
-          createdAt: new Date()
+          createdAt: new Date(),
         };
 
         // Push instantly to UI (optimistic update)
-        setMessageList(prev => [
-          ...prev, optimisticMessage]);
+        setMessageList((prev) => [...prev, optimisticMessage]);
 
         await sendWhatsAppMessage(templatePayload);
 
@@ -114,48 +125,42 @@ const ChatArea = () => {
         body: file ? null : messageValue,
         media: file
           ? {
-            url: URL.createObjectURL(file), // 👈 show preview instantly
-            mimeType: file.type,
-          }
+              url: URL.createObjectURL(file), // 👈 show preview instantly
+              mimeType: file.type,
+            }
           : undefined,
         status: "pending",
         timestamp: new Date(),
-        createdAt: new Date()
+        createdAt: new Date(),
       };
       // Push optimistic message
-      setMessageList(prev => [...prev, optimisticMessage]);
+      setMessageList((prev) => [...prev, optimisticMessage]);
 
       setMessageValue("");
 
       await sendWhatsAppMessage(formData);
-
     } catch (error) {
       console.error(error);
     }
   };
 
-
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-
       // console.log("Server response ", serverResponse);
-      if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
-      ) {
+      if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
         const { data } = serverResponse;
         // console.log(data);
         const fromPhone = normalizePhone(data.from);
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
         const message = { ...data };
-        setMessageList((prev) => [...prev, message])
+        setMessageList((prev) => [...prev, message]);
       }
     });
 
     return () => wsRef.current?.close();
   }, [selectedConversation]);
-
 
   const loadMessages = async (conversationId) => {
     setLoadingMessages(true);
@@ -164,7 +169,7 @@ const ChatArea = () => {
       // setMessageList(response?.result?.messages)
 
       if (response?.success && response?.responseStatusCode === 200) {
-        setMessageList(response?.result?.messages)
+        setMessageList(response?.result?.messages);
       }
     } catch (error) {
       console.log(error);
@@ -172,7 +177,6 @@ const ChatArea = () => {
       setLoadingMessages(false);
     }
   };
-
 
   useEffect(() => {
     loadMessages(selectedConversation?._id);
@@ -187,18 +191,16 @@ const ChatArea = () => {
     } catch (error) {
       console.log("Error", error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchTemplate()
-  }, [])
-
+    fetchTemplate();
+  }, []);
 
   const handleTemplate = (value) => {
     setSelectedTemplate(null);
     setTemplateClick(value);
-  }
-
+  };
 
   // console.log("selected cnvo", selectedConversation);
 
@@ -218,10 +220,13 @@ const ChatArea = () => {
       </div>
 
       {/* Messages */}
-      <div style={{
-        backgroundImage:
-          "url('https://www.transparenttextures.com/patterns/cubes.png')",
-      }} className="flex-1 p-6 overflow-y-auto scrollbar-hidden ">
+      <div
+        style={{
+          backgroundImage:
+            "url('https://www.transparenttextures.com/patterns/cubes.png')",
+        }}
+        className="flex-1 p-6 overflow-y-auto scrollbar-hidden "
+      >
         {messageLoading ? (
           <div className="space-y-4">
             <MessageSkeleton align="left" />
@@ -239,8 +244,11 @@ const ChatArea = () => {
                     className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2`}
                   >
                     <div
-                      className={`max-w-xs  px-3 py-2 ${isMe ? "rounded-tl-xl rounded-br-xl rounded-bl-lg bg-teal-50/90 border !border-green-600 " : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
-                        }`}
+                      className={`max-w-xs  px-3 py-2 ${
+                        isMe
+                          ? "rounded-tl-xl rounded-br-xl rounded-bl-lg bg-teal-50/90 border !border-green-600 "
+                          : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
+                      }`}
                     >
                       {/* TEXT */}
                       {message.messageType === "text" && message.body && (
@@ -248,17 +256,24 @@ const ChatArea = () => {
                           {message.body}
                         </p>
                       )}
-                      {message.messageType === "template" && message.template.name && (
-                        <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
-                          <p className="text-xs text-gray-500 mb-1 capitalize">
-                            {message.template?.name}
-                          </p>
+                      {message.messageType === "template" &&
+                        message.template.name && (
+                          <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
+                            <p className="text-xs text-gray-500 mb-1 capitalize">
+                              {message.template?.name}
+                            </p>
 
-                          <p className="text-sm">
-                            {message.body ? message.body : <span className="text-xs text-zinc-400">No text defined</span>}
-                          </p>
-                        </div>
-                      )}
+                            <p className="text-sm">
+                              {message.body ? (
+                                message.body
+                              ) : (
+                                <span className="text-xs text-zinc-400">
+                                  No text defined
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        )}
 
                       {/* IMAGE */}
                       {message.messageType && message.media?.id && (
@@ -292,27 +307,43 @@ const ChatArea = () => {
         onSubmit={handleSendMessage}
         className="bg-white border-t flex flex-col px-6 py-5"
       >
-        {templateClick &&
+        {templateClick && (
           <div className=" mb-2 grid grid-cols-2 lg:grid-cols-4 max-h-50  gap-2 overflow-auto scrollbar-hidden">
             {templates.map((template) => (
-              <div onClick={() => setSelectedTemplate(template)} key={template?.id} className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border !border-green-600 " : "border border-gray-300 opacity-60"} `}>
-                <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">{template?.name}</p>
-                <p className="text-sm px-2 pb-2 ">{template?.components[0]?.text}</p>
-
+              <div
+                onClick={() => setSelectedTemplate(template)}
+                key={template?.id}
+                className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border !border-green-600 " : "border border-gray-300 opacity-60"} `}
+              >
+                <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
+                  {template?.name}
+                </p>
+                <p className="text-sm px-2 pb-2 ">
+                  {template?.components[0]?.text}
+                </p>
               </div>
             ))}
-
-          </div>}
+          </div>
+        )}
         <div className="flex gap-2">
-          {!templateClick ? <span onClick={() => handleTemplate(true)} className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500">
-            <MdChat className="" /> Templates
-          </span> :
-            <span onClick={() => handleTemplate(false)} className=" cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500">
-              Close Templates <MdClose /></span>}
+          {!templateClick ? (
+            <span
+              onClick={() => handleTemplate(true)}
+              className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+            >
+              <MdChat className="" /> Templates
+            </span>
+          ) : (
+            <span
+              onClick={() => handleTemplate(false)}
+              className=" cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+            >
+              Close Templates <MdClose />
+            </span>
+          )}
         </div>
 
         <div className="bg-white py-3 flex w-full items-center gap-3">
-
           {/* Attachment */}
           <button
             type="button"
@@ -381,7 +412,6 @@ const ChatArea = () => {
             </svg>
           </button>
         </div>
-
       </form>
     </div>
   );

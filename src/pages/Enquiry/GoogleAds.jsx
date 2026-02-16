@@ -1,35 +1,55 @@
-
-
-import { useEffect, useState } from 'react'
-import { formatDateTime } from '../../services/formateDate';
-import { getLeads, UpdateLeadStatus } from '../../services/api/leads.api';
-import LeadPopup, { formatPhoneNumber } from '../../components/Popup/LeadPopup';
-import { useSelector } from 'react-redux';
-import { extractBookingInfo } from './Leads';
-import { Search } from '../../icons/icon';
-import DatePicker from 'react-datepicker';
-import { FaFileExcel, FaPlus } from 'react-icons/fa';
-import Swal from 'sweetalert2';
+import { useEffect, useState } from "react";
+import { formatDateTime } from "../../services/formateDate";
+import { getLeads, UpdateLeadStatus } from "../../services/api/leads.api";
+import LeadPopup, { formatPhoneNumber } from "../../components/Popup/LeadPopup";
+import { useSelector } from "react-redux";
+import { extractBookingInfo } from "./Leads";
+import { Search } from "../../icons/icon";
+import DatePicker from "react-datepicker";
+import { FaFileExcel, FaPlus } from "react-icons/fa";
+import Swal from "sweetalert2";
+import usePagination from "../../hooks/usePagination";
+import Pagination from "../../components/Pagination";
+import TablePaginationInfo from "../../components/TablePaginationInfo";
+import useDebounce from "../../hooks/useDebounce";
 
 const GoogleAds = () => {
   const { user: hotel } = useSelector((state) => state.userProfile);
-const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [limit, setLimit] = useState(10);
-  const [page, setPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const {
+    page,
+    limit,
+    total,
+    totalPages,
+    setTotal,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeLimit,
+  } = usePagination({ initialLimit: 50 });
   const fetchAllLeads = async () => {
+    setLoading(true);
     try {
-      const query = `page=${page}&limit=${limit}&created_from=google_ads`
+      const query = `page=${page}&limit=${limit}&created_from=google_ads&search=${debouncedSearch}`;
       const response = await getLeads(query);
-      setAllLeads(response.leads);
-    }
-    catch (error) {
+      if (response?.success && response?.responseStatusCode === 200) {
+        setAllLeads(response?.result?.docs || []);
+        setTotal(response?.result?.pagination?.total || 0);
+      }
+    } catch (error) {
       console.error("Error fetching all leads:", error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const setDateRange = (dates) => {
     const [start, end] = dates;
@@ -56,7 +76,6 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const handleStatusChange = async (lead, status) => {
     try {
-
       const { data } = await UpdateLeadStatus(lead, status);
       console.log("Handle lead status", data);
 
@@ -69,7 +88,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
       }).then(() => {
         if (data.Status) {
           // handleTabClick(active);
-          fetchAllLeads()
+          fetchAllLeads();
         }
       });
     } catch (error) {
@@ -79,13 +98,13 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
         text: "Error updating Query Status",
       });
     }
-  }
+  };
 
   useEffect(() => {
     fetchAllLeads();
-  }, [limit, page]);
+  }, [limit, page, debouncedSearch]);
   return (
-    <div className='w-full'>
+    <div className="w-full">
       <div className="flex lg:flex-row flex-col justify-between lg:items-center my-2">
         <div className="flex lg:flex-row flex-col justify-between lg:items-center gap-2 max-w-3xl w-full px-4">
           <div className="relative w-full">
@@ -114,8 +133,8 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                 }}
                 popperClassName="!z-50"
                 placeholderText="Select date range"
-              // isClearable
-              // minDate={new Date()}
+                // isClearable
+                // minDate={new Date()}
               />
             </div>
 
@@ -152,18 +171,6 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
         </div>
 
         <div className="py-2 lg:px-4 flex flex-col sm:flex-row sm:items-center gap-4">
-          <select
-            id="itemsPerPage"
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="border  sm:w-fit border-gray-300 rounded-md px-1 lg:px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
           <div
             // onClick={handleAddRow}
             className="bg-green-500 whitespace-nowrap w-fit text-white border py-1 px-3 cursor-pointer rounded flex items-center gap-2 "
@@ -173,6 +180,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
           </div>
         </div>
       </div>
+
       <table className="w-full border-collapse">
         <thead className="sticky top-0 bg-[#0a3a75] w-full">
           <tr className="border-b text-start text-white">
@@ -235,16 +243,28 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                     </th> */}
           </tr>
         </thead>
-        {allLeads?.length > 0 ? (
-          <tbody>
-            {allLeads.map((enquery, index) => {
+
+        <tbody>
+          {loading && (
+            <tr>
+              <td colSpan={12} className="py-6 text-center">
+                <div className="flex justify-center items-center gap-2 text-gray-500">
+                  Loading leads...
+                </div>
+              </td>
+            </tr>
+          )}
+          {!loading &&
+            allLeads?.length > 0 &&
+            allLeads.map((enquery, index) => {
               return (
                 <tr
                   key={index}
-                  className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${enquery?.status === "Open"
-                    ? " text-[#575757]"
-                    : "text-[#575757]"
-                    }`}
+                  className={`py-1 border-b odd:bg-gray-50 even:bg-gray-100 border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer ${
+                    enquery?.status === "Open"
+                      ? " text-[#575757]"
+                      : "text-[#575757]"
+                  }`}
                   onClick={() => {
                     setSelectedLead(enquery);
                     setIsPopupOpen(true);
@@ -263,8 +283,6 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                   <td className="py-3 px-2 text-[14px] capitalize whitespace-nowrap">
                     {index + 1}
                   </td>
-
-
 
                   <td className="py-3 px-2 text-[14px] whitespace-nowrap capitalize">
                     {enquery?.Created_at
@@ -287,9 +305,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                     {formatPhoneNumber(enquery?.Contact)}
                   </td>
                   <td className="py-3 px-2 text-[14px] text-[#575757]">
-                    {enquery?.Email === "undefined"
-                      ? "-"
-                      : enquery?.Email}
+                    {enquery?.Email === "undefined" ? "-" : enquery?.Email}
                   </td>
 
                   {!hotel?.Profile?.websiteType && (
@@ -299,14 +315,11 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                         : enquery?.numberOfGuest
                           ? enquery?.numberOfGuest
                           : isNaN(
-                            extractBookingInfo(enquery?.Message)
-                              ?.guests,
-                          ) ||
-                            extractBookingInfo(enquery?.Message)
-                              ?.guests === 0
+                                extractBookingInfo(enquery?.Message)?.guests,
+                              ) ||
+                              extractBookingInfo(enquery?.Message)?.guests === 0
                             ? "-"
-                            : extractBookingInfo(enquery?.Message)
-                              ?.guests}
+                            : extractBookingInfo(enquery?.Message)?.guests}
                     </td>
                   )}
 
@@ -319,8 +332,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                         ? enquery?.check_in === "undefined"
                           ? "-"
                           : enquery.check_in
-                        : extractBookingInfo(enquery?.Message)
-                          ?.checkIn || "-"}
+                        : extractBookingInfo(enquery?.Message)?.checkIn || "-"}
                     </td>
                   )}
 
@@ -330,8 +342,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                         ? enquery?.check_out === "undefined"
                           ? "-"
                           : enquery.check_out
-                        : extractBookingInfo(enquery?.Message)
-                          ?.checkOut || "-"}
+                        : extractBookingInfo(enquery?.Message)?.checkOut || "-"}
                     </td>
                   )}
 
@@ -349,16 +360,10 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                         handleStatusChange(enquery, e.target.value);
                       }}
                     >
-                      <option
-                        disabled
-                        className="text-gray-500 bg-white"
-                      >
+                      <option disabled className="text-gray-500 bg-white">
                         Select Status
                       </option>
-                      <option
-                        value="Converted"
-                        className="bg-white text-black"
-                      >
+                      <option value="Converted" className="bg-white text-black">
                         Converted
                       </option>
                       <option
@@ -367,10 +372,7 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                       >
                         Contacted
                       </option>
-                      <option
-                        value="Open"
-                        className="bg-white  text-black"
-                      >
+                      <option value="Open" className="bg-white  text-black">
                         Open
                       </option>
 
@@ -414,17 +416,11 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                         Duplicate
                       </option>
 
-                      <option
-                        value="Reserved"
-                        className="bg-white  text-black"
-                      >
+                      <option value="Reserved" className="bg-white  text-black">
                         Reserved
                       </option>
 
-                      <option
-                        value="Hot"
-                        className="bg-white  text-black"
-                      >
+                      <option value="Hot" className="bg-white  text-black">
                         Hot
                       </option>
                     </select>
@@ -444,31 +440,47 @@ const [isPopupOpen, setIsPopupOpen] = useState(false);
                 </tr>
               );
             })}
-          </tbody>
-        ) : (
-          <tbody>
-            <tr className="bg-white text-gray-600 text-center border">
-              <td colSpan={12} className="py-2">
-                Data not found!
+
+          {!loading && allLeads?.length === 0 && (
+            <tr>
+              <td colSpan={12} className="py-6 text-center text-gray-500">
+                No Leads Found
               </td>
             </tr>
-          </tbody>
-        )}
+          )}
+        </tbody>
       </table>
 
-       <LeadPopup
-                    isOpen={isPopupOpen}
-                    onClose={() => setIsPopupOpen(false)}
-                    lead={selectedLead}
-                    fetchEnquires={fetchAllLeads}
-                    // handleTabClick={""}
-                    // activeIndex={active}
-                    show={!hotel?.Profile?.websiteType}
-                  />
-      
+      <div className="flex flex-col items-end px-4 py-6">
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={goToPage}
+          onNext={nextPage}
+          onPrev={prevPage}
+        />
 
+        <div>
+          <TablePaginationInfo
+            limit={limit}
+            onLimitChange={changeLimit}
+            page={page}
+            total={total}
+          />
+        </div>
+      </div>
+
+      <LeadPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        lead={selectedLead}
+        fetchEnquires={fetchAllLeads}
+        // handleTabClick={""}
+        // activeIndex={active}
+        show={!hotel?.Profile?.websiteType}
+      />
     </div>
-  )
-}
+  );
+};
 
-export default GoogleAds
+export default GoogleAds;
