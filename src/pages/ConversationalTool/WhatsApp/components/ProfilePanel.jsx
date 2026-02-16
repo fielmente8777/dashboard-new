@@ -20,22 +20,20 @@ const ProfilePanel = ({ selectedContact }) => {
     }));
   };
 
-  console.log(selectedContact);
-
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
       {/* Profile Header */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 border text-gray-600 border-gray-900 bg-green-200 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
-            {selectedContact?.name.charAt(0).toUpperCase()}
+            {selectedContact?.name?.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
               {selectedContact?.name}
             </h3>
             <p className="text-sm text-gray-600 font-medium ">
-              +{selectedContact.phone}
+              +{selectedContact?.phone}
             </p>
           </div>
         </div>
@@ -71,7 +69,7 @@ const ProfilePanel = ({ selectedContact }) => {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Message</span>
             <span className="text-gray-900">
-              {selectedContact.last_message.text}
+              {selectedContact?.last_message?.text}
             </span>
           </div>
           <div className="flex justify-between text-sm">

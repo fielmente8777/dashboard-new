@@ -9,6 +9,7 @@ import SidebarChat from "./components/SidebarChat";
 import ProfilePanel from "./components/ProfilePanel";
 import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
+import useNotificationSound from "../../../hooks/useNotificationSound";
 
 const WhatsApp = () => {
   const wsRef = useRef(null);
@@ -16,9 +17,54 @@ const WhatsApp = () => {
     integrationStatus,
     checkIntegrationStatus,
     setConversations,
+    conversation,
     selectedConversation,
   } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
+
+  const playNotification = useNotificationSound(
+    "/notification-sound/Sound1.mp3",
+  );
+
+  const updateConversationWithMessage = (
+    conversations,
+    incomingMessage,
+    selectedConversationId,
+  ) => {
+    const fromPhone = incomingMessage.from;
+
+    // 1️⃣ Find index of conversation
+    const index = conversations.findIndex((conv) => conv.phone === fromPhone);
+
+    // If conversation not found → ignore (or create new)
+    if (index === -1) return conversations;
+
+    const conv = conversations[index];
+
+    // 2️⃣ Update conversation data
+    const updatedConversation = {
+      ...conv,
+      last_message: {
+        text: incomingMessage.body || incomingMessage.text,
+        sender: incomingMessage.sender,
+        created_at: incomingMessage.createdAt || new Date(),
+      },
+      unread_count:
+        conv._id === selectedConversationId
+          ? conv.unread_count // if open → don't increment
+          : (conv.unread_count || 0) + 1,
+      updatedAt: new Date(),
+    };
+
+    // 3️⃣ Remove from current position
+    const newList = [...conversations];
+    newList.splice(index, 1);
+
+    // 4️⃣ Add to TOP
+    newList.unshift(updatedConversation);
+
+    return newList;
+  };
 
   useEffect(() => {
     checkIntegrationStatus();
@@ -30,22 +76,9 @@ const WhatsApp = () => {
     try {
       const response = await getWhatsappConversation();
 
-      console.log(response);
-      // if (response?.success && response?.responseStatusCode === 200) {
-      //   const list = response.result.conversations.map((c) => ({
-      //     id: c._id,
-      //     phone: c.phone,
-      //     name: c.name,
-      //     profile_image: c.profile_image,
-      //     messages: [],
-      //     lastMessage: c.last_message || null,
-      //     unreadCount: c.unread_count || 0,
-      //     updatedAt: c.updatedAt,
-      //   }));
-
-      //   // setSelectedConversation(list[0]);
-      // }
-      setConversations(response?.result?.conversations);
+      if (response?.success && response?.responseStatusCode === 200) {
+        setConversations(response?.result?.conversations);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -58,10 +91,12 @@ const WhatsApp = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      const { data } = serverResponse;
+
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
-        const { data } = serverResponse;
+        console.log(data);
         const conversation = {
           id: data._id,
           phone: data.phone,
@@ -71,12 +106,28 @@ const WhatsApp = () => {
           unreadCount: 0,
           updatedAt: new Date(),
         };
-        setConversations((prev) => [conversation, ...prev]);
+
+        console.log(typeof localStorage.getItem("ndid"));
+
+        if (data?.ndid === localStorage.getItem("ndid")) {
+          playNotification();
+          setConversations((prev) => [conversation, ...prev]);
+        }
+      } else if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
+      ) {
+        console.log(data);
+        // if (data?.ndid !== localStorage.getItem("ndid")) return;
+        playNotification();
+        setConversations((prev) =>
+          updateConversationWithMessage(prev, data, selectedConversation?._id),
+        );
+        document.title = `Whatsapp - New Message`;
       }
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation]);
+  }, [selectedConversation, conversation]);
 
   useEffect(() => {
     getWhatsappConversations();
@@ -94,7 +145,6 @@ const WhatsApp = () => {
     }
   };
 
-  console.log(integrationStatus);
   if (loading) return <WhatesAppChatSkeleton />;
 
   return (

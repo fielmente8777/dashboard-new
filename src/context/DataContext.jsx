@@ -1,6 +1,5 @@
 import axios from "axios";
 import { createContext, useState } from "react";
-import { io } from "socket.io-client";
 import { BASE_URL, NEW_BASE_URL } from "../data/constant";
 import { is24HoursCompletedFnc } from "../utils/is24Hours";
 
@@ -36,14 +35,10 @@ export const DataProvider = ({ children }) => {
   const [bookingData, setBookingData] = useState(null);
   const [editButton, setEditButton] = useState(false);
 
-
   // whatsapp
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
-
-
-
 
   const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
     useState(false);
@@ -287,10 +282,10 @@ export const DataProvider = ({ children }) => {
         checkIntegrationStatus,
         isLoadingIntegrationStatus,
         is24HoursCompleted,
-        selectedConversation, 
+        selectedConversation,
         setSelectedConversation,
         conversations,
-         setConversations
+        setConversations,
       }}
     >
       {children}

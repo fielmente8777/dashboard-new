@@ -17,12 +17,7 @@ import normalizePhone from "../../../../utils/normalizePhone";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
-  const {
-    conversations,
-    setConversations,
-    selectedConversation,
-    setSelectedConversation,
-  } = useContext(DataContext);
+  const { selectedConversation } = useContext(DataContext);
 
   const [messageList, setMessageList] = useState([]);
   const [messageLoading, setLoadingMessages] = useState(true);
@@ -148,10 +143,8 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      // console.log("Server response ", serverResponse);
       if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
         const { data } = serverResponse;
-        // console.log(data);
         const fromPhone = normalizePhone(data.from);
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
         const message = { ...data };
@@ -325,6 +318,17 @@ const ChatArea = () => {
             ))}
           </div>
         )}
+
+        {file && (
+          <div className="flex items-center gap-2 mb-2">
+            <img
+              src={URL.createObjectURL(file)}
+              alt="file"
+              className="w-40 h-20 rounded-md object-contain"
+            />
+          </div>
+        )}
+
         <div className="flex gap-2">
           {!templateClick ? (
             <span
