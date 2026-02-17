@@ -20,7 +20,7 @@ const usePagination = ({ initialPage = 1, initialLimit = 10 } = {}) => {
   }, []);
 
   const changeLimit = useCallback((newLimit) => {
-    console.log("aaya");
+    // console.log("aaya");
     setLimit(newLimit);
     setPage(1); // reset page when limit changes
   }, []);

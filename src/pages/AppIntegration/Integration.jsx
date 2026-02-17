@@ -161,7 +161,7 @@ function Integration() {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -169,13 +169,13 @@ function Integration() {
     try {
       const response = await connectMetaLead();
 
-      console.log(response);
+      // console.log(response);
 
       if (response?.success && response?.responseStatusCode) {
         window.open(response?.result?.docs?.authUrl, "_blank");
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -188,7 +188,7 @@ function Integration() {
         checkIntegrationStatus();
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       // setIsUpdateLoading(false);
       setCurrentIntegrationId(null);
@@ -214,7 +214,7 @@ function Integration() {
               "ndid",
             )}`,
           );
-          console.log(response.data);
+          // console.log(response.data);
           window.location.href = response.data.auth_url;
         } catch (error) {
           console.error("Error connecting google:", error);
@@ -296,7 +296,7 @@ function Integration() {
       // setTimeout(() => {}, 2000);
       // getConnectStatus();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsCreateConnectLoading(false);
     }
@@ -317,9 +317,9 @@ function Integration() {
           },
         },
       );
-      console.log("Response data", data);
+      // console.log("Response data", data);
     } catch (err) {
-      console.log("Error:", err);
+      // console.log("Error:", err);
     }
   };
 
@@ -337,9 +337,9 @@ function Integration() {
         },
       );
 
-      console.log(response);
+      // console.log(response);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -357,9 +357,9 @@ function Integration() {
         },
       );
 
-      console.log(response);
+      // console.log(response);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 

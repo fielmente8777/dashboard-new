@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
 
 const ProfilePanel = ({ selectedContact }) => {
-  console.log(selectedContact);
+  // console.log(selectedContact);
   const [expandedSections, setExpandedSections] = useState({
     payments: false,
     campaigns: false,

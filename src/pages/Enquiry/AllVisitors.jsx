@@ -38,7 +38,7 @@ const AllVisitors = () => {
     nextPage,
     prevPage,
     changeLimit,
-  } = usePagination({ initialLimit: 50 });
+  } = usePagination({ initialLimit: 10 });
 
   const fetchAllLeads = async () => {
     setLoading(true);
@@ -96,7 +96,7 @@ const AllVisitors = () => {
   const handleStatusChange = async (lead, status) => {
     try {
       const { data } = await UpdateLeadStatus(lead, status);
-      console.log("Handle lead status", data);
+      // console.log("Handle lead status", data);
 
       Swal.fire({
         icon: "success",

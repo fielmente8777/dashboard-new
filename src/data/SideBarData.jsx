@@ -21,8 +21,9 @@ import {
   MdOutlineSos,
   MdUnsubscribe,
 } from "react-icons/md";
-import { SiGoogleanalytics } from "react-icons/si";
+import { SiGoogleanalytics, SiLivechat } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
+import { PiUsersThreeFill } from "react-icons/pi";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
@@ -30,9 +31,9 @@ import { GrResources } from "react-icons/gr";
 import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
-import { TbSeo } from "react-icons/tb";
+import { TbMessageChatbotFilled, TbSeo } from "react-icons/tb";
 import { TiSocialSkype } from "react-icons/ti";
-import { RiWechatChannelsLine } from "react-icons/ri";
+import { RiMetaFill, RiWechatChannelsLine, RiWhatsappFill } from "react-icons/ri";
 import { CgProfile } from "react-icons/cg";
 import { RiFolderUserFill } from "react-icons/ri";
 import { RiGalleryFill } from "react-icons/ri";
@@ -49,6 +50,7 @@ import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
 import { CiViewBoard } from "react-icons/ci";
+import DocumentIcon, { ChatIcon, TeamIcon } from "../icons/icon";
 
 export const SidebarData = [
   {
@@ -87,7 +89,7 @@ export const SidebarData = [
   {
     name: "Live Chat",
     link: `channel`,
-    icon: <MdLink size={24} />,
+    icon: <SiLivechat size={18} />,
     subLinks: [
       // {
       //   name: "WhatsApp Business",
@@ -141,34 +143,41 @@ export const SidebarData = [
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
-        name:"All Leads",
+        name:"All",
         link: `leads-management/all-leads`,
         icon: <MdLeaderboard size={18} />,
       },
       {
-        name: "Meta Leads",
+        name: "Meta",
         link: `leads-management/meta-leads`,
-        icon: <SiGoogleads size={18} />,
+        icon: <RiMetaFill color="#0266df"/>,
       },
+      // {
+      //   name: "Whatsapp",
+      //   link: `leads-management/whatsapp`,
+      //   icon: <RiWhatsappFill color="green" />,
+      // },
+
       {
-        name: "Google Ads Leads",
+        name: "Google Ads",
         link: `leads-management/google-ads-leads`,
-        icon: <SiGoogleads size={18} />,
+        icon:<svg width="16px" height="16px" viewBox="0 -13 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M5.888,166.405103 L90.88,20.9 C101.676138,27.2558621 156.115862,57.3844138 164.908138,63.1135172 L79.9161379,208.627448 C70.6206897,220.906621 -5.888,185.040138 5.888,166.396276 L5.888,166.405103 Z" fill="#FBBC04"> </path> <path d="M250.084224,166.401789 L165.092224,20.9055131 C153.210293,1.13172 127.619121,-6.05393517 106.600638,5.62496138 C85.582155,17.3038579 79.182155,42.4624786 91.0640861,63.1190303 L176.056086,208.632961 C187.938017,228.397927 213.52919,235.583582 234.547672,223.904686 C254.648086,212.225789 261.966155,186.175582 250.084224,166.419444 L250.084224,166.401789 Z" fill="#4285F4"> </path> <ellipse fill="#34A853" cx="42.6637241" cy="187.924414" rx="42.6637241" ry="41.6044138"> </ellipse> </g> </g></svg>,
       },
       {
-        name:"Webform Leads",
+        name:"Webform",
         link: `leads-management/webform-leads`,
-        icon: <MdLeaderboard size={18} />,
+        icon: <DocumentIcon/>,
       },
       {
-        name:"Eazbot Leads",
+        name:"Eazbot",
         link: `leads-management/eazbot-leads`,
-        icon: <MdLeaderboard size={18} />,
+        icon:<ChatIcon/>,
+
       },
       {
-        name:"All Visitors",
+        name:"Visitors",
         link: `leads-management/all-visitors`,
-        icon: <MdLeaderboard size={18} />,
+        icon: <TeamIcon />,
       },
 
       // {

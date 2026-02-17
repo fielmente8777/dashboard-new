@@ -113,6 +113,7 @@ const WhatsApp = () => {
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
       ) {
+        console.log(data);
         playNotification();
         setConversations((prev) =>
           updateConversationWithMessage(prev, data, selectedConversation?._id),

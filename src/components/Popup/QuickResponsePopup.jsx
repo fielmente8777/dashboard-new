@@ -107,9 +107,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, hotelName }) => {
     try {
       const { data } = await axios.post(
         "http://localhost:4000/api/send-message",
-        { ndid: lead.ndid, phone: phone, name: lead.Name, message: message }
+        { ndid: lead.ndid, phone: phone, name: lead.Name, message: message },
       );
-      console.log(data);
+      // console.log(data);
     } catch (error) {
       console.log(error);
     }

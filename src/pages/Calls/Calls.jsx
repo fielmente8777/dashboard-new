@@ -81,7 +81,7 @@ export default function Calls() {
     e.preventDefault();
     setIsCreateConnectLoading(true);
     // handle connect logic here
-    console.log(formData);
+    // console.log(formData);
     try {
       const { data } = await axios.post(
         `${NEW_BASE_URL}/api/v1/call/auth/connect`,
@@ -99,7 +99,7 @@ export default function Calls() {
       // setTimeout(() => {}, 2000);
       // getConnectStatus();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsCreateConnectLoading(false);
     }
@@ -122,7 +122,7 @@ export default function Calls() {
       // console.log(data);
       // setCurrentRecordingUrl(data?.result?.docs);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
     setShowAudioModal(true);
   };
@@ -196,7 +196,7 @@ export default function Calls() {
     }
   };
 
-  console.log(currentRecordingUrl);
+  // console.log(currentRecordingUrl);
   return (
     <div className="">
       {/* Calls Table */}

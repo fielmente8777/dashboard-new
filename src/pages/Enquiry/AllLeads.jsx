@@ -37,7 +37,7 @@ const AllLeads = () => {
     nextPage,
     prevPage,
     changeLimit,
-  } = usePagination({ initialLimit: 50 });
+  } = usePagination({ initialLimit: 10 });
 
   const fetchAllLeads = async () => {
     setLoading(true);
@@ -96,7 +96,7 @@ const AllLeads = () => {
   const handleStatusChange = async (lead, status) => {
     try {
       const { data } = await UpdateLeadStatus(lead, status);
-      console.log("Handle lead status", data);
+      // console.log("Handle lead status", data);
 
       Swal.fire({
         icon: "success",
@@ -259,13 +259,19 @@ const AllLeads = () => {
 
         <tbody>
           {loading && (
-            <tr>
-              <td colSpan={12} className="py-6 text-center">
-                <div className="flex justify-center items-center gap-2 text-gray-500">
-                  Loading leads...
+           <>
+            {Array.from({length:limit}).map(item=>(
+              <tr key={item} className=" mb-2 ">
+              
+              <td colSpan={12} className="text-center animate-pulse border mb-2 bg-gray-100 py-3 ">
+
+                <div className="flex justify-center h-6 items-center text-gray-500 ">
+
                 </div>
               </td>
             </tr>
+            ))}
+           </>
           )}
 
           {!loading &&

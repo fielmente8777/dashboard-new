@@ -3,7 +3,7 @@ import { NEW_BASE_URL } from "../../data/constant";
 export const sendWhatsAppMessage = async (payload) => {
   const isFormData = payload instanceof FormData;
 
-  console.log(isFormData);
+  // console.log(isFormData);
 
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/messages/send`,
@@ -126,6 +126,22 @@ export const deleteWhatsAppMessageTemplate = async (payload) => {
     `${NEW_BASE_URL}/api/v1/whatsapp/message/template/delete`,
     {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const updateAutoMessageConfig = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/account/${payload?.phoneNumberId}/automessageConfig/update`,
+    {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,

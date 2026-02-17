@@ -1,8 +1,11 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import DataContext from "../../../../context/DataContext";
 import { markMessageAsRead } from "../../../../services/api/whatsApp";
+import useDebounce from "../../../../hooks/useDebounce";
 
 const SidebarChat = () => {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const getAvatarColor = (name) => {
     const colors = [
       "bg-teal-500",
@@ -23,6 +26,8 @@ const SidebarChat = () => {
     selectedConversation,
     setSelectedConversation,
   } = useContext(DataContext);
+
+  // const [filteredConversations, setFilteredConversations] = useState([]);
 
   const handleSelectConversation = async (conv) => {
     try {
@@ -48,11 +53,34 @@ const SidebarChat = () => {
     }
   };
 
+  const handleSearch = () => {
+    if (!debouncedSearch) {
+      // setFilteredConversations(conversations);
+      return;
+    }
+    // const lowerSearch = debouncedSearch.toLowerCase();
+
+    // const filtered = conversations.filter(
+    //   (conv) =>
+    //     conv.name?.toLowerCase().includes(lowerSearch) ||
+    //     conv.phone?.includes(lowerSearch) ||
+    //     conv.lastMessage?.toLowerCase().includes(lowerSearch),
+    // );
+
+    // setFilteredConversations(filtered);
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [debouncedSearch]);
+
   return (
     <div className="w-80  border-b border-l border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
           className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"
         />
