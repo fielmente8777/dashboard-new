@@ -27,7 +27,7 @@ const SidebarChat = () => {
     setSelectedConversation,
   } = useContext(DataContext);
 
-  // const [filteredConversations, setFilteredConversations] = useState([]);
+  const [filteredConversations, setFilteredConversations] = useState([]);
 
   const handleSelectConversation = async (conv) => {
     try {
@@ -55,19 +55,19 @@ const SidebarChat = () => {
 
   const handleSearch = () => {
     if (!debouncedSearch) {
-      // setFilteredConversations(conversations);
+      setFilteredConversations(conversations);
       return;
     }
-    // const lowerSearch = debouncedSearch.toLowerCase();
+    const lowerSearch = debouncedSearch.toLowerCase();
 
-    // const filtered = conversations.filter(
-    //   (conv) =>
-    //     conv.name?.toLowerCase().includes(lowerSearch) ||
-    //     conv.phone?.includes(lowerSearch) ||
-    //     conv.lastMessage?.toLowerCase().includes(lowerSearch),
-    // );
+    const filtered = conversations.filter(
+      (conv) =>
+        conv.name?.toLowerCase().includes(lowerSearch) ||
+        conv.phone?.includes(lowerSearch) ||
+        conv.lastMessage?.toLowerCase().includes(lowerSearch),
+    );
 
-    // setFilteredConversations(filtered);
+    setFilteredConversations(filtered);
   };
 
   useEffect(() => {
@@ -87,8 +87,8 @@ const SidebarChat = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
-        {conversations && conversations?.length > 0 ? (
-          conversations?.map((conv) => (
+        {filteredConversations && filteredConversations?.length > 0 ? (
+          filteredConversations?.map((conv) => (
             <div
               key={conv._id}
               onClick={() => handleSelectConversation(conv)}

@@ -34,23 +34,23 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
   };
 
   const routs = [
-    {
-      name: "Profile",
-      link: "profile",
-    },
-    {
-      name: "User Management",
-      link: "user-management/all-users",
-    },
+    // {
+    //   name: "Profile",
+    //   link: "profile",
+    // },
+    // {
+    //   name: "User Management",
+    //   link: "user-management/all-users",
+    // },
     {
       name: "Account & Billing",
       target: "_blank",
       link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
     },
-    {
-      name: "Integration",
-      link: "integration",
-    },
+    // {
+    //   name: "Integration",
+    //   link: "integration",
+    // },
     {
       name: "QR Code",
       link: "qr-code",
@@ -65,7 +65,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
     <div
       ref={dropdownRef}
       className={`
-    fixed right-4 top-[10%]
+    fixed right-4 top-[6%]
     min-w-180px rounded-lg border bg-white
     shadow-lg
     transition-all duration-200 ease-out

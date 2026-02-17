@@ -65,8 +65,8 @@ function Integration() {
     },
     {
       id: "googleAdsInsight",
-      name: "Google Ads Analytics",
-      description: "Track website metrics and user analytics in real time.",
+      name: "Google Ads Insights",
+      description: "Track google ads metrics.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
       category: "Analytics",
@@ -135,8 +135,8 @@ function Integration() {
     "All",
     "Communication",
     "Analytics",
-    "Productivity",
-    "Storage",
+    // "Productivity",
+    // "Storage",
   ];
 
   const filteredIntegrations = integrations.filter((integration) => {

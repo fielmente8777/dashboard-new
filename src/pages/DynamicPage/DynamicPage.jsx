@@ -67,7 +67,6 @@ import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
 import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
 import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
 import VisitorActivity from "../WebsiteTracker/VisitorActivity";
-import MetaLeads from "../Meta/MetaLeads";
 import MetaMessages from "../Meta/MetaMessage";
 import MetaConnections from "../Meta/MetaConnection";
 import MetaSettings from "../Meta/MetaSetting";
@@ -88,6 +87,7 @@ import GoogleAds from "../Enquiry/GoogleAds";
 import EazbotLeads from "../Enquiry/EazbotEnquiries";
 import WebformLeads from "../Enquiry/WebformLeads";
 import AllVisitors from "../Enquiry/AllVisitors";
+import MetaLeads from "../Enquiry/MetaLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -144,7 +144,7 @@ const DynamicPage = () => {
 
     [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
     [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
-      <AdsLeadsUsingGoogleSheet />
+      <MetaLeads />
     ),
     [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
     [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,

@@ -271,7 +271,7 @@ const ChatArea = () => {
                     <div
                       className={`max-w-xs  px-3 py-2 ${
                         isMe
-                          ? "rounded-tl-xl rounded-br-xl rounded-bl-lg"
+                          ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
                           : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
                       }`}
                     >

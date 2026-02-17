@@ -17,12 +17,11 @@ import {
   AreaChart,
 } from "recharts";
 import DataContext from "../../context/DataContext";
-import { FaSourcetree } from "react-icons/fa";
 import DashboardCard from "../../components/Card/DashboardCard";
 
 const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
   const { Leads, setLeads } = useContext(DataContext);
-  const { leadsList, setLeadsLists } = useContext(DataContext);
+  const { leadsList, setLeadsLists,metaLeads } = useContext(DataContext);
 
   // console.log(leadsList);
 
@@ -330,7 +329,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
             )} */}
 
           <DashboardCard
-            amount={insights.totalLeads || 0}
+            amount={metaLeads.length || 0}
             label={"Total Meta Leads"}
             progress={"100"}
           />

@@ -5,8 +5,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { FaWhatsapp } from "react-icons/fa";
-import { MdClose, MdLink, MdLinkOff, MdVerified } from "react-icons/md";
+import { FaAd, FaPlus, FaWhatsapp } from "react-icons/fa";
+import { MdAccountBalance, MdAdd, MdBalance, MdBook, MdClose, MdLink, MdLinkOff, MdPlusOne, MdVerified, MdWallet } from "react-icons/md";
 import WhatsappBusinessSkelton from "../../../components/Skeltons/WhatsappBusinessSkelton";
 import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
@@ -15,6 +15,7 @@ import {
   getWhatsAppMessageTemplates,
   updateAutoMessageConfig,
 } from "../../../services/api/whatsApp";
+import WhatsAppMessageTemplate from "./Templates";
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
@@ -37,7 +38,7 @@ const WhatsAppBusiness = () => {
   const fetchAccountDetails = useCallback(async () => {
     try {
       const response = await getWhatsappAccountDetails();
-      // console.log(response);
+      console.log(response);
       setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);
@@ -85,7 +86,7 @@ const WhatsAppBusiness = () => {
           </div>
 
           {/* Heading */}
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-2xl font-medium text-gray-600">
             Connect WhatsApp Business
           </h2>
 
@@ -106,7 +107,7 @@ const WhatsAppBusiness = () => {
 
           {/* Helper text */}
           <p className="mt-4 text-xs text-gray-400">
-            Secure Meta OAuth • Embedded signup • Official WhatsApp Cloud API
+            Secure Meta OAuth • Verified Tech Provider • Official WhatsApp Cloud API
           </p>
         </div>
       </div>
@@ -119,18 +120,24 @@ const WhatsAppBusiness = () => {
   return (
     <React.Fragment>
       {accountDetails && (
-        <div className="w-full space-y-6 p-4">
-          <BusinessInfoCard business={accountDetails?.business} />
+        <div className="w-full p-4 gap-4 grid grid-cols-2">
+          <div className="flex gap-4 flex-col"> 
+          {/* <BusinessInfoCard business={accountDetails?.business} /> */}
+
           <WabaDetailsCard
             waba={accountDetails?.waba}
             business={accountDetails?.business}
           />
           <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
+
+          </div>
+          <CreditInfoCard/>
           <AutoMessageCard
             phoneNumberId={accountDetails?.phoneNumber?.id}
             autoMessage={accountDetails?.autoMessage}
             templates={templates} // backend should send this
           />
+          <WhatsAppMessageTemplate/>
         </div>
       )}
     </React.Fragment>
@@ -160,7 +167,7 @@ const BusinessInfoCard = ({ business }) => {
             )}
           </div>
 
-          <h2 className="text-2xl font-semibold text-gray-900 leading-none">
+          <h2 className="text-2xl font-medium text-gray-600 leading-none">
             {business.name}
           </h2>
         </div>
@@ -192,17 +199,17 @@ const PhoneNumberCard = ({ phoneNumber }) => {
     : "bg-gray-100 text-gray-600";
 
   return (
-    <div className="w-full border border-gray-200 rounded-lg bg-white px-6 py-5">
+    <div className="w-full border border-gray-200  bg-white px-6 py-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <FaWhatsapp className="w-4 h-4 text-green-600" />
-          <h3 className="text-sm font-semibold text-gray-900">Phone Number</h3>
+          <h3 className="text-sm font-medium text-gray-600">Phone Number</h3>
         </div>
 
-        <span className="text-sm">
+        <span className="text-sm font-medium text-gray-600">
           Quality Rating:{" "}
-          <span className="bg-green-300 px-3 font-medium text-sm py-1 rounded-2xl">
+          <span className="bg-green-500 text-white px-3 font-medium text-sm py-1 rounded-2xl">
             {phoneNumber.qualityRating === "GREEN"
               ? "Green"
               : phoneNumber.qualityRating}
@@ -218,7 +225,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
 
       {/* Number */}
       <div className="mb-5">
-        <p className="text-xl font-semibold text-gray-900">
+        <p className="text-xl font-medium text-gray-600">
           {phoneNumber.displayPhoneNumber}
         </p>
         <p className="text-sm text-gray-500">{phoneNumber.verifiedName}</p>
@@ -299,7 +306,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
   );
 };
 
-const WabaDetailsCard = ({ waba }) => {
+const WabaDetailsCard = ({ waba,business }) => {
   if (!waba) return null;
 
   const MARKETING_STATUS_UI = {
@@ -336,7 +343,7 @@ const WabaDetailsCard = ({ waba }) => {
   return (
     <div className="w-full border border-gray-200 bg-white px-6 py-5">
       {/* Header */}
-      <div className="space-y-1">
+      <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FaWhatsapp className="w-4 h-4 text-green-600" />
           <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
@@ -344,46 +351,50 @@ const WabaDetailsCard = ({ waba }) => {
           </span>
         </div>
 
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-medium text-gray-600">
           {waba.name || "Unnamed WABA"}
         </h2>
 
         <p className="text-sm text-gray-500">
-          WABA ID
+          WABA ID:
           <span className="ml-2 font-medium text-gray-800">{waba.id}</span>
+        </p>
+        <p className="text-sm text-gray-500">
+          Business ID:
+          <span className="ml-2 font-medium text-gray-800">{business.id}</span>
         </p>
       </div>
 
       {/* Divider */}
-      <div className="mt-4 border-t border-gray-100" />
+      {/* <div className="mt-4 border-t border-gray-100" /> */}
 
       {/* Details Grid */}
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
         {/* Marketing Status */}
-        <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
+        {/* <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
           <span className="text-gray-500">Marketing Status</span>
           <span
             className={`text-xs font-medium px-2 py-1 rounded-md ${status.style}`}
           >
             {status.label}
           </span>
-        </div>
+        </div> */}
 
         {/* Marketing Explanation */}
-        <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
+        {/* <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
           <span className="text-gray-500">Marketing Messaging</span>
           <span className="font-medium text-gray-800">
             {status.description}
           </span>
-        </div>
+        </div> */}
 
         {/* Timezone */}
-        <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
+        {/* <div className="flex items-center justify-between border border-gray-100 px-3 py-2">
           <span className="text-gray-500">Timezone ID</span>
           <span className="font-medium text-gray-800">
             {waba.timezone || "N/A"}
           </span>
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -485,16 +496,16 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white px-6 py-5 space-y-5">
+    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">Auto Messaging</h3>
+        <h3 className="text-lg font-medium text-gray-600">Auto Messaging</h3>
 
         {/* Toggle */}
         <button
           onClick={() => setEnabled(!enabled)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-            enabled ? "bg-green-600" : "bg-gray-300"
+            enabled ? "bg-green-500" : "bg-gray-300"
           }`}
         >
           <span
@@ -579,7 +590,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
               <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
                 {/* HEADER */}
                 {header && (
-                  <p className="font-semibold text-sm mb-1">
+                  <p className="font-medium text-sm mb-1">
                     {formatPreviewText(header.text)}
                   </p>
                 )}
@@ -608,15 +619,52 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       )}
 
       {/* Save */}
-      <div className="flex justify-end">
+      {type!== autoMessage.type||enabled!==autoMessage.enabled? <div className="flex justify-end">
         <button
           onClick={handleSave}
           disabled={loading}
-          className="bg-green-600 text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
+          className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
         >
           {loading ? "Saving..." : "Save Configuration"}
         </button>
-      </div>
+      </div>:""}
     </div>
   );
 };
+
+
+
+const CreditInfoCard=({})=>{
+  const [open, setOpen]=useState(false);
+  return(
+    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium  text-gray-600">WhatsApp Credit Report</h3>
+        
+
+        <button onClick={()=>setOpen(true)} className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between">
+          <MdAdd size={20}/> Buy Credits
+        </button>
+      </div>
+       <div>
+        <p className="flex items-center gap-1 font-medium text-gray-700">
+          <MdAccountBalance/>Account Balance
+        </p>
+
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-2xl font-medium text-gray-600">8,888.5</span>
+          <span className="text-sm text-gray-600">remaining credits</span>
+        </div>
+        </div>
+
+
+        {open && (
+        <div onClick={()=>setOpen(false)} className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
+          <div className="bg-white w-full max-w-md p-6 space-y-5">
+            <h2 className="font-medium text-gray-500 text-center"> We are coming soon with this feature, Thanks</h2>
+            </div>
+            </div>)}
+    </div>
+  )
+}

@@ -40,7 +40,7 @@ export const DataProvider = ({ children }) => {
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(10);
   const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
     useState(false);
 
@@ -95,7 +95,7 @@ export const DataProvider = ({ children }) => {
 
     useEffect(()=>{
       fetchMetaPages()
-    },[])
+    },[limit])
 
   const fetchRoomsData = async () => {
     try {

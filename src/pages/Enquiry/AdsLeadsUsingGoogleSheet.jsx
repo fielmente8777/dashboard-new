@@ -214,7 +214,7 @@ const AdsLeadsUsingGoogleSheet = () => {
       <h2 className="text-lg font-semibold text-gray-800">Meta Lead Forms</h2>
 
       <div className="flex flex-col gap-4 w-full ">
-        {leads?.map((lead, leadIndex) => (
+        {metaLeads?.map((lead, leadIndex) => (
           <div
             key={leadIndex}
             onClick={() => setSelectedLead(lead)}

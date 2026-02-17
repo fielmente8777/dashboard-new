@@ -104,7 +104,7 @@ export const SidebarData = [
       //   ]
       // },
       {
-        name: "WhatsApp Chats",
+        name: "WhatsApp",
         link: `channel/wa/chat`,
         icon: <FaWhatsapp size={16} />,
       },
@@ -197,23 +197,23 @@ export const SidebarData = [
       // },
     ],
   },
-  {
-    name: "Chat Settings",
-    link: `chat-settings`,
-    icon: <MdLink size={24} />,
-    subLinks: [
-      {
-        name: "WhatsApp Business",
-        link: `chat-settings/whatsapp-bussiness-setting`,
-        icon: <FaWhatsapp size={16} />,
-      },
-      {
-        name: "Templates",
-        link: `chat-settings/whatsapp-bussiness-setting/templates`,
-        icon: <FaWhatsapp size={16} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Chat Settings",
+  //   link: `chat-settings`,
+  //   icon: <MdLink size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "WhatsApp Business",
+  //       link: `chat-settings/whatsapp-bussiness-setting`,
+  //       icon: <FaWhatsapp size={16} />,
+  //     },
+  //     // {
+  //     //   name: "Templates",
+  //     //   link: `chat-settings/whatsapp-bussiness-setting/templates`,
+  //     //   icon: <FaWhatsapp size={16} />,
+  //     // },
+  //   ],
+  // },
   {
     name: "Google Ads Insights",
     // key: "",

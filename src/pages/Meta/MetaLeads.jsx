@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 const headers = ["full_name", "email", "phone_number"];
 
-const MetaLeads = () => {
+const MetaLeadss = () => {
   const [leads, setLeads] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -750,4 +750,4 @@ const MetaLeads = () => {
   );
 };
 
-export default MetaLeads;
+export default MetaLeadss;

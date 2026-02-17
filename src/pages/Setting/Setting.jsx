@@ -24,7 +24,6 @@ const Setting = () => {
   //   confirmPassword: "",
   // });
 
-  const [activeTab, setActiveTab] = useState(0);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
@@ -120,31 +119,14 @@ const Setting = () => {
   if (!hotel?.Profile) return null;
   return (
     <div>
-      <div className="flex flex-wrap gap-2 bg-gray-100 p-2 rounded-xl">
-        {Tabs.map((tab, index) => (
-          <button
-            key={index}
-            onClick={() => setActiveTab(index)}
-            className={`relative px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300
-              ${
-                activeTab === index
-                  ? "bg-primary text-white shadow-md"
-                  : "text-gray-600 hover:bg-primary/10 hover:text-primary"
-              }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-      {activeTab === 0 && (
-        <div className="min-h-screen bg-gray-100 p-3 space-y-2.5">
-          <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
+        <div className="bg-gray-100 p-5 space-y-5">
+          <div className="max-w-full mx-auto bg-white p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
             {/* Profile info */}
 
             {/* user type and email */}
             <div className="flex space-x-4">
               <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-white">
-                <p className="text-3xl font-semibold">
+                <p className="text-lg font-semibold">
                   {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
                 </p>
               </div>
@@ -215,30 +197,27 @@ const Setting = () => {
             </div> */}
           </div>
           {/* Hotels */}
-          <div className="bg-white p-8 rounded-2xl shadow-lg">
+          <div className="bg-white p-8 ">
             <div
               className="flex items-center  cursor-pointer"
-              onClick={() => setIsDropDownOpen(isDropDownOpen === 1 ? null : 1)}
             >
               <div>
-                <h3 className="font-bold text-3xl text-gray-800 flex items-center gap-4">
-                  <FaHotel className="text-2xl" />
+                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-4">
+                  <FaHotel color="orange" className="text-2xl" />
                   Hotels
                 </h3>
               </div>
               <span className="ml-auto">
-                <RiArrowDownSLine
+                {/* <RiArrowDownSLine
                   className={`${
                     isDropDownOpen === 1 ? "rotate-180 " : ""
                   } text-2xl transform transition duration-300 ease-in-out`}
-                />
+                /> */}
               </span>
             </div>
 
             <div
-              className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 ${
-                isDropDownOpen === 1 ? "block" : "hidden"
-              }`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 `}
             >
               {profile.hotels &&
                 Object.entries(profile.hotels).map(([hid, h]) => (
@@ -266,33 +245,13 @@ const Setting = () => {
             </div>
           </div>
 
-          <div className="max-w-full mx-auto bg-white shadow-lg rounded-2xl p-8">
+          <div className="max-w-full mx-auto bg-white p-8">
             {/* password change section */}
             <div className="">
-              <div
-                className={`flex items-center cursor-pointer ${
-                  isDropDownOpen === 2 ? "border-b pb-4 mb-6" : ""
-                }`}
-                onClick={() =>
-                  setIsDropDownOpen(isDropDownOpen === 2 ? null : 2)
-                }
-              >
-                <h1 className="text-3xl font-bold text-gray-800 ">
-                  ⚙️ Settings
-                </h1>
-                <span className="ml-auto">
-                  <RiArrowDownSLine
-                    className={`${
-                      isDropDownOpen === 2 ? "rotate-180 " : ""
-                    } text-2xl transform transition duration-300 ease-in-out`}
-                  />
-                </span>
-              </div>
+
 
               <form
-                className={`space-y-10 ${
-                  isDropDownOpen === 2 ? "block" : "hidden"
-                }`}
+                className={`space-y-10`}
                 onSubmit={handleConfirmSubmit}
               >
                 {/* Profile Info */}
@@ -553,13 +512,8 @@ const Setting = () => {
             </div>
           </div>
         </div>
-      )}
 
-      {activeTab === 1 && (
-        <div className="p-3">
-          <Eazobot />
-        </div>
-      )}
+    
     </div>
   );
 };
