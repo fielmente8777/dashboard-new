@@ -1,9 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   getMetaAccounts,
   getMetaForms,
   getMetaLeads,
 } from "../../services/api/MetaLeads.api";
+import { formatDate } from "../../utils/formateData";
+import DataContext from "../../context/DataContext";
 
 /* Clean labels for headers */
 // const FIELD_LABELS = {
@@ -26,6 +28,8 @@ import {
 // };
 
 const AdsLeadsUsingGoogleSheet = () => {
+
+  const {metaLeads,setMetaLeads}=useContext(DataContext)
   const [pages, setPages] = useState([]);
   const [forms, setForms] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -40,6 +44,8 @@ const AdsLeadsUsingGoogleSheet = () => {
   const [loadingForms, setLoadingForms] = useState(false);
   const [loadingLeads, setLoadingLeads] = useState(false);
 
+  const [selectedLead, setSelectedLead] = useState();
+
   /* ---------------- FETCH DATA ---------------- */
 
   const fetchMetaPages = async () => {
@@ -52,7 +58,8 @@ const AdsLeadsUsingGoogleSheet = () => {
 
         if (pagesData.length === 1) {
           setSelectedPageId(pagesData[0].id);
-          fetchPageForms(pagesData[0].id);
+          // fetchPageForms(pagesData[0].id);
+          fetchLeads(pagesData[0].id);
         }
       }
     } finally {
@@ -60,30 +67,37 @@ const AdsLeadsUsingGoogleSheet = () => {
     }
   };
 
-  const fetchPageForms = async (pageId) => {
-    setLoadingForms(true);
-    try {
-      const response = await getMetaForms(pageId);
-      if (response?.success) {
-        const formsData = response?.result?.docs?.forms || [];
-        setForms(formsData);
+  // const fetchPageForms = async (pageId) => {
+  //   setLoadingForms(true);
+  //   try {
+  //     const response = await getMetaForms(pageId);
+  //     if (response?.success) {
+  //       const formsData = response?.result?.docs?.forms || [];
+  //       setForms(formsData);
 
-        if (formsData.length) {
-          setSelectedFormId(formsData[0].id);
-          fetchLeads(pageId, formsData[0].id);
-        }
-      }
-    } finally {
-      setLoadingForms(false);
-    }
-  };
-
+  //       if (formsData.length) {
+  //         setSelectedFormId(formsData[0].id);
+  //         fetchLeads(pageId, formsData[0].id);
+  //       }
+  //     }
+  //   } finally {
+  //     setLoadingForms(false);
+  //   }
+  // };
+  const [limit, setLimit] = useState(5);
   const fetchLeads = async (pageId, formId, cursor) => {
+
     setLoadingLeads(true);
     try {
-      const response = await getMetaLeads(pageId, formId, cursor);
+      const response = await getMetaLeads(pageId, formId, cursor,limit);
       if (response?.success) {
-        setLeads(response?.result?.docs?.leads || []);
+        // setLeads(response?.result?.docs?.leads || []);
+
+
+        const sortedLeads = [...(response?.result?.docs?.allLeads || [])].sort(
+          (a, b) => new Date(b.created_time) - new Date(a.created_time)
+        );
+        setLeads(sortedLeads || []);
         const cursors = response?.result?.paging?.cursors;
         setAfterCursor(cursors?.after || null);
         setBeforeCursor(cursors?.before || null);
@@ -92,7 +106,6 @@ const AdsLeadsUsingGoogleSheet = () => {
       setLoadingLeads(false);
     }
   };
-
   /* ---------------- HANDLERS ---------------- */
 
   const handlePageChange = (e) => {
@@ -134,9 +147,9 @@ const AdsLeadsUsingGoogleSheet = () => {
 
   const visibleHeaders = tableHeaders.filter((h) => h !== "id");
 
-  useEffect(() => {
-    fetchMetaPages();
-  }, []);
+  // useEffect(() => {
+  //   fetchMetaPages();
+  // }, []);
 
   /* ---------------- UI ---------------- */
 
@@ -197,8 +210,36 @@ const AdsLeadsUsingGoogleSheet = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow border p-6 space-y-6">
+    <div className="bg-white shadow border p-6 space-y-6">
       <h2 className="text-lg font-semibold text-gray-800">Meta Lead Forms</h2>
+
+      <div className="flex flex-col gap-4 w-full ">
+        {leads?.map((lead, leadIndex) => (
+          <div
+            key={leadIndex}
+            onClick={() => setSelectedLead(lead)}
+            className=" odd:bg-white border even:bg-gray-50 hover:bg-blue-50 p-4 rounded overflow-auto scrollbar-hidden"
+          >
+            <p className="text-sm text-gray-500 mb-2">
+              Lead Added: {formatDate((lead.created_time))}
+            </p>
+            <div className="flex gap-5">
+
+              {lead?.field_data?.map((field, fieldIndex) => (
+                <div key={fieldIndex} className="mb-2 w-full">
+                  <p className="font-medium capitalize text-zinc-600 whitespace-nowrap">{field?.name}</p>
+                  <p className="text-gray-700 whitespace-nowrap">
+                    {field?.values?.[0] || ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+
+
       {/* <button onClick={() => exportToCSV(leads)}>
         Export Leads to Excel
       </button>
@@ -209,7 +250,7 @@ const AdsLeadsUsingGoogleSheet = () => {
       {/* SELECTION ROW */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* PAGE */}
-        <div className="border rounded-lg p-4">
+        {/* <div className="border rounded-lg p-4">
           <label className="block text-sm font-medium mb-1">
             Facebook Page
           </label>
@@ -229,10 +270,10 @@ const AdsLeadsUsingGoogleSheet = () => {
           {loadingPages && (
             <p className="text-xs text-blue-600 mt-2">Fetching pages…</p>
           )}
-        </div>
+        </div> */}
 
         {/* FORM */}
-        <div className="border rounded-lg p-4">
+        {/* <div className="border rounded-lg p-4">
           <label className="block text-sm font-medium mb-1">Lead Form</label>
           <select
             value={selectedFormId}
@@ -250,7 +291,7 @@ const AdsLeadsUsingGoogleSheet = () => {
           {loadingForms && (
             <p className="text-xs text-blue-600 mt-2">Fetching forms…</p>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* TABLE */}
@@ -330,6 +371,35 @@ const AdsLeadsUsingGoogleSheet = () => {
           </button>
         </div>
       )}
+
+
+
+
+      {selectedLead &&
+        <div className="absolute top-0 left-0 bg-black/50 shadow flex justify-center items-center h-screen w-full z-[99999] ">
+          <div
+            className=" bg-white w-[600px] p-4 rounded overflow-auto scrollbar-hidden"
+          >
+            <p className="text-sm text-gray-500 mb-2 flex items-center justify-between">
+              Lead Added: {formatDate(selectedLead?.created_time)}
+              <button onClick={() => setSelectedLead()} className=" bg-orange-400 text-white font-medium  px-3 py-1 rounded ">
+                Close
+              </button>
+            </p>
+            <div className=" gap-5">
+
+              {selectedLead?.field_data?.map((field, fieldIndex) => (
+                <div key={fieldIndex} className="mb-2 w-full">
+                  <p className="font-medium capitalize text-zinc-600 whitespace-nowrap">{field?.name}</p>
+                  <p className="text-gray-700 whitespace-nowrap">
+                    {field?.values?.[0] || ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      }
     </div>
   );
 };

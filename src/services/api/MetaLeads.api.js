@@ -43,7 +43,7 @@ export const getMetaForms = async (pageId) => {
   }
 };
 
-export const getMetaLeads = async (pageId, formId, cursor) => {
+export const getMetaLeads = async (pageId, formId, cursor,limit) => {
   const token = localStorage.getItem("token");
   console.log(cursor);
 
@@ -58,7 +58,7 @@ export const getMetaLeads = async (pageId, formId, cursor) => {
   }
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${pageId}&formId=${formId}`,
+      `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${pageId}&formId=${formId}&limit=${limit}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
