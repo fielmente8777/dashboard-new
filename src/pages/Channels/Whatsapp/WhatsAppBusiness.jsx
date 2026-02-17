@@ -5,27 +5,22 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { FaWhatsapp, FaBusinessTime, FaRegClock } from "react-icons/fa";
-import { getWhatsappAccountDetails } from "../../../services/api/whatsApp";
-import {
-  MdVerified,
-  MdClose,
-  MdLinkOff,
-  MdLink,
-  MdCheckCircle,
-} from "react-icons/md";
+import { FaWhatsapp } from "react-icons/fa";
+import { MdClose, MdLink, MdLinkOff, MdVerified } from "react-icons/md";
 import WhatsappBusinessSkelton from "../../../components/Skeltons/WhatsappBusinessSkelton";
 import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
+import {
+  getWhatsappAccountDetails,
+  getWhatsAppMessageTemplates,
+  updateAutoMessageConfig,
+} from "../../../services/api/whatsApp";
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
-  const {
-    integrationStatus,
-    checkIntegrationStatus,
-    isLoadingIntegrationStatus,
-  } = useContext(DataContext);
+  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
+  const [templates, setTemplates] = useState([]);
 
   const handleWhatsappConnect = async () => {
     try {
@@ -49,6 +44,17 @@ const WhatsAppBusiness = () => {
     }
   }, []);
 
+  const fetchTemplate = async () => {
+    try {
+      const response = await getWhatsAppMessageTemplates();
+      if (response.success) {
+        setTemplates(response?.result?.docs?.data || []);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+
   useEffect(() => {
     checkIntegrationStatus();
   }, []);
@@ -57,10 +63,9 @@ const WhatsAppBusiness = () => {
     if (integrationStatus?.metaWhatsapp && !hasFetchedRef.current) {
       hasFetchedRef.current = true;
       fetchAccountDetails();
+      fetchTemplate();
     }
   }, [integrationStatus]);
-
- 
 
   if (!integrationStatus?.metaWhatsapp) {
     return (
@@ -110,6 +115,7 @@ const WhatsAppBusiness = () => {
   if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
   }
+  console.log(templates);
   return (
     <React.Fragment>
       {accountDetails && (
@@ -120,6 +126,11 @@ const WhatsAppBusiness = () => {
             business={accountDetails?.business}
           />
           <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
+          <AutoMessageCard
+            phoneNumberId={accountDetails?.phoneNumber?.id}
+            autoMessage={accountDetails?.autoMessage}
+            templates={templates} // backend should send this
+          />
         </div>
       )}
     </React.Fragment>
@@ -190,7 +201,12 @@ const PhoneNumberCard = ({ phoneNumber }) => {
         </div>
 
         <span className="text-sm">
-          Quality Rating: <span className="bg-green-300 px-3 font-medium text-sm py-1 rounded-2xl">{phoneNumber.qualityRating==="GREEN"?"Green":phoneNumber.qualityRating}</span>
+          Quality Rating:{" "}
+          <span className="bg-green-300 px-3 font-medium text-sm py-1 rounded-2xl">
+            {phoneNumber.qualityRating === "GREEN"
+              ? "Green"
+              : phoneNumber.qualityRating}
+          </span>
         </span>
 
         <span
@@ -368,6 +384,238 @@ const WabaDetailsCard = ({ waba }) => {
             {waba.timezone || "N/A"}
           </span>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
+  const [enabled, setEnabled] = useState(autoMessage?.enabled || false);
+  const [type, setType] = useState(autoMessage?.type || "template");
+  const [templateName, setTemplateName] = useState(
+    autoMessage?.templateName || "",
+  );
+
+  const [message, setMessage] = useState(autoMessage?.message || "");
+  const [loading, setLoading] = useState(false);
+
+  /* ----------------------------
+     Sync when backend changes
+  -----------------------------*/
+  useEffect(() => {
+    setEnabled(autoMessage?.enabled || false);
+    setType(autoMessage?.type || "template");
+    setTemplateName(autoMessage?.templateName || "");
+    setMessage(autoMessage?.message || "");
+  }, [autoMessage]);
+
+  /* ----------------------------
+     Find Selected Template
+  -----------------------------*/
+  const selectedTemplateObj = templates?.find(
+    (tpl) => tpl.name === templateName,
+  );
+
+  /* ----------------------------
+     Extract Meta Components
+  -----------------------------*/
+  const getComponent = (type) =>
+    selectedTemplateObj?.components?.find((c) => c.type === type);
+
+  const header = getComponent("HEADER");
+  const body = getComponent("BODY");
+  const footer = getComponent("FOOTER");
+
+  /* ----------------------------
+     Replace {{1}} Variables For Preview
+  -----------------------------*/
+  const formatPreviewText = (text) => {
+    if (!text) return "";
+
+    return text.replace(/{{\d+}}/g, (match) => {
+      const num = match.replace(/[{}]/g, "");
+      return `[value ${num}]`;
+    });
+  };
+
+  /* ----------------------------
+     Save Config API Call
+  -----------------------------*/
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+
+      let templatePayload = null;
+
+      if (type === "template" && selectedTemplateObj) {
+        const getComponent = (type) =>
+          selectedTemplateObj?.components?.find((c) => c.type === type);
+
+        const header = getComponent("HEADER");
+        const body = getComponent("BODY");
+        const buttons = getComponent("BUTTONS");
+
+        templatePayload = {
+          name: selectedTemplateObj.name,
+          language: selectedTemplateObj.language || "en",
+
+          bodyText: body?.text || "",
+          variables: (body?.text?.match(/{{\d+}}/g) || []).length,
+
+          headerType: header?.format || null,
+
+          buttons: buttons?.buttons || [],
+        };
+      }
+
+      const payload = {
+        phoneNumberId,
+        enabled,
+        type,
+        message: type === "text" ? message : null,
+        template: templatePayload,
+      };
+
+      await updateAutoMessageConfig(payload);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-lg bg-white px-6 py-5 space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-900">Auto Messaging</h3>
+
+        {/* Toggle */}
+        <button
+          onClick={() => setEnabled(!enabled)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+            enabled ? "bg-green-600" : "bg-gray-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+              enabled ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      {!enabled && (
+        <p className="text-sm text-gray-500">
+          Auto reply is currently disabled.
+        </p>
+      )}
+
+      {enabled && (
+        <>
+          {/* Type Selection */}
+          <div>
+            <label className="text-sm font-medium text-gray-700">
+              Reply Type
+            </label>
+
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+            >
+              <option value="template">Template Message</option>
+              <option value="text">Custom Text</option>
+            </select>
+          </div>
+
+          {/* TEMPLATE SELECT */}
+          {type === "template" && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Select Template
+              </label>
+
+              <select
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+              >
+                <option value="">Select template</option>
+
+                {templates?.map((tpl) => (
+                  <option key={tpl.name} value={tpl.name}>
+                    {tpl.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* TEXT MESSAGE */}
+          {type === "text" && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">
+                Message
+              </label>
+
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={4}
+                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+                placeholder="Enter auto reply message..."
+              />
+            </div>
+          )}
+
+          {/* TEMPLATE PREVIEW */}
+          {type === "template" && selectedTemplateObj && (
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">
+                WhatsApp Preview
+              </p>
+
+              <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
+                {/* HEADER */}
+                {header && (
+                  <p className="font-semibold text-sm mb-1">
+                    {formatPreviewText(header.text)}
+                  </p>
+                )}
+
+                {/* BODY */}
+                {body && (
+                  <p className="text-sm whitespace-pre-line">
+                    {formatPreviewText(body.text)}
+                  </p>
+                )}
+
+                {/* FOOTER */}
+                {footer && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {formatPreviewText(footer.text)}
+                  </p>
+                )}
+
+                <div className="text-[10px] text-gray-400 text-right mt-1">
+                  Preview
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Save */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="bg-green-600 text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
+        >
+          {loading ? "Saving..." : "Save Configuration"}
+        </button>
       </div>
     </div>
   );

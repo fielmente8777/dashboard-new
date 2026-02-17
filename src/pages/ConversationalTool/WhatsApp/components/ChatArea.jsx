@@ -14,11 +14,18 @@ import {
 import { MdChat, MdClose } from "react-icons/md";
 import WebSocketClient from "../../../../config/websocketClient";
 import normalizePhone from "../../../../utils/normalizePhone";
+import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
+import { BsCheckAll } from "react-icons/bs";
+import { BsCheckLg } from "react-icons/bs";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
-  const { conversations, setConversations, selectedConversation, setSelectedConversation } = useContext(DataContext);
+  const { selectedConversation } = useContext(DataContext);
+
+  const is24HourComplete = is24HoursCompletedFnc(
+    selectedConversation?.last_message?.created_at,
+  );
 
   const [messageList, setMessageList] = useState([]);
   const [messageLoading, setLoadingMessages] = useState(true);
@@ -36,7 +43,11 @@ const ChatArea = () => {
   }, [messageList]);
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!selectedConversation) return;
+
+    if (is24HourComplete && !selectedTemplate) {
+      alert("24 hour window expired. Please send a template message.");
+      return;
+    }
 
     try {
       // =============================
@@ -125,7 +136,7 @@ const ChatArea = () => {
               mimeType: file.type,
             }
           : undefined,
-        status: "pending",
+        status: "sent",
         timestamp: new Date(),
         createdAt: new Date(),
       };
@@ -166,7 +177,7 @@ const ChatArea = () => {
         setMessageList(response?.result?.messages);
       }
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     } finally {
       setLoadingMessages(false);
     }
@@ -183,7 +194,7 @@ const ChatArea = () => {
         setTemplates(response?.result?.docs?.data || []);
       }
     } catch (error) {
-      // console.log("Error", error);
+      console.log("Error", error);
     }
   };
 
@@ -196,7 +207,7 @@ const ChatArea = () => {
     setTemplateClick(value);
   };
 
-   const handleChange = (e) => {
+  const handleChange = (e) => {
     const el = textareaRef.current;
     setMessageValue(e.target.value);
 
@@ -210,21 +221,26 @@ const ChatArea = () => {
     el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
   };
 
-
-  // console.log("selected cnvo", selectedConversation);
-
   return (
     <div className="flex-1 flex flex-col ">
       {/* Header */}
-      <div className="bg-white flex items-center px-6 h-16 shadow-sm">
-        <div className="w-12 h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
-          {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+      <div className="flex justify-between items-center  px-6 h-16 shadow-sm">
+        <div className="bg-white flex items-center">
+          <div className="w-12 h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
+            {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold ">
+              {selectedConversation?.name}
+            </h3>
+            <p className="text-sm ">+{selectedConversation.phone}</p>
+          </div>
         </div>
+
         <div>
-          <h3 className="text-lg font-semibold ">
-            {selectedConversation?.name}
-          </h3>
-          <p className="text-sm ">+{selectedConversation.phone}</p>
+          <button className="bg-gray-200/80 text-black px-4 py-1.5 rounded-sm text-sm font-medium">
+            Add Lead
+          </button>
         </div>
       </div>
 
@@ -255,16 +271,17 @@ const ChatArea = () => {
                     <div
                       className={`max-w-xs  px-3 py-2 ${
                         isMe
-                          ? "rounded-tl-xl rounded-br-xl rounded-bl-lg bg-teal-50/90 border !border-green-600 "
+                          ? "rounded-tl-xl rounded-br-xl rounded-bl-lg"
                           : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
                       }`}
                     >
                       {/* TEXT */}
                       {message.messageType === "text" && message.body && (
-                        <p className="text-sm whitespace-pre-wrap">
+                        <p className="text-sm whitespace-pre-wrap bg-white">
                           {message.body}
                         </p>
                       )}
+
                       {message.messageType === "template" &&
                         message.template.name && (
                           <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
@@ -293,11 +310,32 @@ const ChatArea = () => {
                         />
                       )}
 
-                      <div className="text-[10px] text-right mt-1 opacity-70">
-                        {new Date(message.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                      <div className="flex justify-end px-2 mt-1">
+                        <div className="flex items-center gap-1.5">
+                          <div className="text-[10px] text-right mt-1 opacity-70">
+                            {new Date(message.createdAt).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </div>
+
+                          {isMe && (
+                            <span className="text-xs flex justify-end mt-0.5">
+                              {message.status === "sent" && <BsCheckLg />}
+                              {message.status === "delivered" && (
+                                <BsCheckAll size={18} />
+                              )}{" "}
+                              {message.status === "read" && (
+                                <span className="text-blue-400">
+                                  <BsCheckAll size={18} />
+                                </span>
+                              )}{" "}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -318,25 +356,32 @@ const ChatArea = () => {
       >
         {templateClick && (
           <div className=" mb-2 grid grid-cols-2 lg:grid-cols-4 max-h-50  gap-2 overflow-auto scrollbar-hidden">
-            {templates.map((template) => (
-              <div
-                onClick={() => setSelectedTemplate(template)}
-                key={template?.id}
-                className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border !border-green-600 " : "border border-gray-300 opacity-60"} `}
-              >
-                <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
-                  {template?.name}
-                </p>
-                <p className="text-sm px-2 pb-2 ">
-                  {template?.components[0]?.text}
-                </p>
-              </div>
-            ))}
+            {templates?.length > 0 &&
+              templates?.map((template) => (
+                <div
+                  onClick={() => setSelectedTemplate(template)}
+                  key={template?.id}
+                  className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border !border-green-600 " : "border border-gray-300 opacity-60"} `}
+                >
+                  <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
+                    {template?.name}
+                  </p>
+                  <p className="text-sm px-2 pb-2 ">
+                    {template?.components[0]?.text}
+                  </p>
+                </div>
+              ))}
           </div>
         )}
 
         {file && (
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+            <div
+              onClick={() => setFile(null)}
+              className="flex justify-center items-center absolute left-1 -top-2 cursor-pointer size-4 bg-red-500 rounded-full text-white text-xs"
+            >
+              X
+            </div>
             <img
               src={URL.createObjectURL(file)}
               alt="file"
@@ -365,53 +410,55 @@ const ChatArea = () => {
 
         <div className="bg-white py-3 flex w-full items-center gap-3">
           {/* Attachment */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current.click()}
-            className="text-gray-500 hover:text-teal-600"
-          >
-            {/* Paperclip SVG */}
-            <svg
-              width="22"
-              height="22"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {!is24HourComplete && (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="text-gray-500 hover:text-teal-600"
             >
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
-              />
-            </svg>
-          </button>
+              {/* Paperclip SVG */}
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                />
+              </svg>
+            </button>
+          )}
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            onChange={(e) => {
-              setFile(e.target.files[0]);
-            }}
-          />
+          {!is24HourComplete && (
+            <input
+              disabled={is24HourComplete}
+              ref={fileInputRef}
+              type="file"
+              hidden
+              onChange={(e) => {
+                setFile(e.target.files[0]);
+              }}
+            />
+          )}
 
-          {/* Text Input */}
-          {/* <textarea
-            value={messageValue}
-            onChange={(e) => setMessageValue(e.target.value)}
-            placeholder="Type a message"
-            rows={messageValue.length}
-            className="flex-1 bg-zinc-100 resize-none rounded-lg  px-4 py-2 focus:outline-none focus:border-teal-500"
-          /> */}
-          <textarea
-            ref={textareaRef}
-            value={messageValue}
-            onChange={handleChange}
-            placeholder="Type a message"
-            rows={1}
-            className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
-          />
+          {!is24HourComplete ? (
+            <textarea
+              disabled={is24HourComplete}
+              ref={textareaRef}
+              value={messageValue}
+              onChange={handleChange}
+              placeholder="Type a message"
+              rows={1}
+              className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+            />
+          ) : (
+            <div className="flex-1"></div>
+          )}
 
           {/* Send Button */}
           <button

@@ -136,3 +136,19 @@ export const deleteWhatsAppMessageTemplate = async (payload) => {
   const data = await response.json();
   return data;
 };
+
+export const updateAutoMessageConfig = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/account/${payload?.phoneNumberId}/automessageConfig/update`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};

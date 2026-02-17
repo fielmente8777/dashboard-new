@@ -27,7 +27,7 @@ const SidebarChat = () => {
     setSelectedConversation,
   } = useContext(DataContext);
 
-  const [filteredConversations, setFilteredConversations] = useState([]);
+  // const [filteredConversations, setFilteredConversations] = useState([]);
 
   const handleSelectConversation = async (conv) => {
     try {
@@ -49,25 +49,26 @@ const SidebarChat = () => {
         await markMessageAsRead(conv._id);
       }
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     }
   };
 
   const handleSearch = () => {
     if (!debouncedSearch) {
-      setFilteredConversations(conversations);
+      // setFilteredConversations(conversations);
       return;
     }
-    const lowerSearch = debouncedSearch.toLowerCase();
+    // const lowerSearch = debouncedSearch.toLowerCase();
 
-    const filtered = conversations.filter((conv) =>
-      conv.name?.toLowerCase().includes(lowerSearch) ||
-      conv.phone?.includes(lowerSearch) ||
-      conv.lastMessage?.toLowerCase().includes(lowerSearch)
-    );
+    // const filtered = conversations.filter(
+    //   (conv) =>
+    //     conv.name?.toLowerCase().includes(lowerSearch) ||
+    //     conv.phone?.includes(lowerSearch) ||
+    //     conv.lastMessage?.toLowerCase().includes(lowerSearch),
+    // );
 
-    setFilteredConversations(filtered);
-  }
+    // setFilteredConversations(filtered);
+  };
 
   useEffect(() => {
     handleSearch();
@@ -86,16 +87,17 @@ const SidebarChat = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
-        {filteredConversations && filteredConversations?.length > 0 ? (
-          filteredConversations?.map((conv) => (
+        {conversations && conversations?.length > 0 ? (
+          conversations?.map((conv) => (
             <div
               key={conv._id}
               onClick={() => handleSelectConversation(conv)}
               // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${selectedConversation?._id === conv._id
-                ? "bg-teal-100/20"
-                : "hover:bg-gray-50"
-                }`}
+              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${
+                selectedConversation?._id === conv._id
+                  ? "bg-teal-100/20"
+                  : "hover:bg-gray-50"
+              }`}
             >
               {/* Avatar */}
               <div className="relative">
