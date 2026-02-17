@@ -320,7 +320,13 @@ const ChatArea = () => {
         )}
 
         {file && (
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+            <div
+              onClick={() => setFile(null)}
+              className="flex justify-center items-center absolute left-1 -top-2 cursor-pointer size-4 bg-red-500 rounded-full text-white text-xs"
+            >
+              X
+            </div>
             <img
               src={URL.createObjectURL(file)}
               alt="file"

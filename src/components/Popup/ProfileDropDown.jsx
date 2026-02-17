@@ -9,7 +9,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { setAuth } = useContext(DataContext);
+  const { setAuth, setSelectedConversation } = useContext(DataContext);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,6 +28,8 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
     removeCookie("token");
     setAuth(false);
     dispatch(setHid(null));
+    setSelectedConversation(null);
+
     navigate("/login");
   };
 

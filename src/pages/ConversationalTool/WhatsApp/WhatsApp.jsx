@@ -17,7 +17,7 @@ const WhatsApp = () => {
     integrationStatus,
     checkIntegrationStatus,
     setConversations,
-    conversation,
+    conversations,
     selectedConversation,
   } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
@@ -96,9 +96,8 @@ const WhatsApp = () => {
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
-        console.log(data);
         const conversation = {
-          id: data._id,
+          _id: data._id,
           phone: data.phone,
           name: data.name,
           profile_image: data.profile_image,
@@ -107,8 +106,6 @@ const WhatsApp = () => {
           updatedAt: new Date(),
         };
 
-        console.log(typeof localStorage.getItem("ndid"));
-
         if (data?.ndid === localStorage.getItem("ndid")) {
           playNotification();
           setConversations((prev) => [conversation, ...prev]);
@@ -116,8 +113,6 @@ const WhatsApp = () => {
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
       ) {
-        console.log(data);
-        // if (data?.ndid !== localStorage.getItem("ndid")) return;
         playNotification();
         setConversations((prev) =>
           updateConversationWithMessage(prev, data, selectedConversation?._id),
@@ -127,7 +122,7 @@ const WhatsApp = () => {
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation, conversation]);
+  }, [selectedConversation, conversations]);
 
   useEffect(() => {
     getWhatsappConversations();
