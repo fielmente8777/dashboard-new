@@ -653,7 +653,7 @@ const CreditInfoCard=({})=>{
         </p>
 
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-2xl font-medium text-gray-600">8,888.5</span>
+          <span className="text-2xl font-medium text-gray-600">0000.5</span>
           <span className="text-sm text-gray-600">remaining credits</span>
         </div>
         </div>

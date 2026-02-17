@@ -1,6 +1,7 @@
 import React, { useContext, useMemo, useState } from "react";
 import { formatDate } from "../../utils/formateData";
 import DataContext from "../../context/DataContext";
+import jsonToCsvExport from "json-to-csv-export";
 const MetaLeads = () => {
     const { metaLeads, limit, setLimit } = useContext(DataContext);
     const [selectedLead, setSelectedLead] = useState(null);
@@ -62,8 +63,9 @@ const MetaLeads = () => {
        Prepare Table Data From metaLeads
     ----------------------------------------------*/
     const tableData = useMemo(() => {
-        return metaLeads?.map((lead) => extractLeadFields(lead)) || [];
-    }, [metaLeads]);
+    if (!Array.isArray(metaLeads)) return [];
+    return metaLeads.map((lead) => extractLeadFields(lead));
+}, [metaLeads]);
 
     /* ---------------------------------------------
        UI
@@ -73,18 +75,19 @@ const MetaLeads = () => {
 
 
     const exportToExcel = () => {
-        if (!tableData.length) return;
+    if (!Array.isArray(tableData) || tableData.length === 0) {
+        console.log("No data available for export");
+        return;
+    }
 
-        const dataToExport = tableData;
-
-        const options = {
-            filename: "Meta_Leads",
-            delimiter: ",",
-            headers: Object.keys(tableData[0]),
-        };
-
-        jsonToCsvExport(dataToExport, options);
+    const options = {
+        filename: "Meta_Leads",
+        delimiter: ",",
+        headers: tableHeaders.map(h => h.key),
     };
+
+    jsonToCsvExport({data:tableData, options});
+};
 
     return (
         <div className="bg-white shadow border p-6 space-y-6">
@@ -117,7 +120,7 @@ const MetaLeads = () => {
 
             {/* TABLE */}
             <div className="border rounded-lg overflow-x-auto">
-                {tableData.length === 0 ? (
+                {tableData?.length === 0 ? (
                     <p className="p-6 text-sm text-gray-500">
                         No leads available
                     </p>
