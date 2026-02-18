@@ -4,8 +4,25 @@ import {
   formatDateByOnlyDay,
   formateDateInTimeIS,
 } from "../../../../utils/formateData";
+import ActivityModal from "./ActivityModal";
+import Timeline from "./Timeline";
+
+const header = [
+  { label: "Open Queries", value: "Open" },
+  { label: "Contacted", value: "Contacted" },
+  { label: "Converted", value: "Converted" },
+  { label: "Out Of Budget", value: "Out Of Budget" },
+  { label: "Potential For Later", value: "Potential" },
+  { label: "Quotation Provided", value: "Quotation Provided" },
+  { label: "Dead Lead", value: "Dead Lead" },
+  { label: "Date Sold Out", value: "Date Sold Out" },
+  { label: "Duplicate", value: "Duplicate" },
+  { label: "Hot", value: "Hot" },
+];
 
 const ProfilePanel = ({ selectedContact }) => {
+  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+  const [notes, setNotes] = useState([]);
   const [expandedSections, setExpandedSections] = useState({
     payments: false,
     campaigns: false,
@@ -19,7 +36,6 @@ const ProfilePanel = ({ selectedContact }) => {
       [section]: !prev[section],
     }));
   };
-
 
   // console.log(selectedContact);
 
@@ -35,7 +51,9 @@ const ProfilePanel = ({ selectedContact }) => {
             <h3 className="text-lg font-semibold text-gray-900">
               {selectedContact?.name}
             </h3>
-            <p className="text-sm text-gray-600 font-medium ">+{selectedContact?.phone}</p>
+            <p className="text-sm text-gray-600 font-medium ">
+              +{selectedContact?.phone}
+            </p>
           </div>
         </div>
 
@@ -43,8 +61,11 @@ const ProfilePanel = ({ selectedContact }) => {
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
-            <span className="text-gray-600 bg-green-200 px-4 rounded-2xl font-medium text-sm">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
+            <span className="text-gray-600 bg-green-200 px-4 rounded-2xl font-medium text-sm">
+              {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"}
+            </span>
           </div>
+
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Active</span>
             <span className="text-gray-900">{`${formatDateByOnlyDay(selectedContact?.last_message?.created_at)} ${formateDateInTimeIS(selectedContact?.last_message?.created_at)} `}</span>
@@ -67,7 +88,9 @@ const ProfilePanel = ({ selectedContact }) => {
           </div> */}
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Message</span>
-            <span className="text-gray-900">{selectedContact?.last_message?.text}</span>
+            <span className="text-gray-900">
+              {selectedContact?.last_message?.text}
+            </span>
           </div>
           {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">WA Conversation</span>
@@ -84,9 +107,14 @@ const ProfilePanel = ({ selectedContact }) => {
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Opted In</span>
 
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" class="sr-only peer" checked={selectedContact?.status === "ACTIVE"}/>
-                <div class="w-11 h-6 bg-gray-300 rounded-full peer 
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                checked={selectedContact?.status === "ACTIVE"}
+              />
+              <div
+                class="w-11 h-6 bg-gray-300 rounded-full peer 
                             peer-checked:bg-teal-500 
                             transition-colors duration-300"
               ></div>
@@ -97,6 +125,49 @@ const ProfilePanel = ({ selectedContact }) => {
               ></div>
             </label>
           </div>
+
+          <div className="w-full">
+            <select
+              name=""
+              id=""
+              className="border border-gray-50 outline-none py-1 rounded-md w-full"
+            >
+              <option value="">Select</option>
+              {header?.map((item) => {
+                return <option value={item.value}>{item.label}</option>;
+              })}
+            </select>
+          </div>
+
+          <div className="">
+            <h3 className="text-sm font-medium text-[#37322F] mb-4">Notes</h3>
+
+            {/* Add Activity */}
+            <div className="flex items-center gap-3.5 mb-4">
+              <button
+                className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg"
+                onClick={() => setIsAddActivityOpen(true)}
+              >
+                +
+              </button>
+
+              <p className="text-teal-600 font-medium">Add Activity</p>
+            </div>
+
+            {/* Timeline */}
+            <div className="max-h-72 overflow-auto pr-2">
+              <Timeline items={notes} />
+            </div>
+          </div>
+
+          {/* Modal */}
+          <ActivityModal
+            open={isAddActivityOpen}
+            onClose={() => setIsAddActivityOpen(false)}
+            onSave={(activity) => {
+              setNotes((prev) => [...prev, activity]);
+            }}
+          />
         </div>
       </div>
 

@@ -76,7 +76,7 @@ export default function WhatsAppMessageTemplate() {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     }
   };
 
@@ -138,15 +138,16 @@ export default function WhatsAppMessageTemplate() {
       const response = await createWhatsAppMessageTemplate({
         name,
         category,
-        language,
+        language: language,
         body,
       });
 
-      if (response?.error) {
-        const metaError = response.error;
-        // console.log(metaError);
+      if (response?.error || response?.metaError) {
+        setOpen(false);
+        const metaError = response.error || response.metaError;
 
         return Swal.fire({
+          className: "z-99999",
           icon: "error",
           title: metaError?.error?.error_user_title || "Template Error",
           text:
@@ -253,20 +254,21 @@ export default function WhatsAppMessageTemplate() {
     );
   }
 
-  const isMessagingEnabled =
-    accountDetails?.phoneNumber?.platformType === "CLOUD_API";
+  // const isMessagingEnabled =
+  //   accountDetails?.phoneNumber?.platformType === "CLOUD_API";
 
   return (
     <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
       <div className="flex justify-between">
-        <h1 className="text-lg text-gray-600  font-medium">WhatsApp Templates</h1>
+        <h1 className="text-lg text-gray-600  font-medium">
+          WhatsApp Templates
+        </h1>
 
         {templates.length > 0 && (
-
           <button
             onClick={() => setOpen(true)}
-
-            className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between">
+            className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between"
+          >
             <MdAdd size={20} /> Create Template
           </button>
         )}
@@ -407,10 +409,11 @@ export default function WhatsAppMessageTemplate() {
                     {/* STATUS */}
                     <td className="px-5 py-4 text-center">
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${t.status === "APPROVED"
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                          t.status === "APPROVED"
                             ? "bg-green-100 text-green-700"
                             : "bg-yellow-100 text-yellow-700"
-                          }`}
+                        }`}
                       >
                         {t.status}
                       </span>
@@ -421,10 +424,11 @@ export default function WhatsAppMessageTemplate() {
                       <button
                         onClick={() => handleDelete(t)}
                         disabled={t.status === "APPROVED"}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${t.status === "APPROVED"
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
+                          t.status === "APPROVED"
                             ? "bg-red-100 text-gray-400 cursor-not-allowed"
                             : "bg-red-50 text-red-600 hover:bg-red-100"
-                          }`}
+                        }`}
                         title={
                           t.status === "APPROVED"
                             ? "Approved templates cannot be deleted"
@@ -473,9 +477,9 @@ export default function WhatsAppMessageTemplate() {
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
-                <option value="en_US">English (US)</option>
-                <option value="en_IN">English (India)</option>
-                <option value="hi">Hindi</option>
+                <option value="en">English (US)</option>
+                {/* <option value="en_IN">English (India)</option> */}
+                {/* <option value="hi">Hindi</option> */}
               </select>
             </div>
 

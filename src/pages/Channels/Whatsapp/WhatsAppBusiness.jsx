@@ -6,7 +6,18 @@ import React, {
   useState,
 } from "react";
 import { FaAd, FaPlus, FaWhatsapp } from "react-icons/fa";
-import { MdAccountBalance, MdAdd, MdBalance, MdBook, MdClose, MdLink, MdLinkOff, MdPlusOne, MdVerified, MdWallet } from "react-icons/md";
+import {
+  MdAccountBalance,
+  MdAdd,
+  MdBalance,
+  MdBook,
+  MdClose,
+  MdLink,
+  MdLinkOff,
+  MdPlusOne,
+  MdVerified,
+  MdWallet,
+} from "react-icons/md";
 import WhatsappBusinessSkelton from "../../../components/Skeltons/WhatsappBusinessSkelton";
 import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
@@ -19,6 +30,7 @@ import WhatsAppMessageTemplate from "./Templates";
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
+
   const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
   const [templates, setTemplates] = useState([]);
@@ -107,7 +119,8 @@ const WhatsAppBusiness = () => {
 
           {/* Helper text */}
           <p className="mt-4 text-xs text-gray-400">
-            Secure Meta OAuth • Verified Tech Provider • Official WhatsApp Cloud API
+            Secure Meta OAuth • Verified Tech Provider • Official WhatsApp Cloud
+            API
           </p>
         </div>
       </div>
@@ -121,23 +134,22 @@ const WhatsAppBusiness = () => {
     <React.Fragment>
       {accountDetails && (
         <div className="w-full p-4 gap-4 grid grid-cols-2">
-          <div className="flex gap-4 flex-col"> 
-          {/* <BusinessInfoCard business={accountDetails?.business} /> */}
+          <div className="flex gap-4 flex-col">
+            {/* <BusinessInfoCard business={accountDetails?.business} /> */}
 
-          <WabaDetailsCard
-            waba={accountDetails?.waba}
-            business={accountDetails?.business}
-          />
-          <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
-
+            <WabaDetailsCard
+              waba={accountDetails?.waba}
+              business={accountDetails?.business}
+            />
+            <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
           </div>
-          <CreditInfoCard/>
+          <CreditInfoCard />
           <AutoMessageCard
             phoneNumberId={accountDetails?.phoneNumber?.id}
             autoMessage={accountDetails?.autoMessage}
             templates={templates} // backend should send this
           />
-          <WhatsAppMessageTemplate/>
+          <WhatsAppMessageTemplate />
         </div>
       )}
     </React.Fragment>
@@ -306,7 +318,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
   );
 };
 
-const WabaDetailsCard = ({ waba,business }) => {
+const WabaDetailsCard = ({ waba, business }) => {
   if (!waba) return null;
 
   const MARKETING_STATUS_UI = {
@@ -401,6 +413,8 @@ const WabaDetailsCard = ({ waba,business }) => {
 };
 
 const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
+  console.log(autoMessage);
+  const textareaRef = useRef(null);
   const [enabled, setEnabled] = useState(autoMessage?.enabled || false);
   const [type, setType] = useState(autoMessage?.type || "template");
   const [templateName, setTemplateName] = useState(
@@ -419,6 +433,21 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
     setTemplateName(autoMessage?.templateName || "");
     setMessage(autoMessage?.message || "");
   }, [autoMessage]);
+
+  useEffect(() => {
+    if (!textareaRef.current) return;
+
+    const el = textareaRef.current;
+
+    // Reset height to recalculate
+    el.style.height = "auto";
+
+    const lineHeight = 24; // adjust if needed
+    const maxRows = 8;
+    const maxHeight = lineHeight * maxRows;
+
+    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+  }, [message]);
 
   /* ----------------------------
      Find Selected Template
@@ -573,7 +602,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                rows={4}
+                ref={textareaRef}
                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="Enter auto reply message..."
               />
@@ -619,52 +648,65 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       )}
 
       {/* Save */}
-      {type!== autoMessage?.type||enabled!==autoMessage?.enabled? <div className="flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
-        >
-          {loading ? "Saving..." : "Save Configuration"}
-        </button>
-      </div>:""}
+      {type !== autoMessage?.type || enabled !== autoMessage?.enabled ? (
+        <div className="flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
+          >
+            {loading ? "Saving..." : "Save Configuration"}
+          </button>
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
 
-
-
-const CreditInfoCard=({})=>{
-  const [open, setOpen]=useState(false);
-  return(
+const CreditInfoCard = () => {
+  const [open, setOpen] = useState(false);
+  return (
     <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium  text-gray-600">WhatsApp Credit Report</h3>
-        
+        <h3 className="text-lg font-medium  text-gray-600">
+          WhatsApp Credit Report
+        </h3>
 
-        <button onClick={()=>setOpen(true)} className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between">
-          <MdAdd size={20}/> Buy Credits
+        <button
+          onClick={() => setOpen(true)}
+          className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between"
+        >
+          <MdAdd size={20} /> Buy Credits
         </button>
       </div>
-       <div>
+      <div>
         <p className="flex items-center gap-1 font-medium text-gray-700">
-          <MdAccountBalance/>Account Balance
+          <MdAccountBalance />
+          Account Balance
         </p>
 
         <div className="flex items-center gap-2 mt-2">
           <span className="text-2xl font-medium text-gray-600">0000.5</span>
           <span className="text-sm text-gray-600">remaining credits</span>
         </div>
-        </div>
+      </div>
 
-
-        {open && (
-        <div onClick={()=>setOpen(false)} className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]"
+        >
           <div className="bg-white w-full max-w-md p-6 space-y-5">
-            <h2 className="font-medium text-gray-500 text-center"> We are coming soon with this feature, Thanks</h2>
-            </div>
-            </div>)}
+            <h2 className="font-medium text-gray-500 text-center">
+              {" "}
+              We are coming soon with this feature, Thanks
+            </h2>
+          </div>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};

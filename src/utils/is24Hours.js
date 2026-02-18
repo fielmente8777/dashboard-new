@@ -3,8 +3,6 @@ export function is24HoursCompletedFnc(date) {
 
   const inputDate = date instanceof Date ? date : new Date(date);
 
-  console.log(inputDate);
-
   if (isNaN(inputDate.getTime())) {
     throw new Error("Invalid date provided");
   }

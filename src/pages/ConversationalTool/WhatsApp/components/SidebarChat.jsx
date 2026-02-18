@@ -2,9 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import DataContext from "../../../../context/DataContext";
 import { markMessageAsRead } from "../../../../services/api/whatsApp";
 import useDebounce from "../../../../hooks/useDebounce";
+import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
+
+const tabs = ["Active", "History"];
 
 const SidebarChat = () => {
   const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
   const getAvatarColor = (name) => {
     const colors = [
@@ -48,19 +52,25 @@ const SidebarChat = () => {
       if (conv.unread_count > 0) {
         await markMessageAsRead(conv._id);
       }
+
+      document.title = `${conv.name} | Whatsapp`;
     } catch (error) {
       console.log(error);
     }
   };
 
   const handleSearch = () => {
-    if (!debouncedSearch) {
-      setFilteredConversations(conversations);
-      return;
+    if (debouncedSearch === "" && activeTab.toLowerCase() === "active") {
+      return setFilteredConversations(activeConversations());
+    } else if (
+      debouncedSearch === "" &&
+      activeTab.toLowerCase() === "history"
+    ) {
+      return setFilteredConversations(historyConversations());
     }
     const lowerSearch = debouncedSearch.toLowerCase();
 
-    const filtered = conversations.filter(
+    const filtered = filteredConversations?.filter(
       (conv) =>
         conv.name?.toLowerCase().includes(lowerSearch) ||
         conv.phone?.includes(lowerSearch) ||
@@ -70,9 +80,37 @@ const SidebarChat = () => {
     setFilteredConversations(filtered);
   };
 
+  const activeConversations = () => {
+    return conversations.filter(
+      (conv) => !is24HoursCompletedFnc(conv.last_message?.created_at),
+    );
+  };
+
+  const historyConversations = () => {
+    return conversations.filter((conv) =>
+      is24HoursCompletedFnc(conv.last_message?.created_at),
+    );
+  };
+
+  const handleTabChnage = (tab) => {
+    setActiveTab(tab);
+    const activeTab = tab.toLowerCase();
+
+    activeTab === "active"
+      ? setFilteredConversations(activeConversations())
+      : setFilteredConversations(historyConversations());
+  };
+
   useEffect(() => {
     handleSearch();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, conversations]);
+
+  useEffect(() => {
+    if (activeTab === "active" && activeConversations) {
+      const actConversations = activeConversations();
+      setFilteredConversations(actConversations);
+    }
+  }, []);
 
   return (
     <div className="w-80  border-b border-l border-r border-gray-200 flex flex-col bg-white">
@@ -84,6 +122,18 @@ const SidebarChat = () => {
           placeholder="Search conversations..."
           className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"
         />
+      </div>
+
+      <div className="flex items-center gap-2 border-b border-gray-200 p-2">
+        {tabs?.map((tab) => (
+          <button
+            onClick={() => handleTabChnage(tab)}
+            key={tab}
+            className={`px-4 py-2 rounded-xs ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer `}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden">

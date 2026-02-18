@@ -113,12 +113,13 @@ const WhatsApp = () => {
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
       ) {
-        console.log(data);
+        if (data?.ndid !== localStorage.getItem("ndid")) return;
         playNotification();
         setConversations((prev) =>
           updateConversationWithMessage(prev, data, selectedConversation?._id),
         );
-        document.title = `Whatsapp - New Message`;
+
+        document.title = `(${data?.unread_count + 1}) ${data?.name} | Whatsapp`;
       }
     });
 

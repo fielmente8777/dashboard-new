@@ -21,7 +21,7 @@ import { BsCheckLg } from "react-icons/bs";
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
-  const { selectedConversation } = useContext(DataContext);
+  const { selectedConversation, conversations } = useContext(DataContext);
 
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
@@ -50,9 +50,6 @@ const ChatArea = () => {
     }
 
     try {
-      // =============================
-      // 🚀 TEMPLATE SELECTED
-      // =============================
       if (selectedTemplate) {
         const templateParams =
           selectedTemplate.components?.[0]?.example?.body_text?.[0] || [];
@@ -106,9 +103,6 @@ const ChatArea = () => {
         return;
       }
 
-      // =============================
-      // 🚀 NORMAL MESSAGE
-      // =============================
       const formData = new FormData();
       formData.append("phone", selectedConversation.phone);
 
@@ -145,7 +139,23 @@ const ChatArea = () => {
 
       setMessageValue("");
 
-      await sendWhatsAppMessage(formData);
+      const response = await sendWhatsAppMessage(formData);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        // Update UI
+        setMessageList((prev) =>
+          prev.map((m) => {
+            if (m._id === optimisticMessage._id) {
+              return {
+                ...m,
+                messageId: response?.result?.docs?.messageId,
+                status: "sent",
+              };
+            }
+            return m;
+          }),
+        );
+      }
     } catch (error) {
       console.error(error);
     }
@@ -161,11 +171,27 @@ const ChatArea = () => {
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
         const message = { ...data };
         setMessageList((prev) => [...prev, message]);
+      } else if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_MESSAGE_STATUS
+      ) {
+        const { data } = serverResponse;
+
+        setMessageList((prev) =>
+          prev.map((m) => {
+            if (m.messageId === data.messageId) {
+              return {
+                ...m,
+                status: data.status,
+              };
+            }
+            return m;
+          }),
+        );
       }
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation]);
+  }, [selectedConversation, conversations]);
 
   const loadMessages = async (conversationId) => {
     setLoadingMessages(true);

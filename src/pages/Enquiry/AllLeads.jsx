@@ -259,19 +259,18 @@ const AllLeads = () => {
 
         <tbody>
           {loading && (
-           <>
-            {Array.from({length:limit}).map(item=>(
-              <tr key={item} className=" mb-2 ">
-              
-              <td colSpan={12} className="text-center animate-pulse border mb-2 bg-gray-100 py-3 ">
-
-                <div className="flex justify-center h-6 items-center text-gray-500 ">
-
-                </div>
-              </td>
-            </tr>
-            ))}
-           </>
+            <>
+              {Array.from({ length: limit }).map((item) => (
+                <tr key={item} className=" mb-2 ">
+                  <td
+                    colSpan={12}
+                    className="text-center animate-pulse border mb-2 bg-gray-100 py-3 "
+                  >
+                    <div className="flex justify-center h-6 items-center text-gray-500 "></div>
+                  </td>
+                </tr>
+              ))}
+            </>
           )}
 
           {!loading &&
