@@ -619,7 +619,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       )}
 
       {/* Save */}
-      {type!== autoMessage.type||enabled!==autoMessage.enabled? <div className="flex justify-end">
+      {type!== autoMessage?.type||enabled!==autoMessage?.enabled? <div className="flex justify-end">
         <button
           onClick={handleSave}
           disabled={loading}
