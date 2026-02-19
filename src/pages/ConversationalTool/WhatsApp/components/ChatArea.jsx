@@ -7,6 +7,7 @@ import {
 } from "../../../../data/constant";
 import DataContext from "../../../../context/DataContext";
 import {
+  addWhatsAppLead,
   getWhatsappConversationMessages,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
@@ -17,6 +18,8 @@ import normalizePhone from "../../../../utils/normalizePhone";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import { BsCheckAll } from "react-icons/bs";
 import { BsCheckLg } from "react-icons/bs";
+import Loader from "../../../../components/Loader";
+import Swal from "sweetalert2";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
@@ -29,6 +32,7 @@ const ChatArea = () => {
 
   const [messageList, setMessageList] = useState([]);
   const [messageLoading, setLoadingMessages] = useState(true);
+  const [addLeadLoading, setAddLeadLoading] = useState(false);
   const [messageValue, setMessageValue] = useState("");
   const [file, setFile] = useState(null);
   const bottomRef = useRef(null);
@@ -38,9 +42,6 @@ const ChatArea = () => {
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState();
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView();
-  }, [messageList]);
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
@@ -161,6 +162,79 @@ const ChatArea = () => {
     }
   };
 
+  const loadMessages = async (conversationId) => {
+    setLoadingMessages(true);
+    try {
+      const response = await getWhatsappConversationMessages(conversationId);
+      // setMessageList(response?.result?.messages)
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        setMessageList(response?.result?.messages);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const fetchTemplate = async () => {
+    try {
+      const response = await getWhatsAppMessageTemplates();
+      if (response.success) {
+        setTemplates(response?.result?.docs?.data || []);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+
+  const handleAddLead = async () => {
+    setAddLeadLoading(true);
+    try {
+      const payload = {
+        phone: selectedConversation.phone,
+        name: selectedConversation.name,
+        ndid: selectedConversation.ndid,
+        notes: selectedConversation.notes,
+        stage: selectedConversation.stage,
+        conversationId: selectedConversation._id,
+      };
+      const response = await addWhatsAppLead(payload);
+
+      if (response.success && response.responseStatusCode === 200) {
+        Swal.fire("Success", response?.responseMessage, "success");
+      }
+    } catch (error) {
+      console.log("Error", error);
+    } finally {
+      setAddLeadLoading(false);
+    }
+  };
+
+  const handleTemplate = (value) => {
+    setSelectedTemplate(null);
+    setTemplateClick(value);
+  };
+
+  const handleChange = (e) => {
+    const el = textareaRef.current;
+    setMessageValue(e.target.value);
+
+    // Reset height to recalculate
+    el.style.height = "auto";
+
+    const lineHeight = 24; // adjust if needed
+    const maxRows = 8;
+    const maxHeight = lineHeight * maxRows;
+
+    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+  };
+
+  useEffect(() => {
+    fetchTemplate();
+  }, []);
+
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
@@ -193,59 +267,9 @@ const ChatArea = () => {
     return () => wsRef.current?.close();
   }, [selectedConversation, conversations]);
 
-  const loadMessages = async (conversationId) => {
-    setLoadingMessages(true);
-    try {
-      const response = await getWhatsappConversationMessages(conversationId);
-      // setMessageList(response?.result?.messages)
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        setMessageList(response?.result?.messages);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoadingMessages(false);
-    }
-  };
-
   useEffect(() => {
     loadMessages(selectedConversation?._id);
   }, [selectedConversation?._id]);
-
-  const fetchTemplate = async () => {
-    try {
-      const response = await getWhatsAppMessageTemplates();
-      if (response.success) {
-        setTemplates(response?.result?.docs?.data || []);
-      }
-    } catch (error) {
-      console.log("Error", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTemplate();
-  }, []);
-
-  const handleTemplate = (value) => {
-    setSelectedTemplate(null);
-    setTemplateClick(value);
-  };
-
-  const handleChange = (e) => {
-    const el = textareaRef.current;
-    setMessageValue(e.target.value);
-
-    // Reset height to recalculate
-    el.style.height = "auto";
-
-    const lineHeight = 24; // adjust if needed
-    const maxRows = 8;
-    const maxHeight = lineHeight * maxRows;
-
-    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
-  };
 
   return (
     <div className="flex-1 flex flex-col ">
@@ -263,11 +287,17 @@ const ChatArea = () => {
           </div>
         </div>
 
-        <div>
-          <button className="bg-gray-200/80 text-black px-4 py-1.5 rounded-sm text-sm font-medium">
-            Add Lead
-          </button>
-        </div>
+        {!selectedConversation?.markAsLead && (
+          <div>
+            <button
+              disabled={addLeadLoading}
+              onClick={handleAddLead}
+              className="bg-primary/95 text-lime-50 px-4 py-1.5 rounded-sm text-sm font-medium flex items-center gap-2"
+            >
+              Add Lead {addLeadLoading && <Loader size={12} color="#fff" />}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Messages */}

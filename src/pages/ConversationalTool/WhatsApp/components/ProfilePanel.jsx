@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
 import {
   formatDateByOnlyDay,
@@ -6,6 +6,7 @@ import {
 } from "../../../../utils/formateData";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
+import DataContext from "../../../../context/DataContext";
 
 const header = [
   { label: "Open Queries", value: "Open" },
@@ -21,23 +22,20 @@ const header = [
 ];
 
 const ProfilePanel = ({ selectedContact }) => {
+  const { setSelectedConversation } = useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [notes, setNotes] = useState([]);
-  const [expandedSections, setExpandedSections] = useState({
-    payments: false,
-    campaigns: false,
-    attributes: false,
-    tags: true,
-  });
 
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    if (name === "stage") {
+      setSelectedConversation((prev) => ({
+        ...prev,
+        stage: value,
+      }));
+    }
   };
-
-  // console.log(selectedContact);
 
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
@@ -128,9 +126,10 @@ const ProfilePanel = ({ selectedContact }) => {
 
           <div className="w-full">
             <select
-              name=""
+              name="stage"
               id=""
               className="border border-gray-50 outline-none py-1 rounded-md w-full"
+              onChange={handleInputChange}
             >
               <option value="">Select</option>
               {header?.map((item) => {
@@ -166,6 +165,10 @@ const ProfilePanel = ({ selectedContact }) => {
             onClose={() => setIsAddActivityOpen(false)}
             onSave={(activity) => {
               setNotes((prev) => [...prev, activity]);
+              setSelectedConversation((prev) => ({
+                ...prev,
+                notes: [...(prev.notes || []), activity],
+              }));
             }}
           />
         </div>

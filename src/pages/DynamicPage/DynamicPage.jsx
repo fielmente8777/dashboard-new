@@ -88,6 +88,7 @@ import EazbotLeads from "../Enquiry/EazbotEnquiries";
 import WebformLeads from "../Enquiry/WebformLeads";
 import AllVisitors from "../Enquiry/AllVisitors";
 import MetaLeads from "../Enquiry/MetaLeads";
+import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -143,9 +144,9 @@ const DynamicPage = () => {
     ),
 
     [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
-    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: (
-      <MetaLeads />
-    ),
+    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/whatsapp`]: <WhatsAppLeads />,
+
     [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
     [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
     [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,

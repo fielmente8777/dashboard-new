@@ -71,7 +71,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
     transition-all duration-200 ease-out
     ${
       isProfileOpen
-        ? "opacity-100 translate-y-0 pointer-events-auto !z-999999]"
+        ? "opacity-100 translate-y-0 pointer-events-auto !z-[999999]"
         : "opacity-0 -translate-y-2 pointer-events-none z-[-1]"
     }
   `}

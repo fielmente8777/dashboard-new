@@ -32,9 +32,9 @@ const header = [
 ];
 
 export const formatPhoneNumber = (phone) => {
-  let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
+  let cleaned = phone?.replace(/\D/g, ""); // remove non-digit characters
 
-  if (cleaned.length === 10) {
+  if (cleaned?.length === 10) {
     cleaned = "91" + cleaned; // prepend country code if it's a 10-digit
   }
 
@@ -46,8 +46,6 @@ const LeadPopup = ({
   onClose,
   lead,
   fetchEnquires,
-  handleTabClick,
-  activeIndex,
   show,
 }) => {
   // console.log(lead?.note);
@@ -60,7 +58,7 @@ const LeadPopup = ({
   const [isNoteUpdateLoading, setIsNoteUpdateLoading] = useState(false);
 
   useEffect(() => {
-    setNote(lead?.note || "");
+    setNote(lead?.note || lead?.notes || "");
   }, [lead]);
   const handleTabChange = (index) => {
     setActiveTab(index);

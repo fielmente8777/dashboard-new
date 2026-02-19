@@ -4,7 +4,7 @@ import { markMessageAsRead } from "../../../../services/api/whatsApp";
 import useDebounce from "../../../../hooks/useDebounce";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 
-const tabs = ["Active", "History"];
+const tabs = ["Active", "Inactive"];
 
 const SidebarChat = () => {
   const [search, setSearch] = useState("");
