@@ -12,7 +12,6 @@ import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
 import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
-import ProfileDropDown from "../Popup/ProfileDropDown";
 import { toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { FaAlignRight } from "react-icons/fa";
 
@@ -63,7 +62,8 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
     useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  // const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { isOpenProfilePopup, setIsOpenProfilePopup } = useContext(DataContext);
 
   const SidebarData = [
     {
@@ -152,8 +152,7 @@ const Navbar = () => {
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
             <Link to="settings">
-                <MdSettings size={22} color="white"/>
-
+              <MdSettings size={22} color="white" />
             </Link>
             <div
               onClick={() => setOpen(true)}
@@ -179,7 +178,7 @@ const Navbar = () => {
                   hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
                 ],
             }}
-            onClick={() => setIsProfileOpen(true)}
+            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
@@ -202,7 +201,7 @@ const Navbar = () => {
                   hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
                 ],
             }}
-            onClick={() => setIsProfileOpen(true)}
+            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
@@ -220,10 +219,7 @@ const Navbar = () => {
             letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
           }
         /> */}
-        <ProfileDropDown
-          isProfileOpen={isProfileOpen}
-          setIsProfileOpen={setIsProfileOpen}
-        />
+
         {/* <ChangePassword
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
