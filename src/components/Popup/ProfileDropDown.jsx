@@ -9,7 +9,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { setAuth } = useContext(DataContext);
+  const { setAuth, setSelectedConversation } = useContext(DataContext);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,27 +28,29 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
     removeCookie("token");
     setAuth(false);
     dispatch(setHid(null));
+    setSelectedConversation(null);
+
     navigate("/login");
   };
 
   const routs = [
-    {
-      name: "Profile",
-      link: "profile",
-    },
-    {
-      name: "User Management",
-      link: "user-management/all-users",
-    },
+    // {
+    //   name: "Profile",
+    //   link: "profile",
+    // },
+    // {
+    //   name: "User Management",
+    //   link: "user-management/all-users",
+    // },
     {
       name: "Account & Billing",
       target: "_blank",
       link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
     },
-    {
-      name: "Integration",
-      link: "integration",
-    },
+    // {
+    //   name: "Integration",
+    //   link: "integration",
+    // },
     {
       name: "QR Code",
       link: "qr-code",
@@ -61,34 +63,74 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
 
   return (
     <div
-      className={`nav-profile-dropdown  ${isProfileOpen ? "active" : ""}`}
       ref={dropdownRef}
+      className={`
+    fixed right-4 top-[6%]
+    min-w-180px rounded-lg border bg-white
+    shadow-lg
+    transition-all duration-200 ease-out
+    ${
+      isProfileOpen
+        ? "opacity-100 translate-y-0 pointer-events-auto !z-[999999]"
+        : "opacity-0 -translate-y-2 pointer-events-none z-[-1]"
+    }
+  `}
     >
-      {routs.map((route, index) => (
-        <li key={index}>
-          {route.link && (
-            <Link
-              to={route.link} // integraion
-              target={route.target}
-              onClick={() => setIsProfileOpen(false)}
-              className="block py-2 px-3 font-medium hover:bg-slate-100"
-            >
-              {route.name}
-            </Link>
-          )}
-          {!route.link && (
-            <button
-              type="button"
-              className="block py-2 px-3 font-medium hover:bg-slate-100 w-full text-left"
-              onClick={route.onClick}
-            >
-              {route.name}
-            </button>
-          )}
-        </li>
-      ))}
+      <ul className="py-2">
+        {routs.map((route, index) => (
+          <li key={index}>
+            {route.link ? (
+              <Link
+                to={route.link}
+                target={route.target}
+                onClick={() => setIsProfileOpen(false)}
+                className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                {route.name}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={route.onClick}
+                className="block w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                {route.name}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
 export default ProfileDropDown;
+
+// <div
+//     className={`nav-profile-dropdown border  ${isProfileOpen ? "active z-999999!" : ""}`}
+//     ref={dropdownRef}
+//   >
+//     {routs.map((route, index) => (
+//       <li key={index}>
+//         {route.link && (
+//           <Link
+//             to={route.link} // integraion
+//             target={route.target}
+//             onClick={() => setIsProfileOpen(false)}
+//             className="block py-2 px-3 font-medium hover:bg-slate-100"
+//           >
+//             {route.name}
+//           </Link>
+//         )}
+//         {!route.link && (
+//           <button
+//             type="button"
+//             className="block py-2 px-3 font-medium hover:bg-slate-100 w-full text-left"
+//             onClick={route.onClick}
+//           >
+//             {route.name}
+//           </button>
+//         )}
+//       </li>
+//     ))}
+//   </div>

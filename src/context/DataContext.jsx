@@ -1,8 +1,8 @@
 import axios from "axios";
-import { createContext, useState } from "react";
-import { io } from "socket.io-client";
+import { createContext, useEffect, useState } from "react";
 import { BASE_URL, NEW_BASE_URL } from "../data/constant";
 import { is24HoursCompletedFnc } from "../utils/is24Hours";
+import { getMetaAccounts, getMetaLeads } from "../services/api/MetaLeads.api";
 
 const DataContext = createContext({});
 
@@ -31,23 +31,71 @@ export const DataProvider = ({ children }) => {
       lastSyncTime: null,
     },
   });
-  const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
 
   const [RoomsData, setRoomsData] = useState([]);
   const [bookingData, setBookingData] = useState(null);
   const [editButton, setEditButton] = useState(false);
 
+  // whatsapp
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
+  const [limit, setLimit] = useState(10);
   const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
     useState(false);
 
   // const host = "http://localhost:8000"
   const host = "https://hmsbackend-7pyp.onrender.com";
 
-  const socket = io(host, {
-    transports: ["websocket"], // Ensure WebSocket transport is used
-    reconnectionAttempts: 1, // Optional: retry connection attempts
-    reconnectionDelay: 10000, // Optional: retry delay (in ms)
-  });
+  // const socket = io(host, {
+  //   transports: ["websocket"], // Ensure WebSocket transport is used
+  //   reconnectionAttempts: 1, // Optional: retry connection attempts
+  //   reconnectionDelay: 10000, // Optional: retry delay (in ms)
+  // });
+
+
+  const [metaLeads,setMetaLeads]=useState([])
+  const fetchMetaPages = async () => {
+      try {
+        const response = await getMetaAccounts();
+        if (response?.success) {
+          const pagesData = response?.result?.docs?.pages || [];
+          // setPages(pagesData);
+  
+          if (pagesData.length === 1) {
+            // setSelectedPageId(pagesData[0].id);
+            // fetchPageForms(pagesData[0].id);
+            fetchLeads(pagesData[0].id);
+          }
+        }
+      } finally {
+      }
+    };
+
+   const fetchLeads = async (pageId, formId, cursor) => {
+      // setLoadingLeads(true);
+      try {
+        const response = await getMetaLeads(pageId, formId, cursor,limit);
+        if (response?.success) {
+          // setLeads(response?.result?.docs?.leads || []);
+  
+  
+          const sortedLeads = [...(response?.result?.docs?.allLeads || [])].sort(
+            (a, b) => new Date(b.created_time) - new Date(a.created_time)
+          );
+          setMetaLeads(sortedLeads || []);
+          // const cursors = response?.result?.paging?.cursors;
+          // setAfterCursor(cursors?.after || null);
+          // setBeforeCursor(cursors?.before || null);
+        }
+      } finally {
+      }
+    };
+
+
+    useEffect(()=>{
+      fetchMetaPages()
+    },[limit])
 
   const fetchRoomsData = async () => {
     try {
@@ -179,6 +227,7 @@ export const DataProvider = ({ children }) => {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
@@ -190,7 +239,7 @@ export const DataProvider = ({ children }) => {
       setIs24HoursCompleted(isCompleted);
       setIntegrationStauts(data?.result?.docs);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsLoadingIntegrationStatus(false);
     }
@@ -235,7 +284,7 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider
       value={{
-        socket,
+        // socket,
         host,
         auth,
         setAuth,
@@ -278,6 +327,12 @@ export const DataProvider = ({ children }) => {
         checkIntegrationStatus,
         isLoadingIntegrationStatus,
         is24HoursCompleted,
+        selectedConversation,
+        setSelectedConversation,
+        conversations,
+        setConversations,
+        limit, setLimit,
+        metaLeads,setMetaLeads
       }}
     >
       {children}

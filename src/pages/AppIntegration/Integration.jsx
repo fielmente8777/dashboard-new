@@ -9,12 +9,22 @@ import { useNavigate } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
 import DataContext from "../../context/DataContext";
+import {
+  connectMetaLead,
+  connectWhatsapp,
+  disconnectIntegration,
+} from "../../services/api/Integration";
+import IntegrationSkelton from "../../components/Skeltons/IntegrationSkelton";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
 function Integration() {
   const navigate = useNavigate();
-  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
+  const {
+    integrationStatus,
+    checkIntegrationStatus,
+    isLoadingIntegrationStatus,
+  } = useContext(DataContext);
   const [formData, setFormData] = useState({
     apiKey: "",
     authToken: "",
@@ -25,20 +35,14 @@ function Integration() {
 
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
+  const [currentIntegrationId, setCurrentIntegrationId] = useState(null);
+  // const [isUpdateLoading, setIsUpdateLoading] = useState(false);
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [showOtpLessSidebar, setOtpLessSidebar] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
 
-  // const [integrationStatus, setIntegrationStauts] = useState({
-  //   WebsiteTracking: false,
-  //   gmail: false,
-  //   google_analytics: false,
-  //   meta: false,
-  //   exotel: false,
-  // });
-
-  const [integrations, setIntegrations] = useState([
+  const [integrations] = useState([
     {
       id: "gmail",
       name: "Gmail",
@@ -61,24 +65,15 @@ function Integration() {
     },
     {
       id: "googleAdsInsight",
-      name: "Google Adds Analytics",
-      description: "Track website metrics and user analytics in real time.",
+      name: "Google Ads Insights",
+      description: "Track google ads metrics.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
       category: "Analytics",
       color: "",
     },
     {
-      id: "googleAnalytics",
-      name: "Google Analytics",
-      description: "Track website metrics and user analytics in real time.",
-      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
-      status: "not-connected",
-      category: "Analytics",
-      color: "",
-    },
-    {
-      id: "whatsapp",
+      id: "metaWhatsapp",
       name: "WhatsApp Business",
       description:
         "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
@@ -88,22 +83,21 @@ function Integration() {
       color: "bg-green-500",
     },
     {
+      id: "metaLead",
+      name: "Meta Leads",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
+      icon: <FaMeta className="w-10 h-10" color="#0281F0" />,
+      status: "not-connected",
+      category: "Analytics",
+      color: "",
+    },
+    {
       id: "WebsiteTracking",
       name: "Website Tracking",
       description:
         "Connect website tracking code to your website and get Website Engagement",
       icon: <MdOutlineTrackChanges className="w-10 h-10" color="#2D1953" />,
-      status: "not-connected",
-      category: "Analytics",
-      color: "",
-    },
-
-    {
-      id: "meta",
-      name: "Meta Leads",
-      description:
-        "Connect website tracking code to your website and get Website Engagement",
-      icon: <FaMeta className="w-10 h-10" color="#0281F0" />,
       status: "not-connected",
       category: "Analytics",
       color: "",
@@ -141,8 +135,8 @@ function Integration() {
     "All",
     "Communication",
     "Analytics",
-    "Productivity",
-    "Storage",
+    // "Productivity",
+    // "Storage",
   ];
 
   const filteredIntegrations = integrations.filter((integration) => {
@@ -159,68 +153,81 @@ function Integration() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // console.log(filteredIntegrations);
+  const handleWhatsappConnect = async () => {
+    try {
+      const response = await connectWhatsapp();
 
-  const BASE_URL = "https://262dae41ccde.ngrok-free.app/api/v1";
-  const LOCAL_BASE_URL = "http://localhost:8000/api/v1";
+      if (response?.success && response?.responseStatusCode) {
+        window.open(response?.result?.docs?.signupUrl, "_blank");
+      }
+    } catch (error) {
+      // console.log(error);
+    }
+  };
 
-  const openNewTab = (url) => window.open(url, "_blank", "noopener,noreferrer");
+  const handleMetaLeadConnect = async () => {
+    try {
+      const response = await connectMetaLead();
+
+      // console.log(response);
+
+      if (response?.success && response?.responseStatusCode) {
+        window.open(response?.result?.docs?.authUrl, "_blank");
+      }
+    } catch (error) {
+      // console.log(error);
+    }
+  };
+
+  const handleDisconnectIntegration = async (id) => {
+    // setIsUpdateLoading(true);
+    setCurrentIntegrationId(id);
+    try {
+      const response = await disconnectIntegration(id);
+      if (response?.success && response?.responseStatusCode) {
+        checkIntegrationStatus();
+      }
+    } catch (error) {
+      // console.log(error);
+    } finally {
+      // setIsUpdateLoading(false);
+      setCurrentIntegrationId(null);
+    }
+  };
 
   const toggleIntegration = (id) => {
-    switch (id) {
-      case "meta": {
-        const handleConnect = async () => {
-          try {
-            const { data } = await axios.get(`${BASE_URL}/auth/meta/start`, {
-              headers: {
-                "ngrok-skip-browser-warning": "true",
-              },
-            });
-
-            openNewTab(data?.signupUrl);
-          } catch (error) {
-            console.log(error);
-          }
-        };
-
-        handleConnect();
-        return;
-      }
-
-      case "exotel":
-        setShowSidebar(true);
-        return;
-
-      case "otp-less":
-        setOtpLessSidebar(true);
-        return;
-
-      case "gmail": {
-        const handleConnection = async () => {
-          try {
-            const response = await axios.get(
-              `${LOCAL_BASE_URL}/emails/google/login`,
-              {
-                params: {
-                  ndid: localStorage.getItem("ndid"),
-                },
-              },
-            );
-
-            window.location.href = response.data.auth_url;
-          } catch (error) {
-            console.error("Error connecting google:", error);
-          }
-        };
-
-        handleConnection();
-        return;
-      }
-
-      case "gmb": {
-        const handleConnection = async () => {
-          try {
-            const response = await axios.get(`${LOCAL_BASE_URL}/gmb/connect`, {
+    if (id === "metaWhatsapp") {
+      handleWhatsappConnect();
+      return;
+    } else if (id === "metaLead") {
+      handleMetaLeadConnect();
+    } else if (id === "exotel") {
+      setShowSidebar(true);
+    } else if (id === "otp-less") {
+      setOtpLessSidebar(true);
+    } else if (id === "gmail") {
+      const handleConnection = async () => {
+        try {
+          // console.log("Connecting with google")
+          const response = await axios.get(
+            `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
+              "ndid",
+            )}`,
+          );
+          // console.log(response.data);
+          window.location.href = response.data.auth_url;
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
+      return;
+    } else if (id === "gmb") {
+      const handleConnection = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8000/api/v1/gmb/connect`,
+            {
               params: {
                 ndid: localStorage.getItem("ndid"),
               },
@@ -228,201 +235,45 @@ function Integration() {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 "Content-Type": "application/json",
               },
-            });
+            },
+          );
+          window.open(response.data.url, "_blank");
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
+      return;
+    } else if (id === "googleAdsInsight") {
+      const handleConnection = async () => {
+        try {
+          // console.log("Connecting with google")
+          const { data } = await axios.get(
+            `${NEW_BASE_URL}/api/v1/google-ads/auth/google/start?ndid=${localStorage.getItem("ndid")}`,
+          );
 
-            openNewTab(response.data.url);
-          } catch (error) {
-            console.error("Error connecting google:", error);
-          }
-        };
-
-        handleConnection();
-        return;
-      }
-
-      case "googleAdsInsight": {
-        const handleConnection = async () => {
-          try {
-            const { data } = await axios.get(
-              `${LOCAL_BASE_URL}/google-ads/auth/google/start`,
-              {
-                params: {
-                  ndid: localStorage.getItem("ndid"),
-                },
-              },
-            );
-
-            openNewTab(data.googleAuthUrl);
-          } catch (error) {
-            console.error("Error connecting google:", error);
-          }
-        };
-
-        handleConnection();
-        return;
-      }
-
-      case "googleAnalytics": {
-        const handleConnection = async () => {
-          try {
-            const { data } = await axios.get(
-              `${LOCAL_BASE_URL}/google-analytics/auth/google-analytics/start`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              },
-            );
-
-            openNewTab(data.result.authUrl);
-            console.log(data);
-          } catch (error) {
-            console.error("Error connecting google:", error);
-          }
-        };
-
-        handleConnection();
-        return;
-      }
-
-      default:
-        break;
+          window.open(data.googleAuthUrl, "_blank");
+        } catch (error) {
+          console.error("Error connecting google:", error);
+        }
+      };
+      handleConnection();
     }
-
-    // fallback status toggle
-    setIntegrations(
-      integrations.map((integration) =>
-        integration.id === id
-          ? {
-              ...integration,
-              status:
-                integration.status === "connected"
-                  ? "not-connected"
-                  : "connected",
-            }
-          : integration,
-      ),
-    );
+    // setIntegrations(
+    //   integrations.map((integration) => {
+    //     if (integration.id === id) {
+    //       return {
+    //         ...integration,
+    //         status:
+    //           integration.status === "connected"
+    //             ? "not-connected"
+    //             : "connected",
+    //       };
+    //     }
+    //     return integration;
+    //   }),
+    // );
   };
-
-  // const toggleIntegration = (id) => {
-  //   if (id === "meta") {
-  //     const handleConnect = async () => {
-  //       try {
-  //         const { data } = await axios.get(
-  //           `https://262dae41ccde.ngrok-free.app/api/v1/auth/meta/start`,
-  //           {
-  //             headers: {
-  //               "ngrok-skip-browser-warning": "true",
-  //             },
-  //           },
-  //         );
-
-  //         window.open(data?.signupUrl, "_blank");
-  //         // launchWhatsAppSignup()
-
-  //         // setConnected(true);
-  //       } catch (error) {
-  //         console.log(error);
-  //       }
-  //     };
-  //     handleConnect();
-  //     return;
-  //   } else if (id === "exotel") {
-  //     setShowSidebar(true);
-  //   } else if (id === "otp-less") {
-  //     setOtpLessSidebar(true);
-  //   } else if (id === "gmail") {
-  //     const handleConnection = async () => {
-  //       try {
-  //         // console.log("Connecting with google")
-  //         const response = await axios.get(
-  //           `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
-  //             "ndid",
-  //           )}`,
-  //         );
-  //         console.log(response.data);
-  //         window.location.href = response.data.auth_url;
-  //       } catch (error) {
-  //         console.error("Error connecting google:", error);
-  //       }
-  //     };
-  //     handleConnection();
-  //     return;
-  //   } else if (id === "gmb") {
-  //     const handleConnection = async () => {
-  //       try {
-  //         const response = await axios.get(
-  //           `http://localhost:8000/api/v1/gmb/connect`,
-  //           {
-  //             params: {
-  //               ndid: localStorage.getItem("ndid"),
-  //             },
-  //             headers: {
-  //               Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //               "Content-Type": "application/json",
-  //             },
-  //           },
-  //         );
-  //         window.open(response.data.url, "_blank");
-  //       } catch (error) {
-  //         console.error("Error connecting google:", error);
-  //       }
-  //     };
-  //     handleConnection();
-  //     return;
-  //   } else if (id === "googleAdsInsight") {
-  //     const handleConnection = async () => {
-  //       try {
-  //         // console.log("Connecting with google")
-  //         const { data } = await axios.get(
-  //           `http://localhost:8000/api/v1/google-ads/auth/google/start?ndid=${localStorage.getItem("ndid")}`,
-  //         );
-
-  //         window.open(data.googleAuthUrl, "_blank");
-  //       } catch (error) {
-  //         console.error("Error connecting google:", error);
-  //       }
-  //     };
-  //     handleConnection();
-  //   } else if (id === "googleAnalytics") {
-  //     const handleConnection = async () => {
-  //       try {
-  //         // console.log("Connecting with google")
-  //         const { data } = await axios.get(
-  //           `http://localhost:8000/api/v1/google-analytics/auth/google-analytics/start`,
-  //           {
-  //             headers: {
-  //               Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //             },
-  //           },
-  //         );
-  //         window.open(data.result.authUrl, "_blank");
-  //         console.log(data)
-  //       } catch (error) {
-  //         console.error("Error connecting google:", error);
-  //       }
-  //     };
-  //     handleConnection();
-  //     // window.location.href =
-  //     //   "http://localhost:8000/api/v1/google-analytics/start";
-  //     // return;
-  //   }
-  //   setIntegrations(
-  //     integrations.map((integration) => {
-  //       if (integration.id === id) {
-  //         return {
-  //           ...integration,
-  //           status:
-  //             integration.status === "connected"
-  //               ? "not-connected"
-  //               : "connected",
-  //         };
-  //       }
-  //       return integration;
-  //     }),
-  //   );
-  // };
 
   const handleConnect = async (e) => {
     e.preventDefault();
@@ -445,7 +296,7 @@ function Integration() {
       // setTimeout(() => {}, 2000);
       // getConnectStatus();
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsCreateConnectLoading(false);
     }
@@ -466,32 +317,77 @@ function Integration() {
           },
         },
       );
-      console.log("Response data", data);
+      // console.log("Response data", data);
     } catch (err) {
-      console.log("Error:", err);
+      // console.log("Error:", err);
     }
   };
 
-  const getAccout = async () => {
+  const fetchForms = async () => {
     try {
-      const result = await axios.get(
-        "https://262dae41ccde.ngrok-free.app/api/v1/meta/accounts",
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/meta/forms?pageId=${"137655242755921"}`,
         {
+          method: "GET",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "ngrok-skip-browser-warning": "true",
           },
         },
       );
-      console.log(result);
+
+      // console.log(response);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
+
+  const fetchleads = async () => {
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/meta/leads?pageId=${"137655242755921"}&formId=${"24048488281459114"}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      );
+
+      // console.log(response);
+    } catch (error) {
+      // console.log(error);
+    }
+  };
+
+  // const getAccout = async () => {
+  //   try {
+  //     const result = await axios.get(
+  //       " https://3f966247c27a.ngrok-free.app/api/v1/meta/accounts",
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       },
+  //     );
+  //     console.log(result);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
   useEffect(() => {
     checkIntegrationStatus();
-    getAccout();
+    fetchForms();
+    fetchleads();
   }, []);
+
+  if (isLoadingIntegrationStatus) {
+    return <IntegrationSkelton />;
+  }
 
   return (
     <div className="bg-[#f7f7f7]">
@@ -528,7 +424,7 @@ function Integration() {
 
           {/* Category Tabs */}
           <div className="flex border-b border-gray-200 overflow-x-auto">
-            {categories.map((category) => (
+            {categories?.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
@@ -546,71 +442,92 @@ function Integration() {
 
         {/* Integration Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredIntegrations?.map((integration) => {
-            // console.log(integration)
-            const status = integrationStatus[integration?.id] ?? false;
+          {integrationStatus &&
+            filteredIntegrations?.map((integration) => {
+              let status = false;
 
-            return (
-              <div
-                key={integration?.id}
-                className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
-              >
-                <div className="p-6">
-                  {/* Icon */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div
-                      className={`${integration?.color} text-white  rounded-sm`}
-                    >
-                      <div>
-                        {integration?.img ? (
-                          <img
-                            src={integration?.img}
-                            className={`${
-                              integration.id === "otp-less"
-                                ? "w-40 -ml-4"
-                                : "w-16 -ml-2"
-                            }  object-contain`}
-                          />
-                        ) : (
-                          integration?.icon
-                        )}
+              if (integration?.id === "googleAdsInsight") {
+                status = integrationStatus[integration?.id]?.status;
+              } else {
+                status = integrationStatus[integration?.id] ?? false;
+              }
+
+              return (
+                <div
+                  key={integration?.id}
+                  className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+                >
+                  <div className="p-6">
+                    {/* Icon */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div
+                        className={`${integration?.color} text-white  rounded-sm`}
+                      >
+                        <div>
+                          {integration?.img ? (
+                            <img
+                              src={integration?.img}
+                              className={`${
+                                integration.id === "otp-less"
+                                  ? "w-40 -ml-4"
+                                  : "w-16 -ml-2"
+                              }  object-contain`}
+                            />
+                          ) : (
+                            integration?.icon
+                          )}
+                        </div>
                       </div>
+                      {status && (
+                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
+                          Connected
+                        </span>
+                      )}
                     </div>
-                    {status && (
-                      <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
-                        Connected
-                      </span>
-                    )}
+
+                    {/* Content */}
+                    <h3 className="text-base font-semibold text-gray-900 mb-2">
+                      {integration.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
+                      {integration.description}
+                    </p>
+
+                    {/* Action Button */}
+                    <button
+                      disabled={currentIntegrationId === integration.id}
+                      onClick={() => {
+                        if (!status) {
+                          toggleIntegration(integration.id);
+                        } else {
+                          handleDisconnectIntegration(integration.id);
+                        }
+                      }}
+                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
+                        status
+                          ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
+                      } ${
+                        currentIntegrationId === integration.id
+                          ? "opacity-70 cursor-not-allowed"
+                          : ""
+                      }`}
+                    >
+                      {currentIntegrationId === integration.id ? (
+                        <>
+                          <Loader color="#132e69" />
+                          <span>Disconnecting...</span>
+                        </>
+                      ) : status ? (
+                        "Disconnect"
+                      ) : (
+                        "Connect"
+                      )}
+                    </button>
                   </div>
-
-                  {/* Content */}
-                  <h3 className="text-base font-semibold text-gray-900 mb-2">
-                    {integration.name}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
-                    {integration.description}
-                  </p>
-
-                  {/* Action Button */}
-                  <button
-                    onClick={() => {
-                      if (!status) {
-                        toggleIntegration(integration.id);
-                      }
-                    }}
-                    className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
-                      status
-                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
-                  >
-                    {status ? "Disconnect" : "Connect"}
-                    {/* <ChevronRight className="w-4 h-4" /> */}
-                  </button>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
 
         {/* Empty State */}
@@ -831,20 +748,6 @@ const MailIcon = () => {
         d="M0 116.411V162.956L116.364 250.229V98.956L83.782 74.52C49.251 48.629 0 73.269 0 116.411Z"
         fill="#E51C19"
       />
-    </svg>
-  );
-};
-
-const OtpIcon = () => {
-  return (
-    <svg
-      style={{ width: "100%", height: "100%" }} // FIXED
-      viewBox="0 0 124 32"
-      preserveAspectRatio="none"
-      width="100%"
-      height="100%"
-    >
-      <use xlinkHref="#svg-1758876604_7570" /> {/* FIXED */}
     </svg>
   );
 };

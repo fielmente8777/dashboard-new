@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdHome } from "react-icons/io";
-import { MdOutlineSos, MdSettings } from "react-icons/md";
+import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
 import { RiFeedbackFill } from "react-icons/ri";
 import { RxDashboard } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DataContext from "../../context/DataContext";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import Greeting from "../Greeting";
@@ -151,12 +151,16 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
+            <Link to="settings">
+                <MdSettings size={22} color="white"/>
+
+            </Link>
             <div
               onClick={() => setOpen(true)}
-              className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
+              className="flex gap-2 py-1.5 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
             >
-              <RxDashboard size={22} />{" "}
-              <p className="text-md font-semibold">Marketplace</p>
+              <MdStore size={18} />{" "}
+              <p className="text-sm font-semibold">EazStore</p>
             </div>
             {/* <div>
               <MdSettings

@@ -31,7 +31,7 @@ const ProfilePopup = ({ isProfileOpen, setIsProfileOpen, Color }) => {
           onClick={(e) => {
             if (e.currentTarget) setIsProfileOpen(false);
           }}
-          className="fixed top-0 left-0 z-[99999] bg-black/50 w-full h-[100dvh] flex justify-end"
+          className="fixed top-0 left-0 z-999999! bg-black/50 w-full h-[100dvh] flex justify-end"
         >
           <div
             onClick={(e) => e.stopPropagation()}

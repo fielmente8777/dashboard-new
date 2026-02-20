@@ -8,7 +8,6 @@ function handleLocalStorage(key, value) {
       return JSON.parse(storedValue);
     } catch (err) {
       // Not a JSON string, return as-is
-      console.log(err);
       return storedValue;
     }
   } else {

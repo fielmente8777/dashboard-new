@@ -66,7 +66,7 @@ const Analytics = () => {
           });
         }
 
-        console.log("FAQ deleted successfully:", data);
+        // console.log("FAQ deleted successfully:", data);
       } catch (error) {
         Swal.fire({
           icon: "error",

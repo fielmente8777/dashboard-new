@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-import { BASE_PATH } from "../../data/constant";
+import { BASE_PATH, NEW_BASE_URL } from "../../data/constant";
 import DataContext from "../../context/DataContext";
 import DailyInsightsChart from "../../components/Charts/GoogleAds/DailyInsightChart";
 
@@ -39,9 +39,10 @@ export default function GoogleAdsInsights() {
   /* -------------------- SYNC -------------------- */
   const handleSyncAdsData = async () => {
     setLoadingSync(true);
+
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/google-ads/sync",
+        `${NEW_BASE_URL}/api/v1/google-ads/sync`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -51,6 +52,7 @@ export default function GoogleAdsInsights() {
 
       const accountsData = response?.data?.result?.clientAccounts || [];
       setAccounts(accountsData);
+      checkIntegrationStatus();
 
       if (accountsData.length > 0) {
         handleChangeAccount(accountsData[0].clientCustomerId);
@@ -64,7 +66,7 @@ export default function GoogleAdsInsights() {
       Swal.fire(
         "Error",
         isNotAdsAccount
-          ? "You need to be a Google Ads user to sync data."
+          ? "You must have a Google Ads Account to sync data."
           : error.message,
         "error",
       );
@@ -121,7 +123,7 @@ export default function GoogleAdsInsights() {
     setLoadingAccounts(true);
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/v1/google-ads/accounts",
+        `${NEW_BASE_URL}/api/v1/google-ads/accounts`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -144,7 +146,7 @@ export default function GoogleAdsInsights() {
     setLoadingCampaigns(true);
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/google-ads/campaigns/${accountId}`,
+        `${NEW_BASE_URL}/api/v1/google-ads/campaigns/${accountId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -167,7 +169,7 @@ export default function GoogleAdsInsights() {
     setLoadingAdGroups(true);
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/google-ads/adgroups/${campaignId}`,
+        `${NEW_BASE_URL}/api/v1/google-ads/adgroups/${campaignId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -190,7 +192,7 @@ export default function GoogleAdsInsights() {
     setLoadingAds(true);
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/google-ads/ads/${adGroupId}`,
+        `${NEW_BASE_URL}/api/v1/google-ads/ads/${adGroupId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -213,7 +215,7 @@ export default function GoogleAdsInsights() {
     setLoadingAdDetails(true);
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/v1/google-ads/ad-details/${adId}`,
+        `${NEW_BASE_URL}/api/v1/google-ads/ad-details/${adId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -260,13 +262,45 @@ export default function GoogleAdsInsights() {
 
   if (!integrationStatus?.googleAdsInsight?.status) {
     return (
-      <div className="flex justify-center py-12">
-        <Link
-          to={`${BASE_PATH}/${localStorage.getItem("hid")}/integration`}
-          className="bg-primary text-white px-6 py-3 rounded"
-        >
-          Connect Google Ads
-        </Link>
+      <div className=" flex items-center justify-center py-12">
+        <div className="max-w-md w-full rounded-2xl bg-white p-8 shadow-lg border border-gray-100 text-center">
+          {/* Icon */}
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
+            <svg
+              className="h-7 w-7 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 12h18M12 3v18" />
+            </svg>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Connect Google Ads
+          </h2>
+
+          {/* Description */}
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+            Connect your Google Ads account to start tracking campaigns,
+            performance metrics, and conversion insights — all in one place.
+          </p>
+
+          {/* CTA */}
+          <Link
+            to={`${BASE_PATH}/${localStorage.getItem("hid")}/integration`}
+            className="mt-8 inline-flex w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Connect Google Ads
+          </Link>
+
+          {/* Helper text */}
+          <p className="mt-4 text-xs text-gray-400">
+            Secure OAuth connection • No data shared without permission
+          </p>
+        </div>
       </div>
     );
   }
@@ -321,6 +355,20 @@ export default function GoogleAdsInsights() {
 
       {integrationStatus?.googleAdsInsight?.lastSyncTime && (
         <div>
+          {is24HoursCompleted && (
+            <div className="flex justify-end">
+              {is24HoursCompleted && (
+                <button
+                  onClick={handleSyncAdsData}
+                  disabled={loadingSync}
+                  className="mt-8 inline-flex w-fit items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-white transition hover:bg-primary/90 disabled:opacity-70"
+                >
+                  {loadingSync ? "Syncing..." : "Sync Ads Data"}
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-4 mb-6">
             <Select
               label="Account"

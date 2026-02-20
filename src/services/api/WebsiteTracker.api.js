@@ -1,10 +1,10 @@
-import { NEW_BASE_URL, SALES_AGEENT_BASE_URL } from "../../data/constant";
+import { SALES_AGEENT_BASE_URL } from "../../data/constant";
 
 // hanlde api for getting all applicants
 export const getAllVisitors = async (body) => {
   const token = localStorage.getItem("token");
   try {
-    const params = new URLSearchParams();
+    // const params = new URLSearchParams();
     // if (body.limit) params.append("limit", "1");
     const response = await fetch(
       `${SALES_AGEENT_BASE_URL}/api/v1/webtrack/visitors?skip=${body.skip}&limit=${body.limit}`,
@@ -14,7 +14,7 @@ export const getAllVisitors = async (body) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     const result = await response.json();
     // console.log("jsdfsdkjfhsdhfk",result);
@@ -27,7 +27,7 @@ export const getAllVisitors = async (body) => {
 export const getAllVisitorsActivities = async (body) => {
   const token = localStorage.getItem("token");
   try {
-    const params = new URLSearchParams();
+    // const params = new URLSearchParams();
     // if (body.limit) params.append("limit", "1");
     const response = await fetch(
       `${SALES_AGEENT_BASE_URL}/api/v1/webtrack/sessions?skip=${body.skip}&limit=${body.limit}`,
@@ -37,7 +37,7 @@ export const getAllVisitorsActivities = async (body) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     const result = await response.json();
     // console.log("jsdfsdkjfhsdhfk",result);

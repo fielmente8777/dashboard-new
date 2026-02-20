@@ -32,9 +32,9 @@ const header = [
 ];
 
 export const formatPhoneNumber = (phone) => {
-  let cleaned = phone.replace(/\D/g, ""); // remove non-digit characters
+  let cleaned = phone?.replace(/\D/g, ""); // remove non-digit characters
 
-  if (cleaned.length === 10) {
+  if (cleaned?.length === 10) {
     cleaned = "91" + cleaned; // prepend country code if it's a 10-digit
   }
 
@@ -46,8 +46,7 @@ const LeadPopup = ({
   onClose,
   lead,
   fetchEnquires,
-  handleTabClick,
-  activeIndex,
+  show,
 }) => {
   // console.log(lead?.note);
   const [note, setNote] = useState();
@@ -59,7 +58,7 @@ const LeadPopup = ({
   const [isNoteUpdateLoading, setIsNoteUpdateLoading] = useState(false);
 
   useEffect(() => {
-    setNote(lead?.note || "");
+    setNote(lead?.note || lead?.notes || "");
   }, [lead]);
   const handleTabChange = (index) => {
     setActiveTab(index);
@@ -86,7 +85,7 @@ const LeadPopup = ({
           {
             token: localStorage.getItem("token"),
             id: id,
-          }
+          },
         );
 
         const result = await response.data;
@@ -103,7 +102,7 @@ const LeadPopup = ({
           }
         });
 
-        onClose();
+        // onClose();
       } catch (error) {
         Swal.fire({
           icon: "error",
@@ -134,7 +133,7 @@ const LeadPopup = ({
           ndid: lead.ndid,
           status: status,
           note: note,
-        }
+        },
       );
 
       const result = await response.data;
@@ -147,9 +146,9 @@ const LeadPopup = ({
         showConfirmButton: false,
       }).then(() => {
         if (result.Status) {
-          handleTabClick(activeIndex);
+          // handleTabClick(activeIndex);
 
-          // fetchEnquires(localStorage.getItem('token'));
+          fetchEnquires();
         }
       });
 
@@ -230,7 +229,7 @@ const LeadPopup = ({
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const result = await response.data;
       setCallDetails(result?.data);
@@ -365,56 +364,58 @@ const LeadPopup = ({
                     </Link>
                   </div>
 
-                  <div className="flex flex-col gap-2 text-[#575757] pt-2">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium text-[#575757]">
-                            Check In :{" "}
-                          </span>
-                          <p>
-                            {lead?.check_in
-                              ? lead?.check_in
-                              : extractBookingInfo(lead?.Message)?.checkIn
-                              ? extractBookingInfo(lead?.Message)?.checkIn
-                              : "-"}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          <span className="text-[#575757] font-semibold">
-                            Check Out :
-                          </span>
-                          <p>
-                            {lead?.check_out
-                              ? lead?.check_out
-                              : extractBookingInfo(lead?.Message)?.checkOut
-                              ? extractBookingInfo(lead?.Message)?.checkOut
-                              : "-"}
-                          </p>
-                        </div>
-
-                        <div>
+                  {show && (
+                    <div className="flex flex-col gap-2 text-[#575757] pt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
                           <div className="flex items-center gap-1">
-                            <span className="text-[#575757] font-semibold">
-                              Number of Guests :
+                            <span className="font-medium text-[#575757]">
+                              Check In :{" "}
                             </span>
                             <p>
-                              {lead?.number_of_guest
-                                ? lead?.number_of_guest
-                                : extractBookingInfo(lead?.Message)?.guests
-                                ? extractBookingInfo(lead?.Message)?.guests
-                                : "-"}
+                              {lead?.check_in
+                                ? lead?.check_in
+                                : extractBookingInfo(lead?.Message)?.checkIn
+                                  ? extractBookingInfo(lead?.Message)?.checkIn
+                                  : "-"}
                             </p>
                           </div>
+
+                          <div className="flex items-center gap-1">
+                            <span className="text-[#575757] font-semibold">
+                              Check Out :
+                            </span>
+                            <p>
+                              {lead?.check_out
+                                ? lead?.check_out
+                                : extractBookingInfo(lead?.Message)?.checkOut
+                                  ? extractBookingInfo(lead?.Message)?.checkOut
+                                  : "-"}
+                            </p>
+                          </div>
+
+                          <div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[#575757] font-semibold">
+                                Number of Guests :
+                              </span>
+                              <p>
+                                {lead?.number_of_guest
+                                  ? lead?.number_of_guest
+                                  : extractBookingInfo(lead?.Message)?.guests
+                                    ? extractBookingInfo(lead?.Message)?.guests
+                                    : "-"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-primary">
+                          <FaUser size={22} />
                         </div>
                       </div>
-
-                      <div className="text-primary">
-                        <FaUser size={22} />
-                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex gap-1.5">
                     <strong>Source Url:</strong>
@@ -534,7 +535,7 @@ const LeadPopup = ({
                             day: "numeric",
                             month: "long",
                             year: "numeric",
-                          }
+                          },
                         )}
                       </p>
                     )}

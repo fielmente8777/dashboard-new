@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 3000,
     proxy: {
       // Add proxy rules if you're making API requests
       "/api": {
@@ -15,7 +16,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
     },
-    allowedHosts:true,
+    allowedHosts: true,
     hmr: {
       overlay: false, // Disable HMR overlay to prevent errors
     },

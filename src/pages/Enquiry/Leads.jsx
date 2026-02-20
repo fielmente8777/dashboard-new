@@ -21,6 +21,7 @@ import {
 } from "../../services/api/MetaLeads.api";
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader";
+import { createExportData } from "../../utils/exportLeadData";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -116,21 +117,22 @@ const Leads = () => {
     }
   };
 
-  const createExportData = (apiData) => {
-    return apiData.map((item) => {
-      const message = item?.Message || "";
+  // const createExportData = (apiData) => {
+  //   return apiData.map((item) => {
+  //     const message = item?.Message || "";
 
-      const checkInMatch = message.match(/check-in:\s*(\d{2}-\d{2}-\d{4})/i);
-      const checkOutMatch = message.match(/check-out:\s*(\d{2}-\d{2}-\d{4})/i);
-      const guestsMatch = message.match(/number of guest:\s*([\w\s\d]+)/i);
-      return {
-        ...item,
-        check_in: checkInMatch ? checkInMatch[1] : null,
-        check_out: checkOutMatch ? checkOutMatch[1] : null,
-        number_of_guest: guestsMatch ? guestsMatch[1].trim() : null,
-      };
-    });
-  };
+  //     const checkInMatch = message.match(/check-in:\s*(\d{2}-\d{2}-\d{4})/i);
+  //     const checkOutMatch = message.match(/check-out:\s*(\d{2}-\d{2}-\d{4})/i);
+  //     const guestsMatch = message.match(/number of guest:\s*([\w\s\d]+)/i);
+  //     return {
+  //       ...item,
+  //       check_in: checkInMatch ? checkInMatch[1] : null,
+  //       check_out: checkOutMatch ? checkOutMatch[1] : null,
+  //       number_of_guest: guestsMatch ? guestsMatch[1].trim() : null,
+  //     };
+  //   });
+  // };
+  createExportData(data)
 
   const fetchEnquires = async (token) => {
     setLoading(true);
@@ -587,6 +589,8 @@ const Leads = () => {
     return () => window.removeEventListener("resize", updateBtnLength);
   }, [header]);
 
+  // console.log(hotel);
+
   return (
     <div className="cardShadow">
       <div className="flex flex-col justify-between  bg-white">
@@ -851,15 +855,24 @@ const Leads = () => {
                     <th className="py-3 px-2 text-[14px] font-medium capitalize">
                       Email
                     </th>
-                    <th className="py-3 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
-                      Number of Guests
-                    </th>
-                    <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
-                      Check In
-                    </th>
-                    <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
-                      Check Out
-                    </th>
+                    {!hotel?.Profile?.websiteType && (
+                      <th className="py-3 px-4 text-[14px] font-medium capitalize whitespace-nowrap">
+                        Number of Guests
+                      </th>
+                    )}
+
+                    {!hotel?.Profile?.websiteType && (
+                      <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
+                        Check In
+                      </th>
+                    )}
+
+                    {!hotel?.Profile?.websiteType && (
+                      <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
+                        Check Out
+                      </th>
+                    )}
+
                     <th className="py-3 px-2 text-[14px] font-medium capitalize">
                       Stages
                     </th>
@@ -1090,41 +1103,49 @@ const Leads = () => {
                               : enquery?.Email}
                           </td>
 
-                          <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
-                            {enquery?.numberOfGuest == ""
-                              ? "-"
-                              : enquery?.numberOfGuest
-                                ? enquery?.numberOfGuest
-                                : isNaN(
+                          {!hotel?.Profile?.websiteType && (
+                            <td className="py-3 px-2 text-[14px] text-[#575757] text-center">
+                              {enquery?.numberOfGuest == ""
+                                ? "-"
+                                : enquery?.numberOfGuest
+                                  ? enquery?.numberOfGuest
+                                  : isNaN(
+                                        extractBookingInfo(enquery?.Message)
+                                          ?.guests,
+                                      ) ||
                                       extractBookingInfo(enquery?.Message)
-                                        ?.guests,
-                                    ) ||
-                                    extractBookingInfo(enquery?.Message)
-                                      ?.guests === 0
-                                  ? "-"
-                                  : extractBookingInfo(enquery?.Message)
-                                      ?.guests}
-                          </td>
+                                        ?.guests === 0
+                                    ? "-"
+                                    : extractBookingInfo(enquery?.Message)
+                                        ?.guests}
+                            </td>
+                          )}
 
                           {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
                         {enquery?.Message}
                       </td> */}
-                          <td className="py-3 px-2 text-[14px] text-[#575757]">
-                            {enquery?.check_in
-                              ? enquery?.check_in === "undefined"
-                                ? "-"
-                                : enquery.check_in
-                              : extractBookingInfo(enquery?.Message)?.checkIn ||
-                                "-"}
-                          </td>
-                          <td className="py-3 px-2 text-[14px] text-[#575757]">
-                            {enquery?.check_out
-                              ? enquery?.check_out === "undefined"
-                                ? "-"
-                                : enquery.check_out
-                              : extractBookingInfo(enquery?.Message)
-                                  ?.checkOut || "-"}
-                          </td>
+                          {!hotel?.Profile?.websiteType && (
+                            <td className="py-3 px-2 text-[14px] text-[#575757]">
+                              {enquery?.check_in
+                                ? enquery?.check_in === "undefined"
+                                  ? "-"
+                                  : enquery.check_in
+                                : extractBookingInfo(enquery?.Message)
+                                    ?.checkIn || "-"}
+                            </td>
+                          )}
+
+                          {!hotel?.Profile?.websiteType && (
+                            <td className="py-3 px-2 text-[14px] text-[#575757]">
+                              {enquery?.check_out
+                                ? enquery?.check_out === "undefined"
+                                  ? "-"
+                                  : enquery.check_out
+                                : extractBookingInfo(enquery?.Message)
+                                    ?.checkOut || "-"}
+                            </td>
+                          )}
+
                           {/* <td className="py-3 px-2 text-[14px] text-[#575757] font-medium">
                         {enquery?.status}
                       </td> */}
@@ -1561,6 +1582,7 @@ const Leads = () => {
         fetchEnquires={fetchEnquires}
         handleTabClick={handleTabClick}
         activeIndex={active}
+        show={!hotel?.Profile?.websiteType}
       />
     </div>
   );

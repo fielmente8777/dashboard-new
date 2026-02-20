@@ -16,12 +16,14 @@ import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
 import {
   MdEmergencyShare,
+  MdLink,
   MdOutlineReviews,
   MdOutlineSos,
   MdUnsubscribe,
 } from "react-icons/md";
-import { SiGoogleanalytics } from "react-icons/si";
+import { SiGoogleanalytics, SiLivechat } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
+import { PiUsersThreeFill } from "react-icons/pi";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
@@ -29,9 +31,13 @@ import { GrResources } from "react-icons/gr";
 import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
-import { TbSeo } from "react-icons/tb";
+import { TbMessageChatbotFilled, TbSeo } from "react-icons/tb";
 import { TiSocialSkype } from "react-icons/ti";
-import { RiWechatChannelsLine } from "react-icons/ri";
+import {
+  RiMetaFill,
+  RiWechatChannelsLine,
+  RiWhatsappFill,
+} from "react-icons/ri";
 import { CgProfile } from "react-icons/cg";
 import { RiFolderUserFill } from "react-icons/ri";
 import { RiGalleryFill } from "react-icons/ri";
@@ -48,6 +54,7 @@ import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
 import { CiViewBoard } from "react-icons/ci";
+import DocumentIcon, { ChatIcon, TeamIcon } from "../icons/icon";
 
 export const SidebarData = [
   {
@@ -71,18 +78,48 @@ export const SidebarData = [
   //       link: `channel/wa/chat`,
   //       icon: <FaWhatsapp size={16} />,
   //     },
-  //     // {
-  //     //   name: "Instagram",
-  //     //   link: `channel/ig/chat`,
-  //     //   icon: <FaInstagram size={16} />,
-  //     // },
-  //     // {
-  //     //   name: "Facebook",
-  //     //   link: `channel/fb/chat`,
-  //     //   icon: <FaFacebook size={16} />,
-  //     // },
+  //     {
+  //       name: "Instagram",
+  //       link: `channel/ig/chat`,
+  //       icon: <FaInstagram size={16} />,
+  //     },
+  //     {
+  //       name: "Facebook",
+  //       link: `channel/fb/chat`,
+  //       icon: <FaFacebook size={16} />,
+  //     },
   //   ],
   // },
+  {
+    name: "Live Chat",
+    link: `channel`,
+    icon: <SiLivechat size={18} />,
+    subLinks: [
+      // {
+      //   name: "WhatsApp Business",
+      //   link: `channel/whatsapp`,
+      //   icon: <FaWhatsapp size={16} />,
+      //   subLinks:[
+      //       {
+      //       name: "WhatsApp Chats",
+      //       link: `channel/wa/chat`,
+      //       icon: <FaWhatsapp size={16} />,
+      //     },
+      //   ]
+      // },
+      {
+        name: "WhatsApp",
+        link: `channel/wa/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
+      // {
+      //   name: "Templates",
+      //   link: `channel/whatsapp/template/create`,
+      //   icon: <FaWhatsapp size={16} />,
+      // },
+    ],
+  },
+
   // {
   //   name: "Website Tracking",
   //   // key: "",
@@ -102,27 +139,103 @@ export const SidebarData = [
   //   ],
   // },
   {
-    name: "Enquiries Management",
-    link: `enquiries-management`,
+    name: "Leads Management",
+    link: `leads-management`,
     key: "Enquiries Management",
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
-        name: "Enquiries",
-        link: `enquiries-management/enquiries`,
+        name: "All",
+        link: `leads-management/all-leads`,
         icon: <MdLeaderboard size={18} />,
+      },
+      {
+        name: "Meta",
+        link: `leads-management/meta-leads`,
+        icon: <RiMetaFill color="#0266df" />,
+      },
+      {
+        name: "WhatsApp Leads",
+        link: `leads-management/whatsapp`,
+        icon: <RiWhatsappFill color="green" />,
       },
 
       {
-        name: "Meta Leads",
-        link: `enquiries-management/meta-leads`,
-        icon: <SiGoogleads size={18} />,
+        name: "Google Ads",
+        link: `leads-management/google-ads-leads`,
+        icon: (
+          <svg
+            width="16px"
+            height="16px"
+            viewBox="0 -13 256 256"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            preserveAspectRatio="xMidYMid"
+            fill="#000000"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              {" "}
+              <g>
+                {" "}
+                <path
+                  d="M5.888,166.405103 L90.88,20.9 C101.676138,27.2558621 156.115862,57.3844138 164.908138,63.1135172 L79.9161379,208.627448 C70.6206897,220.906621 -5.888,185.040138 5.888,166.396276 L5.888,166.405103 Z"
+                  fill="#FBBC04"
+                >
+                  {" "}
+                </path>{" "}
+                <path
+                  d="M250.084224,166.401789 L165.092224,20.9055131 C153.210293,1.13172 127.619121,-6.05393517 106.600638,5.62496138 C85.582155,17.3038579 79.182155,42.4624786 91.0640861,63.1190303 L176.056086,208.632961 C187.938017,228.397927 213.52919,235.583582 234.547672,223.904686 C254.648086,212.225789 261.966155,186.175582 250.084224,166.419444 L250.084224,166.401789 Z"
+                  fill="#4285F4"
+                >
+                  {" "}
+                </path>{" "}
+                <ellipse
+                  fill="#34A853"
+                  cx="42.6637241"
+                  cy="187.924414"
+                  rx="42.6637241"
+                  ry="41.6044138"
+                >
+                  {" "}
+                </ellipse>{" "}
+              </g>{" "}
+            </g>
+          </svg>
+        ),
       },
       {
-        name: "Eazbot Visitors",
-        link: `enquiries-management/eazbot-visitors`,
-        icon: <MdLeaderboard size={18} />,
+        name: "Webform",
+        link: `leads-management/webform-leads`,
+        icon: <DocumentIcon />,
       },
+      {
+        name: "Eazbot",
+        link: `leads-management/eazbot-leads`,
+        icon: <ChatIcon />,
+      },
+      {
+        name: "Visitors",
+        link: `leads-management/all-visitors`,
+        icon: <TeamIcon />,
+      },
+
+      // {
+      //   name: "Enquiries",
+      //   link: `enquiries-management/enquiries`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
+      // {
+      //   name: "Eazbot Visitors",
+      //   link: `enquiries-management/eazbot-visitors`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
       // {
       //   name: "Form",
       //   link: `enquiries-management/lead-gen-form`,
@@ -130,11 +243,28 @@ export const SidebarData = [
       // },
     ],
   },
+  // {
+  //   name: "Chat Settings",
+  //   link: `chat-settings`,
+  //   icon: <MdLink size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "WhatsApp Business",
+  //       link: `chat-settings/whatsapp-bussiness-setting`,
+  //       icon: <FaWhatsapp size={16} />,
+  //     },
+  //     // {
+  //     //   name: "Templates",
+  //     //   link: `chat-settings/whatsapp-bussiness-setting/templates`,
+  //     //   icon: <FaWhatsapp size={16} />,
+  //     // },
+  //   ],
+  // },
   {
     name: "Google Ads Insights",
     // key: "",
     link: `google-ads-insights`,
-    icon: <HiOutlineUserGroup />,
+    icon: <SiGoogleadsense />,
   },
   // {
   //   name: "AI Sales Agent",
@@ -225,39 +355,39 @@ export const SidebarData = [
   //   link: `eazmail`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  {
-    name: "Booking Engine",
-    key: "Booking Engine",
-    link: `booking-engine`,
-    icon: <SiGoogleearthengine size={20} />,
-    subLinks: [
-      {
-        name: "Rooms Setup",
-        link: `booking-engine/rooms-setup`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Rooms & Inventory",
-        link: `booking-engine/rooms-and-inventory`,
-        icon: <MdOutlineInventory size={18} />,
-      },
-      {
-        name: "Price Packages",
-        link: `booking-engine/price-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Ads Packages",
-        link: `booking-engine/ads-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Customization",
-        link: `booking-engine/customization`,
-        icon: <MdBedroomParent size={18} />,
-      },
-    ],
-  },
+  // {
+  //   name: "Booking Engine",
+  //   key: "Booking Engine",
+  //   link: `booking-engine`,
+  //   icon: <SiGoogleearthengine size={20} />,
+  //   subLinks: [
+  //     {
+  //       name: "Rooms Setup",
+  //       link: `booking-engine/rooms-setup`,
+  //       icon: <MdBedroomParent size={18} />,
+  //     },
+  //     {
+  //       name: "Rooms & Inventory",
+  //       link: `booking-engine/rooms-and-inventory`,
+  //       icon: <MdOutlineInventory size={18} />,
+  //     },
+  //     {
+  //       name: "Price Packages",
+  //       link: `booking-engine/price-packages`,
+  //       icon: <MdBedroomParent size={18} />,
+  //     },
+  //     {
+  //       name: "Ads Packages",
+  //       link: `booking-engine/ads-packages`,
+  //       icon: <MdBedroomParent size={18} />,
+  //     },
+  //     {
+  //       name: "Customization",
+  //       link: `booking-engine/customization`,
+  //       icon: <MdBedroomParent size={18} />,
+  //     },
+  //   ],
+  // },
 
   // {
   //   name: "Guest Request Management",
@@ -282,19 +412,19 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  {
-    name: "Reservation Desk",
-    link: `reservation-desk`,
-    key: "Reservation Desk",
-    icon: <RiReservedFill size={24} />,
-    // subLinks: [
-    //   {
-    //     name: "Enquiries",
-    //     link: `enquiries-management/enquiries`,
-    //     icon: <FaCircleQuestion size={18} />,
-    //   },
-    // ],
-  },
+  // {
+  //   name: "Reservation Desk",
+  //   link: `reservation-desk`,
+  //   key: "Reservation Desk",
+  //   icon: <RiReservedFill size={24} />,
+  //   // subLinks: [
+  //   //   {
+  //   //     name: "Enquiries",
+  //   //     link: `enquiries-management/enquiries`,
+  //   //     icon: <FaCircleQuestion size={18} />,
+  //   //   },
+  //   // ],
+  // },
 
   // {
   //   name: "Content Management system",
@@ -410,12 +540,12 @@ export const SidebarData = [
   //   // ],
   // },
 
-  {
-    name: "Payment Gateway",
-    key: "Payment Gateway",
-    link: `payment-gateway`,
-    icon: <MdPayment size={22} />,
-  },
+  // {
+  //   name: "Payment Gateway",
+  //   key: "Payment Gateway",
+  //   link: `payment-gateway`,
+  //   icon: <MdPayment size={22} />,
+  // },
 
   {
     name: "Knowledge Base",

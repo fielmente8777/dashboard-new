@@ -373,7 +373,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   // console.log(currentLocation);
   return (
     <div
-      className="p-3  flex flex-col h-screen overflow-hidden shadow-md bg-white md:relative fixed left-0 z-[99999] border border-gray-50"
+      className="p-3  flex flex-col h-screen overflow-hidden shadow-md bg-white md:relative fixed left-0 z-[99999] "
       style={{
         left: isMobile ? (isOpen ? "0px" : "100%") : null,
       }}

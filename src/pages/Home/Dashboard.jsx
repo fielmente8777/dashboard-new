@@ -24,40 +24,40 @@ const Dashboard = () => {
   const [eazobotEnquiriesList, setEazobotEnquiriesList] = useState(0);
 
   const [loading, setLoading] = useState(true);
-  const { Leads, setLeads, setLeadsList } = useContext(DataContext);
+  const { Leads, setLeads, setLeadsList ,metaLeads} = useContext(DataContext);
 
   const [dateRange, setDateRange] = useState(""); // default 7 days
 
-  const FetchSheetsDataofSpreadSheet = async (sheetid, sheetname) => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/leadmanagement/getSheetDetailLead/${localStorage.getItem(
-          "token"
-        )}/${sheetid}/${sheetname}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json, text/plain, /",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const json = await response.json();
-      // console.log(json);
-      if (json.Status) {
-        // setsheetNamess(sheetname);
-        // setsheetid(sheetid);
-        setLeads(json.Message.values);
-        setLeadsList(json.Message.values);
-        // settokenExpire(false);
-      } else {
-        // setLeads([]);
-        // settokenExpire(true);
-      }
-    } catch {
-      // alert("Some Problem update token");
-    }
-  };
+  // const FetchSheetsDataofSpreadSheet = async (sheetid, sheetname) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${BASE_URL}/leadmanagement/getSheetDetailLead/${localStorage.getItem(
+  //         "token"
+  //       )}/${sheetid}/${sheetname}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           Accept: "application/json, text/plain, /",
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     const json = await response.json();
+  //     // console.log(json);
+  //     if (json.Status) {
+  //       // setsheetNamess(sheetname);
+  //       // setsheetid(sheetid);
+  //       setLeads(json.Message.values);
+  //       setLeadsList(json.Message.values);
+  //       // settokenExpire(false);
+  //     } else {
+  //       // setLeads([]);
+  //       // settokenExpire(true);
+  //     }
+  //   } catch {
+  //     // alert("Some Problem update token");
+  //   }
+  // };
 
   const fetchEnquires = async (token) => {
     const hid = handleLocalStorage("hid");
@@ -135,10 +135,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchEnquires(localStorage.getItem("token"));
-    FetchSheetsDataofSpreadSheet(
-      localStorage.getItem("SheetId"),
-      localStorage.getItem("SheetName")
-    );
+    // FetchSheetsDataofSpreadSheet(
+    //   localStorage.getItem("SheetId"),
+    //   localStorage.getItem("SheetName")
+    // );
   }, [hid]);
 
   const data = [

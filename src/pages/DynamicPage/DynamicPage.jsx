@@ -63,12 +63,10 @@ import Facebook from "../ConversationalTool/Facebook/Facebook";
 import Eazbot from "../Eazobot/Eazobot";
 import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
 import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
-import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
 import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
 import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
 import VisitorActivity from "../WebsiteTracker/VisitorActivity";
-import MetaLeads from "../Meta/MetaLeads";
 import MetaMessages from "../Meta/MetaMessage";
 import MetaConnections from "../Meta/MetaConnection";
 import MetaSettings from "../Meta/MetaSetting";
@@ -81,6 +79,16 @@ import Ranks from "../Gmb/Rank";
 import Keywords from "../Gmb/Keyword";
 import Reviews from "../Gmb/Review";
 import GoogleAdsInsights from "../GoogleAdsInsights/GoogleAdsInsights";
+import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates";
+import WhatsAppBusiness from "../Channels/Whatsapp/WhatsAppBusiness";
+import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+import AllLeads from "../Enquiry/AllLeads";
+import GoogleAds from "../Enquiry/GoogleAds";
+import EazbotLeads from "../Enquiry/EazbotEnquiries";
+import WebformLeads from "../Enquiry/WebformLeads";
+import AllVisitors from "../Enquiry/AllVisitors";
+import MetaLeads from "../Enquiry/MetaLeads";
+import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -131,24 +139,29 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
 
     // Enquiries Management
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries-analytics`]: (
+    [`${BASE_PATH}/${hid}/leads-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/eazbot-visitors`]: (
-      <EazbotEnquiries />
-    ),
-    [`${BASE_PATH}/${hid}/enquiries-management/lead-gen-form`]: (
+
+    [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/whatsapp`]: <WhatsAppLeads />,
+
+    [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
+    [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
+
+    // [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: <AllVisitors />,
+    [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: (
-      <AdsLeadsUsingGoogleSheet />
-    ),
-    // [`${BASE_PATH}/${hid}/enquiries-management/meta-leads`]: <MetaLeads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/meta-analytics`]: (
+
+    // [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/meta-analytics`]: (
       <AdLeadsAnalytics />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/leads-management/settings`]: <Feedback />,
 
     // Human Resources Management
     [`${BASE_PATH}/${hid}/human-resources-management/analytics`]: (
@@ -185,8 +198,14 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/social-media`]: <SocialMedia />,
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
 
-    // Marketplace services
+    // whatsapp
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: (
+      <WhatsAppBusiness />
+    ),
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]:
+      <WhatsAppMessageTemplate />,
 
+    // Marketplace services
     [`${BASE_PATH}/${hid}/custom-website`]: <Website />,
 
     // OTA
@@ -195,7 +214,6 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/ota-management`]: <OTAManagement />,
 
     // Accounting
-
     [`${BASE_PATH}/${hid}/accounting`]: <Accounting />,
     [`${BASE_PATH}/${hid}/gst-filing`]: <GSTFiling />,
 
