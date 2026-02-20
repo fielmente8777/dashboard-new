@@ -239,6 +239,7 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      console.log(serverResponse);
       if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
@@ -338,11 +339,11 @@ const ChatArea = () => {
                         </p>
                       )}
 
-                      {message.messageType === "template" &&
-                        message.template.name && (
+                      {message?.messageType === "template" &&
+                        message?.template?.template?.name && (
                           <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
                             <p className="text-xs text-gray-500 mb-1 capitalize">
-                              {message.template?.name}
+                              {message.template?.template?.name}
                             </p>
 
                             <p className="text-sm">
