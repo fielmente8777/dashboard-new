@@ -7,6 +7,7 @@ import { getMetaAccounts, getMetaLeads } from "../services/api/MetaLeads.api";
 const DataContext = createContext({});
 
 export const DataProvider = ({ children }) => {
+  const [isOpenProfilePopup, setIsOpenProfilePopup] = useState(false);
   const [auth, setAuth] = useState(false);
   const [totalRequests, setTotalRequests] = useState();
   const [emergencyRequestData, setEmergencyRequestData] = useState([]);
@@ -332,7 +333,8 @@ export const DataProvider = ({ children }) => {
         conversations,
         setConversations,
         limit, setLimit,
-        metaLeads,setMetaLeads
+        metaLeads,setMetaLeads,
+        isOpenProfilePopup, setIsOpenProfilePopup,
       }}
     >
       {children}

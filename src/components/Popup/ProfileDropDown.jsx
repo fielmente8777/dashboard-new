@@ -5,7 +5,9 @@ import DataContext from "../../context/DataContext";
 import { removeCookie } from "../../utils/handleCookies";
 import { setHid } from "../../redux/slice/UserSlice";
 
-const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
+const ProfileDropDown = () => {
+  const { isOpenProfilePopup, setIsOpenProfilePopup } = useContext(DataContext);
+
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -14,14 +16,14 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileOpen(false);
+        setIsOpenProfilePopup(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [setIsProfileOpen]);
+  }, [setIsOpenProfilePopup]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -60,19 +62,18 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
       onClick: handleLogout,
     },
   ];
-
   return (
     <div
       ref={dropdownRef}
       className={`
-    fixed right-4 top-[6%]
+    fixed right-4 top-14
     min-w-180px rounded-lg border bg-white
     shadow-lg
     transition-all duration-200 ease-out
     ${
-      isProfileOpen
-        ? "opacity-100 translate-y-0 pointer-events-auto !z-[999999]"
-        : "opacity-0 -translate-y-2 pointer-events-none z-[-1]"
+      isOpenProfilePopup
+        ? "opacity-100 visible translate-y-0 pointer-events-auto !z-[999999]"
+        : "opacity-0 invisible -translate-y-2 pointer-events-none z-[-1]"
     }
   `}
     >
@@ -83,7 +84,7 @@ const ProfileDropDown = ({ isProfileOpen, setIsProfileOpen }) => {
               <Link
                 to={route.link}
                 target={route.target}
-                onClick={() => setIsProfileOpen(false)}
+                onClick={() => setIsOpenProfilePopup(false)}
                 className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
               >
                 {route.name}
