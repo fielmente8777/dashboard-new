@@ -1,12 +1,18 @@
 import { useContext, useEffect, useState } from "react";
 import DataContext from "../../../../context/DataContext";
-import { markMessageAsRead } from "../../../../services/api/whatsApp";
 import useDebounce from "../../../../hooks/useDebounce";
+import {
+  getWhatsAppMessageTemplates,
+  markMessageAsRead,
+} from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
+import NewContactModal from "./NewContactModal";
 
-const tabs = ["Active", "Inactive"];
+const tabs = ["Active", "Inactive", "New Contact"];
 
 const SidebarChat = () => {
+  const [templates, setTemplates] = useState([]);
+  const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
@@ -96,9 +102,18 @@ const SidebarChat = () => {
     setActiveTab(tab);
     const activeTab = tab.toLowerCase();
 
-    activeTab === "active"
-      ? setFilteredConversations(activeConversations())
-      : setFilteredConversations(historyConversations());
+    activeTab === "new contact"
+      ? setOpenNewContactModal(true)
+      : activeTab === "active"
+        ? setFilteredConversations(activeConversations())
+        : setFilteredConversations(historyConversations());
+  };
+
+  const fetchTemplates = async () => {
+    const response = await getWhatsAppMessageTemplates();
+    if (response.success) {
+      setTemplates(response?.result?.docs?.data || []);
+    }
   };
 
   useEffect(() => {
@@ -110,6 +125,8 @@ const SidebarChat = () => {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
     }
+
+    fetchTemplates();
   }, []);
 
   return (
@@ -218,6 +235,13 @@ const SidebarChat = () => {
           </div>
         )}
       </div>
+
+      {openNewContactModal && (
+        <NewContactModal
+          onClose={() => setOpenNewContactModal(false)}
+          templates={templates}
+        />
+      )}
     </div>
   );
 };
