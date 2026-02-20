@@ -73,8 +73,6 @@ const ChatArea = () => {
           templateParams: templateParams,
         };
 
-        // console.log("tempalte payload", templatePayload);
-        // Optimistic message matches DB structure
         const optimisticMessage = {
           _id: `temp-${Date.now()}`, // temporary id
           conversationId: selectedConversation._id,
@@ -85,11 +83,13 @@ const ChatArea = () => {
           messageType: "template",
           body: renderedBody,
           template: {
-            name: selectedTemplate.name,
-            language: selectedTemplate.language || "en",
-            parameters: templateParams,
+            template: {
+              name: selectedTemplate.name,
+              language: selectedTemplate.language || "en",
+              parameters: templateParams,
+            },
           },
-          status: "pending",
+          status: "sent",
           timestamp: new Date(),
           createdAt: new Date(),
         };
@@ -97,10 +97,26 @@ const ChatArea = () => {
         // Push instantly to UI (optimistic update)
         setMessageList((prev) => [...prev, optimisticMessage]);
 
-        await sendWhatsAppMessage(templatePayload);
+        const response = await sendWhatsAppMessage(templatePayload);
 
         setSelectedTemplate(null);
         setTemplateClick(false);
+
+        if (response?.success && response?.responseStatusCode === 200) {
+          // Update UI
+          setMessageList((prev) =>
+            prev.map((m) => {
+              if (m._id === optimisticMessage._id) {
+                return {
+                  ...m,
+                  messageId: response?.result?.docs?.messageId,
+                  status: "sent",
+                };
+              }
+              return m;
+            }),
+          );
+        }
         return;
       }
 
@@ -137,8 +153,9 @@ const ChatArea = () => {
       };
       // Push optimistic message
       setMessageList((prev) => [...prev, optimisticMessage]);
-
       setMessageValue("");
+      setFile(null);
+      setSelectedTemplate(null);
 
       const response = await sendWhatsAppMessage(formData);
 
@@ -239,7 +256,6 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      console.log(serverResponse);
       if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
@@ -359,9 +375,12 @@ const ChatArea = () => {
                         )}
 
                       {/* IMAGE */}
-                      {message.messageType && message.media?.id && (
+                      {message.messageType === "image" && (
                         <img
-                          src={`${NEW_BASE_URL}/api/v1/whatsapp/media/${message.media.id}?ndid=${localStorage.getItem("ndid")}`}
+                          src={
+                            message.media?.url ||
+                            ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.media.id}?ndid=${localStorage.getItem("ndid")}`
+                          }
                           alt="WhatsApp"
                           className="mt-2 rounded-lg w-full"
                         />
