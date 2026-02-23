@@ -31,8 +31,8 @@ const ProfileDropDown = () => {
     setAuth(false);
     dispatch(setHid(null));
     setSelectedConversation(null);
-
     navigate("/login");
+    setIsOpenProfilePopup(false);
   };
 
   const routs = [

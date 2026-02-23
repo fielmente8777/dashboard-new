@@ -7,6 +7,7 @@ import { getMetaAccounts, getMetaLeads } from "../services/api/MetaLeads.api";
 const DataContext = createContext({});
 
 export const DataProvider = ({ children }) => {
+  const [pageId, setSelectedPageId] = useState(null);
   const [isOpenProfilePopup, setIsOpenProfilePopup] = useState(false);
   const [auth, setAuth] = useState(false);
   const [totalRequests, setTotalRequests] = useState();
@@ -54,49 +55,49 @@ export const DataProvider = ({ children }) => {
   //   reconnectionDelay: 10000, // Optional: retry delay (in ms)
   // });
 
-
-  const [metaLeads,setMetaLeads]=useState([])
+  const [metaLeads, setMetaLeads] = useState([]);
   const fetchMetaPages = async () => {
-      try {
-        const response = await getMetaAccounts();
-        if (response?.success) {
-          const pagesData = response?.result?.docs?.pages || [];
-          // setPages(pagesData);
-  
-          if (pagesData.length === 1) {
-            // setSelectedPageId(pagesData[0].id);
-            // fetchPageForms(pagesData[0].id);
-            fetchLeads(pagesData[0].id);
-          }
+    try {
+      const response = await getMetaAccounts();
+      if (response?.success) {
+        const pagesData = response?.result?.docs?.pages || [];
+        // setPages(pagesData);
+
+        if (pagesData.length === 1) {
+          setSelectedPageId(pagesData[0].id);
+          // fetchPageForms(pagesData[0].id);
+          fetchLeads(pagesData[0].id);
         }
-      } finally {
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-   const fetchLeads = async (pageId, formId, cursor) => {
-      // setLoadingLeads(true);
-      try {
-        const response = await getMetaLeads(pageId, formId, cursor,limit);
-        if (response?.success) {
-          // setLeads(response?.result?.docs?.leads || []);
-  
-  
-          const sortedLeads = [...(response?.result?.docs?.allLeads || [])].sort(
-            (a, b) => new Date(b.created_time) - new Date(a.created_time)
-          );
-          setMetaLeads(sortedLeads || []);
-          // const cursors = response?.result?.paging?.cursors;
-          // setAfterCursor(cursors?.after || null);
-          // setBeforeCursor(cursors?.before || null);
-        }
-      } finally {
+  const fetchLeads = async (pageId, formId, cursor) => {
+    // setLoadingLeads(true);
+    try {
+      const response = await getMetaLeads(pageId, formId, cursor, limit);
+      if (response?.success) {
+        // setLeads(response?.result?.docs?.leads || []);
+
+        const sortedLeads = [...(response?.result?.docs?.allLeads || [])].sort(
+          (a, b) => new Date(b.created_time) - new Date(a.created_time),
+        );
+        setMetaLeads(sortedLeads || []);
+        // const cursors = response?.result?.paging?.cursors;
+        // setAfterCursor(cursors?.after || null);
+        // setBeforeCursor(cursors?.before || null);
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+    // setLoadingLeads(false);
+  };
 
-
-    useEffect(()=>{
-      fetchMetaPages()
-    },[limit])
+  useEffect(() => {
+    fetchMetaPages();
+  }, [limit]);
 
   const fetchRoomsData = async () => {
     try {
@@ -120,7 +121,7 @@ export const DataProvider = ({ children }) => {
         setRoomsData(responseData.data);
       }
     } catch (error) {
-      // console.log('Error:', error);
+      console.log("Error:", error);
     }
   };
 
@@ -175,24 +176,24 @@ export const DataProvider = ({ children }) => {
         howManyCancelledRequest(response.data?.data);
       }
     } catch (error) {
-      return {};
+      console.log(error);
     } finally {
       setLoading(false);
     }
   };
-  const getEmergencyRequest = async () => {
-    try {
-      const response = await axios.post(`${host}/api/getallemergencyrequest`, {
-        ndid: localStorage.getItem("ndid"),
-        hid: localStorage.getItem("hid"),
-      });
+  // const getEmergencyRequest = async () => {
+  //   try {
+  //     const response = await axios.post(`${host}/api/getallemergencyrequest`, {
+  //       ndid: localStorage.getItem("ndid"),
+  //       hid: localStorage.getItem("hid"),
+  //     });
 
-      setEmergencyRequestData(response.data.data);
-    } catch (error) {
-      setLoading(false);
-      return {};
-    }
-  };
+  //     setEmergencyRequestData(response.data.data);
+  //   } catch (error) {
+  //     setLoading(false);
+  //     return {};
+  //   }
+  // };
 
   const howManyPendingRequest = (data) => {
     const pendingRequests = data?.filter(
@@ -240,7 +241,7 @@ export const DataProvider = ({ children }) => {
       setIs24HoursCompleted(isCompleted);
       setIntegrationStauts(data?.result?.docs);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     } finally {
       setIsLoadingIntegrationStatus(false);
     }
@@ -332,9 +333,13 @@ export const DataProvider = ({ children }) => {
         setSelectedConversation,
         conversations,
         setConversations,
-        limit, setLimit,
-        metaLeads,setMetaLeads,
-        isOpenProfilePopup, setIsOpenProfilePopup,
+        limit,
+        setLimit,
+        metaLeads,
+        setMetaLeads,
+        isOpenProfilePopup,
+        setIsOpenProfilePopup,
+        pageId,
       }}
     >
       {children}

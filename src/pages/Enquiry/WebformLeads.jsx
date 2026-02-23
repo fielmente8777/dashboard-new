@@ -20,8 +20,8 @@ const WebformLeads = () => {
   const [allLeads, setAllLeads] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const {

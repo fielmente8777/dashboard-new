@@ -355,39 +355,39 @@ export const SidebarData = [
   //   link: `eazmail`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  // {
-  //   name: "Booking Engine",
-  //   key: "Booking Engine",
-  //   link: `booking-engine`,
-  //   icon: <SiGoogleearthengine size={20} />,
-  //   subLinks: [
-  //     {
-  //       name: "Rooms Setup",
-  //       link: `booking-engine/rooms-setup`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Rooms & Inventory",
-  //       link: `booking-engine/rooms-and-inventory`,
-  //       icon: <MdOutlineInventory size={18} />,
-  //     },
-  //     {
-  //       name: "Price Packages",
-  //       link: `booking-engine/price-packages`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Ads Packages",
-  //       link: `booking-engine/ads-packages`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Customization",
-  //       link: `booking-engine/customization`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //   ],
-  // },
+  {
+    name: "Booking Engine",
+    key: "Booking Engine",
+    link: `booking-engine`,
+    icon: <SiGoogleearthengine size={20} />,
+    subLinks: [
+      {
+        name: "Rooms Setup",
+        link: `booking-engine/rooms-setup`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Rooms & Inventory",
+        link: `booking-engine/rooms-and-inventory`,
+        icon: <MdOutlineInventory size={18} />,
+      },
+      {
+        name: "Price Packages",
+        link: `booking-engine/price-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Ads Packages",
+        link: `booking-engine/ads-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Customization",
+        link: `booking-engine/customization`,
+        icon: <MdBedroomParent size={18} />,
+      },
+    ],
+  },
 
   // {
   //   name: "Guest Request Management",

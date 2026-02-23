@@ -2,17 +2,21 @@ import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 
 const url = "https://nexon.eazotel.com/eazotel/addcontacts";
 
-export const getMetaAccounts = async () => {
+export const bulkImportMetaLeads = async () => {
   const token = localStorage.getItem("token");
   try {
-    const response = await fetch(`${NEW_BASE_URL}/api/v1/meta/accounts`, {
-      method: "GET", // or "POST" if you're sending data
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        "ngrok-skip-browser-warning": "true",
+    const response = await fetch(
+      `${NEW_BASE_URL}/api/v1/meta/leads/bulk-import`,
+      {
+        method: "POST", // or "POST" if you're sending data
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({}),
       },
-    });
+    );
     const result = await response.json();
     return result;
   } catch (error) {
@@ -21,17 +25,34 @@ export const getMetaAccounts = async () => {
   }
 };
 
-export const getMetaForms = async (pageId) => {
+export const getAllMetaLeads = async ({
+  page,
+  pageId,
+  limit = 20,
+  search,
+  startDate,
+  endDate,
+}) => {
   const token = localStorage.getItem("token");
+
+  const params = new URLSearchParams();
+  if (page) params.append("page", page);
+  if (pageId) params.append("pageId", pageId);
+  if (limit) params.append("limit", limit);
+  if (search) params.append("search", search);
+  if (startDate && endDate) {
+    params.append("from", startDate);
+    params.append("to", endDate);
+  }
+
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/forms?pageId=${pageId}`,
+      `${NEW_BASE_URL}/api/v1/meta/leads?${params.toString()}`,
       {
         method: "GET", // or "POST" if you're sending data
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
         },
       },
     );
@@ -43,7 +64,43 @@ export const getMetaForms = async (pageId) => {
   }
 };
 
-export const getMetaLeads = async (pageId, formId, cursor,limit) => {
+export const getMetaAccounts = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${NEW_BASE_URL}/api/v1/meta/accounts`, {
+      method: "GET", // or "POST" if you're sending data
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
+export const getMetaForms = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${NEW_BASE_URL}/api/v1/meta/forms`, {
+      method: "GET", // or "POST" if you're sending data
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
+export const getMetaLeads = async (pageId, formId, cursor, limit) => {
   const token = localStorage.getItem("token");
   console.log(cursor);
 
@@ -146,7 +203,7 @@ export const getLeadGenFromFields = async (token) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    // console.log(error);
+    throw new Error(error);
   }
 };
 
