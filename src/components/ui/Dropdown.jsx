@@ -4,12 +4,12 @@ import { IoChevronDown } from "react-icons/io5";
 
 export default function CustomDropdown({
   label,
-  value,
   options,
   onChange,
   width = "w-48",
   ...props
 }) {
+  const [selected, setSelected] = useState(label);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
 
@@ -59,7 +59,7 @@ export default function CustomDropdown({
         onClick={toggleDropdown}
         className={`py-2 ${width} flex items-center justify-between px-3 rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-primary ${props.className}`}
       >
-        <span className="truncate">{label || value}</span>
+        <span className="truncate">{selected || label}</span>
         <IoChevronDown
           size={16}
           className={`transition-transform ${open ? "rotate-180" : ""}`}
@@ -85,6 +85,7 @@ export default function CustomDropdown({
                 onClick={() => {
                   onChange(opt.value);
                   setOpen(false);
+                  setSelected(opt.label);
                 }}
                 className="px-3 py-2 text-sm cursor-pointer hover:bg-primary/10"
               >

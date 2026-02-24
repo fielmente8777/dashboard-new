@@ -333,7 +333,7 @@ const MetaLeads = () => {
             </div>
 
             {/* PAGE DROPDOWN */}
-            {tableData.length > 0 && (
+            {pages?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="Select Page"
@@ -347,7 +347,7 @@ const MetaLeads = () => {
             )}
 
             {/* FORM DROPDOWN */}
-            {tableData.length > 0 && (
+            {forms?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="All Forms"
