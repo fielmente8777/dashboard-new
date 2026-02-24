@@ -209,7 +209,7 @@ export default WhatsApp;
 
 const Fallback = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-green-50 to-teal-50 px-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center h-full w-full bg-linear-to-br from-green-50 to-teal-50 px-6 text-center">
       {/* Icon Circle */}
       <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 animate-pulse">
         <svg

@@ -58,8 +58,6 @@ const SidebarChat = () => {
       if (conv.unread_count > 0) {
         await markMessageAsRead(conv._id);
       }
-
-      document.title = `${conv.name} | Whatsapp`;
     } catch (error) {
       console.log(error);
     }
@@ -130,7 +128,7 @@ const SidebarChat = () => {
   }, []);
 
   return (
-    <div className="w-80  border-b border-l border-r border-gray-200 flex flex-col bg-white">
+    <div className="w-80 border-b border-l border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
@@ -199,7 +197,7 @@ const SidebarChat = () => {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-500 truncate mt-1">
+                <p className="text-sm text-gray-500 truncate mt-1 w-44">
                   {conv.last_message?.text || "No messages yet"}
                 </p>
               </div>
