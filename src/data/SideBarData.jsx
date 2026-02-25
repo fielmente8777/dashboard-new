@@ -54,7 +54,7 @@ import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
 import { CiViewBoard } from "react-icons/ci";
-import DocumentIcon, { ChatIcon, TeamIcon } from "../icons/icon";
+import DocumentIcon, { ChatIcon, MailIcon, TeamIcon } from "../icons/icon";
 
 export const SidebarData = [
   {
@@ -138,6 +138,10 @@ export const SidebarData = [
   //     },
   //   ],
   // },
+
+
+
+
   {
     name: "Leads Management",
     link: `leads-management`,
@@ -243,23 +247,26 @@ export const SidebarData = [
       // },
     ],
   },
-  // {
-  //   name: "Chat Settings",
-  //   link: `chat-settings`,
-  //   icon: <MdLink size={24} />,
-  //   subLinks: [
-  //     {
-  //       name: "WhatsApp Business",
-  //       link: `chat-settings/whatsapp-bussiness-setting`,
-  //       icon: <FaWhatsapp size={16} />,
-  //     },
-  //     // {
-  //     //   name: "Templates",
-  //     //   link: `chat-settings/whatsapp-bussiness-setting/templates`,
-  //     //   icon: <FaWhatsapp size={16} />,
-  //     // },
-  //   ],
-  // },
+
+    {
+    name: "Campaign Management",
+    // key: "",
+    link: `campaign-management`,
+    icon: <MdAnalytics size={24} />,
+    subLinks: [
+      {
+        name: "Whatsapp Marketing",
+        link: `campaign-management/whatsapp-marketing`,
+        icon: <RiWhatsappFill color="green" />,
+      },
+      {
+        name: "Email Marketing",
+        link: `campaign-management/email-marketing`,
+        icon: <MailIcon/>,
+      },
+    ],
+  },
+
   {
     name: "Google Ads Insights",
     // key: "",

@@ -62,7 +62,7 @@ const Contacts = () => {
       const result = await response.json();
 
       if (result.Status === true) {
-        getContacts();
+        getContactsData();
       }
     } catch (error) {
       // console.log("Error:", error);
@@ -88,12 +88,13 @@ const Contacts = () => {
           <tr className="border-b">
             {/* <th className="py-3 px-2 text-[14px] font-medium">Select</th> */}
             <th className="py-3 px-2 text-[14px] font-medium">#</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Date Added</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Source</th>
+           
 
             <th className="py-3 px-2 text-[14px] font-medium">Name</th>
             <th className="py-3 px-2 text-[14px] font-medium">Contact</th>
             <th className="py-3 px-2 text-[14px] font-medium">Email</th>
+            <th className="py-3 px-2 text-[14px] font-medium">Date Added</th>
+            <th className="py-3 px-2 text-[14px] font-medium">Source</th>
             <th className="py-3 px-2 text-[14px] font-medium">Action</th>
           </tr>
         </thead>
@@ -111,6 +112,14 @@ const Contacts = () => {
                 </td> */}
                 <td className=" flex-1 py-3 px-2">{index + 1}</td>
 
+                
+
+                <td className="  flex-1 py-3 px-2 whitespace-nowrap">
+                  {row?.name}
+                </td>
+                <td className=" flex-1 py-3 px-2">{row.phone}</td>
+                <td className=" flex-1 py-3 px-2">{row.email}</td>
+
                 <td className=" flex-1 py-3 px-2">
                   {formatDateByDay(row.created_at)}
                 </td>
@@ -120,11 +129,6 @@ const Contacts = () => {
                     : row.added_from}
                 </td>
 
-                <td className="  flex-1 py-3 px-2 whitespace-nowrap">
-                  {row?.name}
-                </td>
-                <td className=" flex-1 py-3 px-2">{row.phone}</td>
-                <td className=" flex-1 py-3 px-2">{row.email}</td>
                 <td>
                   <button
                     onClick={(e) => {
