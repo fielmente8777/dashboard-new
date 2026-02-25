@@ -43,7 +43,7 @@ const WhatsAppBusiness = () => {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }
     } catch (error) {
-      // console.log(error);
+      console.log(error);
     }
   };
 
@@ -129,7 +129,7 @@ const WhatsAppBusiness = () => {
   if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
   }
-  console.log(templates);
+
   return (
     <React.Fragment>
       {accountDetails && (
@@ -349,8 +349,8 @@ const WabaDetailsCard = ({ waba, business }) => {
     },
   };
 
-  const statusKey = waba.marketingMessagesOnboardingStatus || "UNKNOWN";
-  const status = MARKETING_STATUS_UI[statusKey];
+  // const statusKey = waba.marketingMessagesOnboardingStatus || "UNKNOWN";
+  // const status = MARKETING_STATUS_UI[statusKey];
 
   return (
     <div className="w-full border border-gray-200 bg-white px-6 py-5">
@@ -412,15 +412,41 @@ const WabaDetailsCard = ({ waba, business }) => {
   );
 };
 
+const ChannelToggle = ({ label, value, onChange }) => (
+  <div className="flex items-center justify-between">
+    <span className="text-sm text-gray-700">{label}</span>
+
+    <button
+      onClick={onChange}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+        value ? "bg-green-500" : "bg-gray-300"
+      }`}
+    >
+      <span
+        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+          value ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
+  </div>
+);
+
 const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
-  console.log(autoMessage);
   const textareaRef = useRef(null);
-  const [enabled, setEnabled] = useState(autoMessage?.enabled || false);
+
+  /* ----------------------------
+     Channel Toggles
+  -----------------------------*/
+  const [channels, setChannels] = useState({
+    metaLeads: autoMessage?.metaLeads ?? false,
+    googleLeads: autoMessage?.googleLeads ?? false,
+    whatsapp: autoMessage?.whatsapp ?? false,
+  });
+
   const [type, setType] = useState(autoMessage?.type || "template");
   const [templateName, setTemplateName] = useState(
     autoMessage?.templateName || "",
   );
-
   const [message, setMessage] = useState(autoMessage?.message || "");
   const [loading, setLoading] = useState(false);
 
@@ -428,37 +454,41 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
      Sync when backend changes
   -----------------------------*/
   useEffect(() => {
-    setEnabled(autoMessage?.enabled || false);
+    setChannels({
+      metaLeads: autoMessage?.metaLeads ?? false,
+      googleLeads: autoMessage?.googleLeads ?? false,
+      whatsapp: autoMessage?.whatsapp ?? false,
+    });
+
     setType(autoMessage?.type || "template");
     setTemplateName(autoMessage?.templateName || "");
     setMessage(autoMessage?.message || "");
   }, [autoMessage]);
 
+  /* ----------------------------
+     Auto resize textarea
+  -----------------------------*/
   useEffect(() => {
     if (!textareaRef.current) return;
 
     const el = textareaRef.current;
-
-    // Reset height to recalculate
     el.style.height = "auto";
 
-    const lineHeight = 24; // adjust if needed
+    const lineHeight = 24;
     const maxRows = 8;
-    const maxHeight = lineHeight * maxRows;
-
-    el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
+    el.style.height = Math.min(el.scrollHeight, lineHeight * maxRows) + "px";
   }, [message]);
 
   /* ----------------------------
-     Find Selected Template
+     Helpers
   -----------------------------*/
+  const isAnyChannelEnabled =
+    channels.metaLeads || channels.googleLeads || channels.whatsapp;
+
   const selectedTemplateObj = templates?.find(
     (tpl) => tpl.name === templateName,
   );
 
-  /* ----------------------------
-     Extract Meta Components
-  -----------------------------*/
   const getComponent = (type) =>
     selectedTemplateObj?.components?.find((c) => c.type === type);
 
@@ -466,12 +496,8 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
   const body = getComponent("BODY");
   const footer = getComponent("FOOTER");
 
-  /* ----------------------------
-     Replace {{1}} Variables For Preview
-  -----------------------------*/
   const formatPreviewText = (text) => {
     if (!text) return "";
-
     return text.replace(/{{\d+}}/g, (match) => {
       const num = match.replace(/[{}]/g, "");
       return `[value ${num}]`;
@@ -479,7 +505,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
   };
 
   /* ----------------------------
-     Save Config API Call
+     Save Config
   -----------------------------*/
   const handleSave = async () => {
     try {
@@ -488,29 +514,21 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       let templatePayload = null;
 
       if (type === "template" && selectedTemplateObj) {
-        const getComponent = (type) =>
-          selectedTemplateObj?.components?.find((c) => c.type === type);
-
-        const header = getComponent("HEADER");
-        const body = getComponent("BODY");
         const buttons = getComponent("BUTTONS");
 
         templatePayload = {
           name: selectedTemplateObj.name,
           language: selectedTemplateObj.language || "en",
-
           bodyText: body?.text || "",
           variables: (body?.text?.match(/{{\d+}}/g) || []).length,
-
           headerType: header?.format || null,
-
           buttons: buttons?.buttons || [],
         };
       }
 
       const payload = {
         phoneNumberId,
-        enabled,
+        channels, // 👈 metaLeads, googleLeads, whatsapp
         type,
         message: type === "text" ? message : null,
         template: templatePayload,
@@ -524,36 +542,58 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
     }
   };
 
+  const hasChanges =
+    JSON.stringify(channels) !==
+      JSON.stringify({
+        metaLeads: autoMessage?.metaLeads ?? false,
+        googleLeads: autoMessage?.googleLeads ?? false,
+        whatsapp: autoMessage?.whatsapp ?? false,
+      }) ||
+    type !== autoMessage?.type ||
+    templateName !== autoMessage?.templateName ||
+    message !== autoMessage?.message;
+
   return (
     <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-600">Auto Messaging</h3>
+      <h3 className="text-lg font-medium text-gray-600">
+        Auto Messaging Channels
+      </h3>
 
-        {/* Toggle */}
-        <button
-          onClick={() => setEnabled(!enabled)}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-            enabled ? "bg-green-500" : "bg-gray-300"
-          }`}
-        >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-              enabled ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
+      {/* Toggles */}
+      <div className="space-y-3">
+        <ChannelToggle
+          label="Meta Leads"
+          value={channels.metaLeads}
+          onChange={() =>
+            setChannels((p) => ({ ...p, metaLeads: !p.metaLeads }))
+          }
+        />
+
+        <ChannelToggle
+          label="Google Leads"
+          value={channels.googleLeads}
+          onChange={() =>
+            setChannels((p) => ({ ...p, googleLeads: !p.googleLeads }))
+          }
+        />
+
+        <ChannelToggle
+          label="WhatsApp"
+          value={channels.whatsapp}
+          onChange={() => setChannels((p) => ({ ...p, whatsapp: !p.whatsapp }))}
+        />
       </div>
 
-      {!enabled && (
+      {!isAnyChannelEnabled && (
         <p className="text-sm text-gray-500">
-          Auto reply is currently disabled.
+          Auto reply is currently disabled for all channels.
         </p>
       )}
 
-      {enabled && (
+      {isAnyChannelEnabled && (
         <>
-          {/* Type Selection */}
+          {/* Type */}
           <div>
             <label className="text-sm font-medium text-gray-700">
               Reply Type
@@ -569,7 +609,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
             </select>
           </div>
 
-          {/* TEMPLATE SELECT */}
+          {/* Template Select */}
           {type === "template" && (
             <div>
               <label className="text-sm font-medium text-gray-700">
@@ -582,7 +622,6 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
               >
                 <option value="">Select template</option>
-
                 {templates?.map((tpl) => (
                   <option key={tpl.name} value={tpl.name}>
                     {tpl.name}
@@ -592,7 +631,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
             </div>
           )}
 
-          {/* TEXT MESSAGE */}
+          {/* Text Message */}
           {type === "text" && (
             <div>
               <label className="text-sm font-medium text-gray-700">
@@ -600,16 +639,16 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
               </label>
 
               <textarea
+                ref={textareaRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                ref={textareaRef}
                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="Enter auto reply message..."
               />
             </div>
           )}
 
-          {/* TEMPLATE PREVIEW */}
+          {/* Template Preview */}
           {type === "template" && selectedTemplateObj && (
             <div>
               <p className="text-sm font-medium text-gray-700 mb-2">
@@ -617,21 +656,18 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
               </p>
 
               <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
-                {/* HEADER */}
                 {header && (
                   <p className="font-medium text-sm mb-1">
                     {formatPreviewText(header.text)}
                   </p>
                 )}
 
-                {/* BODY */}
                 {body && (
                   <p className="text-sm whitespace-pre-line">
                     {formatPreviewText(body.text)}
                   </p>
                 )}
 
-                {/* FOOTER */}
                 {footer && (
                   <p className="text-xs text-gray-500 mt-2">
                     {formatPreviewText(footer.text)}
@@ -648,18 +684,16 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       )}
 
       {/* Save */}
-      {type !== autoMessage?.type || enabled !== autoMessage?.enabled ? (
+      {hasChanges && (
         <div className="flex justify-end">
           <button
             onClick={handleSave}
             disabled={loading}
-            className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700"
+            className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
           >
             {loading ? "Saving..." : "Save Configuration"}
           </button>
         </div>
-      ) : (
-        ""
       )}
     </div>
   );
