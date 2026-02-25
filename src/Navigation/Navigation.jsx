@@ -80,6 +80,7 @@ const Navigation = () => {
         <Route path="integration" element={<Integration />} />
         <Route path="qr-code" element={<GRMSettings />} />
         <Route path="settings" element={<Settings />} />
+        
 
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {
