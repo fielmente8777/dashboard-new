@@ -60,8 +60,8 @@ const Navbar = () => {
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
   const [open, setOpen] = useState(false);
-  const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
-    useState(false);
+  // const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
+  //   useState(false);
   // const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { isOpenProfilePopup, setIsOpenProfilePopup } = useContext(DataContext);
 
@@ -92,16 +92,16 @@ const Navbar = () => {
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setAuth(false);
-    dispatch(setHid(null));
-    // setTimeout(() => {
-    navigate("/login");
-    // }, 1000)
-  };
+  // const handleLogout = () => {
+  //   localStorage.clear();
+  //   setAuth(false);
+  //   dispatch(setHid(null));
+  //   // setTimeout(() => {
+  //   navigate("/login");
+  //   // }, 1000)
+  // };
 
-  // console.log(hotel);
+  console.log(hotel);
 
   return (
     <div className="sticky left-0 top-0">
@@ -112,8 +112,11 @@ const Navbar = () => {
         >
           <FaAlignRight color="#000" />
         </div>
+
         <Greeting
-          name={hotel?.Profile?.hotels[localStorage?.getItem("hid")]?.local}
+          name={
+            hotel?.Profile?.hotels[localStorage?.getItem("hid")]?.local || ""
+          }
         />
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">

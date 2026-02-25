@@ -1,16 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const activityOptions = [
-  { value: "phone_call", label: "Phone Call", emoji: "📞" },
-  { value: "message", label: "Message", emoji: "💬" },
-  { value: "note", label: "Note", emoji: "📝" },
-  { value: "email", label: "Email", emoji: "✉️" },
-  { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
-];
-
-export default function ActivityModal({ open, onClose, onSave }) {
+export default function ActivityModal({ open, onClose, onSave, initialData }) {
   const [activitySource, setActivitySource] = useState("phone_call");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setActivitySource(initialData?.activitySource || "phone_call");
+      setMessage(initialData?.message || "");
+    }
+  }, [open, initialData]);
 
   if (!open) return null;
 
@@ -20,12 +19,19 @@ export default function ActivityModal({ open, onClose, onSave }) {
     onSave({
       activitySource,
       message,
-      createdAt: new Date().toISOString(),
+      createdAt: initialData?.createdAt || new Date().toISOString(),
     });
 
-    setMessage("");
     onClose();
   };
+
+  const activityOptions = [
+    { value: "phone_call", label: "Phone Call", emoji: "📞" },
+    { value: "message", label: "Message", emoji: "💬" },
+    { value: "note", label: "Note", emoji: "📝" },
+    { value: "email", label: "Email", emoji: "✉️" },
+    { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
+  ];
 
   const selected = activityOptions.find((a) => a.value === activitySource);
 
@@ -34,7 +40,9 @@ export default function ActivityModal({ open, onClose, onSave }) {
       <div className="bg-white w-[420px] rounded-xl shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center px-5 py-4 border-b">
-          <h2 className="font-semibold text-lg">Add Activity</h2>
+          <h2 className="font-semibold text-lg">
+            {initialData ? "Edit Activity" : "Add Activity"}
+          </h2>
           <button onClick={onClose} className="text-gray-500">
             ✕
           </button>
@@ -42,7 +50,6 @@ export default function ActivityModal({ open, onClose, onSave }) {
 
         {/* Body */}
         <div className="p-5 space-y-4">
-          {/* Activity Select */}
           <div className="flex items-center gap-3 border rounded-lg px-3 py-2">
             <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center">
               {selected.emoji}
@@ -61,7 +68,6 @@ export default function ActivityModal({ open, onClose, onSave }) {
             </select>
           </div>
 
-          {/* Message */}
           <textarea
             rows={5}
             placeholder="Add details..."

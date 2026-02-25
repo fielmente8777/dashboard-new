@@ -28,6 +28,7 @@ export const bulkImportMetaLeads = async () => {
 export const getAllMetaLeads = async ({
   page,
   pageId,
+  formId,
   limit = 20,
   search,
   startDate,
@@ -38,6 +39,7 @@ export const getAllMetaLeads = async ({
   const params = new URLSearchParams();
   if (page) params.append("page", page);
   if (pageId) params.append("pageId", pageId);
+  if (formId) params.append("formId", formId);
   if (limit) params.append("limit", limit);
   if (search) params.append("search", search);
   if (startDate && endDate) {
@@ -54,6 +56,28 @@ export const getAllMetaLeads = async ({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+      },
+    );
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error getting applicants:", error);
+    throw error;
+  }
+};
+
+export const updateMetaLead = async (formData) => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(
+      `${NEW_BASE_URL}/api/v1/meta/lead/${formData.leadId}/update`,
+      {
+        method: "PUT", // or "POST" if you're sending data
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
       },
     );
     const result = await response.json();

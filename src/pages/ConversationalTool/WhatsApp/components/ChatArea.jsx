@@ -289,9 +289,9 @@ const ChatArea = () => {
   }, [selectedConversation?._id]);
 
   return (
-    <div className="flex-1 flex flex-col ">
+    <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center  px-6 h-16 shadow-sm">
+      <div className="flex justify-between items-center px-6 h-16 shadow-sm">
         <div className="bg-white flex items-center">
           <div className="w-12 h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
