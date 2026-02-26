@@ -23,7 +23,7 @@ const ProfilePanel = ({ selectedContact }) => {
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center mb-4">
           <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-            {selectedContact?.name.charAt(0).toUpperCase()}
+            {selectedContact?.name?.charAt(0).toUpperCase()}
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900">

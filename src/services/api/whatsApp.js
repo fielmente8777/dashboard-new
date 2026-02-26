@@ -154,14 +154,18 @@ export const updateAutoMessageConfig = async (payload) => {
 };
 
 export const addWhatsAppLead = async (payload) => {
-  const response = await fetch(`${NEW_BASE_URL}/api/v1/whatsapp/lead/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+  const hid = localStorage.getItem("hid");
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/lead/create?hid=${hid}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
     },
-    body: JSON.stringify(payload),
-  });
+  );
   const data = await response.json();
   return data;
 };

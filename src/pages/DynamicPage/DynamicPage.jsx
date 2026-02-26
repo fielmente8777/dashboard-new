@@ -184,12 +184,28 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
 
+    [`${BASE_PATH}/${hid}/insights-analytics/google-ads-insights`]: (
+      <GoogleAdsInsights />
+    ),
+    [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (
+      <Feedback />
+    ),
+    [`${BASE_PATH}/${hid}/insights-analytics/website-analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/leads-analytics`]: <Feedback />,
 
     // TODO: Campaign Management
 
-    [`${BASE_PATH}/${hid}/campaign-management/sms-marketing`]: <EmailMarketing />,
-    [`${BASE_PATH}/${hid}/campaign-management/email-marketing`]: <EmailMarketingManagement />,
-    [`${BASE_PATH}/${hid}/campaign-management/whatsapp-marketing`]: <WhatsappBroadcasting />,
+    [`${BASE_PATH}/${hid}/marketing/sms-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/marketing/email-marketing`]: (
+      <EmailMarketingManagement />
+    ),
+    [`${BASE_PATH}/${hid}/marketing/whatsapp-marketing`]: (
+      <WhatsappBroadcasting />
+    ),
 
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
     [`${BASE_PATH}/${hid}/channel/eb/chat`]: <EazbotChat />,

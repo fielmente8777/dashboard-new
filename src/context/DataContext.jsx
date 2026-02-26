@@ -223,16 +223,20 @@ export const DataProvider = ({ children }) => {
   };
 
   const checkIntegrationStatus = async () => {
+    const hid = localStorage.getItem("hid");
     setIsLoadingIntegrationStatus(true);
     try {
-      const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/get`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/integration/get?hid=${hid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
+      );
       const data = await response.json();
       const isCompleted = is24HoursCompletedFnc(
         data.result?.docs?.googleAdsInsight?.lastSyncTime,

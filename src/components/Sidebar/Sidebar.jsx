@@ -304,7 +304,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${handleLocalStorage("token")}`,
           },
-        }
+        },
       );
 
       if (data?.Status) {
@@ -346,18 +346,18 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
         return {
           ...item,
           subLinks: item?.subLinks?.filter(
-            (sub) => authUser?.accessScope[accessScopeMap[sub.key]]
+            (sub) => authUser?.accessScope[accessScopeMap[sub.key]],
           ),
         };
       } else {
         const assignedLocation = authUser?.assigned_location?.filter(
-          (loc) => loc.hid === String(handleLocalStorage("hid"))
+          (loc) => loc.hid === String(handleLocalStorage("hid")),
         )[0];
 
         return {
           ...item,
           subLinks: item?.subLinks?.filter(
-            (sub) => assignedLocation?.accessScope[accessScopeMap[sub.key]]
+            (sub) => assignedLocation?.accessScope[accessScopeMap[sub.key]],
           ),
         };
       }
@@ -373,7 +373,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   // console.log(currentLocation);
   return (
     <div
-      className="p-3  flex flex-col h-screen overflow-hidden shadow-md bg-white md:relative fixed left-0 z-[99999] "
+      className="p-3 border-r border-r-gray-200!  flex flex-col h-screen overflow-hidden shadow-md bg-slate-50 md:relative fixed left-0 z-99999"
       style={{
         left: isMobile ? (isOpen ? "0px" : "100%") : null,
       }}
@@ -532,7 +532,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               </p>
                             </div>
                           );
-                        }
+                        },
                       )}
                   </div>
                 ) : (
@@ -755,7 +755,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 const currentLocationAccessScope =
                   authUser?.assigned_location?.filter(
                     (location) =>
-                      location?.hid === String(handleLocalStorage("hid"))
+                      location?.hid === String(handleLocalStorage("hid")),
                   )[0];
 
                 const key = item?.key;

@@ -95,23 +95,28 @@ export const SidebarData = [
     link: `channel`,
     icon: <SiLivechat size={18} />,
     subLinks: [
-      // {
-      //   name: "WhatsApp Business",
-      //   link: `channel/whatsapp`,
-      //   icon: <FaWhatsapp size={16} />,
-      //   subLinks:[
-      //       {
-      //       name: "WhatsApp Chats",
-      //       link: `channel/wa/chat`,
-      //       icon: <FaWhatsapp size={16} />,
-      //     },
-      //   ]
-      // },
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
         icon: <FaWhatsapp size={16} />,
       },
+      {
+        name: "Instagram",
+        link: `channel/ig/chat`,
+        icon: <FaInstagram size={16} />,
+      },
+      {
+        name: "Facebook",
+        link: `channel/fb/chat`,
+        icon: <FaFacebook size={16} />,
+      },
+
+      {
+        name: "Eazbot",
+        link: `channel/eb/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
+
       // {
       //   name: "Templates",
       //   link: `channel/whatsapp/template/create`,
@@ -138,9 +143,6 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-
-
-
 
   {
     name: "Leads Management",
@@ -248,21 +250,77 @@ export const SidebarData = [
     ],
   },
 
-    {
-    name: "Campaign Management",
+  {
+    name: "Marketing",
     // key: "",
-    link: `campaign-management`,
+    link: `marketing`,
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
         name: "Whatsapp Marketing",
-        link: `campaign-management/whatsapp-marketing`,
+        link: `marketing/whatsapp-marketing`,
         icon: <RiWhatsappFill color="green" />,
       },
       {
         name: "Email Marketing",
-        link: `campaign-management/email-marketing`,
-        icon: <MailIcon/>,
+        link: `marketing/email-marketing`,
+        icon: <MailIcon />,
+      },
+    ],
+  },
+
+  {
+    name: "Insights & Analytics",
+    link: `insights-analytics`,
+    icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "Google Ads Insights",
+        link: `insights-analytics/google-ads-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Meta Ads Insights",
+        link: `insights-analytics/meta-ads-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Google Analytics",
+        link: `insights-analytics/google-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Google Console",
+        link: `insights-analytics/google-console`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GMB Insights",
+        link: `insights-analytics/gmb-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Social Media Insights",
+        link: `insights-analytics/social-media-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Website Analytics",
+        link: `insights-analytics/website-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Leads Analytics",
+        link: `insights-analytics/leads-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
       },
     ],
   },
@@ -362,135 +420,135 @@ export const SidebarData = [
   //   link: `eazmail`,
   //   icon: <IoIosChatbubbles size={24} />,
   // },
-  // {
-  //   name: "Booking Engine",
-  //   key: "Booking Engine",
-  //   link: `booking-engine`,
-  //   icon: <SiGoogleearthengine size={20} />,
-  //   subLinks: [
-  //     {
-  //       name: "Rooms Setup",
-  //       link: `booking-engine/rooms-setup`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Rooms & Inventory",
-  //       link: `booking-engine/rooms-and-inventory`,
-  //       icon: <MdOutlineInventory size={18} />,
-  //     },
-  //     {
-  //       name: "Price Packages",
-  //       link: `booking-engine/price-packages`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Ads Packages",
-  //       link: `booking-engine/ads-packages`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //     {
-  //       name: "Customization",
-  //       link: `booking-engine/customization`,
-  //       icon: <MdBedroomParent size={18} />,
-  //     },
-  //   ],
-  // },
+  {
+    name: "Booking Engine",
+    key: "Booking Engine",
+    link: `booking-engine`,
+    icon: <SiGoogleearthengine size={20} />,
+    subLinks: [
+      {
+        name: "Rooms Setup",
+        link: `booking-engine/rooms-setup`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Rooms & Inventory",
+        link: `booking-engine/rooms-and-inventory`,
+        icon: <MdOutlineInventory size={18} />,
+      },
+      {
+        name: "Price Packages",
+        link: `booking-engine/price-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Ads Packages",
+        link: `booking-engine/ads-packages`,
+        icon: <MdBedroomParent size={18} />,
+      },
+      {
+        name: "Customization",
+        link: `booking-engine/customization`,
+        icon: <MdBedroomParent size={18} />,
+      },
+    ],
+  },
 
-  // {
-  //   name: "Guest Request Management",
-  //   link: `guest-request-management`,
-  //   key: "GRM",
-  //   icon: <MdOutlineSos size={26} />,
-  //   subLinks: [
-  //     {
-  //       name: "All Requests",
-  //       link: `grm/all-requests`,
-  //       icon: <FaCodePullRequest size={16} />,
-  //     },
-  //     // {
-  //     //   name: "Emergency Request",
-  //     //   link: `grm/emergency-request`,
-  //     //   icon: <MdEmergencyShare size={18} />,
-  //     // },
-  //     {
-  //       name: "GRM Settings",
-  //       link: `grm/settings`,
-  //       icon: <IoMdSettings size={18} />,
-  //     },
-  //   ],
-  // },
-  // {
-  //   name: "Reservation Desk",
-  //   link: `reservation-desk`,
-  //   key: "Reservation Desk",
-  //   icon: <RiReservedFill size={24} />,
-  //   // subLinks: [
-  //   //   {
-  //   //     name: "Enquiries",
-  //   //     link: `enquiries-management/enquiries`,
-  //   //     icon: <FaCircleQuestion size={18} />,
-  //   //   },
-  //   // ],
-  // },
+  {
+    name: "Guest Request Management",
+    link: `guest-request-management`,
+    key: "GRM",
+    icon: <MdOutlineSos size={26} />,
+    subLinks: [
+      {
+        name: "All Requests",
+        link: `grm/all-requests`,
+        icon: <FaCodePullRequest size={16} />,
+      },
+      // {
+      //   name: "Emergency Request",
+      //   link: `grm/emergency-request`,
+      //   icon: <MdEmergencyShare size={18} />,
+      // },
+      {
+        name: "GRM Settings",
+        link: `grm/settings`,
+        icon: <IoMdSettings size={18} />,
+      },
+    ],
+  },
+  {
+    name: "Reservation Desk",
+    link: `reservation-desk`,
+    key: "Reservation Desk",
+    icon: <RiReservedFill size={24} />,
+    // subLinks: [
+    //   {
+    //     name: "Enquiries",
+    //     link: `enquiries-management/enquiries`,
+    //     icon: <FaCircleQuestion size={18} />,
+    //   },
+    // ],
+  },
 
-  // {
-  //   name: "Content Management system",
-  //   link: ``,
-  //   key: "CMS",
-  //   icon: <SiPayloadcms size={24} />,
-  //   subLinks: [
-  //     {
-  //       name: "Profile and Links",
-  //       link: `cms/profile-and-links`,
-  //       icon: <RiFolderUserFill size={22} />,
-  //     },
-  //     {
-  //       name: "Gallery",
-  //       link: `cms/gallery`,
-  //       icon: <RiGalleryFill size={22} />,
-  //     },
-  //     {
-  //       name: "Offers",
-  //       link: `cms/offers`,
-  //       icon: <BiSolidOffer size={22} />,
-  //     },
-  //     {
-  //       name: "Events",
-  //       link: `cms/events`,
-  //       icon: <MdEventSeat size={22} />,
-  //     },
-  //     {
-  //       name: "Blogs",
-  //       link: `cms/blogs`,
-  //       icon: <FaBloggerB size={22} />,
-  //     },
-  //     {
-  //       name: "Faq",
-  //       link: `cms/faq`,
-  //       icon: <FaQuestion size={22} />,
-  //     },
-  //     // {
-  //     //   name: "Newsletter",
-  //     //   link: `cms/newsletter`,
-  //     //   icon: <FaQuestion size={22} />,
-  //     // },
-  //     {
-  //       name: "Privacy Policy",
-  //       link: `cms/privacy-policy`,
-  //       icon: <MdPrivacyTip size={22} />,
-  //     },
-  //     {
-  //       name: "Terms & Conditions",
-  //       link: `cms/terms-and-conditions`,
-  //       icon: <MdPolicy size={22} />,
-  //     },
-  //     {
-  //       name: "Cancellation and refund Policy",
-  //       link: `cms/cancellation-and-refund-policy`,
-  //       icon: <MdOutlineFreeCancellation size={22} />,
-  //     },
-  //   ],
-  // },
+  {
+    name: "Content Management system",
+    link: ``,
+    key: "CMS",
+    icon: <SiPayloadcms size={24} />,
+    subLinks: [
+      {
+        name: "Profile and Links",
+        link: `cms/profile-and-links`,
+        icon: <RiFolderUserFill size={22} />,
+      },
+      {
+        name: "Gallery",
+        link: `cms/gallery`,
+        icon: <RiGalleryFill size={22} />,
+      },
+      {
+        name: "Offers",
+        link: `cms/offers`,
+        icon: <BiSolidOffer size={22} />,
+      },
+      {
+        name: "Events",
+        link: `cms/events`,
+        icon: <MdEventSeat size={22} />,
+      },
+      {
+        name: "Blogs",
+        link: `cms/blogs`,
+        icon: <FaBloggerB size={22} />,
+      },
+      {
+        name: "Faq",
+        link: `cms/faq`,
+        icon: <FaQuestion size={22} />,
+      },
+      // {
+      //   name: "Newsletter",
+      //   link: `cms/newsletter`,
+      //   icon: <FaQuestion size={22} />,
+      // },
+      {
+        name: "Privacy Policy",
+        link: `cms/privacy-policy`,
+        icon: <MdPrivacyTip size={22} />,
+      },
+      {
+        name: "Terms & Conditions",
+        link: `cms/terms-and-conditions`,
+        icon: <MdPolicy size={22} />,
+      },
+      {
+        name: "Cancellation and refund Policy",
+        link: `cms/cancellation-and-refund-policy`,
+        icon: <MdOutlineFreeCancellation size={22} />,
+      },
+    ],
+  },
 
   // {
   //   name: "Human Resources Management",
@@ -502,33 +560,6 @@ export const SidebarData = [
   //       name: "Applications",
   //       link: `human-resources-management/applications`,
   //       icon: <FaFilePdf size={18} />,
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   name: "Analytics & Reporting",
-  //   key: "Analytics Reporting",
-  //   link: ``,
-  //   icon: <SiAnalogue size={22} />,
-  //   subLinks: [
-  //     {
-  //       name: "HRM Analytics",
-  //       link: `human-resources-management/analytics`,
-  //       key: "HRM",
-  //       icon: <SiGoogleanalytics size={16} />,
-  //     },
-  //     {
-  //       name: "Enquiries Analytics",
-  //       link: `enquiries-management/enquiries-analytics`,
-  //       key: "Enquiries Management",
-  //       icon: <SiGoogleanalytics size={16} />,
-  //     },
-  //     {
-  //       name: "GRM Analytics",
-  //       link: `grm/analytics`,
-  //       key: "GRM",
-  //       icon: <SiGoogleanalytics size={16} />,
   //     },
   //   ],
   // },
@@ -547,12 +578,12 @@ export const SidebarData = [
   //   // ],
   // },
 
-  // {
-  //   name: "Payment Gateway",
-  //   key: "Payment Gateway",
-  //   link: `payment-gateway`,
-  //   icon: <MdPayment size={22} />,
-  // },
+  {
+    name: "Payment Gateway",
+    key: "Payment Gateway",
+    link: `payment-gateway`,
+    icon: <MdPayment size={22} />,
+  },
 
   {
     name: "Knowledge Base",
