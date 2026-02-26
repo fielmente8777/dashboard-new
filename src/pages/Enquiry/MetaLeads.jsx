@@ -36,6 +36,11 @@ const Stages = [
   { label: "Dead Lead", value: "Dead Lead" },
   { label: "Date Sold Out", value: "Date Sold Out" },
   { label: "Duplicate", value: "Duplicate" },
+  { label: "Follow up", value: "Follow Up" },
+  { label: "Not Respond", value: "Not Respond" },
+  { label: "Qualified", value: "Qualified" },
+  { label: "Not Qualified", value: "Not Qualified" },
+  { label: "Turn Away", value: "Turn Away" },
   { label: "Hot", value: "Hot" },
 ];
 
@@ -144,15 +149,42 @@ const MetaLeads = () => {
     }
   };
 
+  const flattenMetaLeads = (allMetaLeads) => {
+    return allMetaLeads.map((leadObj) => {
+      const flatLead = {};
+
+      // Extract field_data
+      leadObj.lead?.field_data?.forEach((field) => {
+        flatLead[field.name] = field.values?.[0] || "";
+      });
+
+      // Add top-level fields
+      flatLead.status = leadObj.status;
+      flatLead.stage = leadObj.stage;
+      flatLead.source = leadObj.source;
+      flatLead.createdAt = leadObj.createdAt;
+      flatLead.updatedAt = leadObj.updatedAt;
+
+      // Notes (optional)
+      flatLead.notes = leadObj.notes?.length
+        ? leadObj.notes.map((n) => n.text || "").join(" | ")
+        : "";
+
+      return flatLead;
+    });
+  };
+
   const exportToExcel = () => {
-    if (!tableData.length) return;
+    if (!allMetaLeads.length) return;
+
+    const flattenedData = flattenMetaLeads(allMetaLeads);
 
     jsonToCsvExport({
-      data: tableData,
+      data: flattenedData,
       options: {
         filename: "Meta_Leads",
         delimiter: ",",
-        headers: tableHeaders.map((h) => h.key),
+        headers: Object.keys(flattenedData[0]), // auto headers
       },
     });
   };
@@ -302,7 +334,6 @@ const MetaLeads = () => {
   }, []);
 
   // console.log(selectedLead);
-  console.log(tableData);
 
   return (
     <div className="bg-white p-6 space-y-6">
