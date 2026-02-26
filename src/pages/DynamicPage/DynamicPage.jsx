@@ -89,7 +89,7 @@ import WebformLeads from "../Enquiry/WebformLeads";
 import AllVisitors from "../Enquiry/AllVisitors";
 import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
-import WhatsappBroadcasting from "../BroadCasting/whatsappBroadcasting";
+import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 
 const DynamicPage = () => {
   const location = useLocation();

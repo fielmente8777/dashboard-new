@@ -115,7 +115,7 @@ const Contacts = () => {
                 
 
                 <td className="  flex-1 py-3 px-2 whitespace-nowrap">
-                  {row?.name}
+                  {row?.name.slice(0,30)}
                 </td>
                 <td className=" flex-1 py-3 px-2">{row.phone}</td>
                 <td className=" flex-1 py-3 px-2">{row.email}</td>
@@ -123,10 +123,11 @@ const Contacts = () => {
                 <td className=" flex-1 py-3 px-2">
                   {formatDateByDay(row.created_at)}
                 </td>
-                <td className=" flex-1 py-3 px-2">
-                  {row.added_from?.toLowerCase() === "eazobot"
+                <td className=" flex-1 py-3 px-2 capitalize">
+                  {row.added_from}
+                  {/* {row.added_from?.toLowerCase() === "eazobot"
                     ? "Eazbot"
-                    : row.added_from}
+                    : row.added_from} */}
                 </td>
 
                 <td>

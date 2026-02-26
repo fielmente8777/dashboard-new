@@ -4,7 +4,7 @@ import { formatDateTime } from "../../services/formateDate";
 import { getWhatsappConversationMessages } from "../../services/api/whatsApp";
 import { MessageSkeleton } from "../Skeltons/WhatsappChatSkelton";
 import { NEW_BASE_URL } from "../../data/constant";
-import { BsCheckAll } from "react-icons/bs";
+import { BsCheckAll, BsCheckLg } from "react-icons/bs";
 
 const WhatsAppLeadPopup = ({
   isOpen,

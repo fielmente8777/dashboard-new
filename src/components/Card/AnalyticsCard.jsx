@@ -11,7 +11,7 @@ const AnalyticsCard = () => {
     const maxHeight = 100;
     return (
         <div className="p-4 bg-white cardShadow rounded-xl">
-            <h2 className="text-md font-semibold text-gray-600">Revenue or Google analytics here</h2>
+            <h2 className="text-md font-semibold text-gray-600">Revenue</h2>
             <p className="text-xl font-bold text-[#5A6ACF] mt-1">INR 00.00</p>
             <p className="text-sm text-green-600 font-semibold mt-1">▲ 0.0% vs last week</p>
             <p className="text-sm text-gray-500 mt-1">Sales from 1–12 June, 2025</p>

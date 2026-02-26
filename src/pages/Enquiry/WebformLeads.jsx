@@ -38,7 +38,7 @@ const WebformLeads = () => {
   const fetchAllLeads = async () => {
     setLoading(true);
     try {
-      const query = `page=${page}&limit=${limit}&created_from=website&search=${debouncedSearch}`;
+      const query = `page=${page}&limit=${limit}&created_from=webform&search=${debouncedSearch}`;
       const response = await getLeads(query);
       if (response?.success && response?.responseStatusCode === 200) {
         setAllLeads(response?.result?.docs || []);

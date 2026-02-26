@@ -158,11 +158,11 @@ export const SidebarData = [
         link: `leads-management/meta-leads`,
         icon: <RiMetaFill color="#0266df" />,
       },
-      // {
-      //   name: "WhatsApp Leads",
-      //   link: `leads-management/whatsapp`,
-      //   icon: <RiWhatsappFill color="green" />,
-      // },
+      {
+        name: "WhatsApp Leads",
+        link: `leads-management/whatsapp`,
+        icon: <RiWhatsappFill color="green" />,
+      },
 
       {
         name: "Google Ads",
