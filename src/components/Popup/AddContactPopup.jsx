@@ -55,7 +55,7 @@ const AddContactPopup = ({
   return (
     <>
       {open && (
-        <div className="absolute top-0 left-0 w-full h-screen bg-black/50">
+        <div className="absolute top-0 left-0 w-full h-screen bg-black/50 z-[99999]">
           <div className="flex justify-center items-center h-screen">
             <form
               onSubmit={handleSubmit}
@@ -120,7 +120,7 @@ const AddContactPopup = ({
               </div>
 
               {/* Source */}
-              <div className="flex flex-col w-full">
+              {/* <div className="flex flex-col w-full">
                 <label className="text-sm mb-1 font-medium text-gray-600">
                   Contact Source
                 </label>
@@ -133,7 +133,29 @@ const AddContactPopup = ({
                     setData({ ...data, added_from: e.target.value })
                   }
                 />
-              </div>
+              </div> */}
+              <div className="mb-4">
+              <label className="block text-sm mb-1 font-medium text-gray-600">Source</label>
+              <select
+                className="w-full border p-2 rounded-md"
+                value={data.added_from}
+                // onChange={(e) => setSource(e.target.value)}
+                onChange={(e) =>
+                    setData({ ...data, added_from: e.target.value })
+                  }
+              >
+                <option value="">All Sources</option>
+                <option value="google_ads">Google Ads</option>
+                <option value="meta">Meta Leads</option>
+                <option value="website">Website</option>
+                <option value="Eazobot">Eazbot</option>
+                <option value="website">Website</option>
+                <option value="web-form">Webform</option>
+                <option value="landing-page">Landing Page</option>
+                <option value="landing_page">Landing Page</option>
+                <option value="Call">Call</option>
+              </select>
+            </div>
 
               {/* Submit Button */}
 

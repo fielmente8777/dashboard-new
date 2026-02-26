@@ -19,13 +19,13 @@ const DashboardCard = ({ amount = 0, label = "Label", progress = 0 }) => {
         <div>
           {/* <p className="text-2xl font-bold text-primary/90">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p> */}
           <p className="text-4xl font-bold text-primary/90">{amount}</p>
-          <p className="text-lg font-medium text-gray-500">{label}</p>
+          <p className="text-lg font-medium text-gray-500 mt-5">{label}</p>
         </div>
         {/* <div className="p-2 rounded-md">
                     <VscGraphLine size={40} color="#2e3b61" />
                 </div> */}
       </div>
-      <div className="mt-4">
+      {/* <div className="mt-4">
         <div className="flex items-center justify-between">
           <div className="w-full h-2 bg-gray-200 rounded-full">
             <div
@@ -35,7 +35,7 @@ const DashboardCard = ({ amount = 0, label = "Label", progress = 0 }) => {
           </div>
           <span className="ml-2 text-sm text-gray-600">{progress}%</span>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

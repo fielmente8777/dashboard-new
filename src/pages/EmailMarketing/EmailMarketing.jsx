@@ -361,6 +361,7 @@
 import { useEffect, useState } from "react";
 import { CiStar } from "react-icons/ci";
 import { getEmails } from "../../services/api/Email.api";
+import { MailIcon } from "../../icons/icon";
 // import {
 //   Search,
 //   SlidersHorizontal,
@@ -593,17 +594,8 @@ function EmailMarketingManagement() {
           <div className="flex items-center gap-2">
             {/* <Menu className="w-6 h-6 text-gray-600 cursor-pointer" /> */}
             <div className="flex items-center gap-2">
-              <svg viewBox="0 0 24 24" className="w-10 h-10">
-                <path
-                  fill="#EA4335"
-                  d="M5,20 L5,9.5 L12,4 L19,9.5 L19,20 L14,20 L14,13 L10,13 L10,20 Z"
-                />
-                {/* <path fill="#FBBC04" d="M12,4 L5,9.5 L5,5 L12,4 Z"/> */}
-                {/* <path fill="#34A853" d="M12,4 L19,9.5 L19,5 L12,4 Z"/> */}
-                <path fill="#4285F4" d="M5,9.5 L5,20 L10,15 Z" />
-                <path fill="#188038" d="M19,9.5 L19,20 L14,15 Z" />
-              </svg>
-              <span className="text-xl text-gray-700">EazeMail</span>
+              <MailIcon size={32}/>
+              <span className="text-xl text-gray-700 font-medium">EazeMail</span>
             </div>
           </div>
 
@@ -633,9 +625,9 @@ function EmailMarketingManagement() {
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 h-full border">
         {/* Sidebar */}
-        <aside className="w-64 p-2 flex flex-col gap-1">
+        <aside className="w-64 p-2 flex flex-col gap-1 h-full">
           <button className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-blue-50 hover:bg-blue-100 text-gray-800 font-medium shadow-sm mb-2">
             <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
               <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
@@ -723,7 +715,7 @@ function EmailMarketingManagement() {
           </div>
 
           {/* Email List */}
-          <div className="h-[600px] p-2 overflow-auto">
+          <div className=" pt-2 pb-10 overflow-auto">
             <div className="flex-1 h-full">
               {emails.map((email) => (
                 <div

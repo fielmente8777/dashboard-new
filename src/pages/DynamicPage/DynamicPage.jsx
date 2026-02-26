@@ -89,6 +89,7 @@ import WebformLeads from "../Enquiry/WebformLeads";
 import AllVisitors from "../Enquiry/AllVisitors";
 import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
+import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -138,7 +139,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/user-management/all-users`]: <Usermanagement />,
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
 
-    // Enquiries Management
+    // TODO: Enquiries Management
     [`${BASE_PATH}/${hid}/leads-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
@@ -182,9 +183,13 @@ const DynamicPage = () => {
 
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
-    [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
-    [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketingManagement />,
-    [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
+
+
+    // TODO: Campaign Management
+
+    [`${BASE_PATH}/${hid}/campaign-management/sms-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/campaign-management/email-marketing`]: <EmailMarketingManagement />,
+    [`${BASE_PATH}/${hid}/campaign-management/whatsapp-marketing`]: <WhatsappBroadcasting />,
 
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
     [`${BASE_PATH}/${hid}/channel/eb/chat`]: <EazbotChat />,

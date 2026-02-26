@@ -668,6 +668,6 @@ const extractLeadFields = (lead) => {
     email: getFieldValue(fd, "email"),
 
     stage: lead?.stage || "NEW",
-    notes: lead?.notes.slice(-1)[0]?.message || null,
+    notes: lead?.notes?.slice(-1)[0]?.message || null,
   };
 };

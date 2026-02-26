@@ -311,23 +311,8 @@ const AllLeads = () => {
                       ? formatDateTime(enquery?.Created_at)
                       : ""}
                   </td>
-                  <td className="py-3 px-2 text-[14px] font-semibold">
-                    {enquery?.created_from?.toLowerCase() === "chatbot"
-                      ? "Eazbot"
-                      : enquery?.created_from?.toLowerCase() === "Eazbot"
-                        ? "Eazbot"
-                        : enquery?.created_from === "Eazobt"
-                          ? "Eazbot"
-                          : enquery?.created_from?.toLowerCase() === "eazobot"
-                            ? "Eazbot"
-                            : enquery?.created_from === "Website"
-                              ? "Webform"
-                              : enquery?.created_from?.toLowerCase() ===
-                                  "google_ads"
-                                ? "Google Lead Form"
-                                : enquery?.created_from === null
-                                  ? "Webform"
-                                  : "Webform"}
+                  <td className="py-3 px-2 text-[14px] font-semibold capitalize">
+                                  {enquery?.created_from}
                   </td>
                   <td className="py-3 px-2 text-[14px] font-semibold whitespace-nowrap">
                     {enquery?.Name?.substring(0, 15)}
