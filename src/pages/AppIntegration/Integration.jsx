@@ -83,7 +83,7 @@ function Integration() {
       color: "bg-green-500",
     },
     {
-      id: "metaLead",
+      id: "meta",
       name: "Meta Leads",
       description:
         "Connect website tracking code to your website and get Website Engagement",
@@ -199,7 +199,7 @@ function Integration() {
     if (id === "metaWhatsapp") {
       handleWhatsappConnect();
       return;
-    } else if (id === "metaLead") {
+    } else if (id === "meta") {
       handleMetaLeadConnect();
     } else if (id === "exotel") {
       setShowSidebar(true);

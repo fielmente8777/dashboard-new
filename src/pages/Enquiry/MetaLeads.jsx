@@ -1,30 +1,36 @@
 import jsonToCsvExport from "json-to-csv-export";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { FaPlus } from "react-icons/fa";
 import { IoIosClose, IoMdSync } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
+import { getLeads, updateLead } from "../../services/api/leads.api";
 import {
   bulkImportMetaLeads,
-  getAllMetaLeads,
   getMetaAccounts,
   getMetaForms,
   updateMetaLead,
 } from "../../services/api/MetaLeads.api";
-import { formatDate } from "../../utils/formateData";
-import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
+
 import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
-import Loader from "../../components/Loader";
+import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
+import { formatDate, formatDateTime } from "../../utils/formateDate";
 
 const Stages = [
   { label: "Open Queries", value: "Open" },
@@ -46,14 +52,15 @@ const Stages = [
 
 const MetaLeads = () => {
   const wsRef = useRef(null);
+  const navigate = useNavigate();
   // const { pageId } = useContext(DataContext);
 
   const [pages, setPages] = useState([]);
   const [forms, setForms] = useState([]);
   const [pageId, setPageId] = useState("");
   const [formId, setFormId] = useState("");
-  const [stage, setStage] = useState(Stages[0].value);
-  const [rowId, setRowId] = useState("");
+  // const [stage, setStage] = useState(Stages[0].value);
+  // const [rowId, setRowId] = useState("");
 
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -63,8 +70,8 @@ const MetaLeads = () => {
 
   const [isSync, setIsSync] = useState(true);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [allMetaLeads, setAllMetaLeads] = useState([]);
-  const [isLoadingMetaLeads, setIsLoadingMetaLeads] = useState(false);
+  const [allLeads, setAllLeads] = useState([]);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const [startDate, setStartDate] = useState("");
@@ -85,17 +92,13 @@ const MetaLeads = () => {
   } = usePagination({ initialLimit: 20 });
 
   const tableHeaders = [
-    { key: "created_time", label: "Created Time" },
-    { key: "full_name", label: "Full Name" },
-    { key: "phone_number", label: "Phone Number" },
-    { key: "email", label: "Email" },
+    { key: "Created_at", label: "Created Time" },
+    { key: "Name", label: "Full Name" },
+    { key: "Contact", label: "Phone Number" },
+    { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
-    { key: "stages", label: "Stages" },
+    { key: "status", label: "Stages" },
   ];
-
-  const tableData = useMemo(() => {
-    return allMetaLeads.map((lead) => extractLeadFields(lead));
-  }, [allMetaLeads]);
 
   const setDateRange = (dates) => {
     const [start, end] = dates;
@@ -103,8 +106,8 @@ const MetaLeads = () => {
     setEndDate(end);
   };
 
-  const fetchMetaLeads = async (withDateFilter = false) => {
-    setIsLoadingMetaLeads(true);
+  const fetchLeads = async (withDateFilter = false) => {
+    setIsLoadingLeads(true);
 
     try {
       const params = {
@@ -113,6 +116,7 @@ const MetaLeads = () => {
         limit: limit,
         pageId: pageId,
         formId: formId,
+        created_from: "facebook",
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -120,16 +124,17 @@ const MetaLeads = () => {
         params.endDate = endDate;
       }
 
-      const response = await getAllMetaLeads(params);
+      const response = await getLeads(params);
 
+      console.log(response);
       if (response?.success) {
-        setAllMetaLeads(response?.result?.docs?.metaLeads || []);
+        setAllLeads(response?.result?.docs?.leads || []);
         setTotal(response?.result?.pagination?.total || 0);
       }
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoadingMetaLeads(false);
+      setIsLoadingLeads(false);
     }
   };
 
@@ -139,7 +144,7 @@ const MetaLeads = () => {
       const response = await bulkImportMetaLeads();
 
       if (response?.success && response?.responseStatusCode === 200) {
-        fetchMetaLeads();
+        fetchLeads();
         setIsSync(true);
       }
     } catch (error) {
@@ -175,9 +180,9 @@ const MetaLeads = () => {
   };
 
   const exportToExcel = () => {
-    if (!allMetaLeads.length) return;
+    if (!allLeads.length) return;
 
-    const flattenedData = flattenMetaLeads(allMetaLeads);
+    const flattenedData = flattenMetaLeads(allLeads);
 
     jsonToCsvExport({
       data: flattenedData,
@@ -214,22 +219,21 @@ const MetaLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, stage) => {
-    setRowId(leadId);
-    setStage(stage);
+  const handleUpdateStage = async (leadId, hid, stage) => {
     const payload = {
       leadId: leadId,
-      stage: stage,
+      status: stage,
+      hid: hid,
     };
     try {
-      const response = await updateMetaLead(payload);
+      const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
         Swal.fire({
           icon: "success",
           title: "Success",
           text: "Lead stage updated successfully",
         });
-        fetchMetaLeads();
+        fetchLeads();
         return;
       }
 
@@ -304,6 +308,12 @@ const MetaLeads = () => {
     });
   };
 
+  const handleRedirectToPage = (row) => {
+    const hid = localStorage.getItem("hid");
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
+  };
+
   useEffect(() => {
     fetchPageConnectionDetails();
     fetchMetaForms();
@@ -311,13 +321,13 @@ const MetaLeads = () => {
 
   useEffect(() => {
     if (!startDate && !endDate) {
-      fetchMetaLeads(false);
+      fetchLeads(false);
       return;
     }
 
     // Fetch ONLY when both dates are selected
     if (startDate && endDate) {
-      fetchMetaLeads(true);
+      fetchLeads(true);
     }
   }, [page, debouncedSearch, startDate, endDate, limit, pageId, formId]);
 
@@ -456,24 +466,36 @@ const MetaLeads = () => {
           </thead>
 
           <tbody>
-            {isLoadingMetaLeads && (
+            {isLoadingLeads && (
               <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
             )}
 
-            {!isLoadingMetaLeads &&
-              tableData?.length > 0 &&
-              tableData.map((row, i) => (
+            {!isLoadingLeads &&
+              allLeads.length > 0 &&
+              allLeads.map((row, i) => (
                 <tr
                   key={i}
                   onClick={() => {
-                    setIsEdit(false);
-                    setSelectedLead(allMetaLeads[i]);
+                    handleRedirectToPage(row);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
                   <td className="px-3 py-2.5">{i + limit * (page - 1) + 1}</td>
 
                   {tableHeaders.map((h) => {
+                    // const timesLabels = ["created_time", "Created_at"];
+
+                    if (h.key === "Created_at") {
+                      const isLeadCreatedTime = row?.meta?.created_time;
+                      console.log(isLeadCreatedTime);
+                      return (
+                        <td key={h.key} className="px-3 py-2">
+                          {formatDateTime(
+                            isLeadCreatedTime ? isLeadCreatedTime : row[h.key],
+                          )}
+                        </td>
+                      );
+                    }
                     if (h.key === "phone_number") {
                       return (
                         <td
@@ -485,22 +507,26 @@ const MetaLeads = () => {
                         </td>
                       );
                     }
-
-                    if (h.key === "stages") {
+                    if (h.key === "status") {
                       return (
                         <td onClick={(e) => e.stopPropagation()}>
                           <CustomDropdown
-                            label={
-                              rowId === row?.leadgen_id ? stage : row.stage
-                            }
+                            label={row.status}
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?.leadgen_id, value);
+                              handleUpdateStage(row?._id, row?.hId, value);
                             }}
                           />
                         </td>
                       );
+                    }
+                    if (h.key === "notes") {
+                      const isNotes = row[h.key] && row[h.key].length > 0;
+
+                      const noteMessage =
+                        isNotes && row[h.key]?.slice(-1)[0]?.message;
+                      return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">
@@ -511,7 +537,7 @@ const MetaLeads = () => {
                 </tr>
               ))}
 
-            {!isLoadingMetaLeads && tableData.length === 0 && (
+            {!isLoadingLeads && allLeads.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-6 text-center">
                   No Leads Found
@@ -636,38 +662,38 @@ const MetaLeads = () => {
 
 export default MetaLeads;
 
-const getFieldValue = (fieldData, includes) => {
-  const field = fieldData?.find((f) => includes.includes(f.name));
-  return field?.values?.[0] || "-";
-};
-const extractLeadFields = (lead) => {
-  const includesNamesLabel = ["full_name", "name", "what_is_name?", "name?"];
-  const includesPhoneLabel = ["phone", "phone_number", "mobile"];
-  // const includesCheckInLabel = [
-  //   "check_in",
-  //   "check_in_date",
-  //   "what_is_your_preferred_check_in_date",
-  //   "when_would_you_like_to_check_in?",
-  //   "what_is_your_preferred_check-in_date?",
-  // ];
-  // const includesCheckOutLabel = [
-  //   "check_out",
-  //   "check_out_date",
-  //   "preferred_check-out_date?",
-  //   "what_is_your_preferred_check_out_date",
-  //   "when_would_you_like_to_check_out?",
-  // ];
+// const getFieldValue = (fieldData, includes) => {
+//   const field = fieldData?.find((f) => includes.includes(f.name));
+//   return field?.values?.[0] || "-";
+// };
+// const extractLeadFields = (lead) => {
+//   const includesNamesLabel = ["full_name", "name", "what_is_name?", "name?"];
+//   const includesPhoneLabel = ["phone", "phone_number", "mobile"];
+//   // const includesCheckInLabel = [
+//   //   "check_in",
+//   //   "check_in_date",
+//   //   "what_is_your_preferred_check_in_date",
+//   //   "when_would_you_like_to_check_in?",
+//   //   "what_is_your_preferred_check-in_date?",
+//   // ];
+//   // const includesCheckOutLabel = [
+//   //   "check_out",
+//   //   "check_out_date",
+//   //   "preferred_check-out_date?",
+//   //   "what_is_your_preferred_check_out_date",
+//   //   "when_would_you_like_to_check_out?",
+//   // ];
 
-  const fd = lead?.lead?.field_data;
+//   const fd = lead?.lead?.field_data;
 
-  return {
-    leadgen_id: lead?.meta?.leadgen_id,
-    created_time: new Date(lead?.meta?.created_time).toLocaleString(),
-    full_name: getFieldValue(fd, includesNamesLabel),
-    phone_number: getFieldValue(fd, includesPhoneLabel),
-    email: getFieldValue(fd, "email"),
+//   return {
+//     leadgen_id: lead?.meta?.leadgen_id,
+//     created_time: new Date(lead?.meta?.created_time).toLocaleString(),
+//     full_name: getFieldValue(fd, includesNamesLabel),
+//     phone_number: getFieldValue(fd, includesPhoneLabel),
+//     email: getFieldValue(fd, "email"),
 
-    stage: lead?.stage || "NEW",
-    notes: lead?.notes?.slice(-1)[0]?.message || null,
-  };
-};
+//     stage: lead?.stage || "NEW",
+//     notes: lead?.notes?.slice(-1)[0]?.message || null,
+//   };
+// };

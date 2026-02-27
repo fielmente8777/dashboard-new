@@ -4,9 +4,10 @@ const url = "https://nexon.eazotel.com/eazotel/addcontacts";
 
 export const bulkImportMetaLeads = async () => {
   const token = localStorage.getItem("token");
+  const hid = localStorage.getItem("hid");
   try {
     const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/meta/leads/bulk-import`,
+      `${NEW_BASE_URL}/api/v1/meta/leads/bulk-import?hid=${hid}`,
       {
         method: "POST", // or "POST" if you're sending data
         headers: {

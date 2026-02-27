@@ -1,14 +1,21 @@
-export const formatDateTime = (isoString) => {
-  const date = new Date(isoString);
+// export const formatDateTime = (isoString) => {
+//   const date = new Date(isoString);
 
-  const month = date.toLocaleString("en-US", { month: "short" }); // e.g., "Dec"
-  const day = date.getDate().toString().padStart(2, "0"); // e.g., "05"
+//   const month = date.toLocaleString("en-US", {
+//     month: "short",
+//     timeZone: "UTC",
+//   });
 
-  let hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const period = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12 || 12; // convert to 12-hour format
-  const hoursStr = hours.toString().padStart(2, "0"); // e.g., "02"
+//   const day = date.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
 
-  return `${month} ${day} - ${hoursStr}:${minutes} ${period}`;
-};
+//   const time = date.toLocaleString("en-US", {
+//     hour: "2-digit",
+//     minute: "2-digit",
+//     hour12: true,
+//     timeZone: "UTC",
+//   });
+
+//   return `${month} ${day} - ${time}`;
+// };
+export const formatDateTime = (isoString) =>
+  new Date(isoString).toLocaleString();
