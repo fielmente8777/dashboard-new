@@ -54,13 +54,13 @@ import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
 import { CiViewBoard } from "react-icons/ci";
-import DocumentIcon, { ChatIcon, MailIcon, TeamIcon } from "../icons/icon";
+import{DocumentIcon, ChatIcon, MailIcon, TeamIcon, WhatsappIcon, LiveChatIcon, Dashboard } from "../icons/icon";
 
 export const SidebarData = [
   {
     name: "Dashboard",
     link: ``,
-    icon: <MdDashboard size={24} />,
+    icon: <Dashboard />,
   },
   // {
   //   name: "Live Chat",
@@ -93,7 +93,7 @@ export const SidebarData = [
   {
     name: "Live Chat",
     link: `channel`,
-    icon: <SiLivechat size={18} />,
+    icon: <SiLivechat />,
     subLinks: [
       // {
       //   name: "WhatsApp Business",
@@ -110,7 +110,7 @@ export const SidebarData = [
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
-        icon: <FaWhatsapp size={16} />,
+        icon: <WhatsappIcon />,
       },
       // {
       //   name: "Templates",
@@ -159,9 +159,9 @@ export const SidebarData = [
         icon: <RiMetaFill color="#0266df" />,
       },
       {
-        name: "WhatsApp Leads",
+        name: "WhatsApp",
         link: `leads-management/whatsapp`,
-        icon: <RiWhatsappFill color="green" />,
+        icon: <WhatsappIcon/>,
       },
 
       {
@@ -257,7 +257,7 @@ export const SidebarData = [
       {
         name: "Whatsapp Marketing",
         link: `campaign-management/whatsapp-marketing`,
-        icon: <RiWhatsappFill color="green" />,
+        icon: <WhatsappIcon />,
       },
       {
         name: "Email Marketing",
