@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { BASE_PATH } from "../data/constant";
+import { ROUTES_PATH } from "../data/constant";
 import { SidebarData } from "../data/SideBarData";
 import DynamicPage from "../pages/DynamicPage/DynamicPage";
 import Dashboard from "../pages/Home/Dashboard";
@@ -32,6 +32,8 @@ import Usermanagement from "../pages/UserMgmt/Usermanagement";
 import Integration from "../pages/AppIntegration/Integration";
 import GRMSettings from "../pages/Grm/Settings";
 import Settings from "../pages/Settings/Settings";
+import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageLeads";
+import AllLeads from "../pages/Enquiry/AllLeads";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -80,8 +82,16 @@ const Navigation = () => {
         <Route path="integration" element={<Integration />} />
         <Route path="qr-code" element={<GRMSettings />} />
         <Route path="settings" element={<Settings />} />
-        
 
+        {/* <Route
+          path={ROUTES_PATH.LEADS_MANAGEMENT_ALL_LEADS}
+          element={<AllLeads />}
+        /> */}
+
+        <Route
+          path="leads-management/:slug/:leadId/view"
+          element={<ViewAndMangeLeads />}
+        />
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {
           if (!data?.subLinks) {

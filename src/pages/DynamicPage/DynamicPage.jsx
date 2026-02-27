@@ -90,6 +90,7 @@ import AllVisitors from "../Enquiry/AllVisitors";
 import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
+import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -157,6 +158,13 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
+
+    // [`${BASE_PATH}/${hid}/leads-management/all-leads/:leadId/view`]: (
+    //   <ViewAndMangeLeads />
+    // ),
+    // [`${BASE_PATH}/${hid}/leads-management/meta-leads:leadId/view`]: (
+    //   <ViewAndMangeLeads />
+    // ),
 
     // [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
     [`${BASE_PATH}/${hid}/leads-management/meta-analytics`]: (

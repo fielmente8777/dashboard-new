@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import { FaPlus } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
@@ -12,13 +12,21 @@ import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
-import { getLeads, UpdateLeadStatus } from "../../services/api/leads.api";
+import {
+  getLeads,
+  updateLead,
+  UpdateLeadStatus,
+} from "../../services/api/leads.api";
 import { updateMetaLead } from "../../services/api/MetaLeads.api";
-import { formatDateTime } from "../../services/formateDate";
-import { formatDate } from "../../utils/formateData";
+import { formatDate, formatDateTime } from "../../utils/formateDate";
 import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
 import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
 
@@ -42,6 +50,7 @@ const Stages = [
 
 const AllVisitors = () => {
   const wsRef = useRef(null);
+  const navigate = useNavigate();
 
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -153,28 +162,30 @@ const AllVisitors = () => {
     });
   };
 
-  const handleUpdateStage = async (leadId, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage) => {
+    console.log("aaya");
     const payload = {
       leadId: leadId,
       stage: stage,
+      hid: hid,
     };
     try {
-      const response = await UpdateLeadStatus(payload);
-      // if (response?.success && response?.responseStatusCode === 200) {
-      //   Swal.fire({
-      //     icon: "success",
-      //     title: "Success",
-      //     text: "Lead stage updated successfully",
-      //   });
-      //   fetchLeads();
-      //   return;
-      // }
+      const response = await updateLead(payload);
+      if (response?.success && response?.responseStatusCode === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Lead stage updated successfully",
+        });
+        fetchLeads();
+        return;
+      }
 
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
+      // Swal.fire({
+      //   icon: "error",
+      //   title: "Error",
+      //   text: response?.responseMessage || "Failed to update lead stage",
+      // });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -239,6 +250,12 @@ const AllVisitors = () => {
       notes.splice(index, 1);
       return { ...prev, notes };
     });
+  };
+
+  const handleRedirectToPage = (row) => {
+    const hid = localStorage.getItem("hid");
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
   };
 
   useEffect(() => {
@@ -350,8 +367,7 @@ const AllVisitors = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    setIsEdit(false);
-                    setSelectedLead(row);
+                    handleRedirectToPage(row);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
@@ -391,11 +407,19 @@ const AllVisitors = () => {
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?.leadgen_id, value);
+                              handleUpdateStage(row?._id, row?.hId, value);
                             }}
                           />
                         </td>
                       );
+                    }
+
+                    if (h.key === "notes") {
+                      const isNotes = row[h.key] && row[h.key].length > 0;
+
+                      const noteMessage =
+                        isNotes && row[h.key]?.slice(-1)[0]?.message;
+                      return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">

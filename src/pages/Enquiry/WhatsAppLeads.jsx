@@ -1,31 +1,26 @@
 import jsonToCsvExport from "json-to-csv-export";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { FaPlus } from "react-icons/fa";
-import { IoIosClose, IoMdSync } from "react-icons/io";
+import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads } from "../../services/api/leads.api";
-import {
-  bulkImportMetaLeads,
-  getMetaAccounts,
-  getMetaForms,
-  updateMetaLead,
-} from "../../services/api/MetaLeads.api";
-import { formatDate } from "../../utils/formateData";
-import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
-import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
-import { formatDateTime } from "../../services/formateDate";
+import { updateMetaLead } from "../../services/api/MetaLeads.api";
+import { formatDateTime } from "../../utils/formateDate";
 
 const CREATED_FROM = "whatsapp";
 
@@ -49,26 +44,11 @@ const Stages = [
 
 const WhatsAppLeads = () => {
   const wsRef = useRef(null);
-  // const { pageId } = useContext(DataContext);
+  const navigate = useNavigate();
 
-  const [pages, setPages] = useState([]);
-  const [forms, setForms] = useState([]);
-  const [pageId, setPageId] = useState("");
-  const [formId, setFormId] = useState("");
-  // const [stage, setStage] = useState(Stages[0].value);
-  // const [rowId, setRowId] = useState("");
-
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isEditingLoading, setIsEditingLoading] = useState(false);
-
-  const [isSync, setIsSync] = useState(true);
   const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -110,8 +90,7 @@ const WhatsAppLeads = () => {
         page: page,
         search: debouncedSearch,
         limit: limit,
-        pageId: pageId,
-        formId: formId,
+
         created_from: CREATED_FROM,
       };
 
@@ -131,22 +110,6 @@ const WhatsAppLeads = () => {
       console.log(error);
     } finally {
       setIsLoadingLeads(false);
-    }
-  };
-
-  const handleBulkImportMetaLeads = async () => {
-    setIsSyncing(true);
-    try {
-      const response = await bulkImportMetaLeads();
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        fetchLeads();
-        setIsSync(true);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -190,37 +153,11 @@ const WhatsAppLeads = () => {
     });
   };
 
-  const fetchPageConnectionDetails = async () => {
-    try {
-      const response = await getMetaAccounts();
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        setPages(response?.result?.docs?.pages || []);
-        setIsSync(response?.result?.docs?.isSynced);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const fetchMetaForms = async (pageId) => {
-    try {
-      const response = await getMetaForms(pageId);
-      if (response?.success && response?.responseStatusCode === 200) {
-        const formsData = response?.result?.docs?.forms || [];
-        setForms(formsData);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleUpdateStage = async (leadId, stage) => {
-    // setRowId(leadId);
-    // setStage(stage);
+  const handleUpdateStage = async (leadId, hid, stage) => {
     const payload = {
       leadId: leadId,
       stage: stage,
+      hid: hid,
     };
     try {
       const response = await updateMetaLead(payload);
@@ -305,10 +242,11 @@ const WhatsAppLeads = () => {
     });
   };
 
-  useEffect(() => {
-    fetchPageConnectionDetails();
-    fetchMetaForms();
-  }, []);
+  const handleRedirectToPage = (row) => {
+    const hid = localStorage.getItem("hid");
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
+  };
 
   useEffect(() => {
     if (!startDate && !endDate) {
@@ -320,7 +258,7 @@ const WhatsAppLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit, pageId, formId]);
+  }, [page, debouncedSearch, startDate, endDate, limit]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -421,8 +359,7 @@ const WhatsAppLeads = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    setIsEdit(false);
-                    setSelectedLead(row);
+                    handleRedirectToPage(row);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
@@ -455,7 +392,6 @@ const WhatsAppLeads = () => {
                         </td>
                       );
                     }
-
                     if (h.key === "status") {
                       return (
                         <td onClick={(e) => e.stopPropagation()}>
@@ -464,11 +400,18 @@ const WhatsAppLeads = () => {
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?.leadgen_id, value);
+                              handleUpdateStage(row?._id, row?.hId, value);
                             }}
                           />
                         </td>
                       );
+                    }
+                    if (h.key === "notes") {
+                      const isNotes = row[h.key] && row[h.key].length > 0;
+
+                      const noteMessage =
+                        isNotes && row[h.key]?.slice(-1)[0]?.message;
+                      return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">
@@ -506,98 +449,6 @@ const WhatsAppLeads = () => {
           total={total}
         />
       </div>
-
-      {/* MODAL */}
-      {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 py-2">
-          <div className="relative bg-white max-w-3xl w-full p-4 max-h-[90vh] overflow-y-auto rounded grid grid-cols-2 gap-4 divide-x divide-amber-500">
-            <div>
-              <div className="flex justify-between mb-4">
-                <p className="text-sm text-gray-500">
-                  Lead Added: {formatDate(selectedLead?.created_time)}
-                </p>
-                <button
-                  onClick={() => setSelectedLead(null)}
-                  className="bg-orange-500 text-white px-3 py-1 rounded absolute top-2 right-2"
-                >
-                  Close
-                </button>
-              </div>
-
-              {selectedLead?.lead?.field_data?.map((field, i) => (
-                <div key={i} className="mb-3">
-                  <p className="font-medium text-gray-600 capitalize">
-                    {field.name.replaceAll("_", " ")}
-                  </p>
-                  <p className="wrap-break-word">{field.values?.[0]}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <div className="flex gap-2 items-center mb-4 bg-gray-100 px-4 py-1.5 w-fit rounded-full">
-                <h3 className="text-sm font-medium text-[#37322F]">Notes</h3>
-
-                <button
-                  onClick={() => {
-                    setEditingIndex(null);
-                    setEditingNote(null);
-                    setIsAddActivityOpen(true);
-                  }}
-                  className="rounded-full size-8 border bg-primary text-white border-gray-400 flex items-center justify-center text-lg"
-                >
-                  <FaPlus size={10} />
-                </button>
-              </div>
-
-              {/* Notes exist */}
-              {selectedLead?.notes && selectedLead.notes.length > 0 ? (
-                <div className="max-h-72 overflow-auto pr-2">
-                  <Timeline
-                    items={selectedLead.notes}
-                    onEdit={(item, index) => {
-                      setEditingIndex(index);
-                      setEditingNote(item);
-                      setIsAddActivityOpen(true);
-                    }}
-                    onDelete={(item, index) => handleRemoveNote(index)}
-                  />
-                </div>
-              ) : (
-                /* No notes placeholder */
-                <p className="text-sm text-gray-400">No notes added yet.</p>
-              )}
-
-              {isEdit && (
-                <div className="flex justify-end mt-2">
-                  <button
-                    disabled={isEditingLoading}
-                    onClick={() => {
-                      hanldeUpdateNotes(selectedLead?.meta?.leadgen_id);
-                    }}
-                    className="bg-green-700 text-white px-3 py-1 rounded flex items-center gap-1.5"
-                  >
-                    Save {isEditingLoading && <Loader color="#fff" size={12} />}
-                  </button>
-                </div>
-              )}
-
-              <ActivityModal
-                open={isAddActivityOpen}
-                initialData={editingNote}
-                onClose={() => {
-                  setIsAddActivityOpen(false);
-                  setEditingIndex(null);
-                  setEditingNote(null);
-                }}
-                onSave={(activity) => {
-                  handleNotesSave(activity);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

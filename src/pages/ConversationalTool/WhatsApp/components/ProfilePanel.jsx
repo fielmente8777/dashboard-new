@@ -1,12 +1,13 @@
 import React, { useContext, useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
-import {
-  formatDateByOnlyDay,
-  formateDateInTimeIS,
-} from "../../../../utils/formateData";
+
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
 import DataContext from "../../../../context/DataContext";
+import {
+  formatDateByOnlyDay,
+  formateDateInTimeIS,
+} from "../../../../utils/formateDate";
 
 const header = [
   { label: "Open Queries", value: "Open" },

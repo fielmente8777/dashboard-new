@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../data/constant";
-import { formatDateByDay } from "../../utils/formateData";
 import AddContactPopup from "../../components/Popup/AddContactPopup";
 import { MdDelete } from "react-icons/md";
 import { getContacts } from "../../services/api/contact.api";
+import { formatDateByDay } from "../../utils/formateDate";
 const Contacts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -88,7 +88,6 @@ const Contacts = () => {
           <tr className="border-b">
             {/* <th className="py-3 px-2 text-[14px] font-medium">Select</th> */}
             <th className="py-3 px-2 text-[14px] font-medium">#</th>
-           
 
             <th className="py-3 px-2 text-[14px] font-medium">Name</th>
             <th className="py-3 px-2 text-[14px] font-medium">Contact</th>
@@ -112,10 +111,8 @@ const Contacts = () => {
                 </td> */}
                 <td className=" flex-1 py-3 px-2">{index + 1}</td>
 
-                
-
                 <td className="  flex-1 py-3 px-2 whitespace-nowrap">
-                  {row?.name.slice(0,30)}
+                  {row?.name.slice(0, 30)}
                 </td>
                 <td className=" flex-1 py-3 px-2">{row.phone}</td>
                 <td className=" flex-1 py-3 px-2">{row.email}</td>

@@ -12,6 +12,7 @@ export const getLeads = async ({
   startDate,
   endDate,
 }) => {
+  const token = localStorage.getItem("token");
   const params = new URLSearchParams();
   params.append("hid", localStorage.getItem("hid"));
 
@@ -27,26 +28,48 @@ export const getLeads = async ({
   }
 
   const { data } = await axios.get(
-    `${NEW_BASE_URL}/api/v1/leads/${localStorage.getItem("ndid")}?${params.toString()}`,
+    `${NEW_BASE_URL}/api/v1/leads/get?${params.toString()}`,
     {
       headers: {
         Accept: "application/json, text/plain, */*",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     },
   );
   return data;
 };
 
-export const UpdateLeadStatus = async ({ leadId, stage }) => {
-  const response = await axios.post(
-    "https://nexon.eazotel.com/eazotel/edit-contact-query",
+export const getLeadById = async (leadId, hid) => {
+  const token = localStorage.getItem("token");
+  const { data } = await axios.get(
+    `${NEW_BASE_URL}/api/v1/leads/get/${leadId}?hid=${hid}`,
     {
-      token: localStorage.getItem("token"),
-      status: stage,
-      id: leadId,
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  return data;
+};
+
+export const updateLead = async (payload) => {
+  const token = localStorage.getItem("token");
+  const hid = payload?.hid;
+  const { data } = await axios.put(
+    `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId}/update?hid=${hid}`,
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     },
   );
 
-  return response;
+  return data;
 };
+
+export const UpdateLeadStatus = () => {};

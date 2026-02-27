@@ -101,8 +101,6 @@ const Navbar = () => {
   //   // }, 1000)
   // };
 
-  console.log(hotel);
-
   return (
     <div className="sticky left-0 top-0">
       <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">

@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import { FaPlus } from "react-icons/fa";
 import { IoIosClose, IoMdSync } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
@@ -12,20 +12,25 @@ import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
-import { getLeads } from "../../services/api/leads.api";
+import { getLeads, updateLead } from "../../services/api/leads.api";
 import {
   bulkImportMetaLeads,
   getMetaAccounts,
   getMetaForms,
   updateMetaLead,
 } from "../../services/api/MetaLeads.api";
-import { formatDate } from "../../utils/formateData";
+
 import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
 import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
-import { formatDateTime } from "../../services/formateDate";
+import { formatDate, formatDateTime } from "../../utils/formateDate";
 
 const Stages = [
   { label: "Open Queries", value: "Open" },
@@ -47,6 +52,7 @@ const Stages = [
 
 const MetaLeads = () => {
   const wsRef = useRef(null);
+  const navigate = useNavigate();
   // const { pageId } = useContext(DataContext);
 
   const [pages, setPages] = useState([]);
@@ -174,9 +180,9 @@ const MetaLeads = () => {
   };
 
   const exportToExcel = () => {
-    if (!allMetaLeads.length) return;
+    if (!allLeads.length) return;
 
-    const flattenedData = flattenMetaLeads(allMetaLeads);
+    const flattenedData = flattenMetaLeads(allLeads);
 
     jsonToCsvExport({
       data: flattenedData,
@@ -213,22 +219,21 @@ const MetaLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, stage) => {
-    setRowId(leadId);
-    setStage(stage);
+  const handleUpdateStage = async (leadId, hid, stage) => {
     const payload = {
       leadId: leadId,
-      stage: stage,
+      status: stage,
+      hid: hid,
     };
     try {
-      const response = await updateMetaLead(payload);
+      const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
         Swal.fire({
           icon: "success",
           title: "Success",
           text: "Lead stage updated successfully",
         });
-        fetchMetaLeads();
+        fetchLeads();
         return;
       }
 
@@ -301,6 +306,12 @@ const MetaLeads = () => {
       notes.splice(index, 1);
       return { ...prev, notes };
     });
+  };
+
+  const handleRedirectToPage = (row) => {
+    const hid = localStorage.getItem("hid");
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
   };
 
   useEffect(() => {
@@ -465,8 +476,7 @@ const MetaLeads = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    setIsEdit(false);
-                    setSelectedLead(row);
+                    handleRedirectToPage(row);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
@@ -497,7 +507,6 @@ const MetaLeads = () => {
                         </td>
                       );
                     }
-
                     if (h.key === "status") {
                       return (
                         <td onClick={(e) => e.stopPropagation()}>
@@ -506,11 +515,18 @@ const MetaLeads = () => {
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?.leadgen_id, value);
+                              handleUpdateStage(row?._id, row?.hId, value);
                             }}
                           />
                         </td>
                       );
+                    }
+                    if (h.key === "notes") {
+                      const isNotes = row[h.key] && row[h.key].length > 0;
+
+                      const noteMessage =
+                        isNotes && row[h.key]?.slice(-1)[0]?.message;
+                      return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">
@@ -646,38 +662,38 @@ const MetaLeads = () => {
 
 export default MetaLeads;
 
-const getFieldValue = (fieldData, includes) => {
-  const field = fieldData?.find((f) => includes.includes(f.name));
-  return field?.values?.[0] || "-";
-};
-const extractLeadFields = (lead) => {
-  const includesNamesLabel = ["full_name", "name", "what_is_name?", "name?"];
-  const includesPhoneLabel = ["phone", "phone_number", "mobile"];
-  // const includesCheckInLabel = [
-  //   "check_in",
-  //   "check_in_date",
-  //   "what_is_your_preferred_check_in_date",
-  //   "when_would_you_like_to_check_in?",
-  //   "what_is_your_preferred_check-in_date?",
-  // ];
-  // const includesCheckOutLabel = [
-  //   "check_out",
-  //   "check_out_date",
-  //   "preferred_check-out_date?",
-  //   "what_is_your_preferred_check_out_date",
-  //   "when_would_you_like_to_check_out?",
-  // ];
+// const getFieldValue = (fieldData, includes) => {
+//   const field = fieldData?.find((f) => includes.includes(f.name));
+//   return field?.values?.[0] || "-";
+// };
+// const extractLeadFields = (lead) => {
+//   const includesNamesLabel = ["full_name", "name", "what_is_name?", "name?"];
+//   const includesPhoneLabel = ["phone", "phone_number", "mobile"];
+//   // const includesCheckInLabel = [
+//   //   "check_in",
+//   //   "check_in_date",
+//   //   "what_is_your_preferred_check_in_date",
+//   //   "when_would_you_like_to_check_in?",
+//   //   "what_is_your_preferred_check-in_date?",
+//   // ];
+//   // const includesCheckOutLabel = [
+//   //   "check_out",
+//   //   "check_out_date",
+//   //   "preferred_check-out_date?",
+//   //   "what_is_your_preferred_check_out_date",
+//   //   "when_would_you_like_to_check_out?",
+//   // ];
 
-  const fd = lead?.lead?.field_data;
+//   const fd = lead?.lead?.field_data;
 
-  return {
-    leadgen_id: lead?.meta?.leadgen_id,
-    created_time: new Date(lead?.meta?.created_time).toLocaleString(),
-    full_name: getFieldValue(fd, includesNamesLabel),
-    phone_number: getFieldValue(fd, includesPhoneLabel),
-    email: getFieldValue(fd, "email"),
+//   return {
+//     leadgen_id: lead?.meta?.leadgen_id,
+//     created_time: new Date(lead?.meta?.created_time).toLocaleString(),
+//     full_name: getFieldValue(fd, includesNamesLabel),
+//     phone_number: getFieldValue(fd, includesPhoneLabel),
+//     email: getFieldValue(fd, "email"),
 
-    stage: lead?.stage || "NEW",
-    notes: lead?.notes?.slice(-1)[0]?.message || null,
-  };
-};
+//     stage: lead?.stage || "NEW",
+//     notes: lead?.notes?.slice(-1)[0]?.message || null,
+//   };
+// };

@@ -258,3 +258,52 @@ export const countriesCode = [
   { name: "ZMB", code: "+260" },
   { name: "ZWE", code: "+263" },
 ];
+
+const PATHS = {
+  DASHBOARD: "/",
+  LOGIN: "/login",
+  SIGNUP: "/signup",
+  FORGET_PASSWORD: "/forget-password",
+  CHANGE_PASSWORD: "/change-password",
+
+  LEADS_MANAGEMENT: "leads-management",
+};
+
+export const ROUTES_PATH = {
+  DASHBOARD: "/",
+  LOGIN: "/login",
+  SIGNUP: "/signup",
+  FORGET_PASSWORD: "/forget-password",
+  CHANGE_PASSWORD: "/change-password",
+
+  // admin
+  ADMIN_DASHBOARD: "/admin",
+  ADMIN_LOGIN: "/admin/login",
+  ADMIN_SIGNUP: "/admin/signup",
+  ADMIN_FORGET_PASSWORD: "/admin/forget-password",
+  ADMIN_CHANGE_PASSWORD: "/admin/change-password",
+
+  // leads management
+  LEADS_MANAGEMENT: `${PATHS.LEADS_MANAGEMENT}`,
+  LEADS_MANAGEMENT_ALL_LEADS: `${PATHS.LEADS_MANAGEMENT}/all-leads`,
+  LEADS_MANAGEMENT_META_LEADS: `${PATHS.LEADS_MANAGEMENT}/meta-leads`,
+  LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
+};
+
+export const Stages = [
+  { label: "Open Queries", value: "Open" },
+  { label: "Contacted", value: "Contacted" },
+  { label: "Converted", value: "Converted" },
+  { label: "Out Of Budget", value: "Out Of Budget" },
+  { label: "Potential For Later", value: "Potential" },
+  { label: "Quotation Provided", value: "Quotation Provided" },
+  { label: "Dead Lead", value: "Dead Lead" },
+  { label: "Date Sold Out", value: "Date Sold Out" },
+  { label: "Duplicate", value: "Duplicate" },
+  { label: "Follow up", value: "Follow Up" },
+  { label: "Not Respond", value: "Not Respond" },
+  { label: "Qualified", value: "Qualified" },
+  { label: "Not Qualified", value: "Not Qualified" },
+  { label: "Turn Away", value: "Turn Away" },
+  { label: "Hot", value: "Hot" },
+];

@@ -1,26 +1,26 @@
 import jsonToCsvExport from "json-to-csv-export";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { FaPlus } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
-import { getLeads, UpdateLeadStatus } from "../../services/api/leads.api";
+import { getLeads, updateLead } from "../../services/api/leads.api";
 import { updateMetaLead } from "../../services/api/MetaLeads.api";
-import { formatDateTime } from "../../services/formateDate";
-import { formatDate } from "../../utils/formateData";
-import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
-import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
+import { formatDateTime } from "../../utils/formateDate";
 
 const Stages = [
   { label: "Open Queries", value: "Open" },
@@ -42,6 +42,7 @@ const Stages = [
 
 const AllLeads = () => {
   const wsRef = useRef(null);
+  const navigate = useNavigate();
 
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -72,6 +73,7 @@ const AllLeads = () => {
 
   const tableHeaders = [
     { key: "Created_at", label: "Created Time" },
+    { key: "created_from", label: "Source" },
     { key: "Name", label: "Full Name" },
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
@@ -153,22 +155,23 @@ const AllLeads = () => {
     });
   };
 
-  const handleUpdateStage = async (leadId, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage) => {
     const payload = {
       leadId: leadId,
-      stage: stage,
+      status: stage,
+      hid: hid,
     };
     try {
-      const response = await UpdateLeadStatus(payload);
-      // if (response?.success && response?.responseStatusCode === 200) {
-      //   Swal.fire({
-      //     icon: "success",
-      //     title: "Success",
-      //     text: "Lead stage updated successfully",
-      //   });
-      //   fetchLeads();
-      //   return;
-      // }
+      const response = await updateLead(payload);
+      if (response?.success && response?.responseStatusCode === 200) {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Lead stage updated successfully",
+        });
+        fetchLeads();
+        return;
+      }
 
       Swal.fire({
         icon: "error",
@@ -239,6 +242,12 @@ const AllLeads = () => {
       notes.splice(index, 1);
       return { ...prev, notes };
     });
+  };
+
+  const handleRedirectToPage = (row) => {
+    const hid = localStorage.getItem("hid");
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
   };
 
   useEffect(() => {
@@ -350,8 +359,7 @@ const AllLeads = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    setIsEdit(false);
-                    setSelectedLead(row);
+                    handleRedirectToPage(row);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
@@ -362,7 +370,6 @@ const AllLeads = () => {
 
                     if (h.key === "Created_at") {
                       const isLeadCreatedTime = row?.meta?.created_time;
-                      console.log(isLeadCreatedTime);
                       return (
                         <td key={h.key} className="px-3 py-2">
                           {formatDateTime(
@@ -371,6 +378,7 @@ const AllLeads = () => {
                         </td>
                       );
                     }
+
                     if (h.key === "phone_number") {
                       return (
                         <td
@@ -391,11 +399,19 @@ const AllLeads = () => {
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?.leadgen_id, value);
+                              handleUpdateStage(row?._id, row?.hId, value);
                             }}
                           />
                         </td>
                       );
+                    }
+
+                    if (h.key === "notes") {
+                      const isNotes = row[h.key] && row[h.key].length > 0;
+
+                      const noteMessage =
+                        isNotes && row[h.key]?.slice(-1)[0]?.message;
+                      return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">
@@ -433,98 +449,6 @@ const AllLeads = () => {
           total={total}
         />
       </div>
-
-      {/* MODAL */}
-      {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 py-2">
-          <div className="relative bg-white max-w-3xl w-full p-4 max-h-[90vh] overflow-y-auto rounded grid grid-cols-2 gap-4 divide-x divide-amber-500">
-            <div>
-              <div className="flex justify-between mb-4">
-                <p className="text-sm text-gray-500">
-                  Lead Added: {formatDate(selectedLead?.created_time)}
-                </p>
-                <button
-                  onClick={() => setSelectedLead(null)}
-                  className="bg-orange-500 text-white px-3 py-1 rounded absolute top-2 right-2"
-                >
-                  Close
-                </button>
-              </div>
-
-              {selectedLead?.lead?.field_data?.map((field, i) => (
-                <div key={i} className="mb-3">
-                  <p className="font-medium text-gray-600 capitalize">
-                    {field.name.replaceAll("_", " ")}
-                  </p>
-                  <p className="wrap-break-word">{field.values?.[0]}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <div className="flex gap-2 items-center mb-4 bg-gray-100 px-4 py-1.5 w-fit rounded-full">
-                <h3 className="text-sm font-medium text-[#37322F]">Notes</h3>
-
-                <button
-                  onClick={() => {
-                    setEditingIndex(null);
-                    setEditingNote(null);
-                    setIsAddActivityOpen(true);
-                  }}
-                  className="rounded-full size-8 border bg-primary text-white border-gray-400 flex items-center justify-center text-lg"
-                >
-                  <FaPlus size={10} />
-                </button>
-              </div>
-
-              {/* Notes exist */}
-              {selectedLead?.notes && selectedLead.notes.length > 0 ? (
-                <div className="max-h-72 overflow-auto pr-2">
-                  <Timeline
-                    items={selectedLead.notes}
-                    onEdit={(item, index) => {
-                      setEditingIndex(index);
-                      setEditingNote(item);
-                      setIsAddActivityOpen(true);
-                    }}
-                    onDelete={(item, index) => handleRemoveNote(index)}
-                  />
-                </div>
-              ) : (
-                /* No notes placeholder */
-                <p className="text-sm text-gray-400">No notes added yet.</p>
-              )}
-
-              {isEdit && (
-                <div className="flex justify-end mt-2">
-                  <button
-                    disabled={isEditingLoading}
-                    onClick={() => {
-                      hanldeUpdateNotes(selectedLead?.meta?.leadgen_id);
-                    }}
-                    className="bg-green-700 text-white px-3 py-1 rounded flex items-center gap-1.5"
-                  >
-                    Save {isEditingLoading && <Loader color="#fff" size={12} />}
-                  </button>
-                </div>
-              )}
-
-              <ActivityModal
-                open={isAddActivityOpen}
-                initialData={editingNote}
-                onClose={() => {
-                  setIsAddActivityOpen(false);
-                  setEditingIndex(null);
-                  setEditingNote(null);
-                }}
-                onSave={(activity) => {
-                  handleNotesSave(activity);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
