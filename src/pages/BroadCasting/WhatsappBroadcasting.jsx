@@ -2,7 +2,38 @@ import { useState, useEffect } from "react";
 import { createWhatsappCampaignService } from "../../services/api/broadcast.api";
 
 const MESSAGE_LIMIT = 1000; // Tier 1 Limit
-
+const campaignsData = [
+  {
+    id: 1,
+    name: "Summer Offer 20% OFF",
+    channel: "WhatsApp",
+    audience: "All Leads",
+    sent: 1250,
+    delivered: 1180,
+    status: "sent",
+    date: "25 Feb 2026",
+  },
+  {
+    id: 2,
+    name: "Hotel Festive Promo",
+    channel: "WhatsApp",
+    audience: "New Users",
+    sent: 0,
+    delivered: 0,
+    status: "scheduled",
+    date: "02 Mar 2026",
+  },
+  {
+    id: 3,
+    name: "Last Minute Deal",
+    channel: "WhatsApp",
+    audience: "Website Visitors",
+    sent: 540,
+    delivered: 320,
+    status: "inprogress",
+    date: "27 Feb 2026",
+  },
+];
 const WhatsappBroadcasting = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -62,6 +93,28 @@ const WhatsappBroadcasting = () => {
     }
   };
 
+
+
+  const [filter, setFilter] = useState("all");
+
+  const filteredCampaigns =
+    filter === "all"
+      ? campaignsData
+      : campaignsData.filter((c) => c.status === filter);
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "sent":
+        return "bg-green-100 text-green-700";
+      case "scheduled":
+        return "bg-yellow-100 text-yellow-700";
+      case "inprogress":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center">
@@ -69,7 +122,7 @@ const WhatsappBroadcasting = () => {
 
         <button
           onClick={() => setIsOpen(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-md"
+          className="bg-[#0a3a75] text-white px-4 py-2 rounded-md"
         >
           Create New Campaign
         </button>
@@ -77,6 +130,62 @@ const WhatsappBroadcasting = () => {
 
       <hr className="mt-4" />
 
+      <div className="py-4 bg-gray-50 min-h-screen">
+     
+
+      {/* Filters */}
+      <div className="flex mb-2">
+        {["all", "sent", "scheduled", "inprogress"].map((item) => (
+          <button
+            key={item}
+            onClick={() => setFilter(item)}
+            className={`px-4 py-2 font-medium text-sm capitalize ${
+              filter === item
+                ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
+                : "bg-white border !border-white text-gray-600"
+            }`}
+          >
+            {item}
+          </button>
+        ))}
+      </div>
+
+      {/* Campaign Table */}
+      <div className="bg-white border-l border-r border-t mt-4">
+        <div className="grid grid-cols-6 p-4 border-b text-sm font-medium text-gray-500">
+          <div>Campaign Name</div>
+          <div>Channel</div>
+          <div>Audience</div>
+          <div>Sent</div>
+          <div>Date</div>
+          <div>Status</div>
+        </div>
+
+        {filteredCampaigns.map((campaign) => (
+          <div
+            key={campaign.id}
+            className="grid grid-cols-6 p-4 border-b text-sm hover:bg-gray-50"
+          >
+            <div className="font-medium text-gray-800">
+              {campaign.name}
+            </div>
+            <div>{campaign.channel}</div>
+            <div>{campaign.audience}</div>
+            <div>{campaign.sent}</div>
+            <div>{campaign.date}</div>
+            <div>
+              <span
+                className={`px-3 py-1 text-xs rounded-full capitalize ${getStatusStyle(
+                  campaign.status
+                )}`}
+              >
+                {campaign.status}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
       {isOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
           <div className="bg-white w-[600px] p-6 rounded-xl">

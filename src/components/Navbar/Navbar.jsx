@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoMdHome } from "react-icons/io";
+import { IoIosNotifications, IoMdHome } from "react-icons/io";
 import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
 import { RiFeedbackFill } from "react-icons/ri";
 import { RxDashboard } from "react-icons/rx";
@@ -14,6 +14,7 @@ import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
 import { toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { FaAlignRight } from "react-icons/fa";
+import NotificationPopup from "../Popup/NotificationPopup";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -48,6 +49,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
+  const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -101,8 +103,13 @@ const Navbar = () => {
   //   // }, 1000)
   // };
 
+  console.log(hotel);
+
+  const onNotificationPopupClose = () => {
+    setIsNotificationPopupOpen(false);
+  };
   return (
-    <div className="sticky left-0 top-0">
+    <div className="left-0 top-0">
       <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <div
           onClick={() => dispatch(toggleSideBar())}
@@ -152,6 +159,9 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
+            <button onClick={() => setIsNotificationPopupOpen(true)}>
+              <IoIosNotifications size={22} color="white" />
+            </button>
             <Link to="settings">
               <MdSettings size={22} color="white" />
             </Link>
@@ -225,6 +235,10 @@ const Navbar = () => {
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
         /> */}
+        <NotificationPopup
+          isOpen={isNotificationPopupOpen}
+          onClose={onNotificationPopupClose}
+        />
       </div>
     </div>
   );

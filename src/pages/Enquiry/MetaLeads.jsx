@@ -374,7 +374,7 @@ const MetaLeads = () => {
             </div>
 
             {/* PAGE DROPDOWN */}
-            {pages?.length > 0 && (
+            {/* {pages?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="Select Page"
@@ -385,10 +385,10 @@ const MetaLeads = () => {
                   onChange={setPageId}
                 />
               </div>
-            )}
+            )} */}
 
             {/* FORM DROPDOWN */}
-            {forms?.length > 0 && (
+            {/* {forms?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="All Forms"
@@ -403,7 +403,7 @@ const MetaLeads = () => {
                   onChange={setFormId}
                 />
               </div>
-            )}
+            )} */}
 
             {/* DATE RANGE */}
             <div className="relative">
@@ -528,9 +528,21 @@ const MetaLeads = () => {
                         isNotes && row[h.key]?.slice(-1)[0]?.message;
                       return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
+                    if (h.key === "Name") {
+                      const isName = row[h.key];
+
+                      const userName = isName
+                        ? isName
+                        : row?.other_details?.full_name || "-";
+                      return <td>{userName}</td>;
+                    }
                     return (
                       <td key={h.key} className="px-3 py-2">
-                        {row[h.key]}
+                        {row[h.key]
+                          ? row[h.key]
+                          : row?.created_from === "facebook"
+                            ? row?.other_details["full_name "]
+                            : "-"}
                       </td>
                     );
                   })}

@@ -12,7 +12,7 @@ import {
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
 } from "../../../../services/api/whatsApp";
-import { MdChat, MdClose } from "react-icons/md";
+import { MdCall, MdChat, MdClose } from "react-icons/md";
 import WebSocketClient from "../../../../config/websocketClient";
 import normalizePhone from "../../../../utils/normalizePhone";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
@@ -20,11 +20,14 @@ import { BsCheckAll } from "react-icons/bs";
 import { BsCheckLg } from "react-icons/bs";
 import Loader from "../../../../components/Loader";
 import Swal from "sweetalert2";
+import { renderMessageWithLinks } from "../../../../utils/urlParser";
+import { Link } from "react-router-dom";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
-  const { selectedConversation, conversations } = useContext(DataContext);
+  const { selectedConversation, conversations, setSelectedConversation } =
+    useContext(DataContext);
 
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
@@ -288,6 +291,29 @@ const ChatArea = () => {
     loadMessages(selectedConversation?._id);
   }, [selectedConversation?._id]);
 
+  const header = [
+    { label: "Open Queries", value: "Open" },
+    { label: "Contacted", value: "Contacted" },
+    { label: "Converted", value: "Converted" },
+    { label: "Out Of Budget", value: "Out Of Budget" },
+    { label: "Potential For Later", value: "Potential" },
+    { label: "Quotation Provided", value: "Quotation Provided" },
+    { label: "Dead Lead", value: "Dead Lead" },
+    { label: "Date Sold Out", value: "Date Sold Out" },
+    { label: "Duplicate", value: "Duplicate" },
+    { label: "Hot", value: "Hot" },
+  ];
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+
+    if (name === "stage") {
+      setSelectedConversation((prev) => ({
+        ...prev,
+        stage: value,
+      }));
+    }
+  };
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -304,17 +330,40 @@ const ChatArea = () => {
           </div>
         </div>
 
-        {!selectedConversation?.markAsLead && (
-          <div>
+        <div className="flex items-center gap-2">
+          <Link
+            to={`tel:${selectedConversation?.phone}`}
+            className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
+          >
+            <MdCall size={18} /> Call
+          </Link>
+          {/* <button
+              className="bg-primary  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
+            >
+                {selectedConversation?.status}
+            </button> */}
+          {/* <select
+              name="stage"
+              id=""
+              className="border !px-4 bg-primary text-white border-gray-50 outline-none py-1 rounded-md w-full"
+              onChange={handleInputChange}
+            >
+              <option value="">Select</option>
+              {header?.map((item) => {
+                return <option value={item.value}>{item.label}</option>;
+              })}
+            </select> */}
+
+          {!selectedConversation?.markAsLead && (
             <button
               disabled={addLeadLoading}
               onClick={handleAddLead}
-              className="bg-primary/95 text-lime-50 px-4 py-1.5 rounded-sm text-sm font-medium flex items-center gap-2"
+              className="bg-primary/95 whitespace-nowrap text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2"
             >
               Add Lead {addLeadLoading && <Loader size={12} color="#fff" />}
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Messages */}
@@ -332,6 +381,38 @@ const ChatArea = () => {
           </div>
         ) : (
           <>
+            {selectedConversation?.adAttribution && (
+              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
+                {selectedConversation?.adAttribution?.mediaType === "image" && (
+                  <img
+                    src={selectedConversation?.adAttribution?.imageUrl}
+                    alt={selectedConversation?.adAttribution?.sourceType}
+                    className="rounded"
+                  />
+                )}
+
+                <h1 className="font-medium ">
+                  {selectedConversation?.adAttribution?.headline}
+                </h1>
+                <p className="text-sm">
+                  {selectedConversation?.adAttribution?.body}
+                </p>
+
+                <div className="flex justify-end items-center gap-3">
+                  <p className="text-sm capitalize bg-gray-200 rounded px-2 py-1">
+                    {selectedConversation?.adAttribution?.sourceType}
+                  </p>
+                  <p className="text-[10px] opacity-70">
+                    {new Date(
+                      selectedConversation?.adAttribution?.receivedAt,
+                    ).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </div>
+            )}
             {messageList?.length > 0 ? (
               messageList.map((message, index) => {
                 const isMe = message.sender === "me";
@@ -351,7 +432,7 @@ const ChatArea = () => {
                       {/* TEXT */}
                       {message.messageType === "text" && message.body && (
                         <p className="text-sm whitespace-pre-wrap bg-white">
-                          {message.body}
+                          {renderMessageWithLinks(message?.body)}
                         </p>
                       )}
 
@@ -466,36 +547,86 @@ const ChatArea = () => {
           </div>
         )}
 
-        <div className="flex gap-2">
-          {!templateClick ? (
-            <span
-              onClick={() => handleTemplate(true)}
-              className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
-            >
-              <MdChat className="" /> Templates
-            </span>
-          ) : (
-            <span
-              onClick={() => handleTemplate(false)}
-              className=" cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
-            >
-              Close Templates <MdClose />
-            </span>
-          )}
-        </div>
+        <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
+          <div className="flex gap-2">
+            {!templateClick ? (
+              <span
+                onClick={() => handleTemplate(true)}
+                className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+              >
+                <MdChat className="" /> Templates
+              </span>
+            ) : (
+              <span
+                onClick={() => handleTemplate(false)}
+                className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+              >
+                Close Templates <MdClose />
+              </span>
+            )}
+          </div>
 
-        <div className="bg-white py-3 flex w-full items-center gap-3">
-          {/* Attachment */}
-          {!is24HourComplete && (
+          <div className="bg-white py-3 flex w-full items-center gap-3">
+            {/* Attachment */}
+            {!is24HourComplete && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="text-gray-500 hover:text-teal-600"
+              >
+                {/* Paperclip SVG */}
+                <svg
+                  width="22"
+                  height="22"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {!is24HourComplete && (
+              <input
+                disabled={is24HourComplete}
+                ref={fileInputRef}
+                type="file"
+                hidden
+                onChange={(e) => {
+                  setFile(e.target.files[0]);
+                }}
+              />
+            )}
+
+            {!is24HourComplete ? (
+              <textarea
+                disabled={is24HourComplete}
+                ref={textareaRef}
+                value={messageValue}
+                onChange={handleChange}
+                placeholder="Type a message"
+                rows={1}
+                className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+              />
+            ) : (
+              <div className="flex-1"></div>
+            )}
+
+            {/* Send Button */}
             <button
-              type="button"
-              onClick={() => fileInputRef.current.click()}
-              className="text-gray-500 hover:text-teal-600"
+              type="submit"
+              className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
             >
-              {/* Paperclip SVG */}
+              {/* Send SVG */}
               <svg
-                width="22"
-                height="22"
+                width="18"
+                height="18"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -504,65 +635,17 @@ const ChatArea = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                  d="M22 2L11 13"
+                />
+                <path
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M22 2L15 22l-4-9-9-4 20-7z"
                 />
               </svg>
             </button>
-          )}
-
-          {!is24HourComplete && (
-            <input
-              disabled={is24HourComplete}
-              ref={fileInputRef}
-              type="file"
-              hidden
-              onChange={(e) => {
-                setFile(e.target.files[0]);
-              }}
-            />
-          )}
-
-          {!is24HourComplete ? (
-            <textarea
-              disabled={is24HourComplete}
-              ref={textareaRef}
-              value={messageValue}
-              onChange={handleChange}
-              placeholder="Type a message"
-              rows={1}
-              className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
-            />
-          ) : (
-            <div className="flex-1"></div>
-          )}
-
-          {/* Send Button */}
-          <button
-            type="submit"
-            className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
-          >
-            {/* Send SVG */}
-            <svg
-              width="18"
-              height="18"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M22 2L11 13"
-              />
-              <path
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M22 2L15 22l-4-9-9-4 20-7z"
-              />
-            </svg>
-          </button>
+          </div>
         </div>
       </form>
     </div>

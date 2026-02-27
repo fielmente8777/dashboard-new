@@ -7,6 +7,13 @@ import {
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import NewContactModal from "./NewContactModal";
+import {
+  FacebookIcon,
+  GoogleAdsIcon,
+  InstaICon,
+  WhatsappIcon,
+} from "../../../../icons/icon";
+import { CgGoogle } from "react-icons/cg";
 
 const tabs = ["Active", "Inactive", "New Contact"];
 
@@ -127,6 +134,8 @@ const SidebarChat = () => {
     fetchTemplates();
   }, []);
 
+  console.log("Conversation", conversations);
+
   return (
     <div className="w-80 border-b border-l border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
@@ -197,9 +206,31 @@ const SidebarChat = () => {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-500 truncate mt-1 w-44">
-                  {conv.last_message?.text || "No messages yet"}
-                </p>
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500 truncate mt-1 w-44">
+                    {conv?.last_message?.text || "No messages yet"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {/* {conv?.adAttribution?.sourceType && (
+                      <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
+                        {conv?.adAttribution?.sourceType}
+                      </span>
+                    )} */}
+
+                    <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
+                      {conv?.adAttribution?.sourceType || "Ad"}
+                    </span>
+
+                    {conv?.adAttribution?.sourceUrl &&
+                    conv?.adAttribution?.sourceUrl.includes("instagram") ? (
+                      <InstaICon />
+                    ) : conv?.adAttribution?.sourceUrl.includes("facebook") ? (
+                      <FacebookIcon />
+                    ) : (
+                      <GoogleAdsIcon />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           ))
