@@ -7,7 +7,13 @@ import {
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import NewContactModal from "./NewContactModal";
-import { FacebookIcon, InstaICon, WhatsappIcon } from "../../../../icons/icon";
+import {
+  FacebookIcon,
+  GoogleAdsIcon,
+  InstaICon,
+  WhatsappIcon,
+} from "../../../../icons/icon";
+import { CgGoogle } from "react-icons/cg";
 
 const tabs = ["Active", "Inactive", "New Contact"];
 
@@ -128,9 +134,7 @@ const SidebarChat = () => {
     fetchTemplates();
   }, []);
 
-
-
-  console.log("Conversation",conversations);
+  console.log("Conversation", conversations);
 
   return (
     <div className="w-80 border-b border-l border-r border-gray-200 flex flex-col bg-white">
@@ -202,32 +206,31 @@ const SidebarChat = () => {
                   )}
                 </div>
 
-                  <div className="flex justify-between">
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-500 truncate mt-1 w-44">
+                    {conv?.last_message?.text || "No messages yet"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {/* {conv?.adAttribution?.sourceType && (
+                      <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
+                        {conv?.adAttribution?.sourceType}
+                      </span>
+                    )} */}
 
-                <p className="text-sm text-gray-500 truncate mt-1 w-44">
-                  {conv?.last_message?.text || "No messages yet"}
-                </p>
-                <div className="flex items-center gap-2">
+                    <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
+                      {conv?.adAttribution?.sourceType || "Ad"}
+                    </span>
 
-                {conv?.adAttribution?.sourceType&&
-                <span className="!border !border-orange-600 bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
-                {conv?.adAttribution?.sourceType}
-
-                </span>
-                }
-
-
-
-                {conv?.adAttribution?.sourceUrl&&conv?.adAttribution?.sourceUrl.includes("instagram")
-                ?<InstaICon/>
-                :conv?.adAttribution?.sourceUrl.includes("facebook")?
-                  <FacebookIcon/>:
-                <WhatsappIcon/>
-                }
-                </div>
-
+                    {conv?.adAttribution?.sourceUrl &&
+                    conv?.adAttribution?.sourceUrl.includes("instagram") ? (
+                      <InstaICon />
+                    ) : conv?.adAttribution?.sourceUrl.includes("facebook") ? (
+                      <FacebookIcon />
+                    ) : (
+                      <GoogleAdsIcon />
+                    )}
                   </div>
-
+                </div>
               </div>
             </div>
           ))

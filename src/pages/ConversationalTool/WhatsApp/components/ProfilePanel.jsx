@@ -23,7 +23,8 @@ const header = [
 ];
 
 const ProfilePanel = ({ selectedContact }) => {
-  const { selectedConversation,setSelectedConversation } = useContext(DataContext);
+  const { selectedConversation, setSelectedConversation } =
+    useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [notes, setNotes] = useState([]);
 
@@ -38,8 +39,7 @@ const ProfilePanel = ({ selectedContact }) => {
     }
   };
 
-
-  console.log("ksljf",selectedConversation, selectedContact);
+  console.log("ksljf", selectedConversation, selectedContact);
 
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">

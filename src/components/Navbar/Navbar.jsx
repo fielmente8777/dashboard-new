@@ -49,7 +49,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
-  const [isNotificationPopupOpen,setIsNotificationPopupOpen]=useState(false)
+  const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -105,9 +105,9 @@ const Navbar = () => {
 
   console.log(hotel);
 
-  const onNotificationPopupClose=()=>{
+  const onNotificationPopupClose = () => {
     setIsNotificationPopupOpen(false);
-  }
+  };
   return (
     <div className="left-0 top-0">
       <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
@@ -159,7 +159,7 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
-            <button onClick={()=>setIsNotificationPopupOpen(true)}>
+            <button onClick={() => setIsNotificationPopupOpen(true)}>
               <IoIosNotifications size={22} color="white" />
             </button>
             <Link to="settings">
@@ -235,7 +235,10 @@ const Navbar = () => {
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
         /> */}
-        <NotificationPopup isOpen={isNotificationPopupOpen} onClose={onNotificationPopupClose}/>
+        <NotificationPopup
+          isOpen={isNotificationPopupOpen}
+          onClose={onNotificationPopupClose}
+        />
       </div>
     </div>
   );

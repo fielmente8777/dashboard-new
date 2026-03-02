@@ -366,12 +366,12 @@ const AllLeads = () => {
                   <td className="px-3 py-2.5">{i + limit * (page - 1) + 1}</td>
 
                   {tableHeaders.map((h) => {
-                    // const timesLabels = ["created_time", "Created_at"];
+                    const notCapitalize = ["Email"];
 
                     if (h.key === "Created_at") {
                       const isLeadCreatedTime = row?.meta?.created_time;
                       return (
-                        <td key={h.key} className="px-3 py-2">
+                        <td key={h.key} className="px-3 py-2 whitespace-nowrap">
                           {formatDateTime(
                             isLeadCreatedTime ? isLeadCreatedTime : row[h.key],
                           )}
@@ -413,8 +413,20 @@ const AllLeads = () => {
                         isNotes && row[h.key]?.slice(-1)[0]?.message;
                       return <td>{isNotes ? noteMessage : "-"}</td>;
                     }
+
+                    if (h.key === "Name") {
+                      const isName = row[h.key];
+
+                      const userName = isName
+                        ? isName
+                        : row?.other_details?.full_name || "-";
+                      return <td>{userName}</td>;
+                    }
                     return (
-                      <td key={h.key} className="px-3 py-2">
+                      <td
+                        key={h.key}
+                        className={`px-3 py-2  ${notCapitalize.includes(h.key) ? "" : "capitalize"}`}
+                      >
                         {row[h.key] || "-"}
                       </td>
                     );

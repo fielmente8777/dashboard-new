@@ -5,6 +5,7 @@ import CustomDropdown from "../../../components/ui/Dropdown";
 import { Stages } from "../../../data/constant";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 const CustomerInfoCard = ({ lead }) => {
   if (!lead) return null;
@@ -74,13 +75,20 @@ const CustomerInfoCard = ({ lead }) => {
         )}
 
         {lead?.source_url && (
-          <p className="text-xs text-gray-500 mt-4">
-            <strong>Source:</strong> {lead.source_url.slice(0, 70)}…
-          </p>
+          <Link
+            target="_blank"
+            to={lead.source_url}
+            className="text-sm text-gray-500 mt-4 inline-block"
+          >
+            <strong>Source:</strong>{" "}
+            <span className="text-primary underline text-xs">
+              {lead.source_url.slice(0, 70)}…
+            </span>
+          </Link>
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-4">
         <CustomDropdown
           label={lead?.status}
           options={Stages}

@@ -54,7 +54,15 @@ import { IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
 import { CiViewBoard } from "react-icons/ci";
-import{DocumentIcon, ChatIcon, MailIcon, TeamIcon, WhatsappIcon, LiveChatIcon, Dashboard } from "../icons/icon";
+import {
+  DocumentIcon,
+  ChatIcon,
+  MailIcon,
+  TeamIcon,
+  WhatsappIcon,
+  LiveChatIcon,
+  Dashboard,
+} from "../icons/icon";
 
 export const SidebarData = [
   {
@@ -163,7 +171,7 @@ export const SidebarData = [
       {
         name: "WhatsApp",
         link: `leads-management/whatsapp`,
-        icon: <WhatsappIcon/>,
+        icon: <WhatsappIcon />,
       },
 
       // {
