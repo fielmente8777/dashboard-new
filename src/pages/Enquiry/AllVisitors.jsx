@@ -30,6 +30,8 @@ import { formatDate, formatDateTime } from "../../utils/formateDate";
 import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
 import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
 
+const CREATED_FROM = "visitors";
+
 const Stages = [
   { label: "Open Queries", value: "Open" },
   { label: "Contacted", value: "Contacted" },
@@ -102,6 +104,7 @@ const AllVisitors = () => {
         page: page,
         search: debouncedSearch,
         limit: limit,
+        created_from: CREATED_FROM,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -163,29 +166,17 @@ const AllVisitors = () => {
   };
 
   const handleUpdateStage = async (leadId, hid, stage) => {
-    console.log("aaya");
     const payload = {
       leadId: leadId,
-      stage: stage,
+      status: stage,
       hid: hid,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
-        fetchLeads();
-        return;
+        // fetchLeads();
+        // return;
       }
-
-      // Swal.fire({
-      //   icon: "error",
-      //   title: "Error",
-      //   text: response?.responseMessage || "Failed to update lead stage",
-      // });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -285,7 +276,7 @@ const AllVisitors = () => {
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+        <h2 className="text-lg font-semibold">Visitors Leads</h2>
 
         <button
           onClick={exportToExcel}

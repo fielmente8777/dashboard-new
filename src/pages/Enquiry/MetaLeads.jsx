@@ -228,20 +228,9 @@ const MetaLeads = () => {
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
-        fetchLeads();
-        return;
+        // fetchLeads();
+        // return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -260,18 +249,8 @@ const MetaLeads = () => {
     try {
       const response = await updateMetaLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead notes updated successfully",
-        });
         return;
       }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead notes",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",

@@ -171,20 +171,9 @@ const WebformLeads = () => {
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
         fetchLeads();
         return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -286,7 +275,7 @@ const WebformLeads = () => {
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+        <h2 className="text-lg font-semibold">Webform Leads</h2>
 
         <button
           onClick={exportToExcel}

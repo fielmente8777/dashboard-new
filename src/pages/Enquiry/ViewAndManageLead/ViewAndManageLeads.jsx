@@ -3,7 +3,10 @@ import { FaWhatsapp } from "react-icons/fa";
 import { useParams, useSearchParams } from "react-router-dom";
 import QuickResponsePopup from "../../../components/Popup/QuickResponsePopup";
 import { getLeadById } from "../../../services/api/leads.api";
-import { getWhatsAppMessageTemplates } from "../../../services/api/whatsApp";
+import {
+  getWhatsappConversationMessages,
+  getWhatsAppMessageTemplates,
+} from "../../../services/api/whatsApp";
 import CallDetails from "../../AiSalesAgents/CallDetails";
 import ConversationsCard from "./ConversationCard";
 import CustomerInfoCard from "./CustomerInfoCard";
@@ -12,6 +15,8 @@ import LeadTabs from "./LeadTabs";
 import NotesCard from "./NotesCard";
 import { LeadDetailsSkeleton } from "../../../components/Skeltons/LeadDetailsSkelton";
 import { IoArrowBack } from "react-icons/io5";
+import OtherDetailsCard from "./OtherDetailsCard";
+import WhatsAppConverstionCard from "./WhatsAppConverstionCard";
 
 const ViewAndManageLeads = () => {
   const { leadId } = useParams();
@@ -23,6 +28,22 @@ const ViewAndManageLeads = () => {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [whatsAppConversation, setWhatsAppConversation] = useState(null);
+  const [messageLoading, setMessageLoading] = useState(false);
+
+  const fetchConversation = async (conversationId) => {
+    setMessageLoading(true);
+    try {
+      const response = await getWhatsappConversationMessages(conversationId);
+      if (response?.success && response?.responseStatusCode === 200) {
+        setWhatsAppConversation(response?.result?.messages);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setMessageLoading(false);
+    }
+  };
 
   const fetchLead = async () => {
     setLoading(true);
@@ -30,6 +51,12 @@ const ViewAndManageLeads = () => {
       const response = await getLeadById(leadId, hid);
       if (response?.success) {
         setLead(response?.result?.docs);
+
+        const conversationId = response?.result?.docs?.conversationId;
+
+        if (conversationId) {
+          fetchConversation(conversationId);
+        }
       }
     } finally {
       setLoading(false);
@@ -91,11 +118,21 @@ const ViewAndManageLeads = () => {
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6  min-h-28">
             <CustomerInfoCard lead={lead} />
+            {lead?.other_details && (
+              <OtherDetailsCard otherDetails={lead?.other_details} />
+            )}
             <NotesCard lead={lead} setLead={setLead} />
-          </div>
 
-          <div className="space-y-6">
-            <ConversationsCard chats={lead?.chats} />
+            {lead?.chats?.length > 0 && (
+              <ConversationsCard chats={lead?.chats} />
+            )}
+
+            {whatsAppConversation && (
+              <WhatsAppConverstionCard
+                conversation={whatsAppConversation}
+                messageLoading={messageLoading}
+              />
+            )}
           </div>
 
           {/* <LeadFooter lead={lead} /> */}

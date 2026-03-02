@@ -5,6 +5,7 @@ import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
@@ -19,7 +20,6 @@ import {
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
-import { updateMetaLead } from "../../services/api/MetaLeads.api";
 import { formatDateTime } from "../../utils/formateDate";
 
 const Stages = [
@@ -44,15 +44,9 @@ const AllLeads = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isEditingLoading, setIsEditingLoading] = useState(false);
-
-  const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -115,44 +109,57 @@ const AllLeads = () => {
     }
   };
 
-  const flattenMetaLeads = (allMetaLeads) => {
-    return allMetaLeads.map((leadObj) => {
-      const flatLead = {};
+  const extractRequiredHeaders = (leads) => {
+    const ignoredHeaders = ["_id", "ndid", "hId", "updatedAt", "updated_at"];
 
-      // Extract field_data
-      leadObj.lead?.field_data?.forEach((field) => {
-        flatLead[field.name] = field.values?.[0] || "";
-      });
-
-      // Add top-level fields
-      flatLead.status = leadObj.status;
-      flatLead.stage = leadObj.stage;
-      flatLead.source = leadObj.source;
-      flatLead.createdAt = leadObj.createdAt;
-      flatLead.updatedAt = leadObj.updatedAt;
-
-      // Notes (optional)
-      flatLead.notes = leadObj.notes?.length
-        ? leadObj.notes.map((n) => n.text || "").join(" | ")
-        : "";
-
-      return flatLead;
-    });
+    const cleanedLeads = leads.map((lead) =>
+      Object.fromEntries(
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
+      ),
+    );
+    return cleanedLeads;
   };
 
-  const exportToExcel = () => {
-    if (!allLeads.length) return;
+  const exportToExcel = async () => {
+    setIsExporting(true);
+    const params = {
+      is_export: "excel",
+    };
+    try {
+      const response = await getLeads(params);
+      if (response?.success) {
+        const leads = response?.result?.docs?.leads || [];
 
-    const flattenedData = flattenMetaLeads(allLeads);
+        jsonToCsvExport({
+          data: extractRequiredHeaders(leads),
+          options: {
+            filename: "All Leads",
+            delimiter: ",",
+            headers: Object.keys(leads[0]), // auto headers
+          },
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error?.message || "Failed to update lead stage",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+    // if (!allLeads.length) return;
 
-    jsonToCsvExport({
-      data: flattenedData,
-      options: {
-        filename: "Meta_Leads",
-        delimiter: ",",
-        headers: Object.keys(flattenedData[0]), // auto headers
-      },
-    });
+    // const flattenedData = flattenMetaLeads(allLeads);
+
+    // jsonToCsvExport({
+    //   data: flattenedData,
+    //   options: {
+    //     filename: "Meta_Leads",
+    //     delimiter: ",",
+    //     headers: Object.keys(flattenedData[0]), // auto headers
+    //   },
+    // });
   };
 
   const handleUpdateStage = async (leadId, hid, stage) => {
@@ -164,20 +171,9 @@ const AllLeads = () => {
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
         fetchLeads();
         return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -185,63 +181,6 @@ const AllLeads = () => {
         text: error?.message || "Failed to update lead stage",
       });
     }
-  };
-
-  const hanldeUpdateNotes = async (leadId) => {
-    setIsEditingLoading(true);
-    const payload = {
-      leadId: leadId,
-      notes: selectedLead?.notes || [],
-    };
-    try {
-      const response = await updateMetaLead(payload);
-      if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead notes updated successfully",
-        });
-        return;
-      }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead notes",
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error?.message || "Failed to update lead notes",
-      });
-    } finally {
-      setIsEditingLoading(false);
-      setIsEdit(false);
-    }
-  };
-
-  const handleNotesSave = (activity) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-
-      if (editingIndex !== null) {
-        notes[editingIndex] = activity;
-      } else {
-        notes.push(activity);
-      }
-
-      return { ...prev, notes };
-    });
-  };
-
-  const handleRemoveNote = (index) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-      notes.splice(index, 1);
-      return { ...prev, notes };
-    });
   };
 
   const handleRedirectToPage = (row) => {
@@ -277,13 +216,14 @@ const AllLeads = () => {
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+        <h2 className="text-lg font-semibold">All Leads</h2>
 
         <button
+          disabled={isExporting}
           onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded"
+          className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
         >
-          Export to Excel
+          Export to Excel {isExporting && <Loader color="#fefefe" size={12} />}
         </button>
       </div>
 

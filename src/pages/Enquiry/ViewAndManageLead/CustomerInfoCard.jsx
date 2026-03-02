@@ -18,14 +18,7 @@ const CustomerInfoCard = ({ lead }) => {
         hid: lead?.hId,
       };
 
-      const response = await updateLead(payload);
-      if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
-      }
+      await updateLead(payload);
     } catch (error) {
       Swal.fire({
         icon: "error",

@@ -18,7 +18,7 @@ import {
 } from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
-import { getLeads } from "../../services/api/leads.api";
+import { getLeads, updateLead } from "../../services/api/leads.api";
 import { updateMetaLead } from "../../services/api/MetaLeads.api";
 import { formatDateTime } from "../../utils/formateDate";
 
@@ -101,7 +101,6 @@ const WhatsAppLeads = () => {
 
       const response = await getLeads(params);
 
-      console.log(response);
       if (response?.success) {
         setAllLeads(response?.result?.docs?.leads || []);
         setTotal(response?.result?.pagination?.total || 0);
@@ -156,26 +155,15 @@ const WhatsAppLeads = () => {
   const handleUpdateStage = async (leadId, hid, stage) => {
     const payload = {
       leadId: leadId,
-      stage: stage,
+      status: stage,
       hid: hid,
     };
     try {
-      const response = await updateMetaLead(payload);
+      const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
-        });
-        fetchLeads();
-        return;
+        // fetchLeads();
+        // return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -277,7 +265,7 @@ const WhatsAppLeads = () => {
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+        <h2 className="text-lg font-semibold">Whatsapp Leads</h2>
 
         <button
           onClick={exportToExcel}

@@ -287,7 +287,7 @@ const GoogleAds = () => {
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+        <h2 className="text-lg font-semibold">Google Ads Leads</h2>
 
         <button
           onClick={exportToExcel}

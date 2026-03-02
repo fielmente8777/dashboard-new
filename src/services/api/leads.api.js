@@ -7,15 +7,17 @@ export const getLeads = async ({
   page,
   pageId,
   formId,
-  limit = 20,
+  limit,
   search,
   startDate,
   endDate,
+  is_export,
 }) => {
   const token = localStorage.getItem("token");
   const params = new URLSearchParams();
   params.append("hid", localStorage.getItem("hid"));
 
+  if (is_export) params.append("is_export", is_export);
   if (created_from) params.append("created_from", created_from);
   if (page) params.append("page", page);
   if (pageId) params.append("pageId", pageId);

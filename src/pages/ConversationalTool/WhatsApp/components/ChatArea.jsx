@@ -291,19 +291,6 @@ const ChatArea = () => {
     loadMessages(selectedConversation?._id);
   }, [selectedConversation?._id]);
 
-  const header = [
-    { label: "Open Queries", value: "Open" },
-    { label: "Contacted", value: "Contacted" },
-    { label: "Converted", value: "Converted" },
-    { label: "Out Of Budget", value: "Out Of Budget" },
-    { label: "Potential For Later", value: "Potential" },
-    { label: "Quotation Provided", value: "Quotation Provided" },
-    { label: "Dead Lead", value: "Dead Lead" },
-    { label: "Date Sold Out", value: "Date Sold Out" },
-    { label: "Duplicate", value: "Duplicate" },
-    { label: "Hot", value: "Hot" },
-  ];
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
 
