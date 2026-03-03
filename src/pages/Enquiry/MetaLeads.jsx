@@ -378,7 +378,7 @@ const MetaLeads = () => {
           </div>
 
           {/* RIGHT ACTION */}
-          {!!isSync && (
+          {!isSync && (
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
@@ -477,7 +477,8 @@ const MetaLeads = () => {
 
                       const userName = isName
                         ? isName
-                        : row?.other_details?.full_name || "-";
+                        : row?.other_details?.full_name ||
+                          row?.other_details["full name"];
                       return <td>{userName}</td>;
                     }
                     return (

@@ -131,16 +131,14 @@ const AllVisitors = () => {
       if (response?.success) {
         const leads = response?.result?.docs?.leads || [];
 
-        console.log(leads);
-
-        // jsonToCsvExport({
-        //   data: extractRequiredHeaders(leads),
-        //   options: {
-        //     filename: "All Leads",
-        //     delimiter: ",",
-        //     headers: Object.keys(leads[0]), // auto headers
-        //   },
-        // });
+        jsonToCsvExport({
+          data: extractRequiredHeaders(leads),
+          options: {
+            filename: "All Leads",
+            delimiter: ",",
+            headers: Object.keys(leads[0]), // auto headers
+          },
+        });
       }
     } catch (error) {
       Swal.fire({
