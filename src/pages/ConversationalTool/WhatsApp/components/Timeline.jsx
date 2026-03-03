@@ -1,6 +1,7 @@
 import { IoIosClose } from "react-icons/io";
 
 export default function Timeline({ items, onEdit, onDelete }) {
+  console.log(items);
   if (!items?.length) {
     return (
       <p className="text-xs text-gray-400 text-center py-6">
@@ -11,7 +12,7 @@ export default function Timeline({ items, onEdit, onDelete }) {
 
   return (
     <div className="space-y-2 relative">
-      {items.map((item, index) => (
+      {items?.map((item, index) => (
         <div
           key={index}
           className=" flex gap-2 justify-between items-start bg-gray-100 p-2 rounded-md"
@@ -23,11 +24,11 @@ export default function Timeline({ items, onEdit, onDelete }) {
             {/* Content */}
             <div>
               <p className="text-xs font-bold text-gray-600">
-                {item?.activitySource}
+                {item?.activitySource || ""}
               </p>
-              <p className="text-sm text-gray-800">{item.message}</p>
+              <p className="text-sm text-gray-800">{item?.message}</p>
               <p className="text-xs text-gray-400 mt-1">
-                {new Date(item.createdAt).toLocaleString()}
+                {new Date(item?.createdAt).toLocaleString()}
               </p>
             </div>
           </div>

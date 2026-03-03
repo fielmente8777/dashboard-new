@@ -9,7 +9,7 @@ export default function CustomDropdown({
   width = "w-48",
   ...props
 }) {
-  const [selected, setSelected] = useState(label);
+  const [selected, setSelected] = useState(label || options[0]?.label);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
 
@@ -31,6 +31,12 @@ export default function CustomDropdown({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (label) {
+      setSelected(label);
+    }
+  }, [label]);
 
   const toggleDropdown = () => {
     if (!open) {
@@ -59,7 +65,7 @@ export default function CustomDropdown({
         onClick={toggleDropdown}
         className={`py-2 ${width} flex items-center justify-between px-3 rounded-lg border border-gray-300 bg-gray-50 text-sm text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-primary ${props.className}`}
       >
-        <span className="truncate">{selected || label}</span>
+        <span className="truncate">{selected}</span>
         <IoChevronDown
           size={16}
           className={`transition-transform ${open ? "rotate-180" : ""}`}

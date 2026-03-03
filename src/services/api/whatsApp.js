@@ -107,8 +107,9 @@ export const createWhatsAppMessageTemplate = async (payload) => {
 };
 
 export const getWhatsAppMessageTemplates = async () => {
+  const hid = localStorage.getItem("hid");
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/get`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/get?hid=${hid}`,
     {
       method: "GET",
       headers: {

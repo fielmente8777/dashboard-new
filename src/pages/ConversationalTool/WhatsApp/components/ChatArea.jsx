@@ -209,29 +209,6 @@ const ChatArea = () => {
     }
   };
 
-  const handleAddLead = async () => {
-    setAddLeadLoading(true);
-    try {
-      const payload = {
-        phone: selectedConversation.phone,
-        name: selectedConversation.name,
-        ndid: selectedConversation.ndid,
-        notes: selectedConversation.notes,
-        stage: selectedConversation.stage,
-        conversationId: selectedConversation._id,
-      };
-      const response = await addWhatsAppLead(payload);
-
-      if (response.success && response.responseStatusCode === 200) {
-        Swal.fire("Success", response?.responseMessage, "success");
-      }
-    } catch (error) {
-      console.log("Error", error);
-    } finally {
-      setAddLeadLoading(false);
-    }
-  };
-
   const handleTemplate = (value) => {
     setSelectedTemplate(null);
     setTemplateClick(value);
@@ -341,7 +318,7 @@ const ChatArea = () => {
               })}
             </select> */}
 
-          {!selectedConversation?.markAsLead && (
+          {/* {!selectedConversation?.markAsLead && (
             <button
               disabled={addLeadLoading}
               onClick={handleAddLead}
@@ -349,7 +326,7 @@ const ChatArea = () => {
             >
               Add Lead {addLeadLoading && <Loader size={12} color="#fff" />}
             </button>
-          )}
+          )} */}
         </div>
       </div>
 

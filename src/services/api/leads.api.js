@@ -12,6 +12,7 @@ export const getLeads = async ({
   startDate,
   endDate,
   is_export,
+  stage,
 }) => {
   const token = localStorage.getItem("token");
   const params = new URLSearchParams();
@@ -24,6 +25,7 @@ export const getLeads = async ({
   if (formId) params.append("formId", formId);
   if (limit) params.append("limit", limit);
   if (search) params.append("search", search);
+  if (stage) params.append("stage", stage);
   if (startDate && endDate) {
     params.append("from", startDate);
     params.append("to", endDate);
@@ -61,7 +63,7 @@ export const updateLead = async (payload) => {
   const token = localStorage.getItem("token");
   const hid = payload?.hid;
   const { data } = await axios.put(
-    `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId}/update?hid=${hid}`,
+    `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId || payload?.conversationId}/update?hid=${hid}`,
     payload,
     {
       headers: {

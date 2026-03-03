@@ -15,6 +15,7 @@ import WebSocketClient from "../../config/websocketClient";
 import {
   BASE_PATH,
   ROUTES_PATH,
+  Stages,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../data/constant";
@@ -32,24 +33,6 @@ import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
 
 const CREATED_FROM = "visitors";
 
-const Stages = [
-  { label: "Open Queries", value: "Open" },
-  { label: "Contacted", value: "Contacted" },
-  { label: "Converted", value: "Converted" },
-  { label: "Out Of Budget", value: "Out Of Budget" },
-  { label: "Potential For Later", value: "Potential" },
-  { label: "Quotation Provided", value: "Quotation Provided" },
-  { label: "Dead Lead", value: "Dead Lead" },
-  { label: "Date Sold Out", value: "Date Sold Out" },
-  { label: "Duplicate", value: "Duplicate" },
-  { label: "Follow up", value: "Follow Up" },
-  { label: "Not Respond", value: "Not Respond" },
-  { label: "Qualified", value: "Qualified" },
-  { label: "Not Qualified", value: "Not Qualified" },
-  { label: "Turn Away", value: "Turn Away" },
-  { label: "Hot", value: "Hot" },
-];
-
 const AllVisitors = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
@@ -59,6 +42,7 @@ const AllVisitors = () => {
   const [editingNote, setEditingNote] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
   const [isEditingLoading, setIsEditingLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
@@ -125,44 +109,48 @@ const AllVisitors = () => {
     }
   };
 
-  const flattenMetaLeads = (allMetaLeads) => {
-    return allMetaLeads.map((leadObj) => {
-      const flatLead = {};
+  const extractRequiredHeaders = (leads) => {
+    const ignoredHeaders = ["_id", "ndid", "hId", "updatedAt", "updated_at"];
 
-      // Extract field_data
-      leadObj.lead?.field_data?.forEach((field) => {
-        flatLead[field.name] = field.values?.[0] || "";
-      });
-
-      // Add top-level fields
-      flatLead.status = leadObj.status;
-      flatLead.stage = leadObj.stage;
-      flatLead.source = leadObj.source;
-      flatLead.createdAt = leadObj.createdAt;
-      flatLead.updatedAt = leadObj.updatedAt;
-
-      // Notes (optional)
-      flatLead.notes = leadObj.notes?.length
-        ? leadObj.notes.map((n) => n.text || "").join(" | ")
-        : "";
-
-      return flatLead;
-    });
+    const cleanedLeads = leads.map((lead) =>
+      Object.fromEntries(
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
+      ),
+    );
+    return cleanedLeads;
   };
 
-  const exportToExcel = () => {
-    if (!allLeads.length) return;
+  const exportToExcel = async () => {
+    setIsExporting(true);
+    const params = {
+      is_export: "excel",
+      created_from: CREATED_FROM,
+    };
+    try {
+      const response = await getLeads(params);
+      if (response?.success) {
+        const leads = response?.result?.docs?.leads || [];
 
-    const flattenedData = flattenMetaLeads(allLeads);
+        console.log(leads);
 
-    jsonToCsvExport({
-      data: flattenedData,
-      options: {
-        filename: "Meta_Leads",
-        delimiter: ",",
-        headers: Object.keys(flattenedData[0]), // auto headers
-      },
-    });
+        // jsonToCsvExport({
+        //   data: extractRequiredHeaders(leads),
+        //   options: {
+        //     filename: "All Leads",
+        //     delimiter: ",",
+        //     headers: Object.keys(leads[0]), // auto headers
+        //   },
+        // });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error?.message || "Failed to update lead stage",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleUpdateStage = async (leadId, hid, stage) => {
@@ -278,12 +266,16 @@ const AllVisitors = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Visitors Leads</h2>
 
-        <button
-          onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          Export to Excel
-        </button>
+        {allLeads?.length > 0 && (
+          <button
+            disabled={isExporting}
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+          >
+            Export to Excel{" "}
+            {isExporting && <Loader color="#fefefe" size={12} />}
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">

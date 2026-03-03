@@ -8,38 +8,89 @@ import {
   formatDateByOnlyDay,
   formateDateInTimeIS,
 } from "../../../../utils/formateDate";
+import CustomDropdown from "../../../../components/ui/Dropdown";
+import { Stages } from "../../../../data/constant";
+import { addWhatsAppLead } from "../../../../services/api/whatsApp";
+import Swal from "sweetalert2";
+import { updateLead } from "../../../../services/api/leads.api";
 
-const header = [
-  { label: "Open Queries", value: "Open" },
-  { label: "Contacted", value: "Contacted" },
-  { label: "Converted", value: "Converted" },
-  { label: "Out Of Budget", value: "Out Of Budget" },
-  { label: "Potential For Later", value: "Potential" },
-  { label: "Quotation Provided", value: "Quotation Provided" },
-  { label: "Dead Lead", value: "Dead Lead" },
-  { label: "Date Sold Out", value: "Date Sold Out" },
-  { label: "Duplicate", value: "Duplicate" },
-  { label: "Hot", value: "Hot" },
-];
-
-const ProfilePanel = ({ selectedContact }) => {
+const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { selectedConversation, setSelectedConversation } =
     useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [notes, setNotes] = useState([]);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingNote, setEditingNote] = useState(null);
 
-    if (name === "stage") {
-      setSelectedConversation((prev) => ({
-        ...prev,
-        stage: value,
-      }));
+  const handleAddLead = async ({ stage, activity }) => {
+    const isEdit = selectedConversation?.markAsLead;
+    const notes = [...(selectedConversation?.notes || [])];
+
+    if (activity) {
+      editingIndex !== null
+        ? (notes[editingIndex] = activity)
+        : notes.push(activity);
+    }
+
+    console.log(selectedConversation);
+
+    try {
+      const payload = {
+        phone: selectedConversation.phone,
+        name: selectedConversation.name,
+        ndid: selectedConversation.ndid,
+        notes,
+        stage,
+        conversationId: selectedConversation._id,
+        hid: selectedConversation?.hid || localStorage.getItem("hid"),
+      };
+      const response = isEdit
+        ? await updateLead(payload)
+        : await addWhatsAppLead(payload);
+      if (response.success && response.responseStatusCode === 200) {
+        setSelectedConversation({
+          ...selectedConversation,
+          ...(stage && { status: stage }),
+          ...(notes && { notes }),
+        });
+        fetchConversations(false);
+      }
+    } catch (error) {
+      console.log("Error", error);
     }
   };
 
-  console.log("ksljf", selectedConversation, selectedContact);
+  const handleRemoveNote = async (index) => {
+    const notes = [...selectedConversation.notes];
+    notes.splice(index, 1);
+
+    setSelectedConversation({
+      ...selectedConversation,
+      notes,
+    });
+
+    const payload = {
+      ndid: selectedConversation.ndid,
+      conversationId: selectedConversation._id,
+      hid: selectedConversation?.hid,
+      notes,
+    };
+    const response = await updateLead(payload);
+
+    if (response?.success && response?.responseStatusCode === 200) {
+      fetchConversations(false);
+    }
+
+    // const payload = {
+    //   phone: selectedConversation.phone,
+    //   name: selectedConversation.name,
+    //   ndid: selectedConversation.ndid,
+    //   notes,
+    //   conversationId: selectedConversation._id,
+    //   hid: selectedConversation?.hid,
+    // };
+    // updateLead(payload);
+  };
 
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
@@ -64,7 +115,9 @@ const ProfilePanel = ({ selectedContact }) => {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Status</span>
             <span className="text-gray-600 bg-green-200 px-4 rounded-2xl font-medium text-sm">
-              {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"}
+              {/* {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"} */}
+
+              {selectedContact?.status}
             </span>
           </div>
 
@@ -110,11 +163,7 @@ const ProfilePanel = ({ selectedContact }) => {
             <span className="text-gray-600">Opted In</span>
 
             <label class="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                class="sr-only peer"
-                checked={selectedContact?.status === "ACTIVE"}
-              />
+              <input type="checkbox" class="sr-only peer" checked={true} />
               <div
                 class="w-11 h-6 bg-gray-300 rounded-full peer 
                             peer-checked:bg-teal-500 
@@ -129,7 +178,16 @@ const ProfilePanel = ({ selectedContact }) => {
           </div>
 
           <div className="w-full">
-            <select
+            <CustomDropdown
+              options={Stages}
+              label={selectedContact.status || "Open"}
+              onChange={(value) => {
+                handleAddLead({
+                  stage: value,
+                });
+              }}
+            />
+            {/* <select
               name="stage"
               id=""
               className="border border-gray-50 outline-none py-1 rounded-md w-full"
@@ -139,7 +197,7 @@ const ProfilePanel = ({ selectedContact }) => {
               {header?.map((item) => {
                 return <option value={item.value}>{item.label}</option>;
               })}
-            </select>
+            </select> */}
           </div>
 
           <div className="">
@@ -159,7 +217,15 @@ const ProfilePanel = ({ selectedContact }) => {
 
             {/* Timeline */}
             <div className="max-h-72 overflow-auto pr-2">
-              <Timeline items={notes} />
+              <Timeline
+                items={selectedConversation?.notes || []}
+                onEdit={(item, index) => {
+                  setEditingIndex(index);
+                  setEditingNote(item);
+                  setIsAddActivityOpen(true);
+                }}
+                onDelete={(item, index) => handleRemoveNote(index)}
+              />
             </div>
           </div>
 
@@ -167,12 +233,16 @@ const ProfilePanel = ({ selectedContact }) => {
           <ActivityModal
             open={isAddActivityOpen}
             onClose={() => setIsAddActivityOpen(false)}
+            initialData={editingNote}
             onSave={(activity) => {
-              setNotes((prev) => [...prev, activity]);
-              setSelectedConversation((prev) => ({
-                ...prev,
-                notes: [...(prev.notes || []), activity],
-              }));
+              handleAddLead({
+                activity,
+              });
+              // setNotes((prev) => [...prev, activity]);
+              // setSelectedConversation((prev) => ({
+              //   ...prev,
+              //   notes: [...(prev.notes || []), activity],
+              // }));
             }}
           />
         </div>

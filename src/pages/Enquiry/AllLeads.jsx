@@ -50,6 +50,7 @@ const AllLeads = () => {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [stage, setStage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
@@ -89,6 +90,7 @@ const AllLeads = () => {
         page: page,
         search: debouncedSearch,
         limit: limit,
+        stage: stage,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -148,18 +150,6 @@ const AllLeads = () => {
     } finally {
       setIsExporting(false);
     }
-    // if (!allLeads.length) return;
-
-    // const flattenedData = flattenMetaLeads(allLeads);
-
-    // jsonToCsvExport({
-    //   data: flattenedData,
-    //   options: {
-    //     filename: "Meta_Leads",
-    //     delimiter: ",",
-    //     headers: Object.keys(flattenedData[0]), // auto headers
-    //   },
-    // });
   };
 
   const handleUpdateStage = async (leadId, hid, stage) => {
@@ -199,7 +189,7 @@ const AllLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -218,13 +208,16 @@ const AllLeads = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">All Leads</h2>
 
-        <button
-          disabled={isExporting}
-          onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
-        >
-          Export to Excel {isExporting && <Loader color="#fefefe" size={12} />}
-        </button>
+        {allLeads?.length > 0 && (
+          <button
+            disabled={isExporting}
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+          >
+            Export to Excel{" "}
+            {isExporting && <Loader color="#fefefe" size={12} />}
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
@@ -267,6 +260,13 @@ const AllLeads = () => {
                   <IoIosClose size={18} />
                 </span>
               )}
+            </div>
+
+            <div>
+              <CustomDropdown
+                options={Stages}
+                onChange={(value) => setStage(value)}
+              />
             </div>
           </div>
         </div>

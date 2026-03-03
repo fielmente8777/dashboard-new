@@ -26,6 +26,7 @@ const NotesCard = ({ lead, setLead }) => {
         leadId: lead._id,
         hid: lead?.hId,
         notes: lead.notes,
+        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
       };
 
       const response = await updateLead(payLoad);

@@ -60,6 +60,7 @@ const WebformLeads = () => {
   const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -121,45 +122,46 @@ const WebformLeads = () => {
       setIsLoadingLeads(false);
     }
   };
+  const extractRequiredHeaders = (leads) => {
+    const ignoredHeaders = ["_id", "ndid", "hId", "updatedAt", "updated_at"];
 
-  const flattenMetaLeads = (allMetaLeads) => {
-    return allMetaLeads.map((leadObj) => {
-      const flatLead = {};
-
-      // Extract field_data
-      leadObj.lead?.field_data?.forEach((field) => {
-        flatLead[field.name] = field.values?.[0] || "";
-      });
-
-      // Add top-level fields
-      flatLead.status = leadObj.status;
-      flatLead.stage = leadObj.stage;
-      flatLead.source = leadObj.source;
-      flatLead.createdAt = leadObj.createdAt;
-      flatLead.updatedAt = leadObj.updatedAt;
-
-      // Notes (optional)
-      flatLead.notes = leadObj.notes?.length
-        ? leadObj.notes.map((n) => n.text || "").join(" | ")
-        : "";
-
-      return flatLead;
-    });
+    const cleanedLeads = leads.map((lead) =>
+      Object.fromEntries(
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
+      ),
+    );
+    return cleanedLeads;
   };
 
-  const exportToExcel = () => {
-    if (!allLeads.length) return;
+  const exportToExcel = async () => {
+    setIsExporting(true);
+    const params = {
+      is_export: "excel",
+      created_from: CREATED_FROM,
+    };
+    try {
+      const response = await getLeads(params);
+      if (response?.success) {
+        const leads = response?.result?.docs?.leads || [];
 
-    const flattenedData = flattenMetaLeads(allLeads);
-
-    jsonToCsvExport({
-      data: flattenedData,
-      options: {
-        filename: "Meta_Leads",
-        delimiter: ",",
-        headers: Object.keys(flattenedData[0]), // auto headers
-      },
-    });
+        jsonToCsvExport({
+          data: extractRequiredHeaders(leads),
+          options: {
+            filename: "All Leads",
+            delimiter: ",",
+            headers: Object.keys(leads[0]), // auto headers
+          },
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error?.message || "Failed to update lead stage",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleUpdateStage = async (leadId, hid, stage) => {
@@ -277,12 +279,16 @@ const WebformLeads = () => {
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Webform Leads</h2>
 
-        <button
-          onClick={exportToExcel}
-          className="bg-green-600 text-white px-4 py-2 rounded"
-        >
-          Export to Excel
-        </button>
+        {allLeads?.length > 0 && (
+          <button
+            disabled={isExporting}
+            onClick={exportToExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+          >
+            Export to Excel{" "}
+            {isExporting && <Loader color="#fefefe" size={12} />}
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">

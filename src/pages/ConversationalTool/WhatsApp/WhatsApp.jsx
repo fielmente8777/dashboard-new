@@ -19,6 +19,7 @@ const WhatsApp = () => {
     setConversations,
     conversations,
     selectedConversation,
+    setSelectedConversation,
   } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
 
@@ -71,13 +72,14 @@ const WhatsApp = () => {
   }, []);
 
   // 🔹 Fetch contacts → build conversations
-  const getWhatsappConversations = async () => {
-    setLoading(true);
+  const getWhatsappConversations = async (loading = true) => {
+    setLoading(loading);
     try {
       const response = await getWhatsappConversation();
 
       if (response?.success && response?.responseStatusCode === 200) {
         setConversations(response?.result?.conversations);
+        setSelectedConversation(response?.result?.conversations[0]);
       }
     } catch (e) {
       console.error(e);
@@ -152,7 +154,10 @@ const WhatsApp = () => {
 
           {selectedConversation ? <ChatArea /> : <Fallback />}
           {selectedConversation && (
-            <ProfilePanel selectedContact={selectedConversation} />
+            <ProfilePanel
+              selectedContact={selectedConversation}
+              fetchConversations={getWhatsappConversations}
+            />
           )}
         </>
       ) : (
