@@ -2,11 +2,10 @@ import { NEW_BASE_URL } from "../../data/constant";
 
 export const sendWhatsAppMessage = async (payload) => {
   const isFormData = payload instanceof FormData;
-
-  // console.log(isFormData);
+  const hid = localStorage.getItem("hid");
 
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/messages/send`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/messages/send?hid=${hid}`,
     {
       method: "POST",
       headers: {

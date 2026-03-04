@@ -1,9 +1,9 @@
 import jsonToCsvExport from "json-to-csv-export";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { FaPlus } from "react-icons/fa";
+import { FaCalendarAlt, FaPlus } from "react-icons/fa";
 import { IoIosClose, IoMdSync } from "react-icons/io";
-import { IoSearch } from "react-icons/io5";
+import { IoCalendar, IoSearch } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
@@ -277,14 +277,24 @@ const MetaLeads = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
-        console.log(serverResponse);
+      const ndid = localStorage.getItem("ndid");
+      const hid = localStorage.getItem("hid");
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD &&
+        ndid === serverResponse?.data?.ndid &&
+        hid === serverResponse?.data?.hId
+      ) {
+        const { data } = serverResponse;
+        const newMetaLead = data;
+
+        setAllLeads((prev) => [newMetaLead, ...prev]);
       }
     });
 
     return () => wsRef.current?.close();
-  }, []);
+  }, [allLeads]);
 
+  console.log("allLeads", allLeads);
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -378,7 +388,7 @@ const MetaLeads = () => {
           </div>
 
           {/* RIGHT ACTION */}
-          {!isSync && (
+          {!!isSync && (
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
@@ -477,8 +487,7 @@ const MetaLeads = () => {
 
                       const userName = isName
                         ? isName
-                        : row?.other_details?.full_name ||
-                          row?.other_details["full name"];
+                        : row?.other_details?.full_name;
                       return <td>{userName}</td>;
                     }
                     return (
