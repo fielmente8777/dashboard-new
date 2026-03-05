@@ -388,7 +388,7 @@ const MetaLeads = () => {
           </div>
 
           {/* RIGHT ACTION */}
-          {!!isSync && (
+          {!isSync && (
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
