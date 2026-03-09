@@ -148,6 +148,7 @@ const WhatsAppBusiness = () => {
             phoneNumberId={accountDetails?.phoneNumber?.id}
             autoMessage={accountDetails?.autoMessage}
             templates={templates} // backend should send this
+            notification={accountDetails?.notification}
           />
           <WhatsAppMessageTemplate />
         </div>
@@ -431,33 +432,35 @@ const ChannelToggle = ({ label, value, onChange }) => (
   </div>
 );
 
-const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
+const AutoMessageCard = ({
+  autoMessage,
+  templates,
+  phoneNumberId,
+  notification,
+}) => {
   const textareaRef = useRef(null);
 
-  /* ----------------------------
-     Channel Toggles
-  -----------------------------*/
   const [channels, setChannels] = useState({
-    metaLeads: autoMessage?.metaLeads ?? false,
-    googleLeads: autoMessage?.googleLeads ?? false,
+    metaLead: autoMessage?.metaLead ?? false,
+    googleLead: autoMessage?.googleLead ?? false,
     whatsapp: autoMessage?.whatsapp ?? false,
+    whatsappNotification: notification?.enable ?? false,
   });
 
   const [type, setType] = useState(autoMessage?.type || "template");
+
   const [templateName, setTemplateName] = useState(
     autoMessage?.templateName || "",
   );
   const [message, setMessage] = useState(autoMessage?.message || "");
   const [loading, setLoading] = useState(false);
 
-  /* ----------------------------
-     Sync when backend changes
-  -----------------------------*/
   useEffect(() => {
     setChannels({
-      metaLeads: autoMessage?.metaLeads ?? false,
-      googleLeads: autoMessage?.googleLeads ?? false,
+      metaLead: autoMessage?.metaLead ?? false,
+      googleLead: autoMessage?.googleLead ?? false,
       whatsapp: autoMessage?.whatsapp ?? false,
+      whatsappNotification: notification?.enable ?? false,
     });
 
     setType(autoMessage?.type || "template");
@@ -465,9 +468,6 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
     setMessage(autoMessage?.message || "");
   }, [autoMessage]);
 
-  /* ----------------------------
-     Auto resize textarea
-  -----------------------------*/
   useEffect(() => {
     if (!textareaRef.current) return;
 
@@ -479,9 +479,6 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
     el.style.height = Math.min(el.scrollHeight, lineHeight * maxRows) + "px";
   }, [message]);
 
-  /* ----------------------------
-     Helpers
-  -----------------------------*/
   const isAnyChannelEnabled =
     channels.metaLeads || channels.googleLeads || channels.whatsapp;
 
@@ -504,9 +501,6 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
     });
   };
 
-  /* ----------------------------
-     Save Config
-  -----------------------------*/
   const handleSave = async () => {
     try {
       setLoading(true);
@@ -548,6 +542,7 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
         metaLeads: autoMessage?.metaLeads ?? false,
         googleLeads: autoMessage?.googleLeads ?? false,
         whatsapp: autoMessage?.whatsapp ?? false,
+        whatsappNotification: autoMessage?.whatsappNotification ?? false,
       }) ||
     type !== autoMessage?.type ||
     templateName !== autoMessage?.templateName ||
@@ -563,18 +558,27 @@ const AutoMessageCard = ({ autoMessage, templates, phoneNumberId }) => {
       {/* Toggles */}
       <div className="space-y-3">
         <ChannelToggle
-          label="Meta Leads"
-          value={channels.metaLeads}
+          label="WhatsApp Notification"
+          value={channels.whatsappNotification}
           onChange={() =>
-            setChannels((p) => ({ ...p, metaLeads: !p.metaLeads }))
+            setChannels((p) => ({
+              ...p,
+              whatsappNotification: !p.whatsappNotification,
+            }))
           }
         />
 
         <ChannelToggle
+          label="Meta Leads"
+          value={channels.metaLead}
+          onChange={() => setChannels((p) => ({ ...p, metaLead: !p.metaLead }))}
+        />
+
+        <ChannelToggle
           label="Google Leads"
-          value={channels.googleLeads}
+          value={channels.googleLead}
           onChange={() =>
-            setChannels((p) => ({ ...p, googleLeads: !p.googleLeads }))
+            setChannels((p) => ({ ...p, googleLead: !p.googleLead }))
           }
         />
 

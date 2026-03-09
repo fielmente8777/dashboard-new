@@ -48,6 +48,7 @@ const MetaLeads = () => {
   const [isSync, setIsSync] = useState(true);
   const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
+  const [allCampaigns, setAllCampaigns] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -103,8 +104,12 @@ const MetaLeads = () => {
       const response = await getLeads(params);
 
       if (response?.success) {
-        setAllLeads(response?.result?.docs?.leads || []);
+        const allLeads = response?.result?.docs?.leads || [];
+        const allCampaign = response?.result?.docs?.allCampaigns || [];
+        setAllLeads(allLeads);
         setTotal(response?.result?.pagination?.total || 0);
+
+        setAllCampaigns(allCampaign);
       }
     } catch (error) {
       console.log(error);
@@ -279,6 +284,7 @@ const MetaLeads = () => {
     wsRef.current.connect((serverResponse) => {
       const ndid = localStorage.getItem("ndid");
       const hid = localStorage.getItem("hid");
+      console.log(serverResponse);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD &&
         ndid === serverResponse?.data?.ndid &&
@@ -294,7 +300,6 @@ const MetaLeads = () => {
     return () => wsRef.current?.close();
   }, [allLeads]);
 
-  console.log("allLeads", allLeads);
   return (
     <div className="bg-white p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -385,10 +390,27 @@ const MetaLeads = () => {
                 </span>
               )}
             </div>
+
+            {allCampaigns?.length > 0 && (
+              <div>
+                <CustomDropdown
+                  label="All Campaigns"
+                  options={[
+                    { value: "", label: "All" },
+                    ...(allCampaigns?.map((c) => ({
+                      value: c,
+                      label: c,
+                    })) || []),
+                  ]}
+                  width="w-60"
+                  onChange={(value) => setSearchTerm(value)}
+                />
+              </div>
+            )}
           </div>
 
           {/* RIGHT ACTION */}
-          {!isSync && (
+          {/* {!isSync && (
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
@@ -399,7 +421,7 @@ const MetaLeads = () => {
                 <IoMdSync />
               </span>
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -441,7 +463,7 @@ const MetaLeads = () => {
 
                     if (h.key === "Created_at") {
                       const isLeadCreatedTime = row?.meta?.created_time;
-                      console.log(isLeadCreatedTime);
+
                       return (
                         <td key={h.key} className="px-3 py-2">
                           {formatDateTime(

@@ -6,8 +6,10 @@ import { Stages } from "../../../data/constant";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+import { useToast } from "../../../context/ToastContext";
 
 const CustomerInfoCard = ({ lead }) => {
+  const { showToast } = useToast();
   if (!lead) return null;
 
   const handleStageChange = async (value) => {
@@ -18,12 +20,19 @@ const CustomerInfoCard = ({ lead }) => {
         hid: lead?.hId,
       };
 
-      await updateLead(payload);
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error?.message || "Failed to update lead stage",
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
       });
     }
   };

@@ -6,8 +6,10 @@ import { FaPlus } from "react-icons/fa";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { GrNotes } from "react-icons/gr";
+import { useToast } from "../../../context/ToastContext";
 
 const NotesCard = ({ lead, setLead }) => {
+  const { showToast } = useToast();
   const [isEdit, setIsEdit] = useState(false);
   const [isEditingLoading, setIsEditingLoading] = useState(false);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
@@ -31,16 +33,23 @@ const NotesCard = ({ lead, setLead }) => {
 
       const response = await updateLead(payLoad);
 
-      if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead notes updated successfully",
+      if (
+        response?.success &&
+        (response?.responseStatusCode === 200 ||
+          response?.responseStatusCode === 201)
+      ) {
+        showToast({
+          message: response?.responseMessage || "Lead updated successfully",
+          type: "success",
         });
       }
       setIsEdit(false);
     } catch (error) {
       console.error("Error updating note:", error);
+      showToast({
+        message: error?.message || "Failed to update lead",
+        type: "error",
+      });
     } finally {
       setIsEditingLoading(false);
     }

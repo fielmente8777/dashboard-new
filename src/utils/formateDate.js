@@ -3,7 +3,6 @@ export const formatDateTime = (inputDate) => {
 
   const month = date.toLocaleString("en-US", {
     month: "short",
-    timeZone: "UTC",
   });
 
   const day = date.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
@@ -12,7 +11,6 @@ export const formatDateTime = (inputDate) => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
-    timeZone: "UTC",
   });
 
   const year = date.getFullYear();

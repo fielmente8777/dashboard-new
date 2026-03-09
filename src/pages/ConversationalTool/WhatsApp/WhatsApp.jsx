@@ -79,7 +79,6 @@ const WhatsApp = () => {
 
       if (response?.success && response?.responseStatusCode === 200) {
         setConversations(response?.result?.conversations);
-        setSelectedConversation(response?.result?.conversations[0]);
       }
     } catch (e) {
       console.error(e);

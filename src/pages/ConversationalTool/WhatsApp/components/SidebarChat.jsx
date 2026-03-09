@@ -129,12 +129,12 @@ const SidebarChat = () => {
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
+      setSelectedConversation(null);
+      // setSelectedConversation(actConversations[0]);
     }
 
     fetchTemplates();
   }, []);
-
-  console.log("Conversation", conversations);
 
   return (
     <div className="w-80 border-b border-l border-r border-gray-200 flex flex-col bg-white">

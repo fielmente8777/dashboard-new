@@ -10,7 +10,7 @@ const ProfilePopup = ({ isProfileOpen, setIsProfileOpen, Color }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
-  const { setAuth } = useContext(DataContext);
+  const { setAuth, selectedConversation } = useContext(DataContext);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -18,6 +18,7 @@ const ProfilePopup = ({ isProfileOpen, setIsProfileOpen, Color }) => {
     setAuth(false);
     dispatch(setHid(null));
     navigate("/login");
+    selectedConversation(null);
   };
 
   if (!hotel?.Profile) return null;

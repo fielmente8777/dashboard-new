@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { BsChevronUp, BsChevronDown } from "react-icons/bs";
 
 import ActivityModal from "./ActivityModal";
@@ -13,8 +13,10 @@ import { Stages } from "../../../../data/constant";
 import { addWhatsAppLead } from "../../../../services/api/whatsApp";
 import Swal from "sweetalert2";
 import { updateLead } from "../../../../services/api/leads.api";
+import { useToast } from "../../../../context/ToastContext";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
+  const { showToast } = useToast();
   const { selectedConversation, setSelectedConversation } =
     useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
@@ -31,8 +33,6 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
         ? (notes[editingIndex] = activity)
         : notes.push(activity);
     }
-
-    console.log(selectedConversation);
 
     try {
       const payload = {
@@ -53,6 +53,13 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
           ...(stage && { status: stage }),
           ...(notes && { notes }),
         });
+
+        showToast({
+          message: response.responseMessage || "Lead added successfully",
+          type: "success",
+          position: "bottom-right",
+        });
+
         fetchConversations(false);
       }
     } catch (error) {
