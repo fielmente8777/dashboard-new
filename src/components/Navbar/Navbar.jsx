@@ -10,6 +10,7 @@ import DataContext from "../../context/DataContext";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
+import Logo from "../../assets/companylogo.b.png";
 import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
 import { toggleSideBar } from "../../redux/slice/SidebarToggle";
@@ -110,10 +111,10 @@ const Navbar = () => {
   };
   return (
     <div className="left-0 top-0">
-      <div className="py-2 z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
+      <div className="py-2 z-10 bg-blue-100  sm:bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <div
           onClick={() => dispatch(toggleSideBar())}
-          className={`size-8 bg-blue-100 rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
+          className={`size-8 bg-blue-100  rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
         >
           <FaAlignRight color="#000" />
         </div>
@@ -123,6 +124,15 @@ const Navbar = () => {
             hotel?.Profile?.hotels[localStorage?.getItem("hid")]?.local || ""
           }
         />
+        <div className="sm:hidden">
+                    <div className="w-28 h-10 -ml-2">
+                      <img
+                        src={Logo}
+                        alt="logo"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  </div>
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
         <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
@@ -201,7 +211,7 @@ const Navbar = () => {
         <div className="flex items-center gap-2.5 sm:hidden">
           <div
             onClick={() => setOpen(true)}
-            className="bg-[#0088ff] text-white sm:hidden p-1 rounded-md"
+            className="bg-[#2e3b61] text-white sm:hidden p-1 rounded-md"
           >
             <RxDashboard size={22} />{" "}
           </div>

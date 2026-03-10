@@ -22,8 +22,11 @@ import {
 } from "@react-oauth/google";
 import Logo from "../../assets/companylogo.b.png";
 import { verify } from "../../utils/verify";
+import { useToast } from "../../context/ToastContext";
 
 const Login = () => {
+
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -50,65 +53,32 @@ const Login = () => {
     let timerInterval;
     if (response.success === false) {
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged Failed",
-        html: "Please enter correct username and password <b></b>",
-        timer: 700,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      });
+      showToast(
+        {
+          message: error || "Login failed. Please enter correct username and password",
+          type: "error",
+        }
+      )
     } else if (response.data.Status) {
       const token = response?.data?.Token;
       handleLocalStorage("token", token || "");
       setCookie("token", token || "");
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged in Successfully",
-        html: "We will redirect you to the dashboard <b></b>",
-        timer: 1000,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.timer) {
-          navigate("/");
+      showToast(
+        {
+          message: response.data.Message || "Logged in Successfully",
+          type: "success",
         }
-      });
+      )
+      navigate("/");
     } else {
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged Failed",
-        html: "Please enter correct username and password <b></b>",
-        timer: 700,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      });
+      showToast(
+        {
+          message: error || "Login failed. Please enter correct username and password",
+          type: "error",
+        }
+      )
     }
   };
 
@@ -122,6 +92,7 @@ const Login = () => {
       });
 
       if (response?.data?.Status === true) {
+        
         Swal.fire({
           title: "Password reset successfully",
           text: "Please check your email to reset your password.",
@@ -189,14 +160,18 @@ const Login = () => {
   };
 
   const handleFailure = (error) => {
+    showToast({
+          message: error || "Login failed. Please try again",
+          type: "error",
+        });
     console.error("Login Failed:", error);
     setError("Login failed. Please try again.");
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-white px-6">
-      {/* <div className="max-w-[1500px] w-full grid lg:grid-cols-2 items-center gap-4">
-        <div className="aspect-[4/4]">
+    <div className="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-white px-6">
+      <div className="max-w-[1500px] w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-4">
+        <div className="md:aspect-[4/4] max-sm:hidden">
           <img
             src="/LoginImage.png"
             alt=""
@@ -206,7 +181,7 @@ const Login = () => {
 
         <div className="border p-6 rounded-2xl max-w-xl w-full mx-auto">
           <div>
-            <div className="max-w-60 mx-auto aspect-[3/1]">
+            <div className="max-w-30  mx-auto aspect-[3/1]">
               <img
                 src="/EAZOTEL LOGO.png"
                 alt=""
@@ -215,7 +190,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-2xl font-bold text-text-black">Sign In</h2>
+              <h2 className="text-xl font-bold text-text-black">Sign In</h2>
               <p className="text-text-gray">
                 Provide Your Details to Access Your Account.
               </p>
@@ -311,13 +286,13 @@ const Login = () => {
                   }
                 // clientSecret={"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"}
                 >
-                  <div className="flex justify-center w-full rounded-md">
+                  <div className="flex justify-center  w-full rounded-md">
                     <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleFailure}
                       disabled={loading}
                       text="continue_with"
-                      width="700px"
+                      width=""
                       type="standard"
                       theme="filled_blue"
                       size="large"
@@ -331,7 +306,7 @@ const Login = () => {
               </div>
 
               <div>
-                <p className="text-md font-medium text-text-gray -mt-4">
+                <p className="text-sm max-sm:text-center font-medium text-text-gray -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
                     to="/signin"
@@ -344,13 +319,13 @@ const Login = () => {
             </div>
           </form>
         </div>
-      </div> */}
-      <div className="bg-white w-full shadow-md px-5 md:px-20 py-2">
+      </div>
+      {/* <div className="bg-white w-full shadow-md px-5 md:px-20 py-2">
         <div className="w-28 h-10 -ml-2">
           <img src={Logo} alt="logo" className="h-full w-full object-contain" />
         </div>
-      </div>
-      <div className="flex flex-1 flex-col w-full h-full">
+      </div> */}
+      {/* <div className="flex flex-1 flex-col w-full h-full">
         <form
           onSubmit={handleSubmit}
           className="md:mt-14 w-full self-center md:max-w-[400px]"
@@ -359,13 +334,6 @@ const Login = () => {
 
           <div className="space-y-6 mt-6">
             <div className="flex flex-col gap-2">
-              {/* <label
-                  htmlFor=""
-                  className="font-medium text-text-black text-sm"
-                >
-                  Email
-                </label> */}
-
               <input
                 name="email"
                 type="email"
@@ -377,12 +345,6 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col gap-2">
-              {/* <label
-                  htmlFor=""
-                  className="font-medium text-text-black text-sm"
-                >
-                  Password
-                </label> */}
 
               <div className="w-full relative">
                 <input
@@ -409,7 +371,7 @@ const Login = () => {
                     />
                   )}
                 </div>
-              </div>
+              </div> */}
 
               {/* <div className="flex justify-between items-start">
                   <div className="flex items-center gap-1">
@@ -429,16 +391,16 @@ const Login = () => {
                     Forgot Password
                   </p>
                 </div> */}
-            </div>
+            {/* </div> */}
 
-            <div className="flex">
+            {/* <div className="flex">
               <button className="bg-[#159aff] rounded-md text-white py-3 text-sm shadow-md w-full flex justify-center gap-3 items-center">
                 Sign In <SignInIcon />
                 {spinnerLoader && <Loader size={18} color="white" />}
               </button>
-            </div>
+            </div> */}
 
-            <div className="">
+            {/* <div className="">
               <GoogleOAuthProvider
                 clientId={
                   "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
@@ -461,7 +423,7 @@ const Login = () => {
                   />
                 </div>
               </GoogleOAuthProvider>
-            </div>
+            </div> */}
 
             {/* <div>
                 <p className="text-md font-medium text-text-gray -mt-4">
@@ -474,7 +436,7 @@ const Login = () => {
                   </Link>
                 </p>
               </div> */}
-          </div>
+          {/* </div>
         </form>
       </div>
       <div>
@@ -483,7 +445,7 @@ const Login = () => {
           src="https://static.zohocdn.com/social/images/client-page-bottom-illustration.7f6ab18523b6339974100afa454a7b46.png"
           alt="image"
         />
-      </div>
+      </div> */}
     </div>
   );
 };

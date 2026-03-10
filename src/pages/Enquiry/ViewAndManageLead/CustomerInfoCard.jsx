@@ -38,7 +38,7 @@ const CustomerInfoCard = ({ lead }) => {
   };
 
   return (
-    <div className="flex flex-col bg-white rounded-lg shadow-sm p-5 h-auto">
+    <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">
       <div className="flex-1">
         <h3 className="font-semibold text-gray-800 mb-4">
           Customer Information

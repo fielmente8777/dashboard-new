@@ -36,7 +36,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
   const selected = activityOptions.find((a) => a.value === activitySource);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-5">
       <div className="bg-white w-[420px] rounded-xl shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center px-5 py-4 border-b">

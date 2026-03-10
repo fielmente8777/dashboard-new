@@ -373,12 +373,12 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   // console.log(currentLocation);
   return (
     <div
-      className="p-3 border-r border-r-gray-200!  flex flex-col h-screen overflow-hidden shadow-md bg-slate-50 md:relative fixed left-0 z-99999"
+      className="p-3 md:border-r w-full border-r-gray-200!  flex flex-col h-screen overflow-hidden shadow-md bg-slate-50 md:relative fixed left-0 z-99999"
       style={{
-        left: isMobile ? (isOpen ? "0px" : "100%") : null,
+        left: isMobile ? (isOpen ? "0px" : "0%") : null,
       }}
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 ">
         {isOpen && (
           <div>
             <div className="w-28 h-10 -ml-2">

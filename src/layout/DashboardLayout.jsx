@@ -32,12 +32,12 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <div
-          // style={{
-          //   width: isOpen ? ` ${sideBarWidth}px` : "70px",
-          // }}
-          className={`md:hidden block ${
+          style={{
+            width: isOpen ? `100%` : "0px",
+          }}
+          className={` ${isOpen?"block md:hidden":"hidden"} ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden`}
+          } overflow-hidden bg-white sm:overflow-hidden w-[100%]`}
         >
           {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
