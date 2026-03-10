@@ -9,6 +9,8 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
   const bottomRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
 
+  console.log(messageList);
+
   useEffect(() => {
     if (expanded) {
       setTimeout(() => {

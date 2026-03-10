@@ -10,6 +10,7 @@ import store from "./redux/Store.js";
 import Whatsapp from "./components/Contacts/WhtasApp.jsx";
 import ProfileDropDown from "./components/Popup/ProfileDropDown.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
+import { ConfirmProvider } from "./context/ConfirmContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -18,8 +19,10 @@ createRoot(document.getElementById("root")).render(
         <BrowserRouter>
           <GlobalDataProvider />
           <ToastProvider>
-            {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
-            <App />
+            <ConfirmProvider>
+              {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
+              <App />
+            </ConfirmProvider>
           </ToastProvider>
           <ProfileDropDown />
         </BrowserRouter>

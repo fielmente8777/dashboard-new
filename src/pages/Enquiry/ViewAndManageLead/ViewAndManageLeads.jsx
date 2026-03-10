@@ -35,6 +35,7 @@ const ViewAndManageLeads = () => {
     setMessageLoading(true);
     try {
       const response = await getWhatsappConversationMessages(conversationId);
+
       if (response?.success && response?.responseStatusCode === 200) {
         setWhatsAppConversation(response?.result?.messages);
       }
@@ -129,7 +130,7 @@ const ViewAndManageLeads = () => {
 
             {whatsAppConversation && (
               <WhatsAppConverstionCard
-                conversation={whatsAppConversation}
+                messageList={whatsAppConversation}
                 messageLoading={messageLoading}
               />
             )}

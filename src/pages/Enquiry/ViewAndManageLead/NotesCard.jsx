@@ -7,9 +7,12 @@ import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { GrNotes } from "react-icons/gr";
 import { useToast } from "../../../context/ToastContext";
+import { useConfirm } from "../../../context/ConfirmContext";
 
 const NotesCard = ({ lead, setLead }) => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [isEdit, setIsEdit] = useState(false);
   const [isEditingLoading, setIsEditingLoading] = useState(false);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
@@ -21,17 +24,9 @@ const NotesCard = ({ lead, setLead }) => {
     setEditingNote(null);
     setIsAddActivityOpen(true);
   };
-  const handleUpdateNote = async () => {
+  const handleUpdateNote = async (payload) => {
     try {
-      setIsEditingLoading(true);
-      const payLoad = {
-        leadId: lead._id,
-        hid: lead?.hId,
-        notes: lead.notes,
-        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
-      };
-
-      const response = await updateLead(payLoad);
+      const response = await updateLead(payload);
 
       if (
         response?.success &&
@@ -50,28 +45,61 @@ const NotesCard = ({ lead, setLead }) => {
         message: error?.message || "Failed to update lead",
         type: "error",
       });
-    } finally {
-      setIsEditingLoading(false);
     }
   };
   const handleNotesSave = (activity) => {
-    setIsEdit(true);
     const notes = [...(lead?.notes || [])];
-    editingIndex !== null
-      ? (notes[editingIndex] = activity)
-      : notes.push(activity);
 
-    setLead({ ...lead, notes });
-    setIsAddActivityOpen(false);
-    setEditingIndex(null);
-    setEditingNote(null);
+    if (activity) {
+      editingIndex !== null
+        ? (notes[editingIndex] = activity)
+        : notes.push(activity);
+    }
+
+    const payload = {
+      leadId: lead._id,
+      hid: lead?.hId,
+      notes,
+      ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+    };
+
+    setLead((prev) => ({
+      ...prev,
+      notes,
+    }));
+
+    handleUpdateNote(payload);
+
+    // setIsEdit(true);
+    // const notes = [...(lead?.notes || [])];
+    // editingIndex !== null
+    //   ? (notes[editingIndex] = activity)
+    //   : notes.push(activity);
+
+    // setLead({ ...lead, notes });
+    // setIsAddActivityOpen(false);
+    // setEditingIndex(null);
+    // setEditingNote(null);
   };
 
-  const handleRemoveNote = (index) => {
+  const handleRemoveNote = async (index) => {
+    const isConfirmed = await confirm(
+      "Are you sure you want to delete this lead?",
+    );
+
+    if (!isConfirmed) return;
+
     setIsEdit(true);
     const notes = [...lead.notes];
     notes.splice(index, 1);
+    const payload = {
+      leadId: lead._id,
+      hid: lead?.hId,
+      notes,
+      ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+    };
     setLead({ ...lead, notes });
+    handleUpdateNote(payload);
   };
 
   return (

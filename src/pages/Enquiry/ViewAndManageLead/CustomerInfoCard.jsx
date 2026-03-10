@@ -16,8 +16,9 @@ const CustomerInfoCard = ({ lead }) => {
     try {
       const payload = {
         leadId: lead._id,
-        status: value,
+        stage: value,
         hid: lead?.hId,
+        conversationId: lead?.conversationId,
       };
 
       const response = await updateLead(payload);

@@ -14,9 +14,11 @@ import { addWhatsAppLead } from "../../../../services/api/whatsApp";
 import Swal from "sweetalert2";
 import { updateLead } from "../../../../services/api/leads.api";
 import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { selectedConversation, setSelectedConversation } =
     useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
@@ -68,35 +70,45 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   };
 
   const handleRemoveNote = async (index) => {
-    const notes = [...selectedConversation.notes];
-    notes.splice(index, 1);
+    try {
+      const isConfirmed = await confirm(
+        "Are you sure you want to delete this lead?",
+      );
 
-    setSelectedConversation({
-      ...selectedConversation,
-      notes,
-    });
+      if (!isConfirmed) return;
 
-    const payload = {
-      ndid: selectedConversation.ndid,
-      conversationId: selectedConversation._id,
-      hid: selectedConversation?.hid,
-      notes,
-    };
-    const response = await updateLead(payload);
+      const notes = [...selectedConversation.notes];
+      notes.splice(index, 1);
 
-    if (response?.success && response?.responseStatusCode === 200) {
-      fetchConversations(false);
+      const payload = {
+        ndid: selectedConversation.ndid,
+        conversationId: selectedConversation._id,
+        hid: selectedConversation?.hid,
+        notes,
+      };
+
+      setSelectedConversation({
+        ...selectedConversation,
+        notes,
+      });
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message: response.responseMessage || "Lead added successfully",
+          type: "success",
+          position: "bottom-right",
+        });
+        fetchConversations(false);
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead",
+        type: "error",
+        position: "bottom-right",
+      });
     }
-
-    // const payload = {
-    //   phone: selectedConversation.phone,
-    //   name: selectedConversation.name,
-    //   ndid: selectedConversation.ndid,
-    //   notes,
-    //   conversationId: selectedConversation._id,
-    //   hid: selectedConversation?.hid,
-    // };
-    // updateLead(payload);
   };
 
   return (
