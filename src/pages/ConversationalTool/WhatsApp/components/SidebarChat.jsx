@@ -224,7 +224,7 @@ const SidebarChat = () => {
                       {conv?.adAttribution?.sourceType || "Ad"}
                     </span>
 
-                    {conv?.adAttribution?.sourceUrl &&
+                    {conv?.adAttribution?.sourceUrl ?
                       (conv?.adAttribution?.sourceUrl.match(
                         /^https:\/\/www.instagram.com/,
                       ) ? (
@@ -238,8 +238,12 @@ const SidebarChat = () => {
                         ) ? (
                         <WhatsappIcon />
                       ) : (
+                        ""
+                      )):
                         <GoogleAdsIcon />
-                      ))}
+                      }
+
+
 
                     {/* {conv?.adAttribution?.sourceUrl &&
                     conv?.adAttribution?.sourceUrl.startsWith(
