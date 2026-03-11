@@ -15,7 +15,7 @@ const OtherDetailsCard = ({ otherDetails }) => {
   }
 
   return (
-    <div className="bg-white rounded-md border shadow-xs border-primary/10 p-4">
+    <div className="bg-white rounded-md md:border md:shadow-xs border-primary/10 p-4">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         Other Details
       </h3>

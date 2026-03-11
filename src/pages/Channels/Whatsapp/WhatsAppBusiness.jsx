@@ -27,6 +27,7 @@ import {
   updateAutoMessageConfig,
 } from "../../../services/api/whatsApp";
 import WhatsAppMessageTemplate from "./Templates";
+import TemplatePreview from "./TemplatePreview";
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
@@ -133,7 +134,7 @@ const WhatsAppBusiness = () => {
   return (
     <React.Fragment>
       {accountDetails && (
-        <div className="w-full p-4 gap-4 grid grid-cols-2">
+        <div className="w-full p-4 gap-4 grid md:grid-cols-2">
           <div className="flex gap-4 flex-col">
             {/* <BusinessInfoCard business={accountDetails?.business} /> */}
 
@@ -493,6 +494,8 @@ const AutoMessageCard = ({
   const body = getComponent("BODY");
   const footer = getComponent("FOOTER");
 
+  // console.log(body);
+
   const formatPreviewText = (text) => {
     if (!text) return "";
     return text.replace(/{{\d+}}/g, (match) => {
@@ -659,7 +662,10 @@ const AutoMessageCard = ({
                 WhatsApp Preview
               </p>
 
-              <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
+              <TemplatePreview
+                components={selectedTemplateObj.components || []}
+              />
+              {/* <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
                 {header && (
                   <p className="font-medium text-sm mb-1">
                     {formatPreviewText(header.text)}
@@ -681,7 +687,7 @@ const AutoMessageCard = ({
                 <div className="text-[10px] text-gray-400 text-right mt-1">
                   Preview
                 </div>
-              </div>
+              </div> */}
             </div>
           )}
         </>

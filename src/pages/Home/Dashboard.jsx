@@ -83,14 +83,10 @@ const Dashboard = () => {
   if (!data) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen space-y-6">
+    <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
       
       {/* KPI CARDS */}
-      <div className="grid grid-cols-4 gap-6">
-        {/* <Card title="Total Leads" value={total} />
-        <Card title="Converted Leads" value={converted} />
-        <Card title="Conversion Rate" value={`${conversionRate}%`} />
-        <Card title="WhatsApp Conversations" value={whatsapp} /> */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               <DashboardCard
                 amount={total}
                 label={"Total Leads"}
@@ -118,10 +114,10 @@ const Dashboard = () => {
       </div>
 
       {/* CHARTS SECTION */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Attractive Source Distribution */}
-        <div className="bg-white rounded p-5">
+        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">
             Source Distribution
           </h2>
@@ -130,7 +126,7 @@ const Dashboard = () => {
             <BarChart
               data={cleanedSource}
               layout="vertical"
-              // margin={{ left: 30 }}
+              margin={{ right: 30 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
@@ -138,6 +134,9 @@ const Dashboard = () => {
                 type="category"
                 dataKey="name"
                 width={100}
+                style={{fontSize:"15px"}}
+                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+
               />
               <Tooltip />
               <Bar
@@ -157,16 +156,17 @@ const Dashboard = () => {
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white rounded p-5">
+        <div className="bg-white rounded md:rounded-lg p-3  md:p-5">
           <h2 className="text-lg font-semibold mb-4">
             Stages Breakdown
           </h2>
 
-          <ResponsiveContainer width="100%" >
-            <BarChart data={cleanedStatus}>
+          <ResponsiveContainer width="100%" height={320} >
+            <BarChart data={cleanedStatus} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis dataKey="name" 
+              style={{fontSize:"15px"}} />
+              <YAxis width={50}/>
               <Tooltip />
               <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
                 <LabelList dataKey="count" position="top" />
@@ -184,7 +184,7 @@ const Dashboard = () => {
             </div>
            </div>
       {/* FUNNEL */}
-      <div className="bg-white rounded- p-5">
+      <div className="bg-white rounded md:rounded-lg p-5">
         <h2 className="text-lg font-semibold mb-4">
           Lead Funnel
         </h2>

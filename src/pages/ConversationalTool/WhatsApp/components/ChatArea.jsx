@@ -22,12 +22,19 @@ import Loader from "../../../../components/Loader";
 import Swal from "sweetalert2";
 import { renderMessageWithLinks } from "../../../../utils/urlParser";
 import { Link } from "react-router-dom";
+import { Arrow } from "../../../../icons/icon";
+import { IoArrowBack } from "react-icons/io5";
+import AudioMessage from "./AudioMessage";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
-  const { selectedConversation, conversations, setSelectedConversation } =
-    useContext(DataContext);
+  const {
+    selectedConversation,
+    conversations,
+    setSelectedConversation,
+    setMobileActive,
+  } = useContext(DataContext);
 
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
@@ -281,16 +288,22 @@ const ChatArea = () => {
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center px-6 h-16 shadow-sm">
-        <div className="bg-white flex items-center">
-          <div className="w-12 h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-lg mr-4">
+      <div className="flex z-5 max-md:bg-white justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
+        <div className=" flex items-center">
+          <div className="mr-2 md:hidden ">
+            <IoArrowBack size={22} onClick={() => setMobileActive("sidebar")} />
+          </div>
+          <div
+            onClick={() => setMobileActive("profile")}
+            className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
+          >
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
-          <div>
-            <h3 className="text-lg font-semibold ">
+          <div onClick={() => setMobileActive("profile")}>
+            <h3 className="text-md md:text-lg font-semibold ">
               {selectedConversation?.name}
             </h3>
-            <p className="text-sm ">+{selectedConversation.phone}</p>
+            <p className="text-xs md:text-sm ">+{selectedConversation.phone}</p>
           </div>
         </div>
 
@@ -336,7 +349,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6 overflow-y-auto scrollbar-hidden "
+        className="flex-1 p-6  max-md:mt-16 max-md:mb-[120px] overflow-y-auto scrollbar-hidden "
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -431,6 +444,26 @@ const ChatArea = () => {
                         />
                       )}
 
+                      {/* AUDIO */}
+                      {message.messageType === "audio" && (
+                        <div className="flex items-center gap-1">
+                          <AudioMessage
+                            src={
+                              message?.media?.url ||
+                              `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                            }
+                          />
+                          {/* <audio
+                            src={
+                              message?.media?.url ||
+                              ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                            }
+                            controls
+                            className="mt-2"
+                          /> */}
+                        </div>
+                      )}
+
                       <div className="flex justify-end px-2 mt-1">
                         <div className="flex items-center gap-1.5">
                           <div className="text-[10px] text-right mt-1 opacity-70">
@@ -473,7 +506,7 @@ const ChatArea = () => {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-white border-t flex flex-col px-6 py-5"
+        className="bg-white border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
           <div className=" mb-2 grid grid-cols-2 lg:grid-cols-4 max-h-50  gap-2 overflow-auto scrollbar-hidden">

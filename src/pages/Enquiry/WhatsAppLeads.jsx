@@ -207,7 +207,7 @@ const WhatsAppLeads = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-white p-6 space-y-6">
+    <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Whatsapp Leads</h2>
 
@@ -223,7 +223,7 @@ const WhatsAppLeads = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
+      <div className="bg-white rounded-xl md:shadow-sm border border-gray-200 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* LEFT SIDE FILTERS */}
           <div className="flex flex-wrap items-center gap-3">

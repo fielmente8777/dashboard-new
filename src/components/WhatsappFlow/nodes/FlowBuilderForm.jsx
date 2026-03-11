@@ -105,7 +105,20 @@ export default function FlowBuilderForm({ node, nodes, updateNode }) {
     try {
       const data = buildFlowJSON();
 
-      console.log(data);
+      const response = await fetch(
+        "http://localhost:8000/api/v1/whatsapp-flow/submit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ data }),
+        },
+      );
+
+      const result = await response.json();
+
+      console.log(result);
     } catch (error) {
       console.error(error);
       alert("Something went wrong");

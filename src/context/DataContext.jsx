@@ -45,6 +45,7 @@ export const DataProvider = ({ children }) => {
   const [limit, setLimit] = useState(10);
   const [isLoadingIntegrationStatus, setIsLoadingIntegrationStatus] =
     useState(false);
+  const [mobileActive,setMobileActive]=useState("sidebar")
 
   // const host = "http://localhost:8000"
   const host = "https://hmsbackend-7pyp.onrender.com";
@@ -344,6 +345,7 @@ export const DataProvider = ({ children }) => {
         isOpenProfilePopup,
         setIsOpenProfilePopup,
         pageId,
+        mobileActive,setMobileActive
       }}
     >
       {children}

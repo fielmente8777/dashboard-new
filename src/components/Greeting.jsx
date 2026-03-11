@@ -14,7 +14,7 @@ const Greeting = ({ name }) => {
     return greeting;
   };
   return (
-    <div>
+    <div className="sm:block hidden">
       <h1 className="md:text-xl font-bold text-white">
         {getGreet()},{" "}
         {name && <span className="text-[#fd5c01] capitalize">{name}</span>}

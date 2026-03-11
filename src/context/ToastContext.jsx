@@ -9,7 +9,7 @@ export const ToastProvider = ({ children }) => {
     message,
     type = "success",
     duration = 3000,
-    position = "top-right",
+    position = "top-bottom",
   }) => {
     const id = Date.now();
 

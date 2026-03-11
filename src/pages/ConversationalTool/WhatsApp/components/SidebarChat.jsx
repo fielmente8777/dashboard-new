@@ -2,18 +2,17 @@ import { useContext, useEffect, useState } from "react";
 import DataContext from "../../../../context/DataContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import {
-  getWhatsAppMessageTemplates,
-  markMessageAsRead,
-} from "../../../../services/api/whatsApp";
-import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
-import NewContactModal from "./NewContactModal";
-import {
   FacebookIcon,
   GoogleAdsIcon,
   InstaICon,
   WhatsappIcon,
 } from "../../../../icons/icon";
-import { CgGoogle } from "react-icons/cg";
+import {
+  getWhatsAppMessageTemplates,
+  markMessageAsRead,
+} from "../../../../services/api/whatsApp";
+import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
+import NewContactModal from "./NewContactModal";
 
 const tabs = ["Active", "Inactive", "New Contact"];
 
@@ -42,6 +41,7 @@ const SidebarChat = () => {
     setConversations,
     selectedConversation,
     setSelectedConversation,
+    setMobileActive,
   } = useContext(DataContext);
 
   const [filteredConversations, setFilteredConversations] = useState([]);
@@ -137,7 +137,7 @@ const SidebarChat = () => {
   }, []);
 
   return (
-    <div className="w-80 border-b border-l border-r border-gray-200 flex flex-col bg-white">
+    <div className="w-full md:w-90 border-b md:border-l md:border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
@@ -148,12 +148,12 @@ const SidebarChat = () => {
         />
       </div>
 
-      <div className="flex items-center gap-2 border-b border-gray-200 p-2">
+      <div className="flex  justify-center items-center gap-2 border-b border-gray-200">
         {tabs?.map((tab) => (
           <button
             onClick={() => handleTabChnage(tab)}
             key={tab}
-            className={`px-4 py-2 rounded-xs ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer `}
+            className={`px-4 py-4 w-full ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer `}
           >
             {tab}
           </button>
@@ -165,7 +165,10 @@ const SidebarChat = () => {
           filteredConversations?.map((conv) => (
             <div
               key={conv._id}
-              onClick={() => handleSelectConversation(conv)}
+              onClick={() => {
+                handleSelectConversation(conv);
+                setMobileActive("chatarea");
+              }}
               // onClick={() => setSelectedConversationId(conv._id)}
               className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
@@ -222,20 +225,43 @@ const SidebarChat = () => {
                     </span>
 
                     {conv?.adAttribution?.sourceUrl &&
-                    conv?.adAttribution?.sourceUrl.includes("instagram") ? (
+                      (conv?.adAttribution?.sourceUrl.match(
+                        /^https:\/\/www.instagram.com/,
+                      ) ? (
+                        <InstaICon />
+                      ) : conv?.adAttribution?.sourceUrl.match(
+                          /^https:\/\/www.facebook.com/,
+                        ) ? (
+                        <FacebookIcon />
+                      ) : conv?.adAttribution?.sourceUrl.match(
+                          /^https:\/\/wa.me/,
+                        ) ? (
+                        <WhatsappIcon />
+                      ) : (
+                        <GoogleAdsIcon />
+                      ))}
+
+                    {/* {conv?.adAttribution?.sourceUrl &&
+                    conv?.adAttribution?.sourceUrl.startsWith(
+                      "https://www.instagram.com",
+                    ) ? (
                       <InstaICon />
                     ) : conv?.adAttribution?.sourceUrl.includes("facebook") ? (
                       <FacebookIcon />
+                    ) : conv?.adAttribution?.sourceUrl.startsWith(
+                        "https://wa.me",
+                      ) ? (
+                      <WhatsappIcon />
                     ) : (
                       <GoogleAdsIcon />
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-full px-6 text-center text-gray-500">
+          <div className="flex flex-col max-md:h-[60dvh] items-center justify-center h-full px-6 text-center text-gray-500">
             {/* Icon */}
             <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center mb-4">
               <svg

@@ -7,29 +7,27 @@ import {
 } from "../../../services/api/whatsApp";
 import Swal from "sweetalert2";
 
-import { AiOutlineDelete } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
 import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
 import WhatsappMessageTemplateSkelton from "../../../components/Skeltons/WhatsappMessageTemplateSkelton";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdAdd } from "react-icons/md";
-
-const chipClass = (variant) => {
-  const map = {
-    green: "bg-green-50 text-green-700 ring-1 ring-green-200",
-    yellow: "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-200",
-    red: "bg-red-50 text-red-700 ring-1 ring-red-200",
-  };
-  return map[variant];
-};
+import { useConfirm } from "../../../context/ConfirmContext";
+import { useToast } from "../../../context/ToastContext";
+import TemplatePreviewModal from "./TemplatePreviewModal";
 
 export default function WhatsAppMessageTemplate() {
+  const { confirm } = useConfirm();
+  const { showToast } = useToast();
   const hasFetchedRef = useRef(false);
   const {
     integrationStatus,
     checkIntegrationStatus,
     isLoadingIntegrationStatus,
   } = useContext(DataContext);
+
+  const [selectedTemplatePreview, setSelectedTemplatePreview] = useState(null);
   const [accountDetails, setAccountDetails] = useState(null);
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -81,16 +79,11 @@ export default function WhatsAppMessageTemplate() {
   };
 
   const handleDelete = async (template) => {
-    const result = await Swal.fire({
-      title: "Delete template?",
-      text: `This will permanently delete "${template.name}"`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      confirmButtonText: "Delete",
-    });
+    const isConfirm = await confirm(
+      "Are you sure you want to delete this template?",
+    );
 
-    if (!result.isConfirmed) return;
+    if (!isConfirm) return;
 
     try {
       await deleteWhatsAppMessageTemplate({
@@ -98,15 +91,17 @@ export default function WhatsAppMessageTemplate() {
         language: template.language,
       });
 
-      Swal.fire("Deleted!", "Template deleted successfully", "success");
+      showToast({
+        message: "Template deleted successfully",
+        type: "success",
+      });
 
       setTemplates((prev) => prev.filter((t) => t.name !== template.name));
     } catch (error) {
-      Swal.fire(
-        "Error",
-        error?.message || "Failed to delete template",
-        "error",
-      );
+      showToast({
+        message: error?.message || "Failed to delete template",
+        type: "error",
+      });
     }
   };
 
@@ -129,7 +124,10 @@ export default function WhatsAppMessageTemplate() {
 
   const submit = async () => {
     if (!name || !body) {
-      return Swal.fire("Validation", "Name & body required", "warning");
+      return showToast({
+        message: "Please fill name and body",
+        type: "error",
+      });
     }
 
     setIsCreating(true);
@@ -158,7 +156,10 @@ export default function WhatsAppMessageTemplate() {
       }
 
       if (response?.success && response?.responseStatusCode) {
-        Swal.fire("Success", "Template created", "success");
+        showToast({
+          message: "Template created successfully",
+          type: "success",
+        });
         setOpen(false);
         setName("");
         setBody("");
@@ -166,11 +167,7 @@ export default function WhatsAppMessageTemplate() {
         fetchTemplates();
       }
     } catch (err) {
-      // console.log(err);
       const metaError = err?.response?.data?.error;
-
-      // console.log(metaError);
-
       if (metaError) {
         Swal.fire({
           icon: "error",
@@ -254,9 +251,6 @@ export default function WhatsAppMessageTemplate() {
     );
   }
 
-  // const isMessagingEnabled =
-  //   accountDetails?.phoneNumber?.platformType === "CLOUD_API";
-
   return (
     <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
       <div className="flex justify-between">
@@ -273,81 +267,6 @@ export default function WhatsAppMessageTemplate() {
           </button>
         )}
       </div>
-
-      {/* <div className="w-full rounded-xl border bg-white px-6 py-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <FaWhatsapp className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold text-gray-900">
-                Phone Number
-              </span>
-            </div>
-
-            <p className="text-2xl font-semibold text-gray-900">
-              {accountDetails?.phoneNumber?.displayPhoneNumber}
-            </p>
-
-            <p className="text-sm text-gray-500">
-              {accountDetails?.phoneNumber?.verifiedName}
-            </p>
-          </div>
-
-          <div className="flex flex-col items-end gap-2">
-            <span
-              className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                isMessagingEnabled
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {isMessagingEnabled ? "Messages Enabled" : "Messages Disabled"}
-            </span>
-
-            {!isMessagingEnabled && (
-              <span className="text-xs text-gray-400">
-                Not connected to Cloud API
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          <span
-            className={`rounded-full px-3 py-1 font-medium ${chipClass(
-              accountDetails?.phoneNumber?.accountMode === "LIVE"
-                ? "green"
-                : "yellow",
-            )}`}
-          >
-            Mode: {accountDetails?.phoneNumber?.accountMode}
-          </span>
-
-          <span
-            className={`rounded-full px-3 py-1 font-medium ${chipClass(
-              accountDetails?.phoneNumber?.nameStatus === "APPROVED"
-                ? "green"
-                : accountDetails?.phoneNumber?.nameStatus === "REJECTED"
-                  ? "red"
-                  : "yellow",
-            )}`}
-          >
-            Name: {accountDetails?.phoneNumber?.nameStatus}
-          </span>
-
-          <span
-            className={`rounded-full px-3 py-1 font-medium ${chipClass(
-              accountDetails?.phoneNumber?.qualityRating === "HIGH"
-                ? "green"
-                : accountDetails?.phoneNumber?.qualityRating === "LOW"
-                  ? "red"
-                  : "yellow",
-            )}`}
-          >
-            Quality: {accountDetails?.phoneNumber?.qualityRating}
-          </span>
-        </div>
-      </div> */}
 
       <div className="overflow-hidden">
         {!isFetching && templates?.length === 0 && (
@@ -366,7 +285,7 @@ export default function WhatsAppMessageTemplate() {
         )}
 
         {!isFetching && templates?.length > 0 && (
-          <div className="overflow-hidden  bg-white shadow-sm mt-6 border">
+          <div className="overflow-x-auto bg-white shadow-sm mt-6 border">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
@@ -420,10 +339,10 @@ export default function WhatsAppMessageTemplate() {
                     </td>
 
                     {/* ACTIONS */}
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 flex gap-1.5 text-right">
                       <button
                         onClick={() => handleDelete(t)}
-                        disabled={t.status === "APPROVED"}
+                        // disabled={t.status === "APPROVED"}
                         className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
                           t.status === "APPROVED"
                             ? "bg-red-100 text-gray-400 cursor-not-allowed"
@@ -437,6 +356,14 @@ export default function WhatsAppMessageTemplate() {
                       >
                         <AiOutlineDelete size={16} color="#ad3c3c" />
                       </button>
+
+                      <button
+                        onClick={() => setSelectedTemplatePreview(t.components)}
+                        // disabled={t.status === "APPROVED"}
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-200/60 hover:bg-green-200 transition`}
+                      >
+                        <AiOutlineEye size={16} color="#2e7d32" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -446,7 +373,12 @@ export default function WhatsAppMessageTemplate() {
         )}
       </div>
 
-      {/* <div>Sample Template</div> */}
+      {selectedTemplatePreview && (
+        <TemplatePreviewModal
+          components={selectedTemplatePreview || []}
+          onClose={() => setSelectedTemplatePreview(null)}
+        />
+      )}
 
       {/* CREATE MODAL */}
       {open && (

@@ -103,7 +103,7 @@ const NotesCard = ({ lead, setLead }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-5 ">
+    <div className="bg-white rounded-lg md:shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-5">
         <div className="flex gap-2 items-center bg-gray-100 px-4 py-1.5 w-fit rounded-full">
           <h3 className="text-sm font-medium text-[#37322F]">Notes</h3>

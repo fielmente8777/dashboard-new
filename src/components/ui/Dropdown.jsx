@@ -50,7 +50,7 @@ export default function CustomDropdown({
         left: rect.left + window.scrollX,
         top: openUpwards
           ? rect.top + window.scrollY - dropdownHeight - 8
-          : rect.bottom + window.scrollY + 8,
+          : rect.bottom + window.scrollY + 15,
       });
     }
     setOpen(!open);

@@ -203,8 +203,9 @@ const AllLeads = () => {
     return () => wsRef.current?.close();
   }, []);
 
+  const [filters, setFilter] = useState(false);
   return (
-    <div className="bg-white p-6 space-y-6">
+    <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">All Leads</h2>
 
@@ -220,12 +221,12 @@ const AllLeads = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-4 py-3">
+      <div className="bg-white rounded md:rounded-xl md:shadow-sm border border-gray-200 px-4 py-3">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* LEFT SIDE FILTERS */}
           <div className="flex flex-wrap items-center gap-3">
             {/* SEARCH */}
-            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+            <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
               <IoSearch className="text-gray-400" size={18} />
               <input
                 type="text"
@@ -363,11 +364,12 @@ const AllLeads = () => {
                       return <td>{userName}</td>;
                     }
                     return (
-                      <td
-                        key={h.key}
-                        className={`px-3 py-2  ${notCapitalize.includes(h.key) ? "" : "capitalize"}`}
-                      >
-                        {row[h.key] || "-"}
+                      <td key={h.key} className="px-3 py-2">
+                        {row[h.key]
+                          ? row[h.key] === "undefined"
+                            ? "-"
+                            : row[h.key]
+                          : "-"}
                       </td>
                     );
                   })}

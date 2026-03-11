@@ -19,12 +19,12 @@ const Settings = () => {
 
   const [activeTab, setActiveTab] = useState("Profile");
   return (
-    <div className="">
-      <div className="flex border-b p-5">
+    <div className="w-full">
+      <div className="flex overflow-x-auto border-b p-5 w-fit">
         {tabs.map((item) => (
           <span
             onClick={() => setActiveTab(item)}
-            className={`cursor-pointer ${activeTab === item ? "bg-gray-200" : "bg-white"} hover:bg-gray-200 px-5 transition-all duration-150 text-sm font-medium py-2 text-center  `}
+            className={`flex shrink-0 cursor-pointer ${activeTab === item ? "bg-gray-200" : "bg-white"} hover:bg-gray-200 px-5 transition-all duration-150 text-sm font-medium py-2 text-center  `}
           >
             {item}
           </span>

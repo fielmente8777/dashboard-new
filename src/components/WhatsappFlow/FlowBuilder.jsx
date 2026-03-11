@@ -23,8 +23,6 @@ export default function FlowBuilder() {
     setNodes(nodes.map((n) => (n.id === id ? { ...n, data } : n)));
   };
 
-  console.log(nodes);
-
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
       <div className="flex gap-3 mb-6">

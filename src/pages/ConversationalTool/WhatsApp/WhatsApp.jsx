@@ -20,6 +20,7 @@ const WhatsApp = () => {
     conversations,
     selectedConversation,
     setSelectedConversation,
+    mobileActive,setMobileActive
   } = useContext(DataContext);
   const [loading, setLoading] = useState(false);
 
@@ -148,7 +149,8 @@ const WhatsApp = () => {
   return (
     <div className="h-[calc(100vh-6.2vh)] flex bg-gray-50">
       {integrationStatus?.metaWhatsapp ? (
-        <>
+        <div className="flex w-full">
+        <div className="hidden md:flex w-full">
           <SidebarChat />
 
           {selectedConversation ? <ChatArea /> : <Fallback />}
@@ -158,9 +160,22 @@ const WhatsApp = () => {
               fetchConversations={getWhatsappConversations}
             />
           )}
-        </>
+        </div>
+        <div className="flex w-full md:hidden  flex-col ">
+          {mobileActive==="sidebar"&&<SidebarChat />}
+
+          {mobileActive==="chatarea"&&selectedConversation&& <ChatArea/>}
+          {mobileActive==="profile"&&selectedConversation && (
+            <ProfilePanel
+              selectedContact={selectedConversation}
+              fetchConversations={getWhatsappConversations}
+            />
+          )}
+        </div>
+        </div>
+
       ) : (
-        <div className="flex w-full justify-center py-12">
+        <div className="flex w-full justify-center py-12 ">
           <div>
             <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
               {/* Icon */}
