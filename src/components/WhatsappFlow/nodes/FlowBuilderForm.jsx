@@ -106,13 +106,14 @@ export default function FlowBuilderForm({ node, nodes, updateNode }) {
       const data = buildFlowJSON();
 
       const response = await fetch(
-        "http://localhost:8000/api/v1/whatsapp-flow/submit",
+        `http://localhost:8000/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ data }),
+          body: JSON.stringify(data),
         },
       );
 

@@ -1,21 +1,23 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import {
-  createWhatsAppMessageTemplate,
-  getWhatsAppMessageTemplates,
-  deleteWhatsAppMessageTemplate,
-  getWhatsappAccountDetails,
-} from "../../../services/api/whatsApp";
+
 import Swal from "sweetalert2";
 
 import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
-import DataContext from "../../../context/DataContext";
-import { connectWhatsapp } from "../../../services/api/Integration";
-import WhatsappMessageTemplateSkelton from "../../../components/Skeltons/WhatsappMessageTemplateSkelton";
+
 import { FaWhatsapp } from "react-icons/fa";
 import { MdAdd } from "react-icons/md";
-import { useConfirm } from "../../../context/ConfirmContext";
-import { useToast } from "../../../context/ToastContext";
 import TemplatePreviewModal from "./TemplatePreviewModal";
+import {
+  createWhatsAppMessageTemplate,
+  deleteWhatsAppMessageTemplate,
+  getWhatsappAccountDetails,
+  getWhatsAppMessageTemplates,
+} from "../../../../services/api/whatsApp";
+import DataContext from "../../../../context/DataContext";
+import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
+import { connectWhatsapp } from "../../../../services/api/Integration";
+import WhatsappMessageTemplateSkelton from "../../../../components/Skeltons/WhatsappMessageTemplateSkelton";
 
 export default function WhatsAppMessageTemplate() {
   const { confirm } = useConfirm();
@@ -28,7 +30,7 @@ export default function WhatsAppMessageTemplate() {
   } = useContext(DataContext);
 
   const [selectedTemplatePreview, setSelectedTemplatePreview] = useState(null);
-  const [accountDetails, setAccountDetails] = useState(null);
+  // const [accountDetails, setAccountDetails] = useState(null);
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -59,8 +61,8 @@ export default function WhatsAppMessageTemplate() {
 
   const fetchAccountDetails = useCallback(async () => {
     try {
-      const response = await getWhatsappAccountDetails();
-      setAccountDetails(response?.result?.docs);
+      await getWhatsappAccountDetails();
+      // setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);
     }

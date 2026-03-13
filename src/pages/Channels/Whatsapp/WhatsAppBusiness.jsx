@@ -26,12 +26,24 @@ import {
   getWhatsAppMessageTemplates,
   updateAutoMessageConfig,
 } from "../../../services/api/whatsApp";
-import WhatsAppMessageTemplate from "./Templates";
-import TemplatePreview from "./TemplatePreview";
+
+import { FiMenu } from "react-icons/fi";
+import CreateTemplate from "./Templates/CreateTemplate";
+import WhatsAppMessageTemplate from "./Templates/Templates";
+import TemplatePreview from "./Templates/TemplatePreview";
+
+const sidebarTabs = [
+  { id: "overview", label: "Overview" },
+  { id: "templates", label: "Message Templates" },
+  { id: "auto-message", label: "Auto Message" },
+  { id: "credits", label: "Credits" },
+];
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
 
+  const [activeTab, setActiveTab] = useState("overview");
+  const [collapsed, setCollapsed] = useState(false);
   const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
   const [templates, setTemplates] = useState([]);
@@ -134,24 +146,67 @@ const WhatsAppBusiness = () => {
   return (
     <React.Fragment>
       {accountDetails && (
-        <div className="w-full p-4 gap-4 grid md:grid-cols-2">
-          <div className="flex gap-4 flex-col">
-            {/* <BusinessInfoCard business={accountDetails?.business} /> */}
+        <div className="flex h-[82vh]">
+          <div
+            className={`bg-gray-100/60 shadow! h-full transition-all duration-300
+             ${collapsed ? "w-10" : "w-56"} p-2`}
+          >
+            {/* Hamburger */}
+            <div className="flex justify-end mb-3">
+              <button onClick={() => setCollapsed(!collapsed)}>
+                <FiMenu size={20} />
+              </button>
+            </div>
 
-            <WabaDetailsCard
-              waba={accountDetails?.waba}
-              business={accountDetails?.business}
-            />
-            <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
+            {/* Tabs */}
+            <div className="flex flex-col gap-1">
+              {sidebarTabs.map((tab) => {
+                const Icon = tab.icon;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${collapsed && "opacity-0"} ${
+                      activeTab === tab.id
+                        ? "bg-slate-700 text-white font-medium"
+                        : "hover:bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {/* <Icon size={18} /> */}
+
+                    {!collapsed && <span>{tab.label}</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <CreditInfoCard />
-          <AutoMessageCard
-            phoneNumberId={accountDetails?.phoneNumber?.id}
-            autoMessage={accountDetails?.autoMessage}
-            templates={templates} // backend should send this
-            notification={accountDetails?.notification}
-          />
-          <WhatsAppMessageTemplate />
+
+          <div className="h-full overflow-y-auto flex-1">
+            {activeTab === "overview" && (
+              <div className="w-full gap-4 grid md:grid-cols-2">
+                <div className="flex gap-4 flex-col">
+                  {/* <BusinessInfoCard business={accountDetails?.business} /> */}
+
+                  <WabaDetailsCard
+                    waba={accountDetails?.waba}
+                    business={accountDetails?.business}
+                  />
+                  <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
+                </div>
+                <CreditInfoCard />
+                <AutoMessageCard
+                  phoneNumberId={accountDetails?.phoneNumber?.id}
+                  autoMessage={accountDetails?.autoMessage}
+                  templates={templates} // backend should send this
+                  notification={accountDetails?.notification}
+                />
+                <WhatsAppMessageTemplate />
+              </div>
+            )}
+
+            {activeTab === "templates" && <CreateTemplate />}
+          </div>
         </div>
       )}
     </React.Fragment>
@@ -492,17 +547,6 @@ const AutoMessageCard = ({
 
   const header = getComponent("HEADER");
   const body = getComponent("BODY");
-  const footer = getComponent("FOOTER");
-
-  // console.log(body);
-
-  const formatPreviewText = (text) => {
-    if (!text) return "";
-    return text.replace(/{{\d+}}/g, (match) => {
-      const num = match.replace(/[{}]/g, "");
-      return `[value ${num}]`;
-    });
-  };
 
   const handleSave = async () => {
     try {
@@ -665,29 +709,6 @@ const AutoMessageCard = ({
               <TemplatePreview
                 components={selectedTemplateObj.components || []}
               />
-              {/* <div className="max-w-sm bg-[#DCF8C6] rounded-lg p-3 border shadow-sm">
-                {header && (
-                  <p className="font-medium text-sm mb-1">
-                    {formatPreviewText(header.text)}
-                  </p>
-                )}
-
-                {body && (
-                  <p className="text-sm whitespace-pre-line">
-                    {formatPreviewText(body.text)}
-                  </p>
-                )}
-
-                {footer && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    {formatPreviewText(footer.text)}
-                  </p>
-                )}
-
-                <div className="text-[10px] text-gray-400 text-right mt-1">
-                  Preview
-                </div>
-              </div> */}
             </div>
           )}
         </>

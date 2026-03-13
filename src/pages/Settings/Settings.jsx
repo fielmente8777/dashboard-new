@@ -20,11 +20,11 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState("Profile");
   return (
     <div className="w-full">
-      <div className="flex overflow-x-auto border-b p-5 w-fit">
+      <div className="flex gap-4 overflow-x-auto border-b p-5 w-fit">
         {tabs.map((item) => (
           <span
             onClick={() => setActiveTab(item)}
-            className={`flex shrink-0 cursor-pointer ${activeTab === item ? "bg-gray-200" : "bg-white"} hover:bg-gray-200 px-5 transition-all duration-150 text-sm font-medium py-2 text-center  `}
+            className={`flex shrink-0 cursor-pointer ${activeTab === item ? "bg-slate-700 text-white" : "bg-white"} hover:bg-gray-200 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
           >
             {item}
           </span>
@@ -36,28 +36,35 @@ const Settings = () => {
           <Setting />
         </div>
       )}
+
       {activeTab === "WhatsApp" && (
         <div>
           <WhatsAppBusiness />
         </div>
       )}
+
       {activeTab === "Lead" && <div></div>}
+
       {activeTab === "Google Ads" && <div></div>}
+
       {activeTab === "Eazbot" && (
         <div>
           <Eazobot />
         </div>
       )}
+
       {activeTab === "Integration" && (
         <div>
           <Integration />
         </div>
       )}
+
       {activeTab === "Team Management" && (
         <div>
           <Usermanagement />
         </div>
       )}
+
       {activeTab === "EazWallet" && (
         <div>
           <Wallet />
