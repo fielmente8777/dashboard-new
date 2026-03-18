@@ -20,6 +20,7 @@ const EditUserPopup = ({
 
   const [form, setForm] = useState({
     name: "",
+    phone:"",
     email: "",
     password: "",
   });
@@ -28,6 +29,7 @@ const EditUserPopup = ({
     setForm({
       name: editData.displayName || "",
       email: editData.emailId || "",
+      phone:editData.phone||"",
       password: "", // optional: leave empty if not changing
     });
 
@@ -77,10 +79,11 @@ const EditUserPopup = ({
   };
 
   const handleSubmit = async () => {
-    const { name, email, password } = form;
+    const { name,phone, email, password } = form;
 
     const formData = {
       emailId: email,
+      phone:phone,
       displayName: name,
       userName: name,
       role: "admin",
@@ -107,6 +110,7 @@ const EditUserPopup = ({
         });
         setForm({
           name: "",
+          phone: "",
           email: "",
           password: "",
         });
@@ -129,7 +133,7 @@ const EditUserPopup = ({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${
+      className={`fixed inset-0 z-99999 flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity ${
         isEditPopupOpen ? "opacity-100 visible" : "opacity-0 invisible"
       }`}
     >
@@ -162,6 +166,13 @@ const EditUserPopup = ({
               name="name"
               placeholder="Full Name"
               value={form.name}
+              onChange={handleChange}
+              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+            />
+            <input
+              name="phone"
+              placeholder="Phone number"
+              value={form.phone}
               onChange={handleChange}
               className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />

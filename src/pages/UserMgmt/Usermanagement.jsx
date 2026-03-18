@@ -9,8 +9,10 @@ import EditUserPopup from "./EditUserPopup";
 import UserMgmtPopup from "./UserMgmtPopup";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { useSelector } from "react-redux";
+import { useToast } from "../../context/ToastContext";
 
 const Usermanagement = () => {
+  const { showToast } = useToast();
   const [userManagementData, setUserManagementData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
@@ -65,6 +67,11 @@ const Usermanagement = () => {
           }
         });
       } catch (error) {
+
+      //   showToast({
+      //   message: error?.message || "Failed to update lead",
+      //   type: "error",
+      // });
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -130,7 +137,7 @@ const Usermanagement = () => {
                   <th className="py-2 px-4 text-[16px] font-medium  capitalize">
                     Email
                   </th>
-                  {/* {accessRoles?.slice(0, 4).map((role) => (
+                  {/* {accessRoles?.slice(0, 4)?.map((role) => (
                   <th
                     key={role}
                     className="py-2 px-2 text-[16px] text-center font-medium text-[#575757] capitalize"
@@ -138,6 +145,10 @@ const Usermanagement = () => {
                     {role}
                   </th>
                 ))} */}
+                
+                  <th className="py-2 px-4 text-[16px] font-medium  capitalize">
+                    Phone
+                  </th>
                   <th className="py-2 px-4 text-[16px] font-medium  capitalize">
                     Admin
                   </th>
@@ -168,10 +179,13 @@ const Usermanagement = () => {
                         className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
                       >
                         <td className="py-2 px-4 text-[16px] font-medium text-[#575757] capitalize">
-                          {user.displayName}
+                          {user?.displayName}
                         </td>
                         <td className="py-2 px-4 text-[16px] text-[#575757] lowercase">
-                          {user.emailId}
+                          {user?.emailId}
+                        </td>
+                        <td className="py-2 px-4 text-[16px] text-[#575757] lowercase">
+                          {user?.phone}
                         </td>
                         <td className="py-3 px-4 text-[#575757] text-start">
                           {user?.role || "-"}
@@ -188,7 +202,7 @@ const Usermanagement = () => {
                         </td>
                         <td className="text-gray-500">
                           {/* {isAdmin ? <button className='btn me-2' onClick={() => { editUserData(user) }}>edit</button> : ""} */}
-                          {user.isAdmin ? (
+                          {user?.isAdmin ? (
                             <span className="ml-4">-</span>
                           ) : authUser?.isAdmin ? (
                             <span
@@ -199,7 +213,7 @@ const Usermanagement = () => {
                               <MdDeleteOutline
                                 size={20}
                                 onClick={() =>
-                                  deleteUserFromManagement(user.emailId)
+                                  deleteUserFromManagement(user?.emailId)
                                 }
                                 className="text-red-500 mt-[2px]"
                               />{" "}

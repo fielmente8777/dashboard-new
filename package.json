@@ -16,11 +16,13 @@
     "axios": "^1.11.0",
     "chart.js": "^4.5.1",
     "daypilot-pro-react": "https://npm.daypilot.org/daypilot-pro-react/trial/2023.2.5582.tar.gz",
+    "framer-motion": "^12.35.2",
     "html2canvas": "^1.4.1",
     "jodit-react": "^5.2.19",
     "json-edit-react": "^1.28.2",
     "json-to-csv-export": "^3.1.2",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.577.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.1",
@@ -36,8 +38,9 @@
     "recharts": "^3.1.1",
     "socket.io-client": "^4.8.1",
     "sweetalert2": "^11.22.2",
-    "tailwindcss": "^4.1.11",
-    "use-sound": "^5.0.0"
+    "tailwindcss": "^4.2.1",
+    "use-sound": "^5.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

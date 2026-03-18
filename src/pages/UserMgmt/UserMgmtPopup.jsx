@@ -1,9 +1,13 @@
-import { useState } from "react";
 import { IoMdExit } from "react-icons/io";
 import { useSelector } from "react-redux";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { CreateUser } from "../../services/api/userManagement.api";
+import { useToast } from "../../context/ToastContext";
 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+// import { z } from "zod";
+import { X, UserPlus, MapPin, Shield } from "lucide-react";
 export const accessRoles = [
   "CMS",
   "Social Media",
@@ -59,8 +63,10 @@ export const accessScopeMap = {
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
+      const { showToast } = useToast();
+
   const { user } = useSelector((state) => state?.userProfile);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "",phone:"", email: "", password: "" });
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(""); // selected location
 
@@ -109,7 +115,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
   };
 
   const handleSubmit = async () => {
-    const { name, email, password } = form;
+    const { name,phone, email, password } = form;
 
     const allPermissions = {
       analyticsandreporting: false,
@@ -150,17 +156,22 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       };
     });
 
-    if (!name || !email || !password || selectedLocations.length === 0) {
-      Swal.fire({
-        icon: "warning",
-        title: "Incomplete Form",
-        text: "Please fill all fields and assign at least one location with roles.",
+    if (!name ||!phone|| !email || !password || selectedLocations.length === 0) {
+      // Swal.fire({
+      //   icon: "warning",
+      //   title: "Incomplete Form",
+      //   text: "Please fill all fields and assign at least one location with roles.",
+      // });
+        showToast({
+        message: "Please fill all fields and assign at least one location",
+        type: "warning",
       });
       return;
     }
 
     const formData = {
       emailId: email,
+      phone:phone,
       displayName: name,
       userName: name,
       role: "admin",
@@ -173,37 +184,52 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       const result = await CreateUser(formData);
       // console.log(result);
       if (result?.Status) {
-        Swal.fire({
-          icon: "success",
-          title: "Created Successfully",
-          text: result?.Message,
-        });
-        setForm({ name: "", email: "", password: "" });
+        // Swal.fire({
+        //   icon: "success",
+        //   title: "Created Successfully",
+        //   text: result?.Message,
+        // });
+        
+        showToast({
+        message: result?.Message||"User created successfully",
+        type: "success",
+      });
+        setForm({ name: "",phone:"", email: "", password: "" });
         setSelectedLocations([]);
         onClose();
         fetchData();
       } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: result?.Message,
-        });
-      }
+        // Swal.fire({
+        //   icon: "error",
+        //   title: "Error",
+        //   text: result?.Message,
+        // });
+
+        showToast({
+        message: result?.Message||"Something went wronge try again",
+        type: "error",
+      });}
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "API Error",
-        text: "User Management API error. Please try again.",
+      showToast({
+        message: error.message||"Something went wronge try again",
+        type: "error",
       });
+      // Swal.fire({
+      //   icon: "error",
+      //   title: "API Error",
+      //   text: "User Management API error. Please try again.",
+      // });
     }
   };
 
   return (
+
+
     <div
-      className={`fixed inset-0 px-5 z-[99999] flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      className={`fixed inset-0 px-5 z-99999 flex items-center justify-center bg-black/50 bg-opacity-90 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
     >
-      <div className="bg-white grid md:grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
+      <div className="bg-white grid md:grid-cols-8 gap-6 rounded-md shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
         <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
           <div className="sticky top-0">
             <div className="max-h-96">
@@ -217,7 +243,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         </div>
 
         <div className="md:col-span-5 space-y-8">
-          {/* Header */}
+  
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
             <h2 className="text-xl text-primary font-bold">Create New User</h2>
             <button
@@ -230,12 +256,18 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             </button>
           </div>
 
-          {/* Input Fields */}
           <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
             <input
               name="name"
-              placeholder="Full Name"
+              placeholder="Full name"
               value={form.name}
+              onChange={handleChange}
+              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+            />
+            <input
+              name="phone"
+              placeholder="Phone number"
+              value={form.phone}
               onChange={handleChange}
               className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
@@ -249,7 +281,6 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             />
           </div>
 
-          {/* Location Selection */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="password"
@@ -275,7 +306,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
                       value={`${key}-${value?.city}`}
                       disabled={selectedLocations.some(
                         (loc) => loc.hid === key
-                      )} // Disable if already selected
+                      )}
                     >
                       {value.city}
                     </option>
@@ -284,13 +315,13 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             </div>
           </div>
 
-          {/* Roles for Each Location */}
+  
           {selectedLocations.map((locEntry) => (
             <div
               key={locEntry.location}
               className="mt-4 border border-primary/30 p-4 rounded-md relative shadow-md shadow-black/10 space-y-2"
             >
-              {/* Remove icon */}
+
               <button
                 onClick={() => removeLocation(locEntry.hid)}
                 className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-2xl"
@@ -330,7 +361,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             </div>
           ))}
 
-          {/* Buttons */}
+   
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               onClick={handleSubmit}
@@ -348,6 +379,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         </div>
       </div>
     </div>
+
   );
 };
 

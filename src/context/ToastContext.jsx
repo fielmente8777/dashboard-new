@@ -72,7 +72,7 @@ export const ToastProvider = ({ children }) => {
       {Object.entries(groupedToasts).map(([position, list]) => (
         <div
           key={position}
-          className={`fixed z-9999 flex flex-col gap-3 ${getPositionClasses(position)}`}
+          className={`fixed z-99999 flex flex-col gap-3 ${getPositionClasses(position)}`}
         >
           {list.map((toast) => (
             <div
