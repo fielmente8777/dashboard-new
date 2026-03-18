@@ -25,6 +25,7 @@ import { Link } from "react-router-dom";
 import { Arrow } from "../../../../icons/icon";
 import { IoArrowBack } from "react-icons/io5";
 import AudioMessage from "./AudioMessage";
+import VideoMessage from "./VideoMessage";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
@@ -417,10 +418,11 @@ const ChatArea = () => {
                 return (
                   <div
                     key={index}
-                    className={`flex ${isMe ? "justify-end" : "justify-start"} mb-2`}
+                    className={`flex ${isMe ? "justify-end" : "justify-start"}  mb-2`}
                   >
                     <div
-                      className={`max-w-xs  px-3 py-2 ${isMe
+                      className={`relative max-w-xs  px-3 py-2 ${
+                        isMe
                           ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
                           : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
                         }`}
@@ -480,6 +482,25 @@ const ChatArea = () => {
                             controls
                             className="mt-2"
                           /> */}
+                        </div>
+                      )}
+
+                      {message?.messageType === "video" && (
+                        <div>
+                          <VideoMessage
+                            src={
+                              message?.media?.url ||
+                              `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                            }
+                            caption={message?.caption}
+                            // isMe={isMe}
+                          />
+                        </div>
+                      )}
+
+                      {message?.reaction && (
+                        <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
+                          <p className="text-sm">{message?.reaction?.emoji}</p>
                         </div>
                       )}
 

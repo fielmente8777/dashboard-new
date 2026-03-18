@@ -153,7 +153,7 @@ const WhatsAppLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage,conversationId) => {
+  const handleUpdateStage = async (leadId, hid, conversationId, stage) => {
     const payload = {
       leadId: leadId,
       status: stage,
@@ -337,7 +337,12 @@ const WhatsAppLeads = () => {
                             options={Stages}
                             className="border w-40! p-1! rounded-md! bg-gray-100!"
                             onChange={(value) => {
-                              handleUpdateStage(row?._id, row?.hId, value,row?.conversationId);
+                              handleUpdateStage(
+                                row?._id,
+                                row?.hId,
+                                row?.conversationId,
+                                value,
+                              );
                             }}
                           />
                         </td>

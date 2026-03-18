@@ -79,7 +79,6 @@ import Ranks from "../Gmb/Rank";
 import Keywords from "../Gmb/Keyword";
 import Reviews from "../Gmb/Review";
 import GoogleAdsInsights from "../GoogleAdsInsights/GoogleAdsInsights";
-import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates";
 import WhatsAppBusiness from "../Channels/Whatsapp/WhatsAppBusiness";
 import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AllLeads from "../Enquiry/AllLeads";
@@ -91,6 +90,7 @@ import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
+import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates/Templates";
 
 const DynamicPage = () => {
   const location = useLocation();

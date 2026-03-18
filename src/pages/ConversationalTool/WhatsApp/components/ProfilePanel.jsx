@@ -41,7 +41,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
         name: selectedConversation.name,
         ndid: selectedConversation.ndid,
         notes,
-        status:stage,
+        status: stage,
         conversationId: selectedConversation._id,
         hid: selectedConversation?.hid || localStorage.getItem("hid"),
       };

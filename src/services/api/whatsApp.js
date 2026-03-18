@@ -181,3 +181,18 @@ export const getWhatsAppLeads = async () => {
   const data = await response.json();
   return data;
 };
+
+export const getWhatsAppFlows = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};
