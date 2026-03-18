@@ -34,12 +34,14 @@
     "react-is": "^19.2.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.7.1",
+    "reactflow": "^11.11.4",
     "reactjs-social-login": "^2.6.3",
     "recharts": "^3.1.1",
     "socket.io-client": "^4.8.1",
     "sweetalert2": "^11.22.2",
     "tailwindcss": "^4.1.11",
     "use-sound": "^5.0.0",
+    "uuid": "^13.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

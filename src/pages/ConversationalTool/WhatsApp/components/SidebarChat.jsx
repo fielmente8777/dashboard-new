@@ -45,6 +45,10 @@ const SidebarChat = () => {
   } = useContext(DataContext);
 
   const [filteredConversations, setFilteredConversations] = useState([]);
+  const [countsConversation, setCountsConversation] = useState({
+    active: "",
+    inative: "",
+  });
 
   const handleSelectConversation = async (conv) => {
     try {
@@ -131,10 +135,16 @@ const SidebarChat = () => {
       setFilteredConversations(actConversations);
       setSelectedConversation(null);
       // setSelectedConversation(actConversations[0]);
+
+      const actCount = actConversations?.length;
+      const inactCount = historyConversations()?.length;
+      setCountsConversation({ active: actCount, inative: inactCount });
     }
 
     fetchTemplates();
   }, []);
+
+  console.log(countsConversation);
 
   return (
     <div className="w-full md:w-90 border-b md:border-l md:border-r border-gray-200 flex flex-col bg-white">

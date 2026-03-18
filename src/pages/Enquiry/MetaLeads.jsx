@@ -410,7 +410,7 @@ const MetaLeads = () => {
           </div>
 
           {/* RIGHT ACTION */}
-          {!isSync && (
+          {/* {!isSync && (
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
@@ -421,7 +421,7 @@ const MetaLeads = () => {
                 <IoMdSync />
               </span>
             </button>
-          )}
+          )} */}
         </div>
       </div>
 

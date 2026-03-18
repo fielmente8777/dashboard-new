@@ -16,7 +16,7 @@ const CustomerInfoCard = ({ lead }) => {
     try {
       const payload = {
         leadId: lead._id,
-        stage: value,
+        status: value,
         hid: lead?.hId,
         conversationId: lead?.conversationId,
       };
