@@ -2,7 +2,7 @@ import { FaPhone } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import InfoRow from "./InfoRow";
 import CustomDropdown from "../../../components/ui/Dropdown";
-import { Stages } from "../../../data/constant";
+import { NEW_BASE_URL, Stages } from "../../../data/constant";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
@@ -13,7 +13,10 @@ import { fetchUserManagementData } from "../../../services/api";
 const CustomerInfoCard = ({ lead }) => {
   const { showToast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
+  const [agentNumber,setAgentNumber]=useState();
+  const [selectedGuestNumber,setSelectedGuestNumber]=useState("")
 
+  const [callPopup,setCallPopup]=useState(false)
   if (!lead) return null;
 
   const handleStageChange = async (value) => {
@@ -74,11 +77,62 @@ const CustomerInfoCard = ({ lead }) => {
     setAllUsers(usersData);
   };
 
+  const handleCallPopup=(contact)=>{
+    if(contact|| contact.length<10){
+      console.log("Wronge contact information")
+    }
+    console.log(contact);
+    setSelectedGuestNumber(contact);
+    setCallPopup(true);
+  }
+
+    const handleCall = async () => {
+    console.log("Contact",selectedGuestNumber,agentNumber);
+      try {
+        if (!agentNumber || !selectedGuestNumber) {
+          alert("Both numbers are required");
+          return;
+        }
+  
+        const response = await fetch(
+          `${NEW_BASE_URL}/api/v1/call/auth/make-call`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`, // authMiddleware expects this
+            },
+            body: JSON.stringify({
+              fromNumber:agentNumber,
+              toNumber:selectedGuestNumber,
+            }),
+          }
+        );
+  
+        const data = await response.json();
+
+        // console.log("lkjhgfdxcvbmnm,",data);
+  
+        if (!response.ok) {
+          alert(data?.error || "Call failed");
+          return;
+        }
+  
+        alert("✅ Call initiated successfully");
+        setCallPopup(false);
+        // setFromNumber("");
+        // setToNumber("");
+      } catch (error) {
+        console.error("Call error:", error);
+        alert("Something went wrong while making the call");
+      }
+    };
+
   useEffect(() => {
     fetchUsersData();
   }, []);
 
-  console.log(allUsers);
+  // console.log(allUsers);
 
   return (
     <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">
@@ -88,11 +142,18 @@ const CustomerInfoCard = ({ lead }) => {
         </h3>
 
         {lead?.Contact && (
-          <InfoRow
-            label="Mobile Number"
-            value={lead.Contact}
-            icon={<FaPhone />}
-          />
+          <div onClick={()=>handleCallPopup(lead.Contact)} className="cursor-pointer flex justify-between items-center py-2 border-b last:border-0">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Mobile Number</p>
+                <p onClick={()=>handleCallPopup(lead.Contact)} className="text-sm text-gray-600">{lead.Contact}</p>
+              </div>
+              <div   className="text-primary"><FaPhone /></div>
+          </div>
+          // <InfoRow
+          //   label="Mobile Number"
+          //   value={lead.Contact}
+          //   icon={<FaPhone />}
+          // />
         )}
 
         {lead?.Email && (
@@ -161,6 +222,32 @@ const CustomerInfoCard = ({ lead }) => {
           />
         </div>
       </div>
+
+       {callPopup && (
+        <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
+          <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+            <div className="flex flex-col gap-2">
+              <h1>Enter Number to make a call!</h1>
+              <CustomDropdown
+            label={lead?.assignee || "Select Agent"}
+            options={
+              allUsers?.map((user) => ({
+                value: user?.phone,
+                label: user?.userName,
+              })) || []
+            }
+            onChange={(value) => setAgentNumber(value)}
+          />
+              {/* <input value={fromNumber} onChange={(e) => setFromNumber(e.target.value)} placeholder="From number" required className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" /> */}
+              <input value={selectedGuestNumber} onChange={(e) => setSelectedGuestNumber(e.target.value)} placeholder="Guest number" required className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setCallPopup(false)} className="flex justify-end w-fit border py-1 px-5 bg-red-300 rounded hover:bg-orange-400">Cancel</button>
+                <button onClick={handleCall} className="flex justify-end w-fit border py-1 px-5  rounded hover:bg-orange-400">Call Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

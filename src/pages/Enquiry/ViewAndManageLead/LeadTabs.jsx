@@ -6,11 +6,12 @@ const LeadTabs = ({ activeTab, setActiveTab }) => (
       <button
         key={i}
         onClick={() => setActiveTab(i)}
-        className={`px-5 py-2 rounded-md font-medium transition ${
-          activeTab === i
-            ? "bg-primary text-white shadow"
-            : "bg-white text-gray-500 hover:bg-gray-100"
-        }`}
+        className="font-medium"
+        // className={`px-5 py-2 rounded-md font-medium transition ${
+        //   activeTab === i
+        //     ? "bg-primary text-white shadow"
+        //     : "bg-white text-gray-500 hover:bg-gray-100"
+        // }`}
       >
         {tab}
       </button>
