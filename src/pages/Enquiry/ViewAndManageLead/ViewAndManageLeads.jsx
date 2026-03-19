@@ -18,10 +18,10 @@ import { IoArrowBack } from "react-icons/io5";
 import OtherDetailsCard from "./OtherDetailsCard";
 import WhatsAppConverstionCard from "./WhatsAppConverstionCard";
 
-const ViewAndManageLeads = ({ leadId, hid }) => {
-  // const { leadId } = useParams();
-  // const [searchParams] = useSearchParams();
-  // const hid = searchParams.get("hid");
+const ViewAndManageLeads = () => {
+  const { leadId } = useParams();
+  const [searchParams] = useSearchParams();
+  const hid = searchParams.get("hid");
 
   const [quickResponseOpen, setQuickResponseOpen] = useState(false);
   const [lead, setLead] = useState(null);

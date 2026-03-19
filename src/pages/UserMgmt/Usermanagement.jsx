@@ -51,7 +51,7 @@ const Usermanagement = () => {
               Accept: "application/json, text/plain, */*",
               "Content-Type": "application/json",
             },
-          }
+          },
         );
         const result = await response.json();
 
@@ -67,11 +67,10 @@ const Usermanagement = () => {
           }
         });
       } catch (error) {
-
-      //   showToast({
-      //   message: error?.message || "Failed to update lead",
-      //   type: "error",
-      // });
+        //   showToast({
+        //   message: error?.message || "Failed to update lead",
+        //   type: "error",
+        // });
         Swal.fire({
           icon: "error",
           title: "Error",
@@ -114,7 +113,6 @@ const Usermanagement = () => {
   return (
     <div className="bg-white p-4 mb-10 cardShadow">
       <div className="flex justify-end items-center bg-white">
-     
         {authUser?.isAdmin && (
           <button
             onClick={() => setIsPopupOpen(true)}
@@ -145,7 +143,7 @@ const Usermanagement = () => {
                     {role}
                   </th>
                 ))} */}
-                
+
                   <th className="py-2 px-4 text-[16px] font-medium  capitalize">
                     Phone
                   </th>
@@ -170,8 +168,8 @@ const Usermanagement = () => {
                         data?.assigned_location?.some(
                           (location) =>
                             String(location?.hid) ===
-                            String(handleLocalStorage("hid"))
-                        )
+                            String(handleLocalStorage("hid")),
+                        ),
                     )
                     .map((user, index) => (
                       <tr
