@@ -146,9 +146,9 @@ const ChatArea = () => {
         body: file ? null : messageValue,
         media: file
           ? {
-            url: URL.createObjectURL(file), // 👈 show preview instantly
-            mimeType: file.type,
-          }
+              url: URL.createObjectURL(file), // 👈 show preview instantly
+              mimeType: file.type,
+            }
           : undefined,
         status: "sent",
         timestamp: new Date(),
@@ -333,26 +333,27 @@ const ChatArea = () => {
                     className="rounded"
                   />
                 )}
-                {selectedConversation?.adAttribution?.mediaType === "video" && selectedConversation?.adAttribution?.videoUrl && (
-                  <video
-                    className="rounded"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                  >
-                    <source
-                      src={selectedConversation?.adAttribution?.videoUrl}
-                      type="video/mp4"
-                    />
-                  </video>
-                  // <img
-                  //   src={"https://scontent.xx.fbcdn.net/v/t15.5256-10/649561265_919658240780341_2774417990312888579_n.jpg?stp=dst-jpg_p180x540_tt6&_nc_cat=108&ccb=1-7&_nc_sid=40cf1a&_nc_ohc=FuFjMQHfdogQ7kNvwGf5n0N&_nc_oc=Admab3rVEXpXJfb0ENwfNJ9X8xwAjYoSh4vxTQRujDrJE8w2zpqrckyqX1eGggxIWGwBSSte9wpSj4LjFzd-LhOI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.xx&_nc_gid=d8LpEvFRFPgFTVvr5h5baA&_nc_ss=8&oh=00_AfxVaChDBeHwPmiHpXZPp5bE507iew1PQTG3QRQkf5ELPQ&oe=69B9C69D"}
-                  //   alt={selectedConversation?.adAttribution?.sourceType}
-                  //   className="rounded"
-                  // />
-                )}
+                {selectedConversation?.adAttribution?.mediaType === "video" &&
+                  selectedConversation?.adAttribution?.videoUrl && (
+                    <video
+                      className="rounded"
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="auto"
+                    >
+                      <source
+                        src={selectedConversation?.adAttribution?.videoUrl}
+                        type="video/mp4"
+                      />
+                    </video>
+                    // <img
+                    //   src={"https://scontent.xx.fbcdn.net/v/t15.5256-10/649561265_919658240780341_2774417990312888579_n.jpg?stp=dst-jpg_p180x540_tt6&_nc_cat=108&ccb=1-7&_nc_sid=40cf1a&_nc_ohc=FuFjMQHfdogQ7kNvwGf5n0N&_nc_oc=Admab3rVEXpXJfb0ENwfNJ9X8xwAjYoSh4vxTQRujDrJE8w2zpqrckyqX1eGggxIWGwBSSte9wpSj4LjFzd-LhOI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.xx&_nc_gid=d8LpEvFRFPgFTVvr5h5baA&_nc_ss=8&oh=00_AfxVaChDBeHwPmiHpXZPp5bE507iew1PQTG3QRQkf5ELPQ&oe=69B9C69D"}
+                    //   alt={selectedConversation?.adAttribution?.sourceType}
+                    //   className="rounded"
+                    // />
+                  )}
 
                 <h1 className="font-medium ">
                   {selectedConversation?.adAttribution?.headline}
@@ -391,15 +392,30 @@ const ChatArea = () => {
                         isMe
                           ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
                           : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
-                        }`}
+                      }`}
                     >
                       {/* TEXT */}
                       {(message.messageType === "text" ||
                         message?.messageType === "interactive") &&
                         message.body && (
-                          <p className="text-sm whitespace-pre-wrap bg-white">
-                            {renderMessageWithLinks(message?.body)}
-                          </p>
+                          <div className="max-w-xs ml-auto">
+                            <div className=" text-slate-700 rounded-lg relative">
+                              {/* Context / Reply Preview */}
+                              {message?.context &&
+                                message?.context?.message && (
+                                  <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
+                                    <p className="text-xs text-green-100 truncate">
+                                      {message?.context?.message}
+                                    </p>
+                                  </div>
+                                )}
+
+                              {/* Actual Message */}
+                              <p className="text-sm whitespace-pre-wrap">
+                                {renderMessageWithLinks(message?.body)}
+                              </p>
+                            </div>
+                          </div>
                         )}
 
                       {message?.messageType === "template" &&

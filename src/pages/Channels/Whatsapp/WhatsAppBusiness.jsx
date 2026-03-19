@@ -31,12 +31,14 @@ import { FiMenu } from "react-icons/fi";
 import CreateTemplate from "./Templates/CreateTemplate";
 import WhatsAppMessageTemplate from "./Templates/Templates";
 import TemplatePreview from "./Templates/TemplatePreview";
+import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
   { id: "templates", label: "Message Templates" },
   { id: "auto-message", label: "Auto Message" },
   { id: "credits", label: "Credits" },
+  { id: "whatsapp-flow", label: "WhatsApp Flow " },
 ];
 
 const WhatsAppBusiness = () => {
@@ -206,6 +208,7 @@ const WhatsAppBusiness = () => {
             )}
 
             {activeTab === "templates" && <CreateTemplate />}
+            {activeTab === "whatsapp-flow" && <FlowBuilder />}
           </div>
         </div>
       )}

@@ -53,7 +53,7 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
   ];
 
   return (
-    <div className="w-72 bg-gray-50 h-full bordrer-r! border-gray-200!">
+    <div className="w-72 bg-gray-50 h-full bordrer-r! border-gray-200! p-4">
       {showQuestionMenu && (
         <div
           onClick={() => setShowQuestionMenu(false)}
