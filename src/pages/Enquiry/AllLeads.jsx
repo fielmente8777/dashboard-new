@@ -22,6 +22,7 @@ import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
+import AdsLeadsUsingGoogleSheet from "./AdsLeadsUsingGoogleSheet";
 
 const Stages = [
   { label: "Open Queries", value: "Open" },
@@ -215,6 +216,8 @@ const AllLeads = () => {
 
   return (
     <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
+
+      <AdsLeadsUsingGoogleSheet/>
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">All Leads</h2>
 
