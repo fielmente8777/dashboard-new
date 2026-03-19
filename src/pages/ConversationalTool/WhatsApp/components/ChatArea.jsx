@@ -1,41 +1,33 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { BsCheckAll, BsCheckLg } from "react-icons/bs";
+import { IoArrowBack } from "react-icons/io5";
+import { MdCall, MdChat, MdClose } from "react-icons/md";
+import { Link } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
+import WebSocketClient from "../../../../config/websocketClient";
+import DataContext from "../../../../context/DataContext";
 import {
   NEW_BASE_URL,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../../../data/constant";
-import DataContext from "../../../../context/DataContext";
 import {
-  addWhatsAppLead,
   getWhatsappConversationMessages,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
 } from "../../../../services/api/whatsApp";
-import { MdCall, MdChat, MdClose } from "react-icons/md";
-import WebSocketClient from "../../../../config/websocketClient";
-import normalizePhone from "../../../../utils/normalizePhone";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
-import { BsCheckAll } from "react-icons/bs";
-import { BsCheckLg } from "react-icons/bs";
-import Loader from "../../../../components/Loader";
-import Swal from "sweetalert2";
+import normalizePhone from "../../../../utils/normalizePhone";
 import { renderMessageWithLinks } from "../../../../utils/urlParser";
-import { Link } from "react-router-dom";
-import { Arrow } from "../../../../icons/icon";
-import { IoArrowBack } from "react-icons/io5";
 import AudioMessage from "./AudioMessage";
+import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
-  const {
-    selectedConversation,
-    conversations,
-    setSelectedConversation,
-    setMobileActive,
-  } = useContext(DataContext);
+  const { selectedConversation, conversations, setMobileActive } =
+    useContext(DataContext);
 
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
@@ -266,6 +258,11 @@ const ChatArea = () => {
             return m;
           }),
         );
+      } else if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE
+      ) {
+        const { data } = serverResponse;
+        setMessageList((prev) => [...prev, data]);
       }
     });
 
@@ -276,16 +273,10 @@ const ChatArea = () => {
     loadMessages(selectedConversation?._id);
   }, [selectedConversation?._id]);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({});
+  }, [messageList]);
 
-    if (name === "stage") {
-      setSelectedConversation((prev) => ({
-        ...prev,
-        stage: value,
-      }));
-    }
-  };
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -315,32 +306,6 @@ const ChatArea = () => {
           >
             <MdCall size={18} /> Call
           </Link>
-          {/* <button
-              className="bg-primary  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
-            >
-                {selectedConversation?.status}
-            </button> */}
-          {/* <select
-              name="stage"
-              id=""
-              className="border !px-4 bg-primary text-white border-gray-50 outline-none py-1 rounded-md w-full"
-              onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              {header?.map((item) => {
-                return <option value={item.value}>{item.label}</option>;
-              })}
-            </select> */}
-
-          {/* {!selectedConversation?.markAsLead && (
-            <button
-              disabled={addLeadLoading}
-              onClick={handleAddLead}
-              className="bg-primary/95 whitespace-nowrap text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2"
-            >
-              Add Lead {addLeadLoading && <Loader size={12} color="#fff" />}
-            </button>
-          )} */}
         </div>
       </div>
 
@@ -411,6 +376,7 @@ const ChatArea = () => {
                 </div>
               </div>
             )}
+
             {messageList?.length > 0 ? (
               messageList.map((message, index) => {
                 const isMe = message.sender === "me";
@@ -428,11 +394,13 @@ const ChatArea = () => {
                         }`}
                     >
                       {/* TEXT */}
-                      {message.messageType === "text" && message.body && (
-                        <p className="text-sm whitespace-pre-wrap bg-white">
-                          {renderMessageWithLinks(message?.body)}
-                        </p>
-                      )}
+                      {(message.messageType === "text" ||
+                        message?.messageType === "interactive") &&
+                        message.body && (
+                          <p className="text-sm whitespace-pre-wrap bg-white">
+                            {renderMessageWithLinks(message?.body)}
+                          </p>
+                        )}
 
                       {message?.messageType === "template" &&
                         message?.template?.template?.name && (
@@ -454,16 +422,17 @@ const ChatArea = () => {
                         )}
 
                       {/* IMAGE */}
-                      {message.messageType === "image" && (
-                        <img
-                          src={
-                            message.media?.url ||
-                            ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.media.id}?ndid=${localStorage.getItem("ndid")}`
-                          }
-                          alt="WhatsApp"
-                          className="mt-2 rounded-lg w-full"
-                        />
-                      )}
+                      {message.messageType === "image" ||
+                        (message.messageType === "sticker" && (
+                          <img
+                            src={
+                              message.media?.url ||
+                              ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                            }
+                            alt="WhatsApp"
+                            className="mt-2 rounded-lg w-full size-44"
+                          />
+                        ))}
 
                       {/* AUDIO */}
                       {message.messageType === "audio" && (
@@ -498,10 +467,25 @@ const ChatArea = () => {
                         </div>
                       )}
 
+                      {message?.messageType === "location" && (
+                        <div>
+                          <iframe
+                            // style={"border:0"}
+                            loading="lazy"
+                            src={`https://www.google.com/maps?q=${message?.location?.latitude},${message?.location?.longitude}&output=embed`}
+                            className="max-w-70 w-full aspect-4/3"
+                          />
+                        </div>
+                      )}
+
                       {message?.reaction && (
                         <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
                           <p className="text-sm">{message?.reaction?.emoji}</p>
                         </div>
+                      )}
+
+                      {message?.interactive && (
+                        <InteractiveMessage interactive={message.interactive} />
                       )}
 
                       <div className="flex justify-end px-2 mt-1">

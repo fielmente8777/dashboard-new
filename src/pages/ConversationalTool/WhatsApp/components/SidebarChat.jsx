@@ -47,7 +47,7 @@ const SidebarChat = () => {
   const [filteredConversations, setFilteredConversations] = useState([]);
   const [countsConversation, setCountsConversation] = useState({
     active: "",
-    inative: "",
+    inactive: "",
   });
 
   const handleSelectConversation = async (conv) => {
@@ -135,11 +135,11 @@ const SidebarChat = () => {
       setFilteredConversations(actConversations);
       setSelectedConversation(null);
       // setSelectedConversation(actConversations[0]);
-
-      const actCount = actConversations?.length;
-      const inactCount = historyConversations()?.length;
-      setCountsConversation({ active: actCount, inative: inactCount });
     }
+
+    const actCount = activeConversations()?.length;
+    const inactCount = historyConversations()?.length;
+    setCountsConversation({ active: actCount, inactive: inactCount });
 
     fetchTemplates();
   }, []);
@@ -158,17 +158,58 @@ const SidebarChat = () => {
         />
       </div>
 
-      <div className="flex  justify-center items-center gap-2 border-b border-gray-200">
+      <div className="flex border-b border-gray-200 bg-white rounded-lg overflow-hidden">
+        {tabs?.map((tab) => {
+          const isActive = tab.toLowerCase() === activeTab.toLowerCase();
+          const count = countsConversation?.[tab.toLowerCase()];
+
+          return (
+            <button
+              key={tab}
+              onClick={() => handleTabChnage(tab)}
+              className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
+                isActive
+                  ? "bg-slate-700 text-white border-b-2 "
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <span>{tab}</span>
+
+              {count > 0 && (
+                <span
+                  className={`min-w-5 h-5 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold
+                    ${
+                      isActive
+                        ? "bg-gray-100 text-primary"
+                        : "bg-slate-200 text-slate-700"
+                    }`}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* <div className="flex  justify-center items-center gap-2 border-b border-gray-200">
         {tabs?.map((tab) => (
           <button
             onClick={() => handleTabChnage(tab)}
             key={tab}
-            className={`px-4 py-4 w-full ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer `}
+            className={`px-4 py-4 w-full ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer relative`}
           >
             {tab}
+
+            {Object.keys(countsConversation)?.length > 0 &&
+              countsConversation[tab?.toLowerCase()] && (
+                <span className="absolute top-0 left-0 size-6 flex justify-center items-center rounded-full bg-slate-900 text-white text-xs">
+                  {countsConversation[tab.toLowerCase()]}
+                </span>
+              )}
           </button>
         ))}
-      </div>
+      </div> */}
 
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
         {filteredConversations && filteredConversations?.length > 0 ? (
@@ -224,18 +265,12 @@ const SidebarChat = () => {
                     {conv?.last_message?.text || "No messages yet"}
                   </p>
                   <div className="flex items-center gap-2">
-                    {/* {conv?.adAttribution?.sourceType && (
-                      <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
-                        {conv?.adAttribution?.sourceType}
-                      </span>
-                    )} */}
-
                     <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
                       {conv?.adAttribution?.sourceType || "Ad"}
                     </span>
 
-                    {conv?.adAttribution?.sourceUrl ?
-                      (conv?.adAttribution?.sourceUrl.match(
+                    {conv?.adAttribution?.sourceUrl ? (
+                      conv?.adAttribution?.sourceUrl.match(
                         /^https:\/\/www.instagram.com/,
                       ) ? (
                         <InstaICon />
@@ -249,11 +284,10 @@ const SidebarChat = () => {
                         <WhatsappIcon />
                       ) : (
                         ""
-                      )):
-                        <GoogleAdsIcon />
-                      }
-
-
+                      )
+                    ) : (
+                      <GoogleAdsIcon />
+                    )}
 
                     {/* {conv?.adAttribution?.sourceUrl &&
                     conv?.adAttribution?.sourceUrl.startsWith(

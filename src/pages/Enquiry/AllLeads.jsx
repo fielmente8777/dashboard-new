@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
 import Pagination from "../../components/Pagination";
@@ -11,16 +11,12 @@ import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import {
-  BASE_PATH,
-  ROUTES_PATH,
-  WEBSOCKET_EVENTS,
-  WS_BASE_URL,
-} from "../../data/constant";
+import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
 import { formatDateTime } from "../../utils/formateDate";
+import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 
 const Stages = [
   { label: "Open Queries", value: "Open" },
@@ -42,7 +38,7 @@ const Stages = [
 
 const AllLeads = () => {
   const wsRef = useRef(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
@@ -53,6 +49,8 @@ const AllLeads = () => {
   const [stage, setStage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const [selectedRow, setSelectedRow] = useState(null);
 
   const {
     page,
@@ -175,8 +173,13 @@ const AllLeads = () => {
 
   const handleRedirectToPage = (row) => {
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
-    navigate(navigatePath);
+    // const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    // navigate(navigatePath);
+
+    setSelectedRow({
+      leadId: row._id,
+      hid: hid,
+    });
   };
 
   useEffect(() => {
@@ -203,7 +206,8 @@ const AllLeads = () => {
     return () => wsRef.current?.close();
   }, []);
 
-  const [filters, setFilter] = useState(false);
+  // const [filters, setFilter] = useState(false);
+
   return (
     <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
       <div className="flex justify-between items-center">
@@ -403,6 +407,13 @@ const AllLeads = () => {
           total={total}
         />
       </div>
+
+      <ViewAndManageLeadDrawer
+        leadId={selectedRow?.leadId}
+        hid={selectedRow?.hid}
+        isOpen={selectedRow}
+        onClose={() => setSelectedRow(null)}
+      />
     </div>
   );
 };
