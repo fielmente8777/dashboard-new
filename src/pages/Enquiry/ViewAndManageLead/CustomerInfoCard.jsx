@@ -7,9 +7,13 @@ import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import { useToast } from "../../../context/ToastContext";
+import { useEffect, useState } from "react";
+import { fetchUserManagementData } from "../../../services/api";
 
 const CustomerInfoCard = ({ lead }) => {
   const { showToast } = useToast();
+  const [allUsers, setAllUsers] = useState([]);
+
   if (!lead) return null;
 
   const handleStageChange = async (value) => {
@@ -37,6 +41,18 @@ const CustomerInfoCard = ({ lead }) => {
       });
     }
   };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
+  useEffect(() => {
+    fetchUsersData();
+  }, []);
+
+  console.log(allUsers);
 
   return (
     <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">

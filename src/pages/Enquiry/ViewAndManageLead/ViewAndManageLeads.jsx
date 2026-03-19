@@ -18,10 +18,10 @@ import { IoArrowBack } from "react-icons/io5";
 import OtherDetailsCard from "./OtherDetailsCard";
 import WhatsAppConverstionCard from "./WhatsAppConverstionCard";
 
-const ViewAndManageLeads = () => {
-  const { leadId } = useParams();
-  const [searchParams] = useSearchParams();
-  const hid = searchParams.get("hid");
+const ViewAndManageLeads = ({ leadId, hid }) => {
+  // const { leadId } = useParams();
+  // const [searchParams] = useSearchParams();
+  // const hid = searchParams.get("hid");
 
   const [quickResponseOpen, setQuickResponseOpen] = useState(false);
   const [lead, setLead] = useState(null);
@@ -90,7 +90,7 @@ const ViewAndManageLeads = () => {
 
   return (
     <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6">
-      <div className="flex items-center gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
+      {/* <div className="flex items-center gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
           className="flex size-8 justify-center bg-gray-100 rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
@@ -106,18 +106,19 @@ const ViewAndManageLeads = () => {
                 onClick={() => setQuickResponseOpen(true)}
                 className="bg-green-600 text-white px-2 md:px-5 py-2 rounded flex items-center gap-2 shadow"
               >
-                <FaWhatsapp /> <span className="hidden md:block">Send Quick Response</span>
+                <FaWhatsapp />{" "}
+                <span className="hidden md:block">Send Quick Response</span>
               </button>
             </div>
           )}
         </div>
-      </div>
+      </div> */}
 
       {activeTab === 0 && (
         <>
           <LeadHeader lead={lead} />
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
+          <div className="grid grid-cols-1 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
             <CustomerInfoCard lead={lead} />
             {lead?.other_details && (
               <OtherDetailsCard otherDetails={lead?.other_details} />

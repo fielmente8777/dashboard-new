@@ -12,7 +12,6 @@ const VideoMessage = ({ src, caption, isMe }) => {
         <video
           src={src}
           controls
-          autoPlay
           className="w-full h-auto max-h-64 object-cover"
         />
 

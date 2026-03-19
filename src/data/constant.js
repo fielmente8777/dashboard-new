@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL = "https://0cc2-2409-40d2-206a-10ad-7449-4bb4-2bd-9e3a.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
@@ -13,8 +13,8 @@ export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 // export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
 
 export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-// export const WS_BASE_URL = "ws://localhost:8000";
-export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
+export const WS_BASE_URL = "ws://localhost:8000";
+// export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
 
 export const room_type_name = {
   1: "DELUXE",
@@ -57,6 +57,8 @@ export const MarketPlaceService = [
 
 export const WEBSOCKET_EVENTS = {
   WHATSAPP_NEW_MESSAGE: "WHATSAPP_NEW_MESSAGE",
+  WHATSAPP_AUTO_NEW_MESSAGE: "WHATSAPP_AUTO_NEW_MESSAGE",
+
   WHATSAPP_NEW_CONVERSATION: "WHATSAPP_NEW_CONVERSATION",
   WHATSAPP_MESSAGE_STATUS: "WHATSAPP_MESSAGE_STATUS",
 
