@@ -42,6 +42,32 @@ const CustomerInfoCard = ({ lead }) => {
     }
   };
 
+  const handleUserAssign = async (value) => {
+    try {
+      const payload = {
+        leadId: lead._id,
+        hid: lead?.hId,
+        conversationId: lead?.conversationId,
+        assignee: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const fetchUsersData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
@@ -107,12 +133,33 @@ const CustomerInfoCard = ({ lead }) => {
         )}
       </div>
 
-      <div className="flex justify-end mt-4">
-        <CustomDropdown
-          label={lead?.status}
-          options={Stages}
-          onChange={(value) => handleStageChange(value)}
-        />
+      <div className="flex items-center justify-end gap-2">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="" className="text-sm text-gray-500 ml-1">
+            Assignee
+          </label>
+          <CustomDropdown
+            label={lead?.assignee || "Select User"}
+            options={
+              allUsers?.map((user) => ({
+                value: user?.userName,
+                label: user?.userName,
+              })) || []
+            }
+            onChange={(value) => handleUserAssign(value)}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label htmlFor="" className="text-sm text-gray-500 ml-1">
+            Stages
+          </label>
+          <CustomDropdown
+            label={lead?.status}
+            options={Stages}
+            onChange={(value) => handleStageChange(value)}
+          />
+        </div>
       </div>
     </div>
   );

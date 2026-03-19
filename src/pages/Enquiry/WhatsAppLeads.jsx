@@ -3,14 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  ROUTES_PATH,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
+} from "../../data/constant";
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
@@ -39,6 +44,7 @@ const Stages = [
 
 const WhatsAppLeads = () => {
   const wsRef = useRef(null);
+  const navigate = useNavigate();
 
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
@@ -174,13 +180,13 @@ const WhatsAppLeads = () => {
 
   const handleRedirectToPage = (row) => {
     const hid = localStorage.getItem("hid");
-    // const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
-    // navigate(navigatePath);
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    navigate(navigatePath);
 
-    setSelectedRow({
-      leadId: row._id,
-      hid: hid,
-    });
+    // setSelectedRow({
+    //   leadId: row._id,
+    //   hid: hid,
+    // });
   };
 
   useEffect(() => {
@@ -394,12 +400,12 @@ const WhatsAppLeads = () => {
         />
       </div>
 
-      <ViewAndManageLeadDrawer
+      {/* <ViewAndManageLeadDrawer
         leadId={selectedRow?.leadId}
         hid={selectedRow?.hid}
         isOpen={selectedRow}
         onClose={() => setSelectedRow(null)}
-      />
+      /> */}
     </div>
   );
 };
