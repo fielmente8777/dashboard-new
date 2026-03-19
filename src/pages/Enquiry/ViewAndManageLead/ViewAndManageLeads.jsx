@@ -90,14 +90,14 @@ const ViewAndManageLeads = () => {
 
   return (
     <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6">
-      {/* <div className="flex items-center gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
+      <div className="flex items-center gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
           className="flex size-8 justify-center bg-gray-100 rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
         >
           <IoArrowBack />
         </button>
-        <div className="flex flex-1  justify-between items-start">
+        <div className="flex flex-1  justify-between items-center">
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {lead?.Contact && (
@@ -112,13 +112,13 @@ const ViewAndManageLeads = () => {
             </div>
           )}
         </div>
-      </div> */}
+      </div>
 
       {activeTab === 0 && (
         <>
           <LeadHeader lead={lead} />
 
-          <div className="grid grid-cols-1 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
+          <div className="grid grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
             <CustomerInfoCard lead={lead} />
             {lead?.other_details && (
               <OtherDetailsCard otherDetails={lead?.other_details} />

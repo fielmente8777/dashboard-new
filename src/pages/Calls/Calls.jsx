@@ -430,7 +430,7 @@ export default function Calls() {
       </div>
 
       {callPopup && (
-        <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
+        <div className="fixed inset-0 flex justify-center bg-black/50">
           <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             <div className="flex flex-col gap-2">
               <h1>Enter Number to make a call!</h1>

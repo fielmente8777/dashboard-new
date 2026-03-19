@@ -83,7 +83,7 @@ export default function CustomDropdown({
               left: position.left,
               top: position.top,
             }}
-            className="absolute z-9999 rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto wrap-break-word"
+            className="absolute z-99999 rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto wrap-break-word"
           >
             {options.map((opt) => (
               <div
