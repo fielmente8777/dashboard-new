@@ -216,8 +216,7 @@ const AllLeads = () => {
 
   return (
     <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
-
-      <AdsLeadsUsingGoogleSheet/>
+      {/* <AdsLeadsUsingGoogleSheet/> */}
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">All Leads</h2>
 
