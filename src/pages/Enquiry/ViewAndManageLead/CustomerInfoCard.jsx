@@ -48,6 +48,10 @@ const CustomerInfoCard = ({ lead }) => {
     setAllUsers(usersData);
   };
 
+  const handleCall=(contact)=>{
+    console.log("Contact",contact);
+  }
+
   useEffect(() => {
     fetchUsersData();
   }, []);
@@ -62,11 +66,18 @@ const CustomerInfoCard = ({ lead }) => {
         </h3>
 
         {lead?.Contact && (
-          <InfoRow
-            label="Mobile Number"
-            value={lead.Contact}
-            icon={<FaPhone />}
-          />
+          <div onClick={()=>handleCall(lead.Contact)} className="flex justify-between items-center py-2 border-b last:border-0">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Mobile Number</p>
+                <p onClick={()=>handleCall(lead.Contact)} className="text-sm text-gray-600">{lead.Contact}</p>
+              </div>
+              <div   className="text-primary"><FaPhone /></div>
+          </div>
+          // <InfoRow
+          //   label="Mobile Number"
+          //   value={lead.Contact}
+          //   icon={<FaPhone />}
+          // />
         )}
 
         {lead?.Email && (
