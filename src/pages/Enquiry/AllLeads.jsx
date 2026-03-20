@@ -177,9 +177,9 @@ const AllLeads = () => {
     }
   };
 
-  const handleRedirectToPage = (row) => {
+  const handleRedirectToPage = (row, index) => {
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}`;
     navigate(navigatePath);
 
     // setSelectedRow({
@@ -310,7 +310,7 @@ const AllLeads = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    handleRedirectToPage(row);
+                    handleRedirectToPage(row, i + limit * (page - 1) + 1);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >
@@ -367,11 +367,27 @@ const AllLeads = () => {
 
                     if (h.key === "Name") {
                       const isName = row[h.key];
+                      const followUpDate = new Date(row["followUp"]);
+                      const today = new Date();
+
+                      const isToday =
+                        followUpDate.getDate() === today.getDate() &&
+                        followUpDate.getMonth() === today.getMonth() &&
+                        followUpDate.getFullYear() === today.getFullYear();
 
                       const userName = isName
                         ? isName
                         : row?.other_details?.full_name || "-";
-                      return <td>{userName}</td>;
+                      return (
+                        <td>
+                          {userName}{" "}
+                          {isToday && (
+                            <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                              Follow Up
+                            </span>
+                          )}
+                        </td>
+                      );
                     }
                     return (
                       <td key={h.key} className="px-3 py-2">

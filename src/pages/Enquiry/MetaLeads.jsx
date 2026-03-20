@@ -202,9 +202,9 @@ const MetaLeads = () => {
     }
   };
 
-  const handleRedirectToPage = (row) => {
+  const handleRedirectToPage = (row, index) => {
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}`;
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
     navigate(navigatePath);
 
     // setSelectedRow({
@@ -402,7 +402,7 @@ const MetaLeads = () => {
                 <tr
                   key={i}
                   onClick={() => {
-                    handleRedirectToPage(row);
+                    handleRedirectToPage(row, i + limit * (page - 1) + 1);
                   }}
                   className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                 >

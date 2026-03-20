@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useParams, useSearchParams } from "react-router-dom";
 import QuickResponsePopup from "../../../components/Popup/QuickResponsePopup";
-import { getLeadById } from "../../../services/api/leads.api";
+import {
+  getLeadById,
+  getLeads,
+  updateLead,
+} from "../../../services/api/leads.api";
 import {
   getWhatsappConversationMessages,
   getWhatsAppMessageTemplates,
@@ -17,11 +21,19 @@ import { LeadDetailsSkeleton } from "../../../components/Skeltons/LeadDetailsSke
 import { IoArrowBack } from "react-icons/io5";
 import OtherDetailsCard from "./OtherDetailsCard";
 import WhatsAppConverstionCard from "./WhatsAppConverstionCard";
+import DatePicker from "react-datepicker";
+import { useToast } from "../../../context/ToastContext";
 
 const ViewAndManageLeads = () => {
+  const { showToast } = useToast();
   const { leadId } = useParams();
   const [searchParams] = useSearchParams();
   const hid = searchParams.get("hid");
+  const leadPageNumber = searchParams.get("lead");
+  const created_from = searchParams.get("created_from");
+
+  const [leadPageNumberState, setLeadPageNumberState] =
+    useState(leadPageNumber);
 
   const [quickResponseOpen, setQuickResponseOpen] = useState(false);
   const [lead, setLead] = useState(null);
@@ -30,6 +42,7 @@ const ViewAndManageLeads = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [whatsAppConversation, setWhatsAppConversation] = useState(null);
   const [messageLoading, setMessageLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState();
 
   const fetchConversation = async (conversationId) => {
     setMessageLoading(true);
@@ -48,10 +61,19 @@ const ViewAndManageLeads = () => {
 
   const fetchLead = async () => {
     setLoading(true);
+    const params = {
+      page: leadPageNumberState,
+      limit: 1,
+      ...(created_from && { created_from: created_from }),
+      // stage: stage,
+    };
+
     try {
-      const response = await getLeadById(leadId, hid);
+      const response = await getLeads(params);
+      // const response = await getLeadById(leadId, hid);
       if (response?.success) {
-        setLead(response?.result?.docs);
+        setLead(response?.result?.docs?.leads[0]);
+        setSelectedDate(response?.result?.docs?.leads[0]?.followUp);
 
         const conversationId = response?.result?.docs?.conversationId;
 
@@ -70,11 +92,47 @@ const ViewAndManageLeads = () => {
       setTemplates(response?.result?.docs?.data || []);
     }
   };
+
+  const handleFollow = async (value) => {
+    try {
+      const payload = {
+        leadId: lead._id,
+        hid: lead?.hId,
+        conversationId: lead?.conversationId,
+        followUp: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
+  const handleNextPage = () => {
+    setLeadPageNumberState((prev) => Number(prev) + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (Number(leadPageNumberState) === 1) return;
+    setLeadPageNumberState((prev) => Number(prev) - 1);
+  };
+
   useEffect(() => {
     if (!leadId && !hid) return;
     fetchLead();
     fetchTemplates();
-  }, [leadId, hid]);
+  }, [leadId, hid, leadPageNumberState]);
 
   if (loading) {
     return (
@@ -85,7 +143,37 @@ const ViewAndManageLeads = () => {
   }
 
   if (!lead) {
-    return <div className="text-center text-gray-400">No lead found</div>;
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="flex items-center gap-3 p-3 border-b bg-white">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 
+                 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+          >
+            <IoArrowBack size={18} />
+          </button>
+
+          <span className="text-sm font-medium text-gray-700">Leads</span>
+        </div>
+
+        {/* Empty State */}
+        <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
+          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 mb-4 text-2xl">
+            📭
+          </div>
+
+          <h3 className="text-lg font-semibold text-gray-800">
+            No Leads Found
+          </h3>
+
+          <p className="text-sm text-gray-500 mt-2 mb-4 max-w-xs">
+            You don’t have any leads yet. Start by adding your first lead.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -99,19 +187,60 @@ const ViewAndManageLeads = () => {
         </button>
         <div className="flex flex-1  justify-between items-center">
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
-          {lead?.Contact && (
-            <div className="flex justify-end">
-              <button
-                onClick={() => setQuickResponseOpen(true)}
-                className="bg-green-600 text-white px-2 md:px-5 py-2 rounded flex items-center gap-2 shadow"
-              >
-                <FaWhatsapp />{" "}
-                <span className="hidden md:block">Send Quick Response</span>
-              </button>
-            </div>
-          )}
+          <div className="flex  gap-2 ">
+            {lead?.Contact && (
+              <div className="flex gap-2 justify-center items-center border px-2 text-[#fd5c01]/90 bg-white font-medium">
+                <label htmlFor="" className="">
+                  Follow Up
+                </label>
+                <DatePicker
+                  // selectsRange
+                  startDate={selectedDate}
+                  // endDate={endDate}
+                  onChange={(update) => {
+                    setSelectedDate(update);
+                    handleFollow(update);
+                  }}
+                  className="bg-transparent outline-none text-sm w-40 placeholder:text-[#fd5c01]"
+                  placeholderText={`${selectedDate ? new Date(selectedDate).toLocaleString() : " Select Date"}`}
+                  popperClassName="!z-50"
+                />
+              </div>
+            )}
+            {lead?.Contact && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setQuickResponseOpen(true)}
+                  className="bg-primary text-white px-2 md:px-5 py-2 rounded flex items-center gap-2 shadow"
+                >
+                  <FaWhatsapp />{" "}
+                  <span className="hidden md:block">Send Quick Response</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div className="flex justify-end items-center gap-3 mt-4">
+        {/* Prev Button */}
+        <button
+          onClick={handlePrevPage}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 
+               hover:bg-gray-100 hover:shadow-sm transition-all duration-200
+               disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ← Prev
+        </button>
+
+        {/* Next Button */}
+        <button
+          onClick={handleNextPage}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white 
+               hover:bg-primary/95 hover:shadow-md transition-all duration-200"
+        >
+          Next →
+        </button>
       </div>
 
       {activeTab === 0 && (
