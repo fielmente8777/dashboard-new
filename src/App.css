@@ -1,0 +1,58 @@
+.nav-profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 16px;
+  min-width: 180px;
+  background: white;
+
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  padding: 10px 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 99999 ;
+}
+ 
+.nav-profile-dropdown.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.nav-profile-dropdown li {
+  list-style: none;
+}
+
+.react-datepicker-popper {
+  z-index: 99 !important;
+}
+
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.35s ease forwards;
+}
