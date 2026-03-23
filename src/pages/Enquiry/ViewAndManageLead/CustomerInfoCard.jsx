@@ -1,4 +1,4 @@
-import { FaPhone } from "react-icons/fa";
+import { FaPhone, FaWhatsapp } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import InfoRow from "./InfoRow";
 import CustomDropdown from "../../../components/ui/Dropdown";
@@ -7,14 +7,20 @@ import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import { useToast } from "../../../context/ToastContext";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { fetchUserManagementData } from "../../../services/api";
+import DataContext from "../../../context/DataContext";
 
-const CustomerInfoCard = ({ lead }) => {
+const CustomerInfoCard = ({ lead, onClick }) => {
   const { showToast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
   const [agentNumber, setAgentNumber] = useState();
   const [selectedGuestNumber, setSelectedGuestNumber] = useState("");
+  const {
+    integrationStatus,
+    checkIntegrationStatus,
+    isLoadingIntegrationStatus,
+  } = useContext(DataContext);
 
   const [callPopup, setCallPopup] = useState(false);
   if (!lead) return null;
@@ -85,7 +91,6 @@ const CustomerInfoCard = ({ lead }) => {
     setSelectedGuestNumber(contact);
     setCallPopup(true);
   };
-
   const handleCall = async () => {
     console.log("Contact", selectedGuestNumber, agentNumber);
     try {
@@ -128,8 +133,11 @@ const CustomerInfoCard = ({ lead }) => {
     }
   };
 
+
+  console.log(integrationStatus);
   useEffect(() => {
     fetchUsersData();
+    checkIntegrationStatus()
   }, []);
 
   // console.log(allUsers);
@@ -143,7 +151,6 @@ const CustomerInfoCard = ({ lead }) => {
 
         {lead?.Contact && (
           <div
-            onClick={() => handleCallPopup(lead.Contact)}
             className="cursor-pointer flex justify-between items-center py-2 border-b last:border-0"
           >
             <div>
@@ -155,8 +162,22 @@ const CustomerInfoCard = ({ lead }) => {
                 {lead.Contact}
               </p>
             </div>
-            <div className="text-primary">
-              <FaPhone />
+            <div className="flex items-center gap-4">
+
+              <div onClick={onClick} className="text-primary rounded bg-orange-600/10 p-2">
+                <FaWhatsapp />
+              </div>
+              {integrationStatus.exotel ? <div
+                onClick={() => handleCallPopup(lead.Contact)}
+                className="rounded text-primary bg-orange-600/10 p-2">
+                <FaPhone />
+              </div> 
+              :
+                <Link to={`tel:${lead.Contact}`} className="rounded text-primary bg-orange-600/10 p-2" > 
+                <FaPhone />
+                </Link>
+                }
+              
             </div>
           </div>
           // <InfoRow

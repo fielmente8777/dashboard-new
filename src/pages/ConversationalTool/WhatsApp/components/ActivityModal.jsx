@@ -78,7 +78,13 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
         </div>
 
         {/* Footer */}
-        <div className="py-5 pt-0">
+        <div className="py-5 pt-0 flex items-center gap-2">
+          {initialData &&<button
+            onClick={()=>{setMessage(""); onClose()}}
+            className="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700"
+          >
+            Cancle
+          </button>}
           <button
             onClick={handleSave}
             className="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700"

@@ -189,7 +189,7 @@ const ViewAndManageLeads = () => {
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="flex  gap-2 ">
             {lead?.Contact && (
-              <div className="flex gap-2 justify-center rounded items-center border px-2 text-[#fd5c01]/90 bg-white font-medium">
+              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-[#fd5c01]/90 bg-white font-medium">
                 <label htmlFor="" className="">
                   Follow Up
                 </label>
@@ -207,7 +207,7 @@ const ViewAndManageLeads = () => {
                 />
               </div>
             )}
-            {lead?.Contact && (
+            {/* {lead?.Contact && (
               <div className="flex justify-end">
                 <button
                   onClick={() => setQuickResponseOpen(true)}
@@ -217,7 +217,7 @@ const ViewAndManageLeads = () => {
                   <span className="hidden md:block">Send Quick Response</span>
                 </button>
               </div>
-            )}
+            )} */}
           </div>
         </div>
         <div className="flex justify-end items-center gap-3">
@@ -250,7 +250,7 @@ const ViewAndManageLeads = () => {
           <LeadHeader lead={lead} />
 
           <div className="grid grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
-            <CustomerInfoCard lead={lead} />
+            <CustomerInfoCard lead={lead}  onClick={() => setQuickResponseOpen(true)}  />
             {lead?.other_details && (
               <OtherDetailsCard otherDetails={lead?.other_details} />
             )}

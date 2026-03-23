@@ -229,7 +229,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <h3 className="text-sm font-medium text-[#37322F] mb-4">Notes</h3>
 
             {/* Add Activity */}
-            <div onClick={() => setIsAddActivityOpen(!isAddActivityOpen)} className=" cursor-pointer flex items-center gap-3.5 mb-4">
+            <div onClick={() =>{ setIsAddActivityOpen(!isAddActivityOpen);setEditingNote(null);setEditingIndex(null)}} className=" cursor-pointer flex items-center gap-3.5 mb-4">
               <button
                 className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg"
                 
