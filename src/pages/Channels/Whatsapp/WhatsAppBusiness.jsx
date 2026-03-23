@@ -23,6 +23,7 @@ import DataContext from "../../../context/DataContext";
 import { connectWhatsapp } from "../../../services/api/Integration";
 import {
   getWhatsappAccountDetails,
+  getWhatsAppFlows,
   getWhatsAppMessageTemplates,
   updateAutoMessageConfig,
 } from "../../../services/api/whatsApp";
@@ -49,6 +50,7 @@ const WhatsAppBusiness = () => {
   const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
   const [templates, setTemplates] = useState([]);
+  const [flows, setFlows] = useState({});
 
   const handleWhatsappConnect = async () => {
     try {
@@ -94,6 +96,18 @@ const WhatsAppBusiness = () => {
       fetchTemplate();
     }
   }, [integrationStatus]);
+
+  const fetchFlows = async () => {
+    const response = await getWhatsAppFlows();
+
+    if (response.success && response.responseStatusCode === 200) {
+      setFlows(response?.result?.docs?.flow || {});
+    }
+  };
+
+  useEffect(() => {
+    fetchFlows();
+  }, []);
 
   if (!integrationStatus?.metaWhatsapp) {
     return (
@@ -141,9 +155,12 @@ const WhatsAppBusiness = () => {
       </div>
     );
   }
+
   if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
   }
+
+  console.log(flows);
 
   return (
     <React.Fragment>
@@ -201,6 +218,7 @@ const WhatsAppBusiness = () => {
                   phoneNumberId={accountDetails?.phoneNumber?.id}
                   autoMessage={accountDetails?.autoMessage}
                   templates={templates} // backend should send this
+                  flows={flows || []}
                   notification={accountDetails?.notification}
                 />
                 <WhatsAppMessageTemplate />
@@ -494,6 +512,7 @@ const ChannelToggle = ({ label, value, onChange }) => (
 const AutoMessageCard = ({
   autoMessage,
   templates,
+  flows,
   phoneNumberId,
   notification,
 }) => {
@@ -512,6 +531,7 @@ const AutoMessageCard = ({
     autoMessage?.templateName || "",
   );
   const [message, setMessage] = useState(autoMessage?.message || "");
+  const [flowId, setFlowId] = useState(autoMessage?.flowId || "");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -576,6 +596,7 @@ const AutoMessageCard = ({
         type,
         message: type === "text" ? message : null,
         template: templatePayload,
+        ...(flowId && { flowId }),
       };
 
       await updateAutoMessageConfig(payload);
@@ -660,6 +681,7 @@ const AutoMessageCard = ({
             >
               <option value="template">Template Message</option>
               <option value="text">Custom Text</option>
+              <option value="flow">Flows</option>
             </select>
           </div>
 
@@ -699,6 +721,22 @@ const AutoMessageCard = ({
                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
                 placeholder="Enter auto reply message..."
               />
+            </div>
+          )}
+
+          {/* Flows */}
+          {type === "flow" && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Flows</label>
+
+              <div className="flex items-center gap-1.5">
+                <label htmlFor="">{flows?._id}</label>
+                <input
+                  type="radio"
+                  value={flows?._id}
+                  onChange={(e) => setFlowId(e.target.value)}
+                />
+              </div>
             </div>
           )}
 

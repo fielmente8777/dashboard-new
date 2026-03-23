@@ -13,6 +13,7 @@ export const getLeads = async ({
   endDate,
   is_export,
   stage,
+  source,
 }) => {
   const token = localStorage.getItem("token");
   const params = new URLSearchParams();
@@ -26,6 +27,7 @@ export const getLeads = async ({
   if (limit) params.append("limit", limit);
   if (search) params.append("search", search);
   if (stage) params.append("stage", stage);
+  if (source) params.append("source", source);
   if (startDate && endDate) {
     params.append("from", startDate);
     params.append("to", endDate);

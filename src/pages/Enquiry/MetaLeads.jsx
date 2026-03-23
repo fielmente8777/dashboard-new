@@ -42,6 +42,7 @@ const MetaLeads = () => {
   const [allCampaigns, setAllCampaigns] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [stage, setStage] = useState("");
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -86,6 +87,7 @@ const MetaLeads = () => {
         search: debouncedSearch,
         limit: limit,
         created_from: CREATED_FROM,
+        stage: stage,
         // stage: Stages.META_LEAD,
       };
 
@@ -227,7 +229,7 @@ const MetaLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -280,6 +282,19 @@ const MetaLeads = () => {
                 placeholder="Search clients..."
                 className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
                 onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <CustomDropdown
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
+                onChange={(value) => setStage(value)}
               />
             </div>
 

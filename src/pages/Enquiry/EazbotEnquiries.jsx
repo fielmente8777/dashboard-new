@@ -38,6 +38,7 @@ const EazbotLeads = () => {
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [stage, setStage] = useState("");
 
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -77,6 +78,7 @@ const EazbotLeads = () => {
         search: debouncedSearch,
         limit: limit,
         created_from: CREATED_FROM,
+        stage: stage,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -182,7 +184,7 @@ const EazbotLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -227,6 +229,19 @@ const EazbotLeads = () => {
                 placeholder="Search clients..."
                 className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
                 onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <CustomDropdown
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
+                onChange={(value) => setStage(value)}
               />
             </div>
 
