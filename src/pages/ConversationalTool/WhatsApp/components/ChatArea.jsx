@@ -438,17 +438,17 @@ const ChatArea = () => {
                         )}
 
                       {/* IMAGE */}
-                      {message.messageType === "image" ||
-                        (message.messageType === "sticker" && (
-                          <img
-                            src={
-                              message.media?.url ||
-                              ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                            }
-                            alt="WhatsApp"
-                            className="mt-2 rounded-lg w-full size-44"
-                          />
-                        ))}
+                      {(message.messageType === "image" ||
+                        message.messageType === "sticker") && (
+                        <img
+                          src={
+                            message.media?.url ||
+                            ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                          }
+                          alt="WhatsApp"
+                          className="mt-2 rounded-lg w-full size-44"
+                        />
+                      )}
 
                       {/* AUDIO */}
                       {message.messageType === "audio" && (
@@ -649,6 +649,12 @@ const ChatArea = () => {
                 onChange={handleChange}
                 placeholder="Type a message"
                 rows={1}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault(); // ❗ stop newline
+                    handleSendMessage(e); // OR trigger form submit
+                  }
+                }}
                 className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
               />
             ) : (

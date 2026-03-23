@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }) {
           style={{
             width: isOpen ? `100%` : "0px",
           }}
-          className={` ${isOpen?"block md:hidden":"hidden"} ${
+          className={` ${isOpen ? "block md:hidden" : "hidden"} ${
             isSmooth ? "transition-all duration-300" : ""
           } overflow-hidden bg-white sm:overflow-hidden w-[100%]`}
         >

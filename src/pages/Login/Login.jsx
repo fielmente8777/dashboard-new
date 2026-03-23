@@ -53,32 +53,28 @@ const Login = () => {
     let timerInterval;
     if (response.success === false) {
       setSpinnerLoader(false);
-      showToast(
-        {
-          message: error || "Login failed. Please enter correct username and password",
-          type: "error",
-        }
-      )
+      showToast({
+        message:
+          error || "Login failed. Please enter correct username and password",
+        type: "error",
+      });
     } else if (response.data.Status) {
       const token = response?.data?.Token;
       handleLocalStorage("token", token || "");
       setCookie("token", token || "");
       setSpinnerLoader(false);
-      showToast(
-        {
-          message: response.data.Message || "Logged in Successfully",
-          type: "success",
-        }
-      )
+      showToast({
+        message: response.data.Message || "Logged in Successfully",
+        type: "success",
+      });
       navigate("/");
     } else {
       setSpinnerLoader(false);
-      showToast(
-        {
-          message: error || "Login failed. Please enter correct username and password",
-          type: "error",
-        }
-      )
+      showToast({
+        message:
+          error || "Login failed. Please enter correct username and password",
+        type: "error",
+      });
     }
   };
 
@@ -92,7 +88,6 @@ const Login = () => {
       });
 
       if (response?.data?.Status === true) {
-        
         Swal.fire({
           title: "Password reset successfully",
           text: "Please check your email to reset your password.",
@@ -161,9 +156,9 @@ const Login = () => {
 
   const handleFailure = (error) => {
     showToast({
-          message: error || "Login failed. Please try again",
-          type: "error",
-        });
+      message: error || "Login failed. Please try again",
+      type: "error",
+    });
     console.error("Login Failed:", error);
     setError("Login failed. Please try again.");
   };
@@ -284,7 +279,7 @@ const Login = () => {
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
-                // clientSecret={"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"}
+                  // clientSecret={"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"}
                 >
                   <div className="flex justify-center  w-full rounded-md">
                     <GoogleLogin
@@ -297,10 +292,8 @@ const Login = () => {
                       theme="filled_blue"
                       size="large"
                       shape="pill"
-                    // useOneTap={true}
+                      // useOneTap={true}
                     />
-
-                  
                   </div>
                 </GoogleOAuthProvider>
               </div>
@@ -373,7 +366,7 @@ const Login = () => {
                 </div>
               </div> */}
 
-              {/* <div className="flex justify-between items-start">
+      {/* <div className="flex justify-between items-start">
                   <div className="flex items-center gap-1">
                     <input type="checkbox" id="remember" className="mt-1" />
                     <label
@@ -391,16 +384,16 @@ const Login = () => {
                     Forgot Password
                   </p>
                 </div> */}
-            {/* </div> */}
+      {/* </div> */}
 
-            {/* <div className="flex">
+      {/* <div className="flex">
               <button className="bg-[#159aff] rounded-md text-white py-3 text-sm shadow-md w-full flex justify-center gap-3 items-center">
                 Sign In <SignInIcon />
                 {spinnerLoader && <Loader size={18} color="white" />}
               </button>
             </div> */}
 
-            {/* <div className="">
+      {/* <div className="">
               <GoogleOAuthProvider
                 clientId={
                   "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
@@ -425,7 +418,7 @@ const Login = () => {
               </GoogleOAuthProvider>
             </div> */}
 
-            {/* <div>
+      {/* <div>
                 <p className="text-md font-medium text-text-gray -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
@@ -436,7 +429,7 @@ const Login = () => {
                   </Link>
                 </p>
               </div> */}
-          {/* </div>
+      {/* </div>
         </form>
       </div>
       <div>

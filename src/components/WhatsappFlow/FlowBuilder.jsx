@@ -18,6 +18,7 @@ import ListNode from "./nodes/ListNode";
 import QuestionNode from "./nodes/QuestionNode";
 import { NEW_BASE_URL } from "../../data/constant";
 import { getWhatsAppFlows } from "../../services/api/whatsApp";
+import Loader from "../Loader";
 
 const nodeTypes = {
   sendMessage: SendMessageNode,
@@ -31,6 +32,7 @@ export default function FlowBuilder() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const onConnect = useCallback(
     (params) =>
@@ -158,6 +160,7 @@ export default function FlowBuilder() {
   };
 
   const handlePublish = async () => {
+    setLoading(true);
     const formData = new FormData();
 
     formData.append("nodes", JSON.stringify(nodes));
@@ -167,16 +170,22 @@ export default function FlowBuilder() {
       formData.append(`file_${blockId}`, file);
     });
 
-    await fetch(
-      `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    try {
+      await fetch(
+        `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: formData,
         },
-        body: formData,
-      },
-    );
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchFlows = async () => {
@@ -199,9 +208,9 @@ export default function FlowBuilder() {
       <div className="flex justify-end absolute top-4 right-4 z-50">
         <button
           onClick={() => handlePublish()}
-          className="bg-slate-800 px-4 py-1 text-white"
+          className="bg-slate-800 px-4 py-1 text-white flex items-center gap-1 rounded-sm"
         >
-          Publish
+          Publish {loading && <Loader color="#fefefe" />}
         </button>
       </div>
       <div className="flex h-[90vh]">

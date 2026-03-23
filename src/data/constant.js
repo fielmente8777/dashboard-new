@@ -4,7 +4,8 @@ export const BASE_URL = "https://nexon.eazotel.com";
 
 // export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 export const NEW_BASE_URL = "http://localhost:8000";
-// export const NEW_BASE_URL = "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
+// export const NEW_BASE_URL =
+//   "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
 
@@ -13,8 +14,8 @@ export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
 
 export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-export const WS_BASE_URL = "ws://localhost:8000";
-// export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
+// export const WS_BASE_URL = "ws://localhost:8000";
+export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
 
 export const room_type_name = {
   1: "DELUXE",
