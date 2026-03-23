@@ -14,6 +14,8 @@ import WebSocketClient from "../../config/websocketClient";
 import {
   BASE_PATH,
   ROUTES_PATH,
+  Sources,
+  Stages,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../data/constant";
@@ -23,24 +25,6 @@ import { getLeads, updateLead } from "../../services/api/leads.api";
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 import AdsLeadsUsingGoogleSheet from "./AdsLeadsUsingGoogleSheet";
-
-const Stages = [
-  { label: "Open Queries", value: "Open" },
-  { label: "Contacted", value: "Contacted" },
-  { label: "Converted", value: "Converted" },
-  { label: "Out Of Budget", value: "Out Of Budget" },
-  { label: "Potential For Later", value: "Potential" },
-  { label: "Quotation Provided", value: "Quotation Provided" },
-  { label: "Dead Lead", value: "Dead Lead" },
-  { label: "Date Sold Out", value: "Date Sold Out" },
-  { label: "Duplicate", value: "Duplicate" },
-  { label: "Follow up", value: "Follow Up" },
-  { label: "Not Respond", value: "Not Respond" },
-  { label: "Qualified", value: "Qualified" },
-  { label: "Not Qualified", value: "Not Qualified" },
-  { label: "Turn Away", value: "Turn Away" },
-  { label: "Hot", value: "Hot" },
-];
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -53,6 +37,8 @@ const AllLeads = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [stage, setStage] = useState("");
+  const [source, setSource] = useState("");
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
@@ -95,6 +81,7 @@ const AllLeads = () => {
         search: debouncedSearch,
         limit: limit,
         stage: stage,
+        source: source,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -198,7 +185,7 @@ const AllLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage, source]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -211,6 +198,8 @@ const AllLeads = () => {
 
     return () => wsRef.current?.close();
   }, []);
+
+  console.log(source);
 
   // const [filters, setFilter] = useState(false);
 
@@ -275,7 +264,20 @@ const AllLeads = () => {
 
             <div>
               <CustomDropdown
-                options={Stages}
+                options={Sources}
+                onChange={(value) => setSource(value)}
+              />
+            </div>
+
+            <div>
+              <CustomDropdown
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
                 onChange={(value) => setStage(value)}
               />
             </div>

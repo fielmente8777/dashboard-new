@@ -191,11 +191,9 @@ export default function FlowBuilder() {
   const fetchFlows = async () => {
     const response = await getWhatsAppFlows();
 
-    console.log(response);
-
     if (response.success && response.responseStatusCode === 200) {
-      setNodes(response?.result?.docs?.flow?.nodes);
-      setEdges(response?.result?.docs?.flow?.edges);
+      setNodes(response?.result?.docs?.flow?.nodes || []);
+      setEdges(response?.result?.docs?.flow?.edges || []);
     }
   };
 

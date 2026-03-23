@@ -48,6 +48,7 @@ const GoogleAds = () => {
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [stage, setStage] = useState("");
 
   const {
     page,
@@ -84,7 +85,7 @@ const GoogleAds = () => {
         page: page,
         search: debouncedSearch,
         limit: limit,
-
+        stage: stage,
         created_from: CREATED_FROM,
       };
 
@@ -254,7 +255,7 @@ const GoogleAds = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -301,6 +302,18 @@ const GoogleAds = () => {
               />
             </div>
 
+            <div>
+              <CustomDropdown
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
+                onChange={(value) => setStage(value)}
+              />
+            </div>
             {/* DATE RANGE */}
             <div className="relative">
               <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">

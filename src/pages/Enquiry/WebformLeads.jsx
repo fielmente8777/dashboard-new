@@ -56,6 +56,7 @@ const WebformLeads = () => {
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [stage, setStage] = useState("");
 
   const [selectedRow, setSelectedRow] = useState(null);
 
@@ -95,6 +96,7 @@ const WebformLeads = () => {
         search: debouncedSearch,
         limit: limit,
         created_from: CREATED_FROM,
+        stage: stage,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -198,7 +200,7 @@ const WebformLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit]);
+  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -243,6 +245,19 @@ const WebformLeads = () => {
                 placeholder="Search clients..."
                 className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
                 onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <CustomDropdown
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
+                onChange={(value) => setStage(value)}
               />
             </div>
 
