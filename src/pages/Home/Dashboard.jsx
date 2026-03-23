@@ -175,14 +175,14 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
          <div className="lg:col-span-3">
                <AnalyticsCard />
              </div>
              <div className="md:hidden lg:block lg:col-span-2">
                <TemperatureCard />
             </div>
-           </div>
+           </div> */}
       {/* FUNNEL */}
       <div className="bg-white rounded md:rounded-lg p-5">
         <h2 className="text-lg font-semibold mb-4">

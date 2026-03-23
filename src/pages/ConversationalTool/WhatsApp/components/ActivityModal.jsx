@@ -36,20 +36,20 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
   const selected = activityOptions.find((a) => a.value === activitySource);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-5">
-      <div className="bg-white w-[420px] rounded-xl shadow-lg">
+    <div className="">
+      {open&&<div className="bg-white">
         {/* Header */}
-        <div className="flex justify-between items-center px-5 py-4 border-b">
+        {/* <div className="flex justify-between items-center px-5 py-4 border-b">
           <h2 className="font-semibold text-lg">
             {initialData ? "Edit Activity" : "Add Activity"}
           </h2>
           <button onClick={onClose} className="text-gray-500">
             ✕
           </button>
-        </div>
+        </div> */}
 
         {/* Body */}
-        <div className="p-5 space-y-4">
+        <div className=" space-y-4">
           <div className="flex items-center gap-3 border rounded-lg px-3 py-2">
             <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center">
               {selected.emoji}
@@ -78,7 +78,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
         </div>
 
         {/* Footer */}
-        <div className="p-5 pt-0">
+        <div className="py-5 pt-0">
           <button
             onClick={handleSave}
             className="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700"
@@ -86,7 +86,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
             Save
           </button>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

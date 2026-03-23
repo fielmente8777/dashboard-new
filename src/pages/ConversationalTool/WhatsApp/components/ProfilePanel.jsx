@@ -14,6 +14,7 @@ import {
 } from "../../../../utils/formateDate";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
+import { IoMdArrowDropdown } from "react-icons/io";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { confirm } = useConfirm();
@@ -228,15 +229,15 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <h3 className="text-sm font-medium text-[#37322F] mb-4">Notes</h3>
 
             {/* Add Activity */}
-            <div className="flex items-center gap-3.5 mb-4">
+            <div onClick={() => setIsAddActivityOpen(!isAddActivityOpen)} className=" cursor-pointer flex items-center gap-3.5 mb-4">
               <button
                 className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg"
-                onClick={() => setIsAddActivityOpen(true)}
+                
               >
                 +
               </button>
 
-              <p className="text-teal-600 font-medium">Add Activity</p>
+              <p className="text-teal-600 font-medium flex items-center gap-2">Add Activity <span>{isAddActivityOpen?<span><IoMdArrowDropdown  className="rotate-180"  size={20}/></span>:<span><IoMdArrowDropdown size={20}/></span>}</span></p>
             </div>
 
             {/* Timeline */}
