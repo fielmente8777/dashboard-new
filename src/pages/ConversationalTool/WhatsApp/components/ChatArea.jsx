@@ -12,9 +12,11 @@ import {
   WS_BASE_URL,
 } from "../../../../data/constant";
 import {
+  getFlowSession,
   getWhatsappConversationMessages,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
+  updateFlowSession,
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import normalizePhone from "../../../../utils/normalizePhone";
@@ -22,13 +24,16 @@ import { renderMessageWithLinks } from "../../../../utils/urlParser";
 import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
+import { useToast } from "../../../../context/ToastContext";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const textareaRef = useRef(null);
+  const { showToast } = useToast();
   const { selectedConversation, conversations, setMobileActive } =
     useContext(DataContext);
 
+  const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
   );
@@ -228,6 +233,41 @@ const ChatArea = () => {
     el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
   };
 
+  const handleTakeOver = async () => {
+    const payload = {
+      phone: selectedConversation.phone,
+      isActive: !isTakeOver,
+    };
+    try {
+      const response = await updateFlowSession(payload);
+      console.log(response);
+      if (response?.success) {
+        showToast({
+          message: response?.responseMessage,
+          type: "success",
+        });
+      }
+      setIsTakeOver(!isTakeOver);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchFlowSession = async () => {
+    const payload = {
+      phone: selectedConversation.phone,
+    };
+    try {
+      const response = await getFlowSession(payload);
+      console.log(response);
+      if (response.success) {
+        setIsTakeOver(response?.result?.docs?.flowSession?.isActive);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+
   useEffect(() => {
     fetchTemplate();
   }, []);
@@ -236,6 +276,7 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      console.log(serverResponse);
       if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
@@ -271,11 +312,14 @@ const ChatArea = () => {
 
   useEffect(() => {
     loadMessages(selectedConversation?._id);
+    fetchFlowSession();
   }, [selectedConversation?._id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
+
+  console.log(isTakeOver);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -585,14 +629,20 @@ const ChatArea = () => {
         )}
 
         <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             {!templateClick ? (
-              <span
-                onClick={() => handleTemplate(true)}
-                className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
-              >
-                <MdChat className="" /> Templates
-              </span>
+              <>
+                {!isTakeOver ? (
+                  <span
+                    onClick={() => handleTemplate(true)}
+                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+                  >
+                    <MdChat className="" /> Templates
+                  </span>
+                ) : (
+                  ""
+                )}
+              </>
             ) : (
               <span
                 onClick={() => handleTemplate(false)}
@@ -601,20 +651,88 @@ const ChatArea = () => {
                 Close Templates <MdClose />
               </span>
             )}
+
+            {isTakeOver && (
+              <div className="flex justify-center w-full">
+                <button
+                  type="button"
+                  onClick={handleTakeOver}
+                  className={`text-xs bg-primary rounded-sm text-white px-2 py-1 ${!isTakeOver ? "opacity-70" : ""}`}
+                >
+                  Take Over
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white py-3 flex w-full items-center gap-3">
-            {/* Attachment */}
-            {!is24HourComplete && (
+          {!isTakeOver && (
+            <div className="bg-white py-3 flex w-full items-center gap-3">
+              {/* Attachment */}
+              {!is24HourComplete && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="text-gray-500 hover:text-teal-600"
+                >
+                  {/* Paperclip SVG */}
+                  <svg
+                    width="22"
+                    height="22"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                    />
+                  </svg>
+                </button>
+              )}
+
+              {!is24HourComplete && (
+                <input
+                  disabled={is24HourComplete}
+                  ref={fileInputRef}
+                  type="file"
+                  hidden
+                  onChange={(e) => {
+                    setFile(e.target.files[0]);
+                  }}
+                />
+              )}
+
+              {!is24HourComplete ? (
+                <textarea
+                  disabled={is24HourComplete}
+                  ref={textareaRef}
+                  value={messageValue}
+                  onChange={handleChange}
+                  placeholder="Type a message"
+                  rows={1}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault(); // ❗ stop newline
+                      handleSendMessage(e); // OR trigger form submit
+                    }
+                  }}
+                  className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                />
+              ) : (
+                <div className="flex-1"></div>
+              )}
+
+              {/* Send Button */}
               <button
-                type="button"
-                onClick={() => fileInputRef.current.click()}
-                className="text-gray-500 hover:text-teal-600"
+                type="submit"
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
               >
-                {/* Paperclip SVG */}
+                {/* Send SVG */}
                 <svg
-                  width="22"
-                  height="22"
+                  width="18"
+                  height="18"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -623,72 +741,18 @@ const ChatArea = () => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                    d="M22 2L11 13"
+                  />
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M22 2L15 22l-4-9-9-4 20-7z"
                   />
                 </svg>
               </button>
-            )}
-
-            {!is24HourComplete && (
-              <input
-                disabled={is24HourComplete}
-                ref={fileInputRef}
-                type="file"
-                hidden
-                onChange={(e) => {
-                  setFile(e.target.files[0]);
-                }}
-              />
-            )}
-
-            {!is24HourComplete ? (
-              <textarea
-                disabled={is24HourComplete}
-                ref={textareaRef}
-                value={messageValue}
-                onChange={handleChange}
-                placeholder="Type a message"
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault(); // ❗ stop newline
-                    handleSendMessage(e); // OR trigger form submit
-                  }
-                }}
-                className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
-              />
-            ) : (
-              <div className="flex-1"></div>
-            )}
-
-            {/* Send Button */}
-            <button
-              type="submit"
-              className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
-            >
-              {/* Send SVG */}
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 2L11 13"
-                />
-                <path
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 2L15 22l-4-9-9-4 20-7z"
-                />
-              </svg>
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </form>
     </div>

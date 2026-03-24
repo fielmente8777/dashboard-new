@@ -202,8 +202,8 @@ export default function FlowBuilder() {
   }, []);
 
   return (
-    <div className="relative">
-      <div className="flex justify-end absolute top-4 right-4 z-50">
+    <div>
+      <div className="flex justify-end p-2 z-50">
         <button
           onClick={() => handlePublish()}
           className="bg-slate-800 px-4 py-1 text-white flex items-center gap-1 rounded-sm"
@@ -211,42 +211,45 @@ export default function FlowBuilder() {
           Publish {loading && <Loader color="#fefefe" />}
         </button>
       </div>
-      <div className="flex h-[90vh]">
-        <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-        <div className="flex-1">
-          <ReactFlow
-            nodes={nodes?.map((node) => ({
-              ...node,
-              data: {
-                ...node.data,
-                filesMap,
-                setFilesMap,
-              },
-            }))}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            onConnect={onConnect}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeClick={onNodeClick}
-            onEdgeClick={onEdgeClick}
-            connectionLineType="smoothstep"
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap position="bottom-right" />
-          </ReactFlow>
+      <div className="relative">
+        <div className="flex h-[90vh]">
+          <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
+
+          <div className="flex-1">
+            <ReactFlow
+              nodes={nodes?.map((node) => ({
+                ...node,
+                data: {
+                  ...node.data,
+                  filesMap,
+                  setFilesMap,
+                },
+              }))}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              onConnect={onConnect}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeClick={onNodeClick}
+              onEdgeClick={onEdgeClick}
+              connectionLineType="smoothstep"
+              fitView
+            >
+              <Background />
+              <Controls />
+              <MiniMap position="bottom-right" />
+            </ReactFlow>
+          </div>
+
+          {selectedNode && (
+            <SettingsPanel
+              node={selectedNode}
+              setSelectedNode={setSelectedNode}
+              setNode={setNodes}
+            />
+          )}
         </div>
-
-        {selectedNode && (
-          <SettingsPanel
-            node={selectedNode}
-            setSelectedNode={setSelectedNode}
-            setNode={setNodes}
-          />
-        )}
       </div>
     </div>
   );

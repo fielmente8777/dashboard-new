@@ -36,7 +36,6 @@ export default function ButtonsNode({ id, data }) {
         >
           X
         </div>
-        {/* <FiMoreVertical className="cursor-pointer" /> */}
       </div>
 
       {headerText && (
@@ -54,7 +53,6 @@ export default function ButtonsNode({ id, data }) {
         <div className="px-3 text-sm text-gray-700 py-1.5">{footerText}</div>
       )}
 
-      {/* Answers */}
       <div className="space-y-2 px-3 pb-3">
         {buttons.map((btn) => (
           <div

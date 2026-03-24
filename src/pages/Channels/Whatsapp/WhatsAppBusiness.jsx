@@ -33,6 +33,7 @@ import CreateTemplate from "./Templates/CreateTemplate";
 import WhatsAppMessageTemplate from "./Templates/Templates";
 import TemplatePreview from "./Templates/TemplatePreview";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
+import { useToast } from "../../../context/ToastContext";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -516,7 +517,11 @@ const AutoMessageCard = ({
   phoneNumberId,
   notification,
 }) => {
+  console.log(autoMessage);
+  console.log(templates);
   const textareaRef = useRef(null);
+
+  const { showToast } = useToast();
 
   const [channels, setChannels] = useState({
     metaLead: autoMessage?.metaLead ?? false,
@@ -599,7 +604,14 @@ const AutoMessageCard = ({
         ...(flowId && { flowId }),
       };
 
-      await updateAutoMessageConfig(payload);
+      const response = await updateAutoMessageConfig(payload);
+
+      if (response?.success && response.responseStatusCode === 200) {
+        showToast({
+          message: "Auto message updated successfully",
+          type: "success",
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {

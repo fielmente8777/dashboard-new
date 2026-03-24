@@ -29,18 +29,18 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
   ];
 
   const questionsBlock = [
-    {
-      type: "question",
-      label: "Question",
-      desc: "Ask an open question to the user",
-      color: "from-orange-400 to-orange-600",
-      icon: "❓",
-    },
+    // {
+    //   type: "question",
+    //   label: "Question",
+    //   desc: "Ask an open question to the user",
+    //   color: "from-orange-400 to-orange-600",
+    //   icon: "❓",
+    // },
     {
       type: "button",
       label: "Buttons",
       desc: "Let user choose from quick reply buttons",
-      color: "from-blue-400 to-blue-600",
+      color: "from-orange-400 to-orange-500",
       icon: "🔘",
     },
     {

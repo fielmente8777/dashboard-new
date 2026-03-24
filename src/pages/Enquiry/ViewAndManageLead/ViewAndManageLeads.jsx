@@ -205,6 +205,9 @@ const ViewAndManageLeads = () => {
                   placeholderText={`${selectedDate ? new Date(selectedDate).toLocaleString() : " Select Date"}`}
                   popperClassName="!z-50"
                 />
+                {lead?.followUp && (
+                  <button onClick={() => handleFollow(null)}>X</button>
+                )}
               </div>
             )}
             {/* {lead?.Contact && (
@@ -221,36 +224,37 @@ const ViewAndManageLeads = () => {
           </div>
         </div>
         <div className="flex justify-end items-center gap-3">
-        {/* Prev Button */}
-        <button
-          onClick={handlePrevPage}
-          className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
+          {/* Prev Button */}
+          <button
+            onClick={handlePrevPage}
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
                hover:bg-gray-100 hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          ← Prev
-        </button>
+          >
+            ← Prev
+          </button>
 
-        {/* Next Button */}
-        <button
-          onClick={handleNextPage}
-          className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
+          {/* Next Button */}
+          <button
+            onClick={handleNextPage}
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
                hover:bg-gray-100 hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next →
-        </button>
+          >
+            Next →
+          </button>
+        </div>
       </div>
-      </div>
-
-      
 
       {activeTab === 0 && (
         <>
           <LeadHeader lead={lead} />
 
           <div className="grid grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
-            <CustomerInfoCard lead={lead}  onClick={() => setQuickResponseOpen(true)}  />
+            <CustomerInfoCard
+              lead={lead}
+              onClick={() => setQuickResponseOpen(true)}
+            />
             {lead?.other_details && (
               <OtherDetailsCard otherDetails={lead?.other_details} />
             )}

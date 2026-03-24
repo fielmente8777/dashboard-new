@@ -196,3 +196,34 @@ export const getWhatsAppFlows = async () => {
   const data = await response.json();
   return data;
 };
+
+export const getFlowSession = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/flow-session?hid=${localStorage.getItem("hid")}&ndid=${localStorage.getItem("ndid")}&phone=${payload?.phone}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const updateFlowSession = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/flow-session?hid=${localStorage.getItem("hid")}&ndid=${localStorage.getItem("ndid")}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};
