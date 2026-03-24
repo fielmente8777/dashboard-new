@@ -5,6 +5,7 @@ import Eazobot from "../Eazobot/Eazobot";
 import Integration from "../AppIntegration/Integration";
 import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
+import Notification from "./Notification";
 
 const Settings = () => {
   // const tabs= ["Profile","WhatsApp","Lead","Google Ads","Eazbot","Integration"];
@@ -15,6 +16,7 @@ const Settings = () => {
     "Integration",
     "Team Management",
     // "EazWallet",
+    "Notification",
   ];
 
   const [activeTab, setActiveTab] = useState("Profile");
@@ -68,6 +70,11 @@ const Settings = () => {
       {activeTab === "EazWallet" && (
         <div>
           <Wallet />
+        </div>
+      )}
+      {activeTab === "Notification" && (
+        <div>
+          <Notification />
         </div>
       )}
     </div>
