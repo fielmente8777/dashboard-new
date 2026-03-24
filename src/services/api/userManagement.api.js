@@ -4,7 +4,7 @@ import { BASE_URL } from "../../data/constant";
 // handle api for getting user management data
 export const fetchUserManagementData = async (token) => {
   try {
-    const response = await axios.get(`${BASE_URL}/user/${token}`, {
+    const response = await fetch(`${BASE_URL}/user/${token}`, {
       method: "GET", // Use 'GET' method
       headers: {
         Accept: "application/json",
@@ -56,6 +56,6 @@ export const UpdateUser = async (body) => {
     const result = await response.json();
     return result;
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 };
