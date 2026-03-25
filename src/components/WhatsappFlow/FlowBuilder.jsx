@@ -19,12 +19,15 @@ import QuestionNode from "./nodes/QuestionNode";
 import { NEW_BASE_URL } from "../../data/constant";
 import { getWhatsAppFlows } from "../../services/api/whatsApp";
 import Loader from "../Loader";
+import CarouselNode from "./nodes/CarouselNode";
+import WhatsAppFlowsBuilder from "./WhtasAppFlowBuilder";
 
 const nodeTypes = {
   sendMessage: SendMessageNode,
   button: ButtonsNode,
   list: ListNode,
   question: QuestionNode,
+  carousel: CarouselNode,
 };
 
 export default function FlowBuilder() {
@@ -216,7 +219,7 @@ export default function FlowBuilder() {
         <div className="flex h-[90vh]">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-          <div className="flex-1">
+          {/* <div className="flex-1">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
@@ -240,7 +243,8 @@ export default function FlowBuilder() {
               <Controls />
               <MiniMap position="bottom-right" />
             </ReactFlow>
-          </div>
+          </div> */}
+          <WhatsAppFlowsBuilder />
 
           {selectedNode && (
             <SettingsPanel

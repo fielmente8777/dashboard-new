@@ -139,7 +139,7 @@ export default function SendMessageNode({ id, data }) {
             >
               {/* Caption input for supported types */}
               {(block.type === "text" || block.type === "image") && (
-                <input
+                <textarea
                   value={block.title}
                   onChange={(e) => updateTitle(block.id, e.target.value)}
                   placeholder={
@@ -165,7 +165,6 @@ export default function SendMessageNode({ id, data }) {
               )}
 
               {/* Preview */}
-
               {block.file && block.type === "image" && (
                 <img
                   src={

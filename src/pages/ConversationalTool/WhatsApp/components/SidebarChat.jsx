@@ -130,11 +130,16 @@ const SidebarChat = () => {
   }, [debouncedSearch, conversations]);
 
   useEffect(() => {
+    console.log("aaya");
+    console.log(activeTab);
+
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
       setSelectedConversation(null);
       // setSelectedConversation(actConversations[0]);
+    } else if (activeTab === "Inactive" && historyConversations) {
+      setFilteredConversations(historyConversations());
     }
 
     const actCount = activeConversations()?.length;
@@ -142,9 +147,9 @@ const SidebarChat = () => {
     setCountsConversation({ active: actCount, inactive: inactCount });
 
     fetchTemplates();
-  }, []);
+  }, [conversations]);
 
-  console.log(countsConversation);
+  console.log(filteredConversations);
 
   return (
     <div className="w-full md:w-90 border-b md:border-l md:border-r border-gray-200 flex flex-col bg-white">

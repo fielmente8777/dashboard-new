@@ -1,4 +1,5 @@
 import ButtonsSettings from "./ButtonSetting";
+import CarouselSettings from "./CarouselSettings";
 import ListSetting from "./ListSetting";
 import QuestionSettings from "./QuestionSetting";
 
@@ -62,6 +63,13 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
       {node.type === "question" && (
         <QuestionSettings
           data={node.data}
+          onSave={(data) => handleDataSave(data)}
+          onCancel={() => handleButtonCancel()}
+        />
+      )}
+
+      {node.type === "carousel" && (
+        <CarouselSettings
           onSave={(data) => handleDataSave(data)}
           onCancel={() => handleButtonCancel()}
         />

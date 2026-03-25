@@ -50,6 +50,13 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
       color: "from-purple-400 to-purple-600",
       icon: "📋",
     },
+    {
+      type: "carousel",
+      label: "Carousel",
+      desc: "Show selectable list options",
+      color: "from-primary to-primary/85",
+      icon: "📋",
+    },
   ];
 
   return (

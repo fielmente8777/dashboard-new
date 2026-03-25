@@ -31,7 +31,7 @@ export const ConfirmProvider = ({ children }) => {
       {children}
 
       {confirmState && (
-        <div className="fixed inset-0 z-9999 flex items-start justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-9999999 flex items-start justify-center bg-black/40 backdrop-blur-sm">
           <div
             className="mt-4 w-105 rounded-xl bg-white p-6 shadow-xl
             animate-[slideDown_.25s_ease]"
