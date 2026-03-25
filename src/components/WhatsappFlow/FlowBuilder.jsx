@@ -219,7 +219,7 @@ export default function FlowBuilder() {
         <div className="flex h-[90vh]">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-          {/* <div className="flex-1">
+          <div className="flex-1">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
@@ -243,8 +243,8 @@ export default function FlowBuilder() {
               <Controls />
               <MiniMap position="bottom-right" />
             </ReactFlow>
-          </div> */}
-          <WhatsAppFlowsBuilder />
+          </div>
+          {/* <WhatsAppFlowsBuilder /> */}
 
           {selectedNode && (
             <SettingsPanel

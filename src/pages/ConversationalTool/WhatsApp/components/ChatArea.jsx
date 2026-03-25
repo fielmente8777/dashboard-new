@@ -283,7 +283,6 @@ const ChatArea = () => {
   };
 
   const handleSelectMode = (message) => {
-    alert("aaya");
     setSelectedMessages([message?.messageId]); // auto select first message
   };
 
@@ -513,8 +512,8 @@ const ChatArea = () => {
                       selectedMessages.includes(message?.messageId)
                         ? "bg-blue-100 border-blue-400"
                         : isMe
-                          ? "bg-white"
-                          : "bg-white"
+                          ? ""
+                          : ""
                     }`}
                   >
                     {selectionMode && (
