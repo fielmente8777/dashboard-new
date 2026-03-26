@@ -109,6 +109,13 @@ const Navbar = () => {
   const onNotificationPopupClose = () => {
     setIsNotificationPopupOpen(false);
   };
+  const hid = localStorage.getItem("hid");
+const hotels = hotel?.Profile?.hotels || {};
+const hotelName = hotels?.[hid]?.local || "";
+const isLoadingProfile = !hotel || !hotel.Profile;
+
+const firstLetter =
+  hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
   return (
     <div className="left-0 top-0">
       <div className="py-2 z-10 bg-blue-100  sm:bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
@@ -121,7 +128,7 @@ const Navbar = () => {
 
         <Greeting
           name={
-            hotel?.Profile?.hotels[localStorage?.getItem("hid")]?.local || ""
+            isLoadingProfile ? "Loading..." : hotelName
           }
         />
         <div className="sm:hidden">
@@ -195,15 +202,13 @@ const Navbar = () => {
           <button
             style={{
               backgroundColor:
-                letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                ],
+              letterColorMap[firstLetter],
             }}
             onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+              {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
             </p>
           </button>
         </div>
@@ -218,15 +223,13 @@ const Navbar = () => {
           <button
             style={{
               backgroundColor:
-                letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                ],
+              letterColorMap[firstLetter],
             }}
             onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+            {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
             </p>
           </button>
         </div>
