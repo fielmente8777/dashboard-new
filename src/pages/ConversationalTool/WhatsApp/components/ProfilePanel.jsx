@@ -162,7 +162,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   };
 
   return (
-    <div className="w-full md:w-80 bg-white border-l border-gray-200 flex flex-col">
+    <div className="w-full md:w-80 h-full overflow-y-auto bg-white border-l border-gray-200 flex flex-col">
       <div className="flex justify-end p-2">
         <button
           disabled={isDeleteLoading}
@@ -225,12 +225,12 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <span className="text-gray-600">Source</span>
             <span className="text-gray-900">AD</span>
           </div> */}
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Message</span>
             <span className="text-gray-900">
               {selectedContact?.last_message?.text}
             </span>
-          </div>
+          </div> */}
           {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">WA Conversation</span>
             <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>

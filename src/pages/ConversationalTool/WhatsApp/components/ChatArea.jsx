@@ -6,6 +6,8 @@ import { Link } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
+
+const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
 import {
   NEW_BASE_URL,
@@ -31,6 +33,7 @@ import { useToast } from "../../../../context/ToastContext";
 const ChatArea = () => {
   const wsRef = useRef(null);
   const menuRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   // const { isLoaded } = useLoadScript({
   //   googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
@@ -63,6 +66,7 @@ const ChatArea = () => {
   const [templateClick, setTemplateClick] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState();
+  const [expandedMessages, setExpandedMessages] = useState({});
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -283,6 +287,7 @@ const ChatArea = () => {
   };
 
   const handleSelectMode = (message) => {
+    setOpenMenuIndex(null);
     setSelectedMessages([message?.messageId]); // auto select first message
   };
 
@@ -322,28 +327,39 @@ const ChatArea = () => {
     }
   };
 
+  const toggleReadMore = (id) => {
+    setExpandedMessages((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   useEffect(() => {
     fetchTemplate();
 
-    // const handleClickOutside = (event) => {
-    //   if (menuRef.current && !menuRef.current.contains(event.target)) {
-    //     setOpenMenuIndex(null);
-    //   }
-    // };
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuIndex(null);
+      }
+    };
 
-    // document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
-    // return () => {
-    //   document.removeEventListener("mousedown", handleClickOutside);
-    // };
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      console.log(serverResponse);
-      if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === selectedConversation?.ndid &&
+        normalizePhone(serverResponse?.data?.from) ===
+          normalizePhone(selectedConversation?.phone)
+      ) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
@@ -366,7 +382,10 @@ const ChatArea = () => {
           }),
         );
       } else if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === selectedConversation?.ndid &&
+        normalizePhone(serverResponse?.data?.from) ===
+          normalizePhone(selectedConversation?.phone)
       ) {
         const { data } = serverResponse;
         setMessageList((prev) => [...prev, data]);
@@ -559,8 +578,26 @@ const ChatArea = () => {
                                     )}
 
                                   {/* Actual Message */}
+
                                   <p className="text-sm whitespace-pre-wrap">
-                                    {renderMessageWithLinks(message?.body)}
+                                    {expandedMessages[message._id]
+                                      ? renderMessageWithLinks(message?.body)
+                                      : renderMessageWithLinks(
+                                          message?.body?.slice(0, MAX_LENGTH),
+                                        )}
+
+                                    {message?.body?.length > MAX_LENGTH && (
+                                      <span
+                                        onClick={() =>
+                                          toggleReadMore(message._id)
+                                        }
+                                        className="text-blue-500 cursor-pointer ml-1"
+                                      >
+                                        {expandedMessages[message._id]
+                                          ? " Read less"
+                                          : "... Read more"}
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                               </div>
@@ -589,12 +626,18 @@ const ChatArea = () => {
                           {(message.messageType === "image" ||
                             message.messageType === "sticker") && (
                             <img
+                              onClick={() =>
+                                setImagePreview(
+                                  message?.media?.url ||
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`,
+                                )
+                              }
                               src={
                                 message.media?.url ||
                                 ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
                               }
                               alt="WhatsApp"
-                              className="mt-2 rounded-lg w-full size-44"
+                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
                             />
                           )}
 
@@ -690,8 +733,8 @@ const ChatArea = () => {
                         <div className="absolute -top-1 right-1">
                           <button
                             ref={menuRef}
-                            onClick={() => {
-                              // e.stopPropagation();
+                            onClick={(e) => {
+                              // e.preventDefault();
                               setOpenMenuIndex(
                                 openMenuIndex === index ? null : index,
                               );
@@ -726,7 +769,8 @@ const ChatArea = () => {
                               </button> */}
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation();
+                                  // e.stopPropagation();
+
                                   handleSelectMode(message);
                                 }}
                                 className="block w-full text-left px-3 py-1 hover:bg-red-100 text-sm text-red-500"
@@ -744,6 +788,35 @@ const ChatArea = () => {
             ) : (
               <p className="text-center text-gray-400">No conversation yet</p>
             )}
+
+            {imagePreview && (
+              <div
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999999"
+                onClick={() => setImagePreview("")}
+              >
+                {/* Prevent closing when clicking on image */}
+                <div
+                  className="relative max-w-4xl w-full px-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setImagePreview("")}
+                    className="absolute -top-10 right-0 text-white text-2xl"
+                  >
+                    ✕
+                  </button>
+
+                  {/* Image */}
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
+                  />
+                </div>
+              </div>
+            )}
+
             <div ref={bottomRef} />
           </div>
         )}

@@ -12,7 +12,7 @@ const categories = [
   { value: "AUTHENTICATION", label: "AUTHENTICATION" },
 ];
 
-const TemplateHeader = () => {
+const TemplateHeader = ({ onCancel, showCancelButton }) => {
   const {
     register,
     control,
@@ -21,7 +21,22 @@ const TemplateHeader = () => {
 
   return (
     <div className="bg-white p-4 rounded-lg border">
-      <h2 className="text-lg font-semibold mb-4">Template name and language</h2>
+      <div className="flex justify-between items-start">
+        <h2 className="text-lg font-semibold mb-4">
+          Template name and language
+        </h2>
+
+        {showCancelButton && (
+          <div>
+            <button
+              className="bg-red-500 rounded-sm text-white px-2 py-1"
+              onClick={onCancel}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-start gap-2 w-full">
         {/* TEMPLATE NAME */}

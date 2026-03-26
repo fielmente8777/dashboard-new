@@ -21,21 +21,21 @@ const extractVariables = (text = "") => {
   }));
 };
 
-const CreateTemplate = () => {
+const CreateTemplate = ({ initialData = null, onClose }) => {
   const [loading, setLoading] = React.useState(false);
   const { showToast } = useToast();
   const methods = useForm({
     resolver: zodResolver(templateSchema),
     defaultValues: {
-      name: "",
-      language: "en_US",
-      category: "UTILITY",
-      header: "",
-      body: "",
-      footer: "",
-      headerVariables: [],
-      bodyVariables: [],
-      buttons: [],
+      name: initialData?.name || "",
+      language: initialData?.language || "en_US",
+      category: initialData?.category || "UTILITY",
+      header: initialData?.header || "",
+      body: initialData?.body || "",
+      footer: initialData?.footer || "",
+      headerVariables: initialData?.headerVariables || [],
+      bodyVariables: initialData?.bodyVariables || [],
+      buttons: initialData?.buttons || [],
     },
   });
 
@@ -119,8 +119,9 @@ const CreateTemplate = () => {
         className="flex gap-6 p-2 bg-white "
       >
         {/* LEFT FORM */}
+
         <div className="flex-1 space-y-6">
-          <TemplateHeader />
+          <TemplateHeader onCancel={onClose} showCancelButton={initialData} />
           <TemplateContent />
           <TemplateButtons />
 

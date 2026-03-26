@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL =
 //   "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
 
@@ -320,3 +320,13 @@ export const Sources = [
   { label: "Google", value: "google" },
   { label: "Vistors", value: "visitors" },
 ];
+
+export const LOCAL_STORAGE = {
+  AllLeadsPage: "all-leads-page",
+  MetaLeadsPage: "meta-leads-page",
+  WhatsappPage: "whatsapp-page",
+  WebformPage: "webform-page",
+  EazbotPage: "eazbot-page",
+  GoogleAdsPage: "google-ads-page",
+  AllVisitorsPage: "all-visitors-page",
+};
