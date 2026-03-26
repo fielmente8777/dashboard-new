@@ -1,222 +1,369 @@
-import { useSelector } from "react-redux";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
+import { getAnalyticsService } from "../../services/api/analytics.api";
 import DashboardCard from "../../components/Card/DashboardCard";
+
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
-import MiniLineChartCard from "../../components/Card/MiniLineChartCard";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { getAllClientEnquires } from "../../services/api/clientEnquire.api";
-import { useEffect, useState } from "react";
-import { getTodayQuery } from "../../utils/getDataInRange";
-import Review from "../../components/Card/Review";
-import Services from "../../components/Card/Services";
+const COLORS = [
+  "#22c55e",
+  "#3b82f6",
+  "#f97316",
+  "#eab308",
+  "#a855f7",
+  "#ef4444",
+  "#14b8a6",
+];
 
 const Dashboard = () => {
-  const [enquires, setEnquires] = useState([]);
-  const [convertedEnquiries, setConvertedEnquiries] = useState(0);
-  const [eazobotEnquiries, setEazobotEnquiries] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
 
-  // const navigate = useNavigate();
-  // const location = useLocation();
-  // const { setHomeNotifications, } = useContext(DataContext);
-
-  // const CheckDashboard = async () => {
-  //     try {
-  //         const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6ImFiQGdtYWlsLmNvbSIsImV4cCI6MTc0MzkzOTY2Mi44NDY2ODV9.c7WpwtKuOdc37PwliLcocQooKtJgHlsmyPZDqDdz5W8"
-  //           if (queryParameters.get("id") !== null) {
-  //             localStorage.setItem("Token", queryParameters.get("id"));
-  //           }
-  //         const response = await fetch(
-  //             `https://nexon.eazotel.com/eazotel/getuser/ ${token}}`,
-  //             {
-  //                 method: "GET",
-  //                 headers: {
-  //                     Accept: "application/json, text/plain, */*",
-  //                     "Content-Type": "application/json",
-  //                 },
-  //             }
-  //         );
-  //         const json = await response.json();
-  //         console.log(json)
-  //           if (json.Status === true) {
-  //             setUserProfile(json.Profile);
-  //             setUserLinks(json.Data);
-  //             setUserPlan(json.Plan);
-  //             setUserAccess(json.Access);
-  //             setIsadmin(json.Admin);
-
-  //             GetAllLocations_hotel();
-  //             CheckDinabiteToken_inDb();
-  //             FetchAccessTokenFromDb();
-  //             FetchSpreadSheetFromDb();
-  //             setAuth(true);
-  //           } else {
-  //             LonestarDashboard()
-
-  //           }
-  //     } catch (error) {
-  //         localStorage.clear();
-  //     }
-  //     setLoader(false);
-  // };
-
-  // useEffect(() => {
-  //     CheckDashboard()
-  //     if (localStorage.getItem('authPassword') && localStorage.getItem('authUsername')) {
-  //         navigate('/')
-  //     }
-
-  //     if (location.pathname === "/") {
-  //         setHomeNotifications([]);
-  //     }
-  // }, [])
-
-  const { user } = useSelector((state) => state?.userProfile);
-
-  const fetchEnquires = async (token) => {
-    const hid = handleLocalStorage("hid");
+  const getAnalytics = async () => {
     try {
-      const response = await getAllClientEnquires({
-        token,
-        hid,
-      });
-      setEnquires(response);
-      const converted = response?.filter((item) => {
-        if (item?.status) {
-          return item?.status.toLowerCase() === "converted";
-        }
-
-        return false;
-      });
-
-      const fromEazobot = response?.filter((item) => {
-        if (item?.created_from === "null") return false;
-        else {
-          if (item?.created_from) {
-            const source = item?.created_from?.toLowerCase();
-            return (
-              source === "eazobot" ||
-              source === "chatbot" ||
-              source === "chat bot"
-            );
-          }
-
-          return false;
-        }
-      });
-
-      setEazobotEnquiries(fromEazobot);
-      setConvertedEnquiries(converted?.length);
+      const response = await getAnalyticsService();
+      setData(response?.result?.docs);
     } catch (error) {
-      console.error("Error fetching enquires:", error);
-    } finally {
-      setLoading(false);
+      console.log("Error fetching analytics:", error);
     }
   };
 
   useEffect(() => {
-    fetchEnquires(localStorage.getItem("token"));
+    getAnalytics();
   }, []);
 
-  const data = [
-    {
-      amount: enquires?.length,
-      lable: "Total Leads",
-      progress: 50,
-    },
-    {
-      amount: getTodayQuery(enquires).length,
-      lable: "Today Leads",
-      progress: 18,
-    },
-    {
-      amount: eazobotEnquiries?.length,
-      lable: "Eazbot Leads",
-      progress: 100,
-    },
-    {
-      amount: convertedEnquiries,
-      lable: "Lead Conversion",
-      progress: 78,
-    },
-  ];
+  // -----------------------
+  // Derived Values
+  // -----------------------
+
+  const total = data?.totalLeads?.[0]?.count || 0;
+  const converted = data?.convertedLeads?.[0]?.count || 0;
+  const whatsapp = data?.totalWhatsappConversations || 0;
+
+  const conversionRate = total
+    ? ((converted / total) * 100).toFixed(1)
+    : 0;
+
+  const cleanedSource = useMemo(() => {
+    return (
+      data?.sourceBreakdown
+        ?.map((item) => ({
+          name: item._id,
+          count: item.count,
+        }))
+        .sort((a, b) => b.count - a.count) || []
+    );
+  }, [data]);
+
+  const cleanedStatus = useMemo(() => {
+    return (
+      data?.statusBreakdown
+        ?.filter((item) => item._id && item._id !== "")
+        .map((item) => ({
+          name: item._id,
+          count: item.count,
+        })) || []
+    );
+  }, [data]);
+
+  const getStatusCount = (status) =>
+    cleanedStatus.find((s) => s.name === status)?.count || 0;
+
+  if (!data) return <div className="p-6">Loading...</div>;
 
   return (
-    <>
-      {!loading ? (
-        <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
-          {/*   */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 xxl:grid-cols-6 gap-4 md:gap-5 mt-4">
-            {data?.map((item, index) => (
+    <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
+      
+      {/* KPI CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               <DashboardCard
-                amount={item.amount}
-                label={item.lable}
-                progress={item.progress}
-                key={index}
+                amount={total}
+                label={"Total Leads"}
+                // progress={item.progress}
+                // key={index}
               />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 ">
-            <div className="lg:col-span-3">
-              <AnalyticsCard />
-            </div>
-            <div className="md:hidden lg:block lg:col-span-2">
-              <TemperatureCard />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
-            <Review />
-            <div className="hidden md:block lg:hidden">
-              <TemperatureCard />
-            </div>
-            <Services />
-
-            <div className="lg:col-span-2">
-              <MiniLineChartCard
-                title="Other"
-                value="0.00"
-                changePercent={0.0}
-                isPositive={false}
-                currentData={[20, 15, 30, 35, 25, 50]}
-                lastWeekData={[25, 30, 22, 40, 33, 38]}
+              <DashboardCard
+                amount={converted}
+                label={"Converted Leads"}
+                // progress={item.progress}
+                // key={index}
               />
-            </div>
-          </div>
+              <DashboardCard
+                amount={conversionRate}
+                label={"Conversion Rate"}
+                progress={conversionRate}
+                // key={index}
+              />
+              <DashboardCard
+                amount={whatsapp}
+                label={"WhatsApp Conversations"}
+                // progress={"20"}
+                // key={index}
+              />
+      </div>
+
+      {/* CHARTS SECTION */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Attractive Source Distribution */}
+        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
+          <h2 className="text-lg font-semibold mb-4">
+            Source Distribution
+          </h2>
+
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart
+              data={cleanedSource}
+              layout="vertical"
+              margin={{ right: 30 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={100}
+                style={{fontSize:"15px"}}
+                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+
+              />
+              <Tooltip />
+              <Bar
+                dataKey="count"
+                radius={[0, 8, 8, 0]}
+              >
+                {cleanedSource.map((_, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+                <LabelList dataKey="count" position="right" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      ) : (
-        <div className="flex flex-col gap-5 hide-scrollbar px-4">
-          {/* <div className="h-14 w-1/3 bg-zinc-200 animate-pulse rounded" /> */}
 
-          <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6 mt-4">
-            {[1, 2, 3, 4].map((_, index) => (
-              <div
-                key={index}
-                className="h-[156px] p-4 rounded-xl overflow-hidden bg-zinc-200 animate-pulse flex flex-col justify-between"
-              ></div>
-            ))}
-          </div>
+        {/* Status Breakdown */}
+        <div className="bg-white rounded md:rounded-lg p-3  md:p-5">
+          <h2 className="text-lg font-semibold mb-4">
+            Stages Breakdown
+          </h2>
 
-          <div className="grid grid-cols-5 gap-5">
-            <div className="col-span-3">
-              <div className="h-[335px] rounded-xl bg-zinc-200 animate-pulse w-full"></div>
-            </div>
-            <div className="col-span-2">
-              <div className="h-[335px] rounded-xl bg-zinc-200 animate-pulse w-full"></div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
-            <div className="lg:col-span-2 bg-zinc-200 animate-pulse p-4 rounded-xl h-[300px]" />
-
-            <div className="lg:col-span-1 bg-zinc-200 animate-pulse p-4 rounded-xl h-[300px]" />
-
-            <div className="col-span-2 bg-zinc-200 animate-pulse rounded-xl h-[300px]" />
-          </div>
+          <ResponsiveContainer width="100%" height={320} >
+            <BarChart data={cleanedStatus} margin={{ top: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" 
+              style={{fontSize:"15px"}} />
+              <YAxis width={50}/>
+              <Tooltip />
+              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                <LabelList dataKey="count" position="top" />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      )}
-    </>
+      </div>
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+         <div className="lg:col-span-3">
+               <AnalyticsCard />
+             </div>
+             <div className="md:hidden lg:block lg:col-span-2">
+               <TemperatureCard />
+            </div>
+           </div>
+      {/* FUNNEL */}
+      <div className="bg-white rounded md:rounded-lg p-5">
+        <h2 className="text-lg font-semibold mb-4">
+          Lead Funnel
+        </h2>
+
+        <FunnelBar
+          label="Open"
+          value={getStatusCount("open")}
+          total={total}
+        />
+        <FunnelBar
+          label="Hot"
+          value={getStatusCount("hot")}
+          total={total}
+        />
+        <FunnelBar
+          label="Converted"
+          value={converted}
+          total={total}
+        />
+      </div>
+    </div>
+  );
+};
+
+const Card = ({ title, value }) => (
+  <div className="bg-white rounded  p-5">
+    <p className="text-gray-500 text-sm">{title}</p>
+    <h3 className="text-3xl font-bold mt-2">{value}</h3>
+  </div>
+);
+
+const FunnelBar = ({ label, value, total }) => {
+  const percentage = total ? (value / total) * 100 : 0;
+
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between mb-1">
+        <span className="font-medium">{label}</span>
+        <span>{value}</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-3">
+        <div
+          className="bg-green-500 h-3 rounded-full transition-all duration-500"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
   );
 };
 
 export default Dashboard;
+
+// import DashboardCard from "../../components/Card/DashboardCard";
+// import AnalyticsCard from "../../components/Card/AnalyticsCard";
+// import TemperatureCard from "../../components/Card/TemperatureCard";
+// import MiniLineChartCard from "../../components/Card/MiniLineChartCard";
+// import {useEffect, useState } from "react";
+// import Review from "../../components/Card/Review";
+// import Services from "../../components/Card/Services";
+// import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
+// import { getAnalyticsService } from "../../services/api/analytics.api";
+
+// const Dashboard = () => {
+//   const [loading, setLoading] = useState(true);
+
+//   const [dateRange, setDateRange] = useState(""); // default 7 days
+
+//   const handleDateSelect = (e) => {
+//     const { value } = e.target;
+//     setDateRange(value);
+//   };
+//   const getAnalytics=async()=>{
+//     try{
+//       const response=await getAnalyticsService();
+//       console.log(response);
+//     }catch(error){
+//       console.log("Error",error);
+//     }
+//   }
+
+//   useEffect(()=>{
+//     getAnalytics()
+//   },[])
+//   return (
+//     <>
+//       {!loading ? (
+//         <div className="flex flex-col gap-5 hide-scrollbar md:px-4">
+
+//           <div className="flex items-center justify-end p-2">
+//             <select
+//               value={dateRange}
+//               onChange={handleDateSelect}
+//               className="border border-gray-400 shadow-md rounded-md px-3 py-2 text-sm outline-none cursor-pointer"
+//             >
+//               <option value="" disabled>
+//                 Select Date
+//               </option>
+//               <option value="7d">Last 7 Days</option>
+//               <option value="30d">Last 30 Days</option>
+//               <option value="90d">Last 90 Days</option>
+//               <option value="all">All Time</option>
+//             </select>
+//           </div>
+
+//           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 xxl:grid-cols-6 gap-4 md:gap-6 mt-4">
+//             {data?.map((item, index) => (
+//               <DashboardCard
+//                 amount={item.amount}
+//                 label={item.lable}
+//                 progress={item.progress}
+//                 key={index}
+//               />
+//             ))}
+//           </div>
+
+//           <div>
+//             <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} />
+//           </div>
+//           <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 border">
+//             <div className="lg:col-span-3">
+//               <AnalyticsCard />
+//             </div>
+//             <div className="md:hidden lg:block lg:col-span-2">
+//               <TemperatureCard />
+//             </div>
+//           </div>
+
+//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+//             <Review />
+//             <div className="hidden md:block lg:hidden">
+//               <TemperatureCard />
+//             </div>
+//             <Services />
+
+//             <div className="lg:col-span-2">
+//               <MiniLineChartCard
+//                 title="Other"
+//                 value="0.00"
+//                 changePercent={0.0}
+//                 isPositive={false}
+//                 currentData={[20, 15, 30, 35, 25, 50]}
+//                 lastWeekData={[25, 30, 22, 40, 33, 38]}
+//               />
+//             </div>
+//           </div>
+//         </div>
+//       ) : (
+//         <div className="flex flex-col gap-5 hide-scrollbar px-4">
+
+//           <div className="grid grid-cols-1 md:gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 xxl:grid-cols-6 mt-4">
+//             {[1, 2, 3, 4].map((_, index) => (
+//               <div
+//                 key={index}
+//                 className="h-[156px] p-4 rounded-xl overflow-hidden bg-zinc-200 animate-pulse flex flex-col justify-between"
+//               ></div>
+//             ))}
+//           </div>
+
+//           <div className="grid grid-cols-5 gap-5">
+//             <div className="col-span-3">
+//               <div className="h-[335px] rounded-xl bg-zinc-200 animate-pulse w-full"></div>
+//             </div>
+//             <div className="col-span-2">
+//               <div className="h-[335px] rounded-xl bg-zinc-200 animate-pulse w-full"></div>
+//             </div>
+//           </div>
+
+//           <div className="grid grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+//             <div className="lg:col-span-2 bg-zinc-200 animate-pulse p-4 rounded-xl h-[300px]" />
+
+//             <div className="lg:col-span-1 bg-zinc-200 animate-pulse p-4 rounded-xl h-[300px]" />
+
+//             <div className="col-span-2 bg-zinc-200 animate-pulse rounded-xl h-[300px]" />
+//           </div>
+//         </div>
+//       )}
+
+//     </>
+//   );
+// };
+
+// export default Dashboard;

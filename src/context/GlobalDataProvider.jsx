@@ -22,16 +22,19 @@ const GlobalDataProvider = () => {
     authUser,
   } = useSelector((state) => state.userProfile);
 
+  // console.log("aaya");
+
   useEffect(() => {
     if (token) {
       dispatch(fetchWebsiteData(token, HID));
       dispatch(fetchUserProfile(token));
       dispatch(fetchAuthUserProfile(token));
-      if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
+      // if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
     }
   }, [token]);
 
   useEffect(() => {
+    // console.log(hotel);
     if (hotel?.Data?.ndid) {
       localStorage.setItem("ndid", hotel.Data.ndid);
     }
@@ -40,7 +43,7 @@ const GlobalDataProvider = () => {
       const hotelKeys = Object.keys(hotel.Profile.hotels);
       if (authUser?.isAdmin) {
         if (hotelKeys.length > 0) {
-          dispatch(setHid(hotelKeys[0]));
+          dispatch(setHid(hotelKeys[hotelKeys.length - 1]));
         }
       } else {
         dispatch(setHid(authUser?.assigned_location[0]?.hid));

@@ -200,7 +200,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
   return (
     <div
-      className={`fixed inset-0 px-5 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      className={`fixed inset-0 px-5 z-[99999] flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
     >
       <div className="bg-white grid md:grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">

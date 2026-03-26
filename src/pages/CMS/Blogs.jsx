@@ -112,7 +112,6 @@ const Blogs = () => {
       });
       const result = await response.json();
 
-      console.log(result);
     } catch (error) {
       console.error("Error adding blog:", error);
       Swal.fire({
@@ -125,7 +124,6 @@ const Blogs = () => {
   };
 
   const handleChangeJodit = (idx, name, value) => {
-    console.log("value", blogText);
     // const updatedTerms = [...termsAndCondition]; // Create a copy of the array
     // updatedTerms[idx][name] = value; // Update the value at the specified index
     // setTermsAndCondition(updatedTerms); // Update the state with the modified array
@@ -165,7 +163,7 @@ const Blogs = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
           {currentLoactionWebsiteData &&
-          currentLoactionWebsiteData?.Blogs?.length > 0 ? (
+            currentLoactionWebsiteData?.Blogs?.length > 0 ? (
             currentLoactionWebsiteData?.Blogs?.map((blog, index) => (
               <div key={index} className="bg-gray-100  rounded-md p-4">
                 <h3 className="text-lg font-semibold text-[#575757]">

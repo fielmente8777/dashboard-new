@@ -38,7 +38,6 @@ function MyVerticallyCenteredModal(props) {
       phoneNumber: phoneValue,
       customParams: updatedParams,
     };
-    console.log(data);
     const res = await UpdateParamsWati(data);
     if (res) {
       toast.success("Param Updated Successfully");

@@ -6,15 +6,17 @@ import handleLocalStorage from "../../utils/handleLocalStorage";
 
 export const getBookingEngineDetails = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/booking/getengine/${handleLocalStorage("token")}/${handleLocalStorage("hid")}`)
+    const response = await axios.get(
+      `${BASE_URL}/booking/getengine/${handleLocalStorage(
+        "token"
+      )}/${handleLocalStorage("hid")}`
+    );
     return response?.data;
   } catch (error) {
     // console.log("Error fetching engine details:", error)
     throw error;
   }
-}
-
-
+};
 
 export const getAllRomms = async (token, hid) => {
   try {
@@ -44,9 +46,27 @@ export const addRoom = async (formData, hid) => {
   }
 };
 
+export const addReservation = async (data) => {
+  try {
+    const res = await axios.post(`${BASE_URL}/reservation/create?hid=${handleLocalStorage("hid")}`, data, {
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${handleLocalStorage("token")}`,
+      },
+    });
+    const result = res?.data;
+    return result;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
 export const deleteRoom = async (token, hid, roomId) => {
   try {
-    const response = await axios.post(`${BASE_URL}/room/delete/${roomId}`,
+    const response = await axios.post(
+      `${BASE_URL}/room/delete/${roomId}`,
       {
         token: token,
         hId: hid,
@@ -55,16 +75,15 @@ export const deleteRoom = async (token, hid, roomId) => {
         headers: {
           Accept: "application/json, text/plain, /",
           "Content-Type": "application/json",
-        }
+        },
       }
-    )
+    );
     return response?.data;
-  }
-  catch (error) {
+  } catch (error) {
     console.error("Error deleting room:", error);
     throw error;
   }
-}
+};
 
 export const getPriceAndInventory = async (token, hid) => {
   try {

@@ -35,7 +35,7 @@ import SocialMedia from "../Social/SocialMedia";
 import AnalyticsReporting from "../Analytics/AnalyticsReporting";
 import BookingEngine from "../BookingEngine/BookingEngine";
 import BookingSetup from "../BookingEngine/BookingSetup";
-import AdsPackages from "../BookingEngine/AdsPackages"
+import AdsPackages from "../BookingEngine/AdsPackages";
 import ReservationDesk from "../ReservationDesk/ReservationDesk";
 import Website from "../CustomWebsite/Website";
 import OTAListing from "../OTA/OTAListing";
@@ -54,18 +54,51 @@ import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
-import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+// import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
 import Instagram from "../ConversationalTool/Instagram/Instagram";
 import Facebook from "../ConversationalTool/Facebook/Facebook";
+// import Eazbot from "../Eazobot/Eazbot";
+import Eazbot from "../Eazobot/Eazobot";
+import EazbotChat from "../ConversationalTool/Eazbot/EazbotChat";
+import LeadGenFormTable from "../MetaLeads/LeadGenFormTable";
+import AiSaleAgent from "../AiSalesAgents/AiSaleAgent";
+import KnowledgeBase from "../KnowledgeBase/KnowledgeBase";
+import WebsiteTracker from "../WebsiteTracker/WebsiteTracker";
+import VisitorActivity from "../WebsiteTracker/VisitorActivity";
+import MetaMessages from "../Meta/MetaMessage";
+import MetaConnections from "../Meta/MetaConnection";
+import MetaSettings from "../Meta/MetaSetting";
+import Calls from "../Calls/Calls";
+import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
+import Contacts from "../Contacts/Contacts";
+import EazbotEnquiries from "../Enquiry/EazbotEnquiries";
+import Overview from "../Gmb/Overview";
+import Ranks from "../Gmb/Rank";
+import Keywords from "../Gmb/Keyword";
+import Reviews from "../Gmb/Review";
+import GoogleAdsInsights from "../GoogleAdsInsights/GoogleAdsInsights";
+import WhatsAppBusiness from "../Channels/Whatsapp/WhatsAppBusiness";
+import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
+import AllLeads from "../Enquiry/AllLeads";
+import GoogleAds from "../Enquiry/GoogleAds";
+import EazbotLeads from "../Enquiry/EazbotEnquiries";
+import WebformLeads from "../Enquiry/WebformLeads";
+import AllVisitors from "../Enquiry/AllVisitors";
+import MetaLeads from "../Enquiry/MetaLeads";
+import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
+import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
+import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
+import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates/Templates";
+
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
   const routeComponents = {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
-
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,
@@ -90,15 +123,9 @@ const DynamicPage = () => {
       <RoomsAndInventory />
     ),
 
-    [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: (
-      <AdsPackages />
-    ),
-    [`${BASE_PATH}/${hid}/booking-engine/price-packages`]: (
-      <PricePackage />
-    ),
-    [`${BASE_PATH}/${hid}/booking-engine/customization`]: (
-      <BookingCustom />
-    ),
+    [`${BASE_PATH}/${hid}/booking-engine/ads-packages`]: <AdsPackages />,
+    [`${BASE_PATH}/${hid}/booking-engine/price-packages`]: <PricePackage />,
+    [`${BASE_PATH}/${hid}/booking-engine/customization`]: <BookingCustom />,
 
     // GRM
     [`${BASE_PATH}/${hid}/grm/analytics`]: <GrmAnalytics />,
@@ -107,21 +134,43 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/grm/settings`]: <Settings />,
     [`${BASE_PATH}/${hid}/grm/guest-feedback`]: <GrmFeedback />,
 
-
     // newsletter
     [`${BASE_PATH}/${hid}/newsletter`]: <Newsletter />,
     // User Management
     [`${BASE_PATH}/${hid}/user-management/all-users`]: <Usermanagement />,
     [`${BASE_PATH}/${hid}/user-management/settings`]: <Usermanagement />,
 
-    // Enquiries Management
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries-analytics`]: (
+    // TODO: Enquiries Management
+    [`${BASE_PATH}/${hid}/leads-management/enquiries-analytics`]: (
       <LeadAnalytics />
     ),
-    [`${BASE_PATH}/${hid}/enquiries-management/enquiries`]: <Leads />,
-    [`${BASE_PATH}/${hid}/enquiries-management/ad-leads`]: <AdsLeadsUsingGoogleSheet />,
-    [`${BASE_PATH}/${hid}/enquiries-management/ad-analytics`]: <AdLeadsAnalytics />,
-    [`${BASE_PATH}/${hid}/enquiries-management/settings`]: <Feedback />,
+
+    [`${BASE_PATH}/${hid}/leads-management/all-leads`]: <AllLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/whatsapp`]: <WhatsAppLeads />,
+
+    [`${BASE_PATH}/${hid}/leads-management/google-ads-leads`]: <GoogleAds />,
+    [`${BASE_PATH}/${hid}/leads-management/webform-leads`]: <WebformLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/eazbot-leads`]: <EazbotLeads />,
+
+    // [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
+    [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: <AllVisitors />,
+    [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
+      <LeadGenFormTable />
+    ),
+
+    // [`${BASE_PATH}/${hid}/leads-management/all-leads/:leadId/view`]: (
+    //   <ViewAndMangeLeads />
+    // ),
+    // [`${BASE_PATH}/${hid}/leads-management/meta-leads:leadId/view`]: (
+    //   <ViewAndMangeLeads />
+    // ),
+
+    // [`${BASE_PATH}/${hid}/leads-management/meta-leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/leads-management/meta-analytics`]: (
+      <AdLeadsAnalytics />
+    ),
+    [`${BASE_PATH}/${hid}/leads-management/settings`]: <Feedback />,
 
     // Human Resources Management
     [`${BASE_PATH}/${hid}/human-resources-management/analytics`]: (
@@ -139,18 +188,38 @@ const DynamicPage = () => {
 
     // Feedback, Reports, Analytics, Help
     [`${BASE_PATH}/${hid}/lead-form/lead-gen-form`]: <LeadGenForm />,
-    [`${BASE_PATH}/${hid}/eazobot`]: <Eazobot />,
-    [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
-    [`${BASE_PATH}/${hid}/sms-marketing`]: <EmailMarketing />,
-    [`${BASE_PATH}/${hid}/email-marketing`]: <EmailMarketing />,
-    [`${BASE_PATH}/${hid}/whatsapp-marketing`]: <WhatsappMarketing />,
 
+    [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
+    [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
+
+    [`${BASE_PATH}/${hid}/insights-analytics/google-ads-insights`]: (
+      <GoogleAdsInsights />
+    ),
+    [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (
+      <Feedback />
+    ),
+    [`${BASE_PATH}/${hid}/insights-analytics/website-analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/leads-analytics`]: <Feedback />,
+
+    // TODO: Campaign Management
+
+    [`${BASE_PATH}/${hid}/marketing/sms-marketing`]: <EmailMarketing />,
+    [`${BASE_PATH}/${hid}/marketing/email-marketing`]: (
+      <EmailMarketingManagement />
+    ),
+    [`${BASE_PATH}/${hid}/marketing/whatsapp-marketing`]: (
+      <WhatsappBroadcasting />
+    ),
 
     // [`${BASE_PATH}/${hid}/conversational-tool`]: <ConversationalTool />,
+    [`${BASE_PATH}/${hid}/channel/eb/chat`]: <EazbotChat />,
     [`${BASE_PATH}/${hid}/channel/wa/chat`]: <WhatsApp />,
     [`${BASE_PATH}/${hid}/channel/ig/chat`]: <Instagram />,
     [`${BASE_PATH}/${hid}/channel/fb/chat`]: <Facebook />,
-
 
     [`${BASE_PATH}/${hid}/themes-manager`]: <ThemesManager />,
     [`${BASE_PATH}/${hid}/channel-manager`]: <ChannelManager />,
@@ -158,8 +227,14 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/social-media`]: <SocialMedia />,
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
 
-    // Marketplace services
+    // whatsapp
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: (
+      <WhatsAppBusiness />
+    ),
+    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]:
+      <WhatsAppMessageTemplate />,
 
+    // Marketplace services
     [`${BASE_PATH}/${hid}/custom-website`]: <Website />,
 
     // OTA
@@ -168,7 +243,6 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/ota-management`]: <OTAManagement />,
 
     // Accounting
-
     [`${BASE_PATH}/${hid}/accounting`]: <Accounting />,
     [`${BASE_PATH}/${hid}/gst-filing`]: <GSTFiling />,
 
@@ -176,12 +250,10 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/performance-marketing`]: <PerformanceMarketing />,
     [`${BASE_PATH}/${hid}/pr`]: <PublicRelation />,
 
-
     // link tree setup
     [`${BASE_PATH}/${hid}/linktree-setup`]: <Linktree />,
 
-
-    // google listing 
+    // google listing
     [`${BASE_PATH}/${hid}/google-listing`]: <GMBProfile />,
     [`${BASE_PATH}/${hid}/google-map-itrations`]: <GoogleMapItiration />,
 
@@ -196,6 +268,27 @@ const DynamicPage = () => {
 
     // pms
     [`${BASE_PATH}/${hid}/pms-software`]: <ChannelManager />,
+
+    // gmb
+    [`${BASE_PATH}/${hid}/gmb/overview`]: <Overview />,
+    [`${BASE_PATH}/${hid}/gmb/keywords`]: <Keywords />,
+    [`${BASE_PATH}/${hid}/gmb/rank`]: <Ranks />,
+    [`${BASE_PATH}/${hid}/gmb/reviews`]: <Reviews />,
+
+    // [`${BASE_PATH}/${hid}/ai-sales-agent`]: <AiSaleAgent />,
+    [`${BASE_PATH}/${hid}/calls-management`]: <Calls />,
+
+    [`${BASE_PATH}/${hid}/website-tracking/visitors`]: <WebsiteTracker />,
+    [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
+    [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
+
+    [`${BASE_PATH}/${hid}/eazmail`]: <EmailMarketingManagement />,
+
+    [`${BASE_PATH}/${hid}/meta/leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/meta/messages`]: <MetaMessages />,
+    [`${BASE_PATH}/${hid}/meta/connections`]: <MetaConnections />,
+    [`${BASE_PATH}/${hid}/meta/settings`]: <MetaSettings />,
+    [`${BASE_PATH}/${hid}/contacts`]: <Contacts />,
   };
 
   return (

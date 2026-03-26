@@ -1,11 +1,11 @@
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { GiBackwardTime } from "react-icons/gi";
 import { IoSync } from "react-icons/io5";
+import Loader from "../../components/Loader";
 import AuthContext from "../../context/DataContext";
-import { BASE_URL, room_type_name } from "../../data/constant";
+import { room_type_name } from "../../data/constant";
 import {
   bulkUpdateInventory,
   bulkUpdatePrice,
@@ -15,9 +15,10 @@ import {
   inventoryManage,
   priceManage,
 } from "../../services/api/bookingEngine";
+
 import handleLocalStorage from "../../utils/handleLocalStorage";
-import Loader from "../../components/Loader";
-import { formatDate } from "../../utils/formateData";
+import { formatDate } from "../../utils/formateDate";
+
 // import { inventoryGetApi, priceGetApi } from '../../Api-helpers/Api';
 
 const RoomsAndInventory = () => {
@@ -32,45 +33,44 @@ const RoomsAndInventory = () => {
   const [date, setDate] = useState(today);
   const [prevDate, setprevDate] = useState();
   const [nextDate, setnextDate] = useState();
-  const [inventoryDatas, setinventoryDatas] = useState(
-    //   {
-    //   Inventory: {
-    //     1: {
-    //       "2024-05-10": 2,
-    //       "2024-05-11": 2,
-    //       "2024-05-12": 2,
-    //       "2024-05-13": 2,
-    //       "2024-05-14": 2,
-    //       "2024-05-15": 3,
-    //       "2024-05-16": 2,
-    //       "2024-05-17": 2,
-    //     },
-    //     2: {
-    //       "2024-05-10": 2,
-    //       "2024-05-11": 2,
-    //       "2024-05-12": 2,
-    //       "2024-05-13": 2,
-    //       "2024-05-14": 4,
-    //       "2024-05-15": 2,
-    //       "2024-05-16": 2,
-    //       "2024-05-17": 2,
-    //     },
-    //     3: {
-    //       "2024-05-10": 2,
-    //       "2024-05-11": 2,
-    //       "2024-05-12": 2,
-    //       "2024-05-13": 2,
-    //       "2024-05-14": 4,
-    //       "2024-05-15": 2,
-    //       "2024-05-16": 2,
-    //       "2024-05-17": 2,
-    //     },
-    //   },
-    //   Status: true,
-    //   next: "2024-05-17",
-    //   prev: "2024-05-10",
-    // }
-  );
+  const [inventoryDatas, setinventoryDatas] = useState();
+  //   {
+  //   Inventory: {
+  //     1: {
+  //       "2024-05-10": 2,
+  //       "2024-05-11": 2,
+  //       "2024-05-12": 2,
+  //       "2024-05-13": 2,
+  //       "2024-05-14": 2,
+  //       "2024-05-15": 3,
+  //       "2024-05-16": 2,
+  //       "2024-05-17": 2,
+  //     },
+  //     2: {
+  //       "2024-05-10": 2,
+  //       "2024-05-11": 2,
+  //       "2024-05-12": 2,
+  //       "2024-05-13": 2,
+  //       "2024-05-14": 4,
+  //       "2024-05-15": 2,
+  //       "2024-05-16": 2,
+  //       "2024-05-17": 2,
+  //     },
+  //     3: {
+  //       "2024-05-10": 2,
+  //       "2024-05-11": 2,
+  //       "2024-05-12": 2,
+  //       "2024-05-13": 2,
+  //       "2024-05-14": 4,
+  //       "2024-05-15": 2,
+  //       "2024-05-16": 2,
+  //       "2024-05-17": 2,
+  //     },
+  //   },
+  //   Status: true,
+  //   next: "2024-05-17",
+  //   prev: "2024-05-10",
+  // }
 
   const [priceDatas, setpriceDatas] = useState({
     Price: {
@@ -213,12 +213,10 @@ const RoomsAndInventory = () => {
 
     setInventoryBulkupdate(updatedBulkPriceUpdate);
     // setInventoryData(updatePriceData)
-    console.log(updatedBulkPriceUpdate);
   };
 
   const GetDataForDate = (date, key) => {
     if (key === "prev") {
-      console.log("daaa", date);
       const currentDate = new Date(date);
       currentDate.setDate(currentDate.getDate() - 7); // go 7 days back
       const formattedDate = formatDate(currentDate);
@@ -312,7 +310,7 @@ const RoomsAndInventory = () => {
     const response = await dateRangeInventory(
       token,
       hid,
-      dateRangeInventoryData
+      dateRangeInventoryData,
     );
     // const response = await fetch(
     //   `${baseUrl}/inventory/getinventory/all/nextprev/${localStorage.getItem(
@@ -382,7 +380,7 @@ const RoomsAndInventory = () => {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-      })
+      }),
     );
 
   useEffect(() => {
@@ -401,10 +399,11 @@ const RoomsAndInventory = () => {
           <button
             onClick={handleInventoryClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${showInventory === true
-              ? "border-t border-b border-primary bg-primary  text-white"
-              : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
-              }`}
+            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
+              showInventory === true
+                ? "border-t border-b border-primary bg-primary  text-white"
+                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
+            }`}
           >
             Inventory
           </button>
@@ -412,10 +411,11 @@ const RoomsAndInventory = () => {
           <button
             onClick={handlePriceClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${showPrice
-              ? "border bg-primary border-primary text-white"
-              : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
-              } `}
+            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
+              showPrice
+                ? "border bg-primary border-primary text-white"
+                : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+            } `}
           >
             Price
           </button>
@@ -456,10 +456,11 @@ const RoomsAndInventory = () => {
                         if (!isPreviousDisabled)
                           GetDataForDate(prevDate, "prev");
                       }}
-                      className={`${isPreviousDisabled
-                        ? "cursor-not-allowed opacity-65"
-                        : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                        } me-1 p-2 bg-white border rounded-full `}
+                      className={`${
+                        isPreviousDisabled
+                          ? "cursor-not-allowed opacity-65"
+                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
+                      } me-1 p-2 bg-white border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>

@@ -1,14 +1,29 @@
-import { FaFilePdf, FaWhatsappSquare, FaThemeco, FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
+import {
+  FaFilePdf,
+  FaWhatsappSquare,
+  FaThemeco,
+  FaWhatsapp,
+  FaInstagram,
+  FaFacebook,
+} from "react-icons/fa";
 import {
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
+  FaRankingStar,
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
-import { MdEmergencyShare, MdOutlineSos, MdUnsubscribe } from "react-icons/md";
-import { SiGoogleanalytics } from "react-icons/si";
+import {
+  MdEmergencyShare,
+  MdLink,
+  MdOutlineReviews,
+  MdOutlineSos,
+  MdUnsubscribe,
+} from "react-icons/md";
+import { SiGoogleanalytics, SiLivechat } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
+import { PiUsersThreeFill } from "react-icons/pi";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
@@ -16,9 +31,13 @@ import { GrResources } from "react-icons/gr";
 import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
-import { TbSeo } from "react-icons/tb";
+import { TbMessageChatbotFilled, TbSeo } from "react-icons/tb";
 import { TiSocialSkype } from "react-icons/ti";
-import { RiWechatChannelsLine } from "react-icons/ri";
+import {
+  RiMetaFill,
+  RiWechatChannelsLine,
+  RiWhatsappFill,
+} from "react-icons/ri";
 import { CgProfile } from "react-icons/cg";
 import { RiFolderUserFill } from "react-icons/ri";
 import { RiGalleryFill } from "react-icons/ri";
@@ -32,23 +51,62 @@ import { MdOutlineFreeCancellation } from "react-icons/md";
 import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
 import { IoFastFood } from "react-icons/io5";
+import { SiGoogleadsense } from "react-icons/si";
+import { SiGoogleads } from "react-icons/si";
+import { CiViewBoard } from "react-icons/ci";
+import {
+  DocumentIcon,
+  ChatIcon,
+  MailIcon,
+  TeamIcon,
+  WhatsappIcon,
+  LiveChatIcon,
+  Dashboard,
+} from "../icons/icon";
 
 export const SidebarData = [
   {
     name: "Dashboard",
     link: ``,
-    icon: <MdDashboard size={24} />,
+    icon: <Dashboard />,
   },
+  // {
+  //   name: "Live Chat",
+  //   key: "Conversational Tool",
+  //   link: `chat`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  //   subLinks: [
+  //     // {
+  //     //   name: "Eazbot",
+  //     //   link: `channel/eb/chat`,
+  //     //   icon: <FaWhatsapp size={16} />,
+  //     // },
+  //     {
+  //       name: "WhatsApp",
+  //       link: `channel/wa/chat`,
+  //       icon: <FaWhatsapp size={16} />,
+  //     },
+  //     {
+  //       name: "Instagram",
+  //       link: `channel/ig/chat`,
+  //       icon: <FaInstagram size={16} />,
+  //     },
+  //     {
+  //       name: "Facebook",
+  //       link: `channel/fb/chat`,
+  //       icon: <FaFacebook size={16} />,
+  //     },
+  //   ],
+  // },
   {
     name: "Live Chat",
-    key: "Conversational Tool",
-    link: `chat`,
-    icon: <IoIosChatbubbles size={24} />,
+    link: `channel`,
+    icon: <SiLivechat />,
     subLinks: [
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
-        icon: <FaWhatsapp size={16} />,
+        icon: <WhatsappIcon />,
       },
       {
         name: "Instagram",
@@ -60,32 +118,316 @@ export const SidebarData = [
         link: `channel/fb/chat`,
         icon: <FaFacebook size={16} />,
       },
+
+      {
+        name: "Eazbot",
+        link: `channel/eb/chat`,
+        icon: <FaWhatsapp size={16} />,
+      },
+
+      // {
+      //   name: "Templates",
+      //   link: `channel/whatsapp/template/create`,
+      //   icon: <FaWhatsapp size={16} />,
+      // },
     ],
   },
+
+  // {
+  //   name: "Website Tracking",
+  //   // key: "",
+  //   link: `website-tracking`,
+  //   icon: <MdAnalytics size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Visitors",
+  //       link: `website-tracking/visitors`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //     {
+  //       name: "Activities",
+  //       link: `website-tracking/activities`,
+  //       icon: <MdLeaderboard size={18} />,
+  //     },
+  //   ],
+  // },
+
   {
-    name: "Enquiries Management",
-    link: `enquiries-management`,
+    name: "Leads Management",
+    link: `leads-management`,
     key: "Enquiries Management",
     icon: <MdAnalytics size={24} />,
     subLinks: [
       {
-        name: "Enquiries",
-        link: `enquiries-management/enquiries`,
-        icon: <FaCircleQuestion size={18} />,
+        name: "All",
+        link: `leads-management/all-leads`,
+        icon: <MdLeaderboard size={18} />,
       },
       {
-        name: "Ad Leads",
-        link: `enquiries-management/ad-leads`,
-        icon: <FaCircleQuestion size={18} />,
+        name: "Meta",
+        link: `leads-management/meta-leads`,
+        icon: <RiMetaFill color="#0266df" />,
       },
       {
-        name: "Ads Performance",
-        link: `enquiries-management/ad-analytics`,
-        icon: <FaCircleQuestion size={18} />,
+        name: "WhatsApp",
+        link: `leads-management/whatsapp`,
+        icon: <WhatsappIcon />,
+      },
+
+      {
+        name: "Google Ads",
+        link: `leads-management/google-ads-leads`,
+        icon: (
+          <svg
+            width="16px"
+            height="16px"
+            viewBox="0 -13 256 256"
+            version="1.1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            preserveAspectRatio="xMidYMid"
+            fill="#000000"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              {" "}
+              <g>
+                {" "}
+                <path
+                  d="M5.888,166.405103 L90.88,20.9 C101.676138,27.2558621 156.115862,57.3844138 164.908138,63.1135172 L79.9161379,208.627448 C70.6206897,220.906621 -5.888,185.040138 5.888,166.396276 L5.888,166.405103 Z"
+                  fill="#FBBC04"
+                >
+                  {" "}
+                </path>{" "}
+                <path
+                  d="M250.084224,166.401789 L165.092224,20.9055131 C153.210293,1.13172 127.619121,-6.05393517 106.600638,5.62496138 C85.582155,17.3038579 79.182155,42.4624786 91.0640861,63.1190303 L176.056086,208.632961 C187.938017,228.397927 213.52919,235.583582 234.547672,223.904686 C254.648086,212.225789 261.966155,186.175582 250.084224,166.419444 L250.084224,166.401789 Z"
+                  fill="#4285F4"
+                >
+                  {" "}
+                </path>{" "}
+                <ellipse
+                  fill="#34A853"
+                  cx="42.6637241"
+                  cy="187.924414"
+                  rx="42.6637241"
+                  ry="41.6044138"
+                >
+                  {" "}
+                </ellipse>{" "}
+              </g>{" "}
+            </g>
+          </svg>
+        ),
+      },
+      {
+        name: "Webform",
+        link: `leads-management/webform-leads`,
+        icon: <DocumentIcon />,
+      },
+      {
+        name: "Eazbot",
+        link: `leads-management/eazbot-leads`,
+        icon: <ChatIcon />,
+      },
+      {
+        name: "Visitors",
+        link: `leads-management/all-visitors`,
+        icon: <TeamIcon />,
+      },
+
+      // {
+      //   name: "Enquiries",
+      //   link: `enquiries-management/enquiries`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
+      // {
+      //   name: "Eazbot Visitors",
+      //   link: `enquiries-management/eazbot-visitors`,
+      //   icon: <MdLeaderboard size={18} />,
+      // },
+      // {
+      //   name: "Form",
+      //   link: `enquiries-management/lead-gen-form`,
+      //   icon: <SiGoogleadsense size={18} />,
+      // },
+    ],
+  },
+
+  {
+    name: "Marketing",
+    // key: "",
+    link: `marketing`,
+    icon: <MdAnalytics size={24} />,
+    subLinks: [
+      {
+        name: "Whatsapp Marketing",
+        link: `marketing/whatsapp-marketing`,
+        icon: <RiWhatsappFill color="green" />,
+      },
+      {
+        name: "Email Marketing",
+        link: `marketing/email-marketing`,
+        icon: <MailIcon />,
       },
     ],
   },
 
+  {
+    name: "Insights & Analytics",
+    link: `insights-analytics`,
+    icon: <SiAnalogue size={22} />,
+    subLinks: [
+      {
+        name: "Google Ads Insights",
+        link: `insights-analytics/google-ads-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Meta Ads Insights",
+        link: `insights-analytics/meta-ads-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Google Analytics",
+        link: `insights-analytics/google-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Google Console",
+        link: `insights-analytics/google-console`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "GMB Insights",
+        link: `insights-analytics/gmb-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Social Media Insights",
+        link: `insights-analytics/social-media-insights`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Website Analytics",
+        link: `insights-analytics/website-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+      {
+        name: "Leads Analytics",
+        link: `insights-analytics/leads-analytics`,
+
+        icon: <SiGoogleanalytics size={16} />,
+      },
+    ],
+  },
+
+  {
+    name: "Google Ads Insights",
+    // key: "",
+    link: `google-ads-insights`,
+    icon: <SiGoogleadsense />,
+  },
+  // {
+  //   name: "AI Sales Agent",
+  //   // key: "",
+  //   link: `ai-sales-agent`,
+  //   icon: <HiOutlineUserGroup />,
+  // },
+
+  {
+    name: "Calls Management",
+    // key: "",
+    link: `calls-management`,
+    icon: <HiOutlineUserGroup />,
+  },
+  // {
+  //   name: "Meta",
+  //   key: "",
+  //   link: `meta`,
+  //   icon: <FaFacebook size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Meta Connections",
+  //       link: `meta/connections`,
+  //       icon: <FaFacebook size={18} />,
+  //     },
+  //     // {
+  //     //   name: "Meta Leads",
+  //     //   link: `meta/leads`,
+  //     //   icon: <SiGoogleads size={18} />,
+  //     // },
+  //     {
+  //       name: "Meta Messages",
+  //       link: `meta/messages`,
+  //       icon: <IoIosChatbubbles size={18} />,
+  //     },
+  //     {
+  //       name: "Meta Settings",
+  //       link: `meta/settings`,
+  //       icon: <IoMdSettings size={18} />,
+  //     },
+  //   ],
+  // },
+  {
+    name: "Social Media",
+    // key: "Social Media",
+    target: "_blank",
+    link: `https://social.eazotel.com`,
+    icon: <TiSocialSkype size={24} />,
+  },
+
+  // {
+  //   name: "GMB",
+  //   // key: "gmb",
+  //   icon: <MdLeaderboard size={24} />,
+  //   // link: `lead-form/lead-gen-form`,
+  //   subLinks: [
+  //     {
+  //       name: "Overview",
+  //       link: `gmb/overview`,
+  //       icon: <CiViewBoard size={16} />,
+  //     },
+  //     {
+  //       name: "Rank",
+  //       link: `gmb/rank`,
+  //       icon: <FaRankingStar size={16} />,
+  //     },
+  //     {
+  //       name: "Keywords",
+  //       link: `gmb/keywords`,
+  //       icon: <SiGoogleforms size={16} />,
+  //     },
+  //     {
+  //       name: "Reviews",
+  //       link: `gmb/reviews`,
+  //       icon: <MdOutlineReviews size={16} />,
+  //     },
+  //   ],
+  // },
+  // {
+  //   name: "Eazbot",
+  //   // key: "Eazobot",
+  //   link: `eazbot`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
+  // {
+  //   name: "EazeMail",
+  //   // key: "Eazobot",
+  //   link: `eazmail`,
+  //   icon: <IoIosChatbubbles size={24} />,
+  // },
   {
     name: "Booking Engine",
     key: "Booking Engine",
@@ -131,11 +473,11 @@ export const SidebarData = [
         link: `grm/all-requests`,
         icon: <FaCodePullRequest size={16} />,
       },
-      {
-        name: "Emergency Request",
-        link: `grm/emergency-request`,
-        icon: <MdEmergencyShare size={18} />,
-      },
+      // {
+      //   name: "Emergency Request",
+      //   link: `grm/emergency-request`,
+      //   icon: <MdEmergencyShare size={18} />,
+      // },
       {
         name: "GRM Settings",
         link: `grm/settings`,
@@ -216,66 +558,33 @@ export const SidebarData = [
     ],
   },
 
+  // {
+  //   name: "Human Resources Management",
+  //   link: `human-resources-management`,
+  //   key: "HRM",
+  //   icon: <GrResources size={24} />,
+  //   subLinks: [
+  //     {
+  //       name: "Applications",
+  //       link: `human-resources-management/applications`,
+  //       icon: <FaFilePdf size={18} />,
+  //     },
+  //   ],
+  // },
 
-
-
-
-
-  {
-    name: "Human Resources Management",
-    link: `human-resources-management`,
-    key: "HRM",
-    icon: <GrResources size={24} />,
-    subLinks: [
-      {
-        name: "Applications",
-        link: `human-resources-management/applications`,
-        icon: <FaFilePdf size={18} />,
-      },
-    ],
-  },
-
-  {
-    name: "Analytics & Reporting",
-    key: "Analytics Reporting",
-    link: ``,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "HRM Analytics",
-        link: `human-resources-management/analytics`,
-        key: "HRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Enquiries Analytics",
-        link: `enquiries-management/enquiries-analytics`,
-        key: "Enquiries Management",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GRM Analytics",
-        link: `grm/analytics`,
-        key: "GRM",
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
-
-  {
-    name: "Lead Gen Form",
-    key: "Leads Form",
-    icon: <MdLeaderboard size={24} />,
-    link: `lead-form/lead-gen-form`,
-    key: "Leads Form",
-    // subLinks: [
-    //   {
-    //     name: "My Form",
-    //     link: `lead-form/lead-gen-form`,
-    //     icon: <SiGoogleforms size={16} />,
-    //   },
-    // ],
-  },
+  // {
+  //   name: "Lead Gen Form",
+  //   key: "Leads Form",
+  //   icon: <MdLeaderboard size={24} />,
+  //   link: `lead-form/lead-gen-form`,
+  //   // subLinks: [
+  //   //   {
+  //   //     name: "My Form",
+  //   //     link: `lead-form/lead-gen-form`,
+  //   //     icon: <SiGoogleforms size={16} />,
+  //   //   },
+  //   // ],
+  // },
 
   {
     name: "Payment Gateway",
@@ -285,11 +594,18 @@ export const SidebarData = [
   },
 
   {
-    name: "Front Desk",
-    key: "Front Desk",
-    link: `front-desk`,
+    name: "Knowledge Base",
+    // key: "",
+    link: `knowledge-base`,
     icon: <HiOutlineUserGroup />,
   },
+
+  // {
+  //   name: "Front Desk",
+  //   key: "Front Desk",
+  //   link: `front-desk`,
+  //   icon: <HiOutlineUserGroup />,
+  // },
 
   {
     name: "Newsletter",
@@ -297,21 +613,27 @@ export const SidebarData = [
     icon: <MdUnsubscribe size={22} />,
   },
 
-  {
-    name: "User Management",
-    key: "User Management",
-    link: `user-management/all-users`,
-    icon: <HiOutlineUserGroup size={22} />,
-  },
-
   // {
-  //   name: "Social Media",
-  //   key: "Social Media",
-  //   link: `social-media`,
-  //   icon: <TiSocialSkype size={24} />,
+  //   name: "User Management",
+  //   key: "User Management",
+  //   link: `user-management/all-users`,
+  //   icon: <HiOutlineUserGroup size={22} />,
   // },
 
+  // {
+  //   name: "Account & Billing",
+  //   icon: <FaRobot size={24} />,
+  //   // key: "Accounting",
+  //   target: "_blank",
+  //   link: "https://accounts.eazotel.com/portal/eazoteltechnologiespvtltd/signin",
+  // },
 
+  // {
+  //   name: "Settings",
+  //   // key: "Setting",
+  //   link: `setting`,
+  //   icon: <HiOutlineUserGroup size={22} />,
+  // },
 
   // {
   //   name: "Custom Website",
@@ -418,9 +740,16 @@ export const SidebarData = [
   //   link: "influencer-marketing",
   // },
 
+  {
+    name: "Contacts",
+    key: "",
+    link: `contacts`,
+    icon: <MdMarkEmailUnread size={24} />,
+  },
+
   // {
   //   name: "Email Marketing",
-  //   key: "Email Marketing",
+  //   key: "",
   //   link: `email-marketing`,
   //   icon: <MdMarkEmailUnread size={24} />,
   // },

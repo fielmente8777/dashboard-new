@@ -1,0 +1,32 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App.jsx";
+import { DataProvider } from "./context/DataContext.jsx";
+import { BrowserRouter } from "react-router-dom";
+import GlobalDataProvider from "./context/GlobalDataProvider.jsx";
+import { Provider } from "react-redux";
+import store from "./redux/Store.js";
+import Whatsapp from "./components/Contacts/WhtasApp.jsx";
+import ProfileDropDown from "./components/Popup/ProfileDropDown.jsx";
+import { ToastProvider } from "./context/ToastContext.jsx";
+import { ConfirmProvider } from "./context/ConfirmContext.jsx";
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <Provider store={store}>
+      <DataProvider>
+        <BrowserRouter>
+          <GlobalDataProvider />
+          <ToastProvider>
+            <ConfirmProvider>
+              {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
+              <App />
+            </ConfirmProvider>
+          </ToastProvider>
+          <ProfileDropDown />
+        </BrowserRouter>
+      </DataProvider>
+    </Provider>
+  </StrictMode>,
+);

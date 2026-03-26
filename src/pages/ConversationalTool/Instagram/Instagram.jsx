@@ -1,9 +1,13 @@
-import React from 'react'
+import React from "react";
+import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 
 const Instagram = () => {
-    return (
-        <div>Comming soon</div>
-    )
-}
+  return (
+    <div className="p-4">
+      {/* comming soon */}
+      <FlowBuilder />
+    </div>
+  );
+};
 
-export default Instagram
+export default Instagram;

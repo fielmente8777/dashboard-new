@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { GetwebsiteDetails } from "../../services/api/websiteDetails.api";
-import { act } from "react";
 
 const initialState = {
   hotels: null,
@@ -20,6 +19,7 @@ const websiteDataSlice = createSlice({
     },
 
     getWebsiteDataSucccess: (state, action) => {
+      // console.log(action.payload);
       state.loading = false;
       state.hotels = action.payload;
     },
@@ -29,14 +29,16 @@ const websiteDataSlice = createSlice({
     },
     fetchCurrentLocationWebsiteData: (state, action) => {
       const { data, hid } = action.payload;
-      const currentLocationWebsiteData = data[hid];
+      // console.log(hid);
+      const currentLocationWebsiteData = data[String(hid)];
+      // console.log(currentLocationWebsiteData);
       state.loading = false;
       state.currentLoactionWebsiteData = currentLocationWebsiteData;
     },
     newsletterData: (state, action) => {
       state.loading = false;
       state.newsletterData = action.payload || [];
-    }
+    },
   },
 });
 
@@ -45,7 +47,7 @@ export const {
   getWebsiteDataSucccess,
   getWebsiteDataFailure,
   fetchCurrentLocationWebsiteData,
-  newsletterData
+  newsletterData,
 } = websiteDataSlice.actions;
 
 export default websiteDataSlice.reducer;
@@ -55,7 +57,6 @@ export const fetchWebsiteData = (token, hid) => async (dispatch) => {
   dispatch(getWebsiteDataRequest());
   try {
     const data = await GetwebsiteDetails(token);
-
     dispatch(getWebsiteDataSucccess(data?.WebsiteData || data.Hotels));
     dispatch(
       fetchCurrentLocationWebsiteData({

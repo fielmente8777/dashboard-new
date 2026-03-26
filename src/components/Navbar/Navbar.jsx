@@ -1,17 +1,21 @@
 import { useContext, useEffect, useState } from "react";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoMdHome } from "react-icons/io";
-import { MdOutlineSos, MdSettings } from "react-icons/md";
+import { IoIosNotifications, IoMdHome } from "react-icons/io";
+import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
 import { RiFeedbackFill } from "react-icons/ri";
 import { RxDashboard } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DataContext from "../../context/DataContext";
 import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
 import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
+import Logo from "../../assets/companylogo.b.png";
 import ChangePassword from "../Popup/ChangePassword";
 import ProfilePopup from "../Popup/ProfilePopup";
+import { toggleSideBar } from "../../redux/slice/SidebarToggle";
+import { FaAlignRight } from "react-icons/fa";
+import NotificationPopup from "../Popup/NotificationPopup";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -46,6 +50,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
+  const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -58,9 +63,10 @@ const Navbar = () => {
   const { setAuth, homeNotifications, emergencyNotifications } =
     useContext(DataContext);
   const [open, setOpen] = useState(false);
-  const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
-    useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  // const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
+  //   useState(false);
+  // const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { isOpenProfilePopup, setIsOpenProfilePopup } = useContext(DataContext);
 
   const SidebarData = [
     {
@@ -89,19 +95,47 @@ const Navbar = () => {
     },
   ];
 
-  const handleLogout = () => {
-    localStorage.clear();
-    setAuth(false);
-    dispatch(setHid(null));
-    // setTimeout(() => {
-    navigate("/login");
-    // }, 1000)
-  };
+  // const handleLogout = () => {
+  //   localStorage.clear();
+  //   setAuth(false);
+  //   dispatch(setHid(null));
+  //   // setTimeout(() => {
+  //   navigate("/login");
+  //   // }, 1000)
+  // };
 
+  console.log(hotel);
+
+  const onNotificationPopupClose = () => {
+    setIsNotificationPopupOpen(false);
+  };
+  const hid = localStorage.getItem("hid");
+  const hotels = hotel?.Profile?.hotels || {};
+  const hotelName = hotels?.[hid]?.local || "";
+  const isLoadingProfile = !hotel?.Profile;
+
+  const firstLetter =
+    hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
   return (
-    <div className="sticky top-0 z-50">
-      <div className="h-[8vh] z-10  bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
-        <Greeting name={hotel?.Profile?.hotelName} />
+    <div className="left-0 top-0">
+      <div className="py-2 z-10 bg-blue-100  sm:bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
+        <div
+          onClick={() => dispatch(toggleSideBar())}
+          className={`size-8 bg-blue-100  rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
+        >
+          <FaAlignRight color="#000" />
+        </div>
+
+        <Greeting name={isLoadingProfile ? "Loading..." : hotelName} />
+        <div className="sm:hidden">
+          <div className="w-28 h-10 -ml-2">
+            <img
+              src={Logo}
+              alt="logo"
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
         <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
@@ -138,56 +172,79 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
+            <button onClick={() => setIsNotificationPopupOpen(true)}>
+              <IoIosNotifications size={22} color="white" />
+            </button>
+            <Link to="settings">
+              <MdSettings size={22} color="white" />
+            </Link>
             <div
               onClick={() => setOpen(true)}
-              className="flex gap-2 py-2 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
+              className="flex gap-2 py-1.5 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
             >
-              <RxDashboard size={22} />{" "}
-              <p className="text-md font-semibold">Marketplace</p>
+              <MdStore size={18} />{" "}
+              <p className="text-sm font-semibold">EazStore</p>
             </div>
-            <div>
+            {/* <div>
               <MdSettings
                 onClick={() => setIsChangePasswordPopupOpen(true)}
                 className="text-white"
                 size={24}
               />
-            </div>
-            <button
-              style={{
-                backgroundColor:
-                  letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                  ],
-              }}
-              onClick={() => setIsProfileOpen(true)}
-              className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
-            >
-              <p className="text-2xl font-semibold">
-                {hotel?.Profile?.hotelName.charAt(0).toUpperCase()}
-              </p>
-              {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
-            </button>
+            </div> */}
+
+            {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
           </div>
+          <button
+            style={{
+              backgroundColor: letterColorMap[firstLetter],
+            }}
+            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
+            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
+          >
+            <p className="text-2xl font-semibold">
+              {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
+            </p>
+          </button>
         </div>
-        <div
-          onClick={() => setOpen(true)}
-          className="bg-[#0088ff]a text-white sm:hidden p-1 rounded-md"
-        >
-          <RxDashboard size={22} />{" "}
+
+        <div className="flex items-center gap-2.5 sm:hidden">
+          <div
+            onClick={() => setOpen(true)}
+            className="bg-[#2e3b61] text-white sm:hidden p-1 rounded-md"
+          >
+            <RxDashboard size={22} />{" "}
+          </div>
+          <button
+            style={{
+              backgroundColor: letterColorMap[firstLetter],
+            }}
+            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
+            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
+          >
+            <p className="text-2xl font-semibold">
+              {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
+            </p>
+          </button>
         </div>
 
         <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
 
-        <ProfilePopup
+        {/* <ProfilePopup
           isProfileOpen={isProfileOpen}
           setIsProfileOpen={setIsProfileOpen}
           Color={
             letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
           }
-        />
-        <ChangePassword
+        /> */}
+
+        {/* <ChangePassword
           isOpen={isChangePasswordPopupOpen}
           onClose={() => setIsChangePasswordPopupOpen(false)}
+        /> */}
+        <NotificationPopup
+          isOpen={isNotificationPopupOpen}
+          onClose={onNotificationPopupClose}
         />
       </div>
     </div>

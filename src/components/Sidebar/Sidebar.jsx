@@ -1,30 +1,66 @@
-import { useContext, useEffect, useState } from "react";
+import { use, useContext, useEffect, useMemo, useState } from "react";
+import { CiLocationOn } from "react-icons/ci";
+import { FaAlignRight } from "react-icons/fa";
+import { IoIosLogOut } from "react-icons/io";
+import { MdAddBusiness } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import Logo from "../../assets/companylogo.b.png";
+import DataContext from "../../context/DataContext";
+import { BASE_PATH, BASE_URL } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
-import { CiLocationOn } from "react-icons/ci";
-import { MdAddBusiness } from "react-icons/md";
-import AddLocationForm from "../Popup/AddLocationForm";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { BASE_PATH } from "../../data/constant";
-import { setHid } from "../../redux/slice/UserSlice";
-import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
-import Swal from "sweetalert2";
 import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
-import { FaAlignRight } from "react-icons/fa";
-import Logo from "../../assets/companylogo.b.png";
-import { open, toggleSideBar } from "../../redux/slice/SidebarToggle";
-import { IoClose } from "react-icons/io5";
-import { FiLogOut } from "react-icons/fi";
-import DataContext from "../../context/DataContext";
+import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
+import {
+  fetchAuthUserProfile,
+  fetchUserProfile,
+  setHid,
+} from "../../redux/slice/UserSlice";
+import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
 import { removeCookie } from "../../utils/handleCookies";
+import handleLocalStorage from "../../utils/handleLocalStorage";
+import AddLocationForm from "../Popup/AddLocationForm";
+import axios from "axios";
 
-const Sidebar = () => {
+// const token = "";
+
+const allProfiles = [
+  {
+    id: "2",
+    name: "Soul Stories",
+    ndid: "4f14df46-bcfa-43da-8d99-0c6c414445ba",
+    hid: "71711659",
+    token:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6InNvdWxzdG9yaWVzczAxQGdtYWlsLmNvbSIsImV4cCI6MTc2Mjg2MDI5MS40MzQ2ODh9.BfVEgIg24SvQIubFCt6oMrTmSPWI5eJ6I5Ap1_A_GsU",
+  },
+  {
+    id: "1",
+    name: "Test Multi",
+    ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
+    hid: "11974255",
+    token:
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJFbWFpbCI6ImFiaGlqZWV0QGVhem90ZWwuY29tIiwiR29vZ2xlX0lkIjoiMTExOTUwMTk5NDc2MzQyMTIyODY2IiwiZXhwIjoxNzYyODU4Nzk1Ljg0ODg1NH0.FkeJxgM6n28gNn8xA-C5rGO75iKcMddpBT5gk9uYHVc",
+  },
+
+  {
+    id: "3",
+    name: "Avr",
+    ndid: "5617a084-5783-4bac-b299-bdb6e8e471bd",
+    hid: "11974258",
+  },
+];
+
+const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { Leads, setLeads, setLeadsList } = useContext(DataContext);
   const [openMenus, setOpenMenus] = useState({});
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [currentLocation, setCurrentLocation] = useState({});
+  const [currentProfile, setCurrentProfile] = useState(null);
   const {
     user: hotel,
     authUser,
@@ -34,6 +70,7 @@ const Sidebar = () => {
   } = useSelector((state) => state.userProfile);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
+  const [allClients, setAllClients] = useState([]);
   const { setAuth } = useContext(DataContext);
   const { isOpen } = useSelector((state) => state.toggle);
 
@@ -91,7 +128,7 @@ const Sidebar = () => {
       navigate(`${BASE_PATH}/${hid}/${navigatePath}`);
       setIsDropDownOpen(false);
     } catch (error) {
-      console.log(error);
+      console.error("Error selecting location", error?.message);
     }
   };
 
@@ -122,31 +159,185 @@ const Sidebar = () => {
     }
   };
 
-  useEffect(() => {
-    // console.log("authUser", authUser);
-    if (authUser) {
+  const handleResize = (event) => {
+    setIsSmooth(false);
+    const startX = event.clientX;
+    const moveHandler = (e) => {
+      const diffX = e.clientX - startX;
+      const newWidth = sideBarWidth + diffX;
 
+      if (newWidth < 180) {
+        setSidebarWidth(340);
+        dispatch(close());
+      }
+
+      if (newWidth >= 70 && newWidth <= 600) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const upHandler = () => {
+      setIsSmooth(true);
+      document.removeEventListener("mousemove", moveHandler);
+      document.removeEventListener("mouseup", upHandler);
+    };
+
+    document.addEventListener("mousemove", moveHandler);
+    document.addEventListener("mouseup", upHandler);
+  };
+
+  useEffect(() => {
+    if (authUser && hotel) {
       const hid = handleLocalStorage("hid");
-      if (authUser?.isAdmin) {
-        // console.log(hotel)
-        const currentLoaction = hotel?.Profile?.hotels[hid];
-        setCurrentLocation(currentLoaction);
+      // console.log(hid);
+      if (authUser?.isAdmin && hid && hotel) {
+        if (
+          hotel.Profile &&
+          Object.keys(hotel?.Profile?.hotels ?? {}).length > 0
+        ) {
+          const currentLoaction = hotel?.Profile?.hotels[hid];
+          setCurrentLocation(currentLoaction);
+        }
       } else {
-        const assignedLocation = authUser?.assigned_location[0];
-        const currentLoaction = hotel?.Profile?.hotels[assignedLocation?.hid];
-        setCurrentLocation(currentLoaction);
+        if (
+          hotel.Profile &&
+          Object.keys(hotel?.Profile?.hotels ?? {}).length > 0
+        ) {
+          const assignedLocation =
+            authUser?.assignedLocation &&
+            authUser?.assigned_location[
+              Object.keys(hotel?.Profile?.hotels?.length)
+            ];
+          const currentLoaction = hotel?.Profile?.hotels[assignedLocation?.hid];
+          setCurrentLocation(currentLoaction);
+        }
       }
     }
-  }, [hid, hotel, authUser]);
+  }, [hotel, authUser, hid]);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    removeCookie("token");
-    setAuth(false);
-    dispatch(setHid(null));
-    // setTimeout(() => {
-    navigate("/login");
-    // }, 1000)
+  const fetchAllClients = async () => {
+    // if (!authUser?.isAdmin && authUser?.role !== "owner") return;
+    try {
+      const { data } = await axios.get(`${BASE_URL}/admin/get-all-clients`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${handleLocalStorage("token")}`,
+        },
+      });
+      setAllClients(data?.data);
+    } catch (error) {
+      // console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllClients();
+  }, []);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm.toLowerCase());
+    }, 300); // debounce delay (300ms)
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const filteredClients = useMemo(() => {
+    if (!debouncedSearch) return allClients;
+    return allClients.filter((profile) => {
+      const hotel = Object.values(profile?.hotels || {})[0];
+      const valuesToSearch = [
+        profile?.hotelName,
+        hotel?.name,
+        hotel?.city,
+        hotel?.state,
+        hotel?.country,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return valuesToSearch.includes(debouncedSearch);
+    });
+  }, [allClients, debouncedSearch]);
+
+  // const handleLogout = () => {
+  //   localStorage.clear();
+  //   removeCookie("token");
+  //   setAuth(false);
+  //   dispatch(setHid(null));
+  //   // setTimeout(() => {
+  //   navigate("/login");
+  //   // }, 1000)
+  // };
+
+  // const handleLogout = () => {
+  //   localStorage.clear();
+  //   removeCookie("token");
+  //   setAuth(false);
+  //   dispatch(setHid(null));
+  //   // setTimeout(() => {
+  //   navigate("/login");
+  //   // }, 1000)
+  // };
+
+  const handleProfileSwitch = async (profile) => {
+    const { ndid, hotels, hotelEmail } = profile;
+    const hid = Object.keys(hotels)[0];
+    setCurrentProfile(profile);
+
+    if (currentProfile?.hotelName === profile?.hotelName) {
+      return;
+    }
+
+    try {
+      setLeads([]);
+      setDebouncedSearch("");
+      localStorage.removeItem("SheetId");
+      localStorage.removeItem("SheetName");
+      const { data } = await axios.post(
+        `${BASE_URL}/admin/switch-account`,
+        {
+          Email: hotelEmail,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${handleLocalStorage("token")}`,
+          },
+        },
+      );
+
+      if (data?.Status) {
+        const authToken = data?.Token;
+
+        localStorage.setItem("token", authToken);
+        localStorage.setItem("hid", hid);
+        localStorage.setItem("ndid", ndid);
+
+        // dispatch(setHid(hid));
+        // dispatch(fetchWebsiteData(authToken, hid));
+        // dispatch(fetchUserProfile(authToken));
+        // dispatch(fetchAuthUserProfile(authToken));
+      }
+    } catch (error) {
+      // console.log(error);
+    }
+
+    // let authToken = token;
+
+    // console.log(hid);
+
+    setTimeout(() => {
+      // dispatch(setHid(hid));
+      // dispatch(fetchWebsiteData(authToken, hid));
+      // dispatch(fetchUserProfile(authToken));
+      // dispatch(fetchAuthUserProfile(authToken));
+
+      // localStorage.setItem("token", authToken);
+      // localStorage.setItem("hid", hid);
+      // localStorage.setItem("ndid", ndid);
+      navigate("/");
+    }, 1000);
   };
 
   const maniuplateSideBarData = SidebarData?.map((item) => {
@@ -155,20 +346,18 @@ const Sidebar = () => {
         return {
           ...item,
           subLinks: item?.subLinks?.filter(
-            (sub) => authUser?.accessScope[accessScopeMap[sub.key]]
+            (sub) => authUser?.accessScope[accessScopeMap[sub.key]],
           ),
         };
       } else {
         const assignedLocation = authUser?.assigned_location?.filter(
-          (loc) => loc.hid === String(handleLocalStorage("hid"))
+          (loc) => loc.hid === String(handleLocalStorage("hid")),
         )[0];
-
-        // console.log(assignedLocation);
 
         return {
           ...item,
           subLinks: item?.subLinks?.filter(
-            (sub) => assignedLocation?.accessScope[accessScopeMap[sub.key]]
+            (sub) => assignedLocation?.accessScope[accessScopeMap[sub.key]],
           ),
         };
       }
@@ -179,12 +368,17 @@ const Sidebar = () => {
     };
   });
 
-  // console.log(maniuplateSideBarData);
-
+  // console.log(authUser);
+  // console.log(hotel);
+  // console.log(currentLocation);
   return (
-    <div className="p-3 flex flex-col h-screen overflow-hidden shadow-md bg-white">
-      {/* eazotel logo and hamburger*/}
-      <div className="flex justify-between items-center mb-4">
+    <div
+      className="p-3 md:border-r w-full border-r-gray-200!  flex flex-col h-screen overflow-hidden shadow-md bg-slate-50 md:relative fixed left-0 z-99999"
+      style={{
+        left: isMobile ? (isOpen ? "0px" : "0%") : null,
+      }}
+    >
+      <div className="flex justify-between items-center mb-4 ">
         {isOpen && (
           <div>
             <div className="w-28 h-10 -ml-2">
@@ -198,8 +392,9 @@ const Sidebar = () => {
         )}
 
         <span
-          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${!isOpen && "ml-2 rotate-180"
-            }`}
+          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${
+            !isOpen && "ml-2 rotate-180"
+          }`}
           onClick={() => {
             dispatch(toggleSideBar());
           }}
@@ -210,8 +405,9 @@ const Sidebar = () => {
 
       {/* dropdown mutli location */}
       <div
-        className={`${isOpen ? "w-full" : "w-0 opacity-0 hidden"
-          } duration-200 text-nowrap`}
+        className={`${
+          isOpen ? "w-full" : "w-0 opacity-0 hidden"
+        } duration-200 text-nowrap`}
       >
         {loading ? (
           <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
@@ -227,7 +423,8 @@ const Sidebar = () => {
           >
             <div className="w-full">
               <p className="text-[16px] capitalize text-white font-medium">
-                {hotel?.Profile?.hotelName || "Eazotel"}
+                {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                {currentLocation?.local}
               </p>
 
               {currentLocation?.city &&
@@ -251,28 +448,76 @@ const Sidebar = () => {
               >
                 {authUser?.isAdmin ? (
                   <div className="space-y-2 mt-3 w-full">
+                    {authUser?.isAdmin && authUser?.role === "owner" && (
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="search"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
+                        />
+                      </div>
+                    )}
+                    {authUser?.role === "owner" && (
+                      <div className="space-y-2">
+                        {filteredClients?.map((profile) => {
+                          const hotel = Object.values(profile?.hotels)[0];
+                          return (
+                            <div
+                              className={`${
+                                currentProfile?.hotelName === profile?.hotelName
+                                  ? "bg-gray-300 opacity-80"
+                                  : "bg-gray-200"
+                              }  cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-3`}
+                              onClick={() => {
+                                handleProfileSwitch(profile);
+                              }}
+                            >
+                              <h2>{profile?.hotelName}</h2>
+                              <p className="text-xs text-gray-500 flex items-center">
+                                <CiLocationOn />
+                                <span>
+                                  {hotel?.city}
+                                  {hotel.city && ", "}
+                                  {hotel?.state}
+                                  {hotel.state && ", "}
+                                  {hotel?.country}
+                                </span>
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(
                         ([key, value]) => {
                           const isCurrentLocation =
                             value?.city === currentLocation?.city &&
                             value?.state === currentLocation?.state &&
-                            value?.country === currentLocation?.country;
+                            value?.country === currentLocation?.country &&
+                            value?.local === currentLocation?.local &&
+                            value?.pinCode === currentLocation?.pinCode;
 
                           return (
                             <div
                               key={key + 1}
-                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation
-                                ? "bg-gray-100 opacity-70 cursor-not-allowed"
-                                : "bg-gray-200 cursor-pointer"
-                                }`}
+                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${
+                                isCurrentLocation
+                                  ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                                  : "bg-gray-200 cursor-pointer"
+                              }`}
                               onClick={(e) => {
                                 if (!isCurrentLocation)
                                   handleSelectLocation(e, value, key);
                               }}
                             >
                               <h2 className="text-[16px] font-medium">
-                                {hotel?.Profile?.hotelName || "Eazotel"}
+                                {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                                {value?.local}
                               </h2>
 
                               <p className="text-sm gap-1 text-gray-500 flex items-center">
@@ -287,7 +532,7 @@ const Sidebar = () => {
                               </p>
                             </div>
                           );
-                        }
+                        },
                       )}
                   </div>
                 ) : (
@@ -295,6 +540,7 @@ const Sidebar = () => {
                     {authUser?.assigned_location?.map((location, index) => {
                       if (hotel?.Profile?.hotels[location?.hid]) {
                         const value = hotel?.Profile?.hotels[location?.hid];
+                        // console.log(value);
                         const isCurrentLocation =
                           value?.city === currentLocation?.city &&
                           value?.state === currentLocation?.state &&
@@ -303,17 +549,19 @@ const Sidebar = () => {
                         return (
                           <div
                             key={index + 1}
-                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${isCurrentLocation
-                              ? "bg-gray-100 opacity-70 cursor-not-allowed"
-                              : "bg-gray-200 cursor-pointer"
-                              }`}
+                            className={`cursor-pointer hover:bg-gray-100  duration-150 p-2 ${
+                              isCurrentLocation
+                                ? "bg-gray-100 opacity-70 cursor-not-allowed"
+                                : "bg-gray-200 cursor-pointer"
+                            }`}
                             onClick={(e) => {
                               if (!isCurrentLocation)
                                 handleSelectLocation(e, value, location?.hid);
                             }}
                           >
                             <h2 className="text-[16px] font-medium">
-                              {hotel?.Profile?.hotelName || "Eazotel"}
+                              {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
+                              {value?.local}
                             </h2>
 
                             <p className="text-xs text-gray-500 flex items-center">
@@ -333,7 +581,7 @@ const Sidebar = () => {
                   </div>
                 )}
 
-                {authUser?.isAdmin && (
+                {authUser?.isAdmin && authUser?.role !== "owner" && (
                   <button
                     onClick={(e) => handleAddNewLocation(e)}
                     className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"
@@ -345,8 +593,9 @@ const Sidebar = () => {
             </div>
 
             <div
-              className={`${isDropDownOpen ? "rotate-90 " : "-rotate-90"
-                } absolute top-5 right-2`}
+              className={`${
+                isDropDownOpen ? "rotate-90 " : "-rotate-90"
+              } absolute top-5 right-2`}
             >
               <span className="text-white">
                 <Arrow />
@@ -360,211 +609,84 @@ const Sidebar = () => {
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
-            <div className="animate-pulse h-10 bg-gray-200" />
-          ))
+              <div className="animate-pulse h-10 bg-gray-200" />
+            ))
           : maniuplateSideBarData?.map((item, index) => {
-            if (authUser?.isAdmin) {
-              const key = item.key;
+              if (authUser?.isAdmin) {
+                const key = item.key;
 
-              if (key && !authUser?.accessScope[accessScopeMap[key]])
-                return null;
-              return (
-                <div key={index} className="flex flex-col">
-                  {item?.subLinks ? (
-                    <div
-                      onClick={() => {
-                        navigate(item?.subLinks[0]?.link);
-                        setSidebarActiveIndex(null);
-                        toggleMenu(index);
-                        dispatch(open());
-                      }}
-                      className={`flex justify-between items-center cursor-pointer py-3 px-2 ${pathLocation?.pathname
-                        ?.split("/")
-                        .slice(4)
-                        .join("/")
-                        .toString() ===
-                        item?.subLinks[sidebarActiveIndex]?.link
-                        ? " text-white rounded-sm bg-primary"
-                        : "text-primary"
-                        }`}
-                    >
-                      <div className={`flex gap-2 items-center`}>
-                        <span>{item?.icon}</span>
-
-                        <p
-                          className={`font-medium text-nowrap ${isOpen ? "block" : "hidden"
-                            }  duration-300 overflow-hidden`}
-                        >
-                          {item.name}
-                        </p>
-                      </div>
-
-                      {isOpen && (
-                        <span
-                          className={`${openMenus[index] ? "rotate-90" : " -rotate-90"
-                            } ${pathLocation?.pathname
-                              ?.split("/")
-                              .slice(4)
-                              .join("/")
-                              .toString() ===
-                              item?.subLinks[sidebarActiveIndex]?.link
-                              ? " text-white"
-                              : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
-                        >
-                          <Arrow />
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      className={`flex gap-2 items-center py-3 px-2  ${pathLocation?.pathname
-                        ?.split("/")
-                        .slice(4)
-                        .join("/")
-                        .toString() === item?.link
-                        ? "bg-[#0a3a75] text-white rounded-sm"
-                        : "text-primary"
-                        } `}
-                    >
-                      <Link
-                        to={item.link}
-                        className={`flex gap-1 font-medium`}
-                      >
-                        {item?.icon}
-                      </Link>
-
-                      {isOpen && (
-                        <Link
-                          to={item.link}
-                          className={`flex gap-1 font-medium text-nowrap`}
-                        >
-                          {item.name}
-                        </Link>
-                      )}
-                    </div>
-                  )}
-
-                  {openMenus[index] && item?.subLinks && (
-                    <hr className="border-b" />
-                  )}
-
-                  {isOpen && openMenus[index] && (
-                    <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
-                      {item?.subLinks &&
-                        item.subLinks.map((subLink, index) => {
-                          if (
-                            subLink?.key &&
-                            !authUser?.accessScope[
-                            accessScopeMap[subLink?.key]
-                            ]
-                          )
-                            return null;
-                          return (
-                            <div className="flex flex-col">
-                              <Link
-                                onClick={() => {
-                                  setSidebarActiveIndex(index);
-                                }}
-                                to={subLink.link}
-                                key={index}
-                                className={` ${subLink?.link ===
-                                  pathLocation?.pathname
-                                    ?.split("/")
-                                    .slice(4)
-                                    .join("/")
-                                    .toString()
-                                  ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                  : "hover:bg-[#0a3a75]/10"
-                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
-                              >
-                                {subLink.icon} {subLink.name}
-                                {/* {hid}{subLink.link} */}
-                              </Link>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
-                </div>
-              );
-            } else {
-              const currentLocationAccessScope =
-                authUser?.assigned_location?.filter(
-                  (location) =>
-                    location?.hid === String(handleLocalStorage("hid"))
-                )[0];
-
-              const key = item?.key;
-              if (
-                key &&
-                currentLocationAccessScope &&
-                !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
-              )
-                return null;
-
-              return (
-                <div key={index} className="flex flex-col gap-1">
-                  {item?.subLinks && item?.subLinks.length > 0 ? (
-                    <div
-                      onClick={() => {
-                        navigate(item?.subLinks[0]?.link);
-                        setSidebarActiveIndex(0);
-                        toggleMenu(index);
-                        dispatch(open());
-                      }}
-                      className={`flex justify-between items-center cursor-pointer py-3 px-2 ${pathLocation?.pathname
-                        ?.split("/")
-                        .slice(4)
-                        .join("/")
-                        .toString() ===
-                        item?.subLinks[sidebarActiveIndex]?.link
-                        ? " text-white rounded-sm bg-primary"
-                        : "text-primary"
-                        }`}
-                    >
-                      <div className={`flex gap-2 items-center`}>
-                        <span>{item?.icon}</span>
-
-                        <p
-                          className={`font-medium text-nowrap ${isOpen ? "block" : "hidden"
-                            }  duration-300 overflow-hidden`}
-                        >
-                          {item.name}
-                        </p>
-                      </div>
-
-                      {isOpen && (
-                        <span
-                          className={`${openMenus[index] ? "-rotate-90" : " rotate-90"
-                            } ${pathLocation?.pathname
-                              ?.split("/")
-                              .slice(4)
-                              .join("/")
-                              .toString() ===
-                              item?.subLinks[sidebarActiveIndex]?.link
-                              ? " text-white"
-                              : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
-                        >
-                          <Arrow />
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    !item?.subLinks && (
+                if (key && !authUser?.accessScope[accessScopeMap[key]])
+                  return null;
+                return (
+                  <div key={index} className="flex flex-col">
+                    {item?.subLinks ? (
                       <div
-                        className={`flex gap-2 items-center py-3 px-2  ${pathLocation?.pathname
-                          ?.split("/")
-                          .slice(4)
-                          .join("/")
-                          .toString() === item?.link
-                          ? "bg-[#0a3a75] text-white rounded-sm"
-                          : "text-primary"
-                          } `}
+                        onClick={() => {
+                          navigate(item?.subLinks[0]?.link);
+                          setSidebarActiveIndex(null);
+                          toggleMenu(index);
+                          dispatch(open());
+                          // if(isMobile){
+                          //   dispatch(close());
+                          // }
+                        }}
+                        className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
+                          pathLocation?.pathname
+                            ?.split("/")
+                            .slice(4)
+                            .join("/")
+                            .toString() ===
+                          item?.subLinks[sidebarActiveIndex]?.link
+                            ? " text-white rounded-sm bg-primary"
+                            : "text-primary"
+                        }`}
+                      >
+                        <div className={`flex gap-2 items-center`}>
+                          <span>{item?.icon}</span>
+
+                          <p
+                            className={`font-medium text-nowrap ${
+                              isOpen ? "block" : "hidden"
+                            }  duration-300 overflow-hidden`}
+                          >
+                            {item.name}
+                          </p>
+                        </div>
+
+                        {isOpen && (
+                          <span
+                            className={`${
+                              openMenus[index] ? "rotate-90" : " -rotate-90"
+                            } ${
+                              pathLocation?.pathname
+                                ?.split("/")
+                                .slice(4)
+                                .join("/")
+                                .toString() ===
+                              item?.subLinks[sidebarActiveIndex]?.link
+                                ? " text-white"
+                                : ""
+                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                          >
+                            <Arrow />
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div
+                        className={`flex gap-2 items-center py-3 px-2  ${
+                          pathLocation?.pathname
+                            ?.split("/")
+                            .slice(4)
+                            .join("/")
+                            .toString() === item?.link
+                            ? "bg-[#0a3a75] text-white rounded-sm"
+                            : "text-primary"
+                        } `}
                       >
                         <Link
                           to={item.link}
+                          target={item?.target ? "_blank" : "_self"}
                           className={`flex gap-1 font-medium`}
                         >
                           {item?.icon}
@@ -573,80 +695,218 @@ const Sidebar = () => {
                         {isOpen && (
                           <Link
                             to={item.link}
+                            target={item?.target ? "_blank" : "_self"}
                             className={`flex gap-1 font-medium text-nowrap`}
                           >
                             {item.name}
                           </Link>
                         )}
                       </div>
-                    )
-                  )}
+                    )}
 
-                  {openMenus[index] && item?.subLinks && (
-                    <hr className="border-b" />
-                  )}
+                    {openMenus[index] && item?.subLinks && (
+                      <hr className="border-b" />
+                    )}
 
-                  {isOpen && openMenus[index] && (
-                    <div className="space-y-2 mt-2">
-                      {item?.subLinks &&
-                        item?.subLinks?.length > 0 &&
-                        item.subLinks.map((subLink, index) => {
-                          if (
-                            subLink?.key &&
-                            !currentLocationAccessScope?.accessScope[
-                            accessScopeMap[subLink?.key]
-                            ]
-                          )
-                            return null;
-                          return (
-                            <div className="flex flex-col">
-                              <Link
-                                onClick={() => setSidebarActiveIndex(index)}
-                                to={subLink.link}
-                                key={index}
-                                className={` ${subLink?.link ===
-                                  pathLocation?.pathname
-                                    ?.split("/")
-                                    .slice(4)
-                                    .join("/")
-                                    .toString()
-                                  ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                  : "hover:bg-[#0a3a75]/10"
+                    {isOpen && openMenus[index] && (
+                      <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
+                        {item?.subLinks &&
+                          item.subLinks.map((subLink, index) => {
+                            if (
+                              subLink?.key &&
+                              !authUser?.accessScope[
+                                accessScopeMap[subLink?.key]
+                              ]
+                            )
+                              return null;
+                            return (
+                              <div className="flex flex-col">
+                                <Link
+                                  onClick={() => {
+                                    setSidebarActiveIndex(index);
+                                    if (isMobile) {
+                                      dispatch(close());
+                                    }
+                                  }}
+                                  to={subLink.link}
+                                  key={index}
+                                  className={` ${
+                                    subLink?.link ===
+                                    pathLocation?.pathname
+                                      ?.split("/")
+                                      .slice(4)
+                                      .join("/")
+                                      .toString()
+                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
+                                      : "hover:bg-[#0a3a75]/10"
                                   }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
-                              >
-                                {subLink.icon} {subLink.name}
-                                {/* {hid}{subLink.link} */}
-                              </Link>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  )}
-                </div>
-              );
-            }
-          })}
+                                >
+                                  {subLink.icon} {subLink.name}
+                                  {/* {hid}{subLink.link} */}
+                                </Link>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                );
+              } else {
+                const currentLocationAccessScope =
+                  authUser?.assigned_location?.filter(
+                    (location) =>
+                      location?.hid === String(handleLocalStorage("hid")),
+                  )[0];
+
+                const key = item?.key;
+                if (
+                  key &&
+                  currentLocationAccessScope &&
+                  !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+                )
+                  return null;
+
+                return (
+                  <div key={index} className="flex flex-col gap-1">
+                    {item?.subLinks && item?.subLinks.length > 0 ? (
+                      <div
+                        onClick={() => {
+                          navigate(item?.subLinks[0]?.link);
+                          setSidebarActiveIndex(0);
+                          toggleMenu(index);
+                          dispatch(open());
+                        }}
+                        className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
+                          pathLocation?.pathname
+                            ?.split("/")
+                            .slice(4)
+                            .join("/")
+                            .toString() ===
+                          item?.subLinks[sidebarActiveIndex]?.link
+                            ? " text-white rounded-sm bg-primary"
+                            : "text-primary"
+                        }`}
+                      >
+                        <div className={`flex gap-2 items-center`}>
+                          <span>{item?.icon}</span>
+
+                          <p
+                            className={`font-medium text-nowrap ${
+                              isOpen ? "block" : "hidden"
+                            }  duration-300 overflow-hidden`}
+                          >
+                            {item.name}
+                          </p>
+                        </div>
+
+                        {isOpen && (
+                          <span
+                            className={`${
+                              openMenus[index] ? "-rotate-90" : " rotate-90"
+                            } ${
+                              pathLocation?.pathname
+                                ?.split("/")
+                                .slice(4)
+                                .join("/")
+                                .toString() ===
+                              item?.subLinks[sidebarActiveIndex]?.link
+                                ? " text-white"
+                                : ""
+                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                          >
+                            <Arrow />
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      !item?.subLinks && (
+                        <div
+                          className={`flex gap-2 items-center py-3 px-2  ${
+                            pathLocation?.pathname
+                              ?.split("/")
+                              .slice(4)
+                              .join("/")
+                              .toString() === item?.link
+                              ? "bg-[#0a3a75] text-white rounded-sm"
+                              : "text-primary"
+                          } `}
+                        >
+                          <Link
+                            to={item.link}
+                            className={`flex gap-1 font-medium`}
+                          >
+                            {item?.icon}
+                          </Link>
+
+                          {isOpen && (
+                            <Link
+                              to={item.link}
+                              className={`flex gap-1 font-medium text-nowrap`}
+                            >
+                              {item.name}
+                            </Link>
+                          )}
+                        </div>
+                      )
+                    )}
+
+                    {openMenus[index] && item?.subLinks && (
+                      <hr className="border-b" />
+                    )}
+
+                    {isOpen && openMenus[index] && (
+                      <div className="space-y-2 mt-2">
+                        {item?.subLinks &&
+                          item?.subLinks?.length > 0 &&
+                          item.subLinks.map((subLink, index) => {
+                            if (
+                              subLink?.key &&
+                              !currentLocationAccessScope?.accessScope[
+                                accessScopeMap[subLink?.key]
+                              ]
+                            )
+                              return null;
+                            return (
+                              <div className="flex flex-col">
+                                <Link
+                                  onClick={() => setSidebarActiveIndex(index)}
+                                  to={subLink.link}
+                                  key={index}
+                                  className={` ${
+                                    subLink?.link ===
+                                    pathLocation?.pathname
+                                      ?.split("/")
+                                      .slice(4)
+                                      .join("/")
+                                      .toString()
+                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
+                                      : "hover:bg-[#0a3a75]/10"
+                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                                >
+                                  {subLink.icon} {subLink.name}
+                                  {/* {hid}{subLink.link} */}
+                                </Link>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+            })}
 
         {/* add location form  */}
         <AddLocationForm isOpen={isOpenForm} handleClose={handleClose} />
       </div>
 
-      {/* logout button  */}
-      {/* <div
-        className="flex items-center gap-1 px-2 py-3 rounded-md bg-primary text-white cursor-pointer"
-        onClick={handleLogout}
-      >
-        <FiLogOut size={20} />
+      <div
+        className="w-[2px] h-full absolute right-0 top-0 bg-white cursor-e-resize"
+        onMouseDown={handleResize}
+      />
 
-        {isOpen && (
-          <button
-            className={`${
-              !isOpen ? "w-0" : "w-f"
-            } font-medium text-nowrap overflow-hidden`}
-          >
-            Logout
-          </button>
-        )}
+      {/* <div className="md:hidden block cursor-pointer" onClick={handleLogout}>
+        <IoIosLogOut size={32} />
       </div> */}
     </div>
   );

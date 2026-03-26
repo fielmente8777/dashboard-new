@@ -54,9 +54,9 @@ const TemperatureCard = () => {
     fetchWeatherData();
   }, []);
 
-  const [weatherCondition, setWeatherCondition] = useState("Rainy");
+  const [weatherCondition, setWeatherCondition] = useState("Sunny");
   return (
-    <div className="relative rounded-xl cardShadow w-full h-[300px] lg:h-full transition-all duration-500 ease-in-out ">
+    <div className="relative rounded md:rounded-lg cardShadow w-full h-[300px] lg:h-full transition-all duration-500 ease-in-out ">
       {/* <div className={`rounded-xl cardShadow p-5 w-full h-full transition-all duration-500 ease-in-out ${weatherCondition === 'Sunny' ? 'bg-yellow-100 shadow-yellow-300'
             : weatherCondition === 'Rainy' ? 'bg-blue-100 shadow-blue-300'
                 : weatherCondition === 'Cloudy' ? 'bg-gray-100 shadow-gray-300'
@@ -68,19 +68,19 @@ const TemperatureCard = () => {
           weatherCondition === "Rainy"
             ? RainVideo
             : weatherCondition === "Cloudy"
-              ? CouldVideo
-              : weatherCondition === "Sunny"
-                ? SummerVideo
-                : ""
+            ? CouldVideo
+            : weatherCondition === "Sunny"
+            ? SummerVideo
+            : ""
         }
         autoPlay
         loop
         muted
         playsInline
-        className="w-full h-full object-cover  top-0 left-0 absolute rounded-xl"
+        className="w-full h-full object-cover  top-0 left-0 absolute rounded md:rounded-lg"
       />
 
-      <div className="absolute top-0 left-0 h-full w-full px-2 py-5 md:p-5 bg-black/30 rounded-xl ">
+      <div className="absolute top-0 left-0 h-full w-full px-2 py-5 md:p-5 bg-black/30 rounded md:rounded-lg ">
         <h3 className="text-md font-semibold  !text-white">
           Temperature Guide
         </h3>

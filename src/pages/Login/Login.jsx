@@ -1,24 +1,32 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
+// import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Banner from "../../assets/HotelVhNPHJ.png";
-import Logo from "../../assets/companylogo.b.png";
+// import Banner from "../../assets/HotelVhNPHJ.png";
+// import Logo from "../../assets/companylogo.b.png";
 import { loginUser } from "../../redux/slice/LoginSlice";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { setCookie } from "../../utils/handleCookies";
-import Whatsapp from "../../components/Contacts/WhtasApp";
-import { FcGoogle } from "react-icons/fc";
+// import Whatsapp from "../../components/Contacts/WhtasApp";
+// import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import Loader from "../../components/Loader";
 import axios from "axios";
 import { BASE_URL } from "../../data/constant";
-import { useGoogleLogin, GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import {
+  useGoogleLogin,
+  GoogleOAuthProvider,
+  GoogleLogin,
+} from "@react-oauth/google";
+import Logo from "../../assets/companylogo.b.png";
 import { verify } from "../../utils/verify";
+import { useToast } from "../../context/ToastContext";
 
 const Login = () => {
+
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -45,65 +53,32 @@ const Login = () => {
     let timerInterval;
     if (response.success === false) {
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged Failed",
-        html: "Navigating you to Login <b></b>",
-        timer: 700,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      });
+      showToast(
+        {
+          message: error || "Login failed. Please enter correct username and password",
+          type: "error",
+        }
+      )
     } else if (response.data.Status) {
       const token = response?.data?.Token;
       handleLocalStorage("token", token || "");
       setCookie("token", token || "");
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged in Successfully",
-        html: "We will redirect you to the dashboard <b></b>",
-        timer: 1000,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.timer) {
-          navigate("/");
+      showToast(
+        {
+          message: response.data.Message || "Logged in Successfully",
+          type: "success",
         }
-      });
+      )
+      navigate("/");
     } else {
       setSpinnerLoader(false);
-      Swal.fire({
-        title: "Logged Failed",
-        html: "Navigating you to Login <b></b>",
-        timer: 700,
-        timerProgressBar: true,
-        didOpen: () => {
-          Swal.showLoading();
-          const timer = Swal.getPopup().querySelector("b");
-          timerInterval = setInterval(() => {
-            timer.textContent = `${Swal.getTimerLeft()}`;
-          }, 1000);
-        },
-        willClose: () => {
-          clearInterval(timerInterval);
-        },
-      });
+      showToast(
+        {
+          message: error || "Login failed. Please enter correct username and password",
+          type: "error",
+        }
+      )
     }
   };
 
@@ -117,6 +92,7 @@ const Login = () => {
       });
 
       if (response?.data?.Status === true) {
+        
         Swal.fire({
           title: "Password reset successfully",
           text: "Please check your email to reset your password.",
@@ -140,11 +116,7 @@ const Login = () => {
     setError(null);
     try {
       const token = response.credential;
-      console.log(token);
-
       const result = (await verify(token)).data;
-
-      console.log(result);
 
       let timerInterval;
       if (result?.status === true) {
@@ -166,11 +138,13 @@ const Login = () => {
           willClose: () => {
             clearInterval(timerInterval);
           },
-        }).then((result) => {
-          if (result.dismiss === Swal.DismissReason.timer) {
-            navigate("/");
-          }
         });
+
+        if (result?.onboarding) {
+          navigate("/");
+        } else {
+          navigate("/onboarding/form");
+        }
       }
 
       // await testprotected(jwtToken);
@@ -186,14 +160,18 @@ const Login = () => {
   };
 
   const handleFailure = (error) => {
+    showToast({
+          message: error || "Login failed. Please try again",
+          type: "error",
+        });
     console.error("Login Failed:", error);
     setError("Login failed. Please try again.");
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center">
-      <div className="max-w-[1500px] w-full grid lg:grid-cols-2 items-center gap-4">
-        <div className="aspect-[4/4]">
+    <div className="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-white px-6">
+      <div className="max-w-[1500px] w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-4">
+        <div className="md:aspect-[4/4] max-sm:hidden">
           <img
             src="/LoginImage.png"
             alt=""
@@ -203,7 +181,7 @@ const Login = () => {
 
         <div className="border p-6 rounded-2xl max-w-xl w-full mx-auto">
           <div>
-            <div className="max-w-60 mx-auto aspect-[3/1]">
+            <div className="max-w-30  mx-auto aspect-[3/1]">
               <img
                 src="/EAZOTEL LOGO.png"
                 alt=""
@@ -212,7 +190,7 @@ const Login = () => {
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-2xl font-bold text-text-black">Sign In</h2>
+              <h2 className="text-xl font-bold text-text-black">Sign In</h2>
               <p className="text-text-gray">
                 Provide Your Details to Access Your Account.
               </p>
@@ -301,39 +279,34 @@ const Login = () => {
                 </button>
               </div>
 
-              {/* <div className="">
-
-
+              <div className="">
                 <GoogleOAuthProvider
                   clientId={
                     "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
                   }
                 // clientSecret={"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"}
                 >
-                  <div className="flex justify-center w-full rounded-md">
+                  <div className="flex justify-center  w-full rounded-md">
                     <GoogleLogin
                       onSuccess={handleSuccess}
                       onError={handleFailure}
                       disabled={loading}
                       text="continue_with"
-                      width="700px"
+                      width=""
                       type="standard"
                       theme="filled_blue"
                       size="large"
                       shape="pill"
-                      useOneTap={true}
+                    // useOneTap={true}
                     />
-                    
-                    <GoogleLoginButton
-                      handleSuccess={handleSuccess}
-                      handleFailure={handleFailure}
-                    />
+
+                  
                   </div>
                 </GoogleOAuthProvider>
-              </div> */}
+              </div>
 
               <div>
-                <p className="text-md font-medium text-text-gray -mt-4">
+                <p className="text-sm max-sm:text-center font-medium text-text-gray -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
                     to="/signin"
@@ -347,6 +320,132 @@ const Login = () => {
           </form>
         </div>
       </div>
+      {/* <div className="bg-white w-full shadow-md px-5 md:px-20 py-2">
+        <div className="w-28 h-10 -ml-2">
+          <img src={Logo} alt="logo" className="h-full w-full object-contain" />
+        </div>
+      </div> */}
+      {/* <div className="flex flex-1 flex-col w-full h-full">
+        <form
+          onSubmit={handleSubmit}
+          className="md:mt-14 w-full self-center md:max-w-[400px]"
+        >
+          <h1 className="text-2xl font-medium">Sign In</h1>
+
+          <div className="space-y-6 mt-6">
+            <div className="flex flex-col gap-2">
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                className="px-4 py-3 font-medium bg-[#f1f1f1] rounded-md  text-sm outline-none placeholder:text-gray-600 shadow-sm"
+                onChange={handleChange}
+                value={formData.email}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+
+              <div className="w-full relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className="px-4 py-3 bg-[#f1f1f1] font-medium rounded-md  text-sm outline-none placeholder:text-gray-600 shadow-sm w-full"
+                  onChange={handleChange}
+                  value={formData.password}
+                />
+
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
+                  {showPassword ? (
+                    <AiOutlineEye
+                      size={20}
+                      onClick={togglePassword}
+                      className="text-gray-400"
+                    />
+                  ) : (
+                    <HiOutlineEyeOff
+                      size={20}
+                      onClick={togglePassword}
+                      className="text-gray-400"
+                    />
+                  )}
+                </div>
+              </div> */}
+
+              {/* <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-1">
+                    <input type="checkbox" id="remember" className="mt-1" />
+                    <label
+                      htmlFor="remember"
+                      className="text-sm text-text-black font-medium"
+                    >
+                      Remember Me
+                    </label>
+                  </div>
+
+                  <p
+                    onClick={() => setForget(true)}
+                    className="cursor-pointer text-sm text-secondary  inline-block font-medium"
+                  >
+                    Forgot Password
+                  </p>
+                </div> */}
+            {/* </div> */}
+
+            {/* <div className="flex">
+              <button className="bg-[#159aff] rounded-md text-white py-3 text-sm shadow-md w-full flex justify-center gap-3 items-center">
+                Sign In <SignInIcon />
+                {spinnerLoader && <Loader size={18} color="white" />}
+              </button>
+            </div> */}
+
+            {/* <div className="">
+              <GoogleOAuthProvider
+                clientId={
+                  "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com"
+                }
+                // clientSecret={"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"}
+              >
+                <div className="flex justify-center w-full rounded-md">
+                  <GoogleLogin
+                    onSuccess={handleSuccess}
+                    onError={handleFailure}
+                    disabled={loading}
+                    text="continue_with"
+                    width="700px"
+                    // type="icon"
+                    type="standard"
+                    theme="outline"
+                    size="large"
+                    shape="rectangular"
+                    // useOneTap={true}
+                  />
+                </div>
+              </GoogleOAuthProvider>
+            </div> */}
+
+            {/* <div>
+                <p className="text-md font-medium text-text-gray -mt-4">
+                  Don&apos;t have an account?{" "}
+                  <Link
+                    to="/signin"
+                    className="text-secondary font-medium inline-block"
+                  >
+                    Sign Up
+                  </Link>
+                </p>
+              </div> */}
+          {/* </div>
+        </form>
+      </div>
+      <div>
+        <img
+          className="bottom-0"
+          src="https://static.zohocdn.com/social/images/client-page-bottom-illustration.7f6ab18523b6339974100afa454a7b46.png"
+          alt="image"
+        />
+      </div> */}
     </div>
   );
 };
