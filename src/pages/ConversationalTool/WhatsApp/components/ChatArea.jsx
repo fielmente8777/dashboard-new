@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
@@ -29,6 +30,7 @@ import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
 import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
@@ -43,6 +45,7 @@ const ChatArea = () => {
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { selectedConversation, conversations, setMobileActive } =
     useContext(DataContext);
 
@@ -303,6 +306,11 @@ const ChatArea = () => {
   };
 
   const handleBulkDelete = async () => {
+    const isConfirmed = await confirm(
+      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`,
+    );
+
+    if (!isConfirmed) return;
     try {
       setMessageList((prev) =>
         prev.filter((m) => !selectedMessages.includes(m.messageId)),
@@ -337,23 +345,25 @@ const ChatArea = () => {
   useEffect(() => {
     fetchTemplate();
 
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setOpenMenuIndex(null);
-      }
-    };
+    // const handleClickOutside = (event) => {
+    //   if (menuRef.current && !menuRef.current.contains(event.target)) {
+    //     setOpenMenuIndex(null);
+    //   }
+    // };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    // document.addEventListener("mousedown", handleClickOutside);
 
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    // return () => {
+    //   document.removeEventListener("mousedown", handleClickOutside);
+    // };
   }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      console.log("serverResponse", serverResponse);
+      console.log("selectedConversation", selectedConversation);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
         serverResponse?.data?.ndid === selectedConversation?.ndid &&
@@ -396,6 +406,7 @@ const ChatArea = () => {
   }, [selectedConversation, conversations]);
 
   useEffect(() => {
+    setSelectedMessages([]);
     loadMessages(selectedConversation?._id);
     fetchFlowSession();
   }, [selectedConversation?._id]);
@@ -429,18 +440,18 @@ const ChatArea = () => {
         <div className="flex items-center gap-6">
           {selectionMode && (
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleBulkDelete}
-                className="text-red-500 font-medium"
-              >
-                <MdOutlineDelete size={20} />
-              </button>
-
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">
-                  {selectedMessages.length} items
+                <span className="text-xs font-medium ">
+                  {selectedMessages.length} Messages
                 </span>
               </div>
+
+              <button
+                onClick={handleBulkDelete}
+                className="text-red-600 font-medium size-7 flex justify-center items-center bg-red-200 rounded-full"
+              >
+                <RiDeleteBin6Line size={16} />
+              </button>
             </div>
           )}
           <Link
@@ -529,7 +540,7 @@ const ChatArea = () => {
                   <div
                     className={`flex gap-1 items-center py-2 ${
                       selectedMessages.includes(message?.messageId)
-                        ? "bg-blue-100 border-blue-400"
+                        ? "bg-slate-200 border-blue-400"
                         : isMe
                           ? ""
                           : ""
@@ -733,7 +744,7 @@ const ChatArea = () => {
                         <div className="absolute -top-1 right-1">
                           <button
                             ref={menuRef}
-                            onClick={(e) => {
+                            onClick={() => {
                               // e.preventDefault();
                               setOpenMenuIndex(
                                 openMenuIndex === index ? null : index,
@@ -745,7 +756,7 @@ const ChatArea = () => {
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute right-0 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
                               {![
                                 "image",
                                 "video",

@@ -35,6 +35,7 @@ import TemplatePreview from "./Templates/TemplatePreview";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import { useToast } from "../../../context/ToastContext";
 import TemplateLibrary from "./Templates/TemplateLibrary";
+import { ReactFlowProvider } from "reactflow";
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
   {
@@ -293,7 +294,11 @@ const WhatsAppBusiness = () => {
                   }}
                 />
               )}
-            {activeTab === "whatsapp-flow" && <FlowBuilder />}
+            {activeTab === "whatsapp-flow" && (
+              <ReactFlowProvider>
+                <FlowBuilder />
+              </ReactFlowProvider>
+            )}
           </div>
         </div>
       )}

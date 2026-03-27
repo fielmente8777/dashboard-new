@@ -19,6 +19,7 @@ import {
 } from "../../../../utils/formateDate";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { confirm } = useConfirm();
@@ -166,10 +167,11 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
       <div className="flex justify-end p-2">
         <button
           disabled={isDeleteLoading}
-          className="bg-red-500 text-white p-2 rounded-sm flex items-center gap-1.5"
+          className="bg-red-200 text-red-600  p-2 font-medium text-sm rounded-sm flex items-center gap-1.5"
           onClick={handleDeleteConversation}
         >
-          Delete Conversation {isDeleteLoading && <Loader color="#fefefe" />}
+          <RiDeleteBin6Line /> Conversation{" "}
+          {isDeleteLoading && <Loader color="#fefefe" />}
         </button>
       </div>
       {/* Profile Header */}

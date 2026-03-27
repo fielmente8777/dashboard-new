@@ -29,6 +29,8 @@ import {
 
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
+import { useToast } from "../../context/ToastContext";
 
 const CREATED_FROM = "facebook";
 
@@ -38,6 +40,7 @@ const MetaLeads = () => {
   const [isExporting, setIsExporting] = useState(false);
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
   const [isSync, setIsSync] = useState(true);
   const [allLeads, setAllLeads] = useState([]);
   const [allCampaigns, setAllCampaigns] = useState([]);
@@ -50,6 +53,9 @@ const MetaLeads = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [isPageRestored, setIsPageRestored] = useState(false);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   const {
     page,
@@ -184,17 +190,22 @@ const MetaLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        // fetchLeads();
-        // return;
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+        return;
       }
     } catch (error) {
       Swal.fire({
@@ -472,11 +483,16 @@ const MetaLeads = () => {
                         return (
                           <td onClick={(e) => e.stopPropagation()}>
                             <CustomDropdown
-                              label={row?.status || "Select Status"}
-                              options={Stages || []}
-                              className="border w-40! p-1! rounded-md! bg-gray-100!"
+                              label={row.status}
+                              options={Stages}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                               onChange={(value) => {
-                                handleUpdateStage(row?._id, row?.hId, value);
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
                               }}
                             />
                           </td>
@@ -491,11 +507,29 @@ const MetaLeads = () => {
                       }
                       if (h.key === "Name") {
                         const isName = row[h.key];
+                        const followUpDate = new Date(
+                          row["followUpDate"] || row["followUp"] || "",
+                        );
+                        const today = new Date();
+
+                        const isToday =
+                          followUpDate.getDate() === today.getDate() &&
+                          followUpDate.getMonth() === today.getMonth() &&
+                          followUpDate.getFullYear() === today.getFullYear();
 
                         const userName = isName
                           ? isName
-                          : row?.other_details?.full_name;
-                        return <td>{userName}</td>;
+                          : row?.other_details?.full_name || "-";
+                        return (
+                          <td>
+                            {userName}{" "}
+                            {isToday && (
+                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                                Follow Up
+                              </span>
+                            )}
+                          </td>
+                        );
                       }
                       return (
                         <td key={h.key} className="px-3 py-2">
@@ -538,6 +572,20 @@ const MetaLeads = () => {
           total={total}
         />
       </div>
+
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage(
+            selectedLead?._id,
+            selectedLead?.hId,
+            "Follow Up",
+            date,
+          );
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 };

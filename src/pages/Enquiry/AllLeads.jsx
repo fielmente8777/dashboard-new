@@ -26,11 +26,14 @@ import { getLeads, updateLead } from "../../services/api/leads.api";
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 import AdsLeadsUsingGoogleSheet from "./AdsLeadsUsingGoogleSheet";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
+import { useToast } from "../../context/ToastContext";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -40,6 +43,9 @@ const AllLeads = () => {
   const [endDate, setEndDate] = useState("");
   const [stage, setStage] = useState("");
   const [source, setSource] = useState("");
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -64,6 +70,7 @@ const AllLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "assignee", label: "Assignee" },
     { key: "status", label: "Stages" },
   ];
 
@@ -144,16 +151,21 @@ const AllLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        fetchLeads();
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
         return;
       }
     } catch (error) {
@@ -204,17 +216,16 @@ const AllLeads = () => {
     setIsPageRestored(true);
   }, []);
 
-  useEffect(() => {
-    wsRef.current = new WebSocketClient(WS_BASE_URL);
+  // useEffect(() => {
+  //   wsRef.current = new WebSocketClient(WS_BASE_URL);
 
-    wsRef.current.connect((serverResponse) => {
-      if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
-        console.log(serverResponse);
-      }
-    });
+  //   wsRef.current.connect((serverResponse) => {
+  //     if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
+  //     }
+  //   });
 
-    return () => wsRef.current?.close();
-  }, []);
+  //   return () => wsRef.current?.close();
+  // }, []);
 
   return (
     <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
@@ -374,7 +385,12 @@ const AllLeads = () => {
                               options={Stages}
                               className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                               onChange={(value) => {
-                                handleUpdateStage(row?._id, row?.hId, value);
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
                               }}
                             />
                           </td>
@@ -391,7 +407,9 @@ const AllLeads = () => {
 
                       if (h.key === "Name") {
                         const isName = row[h.key];
-                        const followUpDate = new Date(row["followUp"]);
+                        const followUpDate = new Date(
+                          row["followUpDate"] || row["followUp"] || null,
+                        );
                         const today = new Date();
 
                         const isToday =
@@ -408,6 +426,18 @@ const AllLeads = () => {
                             {isToday && (
                               <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
                                 Follow Up
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "assigne") {
+                        return (
+                          <td className="bg-black p-8">
+                            {row[h.key] || (
+                              <span className="text-center w-full inline-block">
+                                -
                               </span>
                             )}
                           </td>
@@ -454,6 +484,65 @@ const AllLeads = () => {
           total={total}
         />
       </div>
+
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage(
+            selectedLead?._id,
+            selectedLead?.hId,
+            "Follow Up",
+            date,
+          );
+          setShowDatePicker(false);
+        }}
+      />
+
+      {/* {showDatePicker && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-999999">
+          <div className="bg-white rounded-lg p-6 w-75 shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Select Follow Up Date
+            </h3>
+
+            <DatePicker
+              minDate={new Date()}
+              selected={followUpDate}
+              onChange={(date) => setFollowUpDate(date)}
+              inline
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowDatePicker(false);
+                  setFollowUpDate(null);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleUpdateStage(
+                    selectedLead?._id,
+                    selectedLead?.hId,
+                    "Follow Up",
+                    followUpDate,
+                  );
+                  setShowDatePicker(false);
+                  setFollowUpDate(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };

@@ -104,8 +104,6 @@ export default function SendMessageNode({ id, data }) {
     setNodes(updatedNodes);
   };
 
-  console.log(nodes);
-
   return (
     <div className="w-[320px] rounded-xl shadow-lg bg-white border relative">
       {/* Header */}

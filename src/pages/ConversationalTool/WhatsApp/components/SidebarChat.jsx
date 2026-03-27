@@ -130,7 +130,6 @@ const SidebarChat = () => {
   }, [debouncedSearch, conversations]);
 
   useEffect(() => {
-    console.log(activeTab);
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);

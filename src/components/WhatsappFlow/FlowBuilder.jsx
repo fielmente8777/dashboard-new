@@ -6,6 +6,7 @@ import ReactFlow, {
   addEdge,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
@@ -31,10 +32,13 @@ const nodeTypes = {
 };
 
 export default function FlowBuilder() {
+  // const { project, getViewport } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
+  const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
 
   const onConnect = useCallback(
@@ -129,6 +133,54 @@ export default function FlowBuilder() {
         type: "interactive",
         variable: "",
       };
+    } else if (type === "carousel") {
+      data = {
+        interactive: {
+          type: "carousel",
+
+          body: {
+            text: "Choose an option",
+          },
+
+          action: {
+            cards: [
+              {
+                card_index: 0,
+
+                // default header (text)
+                header: {
+                  type: "text",
+                  text: "Card Title",
+                },
+
+                body: {
+                  text: "Card description",
+                },
+
+                action: {
+                  buttons: [
+                    {
+                      type: "quick_reply",
+                      quick_reply: {
+                        id: "card_0_btn_0",
+                        title: "Option 1",
+                      },
+                    },
+                  ],
+                },
+
+                // 🔥 UI-only fields (important)
+                headerType: "text", // for frontend toggle
+                headerText: "Card Title",
+                image: null, // file (not URL)
+              },
+            ],
+          },
+        },
+
+        type: "interactive",
+        variable: "",
+      };
     } else if (type === "question") {
       data = {
         message: "Ask a question here",
@@ -141,8 +193,8 @@ export default function FlowBuilder() {
       id: uuidv4(),
       type,
       position: {
-        x: 200 + Math.random() * 300,
-        y: 100 + Math.random() * 300,
+        x: nodes[nodes.length - 1].position.x + 100,
+        y: nodes[nodes.length - 1].position.y + 100,
       },
       data,
     };
@@ -205,7 +257,7 @@ export default function FlowBuilder() {
   }, []);
 
   return (
-    <div>
+    <div className="">
       <div className="flex justify-end p-2 z-50">
         <button
           onClick={() => handlePublish()}
@@ -216,17 +268,19 @@ export default function FlowBuilder() {
       </div>
 
       <div className="relative">
-        <div className="flex h-[90vh]">
+        <div className="flex h-140 bg-red-400">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-          <div className="flex-1">
+          <div className="flex-1 bg-black/75">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
                 data: {
                   ...node.data,
                   filesMap,
+                  filesMapCarousel,
                   setFilesMap,
+                  setFilesMapCarousel,
                 },
               }))}
               edges={edges}
@@ -237,11 +291,15 @@ export default function FlowBuilder() {
               onNodeClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               connectionLineType="smoothstep"
-              fitView
             >
               <Background />
               <Controls />
-              <MiniMap position="bottom-right" />
+              <MiniMap
+                position="bottom-right"
+                zoomable
+                pannable
+                nodeStrokeWidth={3}
+              />
             </ReactFlow>
           </div>
           {/* <WhatsAppFlowsBuilder /> */}

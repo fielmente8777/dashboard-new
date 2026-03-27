@@ -1,17 +1,18 @@
 import jsonToCsvExport from "json-to-csv-export";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { FaPlus } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
+import { useToast } from "../../context/ToastContext";
 import {
   BASE_PATH,
   LOCAL_STORAGE,
@@ -23,10 +24,7 @@ import {
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
-import { updateMetaLead } from "../../services/api/MetaLeads.api";
-import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
-import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
-import { formatDate, formatDateTime } from "../../utils/formateDate";
+import { formatDateTime } from "../../utils/formateDate";
 
 const CREATED_FROM = "google_ads";
 
@@ -34,14 +32,10 @@ const GoogleAds = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isEditingLoading, setIsEditingLoading] = useState(false);
+  const { showToast } = useToast();
+
   const [isExporting, setIsExporting] = useState(false);
 
-  const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
 
@@ -51,6 +45,9 @@ const GoogleAds = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [stage, setStage] = useState("");
   const [isPageRestored, setIsPageRestored] = useState(false);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   const {
     page,
@@ -153,29 +150,24 @@ const GoogleAds = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
+        // fetchLeads();
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
         });
-        fetchLeads();
         return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -183,63 +175,6 @@ const GoogleAds = () => {
         text: error?.message || "Failed to update lead stage",
       });
     }
-  };
-
-  const hanldeUpdateNotes = async (leadId) => {
-    setIsEditingLoading(true);
-    const payload = {
-      leadId: leadId,
-      notes: selectedLead?.notes || [],
-    };
-    try {
-      const response = await updateMetaLead(payload);
-      if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead notes updated successfully",
-        });
-        return;
-      }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead notes",
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error?.message || "Failed to update lead notes",
-      });
-    } finally {
-      setIsEditingLoading(false);
-      setIsEdit(false);
-    }
-  };
-
-  const handleNotesSave = (activity) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-
-      if (editingIndex !== null) {
-        notes[editingIndex] = activity;
-      } else {
-        notes.push(activity);
-      }
-
-      return { ...prev, notes };
-    });
-  };
-
-  const handleRemoveNote = (index) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-      notes.splice(index, 1);
-      return { ...prev, notes };
-    });
   };
 
   const handleRedirectToPage = (row, index) => {
@@ -435,9 +370,14 @@ const GoogleAds = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100!"
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                               onChange={(value) => {
-                                handleUpdateStage(row?._id, row?.hId, value);
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
                               }}
                             />
                           </td>
@@ -488,6 +428,20 @@ const GoogleAds = () => {
           total={total}
         />
       </div>
+
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage(
+            selectedLead?._id,
+            selectedLead?.hId,
+            "Follow Up",
+            date,
+          );
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 };
