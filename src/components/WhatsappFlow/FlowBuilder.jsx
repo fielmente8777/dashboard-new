@@ -121,7 +121,7 @@ export default function FlowBuilder() {
                 title: "Section 1",
                 rows: [
                   {
-                    id: "row_1",
+                    id: `row_1_1_${uuidv4()}`,
                     title: "Option 1",
                   },
                 ],
@@ -193,8 +193,8 @@ export default function FlowBuilder() {
       id: uuidv4(),
       type,
       position: {
-        x: nodes[nodes.length - 1].position.x + 100,
-        y: nodes[nodes.length - 1].position.y + 100,
+        x: 250,
+        y: 100,
       },
       data,
     };
@@ -256,6 +256,8 @@ export default function FlowBuilder() {
     fetchFlows();
   }, []);
 
+  console.log(nodes);
+
   return (
     <div className="">
       <div className="flex justify-end p-2 z-50">
@@ -268,10 +270,10 @@ export default function FlowBuilder() {
       </div>
 
       <div className="relative">
-        <div className="flex h-140 bg-red-400">
+        <div className="flex h-140">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-          <div className="flex-1 bg-black/75">
+          <div className="flex-1 bg-gray-200">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,

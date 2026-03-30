@@ -366,7 +366,7 @@ const ChatArea = () => {
       console.log("selectedConversation", selectedConversation);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
-        serverResponse?.data?.ndid === selectedConversation?.ndid &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
         normalizePhone(serverResponse?.data?.from) ===
           normalizePhone(selectedConversation?.phone)
       ) {
@@ -393,8 +393,8 @@ const ChatArea = () => {
         );
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
-        serverResponse?.data?.ndid === selectedConversation?.ndid &&
-        normalizePhone(serverResponse?.data?.from) ===
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
+        normalizePhone(serverResponse?.data?.to) ===
           normalizePhone(selectedConversation?.phone)
       ) {
         const { data } = serverResponse;
@@ -403,7 +403,7 @@ const ChatArea = () => {
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation, conversations]);
+  }, [selectedConversation, conversations, messageList]);
 
   useEffect(() => {
     setSelectedMessages([]);
