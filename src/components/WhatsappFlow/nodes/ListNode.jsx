@@ -1,8 +1,8 @@
-import { Handle, Position } from "reactflow";
-import { FiMoreVertical } from "react-icons/fi";
-import { v4 as uuidv4 } from "uuid";
+import { Handle, Position, useReactFlow } from "reactflow";
 
-export default function ListNode({ data }) {
+export default function ListNode({ data, id }) {
+  const { getNodes, setNodes } = useReactFlow();
+  const nodes = getNodes();
   const interactive = data?.interactive;
 
   const headerText = interactive?.header?.text;
@@ -10,6 +10,11 @@ export default function ListNode({ data }) {
   const footerText = interactive?.footer?.text;
 
   const sections = interactive?.action?.sections || [];
+
+  const removeNode = () => {
+    const updatedNodes = nodes.filter((node) => node.id !== id);
+    setNodes(updatedNodes);
+  };
 
   return (
     <div className="w-64 bg-white rounded-lg shadow border overflow-hidden">
@@ -20,7 +25,15 @@ export default function ListNode({ data }) {
           List
         </div>
 
-        <FiMoreVertical className="cursor-pointer" />
+        <div
+          className="cursor-pointer text-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            removeNode();
+          }}
+        >
+          X
+        </div>
       </div>
 
       {/* Header Text */}

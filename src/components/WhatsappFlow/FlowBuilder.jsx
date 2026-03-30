@@ -6,6 +6,7 @@ import ReactFlow, {
   addEdge,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
@@ -19,19 +20,25 @@ import QuestionNode from "./nodes/QuestionNode";
 import { NEW_BASE_URL } from "../../data/constant";
 import { getWhatsAppFlows } from "../../services/api/whatsApp";
 import Loader from "../Loader";
+import CarouselNode from "./nodes/CarouselNode";
+import WhatsAppFlowsBuilder from "./WhtasAppFlowBuilder";
 
 const nodeTypes = {
   sendMessage: SendMessageNode,
   button: ButtonsNode,
   list: ListNode,
   question: QuestionNode,
+  carousel: CarouselNode,
 };
 
 export default function FlowBuilder() {
+  // const { project, getViewport } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
+  const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
 
   const onConnect = useCallback(
@@ -114,7 +121,7 @@ export default function FlowBuilder() {
                 title: "Section 1",
                 rows: [
                   {
-                    id: "row_1",
+                    id: `row_1_1_${uuidv4()}`,
                     title: "Option 1",
                   },
                 ],
@@ -123,6 +130,54 @@ export default function FlowBuilder() {
           },
           type: "list",
         },
+        type: "interactive",
+        variable: "",
+      };
+    } else if (type === "carousel") {
+      data = {
+        interactive: {
+          type: "carousel",
+
+          body: {
+            text: "Choose an option",
+          },
+
+          action: {
+            cards: [
+              {
+                card_index: 0,
+
+                // default header (text)
+                header: {
+                  type: "text",
+                  text: "Card Title",
+                },
+
+                body: {
+                  text: "Card description",
+                },
+
+                action: {
+                  buttons: [
+                    {
+                      type: "quick_reply",
+                      quick_reply: {
+                        id: "card_0_btn_0",
+                        title: "Option 1",
+                      },
+                    },
+                  ],
+                },
+
+                // 🔥 UI-only fields (important)
+                headerType: "text", // for frontend toggle
+                headerText: "Card Title",
+                image: null, // file (not URL)
+              },
+            ],
+          },
+        },
+
         type: "interactive",
         variable: "",
       };
@@ -138,8 +193,8 @@ export default function FlowBuilder() {
       id: uuidv4(),
       type,
       position: {
-        x: 200 + Math.random() * 300,
-        y: 100 + Math.random() * 300,
+        x: 250,
+        y: 100,
       },
       data,
     };
@@ -201,9 +256,11 @@ export default function FlowBuilder() {
     fetchFlows();
   }, []);
 
+  console.log(nodes);
+
   return (
-    <div className="relative">
-      <div className="flex justify-end absolute top-4 right-4 z-50">
+    <div className="">
+      <div className="flex justify-end p-2 z-50">
         <button
           onClick={() => handlePublish()}
           className="bg-slate-800 px-4 py-1 text-white flex items-center gap-1 rounded-sm"
@@ -211,42 +268,52 @@ export default function FlowBuilder() {
           Publish {loading && <Loader color="#fefefe" />}
         </button>
       </div>
-      <div className="flex h-[90vh]">
-        <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-        <div className="flex-1">
-          <ReactFlow
-            nodes={nodes?.map((node) => ({
-              ...node,
-              data: {
-                ...node.data,
-                filesMap,
-                setFilesMap,
-              },
-            }))}
-            edges={edges}
-            nodeTypes={nodeTypes}
-            onConnect={onConnect}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeClick={onNodeClick}
-            onEdgeClick={onEdgeClick}
-            connectionLineType="smoothstep"
-            fitView
-          >
-            <Background />
-            <Controls />
-            <MiniMap position="bottom-right" />
-          </ReactFlow>
+      <div className="relative">
+        <div className="flex h-140">
+          <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
+
+          <div className="flex-1 bg-gray-200">
+            <ReactFlow
+              nodes={nodes?.map((node) => ({
+                ...node,
+                data: {
+                  ...node.data,
+                  filesMap,
+                  filesMapCarousel,
+                  setFilesMap,
+                  setFilesMapCarousel,
+                },
+              }))}
+              edges={edges}
+              nodeTypes={nodeTypes}
+              onConnect={onConnect}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeClick={onNodeClick}
+              onEdgeClick={onEdgeClick}
+              connectionLineType="smoothstep"
+            >
+              <Background />
+              <Controls />
+              <MiniMap
+                position="bottom-right"
+                zoomable
+                pannable
+                nodeStrokeWidth={3}
+              />
+            </ReactFlow>
+          </div>
+          {/* <WhatsAppFlowsBuilder /> */}
+
+          {selectedNode && (
+            <SettingsPanel
+              node={selectedNode}
+              setSelectedNode={setSelectedNode}
+              setNode={setNodes}
+            />
+          )}
         </div>
-
-        {selectedNode && (
-          <SettingsPanel
-            node={selectedNode}
-            setSelectedNode={setSelectedNode}
-            setNode={setNodes}
-          />
-        )}
       </div>
     </div>
   );

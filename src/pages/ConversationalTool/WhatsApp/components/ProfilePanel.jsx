@@ -1,30 +1,40 @@
 import { useContext, useState } from "react";
 
+import { IoMdArrowDropdown } from "react-icons/io";
 import { IoArrowBack } from "react-icons/io5";
+import Loader from "../../../../components/Loader";
 import CustomDropdown from "../../../../components/ui/Dropdown";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import DataContext from "../../../../context/DataContext";
 import { useToast } from "../../../../context/ToastContext";
 import { Stages } from "../../../../data/constant";
 import { updateLead } from "../../../../services/api/leads.api";
-import { addWhatsAppLead } from "../../../../services/api/whatsApp";
+import {
+  addWhatsAppLead,
+  deleteConversation,
+} from "../../../../services/api/whatsApp";
 import {
   formatDateByOnlyDay,
   formateDateInTimeIS,
 } from "../../../../utils/formateDate";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
-import { IoMdArrowDropdown } from "react-icons/io";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
-  const { selectedConversation, setSelectedConversation, setMobileActive } =
-    useContext(DataContext);
+  const {
+    selectedConversation,
+    setSelectedConversation,
+    setConversations,
+    setMobileActive,
+  } = useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   const handleAddLead = async ({ stage, activity }) => {
     const isEdit = selectedConversation?.markAsLead;
@@ -111,8 +121,59 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
     }
   };
 
+  const handleDeleteConversation = async () => {
+    setIsDeleteLoading(true);
+    try {
+      const isConfirmed = await confirm(
+        "Are you sure you want to delete this conversation?",
+      );
+
+      if (!isConfirmed) return;
+
+      const response = await deleteConversation({
+        conversationId: selectedConversation._id,
+        phone: selectedConversation.phone,
+      });
+
+      setConversations((prevConversations) =>
+        prevConversations.filter(
+          (conv) => conv._id !== selectedConversation._id,
+        ),
+      );
+
+      setSelectedConversation(null);
+
+      if (response?.success) {
+        showToast({
+          message:
+            response?.responseMessage || "Conversation deleted successfully",
+          type: "success",
+          position: "bottom-right",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to delete conversation",
+        type: "error",
+        position: "bottom-right",
+      });
+    } finally {
+      setIsDeleteLoading(false);
+    }
+  };
+
   return (
-    <div className="w-full md:w-80 bg-white border-l border-gray-200 flex flex-col">
+    <div className="w-full md:w-80 h-full overflow-y-auto bg-white border-l border-gray-200 flex flex-col">
+      <div className="flex justify-end p-2">
+        <button
+          disabled={isDeleteLoading}
+          className="bg-red-200 text-red-600  p-2 font-medium text-sm rounded-sm flex items-center gap-1.5"
+          onClick={handleDeleteConversation}
+        >
+          <RiDeleteBin6Line /> Conversation{" "}
+          {isDeleteLoading && <Loader color="#fefefe" />}
+        </button>
+      </div>
       {/* Profile Header */}
       <div className="p-3 md:p-6 border-b border-gray-200">
         <div className="flex items-center mb-4">
@@ -166,12 +227,12 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <span className="text-gray-600">Source</span>
             <span className="text-gray-900">AD</span>
           </div> */}
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Message</span>
             <span className="text-gray-900">
               {selectedContact?.last_message?.text}
             </span>
-          </div>
+          </div> */}
           {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">WA Conversation</span>
             <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
@@ -229,15 +290,32 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <h3 className="text-sm font-medium text-[#37322F] mb-4">Notes</h3>
 
             {/* Add Activity */}
-            <div onClick={() =>{ setIsAddActivityOpen(!isAddActivityOpen);setEditingNote(null);setEditingIndex(null)}} className=" cursor-pointer flex items-center gap-3.5 mb-4">
-              <button
-                className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg"
-                
-              >
+            <div
+              onClick={() => {
+                setIsAddActivityOpen(!isAddActivityOpen);
+                setEditingNote(null);
+                setEditingIndex(null);
+              }}
+              className=" cursor-pointer flex items-center gap-3.5 mb-4"
+            >
+              <button className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg">
                 +
               </button>
 
-              <p className="text-teal-600 font-medium flex items-center gap-2">Add Activity <span>{isAddActivityOpen?<span><IoMdArrowDropdown  className="rotate-180"  size={20}/></span>:<span><IoMdArrowDropdown size={20}/></span>}</span></p>
+              <p className="text-teal-600 font-medium flex items-center gap-2">
+                Add Activity{" "}
+                <span>
+                  {isAddActivityOpen ? (
+                    <span>
+                      <IoMdArrowDropdown className="rotate-180" size={20} />
+                    </span>
+                  ) : (
+                    <span>
+                      <IoMdArrowDropdown size={20} />
+                    </span>
+                  )}
+                </span>
+              </p>
             </div>
 
             {/* Timeline */}

@@ -9,14 +9,14 @@ import {
   FaCommentDots,
 } from "react-icons/fa";
 import { Handle, Position, useReactFlow } from "reactflow";
+import { NEW_BASE_URL } from "../../../data/constant";
 
 export default function SendMessageNode({ id, data }) {
-  const { setNodes } = useReactFlow();
+  const { getNodes, setNodes } = useReactFlow();
+  const nodes = getNodes();
   const [blocks, setBlocks] = useState(data?.blocks || []);
 
   const { setFilesMap } = data;
-
-  /* ---------------- UPDATE NODE ---------------- */
 
   const updateNodeData = (updated) => {
     setNodes((nodes) =>
@@ -30,8 +30,6 @@ export default function SendMessageNode({ id, data }) {
       ),
     );
   };
-
-  /* ---------------- ADD BLOCK ---------------- */
 
   const addBlock = (type) => {
     const newBlock = {
@@ -48,8 +46,6 @@ export default function SendMessageNode({ id, data }) {
     updateNodeData(updated);
   };
 
-  /* ---------------- UPDATE TITLE ---------------- */
-
   const updateTitle = (id, value) => {
     const updated = blocks.map((b) =>
       b.id === id ? { ...b, title: value } : b,
@@ -58,8 +54,6 @@ export default function SendMessageNode({ id, data }) {
     setBlocks(updated);
     updateNodeData(updated);
   };
-
-  /* ---------------- FILE UPLOAD ---------------- */
 
   const handleFile = (e, blockId) => {
     const file = e.target.files[0];
@@ -84,8 +78,6 @@ export default function SendMessageNode({ id, data }) {
     updateNodeData(updated);
   };
 
-  /* ---------------- DELETE ---------------- */
-
   const removeBlock = (blockId) => {
     const updated = blocks.filter((b) => b.id !== blockId);
 
@@ -93,10 +85,8 @@ export default function SendMessageNode({ id, data }) {
     updateNodeData(updated);
   };
 
-  /* ---------------- ACCEPT TYPES ---------------- */
-
   const getAccept = (type) => {
-    if (type === "image") return "image/*";
+    if (type === "image") return "image/jpeg, image/png, image/jpg";
     if (type === "video") return "video/* ";
     if (type === "audio") return "audio/*";
     return ".pdf,.doc,.docx,.txt";
@@ -109,100 +99,123 @@ export default function SendMessageNode({ id, data }) {
     return <FaFileAlt />;
   };
 
+  const removeNode = () => {
+    const updatedNodes = nodes.filter((node) => node.id !== id);
+    setNodes(updatedNodes);
+  };
+
   return (
     <div className="w-[320px] rounded-xl shadow-lg bg-white border relative">
       {/* Header */}
-      <div className="bg-red-500 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
+      <div className="bg-primary/90 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
         <div className="flex items-center gap-2 font-semibold">
           <FaCommentDots />
           Send Message
         </div>
 
-        <FaEllipsisV />
+        <div
+          className="cursor-pointer text-lg"
+          onClick={(e) => {
+            e.stopPropagation();
+            removeNode();
+          }}
+        >
+          X
+        </div>
       </div>
 
       <div className="p-4 space-y-4">
         {/* BLOCKS */}
 
-        {blocks.map((block) => (
-          <div
-            key={block.id}
-            className="border rounded-lg p-3 space-y-3 relative"
-          >
-            {/* Caption input for supported types */}
-            {(block.type === "text" || block.type === "image") && (
-              <input
-                value={block.title}
-                onChange={(e) => updateTitle(block.id, e.target.value)}
-                placeholder={
-                  block.type === "text"
-                    ? "Enter message..."
-                    : "Enter caption..."
-                }
-                className="w-full border rounded-md p-2 text-sm"
-              />
-            )}
+        {blocks.map((block) => {
+          const mediaId = block.media ? block?.media?.mediaId : null;
 
-            {/* Upload */}
-            {block.type !== "text" && !block.file && (
-              <label
-                htmlFor={`file-${block.id}`}
-                className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer"
-              >
-                {getIcon(block.type)}
-                <span className="text-sm text-green-600">
-                  Upload {block.type}
-                </span>
-              </label>
-            )}
-
-            {/* Preview */}
-
-            {block.file && block.type === "image" && (
-              <img src={block.url} className="w-full rounded-md" />
-            )}
-
-            {block.file && block.type === "video" && (
-              <video controls className="w-full rounded-md">
-                <source src={block.url} />
-              </video>
-            )}
-
-            {block.file && block.type === "audio" && (
-              <audio controls className="w-full">
-                <source src={block.url} />
-              </audio>
-            )}
-
-            {block.file && block.type === "document" && (
-              <div className="flex items-center gap-2 text-sm">
-                <FaFileAlt />
-                {block.file.name}
-              </div>
-            )}
-
-            {/* Hidden file input */}
-
-            {block.type !== "text" && (
-              <input
-                id={`file-${block.id}`}
-                type="file"
-                className="hidden"
-                accept={getAccept(block.type)}
-                onChange={(e) => handleFile(e, block.id)}
-              />
-            )}
-
-            {/* Delete */}
-
-            <button
-              onClick={() => removeBlock(block.id)}
-              className="absolute top-2 right-2 text-red-500"
+          return (
+            <div
+              key={block.id}
+              className="border rounded-lg p-3 space-y-3 relative"
             >
-              <FaTrash size={14} />
-            </button>
-          </div>
-        ))}
+              {/* Caption input for supported types */}
+              {(block.type === "text" || block.type === "image") && (
+                <textarea
+                  value={block.title}
+                  onChange={(e) => updateTitle(block.id, e.target.value)}
+                  placeholder={
+                    block.type === "text"
+                      ? "Enter message..."
+                      : "Enter caption..."
+                  }
+                  className="w-full border rounded-md p-2 text-sm"
+                />
+              )}
+
+              {/* Upload */}
+              {block.type !== "text" && !block.file && (
+                <label
+                  htmlFor={`file-${block.id}`}
+                  className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer"
+                >
+                  {getIcon(block.type)}
+                  <span className="text-sm text-green-600">
+                    Upload {block.type}
+                  </span>
+                </label>
+              )}
+
+              {/* Preview */}
+              {block.file && block.type === "image" && (
+                <img
+                  src={
+                    mediaId
+                      ? `${NEW_BASE_URL}/api/v1/whatsapp/media/${mediaId}?ndid=${localStorage.getItem("ndid")}`
+                      : block.url
+                  }
+                  className="w-full rounded-md"
+                />
+              )}
+
+              {block.file && block.type === "video" && (
+                <video controls className="w-full rounded-md">
+                  <source src={block.url} />
+                </video>
+              )}
+
+              {block.file && block.type === "audio" && (
+                <audio controls className="w-full">
+                  <source src={block.url} />
+                </audio>
+              )}
+
+              {block.file && block.type === "document" && (
+                <div className="flex items-center gap-2 text-sm">
+                  <FaFileAlt />
+                  {block.file.name}
+                </div>
+              )}
+
+              {/* Hidden file input */}
+
+              {block.type !== "text" && (
+                <input
+                  id={`file-${block.id}`}
+                  type="file"
+                  className="hidden"
+                  accept={getAccept(block.type)}
+                  onChange={(e) => handleFile(e, block.id)}
+                />
+              )}
+
+              {/* Delete */}
+
+              <button
+                onClick={() => removeBlock(block.id)}
+                className="absolute top-2 right-2 text-red-500"
+              >
+                <FaTrash size={14} />
+              </button>
+            </div>
+          );
+        })}
 
         {/* SMALL ACTION BUTTONS */}
 

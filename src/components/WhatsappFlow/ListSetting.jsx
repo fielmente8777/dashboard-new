@@ -88,10 +88,10 @@ export default function ListSetting({ data, onSave, onCancel }) {
         footer: footer ? { text: footer } : undefined,
         action: {
           button: buttonText,
-          sections: sections.map((section, sIndex) => ({
+          sections: sections.map((section) => ({
             title: section.title,
-            rows: section.rows.map((row, rIndex) => ({
-              id: `row_${sIndex + 1}_${rIndex + 1}`,
+            rows: section.rows.map((row) => ({
+              id: row.id,
               title: row?.title,
             })),
           })),

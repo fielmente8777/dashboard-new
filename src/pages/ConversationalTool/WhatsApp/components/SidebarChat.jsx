@@ -133,8 +133,10 @@ const SidebarChat = () => {
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
-      setSelectedConversation(null);
+      // setSelectedConversation(null);
       // setSelectedConversation(actConversations[0]);
+    } else if (activeTab === "Inactive" && historyConversations) {
+      setFilteredConversations(historyConversations());
     }
 
     const actCount = activeConversations()?.length;
@@ -142,9 +144,7 @@ const SidebarChat = () => {
     setCountsConversation({ active: actCount, inactive: inactCount });
 
     fetchTemplates();
-  }, []);
-
-  console.log(countsConversation);
+  }, [conversations]);
 
   return (
     <div className="w-full md:w-90 border-b md:border-l md:border-r border-gray-200 flex flex-col bg-white">

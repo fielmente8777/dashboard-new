@@ -1,20 +1,27 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { BsCheckAll, BsCheckLg } from "react-icons/bs";
 import { IoArrowBack } from "react-icons/io5";
-import { MdCall, MdChat, MdClose } from "react-icons/md";
+import { MdCall, MdChat, MdClose, MdOutlineDelete } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
+const MAX_LENGTH = 150; // adjust as needed
+// import { GoogleMap, useLoadScript } from "@react-google-maps/api";
 import {
   NEW_BASE_URL,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../../../data/constant";
 import {
+  deleteWhatsAppMessage,
+  getFlowSession,
   getWhatsappConversationMessages,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
+  updateFlowSession,
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import normalizePhone from "../../../../utils/normalizePhone";
@@ -22,20 +29,38 @@ import { renderMessageWithLinks } from "../../../../utils/urlParser";
 import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
+import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
+  const menuRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState("");
+
+  // const { isLoaded } = useLoadScript({
+  //   googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
+  // });
+
+  // const [marker, setMarker] = useState(null);
+
   const textareaRef = useRef(null);
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const { selectedConversation, conversations, setMobileActive } =
     useContext(DataContext);
 
+  const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
     selectedConversation?.last_message?.created_at,
   );
 
+  const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [selectedMessages, setSelectedMessages] = useState([]);
+
+  const selectionMode = selectedMessages.length > 0;
+
   const [messageList, setMessageList] = useState([]);
   const [messageLoading, setLoadingMessages] = useState(true);
-  const [addLeadLoading, setAddLeadLoading] = useState(false);
   const [messageValue, setMessageValue] = useState("");
   const [file, setFile] = useState(null);
   const bottomRef = useRef(null);
@@ -44,6 +69,7 @@ const ChatArea = () => {
   const [templateClick, setTemplateClick] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState();
+  const [expandedMessages, setExpandedMessages] = useState({});
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -228,15 +254,122 @@ const ChatArea = () => {
     el.style.height = Math.min(el.scrollHeight, maxHeight) + "px";
   };
 
+  const handleTakeOver = async () => {
+    const payload = {
+      phone: selectedConversation.phone,
+      isActive: !isTakeOver,
+    };
+    try {
+      const response = await updateFlowSession(payload);
+      console.log(response);
+      if (response?.success) {
+        showToast({
+          message: response?.responseMessage,
+          type: "success",
+        });
+      }
+      setIsTakeOver(!isTakeOver);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchFlowSession = async () => {
+    const payload = {
+      phone: selectedConversation.phone,
+    };
+    try {
+      const response = await getFlowSession(payload);
+      console.log(response);
+      if (response.success) {
+        setIsTakeOver(response?.result?.docs?.flowSession?.isActive);
+      }
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
+
+  const handleSelectMode = (message) => {
+    setOpenMenuIndex(null);
+    setSelectedMessages([message?.messageId]); // auto select first message
+  };
+
+  const toggleSelectMessage = (id) => {
+    setSelectedMessages((prev) => {
+      return prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id];
+    });
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard.writeText(text || "");
+    setOpenMenuIndex(null);
+  };
+
+  const handleBulkDelete = async () => {
+    const isConfirmed = await confirm(
+      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`,
+    );
+
+    if (!isConfirmed) return;
+    try {
+      setMessageList((prev) =>
+        prev.filter((m) => !selectedMessages.includes(m.messageId)),
+      );
+
+      const response = await deleteWhatsAppMessage({
+        ids: selectedMessages,
+      });
+
+      if (response?.success) {
+        showToast({
+          message: response?.responseMessage,
+          type: "success",
+        });
+
+        setSelectedMessages([]);
+      }
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const toggleReadMore = (id) => {
+    setExpandedMessages((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   useEffect(() => {
     fetchTemplate();
+
+    // const handleClickOutside = (event) => {
+    //   if (menuRef.current && !menuRef.current.contains(event.target)) {
+    //     setOpenMenuIndex(null);
+    //   }
+    // };
+
+    // document.addEventListener("mousedown", handleClickOutside);
+
+    // return () => {
+    //   document.removeEventListener("mousedown", handleClickOutside);
+    // };
   }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
+      console.log("serverResponse", serverResponse);
+      console.log("selectedConversation", selectedConversation);
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
+        normalizePhone(serverResponse?.data?.from) ===
+          normalizePhone(selectedConversation?.phone)
+      ) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
@@ -259,7 +392,10 @@ const ChatArea = () => {
           }),
         );
       } else if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
+        normalizePhone(serverResponse?.data?.to) ===
+          normalizePhone(selectedConversation?.phone)
       ) {
         const { data } = serverResponse;
         setMessageList((prev) => [...prev, data]);
@@ -267,10 +403,12 @@ const ChatArea = () => {
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation, conversations]);
+  }, [selectedConversation, conversations, messageList]);
 
   useEffect(() => {
+    setSelectedMessages([]);
     loadMessages(selectedConversation?._id);
+    fetchFlowSession();
   }, [selectedConversation?._id]);
 
   useEffect(() => {
@@ -299,7 +437,23 @@ const ChatArea = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-6">
+          {selectionMode && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium ">
+                  {selectedMessages.length} Messages
+                </span>
+              </div>
+
+              <button
+                onClick={handleBulkDelete}
+                className="text-red-600 font-medium size-7 flex justify-center items-center bg-red-200 rounded-full"
+              >
+                <RiDeleteBin6Line size={16} />
+              </button>
+            </div>
+          )}
           <Link
             to={`tel:${selectedConversation?.phone}`}
             className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
@@ -323,7 +477,7 @@ const ChatArea = () => {
             <MessageSkeleton align="right" />
           </div>
         ) : (
-          <>
+          <div className="space-y-1">
             {selectedConversation?.adAttribution && (
               <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
                 {selectedConversation?.adAttribution?.mediaType === "image" && (
@@ -384,82 +538,130 @@ const ChatArea = () => {
 
                 return (
                   <div
-                    key={index}
-                    className={`flex ${isMe ? "justify-end" : "justify-start"}  mb-2`}
+                    className={`flex gap-1 items-center py-2 ${
+                      selectedMessages.includes(message?.messageId)
+                        ? "bg-slate-200 border-blue-400"
+                        : isMe
+                          ? ""
+                          : ""
+                    }`}
                   >
+                    {selectionMode && (
+                      <input
+                        type="checkbox"
+                        className="mt-3"
+                        checked={selectedMessages.includes(message?.messageId)}
+                        onChange={() =>
+                          toggleSelectMessage(
+                            message?.messageId || message?._id,
+                          )
+                        }
+                      />
+                    )}
+
                     <div
-                      className={`relative max-w-xs  px-3 py-2 ${
-                        isMe
-                          ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
-                          : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
-                      }`}
+                      key={index}
+                      className={`relative flex flex-1 ${isMe ? "justify-end" : "justify-start"}  mb-2`}
                     >
-                      {/* TEXT */}
-                      {(message.messageType === "text" ||
-                        message?.messageType === "interactive") &&
-                        message.body && (
-                          <div className="max-w-xs ml-auto">
-                            <div className=" text-slate-700 rounded-lg relative">
-                              {/* Context / Reply Preview */}
-                              {message?.context &&
-                                message?.context?.message && (
-                                  <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
-                                    <p className="text-xs text-green-100 truncate">
-                                      {message?.context?.message}
-                                    </p>
-                                  </div>
-                                )}
+                      <div
+                        className={`relative max-w-xs  p-3 ${
+                          isMe
+                            ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
+                            : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
+                        }`}
+                      >
+                        {/* all message types */}
+                        <div className="mt-4">
+                          {/* TEXT */}
+                          {(message.messageType === "text" ||
+                            message?.messageType === "interactive") &&
+                            message.body && (
+                              <div className="max-w-xs ml-auto mt-3">
+                                <div className=" text-slate-700 rounded-lg relative">
+                                  {/* Context / Reply Preview */}
+                                  {message?.context &&
+                                    message?.context?.message && (
+                                      <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
+                                        <p className="text-xs text-green-100 truncate">
+                                          {message?.context?.message}
+                                        </p>
+                                      </div>
+                                    )}
 
-                              {/* Actual Message */}
-                              <p className="text-sm whitespace-pre-wrap">
-                                {renderMessageWithLinks(message?.body)}
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                                  {/* Actual Message */}
 
-                      {message?.messageType === "template" &&
-                        message?.template?.template?.name && (
-                          <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
-                            <p className="text-xs text-gray-500 mb-1 capitalize">
-                              {message.template?.template?.name}
-                            </p>
+                                  <p className="text-sm whitespace-pre-wrap">
+                                    {expandedMessages[message._id]
+                                      ? renderMessageWithLinks(message?.body)
+                                      : renderMessageWithLinks(
+                                          message?.body?.slice(0, MAX_LENGTH),
+                                        )}
 
-                            <p className="text-sm">
-                              {message.body ? (
-                                message.body
-                              ) : (
-                                <span className="text-xs text-zinc-400">
-                                  No text defined
-                                </span>
-                              )}
-                            </p>
-                          </div>
-                        )}
+                                    {message?.body?.length > MAX_LENGTH && (
+                                      <span
+                                        onClick={() =>
+                                          toggleReadMore(message._id)
+                                        }
+                                        className="text-blue-500 cursor-pointer ml-1"
+                                      >
+                                        {expandedMessages[message._id]
+                                          ? " Read less"
+                                          : "... Read more"}
+                                      </span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
 
-                      {/* IMAGE */}
-                      {(message.messageType === "image" ||
-                        message.messageType === "sticker") && (
-                        <img
-                          src={
-                            message.media?.url ||
-                            ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                          }
-                          alt="WhatsApp"
-                          className="mt-2 rounded-lg w-full size-44"
-                        />
-                      )}
+                          {message?.messageType === "template" &&
+                            message?.template?.template?.name && (
+                              <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
+                                <p className="text-xs text-gray-500 mb-1 capitalize">
+                                  {message.template?.template?.name}
+                                </p>
 
-                      {/* AUDIO */}
-                      {message.messageType === "audio" && (
-                        <div className="flex items-center gap-1">
-                          <AudioMessage
-                            src={
-                              message?.media?.url ||
-                              `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                            }
-                          />
-                          {/* <audio
+                                <p className="text-sm">
+                                  {message.body ? (
+                                    message.body
+                                  ) : (
+                                    <span className="text-xs text-zinc-400">
+                                      No text defined
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            )}
+
+                          {/* IMAGE */}
+                          {(message.messageType === "image" ||
+                            message.messageType === "sticker") && (
+                            <img
+                              onClick={() =>
+                                setImagePreview(
+                                  message?.media?.url ||
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`,
+                                )
+                              }
+                              src={
+                                message.media?.url ||
+                                ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                              }
+                              alt="WhatsApp"
+                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                            />
+                          )}
+
+                          {/* AUDIO */}
+                          {message.messageType === "audio" && (
+                            <div className="flex items-center gap-1">
+                              <AudioMessage
+                                src={
+                                  message?.media?.url ||
+                                  `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                                }
+                              />
+                              {/* <audio
                             src={
                               message?.media?.url ||
                               ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
@@ -467,67 +669,126 @@ const ChatArea = () => {
                             controls
                             className="mt-2"
                           /> */}
+                            </div>
+                          )}
+
+                          {message?.messageType === "video" && (
+                            <div>
+                              <VideoMessage
+                                src={
+                                  message?.media?.url ||
+                                  `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                                }
+                                caption={message?.caption}
+                                // isMe={isMe}
+                              />
+                            </div>
+                          )}
+
+                          {message?.messageType === "location" && (
+                            <div>
+                              <iframe
+                                // style={"border:0"}
+                                loading="lazy"
+                                src={`https://www.google.com/maps?q=${message?.location?.latitude},${message?.location?.longitude}&output=embed`}
+                                className="max-w-70 w-full aspect-4/3"
+                              />
+                            </div>
+                          )}
+
+                          {message?.reaction && (
+                            <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
+                              <p className="text-sm">
+                                {message?.reaction?.emoji}
+                              </p>
+                            </div>
+                          )}
+
+                          {message?.interactive && (
+                            <InteractiveMessage
+                              interactive={message.interactive}
+                            />
+                          )}
                         </div>
-                      )}
 
-                      {message?.messageType === "video" && (
-                        <div>
-                          <VideoMessage
-                            src={
-                              message?.media?.url ||
-                              `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                            }
-                            caption={message?.caption}
-                            // isMe={isMe}
-                          />
-                        </div>
-                      )}
+                        {/* status and time  */}
+                        <div className="flex justify-end px-2 mt-1">
+                          <div className="flex items-center gap-1.5">
+                            <div className="text-[10px] text-right mt-1 opacity-70">
+                              {new Date(message.createdAt).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </div>
 
-                      {message?.messageType === "location" && (
-                        <div>
-                          <iframe
-                            // style={"border:0"}
-                            loading="lazy"
-                            src={`https://www.google.com/maps?q=${message?.location?.latitude},${message?.location?.longitude}&output=embed`}
-                            className="max-w-70 w-full aspect-4/3"
-                          />
-                        </div>
-                      )}
-
-                      {message?.reaction && (
-                        <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
-                          <p className="text-sm">{message?.reaction?.emoji}</p>
-                        </div>
-                      )}
-
-                      {message?.interactive && (
-                        <InteractiveMessage interactive={message.interactive} />
-                      )}
-
-                      <div className="flex justify-end px-2 mt-1">
-                        <div className="flex items-center gap-1.5">
-                          <div className="text-[10px] text-right mt-1 opacity-70">
-                            {new Date(message.createdAt).toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
+                            {isMe && (
+                              <span className="text-xs flex justify-end mt-0.5">
+                                {message.status === "sent" && <BsCheckLg />}
+                                {message.status === "delivered" && (
+                                  <BsCheckAll size={18} />
+                                )}{" "}
+                                {message.status === "read" && (
+                                  <span className="text-blue-400">
+                                    <BsCheckAll size={18} />
+                                  </span>
+                                )}{" "}
+                              </span>
                             )}
                           </div>
+                        </div>
 
-                          {isMe && (
-                            <span className="text-xs flex justify-end mt-0.5">
-                              {message.status === "sent" && <BsCheckLg />}
-                              {message.status === "delivered" && (
-                                <BsCheckAll size={18} />
-                              )}{" "}
-                              {message.status === "read" && (
-                                <span className="text-blue-400">
-                                  <BsCheckAll size={18} />
-                                </span>
-                              )}{" "}
-                            </span>
+                        {/* menu */}
+                        <div className="absolute -top-1 right-1">
+                          <button
+                            ref={menuRef}
+                            onClick={() => {
+                              // e.preventDefault();
+                              setOpenMenuIndex(
+                                openMenuIndex === index ? null : index,
+                              );
+                            }}
+                            className="text-gray-600 hover:text-black p-1"
+                          >
+                            ⋮
+                          </button>
+
+                          {openMenuIndex === index && (
+                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                              {![
+                                "image",
+                                "video",
+                                "audio",
+                                "template",
+                                "location",
+                                "interactive",
+                              ].includes(message?.messageType) && (
+                                <button
+                                  onClick={() => handleCopy(message.body)}
+                                  className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
+                                >
+                                  Copy
+                                </button>
+                              )}
+                              {/* <button
+                                onClick={() => handleSelectMode(message)}
+                                className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
+                              >
+                                Select
+                              </button> */}
+                              <button
+                                onClick={(e) => {
+                                  // e.stopPropagation();
+
+                                  handleSelectMode(message);
+                                }}
+                                className="block w-full text-left px-3 py-1 hover:bg-red-100 text-sm text-red-500"
+                              >
+                                Delete
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -538,8 +799,37 @@ const ChatArea = () => {
             ) : (
               <p className="text-center text-gray-400">No conversation yet</p>
             )}
+
+            {imagePreview && (
+              <div
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999999"
+                onClick={() => setImagePreview("")}
+              >
+                {/* Prevent closing when clicking on image */}
+                <div
+                  className="relative max-w-4xl w-full px-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setImagePreview("")}
+                    className="absolute -top-10 right-0 text-white text-2xl"
+                  >
+                    ✕
+                  </button>
+
+                  {/* Image */}
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
+                  />
+                </div>
+              </div>
+            )}
+
             <div ref={bottomRef} />
-          </>
+          </div>
         )}
       </div>
 
@@ -585,14 +875,20 @@ const ChatArea = () => {
         )}
 
         <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             {!templateClick ? (
-              <span
-                onClick={() => handleTemplate(true)}
-                className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
-              >
-                <MdChat className="" /> Templates
-              </span>
+              <>
+                {!isTakeOver ? (
+                  <span
+                    onClick={() => handleTemplate(true)}
+                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+                  >
+                    <MdChat className="" /> Templates
+                  </span>
+                ) : (
+                  ""
+                )}
+              </>
             ) : (
               <span
                 onClick={() => handleTemplate(false)}
@@ -601,20 +897,88 @@ const ChatArea = () => {
                 Close Templates <MdClose />
               </span>
             )}
+
+            {isTakeOver && (
+              <div className="flex justify-center w-full">
+                <button
+                  type="button"
+                  onClick={handleTakeOver}
+                  className={`text-xs bg-primary rounded-sm text-white px-2 py-1 ${!isTakeOver ? "opacity-70" : ""}`}
+                >
+                  Take Over
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="bg-white py-3 flex w-full items-center gap-3">
-            {/* Attachment */}
-            {!is24HourComplete && (
+          {!isTakeOver && (
+            <div className="bg-white py-3 flex w-full items-center gap-3">
+              {/* Attachment */}
+              {!is24HourComplete && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="text-gray-500 hover:text-teal-600"
+                >
+                  {/* Paperclip SVG */}
+                  <svg
+                    width="22"
+                    height="22"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                    />
+                  </svg>
+                </button>
+              )}
+
+              {!is24HourComplete && (
+                <input
+                  disabled={is24HourComplete}
+                  ref={fileInputRef}
+                  type="file"
+                  hidden
+                  onChange={(e) => {
+                    setFile(e.target.files[0]);
+                  }}
+                />
+              )}
+
+              {!is24HourComplete ? (
+                <textarea
+                  disabled={is24HourComplete}
+                  ref={textareaRef}
+                  value={messageValue}
+                  onChange={handleChange}
+                  placeholder="Type a message"
+                  rows={1}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault(); // ❗ stop newline
+                      handleSendMessage(e); // OR trigger form submit
+                    }
+                  }}
+                  className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                />
+              ) : (
+                <div className="flex-1"></div>
+              )}
+
+              {/* Send Button */}
               <button
-                type="button"
-                onClick={() => fileInputRef.current.click()}
-                className="text-gray-500 hover:text-teal-600"
+                type="submit"
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
               >
-                {/* Paperclip SVG */}
+                {/* Send SVG */}
                 <svg
-                  width="22"
-                  height="22"
+                  width="18"
+                  height="18"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -623,73 +987,41 @@ const ChatArea = () => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                    d="M22 2L11 13"
+                  />
+                  <path
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M22 2L15 22l-4-9-9-4 20-7z"
                   />
                 </svg>
               </button>
-            )}
-
-            {!is24HourComplete && (
-              <input
-                disabled={is24HourComplete}
-                ref={fileInputRef}
-                type="file"
-                hidden
-                onChange={(e) => {
-                  setFile(e.target.files[0]);
-                }}
-              />
-            )}
-
-            {!is24HourComplete ? (
-              <textarea
-                disabled={is24HourComplete}
-                ref={textareaRef}
-                value={messageValue}
-                onChange={handleChange}
-                placeholder="Type a message"
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault(); // ❗ stop newline
-                    handleSendMessage(e); // OR trigger form submit
-                  }
-                }}
-                className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
-              />
-            ) : (
-              <div className="flex-1"></div>
-            )}
-
-            {/* Send Button */}
-            <button
-              type="submit"
-              className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
-            >
-              {/* Send SVG */}
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 2L11 13"
-                />
-                <path
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 2L15 22l-4-9-9-4 20-7z"
-                />
-              </svg>
-            </button>
-          </div>
+            </div>
+          )}
         </div>
+
+        {/* <div className="w-full h-80">
+          <GoogleMap
+            zoom={10}
+            center={{ lat: 28.6139, lng: 77.209 }}
+            mapContainerStyle={{ width: "100%", height: "100%" }}
+            onClick={(e) => {
+              const lat = e.latLng.lat();
+              const lng = e.latLng.lng();
+              setMarker({ lat, lng });
+            }}
+          >
+            {marker && <Marker position={marker} />}
+          </GoogleMap>
+
+          <button
+            // onClick={() => onSelect(marker)}
+            className="mt-2 bg-teal-600 text-white px-4 py-2 rounded"
+          >
+            Send Location
+          </button>
+        </div> */}
       </form>
     </div>
   );

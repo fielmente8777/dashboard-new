@@ -13,6 +13,7 @@ import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
 import {
   BASE_PATH,
+  LOCAL_STORAGE,
   ROUTES_PATH,
   Sources,
   Stages,
@@ -25,30 +26,36 @@ import { getLeads, updateLead } from "../../services/api/leads.api";
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 import AdsLeadsUsingGoogleSheet from "./AdsLeadsUsingGoogleSheet";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
+import { useToast } from "../../context/ToastContext";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isPageRestored, setIsPageRestored] = useState(false);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [stage, setStage] = useState("");
   const [source, setSource] = useState("");
 
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
-
-  const [selectedRow, setSelectedRow] = useState(null);
 
   const {
     page,
     limit,
     total,
     totalPages,
+    setPage,
     setTotal,
     goToPage,
     nextPage,
@@ -63,6 +70,7 @@ const AllLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "assignee", label: "Assignee" },
     { key: "status", label: "Stages" },
   ];
 
@@ -72,12 +80,12 @@ const AllLeads = () => {
     setEndDate(end);
   };
 
-  const fetchLeads = async (withDateFilter = false) => {
+  const fetchLeads = async (withDateFilter = false, lastPage) => {
     setIsLoadingLeads(true);
 
     try {
       const params = {
-        page: page,
+        page: lastPage || page,
         search: debouncedSearch,
         limit: limit,
         stage: stage,
@@ -143,16 +151,21 @@ const AllLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        fetchLeads();
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
         return;
       }
     } catch (error) {
@@ -165,257 +178,297 @@ const AllLeads = () => {
   };
 
   const handleRedirectToPage = (row, index) => {
+    localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
     const hid = localStorage.getItem("hid");
     const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}`;
     navigate(navigatePath);
-
-    // setSelectedRow({
-    //   leadId: row._id,
-    //   hid: hid,
-    // });
   };
 
   useEffect(() => {
+    if (!isPageRestored) return; // 🚨 WAIT until page restored
+
     if (!startDate && !endDate) {
       fetchLeads(false);
       return;
     }
 
-    // Fetch ONLY when both dates are selected
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit, stage, source]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    source,
+  ]);
 
   useEffect(() => {
-    wsRef.current = new WebSocketClient(WS_BASE_URL);
+    const savedPage = localStorage.getItem(LOCAL_STORAGE.AllLeads);
 
-    wsRef.current.connect((serverResponse) => {
-      if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
-        console.log(serverResponse);
-      }
-    });
+    if (savedPage) {
+      setPage(Number(savedPage));
+    }
 
-    return () => wsRef.current?.close();
+    setIsPageRestored(true);
   }, []);
 
-  console.log(source);
+  // useEffect(() => {
+  //   wsRef.current = new WebSocketClient(WS_BASE_URL);
 
-  // const [filters, setFilter] = useState(false);
+  //   wsRef.current.connect((serverResponse) => {
+  //     if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
+  //     }
+  //   });
+
+  //   return () => wsRef.current?.close();
+  // }, []);
 
   return (
-    <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">All Leads</h2>
+    <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">All Leads</h2>
 
-        {allLeads?.length > 0 && (
-          <button
-            disabled={isExporting}
-            onClick={exportToExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
-          >
-            Export to Excel{" "}
-            {isExporting && <Loader color="#fefefe" size={12} />}
-          </button>
-        )}
-      </div>
+          {allLeads?.length > 0 && (
+            <button
+              disabled={isExporting}
+              onClick={exportToExcel}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+            >
+              Export to Excel{" "}
+              {isExporting && <Loader color="#fefefe" size={12} />}
+            </button>
+          )}
+        </div>
 
-      <div className="bg-white rounded md:rounded-xl md:shadow-sm border border-gray-200 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* LEFT SIDE FILTERS */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* SEARCH */}
-            <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-              <IoSearch className="text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search clients..."
-                className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* DATE RANGE */}
-            <div className="relative">
-              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <DatePicker
-                  selectsRange
-                  startDate={startDate}
-                  endDate={endDate}
-                  onChange={(update) => setDateRange(update)}
-                  className="bg-transparent outline-none text-sm w-40"
-                  placeholderText="Date range"
-                  popperClassName="!z-50"
+        <div className="bg-white px-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* SEARCH */}
+              <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search clients..."
+                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              {startDate && endDate && (
-                <span
-                  onClick={() => {
-                    setStartDate(null);
-                    setEndDate(null);
-                  }}
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
-                >
-                  <IoIosClose size={18} />
-                </span>
-              )}
-            </div>
+              {/* DATE RANGE */}
+              <div className="relative">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                  <DatePicker
+                    selectsRange
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => setDateRange(update)}
+                    className="bg-transparent outline-none text-sm w-40"
+                    placeholderText="Date range"
+                    popperClassName="z-99999!"
+                  />
+                </div>
 
-            <div>
-              <CustomDropdown
-                options={Sources}
-                onChange={(value) => setSource(value)}
-              />
-            </div>
+                {startDate && endDate && (
+                  <span
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                    }}
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                  >
+                    <IoIosClose size={18} />
+                  </span>
+                )}
+              </div>
 
-            <div>
-              <CustomDropdown
-                options={[
-                  {
-                    value: "",
-                    label: "All Stages",
-                  },
-                  ...Stages,
-                ]}
-                onChange={(value) => setStage(value)}
-              />
+              <div>
+                <CustomDropdown
+                  options={Sources}
+                  onChange={(value) => setSource(value)}
+                />
+              </div>
+
+              <div>
+                <CustomDropdown
+                  options={[
+                    {
+                      value: "",
+                      label: "All Stages",
+                    },
+                    ...Stages,
+                  ]}
+                  onChange={(value) => setStage(value)}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-primary">
-            <tr>
-              <th className="px-3 py-3 text-white">#</th>
-              {tableHeaders?.map((h) => (
-                <th
-                  key={h.key}
-                  className="px-3 py-3 text-left text-white min-w-40"
-                >
-                  {h.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {isLoadingLeads && (
-              <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
-            )}
-
-            {!isLoadingLeads &&
-              allLeads.length > 0 &&
-              allLeads.map((row, i) => (
-                <tr
-                  key={i}
-                  onClick={() => {
-                    handleRedirectToPage(row, i + limit * (page - 1) + 1);
-                  }}
-                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
-                >
-                  <td className="px-3 py-2.5">{i + limit * (page - 1) + 1}</td>
-
-                  {tableHeaders.map((h) => {
-                    const notCapitalize = ["Email"];
-
-                    if (h.key === "Created_at") {
-                      const isLeadCreatedTime = row?.meta?.created_time;
-                      return (
-                        <td key={h.key} className="px-3 py-2 whitespace-nowrap">
-                          {formatDateTime(
-                            isLeadCreatedTime ? isLeadCreatedTime : row[h.key],
-                          )}
-                        </td>
-                      );
-                    }
-
-                    if (h.key === "phone_number") {
-                      return (
-                        <td
-                          key={h.key}
-                          className="px-3 py-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
-                        </td>
-                      );
-                    }
-
-                    if (h.key === "status") {
-                      return (
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <CustomDropdown
-                            label={row.status}
-                            options={Stages}
-                            className="border w-40! p-1! rounded-md! bg-gray-100!"
-                            onChange={(value) => {
-                              handleUpdateStage(row?._id, row?.hId, value);
-                            }}
-                          />
-                        </td>
-                      );
-                    }
-
-                    if (h.key === "notes") {
-                      const isNotes = row[h.key] && row[h.key].length > 0;
-
-                      const noteMessage =
-                        isNotes && row[h.key]?.slice(-1)[0]?.message;
-                      return <td>{isNotes ? noteMessage : "-"}</td>;
-                    }
-
-                    if (h.key === "Name") {
-                      const isName = row[h.key];
-                      const followUpDate = new Date(row["followUp"]);
-                      const today = new Date();
-
-                      const isToday =
-                        followUpDate.getDate() === today.getDate() &&
-                        followUpDate.getMonth() === today.getMonth() &&
-                        followUpDate.getFullYear() === today.getFullYear();
-
-                      const userName = isName
-                        ? isName
-                        : row?.other_details?.full_name || "-";
-                      return (
-                        <td>
-                          {userName}{" "}
-                          {isToday && (
-                            <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
-                              Follow Up
-                            </span>
-                          )}
-                        </td>
-                      );
-                    }
-                    return (
-                      <td key={h.key} className="px-3 py-2">
-                        {row[h.key]
-                          ? row[h.key] === "undefined"
-                            ? "-"
-                            : row[h.key]
-                          : "-"}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-
-            {!isLoadingLeads && allLeads.length === 0 && (
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex border rounded-lg overflow-auto">
+          <table className="min-w-full text-sm ">
+            <thead className="bg-primary sticky top-0 z-99">
               <tr>
-                <td colSpan={7} className="py-6 text-center">
-                  No Leads Found
-                </td>
+                <th className="px-3 py-3 text-white">#</th>
+                {tableHeaders?.map((h) => (
+                  <th
+                    key={h.key}
+                    className="px-3 py-3 text-left text-white min-w-40"
+                  >
+                    {h.label}
+                  </th>
+                ))}
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {isLoadingLeads && (
+                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+              )}
+
+              {!isLoadingLeads &&
+                allLeads.length > 0 &&
+                allLeads.map((row, i) => (
+                  <tr
+                    key={i}
+                    onClick={() => {
+                      handleRedirectToPage(row, i + limit * (page - 1) + 1);
+                    }}
+                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                  >
+                    <td className="px-3 py-2.5">
+                      {i + limit * (page - 1) + 1}
+                    </td>
+
+                    {tableHeaders.map((h) => {
+                      const notCapitalize = ["Email"];
+
+                      if (h.key === "Created_at") {
+                        const isLeadCreatedTime = row?.meta?.created_time;
+                        return (
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
+                            {formatDateTime(
+                              isLeadCreatedTime
+                                ? isLeadCreatedTime
+                                : row[h.key],
+                            )}
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "phone_number") {
+                        return (
+                          <td
+                            key={h.key}
+                            className="px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "status") {
+                        return (
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <CustomDropdown
+                              label={row.status}
+                              options={Stages}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "notes") {
+                        const isNotes = row[h.key] && row[h.key].length > 0;
+
+                        const noteMessage =
+                          isNotes && row[h.key]?.slice(-1)[0]?.message;
+                        return <td>{isNotes ? noteMessage : "-"}</td>;
+                      }
+
+                      if (h.key === "Name") {
+                        const isName = row[h.key];
+                        const followUpDate = new Date(
+                          row["followUpDate"] || row["followUp"] || null,
+                        );
+                        const today = new Date();
+
+                        const isToday =
+                          followUpDate.getDate() === today.getDate() &&
+                          followUpDate.getMonth() === today.getMonth() &&
+                          followUpDate.getFullYear() === today.getFullYear();
+
+                        const userName = isName
+                          ? isName
+                          : row?.other_details?.full_name || "-";
+                        return (
+                          <td>
+                            {userName}{" "}
+                            {isToday && (
+                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                                Follow Up
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "assigne") {
+                        return (
+                          <td className="bg-black p-8">
+                            {row[h.key] || (
+                              <span className="text-center w-full inline-block">
+                                -
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
+                      return (
+                        <td key={h.key} className="px-3 py-2">
+                          {row[h.key]
+                            ? row[h.key] === "undefined"
+                              ? "-"
+                              : row[h.key]
+                            : "-"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+
+              {!isLoadingLeads && allLeads.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center">
+                    No Leads Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="flex flex-col items-end px-4 py-6">
+      <div className="flex justify-between items-center px-4">
         <Pagination
           page={page}
           totalPages={totalPages}
@@ -432,12 +485,64 @@ const AllLeads = () => {
         />
       </div>
 
-      {/* <ViewAndManageLeadDrawer
-        leadId={selectedRow?.leadId}
-        hid={selectedRow?.hid}
-        isOpen={selectedRow}
-        onClose={() => setSelectedRow(null)}
-      /> */}
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage(
+            selectedLead?._id,
+            selectedLead?.hId,
+            "Follow Up",
+            date,
+          );
+          setShowDatePicker(false);
+        }}
+      />
+
+      {/* {showDatePicker && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-999999">
+          <div className="bg-white rounded-lg p-6 w-75 shadow-lg">
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Select Follow Up Date
+            </h3>
+
+            <DatePicker
+              minDate={new Date()}
+              selected={followUpDate}
+              onChange={(date) => setFollowUpDate(date)}
+              inline
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => {
+                  setShowDatePicker(false);
+                  setFollowUpDate(null);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  handleUpdateStage(
+                    selectedLead?._id,
+                    selectedLead?.hId,
+                    "Follow Up",
+                    followUpDate,
+                  );
+                  setShowDatePicker(false);
+                  setFollowUpDate(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };

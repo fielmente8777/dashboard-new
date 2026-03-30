@@ -1,19 +1,21 @@
 import jsonToCsvExport from "json-to-csv-export";
 import { useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
-import { FaPlus } from "react-icons/fa";
 import { IoIosClose } from "react-icons/io";
 import { IoSearch } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
 import Pagination from "../../components/Pagination";
 import { TableRowSkelton } from "../../components/Skeltons/TableSkelton";
 import TablePaginationInfo from "../../components/TablePaginationInfo";
 import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
+import { useToast } from "../../context/ToastContext";
 import {
   BASE_PATH,
+  LOCAL_STORAGE,
   ROUTES_PATH,
   Stages,
   WEBSOCKET_EVENTS,
@@ -22,10 +24,7 @@ import {
 import useDebounce from "../../hooks/useDebounce";
 import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
-import { updateMetaLead } from "../../services/api/MetaLeads.api";
-import ActivityModal from "../ConversationalTool/WhatsApp/components/ActivityModal";
-import Timeline from "../ConversationalTool/WhatsApp/components/Timeline";
-import { formatDate, formatDateTime } from "../../utils/formateDate";
+import { formatDateTime } from "../../utils/formateDate";
 
 const CREATED_FROM = "google_ads";
 
@@ -33,14 +32,10 @@ const GoogleAds = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
 
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isEditingLoading, setIsEditingLoading] = useState(false);
+  const { showToast } = useToast();
+
   const [isExporting, setIsExporting] = useState(false);
 
-  const [selectedLead, setSelectedLead] = useState(null);
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
 
@@ -49,12 +44,17 @@ const GoogleAds = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [stage, setStage] = useState("");
+  const [isPageRestored, setIsPageRestored] = useState(false);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   const {
     page,
     limit,
     total,
     totalPages,
+    setPage,
     setTotal,
     goToPage,
     nextPage,
@@ -150,29 +150,24 @@ const GoogleAds = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead stage updated successfully",
+        // fetchLeads();
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
         });
-        fetchLeads();
         return;
       }
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead stage",
-      });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -182,80 +177,35 @@ const GoogleAds = () => {
     }
   };
 
-  const hanldeUpdateNotes = async (leadId) => {
-    setIsEditingLoading(true);
-    const payload = {
-      leadId: leadId,
-      notes: selectedLead?.notes || [],
-    };
-    try {
-      const response = await updateMetaLead(payload);
-      if (response?.success && response?.responseStatusCode === 200) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Lead notes updated successfully",
-        });
-        return;
-      }
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: response?.responseMessage || "Failed to update lead notes",
-      });
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error?.message || "Failed to update lead notes",
-      });
-    } finally {
-      setIsEditingLoading(false);
-      setIsEdit(false);
-    }
-  };
-
-  const handleNotesSave = (activity) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-
-      if (editingIndex !== null) {
-        notes[editingIndex] = activity;
-      } else {
-        notes.push(activity);
-      }
-
-      return { ...prev, notes };
-    });
-  };
-
-  const handleRemoveNote = (index) => {
-    setIsEdit(true);
-    setSelectedLead((prev) => {
-      const notes = [...(prev.notes || [])];
-      notes.splice(index, 1);
-      return { ...prev, notes };
-    });
-  };
-
   const handleRedirectToPage = (row, index) => {
+    localStorage.setItem(LOCAL_STORAGE.GoogleAds, page);
     const hid = localStorage.getItem("hid");
     const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
     navigate(navigatePath);
   };
 
   useEffect(() => {
+    if (!isPageRestored) return; // 🚨 WAIT until page restored
+
     if (!startDate && !endDate) {
       fetchLeads(false);
       return;
     }
 
-    // Fetch ONLY when both dates are selected
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+
+  useEffect(() => {
+    const savedPage = localStorage.getItem(LOCAL_STORAGE.GoogleAds);
+
+    if (savedPage) {
+      setPage(Number(savedPage));
+    }
+
+    setIsPageRestored(true);
+  }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -272,182 +222,197 @@ const GoogleAds = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-white p-3 md:p-6 space-y-3 md:space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Google Ads Leads</h2>
-        {allLeads?.length > 0 && (
-          <button
-            disabled={isExporting}
-            onClick={exportToExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
-          >
-            Export to Excel{" "}
-            {isExporting && <Loader color="#fefefe" size={12} />}
-          </button>
-        )}
-      </div>
+    <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Google Ads Leads</h2>
 
-      <div className="bg-white rounded-xl md:shadow-sm border border-gray-200 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* LEFT SIDE FILTERS */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* SEARCH */}
-            <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-              <IoSearch className="text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search clients..."
-                className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+          {allLeads?.length > 0 && (
+            <button
+              disabled={isExporting}
+              onClick={exportToExcel}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+            >
+              Export to Excel{" "}
+              {isExporting && <Loader color="#fefefe" size={12} />}
+            </button>
+          )}
+        </div>
 
-            <div>
-              <CustomDropdown
-                options={[
-                  {
-                    value: "",
-                    label: "All Stages",
-                  },
-                  ...Stages,
-                ]}
-                onChange={(value) => setStage(value)}
-              />
-            </div>
-            {/* DATE RANGE */}
-            <div className="relative">
-              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <DatePicker
-                  selectsRange
-                  startDate={startDate}
-                  endDate={endDate}
-                  onChange={(update) => setDateRange(update)}
-                  className="bg-transparent outline-none text-sm w-40"
-                  placeholderText="Date range"
-                  popperClassName="!z-50"
+        <div className="">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* LEFT SIDE FILTERS */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* SEARCH */}
+              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search clients..."
+                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              {startDate && endDate && (
-                <span
-                  onClick={() => {
-                    setStartDate(null);
-                    setEndDate(null);
-                  }}
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
-                >
-                  <IoIosClose size={18} />
-                </span>
-              )}
+              <div>
+                <CustomDropdown
+                  options={[
+                    {
+                      value: "",
+                      label: "All Stages",
+                    },
+                    ...Stages,
+                  ]}
+                  onChange={(value) => setStage(value)}
+                />
+              </div>
+
+              {/* DATE RANGE */}
+              <div className="relative">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                  <DatePicker
+                    selectsRange
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => setDateRange(update)}
+                    className="bg-transparent outline-none text-sm w-40"
+                    placeholderText="Date range"
+                    popperClassName="z-9999!"
+                  />
+                </div>
+
+                {startDate && endDate && (
+                  <span
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                    }}
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                  >
+                    <IoIosClose size={18} />
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-primary">
-            <tr>
-              <th className="px-3 py-3 text-white">#</th>
-              {tableHeaders?.map((h) => (
-                <th
-                  key={h.key}
-                  className="px-3 py-3 text-left text-white min-w-40"
-                >
-                  {h.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
+      <div className="flex flex-col flex-1 min-h-0">
+        <div className="border rounded-lg overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-primary sticky top-0 z-99!">
+              <tr>
+                <th className="px-3 py-3 text-white">#</th>
+                {tableHeaders?.map((h) => (
+                  <th
+                    key={h.key}
+                    className="px-3 py-3 text-left text-white min-w-40"
+                  >
+                    {h.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody>
-            {isLoadingLeads && (
-              <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
-            )}
+            <tbody>
+              {isLoadingLeads && (
+                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+              )}
 
-            {!isLoadingLeads &&
-              allLeads.length > 0 &&
-              allLeads.map((row, i) => (
-                <tr
-                  key={i}
-                  onClick={() => {
-                    handleRedirectToPage(row, i + limit * (page - 1) + 1);
-                  }}
-                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
-                >
-                  <td className="px-3 py-2.5">{i + limit * (page - 1) + 1}</td>
+              {!isLoadingLeads &&
+                allLeads.length > 0 &&
+                allLeads.map((row, i) => (
+                  <tr
+                    key={i}
+                    onClick={() => {
+                      handleRedirectToPage(row, i + limit * (page - 1) + 1);
+                    }}
+                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                  >
+                    <td className="px-3 py-2.5">
+                      {i + limit * (page - 1) + 1}
+                    </td>
 
-                  {tableHeaders.map((h) => {
-                    // const timesLabels = ["created_time", "Created_at"];
+                    {tableHeaders.map((h) => {
+                      // const timesLabels = ["created_time", "Created_at"];
 
-                    if (h.key === "Created_at") {
-                      const isLeadCreatedTime = row?.meta?.created_time;
+                      if (h.key === "Created_at") {
+                        const isLeadCreatedTime = row?.meta?.created_time;
 
+                        return (
+                          <td key={h.key} className="px-3 py-2">
+                            {formatDateTime(
+                              isLeadCreatedTime
+                                ? isLeadCreatedTime
+                                : row[h.key],
+                            )}
+                          </td>
+                        );
+                      }
+                      if (h.key === "phone_number") {
+                        return (
+                          <td
+                            key={h.key}
+                            className="px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Link to={`tel:${row[h.key]}`}>
+                              {row[h.key] || "-"}
+                            </Link>
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "status") {
+                        return (
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <CustomDropdown
+                              label={row.status}
+                              options={Stages}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "notes") {
+                        const isNotes = row[h.key] && row[h.key].length > 0;
+
+                        const noteMessage =
+                          isNotes && row[h.key]?.slice(-1)[0]?.message;
+                        return <td>{isNotes ? noteMessage : "-"}</td>;
+                      }
                       return (
                         <td key={h.key} className="px-3 py-2">
-                          {formatDateTime(
-                            isLeadCreatedTime ? isLeadCreatedTime : row[h.key],
-                          )}
+                          {row[h.key] || "-"}
                         </td>
                       );
-                    }
-                    if (h.key === "phone_number") {
-                      return (
-                        <td
-                          key={h.key}
-                          className="px-3 py-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link to={`tel:${row[h.key]}`}>
-                            {row[h.key] || "-"}
-                          </Link>
-                        </td>
-                      );
-                    }
+                    })}
+                  </tr>
+                ))}
 
-                    if (h.key === "status") {
-                      return (
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <CustomDropdown
-                            label={row.status}
-                            options={Stages}
-                            className="border w-40! p-1! rounded-md! bg-gray-100!"
-                            onChange={(value) => {
-                              handleUpdateStage(row?._id, row?.hId, value);
-                            }}
-                          />
-                        </td>
-                      );
-                    }
-
-                    if (h.key === "notes") {
-                      const isNotes = row[h.key] && row[h.key].length > 0;
-
-                      const noteMessage =
-                        isNotes && row[h.key]?.slice(-1)[0]?.message;
-                      return <td>{isNotes ? noteMessage : "-"}</td>;
-                    }
-                    return (
-                      <td key={h.key} className="px-3 py-2">
-                        {row[h.key] || "-"}
-                      </td>
-                    );
-                  })}
+              {!isLoadingLeads && allLeads.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center">
+                    No Leads Found
+                  </td>
                 </tr>
-              ))}
-
-            {!isLoadingLeads && allLeads.length === 0 && (
-              <tr>
-                <td colSpan={7} className="py-6 text-center">
-                  No Leads Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="flex flex-col items-end px-4 py-6">
+      <div className="flex justify-between items-center px-4">
         <Pagination
           page={page}
           totalPages={totalPages}
@@ -464,97 +429,19 @@ const GoogleAds = () => {
         />
       </div>
 
-      {/* MODAL */}
-      {selectedLead && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 py-2">
-          <div className="relative bg-white max-w-3xl w-full p-4 max-h-[90vh] overflow-y-auto rounded grid grid-cols-2 gap-4 divide-x divide-amber-500">
-            <div>
-              <div className="flex justify-between mb-4">
-                <p className="text-sm text-gray-500">
-                  Lead Added: {formatDate(selectedLead?.created_time)}
-                </p>
-                <button
-                  onClick={() => setSelectedLead(null)}
-                  className="bg-orange-500 text-white px-3 py-1 rounded absolute top-2 right-2"
-                >
-                  Close
-                </button>
-              </div>
-
-              {selectedLead?.lead?.field_data?.map((field, i) => (
-                <div key={i} className="mb-3">
-                  <p className="font-medium text-gray-600 capitalize">
-                    {field.name.replaceAll("_", " ")}
-                  </p>
-                  <p className="wrap-break-word">{field.values?.[0]}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <div className="flex gap-2 items-center mb-4 bg-gray-100 px-4 py-1.5 w-fit rounded-full">
-                <h3 className="text-sm font-medium text-[#37322F]">Notes</h3>
-
-                <button
-                  onClick={() => {
-                    setEditingIndex(null);
-                    setEditingNote(null);
-                    setIsAddActivityOpen(true);
-                  }}
-                  className="rounded-full size-8 border bg-primary text-white border-gray-400 flex items-center justify-center text-lg"
-                >
-                  <FaPlus size={10} />
-                </button>
-              </div>
-
-              {/* Notes exist */}
-              {selectedLead?.notes && selectedLead.notes.length > 0 ? (
-                <div className="max-h-72 overflow-auto pr-2">
-                  <Timeline
-                    items={selectedLead.notes}
-                    onEdit={(item, index) => {
-                      setEditingIndex(index);
-                      setEditingNote(item);
-                      setIsAddActivityOpen(true);
-                    }}
-                    onDelete={(item, index) => handleRemoveNote(index)}
-                  />
-                </div>
-              ) : (
-                /* No notes placeholder */
-                <p className="text-sm text-gray-400">No notes added yet.</p>
-              )}
-
-              {isEdit && (
-                <div className="flex justify-end mt-2">
-                  <button
-                    disabled={isEditingLoading}
-                    onClick={() => {
-                      hanldeUpdateNotes(selectedLead?.meta?.leadgen_id);
-                    }}
-                    className="bg-green-700 text-white px-3 py-1 rounded flex items-center gap-1.5"
-                  >
-                    Save {isEditingLoading && <Loader color="#fff" size={12} />}
-                  </button>
-                </div>
-              )}
-
-              <ActivityModal
-                open={isAddActivityOpen}
-                initialData={editingNote}
-                onClose={() => {
-                  setIsAddActivityOpen(false);
-                  setEditingIndex(null);
-                  setEditingNote(null);
-                }}
-                onSave={(activity) => {
-                  handleNotesSave(activity);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage(
+            selectedLead?._id,
+            selectedLead?.hId,
+            "Follow Up",
+            date,
+          );
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 };
