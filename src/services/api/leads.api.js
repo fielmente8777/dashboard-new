@@ -63,7 +63,7 @@ export const getLeadById = async (leadId, hid) => {
 
 export const updateLead = async (payload) => {
   const token = localStorage.getItem("token");
-  const hid = payload?.hid;
+  const hid = payload?.hId || payload?.hid;
   const { data } = await axios.put(
     `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId || payload?.conversationId}/update?hid=${hid}`,
     payload,

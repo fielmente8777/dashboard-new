@@ -28,6 +28,7 @@ import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer
 import AdsLeadsUsingGoogleSheet from "./AdsLeadsUsingGoogleSheet";
 import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
+import { fetchUserManagementData } from "../../services/api";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -50,6 +51,8 @@ const AllLeads = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
 
+  const [allUsers, setAllUsers] = useState([]);
+
   const {
     page,
     limit,
@@ -70,7 +73,8 @@ const AllLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
-    { key: "assignee", label: "Assignee" },
+    { key: "campaign_name", label: "Campaign Name" },
+    { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
   ];
 
@@ -151,12 +155,19 @@ const AllLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
+  const handleUpdateStage = async (
+    leadId,
+    hid,
+    stage,
+    followUpDate,
+    conversationId = null,
+  ) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
       followUpDate: followUpDate || null,
+      ...(conversationId && { conversationId }),
     };
     try {
       const response = await updateLead(payload);
@@ -177,11 +188,48 @@ const AllLeads = () => {
     }
   };
 
+  const handleUserAssign = async (
+    leadId,
+    hid,
+    value,
+    conversationId = null,
+  ) => {
+    try {
+      const payload = {
+        leadId: leadId,
+        hid: hid,
+        ...(conversationId && { conversationId }),
+        assignee: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
     const hid = localStorage.getItem("hid");
     const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}`;
     navigate(navigatePath);
+  };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
   };
 
   useEffect(() => {
@@ -207,6 +255,7 @@ const AllLeads = () => {
   ]);
 
   useEffect(() => {
+    fetchUsersData();
     const savedPage = localStorage.getItem(LOCAL_STORAGE.AllLeads);
 
     if (savedPage) {
@@ -220,7 +269,7 @@ const AllLeads = () => {
   //   wsRef.current = new WebSocketClient(WS_BASE_URL);
 
   //   wsRef.current.connect((serverResponse) => {
-  //     if (serverResponse?.event === WEBSOCKET_EVENTS.META_NEW_LEAD) {
+  //     if (serverResponse?.event === WEBShOCKET_EVENTS.META_NEW_LEAD) {
   //     }
   //   });
 
@@ -389,7 +438,13 @@ const AllLeads = () => {
                                   setSelectedLead(row);
                                   setShowDatePicker(true);
                                 } else {
-                                  handleUpdateStage(row?._id, row?.hId, value);
+                                  handleUpdateStage(
+                                    row?._id,
+                                    row?.hId,
+                                    value,
+                                    null,
+                                    row?.conversationId,
+                                  );
                                 }
                               }}
                             />
@@ -432,14 +487,39 @@ const AllLeads = () => {
                         );
                       }
 
-                      if (h.key === "assigne") {
+                      if (h.key === "campaign_name") {
+                        const isMeta = row?.meta;
                         return (
-                          <td className="bg-black p-8">
-                            {row[h.key] || (
-                              <span className="text-center w-full inline-block">
-                                -
-                              </span>
-                            )}
+                          <td className="p-8">
+                            {isMeta ? isMeta?.campaign_name : "-"}
+                          </td>
+                        );
+                      }
+
+                      if (h.key === "assignee") {
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={row["assignee"] || "Attempted By"}
+                              options={
+                                allUsers?.map((user) => ({
+                                  value: user?.userName,
+                                  label: user?.userName,
+                                })) || []
+                              }
+                              onChange={(value) =>
+                                handleUserAssign(
+                                  row?._id,
+                                  row?.hId,
+                                  value,
+                                  row?.conversationId,
+                                )
+                              }
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            />
                           </td>
                         );
                       }

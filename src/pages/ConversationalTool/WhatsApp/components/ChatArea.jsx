@@ -16,6 +16,7 @@ import {
   WS_BASE_URL,
 } from "../../../../data/constant";
 import {
+  addWhatsAppLead,
   deleteWhatsAppMessage,
   getFlowSession,
   getWhatsappConversationMessages,
@@ -31,11 +32,15 @@ import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
 import { useToast } from "../../../../context/ToastContext";
 import { useConfirm } from "../../../../context/ConfirmContext";
+import CustomDropdown from "../../../../components/ui/Dropdown";
+import { fetchUserManagementData } from "../../../../services/api";
+import { updateLead } from "../../../../services/api/leads.api";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
 
   // const { isLoaded } = useLoadScript({
   //   googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
@@ -46,8 +51,12 @@ const ChatArea = () => {
   const textareaRef = useRef(null);
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const { selectedConversation, conversations, setMobileActive } =
-    useContext(DataContext);
+  const {
+    selectedConversation,
+    setSelectedConversation,
+    conversations,
+    setMobileActive,
+  } = useContext(DataContext);
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
@@ -342,28 +351,41 @@ const ChatArea = () => {
     }));
   };
 
+  const handleUserAssign = async (value) => {
+    const isEdit = selectedConversation?.markAsLead;
+
+    const payload = {
+      Contact: selectedConversation.phone,
+      Name: selectedConversation.name,
+      ndid: selectedConversation.ndid,
+      notes: selectedConversation.notes,
+      status: selectedConversation.status,
+      conversationId: selectedConversation._id,
+      hId: selectedConversation?.hid || localStorage.getItem("hid"),
+      assignee: value,
+    };
+    const response = isEdit
+      ? await updateLead(payload)
+      : await addWhatsAppLead(payload);
+
+    setSelectedConversation({ ...selectedConversation, assignee: value });
+  };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
   useEffect(() => {
     fetchTemplate();
-
-    // const handleClickOutside = (event) => {
-    //   if (menuRef.current && !menuRef.current.contains(event.target)) {
-    //     setOpenMenuIndex(null);
-    //   }
-    // };
-
-    // document.addEventListener("mousedown", handleClickOutside);
-
-    // return () => {
-    //   document.removeEventListener("mousedown", handleClickOutside);
-    // };
+    fetchUsersData();
   }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      console.log("serverResponse", serverResponse);
-      console.log("selectedConversation", selectedConversation);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
         serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
@@ -460,6 +482,19 @@ const ChatArea = () => {
           >
             <MdCall size={18} /> Call
           </Link>
+
+          <div>
+            <CustomDropdown
+              label={selectedConversation?.assignedTo || "Select User"}
+              options={
+                allUsers?.map((user) => ({
+                  value: user?.userName,
+                  label: user?.userName,
+                })) || []
+              }
+              onChange={(value) => handleUserAssign(value)}
+            />
+          </div>
         </div>
       </div>
 

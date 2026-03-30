@@ -32,6 +32,8 @@ const ViewAndManageLeads = () => {
   const leadPageNumber = searchParams.get("lead");
   const created_from = searchParams.get("created_from");
 
+  const [showSave, setShowSave] = useState(false);
+
   const [leadPageNumberState, setLeadPageNumberState] =
     useState(leadPageNumber);
 
@@ -73,10 +75,11 @@ const ViewAndManageLeads = () => {
       // const response = await getLeadById(leadId, hid);
       if (response?.success) {
         setLead(response?.result?.docs?.leads[0]);
-        setSelectedDate(
+        const followDate =
           response?.result?.docs?.leads[0]?.followUpDate ||
-            response?.result?.docs?.leads[0]?.folloUp,
-        );
+          response?.result?.docs?.leads[0]?.folloUp;
+
+        setSelectedDate(followDate ? new Date(followDate) : null);
 
         const conversationId = response?.result?.docs?.conversationId;
 
@@ -198,19 +201,72 @@ const ViewAndManageLeads = () => {
                 <label htmlFor="" className="">
                   Follow Up
                 </label>
-                <DatePicker
+                {/* <DatePicker
                   minDate={new Date()}
                   startDate={selectedDate}
+                  // onChange={(update) => {
+                  //   // setSelectedDate(update);
+                  //   // handleFollow(update);
+                  // }}
+                  shouldCloseOnSelect={false}
                   onChange={(update) => {
                     setSelectedDate(update);
-                    handleFollow(update);
+                    setShowSave(true); // show save button
                   }}
                   className="bg-transparent outline-none text-sm w-40 placeholder:text-[#fd5c01]"
                   placeholderText={`${selectedDate ? new Date(selectedDate).toLocaleString() : " Select Date"}`}
                   popperClassName="!z-50"
+                  showTimeInput
+                  customTimeInput={
+                    <CustomTimeInput onChangeCustom={handleChangeTime} />
+                  }
+                /> */}
+
+                <DatePicker
+                  minDate={new Date()}
+                  selected={selectedDate}
+                  onChange={(date) => {
+                    setSelectedDate(date);
+
+                    // ✅ Only call API when time is selected (not just date)
+                    // if (date && date.getHours() !== 0) {
+                    //   handleFollow(date);
+                    //   setShowSave(false);
+                    // }
+                  }}
+                  onCalendarClose={() => {
+                    if (selectedDate) {
+                      handleFollow(selectedDate); // ✅ runs only once
+                    }
+                  }}
+                  showTimeSelect
+                  timeIntervals={5}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                  placeholderText="Select Date & Time"
+                  className="bg-transparent outline-none text-sm w-44"
+                  popperClassName="!z-50"
                 />
-                {lead?.followUp && (
-                  <button onClick={() => handleFollow(null)}>X</button>
+                {(lead?.followUp || lead?.followUpDate) && (
+                  <button
+                    onClick={() => {
+                      setSelectedDate(null);
+                      handleFollow(null);
+                    }}
+                  >
+                    X
+                  </button>
+                )}
+
+                {showSave && (
+                  <button
+                    onClick={() => {
+                      handleFollow(selectedDate);
+                      setShowSave(false);
+                    }}
+                    className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                  >
+                    Save
+                  </button>
                 )}
               </div>
             )}

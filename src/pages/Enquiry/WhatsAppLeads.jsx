@@ -82,6 +82,7 @@ const WhatsAppLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
   ];
 
@@ -163,12 +164,19 @@ const WhatsAppLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
+  const handleUpdateStage = async (
+    leadId,
+    hid,
+    stage,
+    followUpDate,
+    conversationId,
+  ) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
       followUpDate: followUpDate || null,
+      ...(conversationId && { conversationId }),
     };
     try {
       const response = await updateLead(payload);
@@ -392,7 +400,13 @@ const WhatsAppLeads = () => {
                                   setSelectedLead(row);
                                   setShowDatePicker(true);
                                 } else {
-                                  handleUpdateStage(row?._id, row?.hId, value);
+                                  handleUpdateStage(
+                                    row?._id,
+                                    row?.hId,
+                                    value,
+                                    null,
+                                    row?.conversationId,
+                                  );
                                 }
                               }}
                             />

@@ -58,7 +58,7 @@ export default function CustomDropdown({
   };
 
   return (
-    <div className="relative">
+    <div className="relativ">
       {/* BUTTON */}
       <button
         ref={buttonRef}

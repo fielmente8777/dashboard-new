@@ -85,6 +85,7 @@ const WebformLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
   ];
 

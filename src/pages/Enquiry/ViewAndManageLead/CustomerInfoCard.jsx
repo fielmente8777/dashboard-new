@@ -229,7 +229,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
       <div className="flex items-center flex-wrap lg:justify-end gap-2 mt-2">
         <div className="flex w-auto flex-col gap-1">
           <label htmlFor="" className="text-sm text-gray-500 ml-1">
-            Assigned to
+            Attempted By
           </label>
           <CustomDropdown
             label={lead?.assignee || "Select User"}

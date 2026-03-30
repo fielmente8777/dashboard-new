@@ -31,6 +31,7 @@ import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
+import { fetchUserManagementData } from "../../services/api";
 
 const CREATED_FROM = "facebook";
 
@@ -56,6 +57,7 @@ const MetaLeads = () => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
 
   const {
     page,
@@ -76,6 +78,8 @@ const MetaLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "campaign_name", label: "Campaign Name" },
+    { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
   ];
 
@@ -216,6 +220,37 @@ const MetaLeads = () => {
     }
   };
 
+  const handleUserAssign = async (
+    leadId,
+    hid,
+    value,
+    conversationId = null,
+  ) => {
+    try {
+      const payload = {
+        leadId: leadId,
+        hid: hid,
+        ...(conversationId && { conversationId }),
+        assignee: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.MetaLeadsPage, page);
     const hid = localStorage.getItem("hid");
@@ -228,8 +263,15 @@ const MetaLeads = () => {
     // });
   };
 
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
   useEffect(() => {
     fetchPageConnectionDetails();
+    fetchUsersData();
   }, []);
 
   useEffect(() => {
@@ -505,6 +547,14 @@ const MetaLeads = () => {
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
                         return <td>{isNotes ? noteMessage : "-"}</td>;
                       }
+                      if (h.key === "campaign_name") {
+                        const isMeta = row?.meta;
+                        return (
+                          <td className="p-8">
+                            {isMeta ? isMeta?.campaign_name : "-"}
+                          </td>
+                        );
+                      }
                       if (h.key === "Name") {
                         const isName = row[h.key];
                         const followUpDate = new Date(
@@ -528,6 +578,33 @@ const MetaLeads = () => {
                                 Follow Up
                               </span>
                             )}
+                          </td>
+                        );
+                      }
+                      if (h.key === "assignee") {
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={row["assignee"] || "Attempted By"}
+                              options={
+                                allUsers?.map((user) => ({
+                                  value: user?.userName,
+                                  label: user?.userName,
+                                })) || []
+                              }
+                              onChange={(value) =>
+                                handleUserAssign(
+                                  row?._id,
+                                  row?.hId,
+                                  value,
+                                  row?.conversationId,
+                                )
+                              }
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            />
                           </td>
                         );
                       }
