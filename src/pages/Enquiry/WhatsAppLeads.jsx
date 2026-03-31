@@ -14,6 +14,7 @@ import {
   BASE_PATH,
   LOCAL_STORAGE,
   ROUTES_PATH,
+  TurnAwayCode,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../data/constant";
@@ -24,6 +25,7 @@ import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
 import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
+import { fetchUserManagementData } from "../../services/api";
 
 const CREATED_FROM = "whatsapp";
 
@@ -62,6 +64,7 @@ const WhatsAppLeads = () => {
   const [stage, setStage] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
 
   const {
     page,
@@ -84,6 +87,7 @@ const WhatsAppLeads = () => {
     { key: "notes", label: "Notes" },
     { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
+    { key: "turnAwayCode", label: "Turn Away Code" },
   ];
 
   const setDateRange = (dates) => {
@@ -164,19 +168,21 @@ const WhatsAppLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (
+  const handleUpdateStage = async ({
     leadId,
     hid,
     stage,
     followUpDate,
     conversationId,
-  ) => {
+    turnAwayCode,
+  }) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
       followUpDate: followUpDate || null,
       ...(conversationId && { conversationId }),
+      ...(turnAwayCode && { turnAwayCode }),
     };
     try {
       const response = await updateLead(payload);
@@ -197,6 +203,37 @@ const WhatsAppLeads = () => {
     }
   };
 
+  const handleUserAssign = async (
+    leadId,
+    hid,
+    value,
+    conversationId = null,
+  ) => {
+    try {
+      const payload = {
+        leadId: leadId,
+        hid: hid,
+        ...(conversationId && { conversationId }),
+        assignee: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.WhatsappPage, page);
     const hid = localStorage.getItem("hid");
@@ -207,6 +244,12 @@ const WhatsAppLeads = () => {
     //   leadId: row._id,
     //   hid: hid,
     // });
+  };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
   };
 
   useEffect(() => {
@@ -223,6 +266,7 @@ const WhatsAppLeads = () => {
   }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
 
   useEffect(() => {
+    fetchUsersData();
     const savedPage = localStorage.getItem(LOCAL_STORAGE.WhatsappPage);
 
     if (savedPage) {
@@ -400,14 +444,37 @@ const WhatsAppLeads = () => {
                                   setSelectedLead(row);
                                   setShowDatePicker(true);
                                 } else {
-                                  handleUpdateStage(
-                                    row?._id,
-                                    row?.hId,
-                                    value,
-                                    null,
-                                    row?.conversationId,
-                                  );
+                                  handleUpdateStage({
+                                    leadId: row?._id,
+                                    hid: row?.hId,
+                                    stage: value,
+                                    conversationId: row?.conversationId,
+                                  });
                                 }
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+                      if (h.key === "turnAwayCode") {
+                        const turnAwayCode = row[h.key];
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={turnAwayCode || "Select Code"}
+                              options={TurnAwayCode}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                handleUpdateStage({
+                                  leadId: row?._id,
+                                  hid: row?.hId,
+                                  stage: "Turn Away",
+                                  turnAwayCode: value,
+                                  conversationId: row?.conversationId,
+                                });
                               }}
                             />
                           </td>
@@ -419,6 +486,33 @@ const WhatsAppLeads = () => {
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
                         return <td>{isNotes ? noteMessage : "-"}</td>;
+                      }
+                      if (h.key === "assignee") {
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={row["assignee"] || "Attempted By"}
+                              options={
+                                allUsers?.map((user) => ({
+                                  value: user?.userName,
+                                  label: user?.userName,
+                                })) || []
+                              }
+                              onChange={(value) =>
+                                handleUserAssign(
+                                  row?._id,
+                                  row?.hId,
+                                  value,
+                                  row?.conversationId,
+                                )
+                              }
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            />
+                          </td>
+                        );
                       }
                       if (h.key === "Name") {
                         const isName = row[h.key];
@@ -488,12 +582,13 @@ const WhatsAppLeads = () => {
         isOpen={showDatePicker}
         onClose={() => setShowDatePicker(false)}
         onSave={(date) => {
-          handleUpdateStage(
-            selectedLead?._id,
-            selectedLead?.hId,
-            "Follow Up",
-            date,
-          );
+          handleUpdateStage({
+            leadId: selectedLead?._id,
+            hid: selectedLead?.hId,
+            stage: "Follow Up",
+            followUpDate: date,
+            conversationId: selectedLead?.conversationId,
+          });
           setShowDatePicker(false);
         }}
       />
@@ -502,144 +597,3 @@ const WhatsAppLeads = () => {
 };
 
 export default WhatsAppLeads;
-
-// import { useEffect, useState } from "react";
-// import { formatDateTime } from "../../services/formateDate";
-// import { getLeads, UpdateLeadStatus } from "../../services/api/leads.api";
-
-// import Swal from "sweetalert2";
-// import LeadPopup from "../../components/Popup/LeadPopup";
-// import { getWhatsAppLeads } from "../../services/api/whatsApp";
-// import WhatsAppLeadPopup from "../../components/Popup/WhatsAppLeadPopup";
-
-// const WhatsAppLeads = () => {
-//   const [leads, setLeads] = useState([]);
-//   const [loading, setLoading] = useState(false);
-
-//   const [isPopupOpen, setIsPopupOpen] = useState(false);
-//   const [selectedLead, setSelectedLead] = useState(null);
-
-//   const fetchWhatsAppLeads = async () => {
-//     setLoading(true);
-//     try {
-//       const response = await getWhatsAppLeads();
-//       if (response?.success) {
-//         setLeads(response?.result?.docs || []);
-//       }
-//     } catch (err) {
-//       console.error(err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleStageChange = async (lead, stage) => {
-//     try {
-//       await UpdateLeadStatus(lead, stage);
-
-//       Swal.fire({
-//         icon: "success",
-//         title: "Stage updated",
-//         timer: 1000,
-//         showConfirmButton: false,
-//       });
-
-//       fetchWhatsAppLeads();
-//     } catch {
-//       Swal.fire("Error", "Failed to update stage", "error");
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchWhatsAppLeads();
-//   }, []);
-
-//   return (
-//     <div className="w-full px-4">
-//       <h2 className="text-lg font-semibold mb-4">WhatsApp Leads</h2>
-
-//       <table className="w-full border-collapse">
-//         <thead className="bg-[#0a3a75] text-white">
-//           <tr>
-//             <th className="py-3 px-2 text-left">#</th>
-//             <th className="py-3 px-2 text-left">Date</th>
-//             <th className="py-3 px-2 text-left">Name</th>
-//             <th className="py-3 px-2 text-left">Phone</th>
-//             <th className="py-3 px-2 text-left">Source</th>
-//             <th className="py-3 px-2 text-left">Stage</th>
-//           </tr>
-//         </thead>
-
-//         <tbody>
-//           {loading && (
-//             <tr>
-//               <td colSpan="6" className="py-6 text-center">
-//                 Loading leads...
-//               </td>
-//             </tr>
-//           )}
-
-//           {!loading &&
-//             leads?.length > 0 &&
-//             leads?.map((lead, index) => (
-//               <tr
-//                 key={lead._id}
-//                 className="border-b odd:bg-gray-50 even:bg-gray-100 hover:bg-[#f8f8fb] cursor-pointer"
-//                 onClick={() => {
-//                   setSelectedLead(lead);
-//                   setIsPopupOpen(true);
-//                 }}
-//               >
-//                 <td className="py-3 px-2">{index + 1}</td>
-
-//                 <td className="py-3 px-2 whitespace-nowrap">
-//                   {formatDateTime(lead.createdAt)}
-//                 </td>
-
-//                 <td className="py-3 px-2 font-medium">{lead.name || "-"}</td>
-
-//                 <td className="py-3 px-2">+{lead.phone}</td>
-
-//                 <td className="py-3 px-2 capitalize">{lead.source}</td>
-
-//                 <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
-//                   <select
-//                     className="bg-gray-50 border rounded px-2 py-1 outline-none cursor-pointer"
-//                     value={lead.stage || "Open"}
-//                     onChange={(e) => handleStageChange(lead, e.target.value)}
-//                   >
-//                     <option value="Open">Open</option>
-//                     <option value="Contacted">Contacted</option>
-//                     <option value="Converted">Converted</option>
-//                     <option value="Duplicate">Duplicate</option>
-//                     <option value="Dead Lead">Dead Lead</option>
-//                   </select>
-//                 </td>
-//               </tr>
-//             ))}
-
-//           {!loading && leads.length === 0 && (
-//             <tr>
-//               <td colSpan="6" className="py-6 text-center text-gray-500">
-//                 No WhatsApp Leads Found
-//               </td>
-//             </tr>
-//           )}
-//         </tbody>
-//       </table>
-
-//       {/* ✅ Lead Popup */}
-//       <WhatsAppLeadPopup
-//         isOpen={isPopupOpen}
-//         onClose={() => setIsPopupOpen(false)}
-//         lead={selectedLead}
-//         // onAddNote={(text) => addLeadNote(selectedLead._id, text)}
-//         // onEditNote={(noteId, text) =>
-//         //   updateLeadNote(selectedLead._id, noteId, text)
-//         // }
-//       />
-//     </div>
-//   );
-// };
-
-// export default WhatsAppLeads;

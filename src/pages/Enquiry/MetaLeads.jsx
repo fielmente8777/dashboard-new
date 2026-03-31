@@ -16,6 +16,7 @@ import {
   LOCAL_STORAGE,
   ROUTES_PATH,
   Stages,
+  TurnAwayCode,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../data/constant";
@@ -81,6 +82,7 @@ const MetaLeads = () => {
     { key: "campaign_name", label: "Campaign Name" },
     { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
+    { key: "turnAwayCode", label: "Turn Away Code" },
   ];
 
   const setDateRange = (dates) => {
@@ -194,12 +196,19 @@ const MetaLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage, followUpDate) => {
+  const handleUpdateStage = async ({
+    leadId,
+    hid,
+    stage,
+    followUpDate,
+    turnAwayCode,
+  }) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
       followUpDate: followUpDate || null,
+      ...(turnAwayCode && { turnAwayCode }),
     };
     try {
       const response = await updateLead(payload);
@@ -540,6 +549,30 @@ const MetaLeads = () => {
                           </td>
                         );
                       }
+                      if (h.key === "turnAwayCode") {
+                        const turnAwayCode = row[h.key];
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={turnAwayCode || "Select Code"}
+                              options={TurnAwayCode}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                handleUpdateStage({
+                                  leadId: row?._id,
+                                  hid: row?.hId,
+                                  stage: "Turn Away",
+                                  turnAwayCode: value,
+                                  conversationId: row?.conversationId,
+                                });
+                              }}
+                            />
+                          </td>
+                        );
+                      }
                       if (h.key === "notes") {
                         const isNotes = row[h.key] && row[h.key].length > 0;
 
@@ -552,32 +585,6 @@ const MetaLeads = () => {
                         return (
                           <td className="p-8">
                             {isMeta ? isMeta?.campaign_name : "-"}
-                          </td>
-                        );
-                      }
-                      if (h.key === "Name") {
-                        const isName = row[h.key];
-                        const followUpDate = new Date(
-                          row["followUpDate"] || row["followUp"] || "",
-                        );
-                        const today = new Date();
-
-                        const isToday =
-                          followUpDate.getDate() === today.getDate() &&
-                          followUpDate.getMonth() === today.getMonth() &&
-                          followUpDate.getFullYear() === today.getFullYear();
-
-                        const userName = isName
-                          ? isName
-                          : row?.other_details?.full_name || "-";
-                        return (
-                          <td>
-                            {userName}{" "}
-                            {isToday && (
-                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
-                                Follow Up
-                              </span>
-                            )}
                           </td>
                         );
                       }
@@ -608,6 +615,33 @@ const MetaLeads = () => {
                           </td>
                         );
                       }
+                      if (h.key === "Name") {
+                        const isName = row[h.key];
+                        const followUpDate = new Date(
+                          row["followUpDate"] || row["followUp"] || "",
+                        );
+                        const today = new Date();
+
+                        const isToday =
+                          followUpDate.getDate() === today.getDate() &&
+                          followUpDate.getMonth() === today.getMonth() &&
+                          followUpDate.getFullYear() === today.getFullYear();
+
+                        const userName = isName
+                          ? isName
+                          : row?.other_details?.full_name || "-";
+                        return (
+                          <td>
+                            {userName}{" "}
+                            {isToday && (
+                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                                Follow Up
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
+
                       return (
                         <td key={h.key} className="px-3 py-2">
                           {row[h.key]
@@ -654,12 +688,12 @@ const MetaLeads = () => {
         isOpen={showDatePicker}
         onClose={() => setShowDatePicker(false)}
         onSave={(date) => {
-          handleUpdateStage(
-            selectedLead?._id,
-            selectedLead?.hId,
-            "Follow Up",
-            date,
-          );
+          handleUpdateStage({
+            leadId: selectedLead?._id,
+            hid: selectedLead?.hId,
+            stage: "Follow Up",
+            followUpDate: date,
+          });
           setShowDatePicker(false);
         }}
       />

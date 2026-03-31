@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL =
 //   "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
 
@@ -293,6 +293,17 @@ export const ROUTES_PATH = {
   LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
 };
 
+export const tableHeaders = [
+  { key: "Created_at", label: "Created Time" },
+  { key: "Name", label: "Full Name" },
+  { key: "Contact", label: "Phone Number" },
+  { key: "Email", label: "Email" },
+  { key: "notes", label: "Notes" },
+  { key: "assignee", label: "Attempted By" },
+  { key: "status", label: "Stages" },
+  { key: "turnAwayCode", label: "Turn Away Code" },
+];
+
 export const Stages = [
   { label: "Open Queries", value: "Open" },
   { label: "Contacted", value: "Contacted" },
@@ -309,6 +320,21 @@ export const Stages = [
   { label: "Not Qualified", value: "Not Qualified" },
   { label: "Turn Away", value: "Turn Away" },
   { label: "Hot", value: "Hot" },
+];
+
+export const TurnAwayCode = [
+  { label: "GD", value: "GD" },
+  { label: "JE", value: "JE" },
+  { label: "LC", value: "LC" },
+  { label: "NR", value: "NR" },
+  { label: "Others", value: "Others" },
+  { label: "DD", value: "DD" },
+  { label: "CRP", value: "CRP" },
+  { label: "TA", value: "TA" },
+  { label: "CP", value: "CP" },
+  { label: "LOS", value: "LOS" },
+  { label: "GE", value: "GE" },
+  { label: "RX", value: "RX" },
 ];
 
 export const Sources = [

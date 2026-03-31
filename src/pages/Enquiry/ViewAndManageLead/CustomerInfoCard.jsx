@@ -2,7 +2,7 @@ import { FaPhone, FaWhatsapp } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import InfoRow from "./InfoRow";
 import CustomDropdown from "../../../components/ui/Dropdown";
-import { NEW_BASE_URL, Stages } from "../../../data/constant";
+import { NEW_BASE_URL, Stages, TurnAwayCode } from "../../../data/constant";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
@@ -21,9 +21,8 @@ const CustomerInfoCard = ({ lead, onClick }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [callPopup, setCallPopup] = useState(false);
-  if (!lead) return null;
 
-  const handleStageChange = async (value, followUpDate) => {
+  const handleStageChange = async ({ value, followUpDate, turnAwayCode }) => {
     try {
       const payload = {
         leadId: lead._id,
@@ -31,6 +30,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         hid: lead?.hId,
         conversationId: lead?.conversationId,
         followUpDate: followUpDate || null,
+        ...(turnAwayCode && { turnAwayCode }),
       };
 
       const response = await updateLead(payload);
@@ -137,7 +137,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
     checkIntegrationStatus();
   }, []);
 
-  // console.log(allUsers);
+  if (!lead) return null;
 
   return (
     <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">
@@ -226,7 +226,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         )}
       </div>
 
-      <div className="flex items-center flex-wrap lg:justify-end gap-2 mt-2">
+      <div className="flex flex-wrap items-center gap-2 mt-2">
         <div className="flex w-auto flex-col gap-1">
           <label htmlFor="" className="text-sm text-gray-500 ml-1">
             Attempted By
@@ -252,11 +252,28 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             options={Stages}
             onChange={(value) => {
               if (value === "Follow Up") {
-                // setSelectedLead(row);
                 setShowDatePicker(true);
               } else {
-                handleStageChange(value);
+                handleStageChange({
+                  value,
+                });
               }
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 w-auto">
+          <label htmlFor="" className="text-sm text-gray-500 ml-1">
+            Turn Away Code
+          </label>
+          <CustomDropdown
+            label={lead?.turnAwayCode || "Select Code"}
+            options={TurnAwayCode}
+            onChange={(value) => {
+              handleStageChange({
+                value: "Turn Away",
+                turnAwayCode: value,
+              });
             }}
           />
         </div>
@@ -308,7 +325,10 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         isOpen={showDatePicker}
         onClose={() => setShowDatePicker(false)}
         onSave={(date) => {
-          handleStageChange("Follow Up", date);
+          handleStageChange({
+            value: "Follow Up",
+            followUpDate: date,
+          });
           setShowDatePicker(false);
         }}
       />
