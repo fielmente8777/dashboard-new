@@ -48,13 +48,13 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
 
     try {
       const payload = {
-        phone: selectedConversation.phone,
-        name: selectedConversation.name,
+        Contact: selectedConversation.phone,
+        Name: selectedConversation.name,
         ndid: selectedConversation.ndid,
         notes,
         status: stage,
         conversationId: selectedConversation._id,
-        hid: selectedConversation?.hid || localStorage.getItem("hid"),
+        hId: selectedConversation?.hid || localStorage.getItem("hid"),
       };
       const response = isEdit
         ? await updateLead(payload)
