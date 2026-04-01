@@ -128,7 +128,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
   return (
     <div>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/40 text-gray-600 flex items-center justify-center z-50">
           <form
             onSubmit={handleFormSubmit}
             className="relative max-w-xl w-full mx-auto bg-white/95 py-7 px-5 rounded-lg space-y-6"
@@ -136,7 +136,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
             {/* Existing Local input */}
             <div>
               <div className="w-full">
-                <label htmlFor="local" className="font-medium text-primary/70">
+                <label htmlFor="local" className="font-medium text-primary/70!">
                   Hotel Name
                 </label>
                 <input
@@ -167,7 +167,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
                     <option>Loading countries...</option>
                   ) : (
                     countries.map((country) => (
-                      <option key={country.country} value={country.country}>
+                      <option className="text-gray-600" key={country.country} value={country.country}>
                         {country.country}
                       </option>
                     ))

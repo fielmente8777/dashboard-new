@@ -283,8 +283,8 @@ const AllLeads = () => {
   // }, []);
 
   return (
-    <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
-      <div className="space-y-2">
+    <div className="bg-white p-1 md:p-2 space-y-2 md:space-y-2 h-[90vh] flex flex-col">
+      <div className="">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">All Leads</h2>
 
@@ -300,7 +300,7 @@ const AllLeads = () => {
           )}
         </div>
 
-        <div className="bg-white px-4">
+        <div className="bg-white px-">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
@@ -466,7 +466,7 @@ const AllLeads = () => {
 
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
-                        return <td>{isNotes ? noteMessage : "-"}</td>;
+                        return <td className="min-w-150 w-full">{isNotes ? noteMessage : "-"}</td>;
                       }
 
                       if (h.key === "turnAwayCode") {
@@ -524,7 +524,7 @@ const AllLeads = () => {
                       if (h.key === "campaign_name") {
                         const isMeta = row?.meta;
                         return (
-                          <td className="p-8">
+                          <td className="p-8 whitespace-nowrap">
                             {isMeta ? isMeta?.campaign_name : "-"}
                           </td>
                         );
