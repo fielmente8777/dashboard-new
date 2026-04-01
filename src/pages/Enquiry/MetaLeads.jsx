@@ -329,8 +329,8 @@ const MetaLeads = () => {
   }, [allLeads]);
 
   return (
-    <div className="bg-white p-1 md:p-2 space-y-1 md:space-y-2 h-[90vh] flex flex-col">
-      <div className="space-y-2">
+    <div className="bg-white p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Meta Leads</h2>
 
@@ -463,13 +463,12 @@ const MetaLeads = () => {
                 <IoMdSync />
               </span>
             </button>
-            
           </div>
         </div>
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="border rounded-lg overflow-auto">
+        <div className="border rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
@@ -498,10 +497,10 @@ const MetaLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
                     <td className="px-3 py-2.5">
-                      {i + limit * (page - 1) + 1}
+                      {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
 
                     {tableHeaders.map((h) => {
@@ -511,7 +510,10 @@ const MetaLeads = () => {
                         const isLeadCreatedTime = row?.meta?.created_time;
 
                         return (
-                          <td key={h.key} className="px-3 py-2">
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -579,12 +581,16 @@ const MetaLeads = () => {
 
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
-                        return <td className="min-w-150 w-full">{isNotes ? noteMessage : "-"}</td>;
+                        return (
+                          <td className="min-w-150 w-full">
+                            {isNotes ? noteMessage : "-"}
+                          </td>
+                        );
                       }
                       if (h.key === "campaign_name") {
                         const isMeta = row?.meta;
                         return (
-                          <td className="p-8 whitespace-nowrap">
+                          <td className="whitespace-nowrap">
                             {isMeta ? isMeta?.campaign_name : "-"}
                           </td>
                         );
@@ -658,7 +664,10 @@ const MetaLeads = () => {
 
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center">
+                  <td
+                    colSpan={tableHeaders.length + 1}
+                    className="py-6 text-center"
+                  >
                     No Leads Found
                   </td>
                 </tr>

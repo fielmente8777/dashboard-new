@@ -360,7 +360,7 @@ const WebformLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="border rounded-lg overflow-x-auto">
+        <div className="border rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99!">
               <tr>
@@ -389,7 +389,7 @@ const WebformLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-white  even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
                     <td className="px-3 py-2.5">
                       {i + limit * (page - 1) + 1}
@@ -402,7 +402,10 @@ const WebformLeads = () => {
                         const isLeadCreatedTime = row?.meta?.created_time;
 
                         return (
-                          <td key={h.key} className="px-3 py-2">
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -543,7 +546,10 @@ const WebformLeads = () => {
 
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center">
+                  <td
+                    colSpan={tableHeaders.length + 1}
+                    className="py-6 text-center"
+                  >
                     No Leads Found
                   </td>
                 </tr>

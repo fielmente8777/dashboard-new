@@ -340,9 +340,9 @@ const AllVisitors = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="border rounded-lg overflow-x-auto">
+        <div className="border rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
-            <thead className="bg-primary sticky top-0 z-99!">
+            <thead className="bg-primary  sticky top-0 z-99!">
               <tr>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
@@ -382,7 +382,10 @@ const AllVisitors = () => {
                         const isLeadCreatedTime = row?.meta?.created_time;
                         console.log(isLeadCreatedTime);
                         return (
-                          <td key={h.key} className="px-3 py-2">
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -525,7 +528,10 @@ const AllVisitors = () => {
 
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center">
+                  <td
+                    colSpan={tableHeaders?.length + 1}
+                    className="py-6 text-center"
+                  >
                     No Leads Found
                   </td>
                 </tr>

@@ -19,9 +19,8 @@ export default function DashboardLayout({ children }) {
           }}
           className={`md:block hidden ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden`}
+          } overflow-hidden sm:overflow-hidden`}
         >
-          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
             <Sidebar
               sideBarWidth={sideBarWidth}
@@ -31,7 +30,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        <div
+        {/* <div
           style={{
             width: isOpen ? `100%` : "0px",
           }}
@@ -39,7 +38,6 @@ export default function DashboardLayout({ children }) {
             isSmooth ? "transition-all duration-300" : ""
           } overflow-hidden bg-white sm:overflow-hidden w-full`}
         >
-          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
             <Sidebar
               sideBarWidth={sideBarWidth}
@@ -48,7 +46,7 @@ export default function DashboardLayout({ children }) {
               isMobile={true}
             />
           </div>
-        </div>
+        </div> */}
 
         <div className="flex-1 flex  flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
           <Navbar />
