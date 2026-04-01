@@ -111,11 +111,11 @@ export const SidebarData = [
         link: `channel/wa/chat`,
         icon: <WhatsappIcon />,
       },
-      // {
-      //   name: "Instagram",
-      //   link: `channel/ig/chat`,
-      //   icon: <FaInstagram size={18} />,
-      // },
+      {
+        name: "Instagram",
+        link: `channel/ig/chat`,
+        icon: <FaInstagram size={18} />,
+      },
       // {
       //   name: "Facebook",
       //   link: `channel/fb/chat`,
