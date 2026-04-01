@@ -373,7 +373,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   // console.log(currentLocation);
   return (
     <div
-      className="p-3 md:border-r w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
+      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
       style={{
         left: isMobile ? (isOpen ? "0px" : "0%") : null,
       }}
@@ -388,9 +388,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 className="h-full w-full object-contain"
               />
             </div> */}
-              <h1 className="font-bold text-xl uppercase text-white tracking-wider">Eazotel</h1>
-
-
+            <h1 className="font-bold text-xl uppercase text-white tracking-wider">
+              Eazotel
+            </h1>
           </div>
         )}
 
@@ -834,10 +834,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               : "text-[#c2ccd6]"
                           } `}
                         >
-                          <Link
-                            to={item.link}
-                            className={`flex gap-1`}
-                          >
+                          <Link to={item.link} className={`flex gap-1`}>
                             {item?.icon}
                           </Link>
 
@@ -904,7 +901,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       </div>
 
       <div
-        className="w-0.5 h-full absolute right-0 top-0 bg-white cursor-e-resize"
+        className=" absolute right-0 top-0 bg-transparent cursor-e-resize"
         onMouseDown={handleResize}
       />
 

@@ -283,8 +283,8 @@ const AllLeads = () => {
   // }, []);
 
   return (
-    <div className="bg-white p-1 md:p-2 space-y-2 md:space-y-2 h-[90vh] flex flex-col">
-      <div className="">
+    <div className="bg-white p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+      <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">All Leads</h2>
 
@@ -300,11 +300,11 @@ const AllLeads = () => {
           )}
         </div>
 
-        <div className="bg-white px-">
+        <div className="bg-white">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-gray-400" size={18} />
                 <input
                   type="text"
@@ -366,10 +366,10 @@ const AllLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex border rounded-lg overflow-auto">
+        <div className="flex border rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
-              <tr>
+              <tr className="">
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
                   <th
@@ -395,10 +395,10 @@ const AllLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
                     <td className="px-3 py-2.5">
-                      {i + limit * (page - 1) + 1}
+                      {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
 
                     {tableHeaders.map((h) => {
@@ -466,7 +466,11 @@ const AllLeads = () => {
 
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
-                        return <td className="min-w-150 w-full">{isNotes ? noteMessage : "-"}</td>;
+                        return (
+                          <td className="max-w-150 w-full">
+                            {isNotes ? noteMessage : "-"}
+                          </td>
+                        );
                       }
 
                       if (h.key === "turnAwayCode") {
@@ -524,7 +528,7 @@ const AllLeads = () => {
                       if (h.key === "campaign_name") {
                         const isMeta = row?.meta;
                         return (
-                          <td className="p-8 whitespace-nowrap">
+                          <td className=" whitespace-nowrap">
                             {isMeta ? isMeta?.campaign_name : "-"}
                           </td>
                         );
@@ -572,7 +576,10 @@ const AllLeads = () => {
 
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center">
+                  <td
+                    colSpan={tableHeaders?.length + 1}
+                    className="py-6 text-center"
+                  >
                     No Leads Found
                   </td>
                 </tr>

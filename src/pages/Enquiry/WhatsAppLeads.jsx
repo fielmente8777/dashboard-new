@@ -292,7 +292,7 @@ const WhatsAppLeads = () => {
 
   return (
     <div className="bg-white md:p-2 md:space-y-2 h-[90vh] flex flex-col">
-      <div className="">
+      <div className="space-y-2">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Whatsapp Leads</h2>
 
@@ -368,7 +368,7 @@ const WhatsAppLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="border rounded-lg overflow-x-auto">
+        <div className="border rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
@@ -397,10 +397,10 @@ const WhatsAppLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
                     <td className="px-3 py-2.5">
-                      {i + limit * (page - 1) + 1}
+                      {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
 
                     {tableHeaders.map((h) => {
@@ -410,7 +410,10 @@ const WhatsAppLeads = () => {
                         const isLeadCreatedTime = row?.meta?.created_time;
 
                         return (
-                          <td key={h.key} className="px-3 py-2 whitespace-nowrap">
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -485,7 +488,11 @@ const WhatsAppLeads = () => {
 
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
-                        return <td className="min-w-150 w-full">{isNotes ? noteMessage : "-"}</td>;
+                        return (
+                          <td className="min-w-150 w-full">
+                            {isNotes ? noteMessage : "-"}
+                          </td>
+                        );
                       }
                       if (h.key === "assignee") {
                         return (
@@ -551,7 +558,10 @@ const WhatsAppLeads = () => {
 
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center">
+                  <td
+                    colSpan={tableHeaders.length + 1}
+                    className="py-6 text-center"
+                  >
                     No Leads Found
                   </td>
                 </tr>
