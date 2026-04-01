@@ -259,18 +259,18 @@ export default function FlowBuilder() {
   console.log(nodes);
 
   return (
-    <div className="">
-      <div className="flex justify-end p-2 z-50">
+    <div className="bg-white relative w-full">
+      <div className="flex justify-end absolute right-2 top-2 px-2 z-50">
         <button
           onClick={() => handlePublish()}
-          className="bg-slate-800 px-4 py-1 text-white flex items-center gap-1 rounded-sm"
+          className="bg-primary px-4 py-1 text-white flex items-center gap-1 rounded-sm"
         >
           Publish {loading && <Loader color="#fefefe" />}
         </button>
       </div>
 
       <div className="relative">
-        <div className="flex h-140">
+        <div className="flex h-[82vh]">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
           <div className="flex-1 bg-gray-200">

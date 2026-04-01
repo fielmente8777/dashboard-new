@@ -638,7 +638,7 @@ const MetaLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td>
+                          <td className="whitespace-nowrap">
                             {userName}{" "}
                             {isToday && (
                               <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">

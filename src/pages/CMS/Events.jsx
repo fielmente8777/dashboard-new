@@ -340,7 +340,7 @@ const Events = () => {
         <button
           disabled={loadingAddEvent}
           type="submit"
-          className="bg-[#0a3a75] disabled:opacity-75 text-white px-4 py-2 rounded-md flex items-center gap-4 justify-center"
+          className="bg-primary disabled:opacity-75 text-white px-4 py-2 rounded-md flex items-center gap-4 justify-center"
         >
           Add Event {loadingAddEvent && <Loader size={18} color="#fff" />}
         </button>

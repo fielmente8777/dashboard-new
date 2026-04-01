@@ -374,7 +374,7 @@ const AllLeads = () => {
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className="px-3 py-3 text-left text-white min-w-40"
+                    className={`px-3 py-3 text-left text-white`}
                   >
                     {h.label}
                   </th>
@@ -409,7 +409,7 @@ const AllLeads = () => {
                         return (
                           <td
                             key={h.key}
-                            className="px-3 py-2 whitespace-nowrap"
+                            className="px-3 py-2 whitespace-nowrap capitalize"
                           >
                             {formatDateTime(
                               isLeadCreatedTime
@@ -467,7 +467,7 @@ const AllLeads = () => {
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
                         return (
-                          <td className="max-w-150 w-full">
+                          <td className="min-w-150 w-full">
                             {isNotes ? noteMessage : "-"}
                           </td>
                         );
@@ -514,7 +514,7 @@ const AllLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td>
+                          <td className=" whitespace-nowrap">
                             {userName}{" "}
                             {isToday && (
                               <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">

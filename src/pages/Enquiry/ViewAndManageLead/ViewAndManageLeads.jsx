@@ -197,7 +197,7 @@ const ViewAndManageLeads = () => {
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="hidden md:flex  gap-2 ">
             {lead?.Contact && (
-              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-[#fd5c01]/90 bg-white font-medium">
+              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white font-medium">
                 <label htmlFor="" className="">
                   Follow Up
                 </label>

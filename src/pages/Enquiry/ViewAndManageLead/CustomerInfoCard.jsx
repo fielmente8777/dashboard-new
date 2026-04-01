@@ -160,21 +160,21 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             <div className="flex items-center gap-4">
               <div
                 onClick={onClick}
-                className="text-primary rounded bg-orange-600/10 p-2"
+                className="text-primary rounded bg-primary/10 p-2"
               >
                 <FaWhatsapp />
               </div>
               {integrationStatus.exotel ? (
                 <div
                   onClick={() => handleCallPopup(lead.Contact)}
-                  className="rounded text-primary bg-orange-600/10 p-2"
+                  className="rounded text-primary bg-primary/10 p-2"
                 >
                   <FaPhone />
                 </div>
               ) : (
                 <Link
                   to={`tel:${lead.Contact}`}
-                  className="rounded text-primary bg-orange-600/10 p-2"
+                  className="rounded text-primary bg-primary/10 p-2"
                 >
                   <FaPhone />
                 </Link>

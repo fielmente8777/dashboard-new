@@ -336,7 +336,7 @@ const Analytics = () => {
           />
           <button
             onClick={addInclusion}
-            className="px-3 py-2 w-fit bg-blue-500 text-white rounded-md"
+            className="px-3 py-2 w-fit bg-primary text-white rounded-md"
           >
             Add
           </button>

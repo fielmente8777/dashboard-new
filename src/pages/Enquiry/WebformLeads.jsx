@@ -452,7 +452,7 @@ const WebformLeads = () => {
 
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
-                        return <td>{isNotes ? noteMessage : "-"}</td>;
+                        return <td className="min-w-150 w-full">{isNotes ? noteMessage : "-"}</td>;
                       }
                       if (h.key === "turnAwayCode") {
                         const turnAwayCode = row[h.key];

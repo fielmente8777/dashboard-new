@@ -248,7 +248,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             <h2 className="text-xl text-primary font-bold">Create New User</h2>
             <button
               onClick={onClose}
-              className="text-2xl font-bold hover:bg-transparent size-10 rounded-full border border-slate-900 bg-blue-900 flex items-center justify-center hover:rotate-180 duration-300 hover:text-primary text-white"
+              className="text-2xl font-bold hover:bg-transparent size-10 rounded-full border border-slate-900 bg-primary flex items-center justify-center hover:rotate-180 duration-300 hover:text-primary text-white"
             >
               <span className="">
                 <IoMdExit size={22} />

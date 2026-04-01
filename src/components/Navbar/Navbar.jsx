@@ -111,7 +111,7 @@ const Navbar = () => {
   };
   return (
     <div className="left-0 top-0">
-      <div className="py-2 z-10 bg-blue-100  sm:bg-[#2e3b61] flex cardShadow px-4 items-center justify-between top-0 w-full ">
+      <div className="py-2 z-10 bg-blue-100  sm:bg-primary flex cardShadow px-4 items-center justify-between top-0 w-full ">
         <div
           onClick={() => dispatch(toggleSideBar())}
           className={`size-8 bg-blue-100  rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
