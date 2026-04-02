@@ -6,7 +6,7 @@ import { MdAddBusiness } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import Logo from "../../assets/companylogo.b.png";
+import Logo from "../../../public/logo.png";
 import DataContext from "../../context/DataContext";
 import { BASE_PATH, BASE_URL } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
@@ -381,16 +381,16 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       <div className="flex justify-between items-center mb-4 ">
         {isOpen && (
           <div>
-            {/* <div className="w-28 h-10  ">
+            <div className="h-7 -ml-2 ">
               <img
                 src={Logo}
                 alt="logo"
                 className="h-full w-full object-contain"
               />
-            </div> */}
-            <h1 className="font-bold text-xl uppercase text-white tracking-wider">
+            </div>
+            {/* <h1 className="font-bold text-xl uppercase text-white tracking-wider">
               Eazotel
-            </h1>
+            </h1> */}
           </div>
         )}
 

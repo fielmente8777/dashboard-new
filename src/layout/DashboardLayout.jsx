@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </div>
 
-        {/* <div
+        <div
           style={{
             width: isOpen ? `100%` : "0px",
           }}
@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }) {
               isMobile={true}
             />
           </div>
-        </div> */}
+        </div>
 
         <div className="flex-1 flex  flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
           <Navbar />
