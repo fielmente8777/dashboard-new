@@ -31,6 +31,8 @@ import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import TurnAwayModal from "../../components/Modal/TurnAwayModal";
+import { FaTrashAlt } from "react-icons/fa";
+import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -55,6 +57,7 @@ const AllLeads = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const [allUsers, setAllUsers] = useState([]);
+  const [rowSelected, setRowSelected] = useState([]);
 
   const {
     page,
@@ -232,10 +235,49 @@ const AllLeads = () => {
     navigate(navigatePath);
   };
 
+  const handleDeleteAll = () => {
+    // alert("We are working on it");
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchLeads(false);
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+          setRowSelected([]);
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
+      }
+    });
+  };
+
   const fetchUsersData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
     setAllUsers(usersData);
+  };
+
+  const handleRowSelect = (id) => {
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
   };
 
   useEffect(() => {
@@ -366,16 +408,22 @@ const AllLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
+        {rowSelected?.length > 0 && (
+          <button
+            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            onClick={handleDeleteAll}
+          >
+            Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+          </button>
+        )}
         <div className="flex border rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
               <tr className="">
+                <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
-                  <th
-                    key={h.key}
-                    className={`px-3 py-3 text-left text-white`}
-                  >
+                  <th key={h.key} className={`px-3 py-3 text-left text-white`}>
                     {h.label}
                   </th>
                 ))}
@@ -397,6 +445,20 @@ const AllLeads = () => {
                     }}
                     className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rowSelected.includes(row?._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowSelect(row?._id);
+                        }}
+                      />
+                    </td>
+
                     <td className="px-3 py-2.5">
                       {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>

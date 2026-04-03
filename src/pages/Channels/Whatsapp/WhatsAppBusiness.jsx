@@ -36,6 +36,7 @@ import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import { useToast } from "../../../context/ToastContext";
 import TemplateLibrary from "./Templates/TemplateLibrary";
 import { ReactFlowProvider } from "reactflow";
+import AutoMessageCard from "./components/AutoMessageCard";
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
   {
@@ -124,6 +125,10 @@ const WhatsAppBusiness = () => {
     fetchFlows();
   }, []);
 
+  if (!accountDetails) {
+    return <WhatsappBusinessSkelton />;
+  }
+
   if (!integrationStatus?.metaWhatsapp) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -169,10 +174,6 @@ const WhatsAppBusiness = () => {
         </div>
       </div>
     );
-  }
-
-  if (!accountDetails) {
-    return <WhatsappBusinessSkelton />;
   }
 
   return (
@@ -562,297 +563,478 @@ const WabaDetailsCard = ({ waba, business }) => {
   );
 };
 
-const ChannelToggle = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-sm text-gray-700">{label}</span>
+// const AutoMessageCard = ({
+//   autoMessage = {},
+//   templates = [],
+//   flows,
+//   phoneNumberId,
+//   notification,
+// }) => {
+//   const { showToast } = useToast();
 
-    <button
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        value ? "bg-green-500" : "bg-gray-300"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-          value ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-  </div>
-);
+//   const modules = [
+//     { key: "metaLead", label: "Meta Leads" },
+//     { key: "googleLead", label: "Google Leads" },
+//     { key: "whatsapp", label: "WhatsApp" },
+//   ];
 
-const AutoMessageCard = ({
-  autoMessage,
-  templates,
-  flows,
-  phoneNumberId,
-  notification,
-}) => {
-  console.log(autoMessage);
-  console.log(templates);
-  const textareaRef = useRef(null);
+//   const defaultConfig = {
+//     enabled: false,
+//     type: "template",
+//     templateName: "",
+//     message: "",
+//     flowId: "",
+//   };
 
-  const { showToast } = useToast();
+//   const [configs, setConfigs] = useState(() =>
+//     Object.fromEntries(
+//       modules.map(({ key }) => [key, autoMessage?.[key] || defaultConfig]),
+//     ),
+//   );
 
-  const [channels, setChannels] = useState({
-    metaLead: autoMessage?.metaLead ?? false,
-    googleLead: autoMessage?.googleLead ?? false,
-    whatsapp: autoMessage?.whatsapp ?? false,
-    whatsappNotification: notification?.enable ?? false,
-  });
+//   const [whatsappNotification, setWhatsappNotification] = useState(
+//     notification?.enable ?? false,
+//   );
 
-  const [type, setType] = useState(autoMessage?.type || "template");
+//   const [loading, setLoading] = useState(false);
 
-  const [templateName, setTemplateName] = useState(
-    autoMessage?.templateName || "",
-  );
-  const [message, setMessage] = useState(autoMessage?.message || "");
-  const [flowId, setFlowId] = useState(autoMessage?.flowId || "");
-  const [loading, setLoading] = useState(false);
+//   useEffect(() => {
+//     setConfigs(
+//       Object.fromEntries(
+//         modules.map(({ key }) => [key, autoMessage?.[key] || defaultConfig]),
+//       ),
+//     );
+//     setWhatsappNotification(notification?.enable ?? false);
+//   }, [autoMessage, notification]);
 
-  useEffect(() => {
-    setChannels({
-      metaLead: autoMessage?.metaLead ?? false,
-      googleLead: autoMessage?.googleLead ?? false,
-      whatsapp: autoMessage?.whatsapp ?? false,
-      whatsappNotification: notification?.enable ?? false,
-    });
+//   const update = (module, key, value) =>
+//     setConfigs((p) => ({
+//       ...p,
+//       [module]: { ...p[module], [key]: value },
+//     }));
 
-    setType(autoMessage?.type || "template");
-    setTemplateName(autoMessage?.templateName || "");
-    setMessage(autoMessage?.message || "");
-  }, [autoMessage]);
+//   const getTemplateMeta = (tpl) => {
+//     if (!tpl) return null;
 
-  useEffect(() => {
-    if (!textareaRef.current) return;
+//     const get = (type) => tpl.components?.find((c) => c.type === type);
 
-    const el = textareaRef.current;
-    el.style.height = "auto";
+//     const body = get("BODY");
+//     const header = get("HEADER");
+//     const buttons = get("BUTTONS");
 
-    const lineHeight = 24;
-    const maxRows = 8;
-    el.style.height = Math.min(el.scrollHeight, lineHeight * maxRows) + "px";
-  }, [message]);
+//     return {
+//       name: tpl.name,
+//       language: tpl.language || "en",
+//       bodyText: body?.text || "",
+//       variables: (body?.text?.match(/{{\d+}}/g) || []).length,
+//       headerType: header?.format || null,
+//       buttons: buttons?.buttons || [],
+//     };
+//   };
 
-  const isAnyChannelEnabled =
-    channels.metaLeads || channels.googleLeads || channels.whatsapp;
+//   const handleSave = async () => {
+//     try {
+//       setLoading(true);
 
-  const selectedTemplateObj = templates?.find(
-    (tpl) => tpl.name === templateName,
-  );
+//       const formatted = Object.fromEntries(
+//         Object.entries(configs).map(([key, cfg]) => {
+//           if (!cfg.enabled) return [key, { enabled: false }];
 
-  const getComponent = (type) =>
-    selectedTemplateObj?.components?.find((c) => c.type === type);
+//           const tpl = templates.find((t) => t.name === cfg.templateName);
 
-  const header = getComponent("HEADER");
-  const body = getComponent("BODY");
+//           return [
+//             key,
+//             {
+//               enabled: true,
+//               type: cfg.type,
+//               templateName: cfg.templateName || null,
+//               message: cfg.type === "text" ? cfg.message : null,
+//               templateMeta:
+//                 cfg.type === "template" ? getTemplateMeta(tpl) : null,
+//               flowId: cfg.type === "flow" ? cfg.flowId : null,
+//             },
+//           ];
+//         }),
+//       );
 
-  const handleSave = async () => {
-    try {
-      setLoading(true);
+//       await updateAutoMessageConfig({
+//         phoneNumberId,
+//         autoMessage: formatted,
+//         notification: { enable: whatsappNotification },
+//       });
 
-      let templatePayload = null;
+//       showToast({ message: "Saved successfully", type: "success" });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-      if (type === "template" && selectedTemplateObj) {
-        const buttons = getComponent("BUTTONS");
+//   const renderModule = ({ key, label }) => {
+//     const cfg = configs[key];
+//     const tpl = templates.find((t) => t.name === cfg.templateName);
 
-        templatePayload = {
-          name: selectedTemplateObj.name,
-          language: selectedTemplateObj.language || "en",
-          bodyText: body?.text || "",
-          variables: (body?.text?.match(/{{\d+}}/g) || []).length,
-          headerType: header?.format || null,
-          buttons: buttons?.buttons || [],
-        };
-      }
+//     return (
+//       <div key={key} className="border rounded-lg p-4 bg-gray-50 space-y-3">
+//         <ChannelToggle
+//           label={label}
+//           value={cfg.enabled}
+//           onChange={() => update(key, "enabled", !cfg.enabled)}
+//         />
 
-      const payload = {
-        phoneNumberId,
-        channels, // 👈 metaLeads, googleLeads, whatsapp
-        type,
-        message: type === "text" ? message : null,
-        template: templatePayload,
-        ...(flowId && { flowId }),
-      };
+//         {cfg.enabled && (
+//           <>
+//             <select
+//               value={cfg.type}
+//               onChange={(e) => update(key, "type", e.target.value)}
+//               className="w-full border rounded-md px-3 py-2 text-sm"
+//             >
+//               <option value="template">Template</option>
+//               <option value="text">Text</option>
+//               <option value="flow">Flow</option>
+//             </select>
 
-      const response = await updateAutoMessageConfig(payload);
+//             {cfg.type === "template" && (
+//               <select
+//                 value={cfg.templateName}
+//                 onChange={(e) => update(key, "templateName", e.target.value)}
+//                 className="w-full border rounded-md px-3 py-2 text-sm"
+//               >
+//                 <option value="">Select template</option>
+//                 {templates.map((t) => (
+//                   <option key={t.name}>{t.name}</option>
+//                 ))}
+//               </select>
+//             )}
 
-      if (response?.success && response.responseStatusCode === 200) {
-        showToast({
-          message: "Auto message updated successfully",
-          type: "success",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+//             {cfg.type === "text" && (
+//               <textarea
+//                 value={cfg.message}
+//                 onChange={(e) => update(key, "message", e.target.value)}
+//                 className="w-full border rounded-md px-3 py-2 text-sm"
+//               />
+//             )}
 
-  const hasChanges =
-    JSON.stringify(channels) !==
-      JSON.stringify({
-        metaLeads: autoMessage?.metaLeads ?? false,
-        googleLeads: autoMessage?.googleLeads ?? false,
-        whatsapp: autoMessage?.whatsapp ?? false,
-        whatsappNotification: autoMessage?.whatsappNotification ?? false,
-      }) ||
-    type !== autoMessage?.type ||
-    templateName !== autoMessage?.templateName ||
-    message !== autoMessage?.message;
+//             {cfg.type === "flow" && (
+//               <input
+//                 value={cfg.flowId}
+//                 onChange={(e) => update(key, "flowId", e.target.value)}
+//                 className="w-full border rounded-md px-3 py-2 text-sm"
+//                 placeholder="Flow ID"
+//               />
+//             )}
 
-  return (
-    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
-      {/* Header */}
-      <h3 className="text-lg font-medium text-gray-600">
-        Auto Messaging Channels
-      </h3>
+//             {cfg.type === "template" && tpl && (
+//               <TemplatePreview components={tpl.components || []} />
+//             )}
+//           </>
+//         )}
+//       </div>
+//     );
+//   };
 
-      {/* Toggles */}
-      <div className="space-y-3">
-        <ChannelToggle
-          label="WhatsApp Notification"
-          value={channels.whatsappNotification}
-          onChange={() =>
-            setChannels((p) => ({
-              ...p,
-              whatsappNotification: !p.whatsappNotification,
-            }))
-          }
-        />
+//   const hasChanges =
+//     JSON.stringify(configs) !== JSON.stringify(autoMessage) ||
+//     whatsappNotification !== notification?.enable;
 
-        <ChannelToggle
-          label="Meta Leads"
-          value={channels.metaLead}
-          onChange={() => setChannels((p) => ({ ...p, metaLead: !p.metaLead }))}
-        />
+//   return (
+//     <div className="border bg-white p-5 space-y-5">
+//       <h3 className="text-lg font-medium text-gray-600">
+//         Auto Messaging Configuration
+//       </h3>
 
-        <ChannelToggle
-          label="Google Leads"
-          value={channels.googleLead}
-          onChange={() =>
-            setChannels((p) => ({ ...p, googleLead: !p.googleLead }))
-          }
-        />
+//       <ChannelToggle
+//         label="WhatsApp Notification"
+//         value={whatsappNotification}
+//         onChange={() => setWhatsappNotification((p) => !p)}
+//       />
 
-        <ChannelToggle
-          label="WhatsApp"
-          value={channels.whatsapp}
-          onChange={() => setChannels((p) => ({ ...p, whatsapp: !p.whatsapp }))}
-        />
-      </div>
+//       <div className="space-y-4">{modules.map(renderModule)}</div>
 
-      {!isAnyChannelEnabled && (
-        <p className="text-sm text-gray-500">
-          Auto reply is currently disabled for all channels.
-        </p>
-      )}
+//       {hasChanges && (
+//         <div className="flex justify-end">
+//           <button
+//             onClick={handleSave}
+//             disabled={loading}
+//             className="bg-green-500 text-white px-5 py-2 rounded-md text-sm"
+//           >
+//             {loading ? "Saving..." : "Save"}
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
-      {isAnyChannelEnabled && (
-        <>
-          {/* Type */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Reply Type
-            </label>
+// const AutoMessageCard = ({
+//   autoMessage,
+//   templates,
+//   flows,
+//   phoneNumberId,
+//   notification,
+// }) => {
+//   const textareaRef = useRef(null);
 
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-            >
-              <option value="template">Template Message</option>
-              <option value="text">Custom Text</option>
-              <option value="flow">Flows</option>
-            </select>
-          </div>
+//   const { showToast } = useToast();
 
-          {/* Template Select */}
-          {type === "template" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Select Template
-              </label>
+//   const [channels, setChannels] = useState({
+//     metaLead: autoMessage?.metaLead ?? false,
+//     googleLead: autoMessage?.googleLead ?? false,
+//     whatsapp: autoMessage?.whatsapp ?? false,
+//     whatsappNotification: notification?.enable ?? false,
+//   });
 
-              <select
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-              >
-                <option value="">Select template</option>
-                {templates?.map((tpl) => (
-                  <option key={tpl.name} value={tpl.name}>
-                    {tpl.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+//   const [type, setType] = useState(autoMessage?.type || "template");
 
-          {/* Text Message */}
-          {type === "text" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Message
-              </label>
+//   const [templateName, setTemplateName] = useState(
+//     autoMessage?.templateName || "",
+//   );
+//   const [message, setMessage] = useState(autoMessage?.message || "");
+//   const [flowId, setFlowId] = useState(autoMessage?.flowId || "");
+//   const [loading, setLoading] = useState(false);
 
-              <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-                placeholder="Enter auto reply message..."
-              />
-            </div>
-          )}
+//   useEffect(() => {
+//     setChannels({
+//       metaLead: autoMessage?.metaLead ?? false,
+//       googleLead: autoMessage?.googleLead ?? false,
+//       whatsapp: autoMessage?.whatsapp ?? false,
+//       whatsappNotification: notification?.enable ?? false,
+//     });
 
-          {/* Flows */}
-          {type === "flow" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Flows</label>
+//     setType(autoMessage?.type || "template");
+//     setTemplateName(autoMessage?.templateName || "");
+//     setMessage(autoMessage?.message || "");
+//   }, [autoMessage]);
 
-              <div className="flex items-center gap-1.5">
-                <label htmlFor="">{flows?._id}</label>
-                <input
-                  type="radio"
-                  value={flows?._id}
-                  onChange={(e) => setFlowId(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
+//   useEffect(() => {
+//     if (!textareaRef.current) return;
 
-          {/* Template Preview */}
-          {type === "template" && selectedTemplateObj && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                WhatsApp Preview
-              </p>
+//     const el = textareaRef.current;
+//     el.style.height = "auto";
 
-              <TemplatePreview
-                components={selectedTemplateObj.components || []}
-              />
-            </div>
-          )}
-        </>
-      )}
+//     const lineHeight = 24;
+//     const maxRows = 8;
+//     el.style.height = Math.min(el.scrollHeight, lineHeight * maxRows) + "px";
+//   }, [message]);
 
-      {/* Save */}
-      {hasChanges && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Save Configuration"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+//   const isAnyChannelEnabled =
+//     channels.metaLeads || channels.googleLeads || channels.whatsapp;
+
+//   const selectedTemplateObj = templates?.find(
+//     (tpl) => tpl.name === templateName,
+//   );
+
+//   const getComponent = (type) =>
+//     selectedTemplateObj?.components?.find((c) => c.type === type);
+
+//   const header = getComponent("HEADER");
+//   const body = getComponent("BODY");
+
+//   const handleSave = async () => {
+//     try {
+//       setLoading(true);
+
+//       let templatePayload = null;
+
+//       if (type === "template" && selectedTemplateObj) {
+//         const buttons = getComponent("BUTTONS");
+
+//         templatePayload = {
+//           name: selectedTemplateObj.name,
+//           language: selectedTemplateObj.language || "en",
+//           bodyText: body?.text || "",
+//           variables: (body?.text?.match(/{{\d+}}/g) || []).length,
+//           headerType: header?.format || null,
+//           buttons: buttons?.buttons || [],
+//         };
+//       }
+
+//       const payload = {
+//         phoneNumberId,
+//         channels, // 👈 metaLeads, googleLeads, whatsapp
+//         type,
+//         message: type === "text" ? message : null,
+//         template: templatePayload,
+//         ...(flowId && { flowId }),
+//       };
+
+//       const response = await updateAutoMessageConfig(payload);
+
+//       if (response?.success && response.responseStatusCode === 200) {
+//         showToast({
+//           message: "Auto message updated successfully",
+//           type: "success",
+//         });
+//       }
+//     } catch (err) {
+//       console.error(err);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const hasChanges =
+//     JSON.stringify(channels) !==
+//       JSON.stringify({
+//         metaLeads: autoMessage?.metaLeads ?? false,
+//         googleLeads: autoMessage?.googleLeads ?? false,
+//         whatsapp: autoMessage?.whatsapp ?? false,
+//         whatsappNotification: autoMessage?.whatsappNotification ?? false,
+//       }) ||
+//     type !== autoMessage?.type ||
+//     templateName !== autoMessage?.templateName ||
+//     message !== autoMessage?.message;
+
+//   return (
+//     <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
+//       {/* Header */}
+//       <h3 className="text-lg font-medium text-gray-600">
+//         Auto Messaging Channels
+//       </h3>
+
+//       {/* Toggles */}
+//       <div className="space-y-3">
+//         <ChannelToggle
+//           label="WhatsApp Notification"
+//           value={channels.whatsappNotification}
+//           onChange={() =>
+//             setChannels((p) => ({
+//               ...p,
+//               whatsappNotification: !p.whatsappNotification,
+//             }))
+//           }
+//         />
+
+//         <ChannelToggle
+//           label="Meta Leads"
+//           value={channels.metaLead}
+//           onChange={() => setChannels((p) => ({ ...p, metaLead: !p.metaLead }))}
+//         />
+
+//         <ChannelToggle
+//           label="Google Leads"
+//           value={channels.googleLead}
+//           onChange={() =>
+//             setChannels((p) => ({ ...p, googleLead: !p.googleLead }))
+//           }
+//         />
+
+//         <ChannelToggle
+//           label="WhatsApp"
+//           value={channels.whatsapp}
+//           onChange={() => setChannels((p) => ({ ...p, whatsapp: !p.whatsapp }))}
+//         />
+//       </div>
+
+//       {!isAnyChannelEnabled && (
+//         <p className="text-sm text-gray-500">
+//           Auto reply is currently disabled for all channels.
+//         </p>
+//       )}
+
+//       {isAnyChannelEnabled && (
+//         <>
+//           {/* Type */}
+//           <div>
+//             <label className="text-sm font-medium text-gray-700">
+//               Reply Type
+//             </label>
+
+//             <select
+//               value={type}
+//               onChange={(e) => setType(e.target.value)}
+//               className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+//             >
+//               <option value="template">Template Message</option>
+//               <option value="text">Custom Text</option>
+//               <option value="flow">Flows</option>
+//             </select>
+//           </div>
+
+//           {/* Template Select */}
+//           {type === "template" && (
+//             <div>
+//               <label className="text-sm font-medium text-gray-700">
+//                 Select Template
+//               </label>
+
+//               <select
+//                 value={templateName}
+//                 onChange={(e) => setTemplateName(e.target.value)}
+//                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+//               >
+//                 <option value="">Select template</option>
+//                 {templates?.map((tpl) => (
+//                   <option key={tpl.name} value={tpl.name}>
+//                     {tpl.name}
+//                   </option>
+//                 ))}
+//               </select>
+//             </div>
+//           )}
+
+//           {/* Text Message */}
+//           {type === "text" && (
+//             <div>
+//               <label className="text-sm font-medium text-gray-700">
+//                 Message
+//               </label>
+
+//               <textarea
+//                 ref={textareaRef}
+//                 value={message}
+//                 onChange={(e) => setMessage(e.target.value)}
+//                 className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+//                 placeholder="Enter auto reply message..."
+//               />
+//             </div>
+//           )}
+
+//           {/* Flows */}
+//           {type === "flow" && (
+//             <div>
+//               <label className="text-sm font-medium text-gray-700">Flows</label>
+
+//               <div className="flex items-center gap-1.5">
+//                 <label htmlFor="">{flows?._id}</label>
+//                 <input
+//                   type="radio"
+//                   value={flows?._id}
+//                   onChange={(e) => setFlowId(e.target.value)}
+//                 />
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Template Preview */}
+//           {type === "template" && selectedTemplateObj && (
+//             <div>
+//               <p className="text-sm font-medium text-gray-700 mb-2">
+//                 WhatsApp Preview
+//               </p>
+
+//               <TemplatePreview
+//                 components={selectedTemplateObj.components || []}
+//               />
+//             </div>
+//           )}
+//         </>
+//       )}
+
+//       {/* Save */}
+//       {hasChanges && (
+//         <div className="flex justify-end">
+//           <button
+//             onClick={handleSave}
+//             disabled={loading}
+//             className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
+//           >
+//             {loading ? "Saving..." : "Save Configuration"}
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
 
 const CreditInfoCard = () => {
   const [open, setOpen] = useState(false);
