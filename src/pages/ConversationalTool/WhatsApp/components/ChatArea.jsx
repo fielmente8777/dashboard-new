@@ -806,17 +806,15 @@ const ChatArea = () => {
                                     onClick={() => window.open(url, "_blank")}
                                     className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-white flex flex-col justify-center items-center"
                                   >
-                                    {isPDF ? (
-                                      <iframe
-                                        src={url}
-                                        className="w-full h-full pointer-events-none"
-                                        style={{ border: "none" }}
-                                      />
-                                    ) : (
-                                      <div className="flex flex-col items-center justify-center text-gray-600 px-2">
-                                        {getIcon()}
-                                      </div>
-                                    )}
+                                    {/* <iframe
+                                      src={url}
+                                      className="w-full h-full pointer-events-none"
+                                      style={{ border: "none" }}
+                                    /> */}
+
+                                    <div className="flex flex-col items-center justify-center text-gray-600 px-2">
+                                      {getIcon()}
+                                    </div>
 
                                     {/* Overlay */}
                                     <div className="absolute inset-0 bg-transparent" />

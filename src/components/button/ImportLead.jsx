@@ -12,7 +12,6 @@ export default function ImportLead({ open, setOpen }) {
   const [totalPages, setTotalPage] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
 
-
   const normalizeKey = (key) => key.toLowerCase().replace(/[^a-z]/g, "");
 
   const FIELD_MAP = {
@@ -116,8 +115,7 @@ export default function ImportLead({ open, setOpen }) {
     } catch (err) {
       console.error(err);
       // alert("Import failed");
-    }
-    finally{
+    } finally {
       setOpen(false);
       setCurrentPage(0);
       setTotalPage(0);
@@ -132,78 +130,90 @@ export default function ImportLead({ open, setOpen }) {
   console.log("Leads", leads);
   return (
     <div className="max-w-3xl mx-auto space-y-4 bg-gray">
-      <button className="text-sm font-medium bg-gray-200 p-2.5 rounded-sm ml-2" onClick={() => setOpen(!open)}>
+      <button
+        className="text-sm font-medium bg-gray-200 p-2.5 rounded-sm ml-2"
+        onClick={() => setOpen(!open)}
+      >
         Import Leads (CSV)
       </button>
 
-      {open&&<div onClick={(e) => {
-        if (e.currentTarget === e.target) {
-          e.stopPropagation(); setOpen(false)
-        }
-      }} className="absolute z-99999 top-0 left-0 w-full h-full bg-black/70 bg-opacity-50 flex justify-center items-start p-10">
-        <div className="p-6 bg-white rounded-2xl shadow-md w-full max-w-md mx-auto">
-          <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+      {open && (
+        <div
+          onClick={(e) => {
+            if (e.currentTarget === e.target) {
+              e.stopPropagation();
+              setOpen(false);
+            }
+          }}
+          className="absolute z-99999 top-0 left-0 w-full h-full bg-black/70 bg-opacity-50 flex justify-center items-start p-10"
+        >
+          <div className="p-6 bg-white rounded-2xl shadow-md w-full max-w-md mx-auto">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg
+                  className="w-8 h-8 mb-3 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7 16V4m0 0l-4 4m4-4l4 4m6 8v4m0 0l4-4m-4 4l-4-4"
+                  />
+                </svg>
 
-            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-              <svg
-                className="w-8 h-8 mb-3 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M7 16V4m0 0l-4 4m4-4l4 4m6 8v4m0 0l4-4m-4 4l-4-4"
-                />
-              </svg>
+                <p className="mb-1 text-sm text-gray-600">
+                  <span className="font-medium text-blue-600">
+                    Click to upload
+                  </span>{" "}
+                  or drag & drop
+                </p>
+                <p className="text-xs text-gray-400">CSV files only</p>
+              </div>
 
-              <p className="mb-1 text-sm text-gray-600">
-                <span className="font-medium text-blue-600">Click to upload</span> or drag & drop
-              </p>
-              <p className="text-xs text-gray-400">CSV files only</p>
-            </div>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
 
-            <input
-              type="file"
-              accept=".csv"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </label>
-
-          {fileName && (
-            <div className="mt-3 text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-between">
-              <span className="truncate">📄 {fileName}</span>
-            </div>
-          )}
-          <button className="bg-primary py-1.5 rounded-lg w-full mt-2 text-sm text-white font-medium" onClick={handleImport}>
+            {fileName && (
+              <div className="mt-3 text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-between">
+                <span className="truncate">📄 {fileName}</span>
+              </div>
+            )}
+            <button
+              className="bg-primary py-1.5 rounded-lg w-full mt-2 text-sm text-white font-medium"
+              onClick={handleImport}
+            >
               Proceed
-          </button>
+            </button>
 
-          <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
+              <div className="mt-4 flex justify-between text-sm text-gray-600">
+                <p>Uploading...</p>
+                <p>
+                  {currentPage} / {totalPages}
+                </p>
+              </div>
 
-          <div className="mt-4 flex justify-between text-sm text-gray-600">
-            <p>Uploading...</p>
-            <p>{currentPage} / {totalPages}</p>
+              {/* <p className={`${currentPage <= totalPages ? 'w-full bg-gray-300' : `w-[${(currentPage / totalPages) * 100}%] bg-green-600`} h-2 rounded-full `}/> */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-600 transition-all duration-500"
+                  style={{
+                    width: `${totalPages ? (currentPage / totalPages) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
           </div>
-
-            {/* <p className={`${currentPage <= totalPages ? 'w-full bg-gray-300' : `w-[${(currentPage / totalPages) * 100}%] bg-green-600`} h-2 rounded-full `}/> */}
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-    <div
-      className="h-full bg-green-600 transition-all duration-500"
-      style={{
-        width: `${totalPages ? (currentPage / totalPages) * 100 : 0}%`,
-      }}
-    />
-  </div>
-          </div>            
-          </div>
-     
-      </div>}
-
-       
+        </div>
+      )}
     </div>
   );
 }

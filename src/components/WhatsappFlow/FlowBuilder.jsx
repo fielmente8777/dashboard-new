@@ -47,12 +47,7 @@ const NODE_OPTIONS = [
   {
     key: "flow",
     label: "Flows",
-    icon: "🎠",
-  },
-  {
-    key: "carousel",
-    label: "Carousel",
-    icon: "🎠",
+    icon: "📡",
   },
 ];
 
