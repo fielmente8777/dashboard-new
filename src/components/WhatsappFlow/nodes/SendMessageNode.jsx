@@ -233,13 +233,15 @@ export default function SendMessageNode({ id, data }) {
       <Handle
         type="target"
         position={Position.Left}
-        className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
+        // className=" rounded-full top-1/2"
+        className="bg-primary! w-3! h-3!"
       />
 
       <Handle
         type="source"
         position={Position.Right}
-        className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
+        // className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
+        className="bg-green-500! w-3! h-3!"
       />
     </div>
   );

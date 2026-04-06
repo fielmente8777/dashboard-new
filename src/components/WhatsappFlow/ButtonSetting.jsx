@@ -2,13 +2,24 @@ import { useState } from "react";
 import { FiX } from "react-icons/fi";
 import { v4 as uuidv4 } from "uuid";
 
-export default function ButtonsSettings({ onSave, onCancel }) {
-  const [header, setHeader] = useState("");
-  const [body, setBody] = useState("Ask a question here");
-  const [footer, setFooter] = useState("");
-  const [buttons, setButtons] = useState(["Answer 1"]);
+export default function ButtonsSettings({ onSave, onCancel, data }) {
+  const interactive = data?.interactive || {};
+
+  const [header, setHeader] = useState(interactive?.header?.text || "");
+
+  const [body, setBody] = useState(
+    interactive?.body?.text || "Ask a question here",
+  );
+
+  const [footer, setFooter] = useState(interactive?.footer?.text || "");
+
+  const [buttons, setButtons] = useState(
+    interactive?.action?.buttons?.map((btn) => btn.reply.title) || ["Answer 1"],
+  );
+
+  const [variable, setVariable] = useState(data?.variable || "");
+
   const [newButton, setNewButton] = useState("");
-  const [variable, setVariable] = useState("");
 
   const addButton = () => {
     if (!newButton.trim()) return;
@@ -177,7 +188,7 @@ export default function ButtonsSettings({ onSave, onCancel }) {
       )}
 
       {/* Variable */}
-      <div className="mb-5">
+      {/* <div className="mb-5">
         <label className="text-sm text-gray-600">
           Save Answers in a variable
         </label>
@@ -188,7 +199,7 @@ export default function ButtonsSettings({ onSave, onCancel }) {
           className="border rounded w-full p-2 mt-1"
           placeholder="@value"
         />
-      </div>
+      </div> */}
 
       {/* Footer Buttons */}
       <div className="flex justify-end gap-3">

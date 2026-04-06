@@ -80,7 +80,7 @@ export default function ListNode({ data, id }) {
                     type="source"
                     position={Position.Right}
                     id={row.id}
-                    className="!bg-green-500 !w-3 !h-3"
+                    className="bg-green-500! w-3! h-3!"
                   />
                 </div>
               ))}
@@ -89,22 +89,22 @@ export default function ListNode({ data, id }) {
         ))}
 
         {/* Default Path */}
-        <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
+        {/* <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
           Default
           <Handle
             type="source"
             position={Position.Right}
             id="default"
-            className="!bg-green-500 !w-3 !h-3"
+            className="bg-green-500 w-3! h-3!"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="!bg-gray-400 !w-3 !h-3"
+        className="bg-primary! w-3! h-3!"
       />
     </div>
   );
