@@ -31,6 +31,7 @@ import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import TurnAwayModal from "../../components/Modal/TurnAwayModal";
+import ImportLead from "../../components/button/ImportLead";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -298,6 +299,7 @@ const AllLeads = () => {
               {isExporting && <Loader color="#fefefe" size={12} />}
             </button>
           )}
+          <ImportLead/>
         </div>
 
         <div className="bg-white">
