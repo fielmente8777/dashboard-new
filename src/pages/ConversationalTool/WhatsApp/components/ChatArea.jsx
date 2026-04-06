@@ -8,6 +8,15 @@ import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFileImage,
+  FaFileAlt,
+} from "react-icons/fa";
+import { MdOutlineFileDownload } from "react-icons/md";
+
 const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
 import {
@@ -364,9 +373,7 @@ const ChatArea = () => {
       hId: selectedConversation?.hid || localStorage.getItem("hid"),
       assignee: value,
     };
-    const response = isEdit
-      ? await updateLead(payload)
-      : await addWhatsAppLead(payload);
+    isEdit ? await updateLead(payload) : await addWhatsAppLead(payload);
 
     setSelectedConversation({ ...selectedConversation, assignee: value });
   };
@@ -719,6 +726,119 @@ const ChatArea = () => {
                               />
                             </div>
                           )}
+
+                          {/* {message?.messageType === "document" && (
+                            <div>
+                              <a
+                                href={
+                                  message?.media?.url ||
+                                  `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <iframe src />
+                              </a>
+                            </div>
+                          )} */}
+
+                          {message?.messageType === "document" &&
+                            (() => {
+                              const url =
+                                message?.media?.url ||
+                                `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`;
+
+                              const mime = message?.media?.mimeType || "";
+                              const fileName =
+                                message?.media?.filename || "Document";
+
+                              const isPDF = mime.includes("pdf");
+
+                              // 🔥 Detect file type
+                              const getIcon = () => {
+                                const lowerMime = mime.toLowerCase();
+
+                                // ✅ PDF
+                                if (lowerMime.includes("pdf")) {
+                                  return (
+                                    <FaFilePdf className="text-red-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ EXCEL (check FIRST before word)
+                                if (
+                                  lowerMime.includes("spreadsheet") ||
+                                  lowerMime.includes("excel") ||
+                                  lowerMime.includes("sheet")
+                                ) {
+                                  return (
+                                    <FaFileExcel className="text-green-600 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ WORD
+                                if (
+                                  lowerMime.includes("wordprocessingml") ||
+                                  lowerMime.includes("msword")
+                                ) {
+                                  return (
+                                    <FaFileWord className="text-blue-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ IMAGE (optional)
+                                if (lowerMime.includes("image")) {
+                                  return (
+                                    <FaFileImage className="text-purple-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ DEFAULT
+                                return (
+                                  <FaFileAlt className="text-gray-500 text-3xl" />
+                                );
+                              };
+
+                              return (
+                                <div className="max-w-60">
+                                  {/* 📦 CARD */}
+                                  <div
+                                    onClick={() => window.open(url, "_blank")}
+                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-white flex flex-col justify-center items-center"
+                                  >
+                                    {isPDF ? (
+                                      <iframe
+                                        src={url}
+                                        className="w-full h-full pointer-events-none"
+                                        style={{ border: "none" }}
+                                      />
+                                    ) : (
+                                      <div className="flex flex-col items-center justify-center text-gray-600 px-2">
+                                        {getIcon()}
+                                      </div>
+                                    )}
+
+                                    {/* Overlay */}
+                                    <div className="absolute inset-0 bg-transparent" />
+                                  </div>
+
+                                  {/* 📄 FILE NAME */}
+                                  <p className="text-xs mt-1 truncate text-gray-700">
+                                    {fileName}
+                                  </p>
+
+                                  {/* ⬇️ DOWNLOAD */}
+                                  <a
+                                    href={url}
+                                    download
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs text-green-600 hover:underline flex items-center gap-1 mt-2"
+                                  >
+                                    <MdOutlineFileDownload size={20} /> Download
+                                  </a>
+                                </div>
+                              );
+                            })()}
 
                           {message?.messageType === "location" && (
                             <div>

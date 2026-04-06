@@ -76,7 +76,6 @@ export default function FlowSettings({ onSave, onCancel, data }) {
     if (response?.success) {
       const flowScreens = response?.result?.docs || [];
 
-      console.log(flowScreens);
       const flowIds = flowScreens?.map((flow) => {
         return {
           label: flow?.flowName,
@@ -92,7 +91,6 @@ export default function FlowSettings({ onSave, onCancel, data }) {
     fetchFlowsScreens();
   }, []);
 
-  console.log(flowIds);
   return (
     <div className="bg-white w-full rounded-lg shadow-lg p-5">
       {/* Header */}

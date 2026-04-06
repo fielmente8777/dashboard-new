@@ -62,7 +62,6 @@ export default function FlowNode({ id, data }) {
           <Handle
             type="source"
             position={Position.Right}
-            id="flow_output"
             className="!bg-green-500 !w-3 !h-3"
           />
         </div>
