@@ -44,7 +44,7 @@ const sidebarTabs = [
   },
   { id: "auto-message", label: "Auto Message" },
   { id: "credits", label: "Credits" },
-  { id: "whatsapp-flows", label: "Flows" },
+  // { id: "whatsapp-flows", label: "Flows" },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 
