@@ -23,8 +23,9 @@ const AutoMessageCard = ({
   templates = [],
   phoneNumberId,
   notification,
+  flows,
 }) => {
-  console.log("autoMessage", autoMessage);
+  const flow = [{ ...flows }];
   const { showToast } = useToast();
 
   const [configs, setConfigs] = useState({});
@@ -235,12 +236,22 @@ const AutoMessageCard = ({
             )}
 
             {c.type === "flow" && (
-              <input
-                value={c.flowId}
+              <select
                 onChange={(e) => updateConfig(key, "flowId", e.target.value)}
-                placeholder="Flow ID"
                 className="w-full border px-3 py-2 rounded-md text-sm"
-              />
+                value={c.flowId}
+              >
+                <option value="">Select flow</option>
+                {flow?.map((f) => (
+                  <option key={f._id}>{f._id}</option>
+                ))}
+              </select>
+              // <input
+              //   value={c.flowId}
+              //   onChange={(e) => updateConfig(key, "flowId", e.target.value)}
+              //   placeholder="Flow ID"
+              //   className="w-full border px-3 py-2 rounded-md text-sm"
+              // />
             )}
           </>
         )}
