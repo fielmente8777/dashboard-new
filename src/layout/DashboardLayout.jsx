@@ -11,50 +11,49 @@ export default function DashboardLayout({ children }) {
   const { isOpen } = useSelector((state) => state.toggle);
 
   return (
-    <div>
-      <div className="flex overflow-hidden h-screen">
-        <div
-          style={{
-            width: isOpen ? ` ${sideBarWidth}px` : "70px",
-          }}
-          className={`md:block hidden ${
-            isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden sm:overflow-hidden`}
-        >
-          <div>
-            <Sidebar
-              sideBarWidth={sideBarWidth}
-              setSidebarWidth={setSidebarWidth}
-              setIsSmooth={setIsSmooth}
-            />
-          </div>
+    <div className="flex h-screen overflow-hidden">
+      <div
+        style={{
+          width: isOpen ? ` ${sideBarWidth}px` : "70px",
+        }}
+        className={`md:block hidden ${
+          isSmooth ? "transition-all duration-300" : ""
+        } overflow-hidden sm:overflow-hidden`}
+      >
+        <div>
+          <Sidebar
+            sideBarWidth={sideBarWidth}
+            setSidebarWidth={setSidebarWidth}
+            setIsSmooth={setIsSmooth}
+          />
+        </div>
+      </div>
+
+      <div
+        style={{
+          width: isOpen ? `100%` : "0px",
+        }}
+        className={` ${isOpen ? "block md:hidden" : "hidden"} ${
+          isSmooth ? "transition-all duration-300" : ""
+        } overflow-hidden bg-white sm:overflow-hidden w-full`}
+      >
+        <div>
+          <Sidebar
+            sideBarWidth={sideBarWidth}
+            setSidebarWidth={setSidebarWidth}
+            setIsSmooth={setIsSmooth}
+            isMobile={true}
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 h-full flex flex-col overflow-hidden scrollbar-hidden bg-[#f8f8fb]">
+        <div>
+          <Navbar />
         </div>
 
-        {/* <div
-          style={{
-            width: isOpen ? `100%` : "0px",
-          }}
-          className={` ${isOpen ? "block md:hidden" : "hidden"} ${
-            isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden w-full`}
-        >
-          <div>
-            <Sidebar
-              sideBarWidth={sideBarWidth}
-              setSidebarWidth={setSidebarWidth}
-              setIsSmooth={setIsSmooth}
-              isMobile={true}
-            />
-          </div>
-        </div> */}
-
-        <div className="flex-1 flex  flex-col overflow-y-scroll scrollbar-hidden sm:overflow-y-auto bg-[#f8f8fb]">
-          <Navbar />
-
-          <div className="overflow-auto flex-1 scrollbar-hidden">
-            {/* <Breadcrumb /> */}
-            {children}
-          </div>
+        <div className="flex-1 h-full overflow-y-auto scrollbar-hidden">
+          {children}
         </div>
       </div>
     </div>

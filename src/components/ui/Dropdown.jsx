@@ -19,48 +19,52 @@ export default function CustomDropdown({
   const buttonRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    if (multiple && Array.isArray(label)) {
-      setSelected(label);
-    } else if (!multiple && label) {
-      setSelected(label);
-    }
-  }, [label, multiple]);
+  const updatePosition = () => {
+    if (!buttonRef.current) return;
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target) &&
-        !buttonRef.current.contains(e.target)
-      ) {
-        setOpen(false);
-      }
-    };
+    const rect = buttonRef.current.getBoundingClientRect();
+    const dropdownHeight = dropdownRef.current?.offsetHeight || 260;
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const openUpwards = spaceBelow < dropdownHeight;
+
+    setPosition({
+      width: rect.width,
+      left: rect.left,
+      top: openUpwards ? rect.top - dropdownHeight - 6 : rect.bottom + 6,
+    });
+  };
 
   const toggleDropdown = () => {
     if (disabled) return;
 
     if (!open) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownHeight = 260;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const openUpwards = spaceBelow < dropdownHeight;
-
-      setPosition({
-        width: rect.width,
-        left: rect.left + window.scrollX,
-        top: openUpwards
-          ? rect.top + window.scrollY - dropdownHeight - 8
-          : rect.bottom + window.scrollY + 10,
-      });
+      setOpen(true);
+      setTimeout(updatePosition, 0);
+    } else {
+      setOpen(false);
     }
-    setOpen(!open);
   };
+
+  // const toggleDropdown = () => {
+  //   if (disabled) return;
+
+  //   if (!open) {
+  //     const rect = buttonRef.current.getBoundingClientRect();
+  //     const dropdownHeight = 260;
+  //     const spaceBelow = window.innerHeight - rect.bottom;
+  //     const openUpwards = spaceBelow < dropdownHeight;
+
+  //     setPosition({
+  //       width: rect.width,
+  //       left: rect.left + window.scrollX,
+  //       top: openUpwards
+  //         ? rect.top + window.scrollY - dropdownHeight - 8
+  //         : rect.bottom + window.scrollY + 10,
+  //     });
+  //   }
+  //   setOpen(!open);
+  // };
 
   const handleSelect = (opt) => {
     if (disabled) return;
@@ -93,8 +97,43 @@ export default function CustomDropdown({
   };
 
   const getLabel = (value) => {
-    return options.find((o) => o.value === value)?.label;
+    return options?.find((o) => o.value === value)?.label;
   };
+
+  useEffect(() => {
+    if (multiple && Array.isArray(label)) {
+      setSelected(label);
+    } else if (!multiple && label) {
+      setSelected(label);
+    }
+  }, [label, multiple]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        !buttonRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [open]);
 
   return (
     <div className="relative">
@@ -147,12 +186,13 @@ export default function CustomDropdown({
           <div
             ref={dropdownRef}
             style={{
+              position: "fixed", // 🔥 IMPORTANT
               width: position.width,
               left: position.left,
               top: position.top,
               zIndex,
             }}
-            className="absolute rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
+            className="rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
           >
             {options.map((opt) => {
               const isSelected = multiple

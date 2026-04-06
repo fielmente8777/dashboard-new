@@ -6,22 +6,55 @@ import ReactFlow, {
   addEdge,
   useEdgesState,
   useNodesState,
-  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 
-import Sidebar from "./Sidebar";
-import SendMessageNode from "./nodes/SendMessageNode";
-import SettingsPanel from "./SettingsPanel";
-import ButtonsNode from "./nodes/ButtonNodes";
-import ListNode from "./nodes/ListNode";
-import QuestionNode from "./nodes/QuestionNode";
 import { NEW_BASE_URL } from "../../data/constant";
 import { getWhatsAppFlows } from "../../services/api/whatsApp";
 import Loader from "../Loader";
+import ButtonsNode from "./nodes/ButtonNodes";
 import CarouselNode from "./nodes/CarouselNode";
-import WhatsAppFlowsBuilder from "./WhtasAppFlowBuilder";
+import ListNode from "./nodes/ListNode";
+import QuestionNode from "./nodes/QuestionNode";
+import SendMessageNode from "./nodes/SendMessageNode";
+import SettingsPanel from "./SettingsPanel";
+import Sidebar from "./Sidebar";
+import { FiX } from "react-icons/fi";
+import FlowNode from "./nodes/FlowNode";
+
+const NODE_OPTIONS = [
+  {
+    key: "sendMessage",
+    label: "Send Message",
+    icon: "📩",
+  },
+  {
+    key: "button",
+    label: "Buttons",
+    icon: "🔘",
+  },
+  {
+    key: "list",
+    label: "List",
+    icon: "📋",
+  },
+  {
+    key: "question",
+    label: "Question",
+    icon: "❓",
+  },
+  {
+    key: "flow",
+    label: "Flows",
+    icon: "🎠",
+  },
+  {
+    key: "carousel",
+    label: "Carousel",
+    icon: "🎠",
+  },
+];
 
 const nodeTypes = {
   sendMessage: SendMessageNode,
@@ -29,17 +62,20 @@ const nodeTypes = {
   list: ListNode,
   question: QuestionNode,
   carousel: CarouselNode,
+  flow: FlowNode,
 };
 
 export default function FlowBuilder() {
-  // const { project, getViewport } = useReactFlow();
-  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
   const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [sourceNodeId, setSourceNodeId] = useState(null);
 
   const onConnect = useCallback(
     (params) =>
@@ -55,6 +91,58 @@ export default function FlowBuilder() {
       ),
     [setEdges],
   );
+
+  const onConnectStart = (_, { nodeId }) => {
+    setSourceNodeId(nodeId);
+  };
+
+  const onConnectEnd = (event) => {
+    const targetIsPane = event.target.classList.contains("react-flow__pane");
+
+    if (targetIsPane) {
+      setPopupPosition({
+        x: event.clientX - 280,
+        y: event.clientY - 100,
+      });
+
+      setShowPopup(true);
+    }
+  };
+
+  const handleAddNodeFromPopup = (type) => {
+    // let data = {};
+
+    // 🔁 reuse your existing logic
+    addNode(type);
+
+    // const newNodeId = uuidv4();
+
+    // const newNode = {
+    //   id: newNodeId,
+    //   type,
+    //   position: {
+    //     x: popupPosition.x - 250,
+    //     y: popupPosition.y - 100,
+    //   },
+    //   data,
+    // };
+
+    // setNodes((nds) => [...nds, newNode]);
+
+    // // 🔗 auto connect edge
+    // setEdges((eds) => [
+    //   ...eds,
+    //   {
+    //     id: `e-${sourceNodeId}-${newNodeId}`,
+    //     source: sourceNodeId,
+    //     target: newNodeId,
+    //     type: "smoothstep",
+    //     animated: true,
+    //   },
+    // ]);
+
+    setShowPopup(false);
+  };
 
   const addSendMessageNode = () => {
     const newNode = {
@@ -256,24 +344,22 @@ export default function FlowBuilder() {
     fetchFlows();
   }, []);
 
-  console.log(nodes);
-
   return (
-    <div className="bg-white relative w-full">
-      <div className="flex justify-end absolute right-2 top-2 px-2 z-50">
-        <button
-          onClick={() => handlePublish()}
-          className="bg-primary px-4 py-1 text-white flex items-center gap-1 rounded-sm"
-        >
-          Publish {loading && <Loader color="#fefefe" />}
-        </button>
-      </div>
+    <div className="bg-white relative w-full h-full">
+      <div className="flex h-full w-full">
+        <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-      <div className="relative">
-        <div className="flex h-[82vh]">
-          <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
+        <div className="flex-1 h-[78vh]">
+          <div className="flex bg-primary justify-end p-2">
+            <button
+              onClick={() => handlePublish()}
+              className="bg-[#FD5C01] px-4 py-1 text-white flex items-center gap-1 rounded-sm"
+            >
+              Publish {loading && <Loader color="#fefefe" />}
+            </button>
+          </div>
 
-          <div className="flex-1 bg-gray-200">
+          <div className="h-full w-full bg-linear-to-br from-gray-200 to-gray-300">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
@@ -288,33 +374,79 @@ export default function FlowBuilder() {
               edges={edges}
               nodeTypes={nodeTypes}
               onConnect={onConnect}
+              onConnectStart={onConnectStart} // ✅ NEW
+              onConnectEnd={onConnectEnd}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onNodeClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               connectionLineType="smoothstep"
+              className="h-full!"
             >
-              <Background />
+              <Background variant="line" gap={2} size={1.5} />
               <Controls />
               <MiniMap
                 position="bottom-right"
                 zoomable
                 pannable
                 nodeStrokeWidth={3}
+                nodeColor={(node) => {
+                  if (node.type === "sendMessage") return "#22c55e"; // green
+                  if (node.type === "button") return "#ef4444"; // red
+                  if (node.type === "default") return "#3b82f6"; // blue
+                  return "#6366f1"; // fallback
+                }}
               />
             </ReactFlow>
           </div>
-          {/* <WhatsAppFlowsBuilder /> */}
-
-          {selectedNode && (
-            <SettingsPanel
-              node={selectedNode}
-              setSelectedNode={setSelectedNode}
-              setNode={setNodes}
-            />
-          )}
         </div>
       </div>
+
+      {showPopup && (
+        <div
+          className="absolute bg-white border shadow-xl rounded-lg w-56 z-50 overflow-hidden"
+          style={{
+            top: popupPosition.y,
+            left: popupPosition.x,
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-2">
+            <div className="p-2 border-b font-semibold text-sm bg-gray-50">
+              Add Node
+            </div>
+
+            <div
+              onClick={() => setShowPopup(false)}
+              className="size-4 cursor-pointer bg-red-300 text-red-500 rounded-full text-xs flex items-center justify-center"
+            >
+              <FiX size={12} />
+            </div>
+          </div>
+
+          {/* Options */}
+          <div className="flex flex-col max-h-60 h-full overflow-y-auto scrollbar-hidden">
+            {NODE_OPTIONS.map((item) => (
+              <div
+                key={item.key}
+                onClick={() => handleAddNodeFromPopup(item.key)}
+                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
+              >
+                <span>{item.icon}</span>
+                <span className="text-sm">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedNode && (
+        <SettingsPanel
+          node={selectedNode}
+          setSelectedNode={setSelectedNode}
+          setNode={setNodes}
+        />
+      )}
     </div>
   );
 }

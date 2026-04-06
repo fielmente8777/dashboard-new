@@ -103,17 +103,11 @@ export default function ListSetting({ data, onSave, onCancel }) {
     onSave(interactiveMessage);
   };
 
-  console.log("sections", sections);
-
   return (
     <div className="bg-white w-full rounded-xl shadow-xl p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="font-semibold text-lg">List Settings</h2>
-        <FiX
-          className="cursor-pointer text-gray-500 hover:text-black"
-          onClick={onCancel}
-        />
       </div>
 
       {/* Header */}
@@ -227,7 +221,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
       </button>
 
       {/* Variable */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <label className="text-sm text-gray-600">Save answer in variable</label>
         <input
           value={variable}
@@ -235,7 +229,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
           className="border rounded-lg w-full p-2 mt-1"
           placeholder="@value"
         />
-      </div>
+      </div> */}
 
       {/* Footer Buttons */}
       <div className="flex justify-end gap-3">

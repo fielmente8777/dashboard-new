@@ -24,6 +24,7 @@ const AutoMessageCard = ({
   phoneNumberId,
   notification,
 }) => {
+  console.log("autoMessage", autoMessage);
   const { showToast } = useToast();
 
   const [configs, setConfigs] = useState({});

@@ -266,7 +266,17 @@ const MetaLeads = () => {
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.MetaLeadsPage, page);
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
+
+    const queryParams = new URLSearchParams({
+      hid: row?.hId,
+      lead: index,
+      created_from: CREATED_FROM,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(stage ? { stage: stage } : {}),
+      ...(startDate ? { startDate: startDate } : {}),
+      ...(endDate ? { endDate: endDate } : {}),
+    });
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?${queryParams.toString()}`;
     navigate(navigatePath);
 
     // setSelectedRow({
@@ -455,6 +465,7 @@ const MetaLeads = () => {
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
+                    maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
                     className="bg-transparent outline-none text-sm w-40"
                     placeholderText="Date range"
@@ -537,7 +548,10 @@ const MetaLeads = () => {
 
             <tbody>
               {isLoadingLeads && (
-                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+                <TableRowSkelton
+                  rows={limit}
+                  columns={tableHeaders?.length + 2}
+                />
               )}
 
               {!isLoadingLeads &&
@@ -729,7 +743,7 @@ const MetaLeads = () => {
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
                   <td
-                    colSpan={tableHeaders.length + 1}
+                    colSpan={tableHeaders.length + 2}
                     className="py-6 text-center"
                   >
                     No Leads Found

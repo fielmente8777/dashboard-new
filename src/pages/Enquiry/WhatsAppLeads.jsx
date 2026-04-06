@@ -240,7 +240,17 @@ const WhatsAppLeads = () => {
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.WhatsappPage, page);
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
+    const queryParams = new URLSearchParams({
+      hid: row?.hId,
+      lead: index,
+      created_from: CREATED_FROM,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(stage ? { stage: stage } : {}),
+      ...(startDate ? { startDate: startDate } : {}),
+      ...(endDate ? { endDate: endDate } : {}),
+    });
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?${queryParams.toString()}`;
+
     navigate(navigatePath);
 
     // setSelectedRow({
@@ -385,6 +395,7 @@ const WhatsAppLeads = () => {
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
+                    maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
                     className="bg-transparent outline-none text-sm w-40"
                     placeholderText="Date range"
@@ -422,6 +433,7 @@ const WhatsAppLeads = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
+                <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
                   <th
@@ -436,7 +448,10 @@ const WhatsAppLeads = () => {
 
             <tbody>
               {isLoadingLeads && (
-                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+                <TableRowSkelton
+                  rows={limit}
+                  columns={tableHeaders?.length + 2}
+                />
               )}
 
               {!isLoadingLeads &&
@@ -622,7 +637,7 @@ const WhatsAppLeads = () => {
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
                   <td
-                    colSpan={tableHeaders.length + 1}
+                    colSpan={tableHeaders.length + 2}
                     className="py-6 text-center"
                   >
                     No Leads Found

@@ -19,13 +19,6 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
       icon: <FaQuestionCircle />,
       color: "from-orange-400 to-orange-500",
     },
-    // {
-    //   type: "condition",
-    //   label: "Set a condition",
-    //   desc: "Send message(s) based on logical condition(s)",
-    //   icon: <FaRandom />,
-    //   color: "from-blue-400 to-blue-500",
-    // },
   ];
 
   const questionsBlock = [
@@ -60,7 +53,7 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
   ];
 
   return (
-    <div className="w-72 bg-gray-50 h-full bordrer-r! border-gray-200! p-4">
+    <div className="w-72  bg-primary/ h-full bordrer-r! border-gray-200! p-4">
       {showQuestionMenu && (
         <div
           onClick={() => setShowQuestionMenu(false)}

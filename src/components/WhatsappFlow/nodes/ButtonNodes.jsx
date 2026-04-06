@@ -1,5 +1,4 @@
 import { Handle, Position, useReactFlow } from "reactflow";
-import { FiMoreVertical } from "react-icons/fi";
 
 export default function ButtonsNode({ id, data }) {
   const { getNodes, setNodes } = useReactFlow();

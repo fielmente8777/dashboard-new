@@ -231,7 +231,17 @@ const AllLeads = () => {
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}`;
+
+    const queryParams = new URLSearchParams({
+      hid: row?.hId,
+      lead: index,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(stage ? { stage: stage } : {}),
+      ...(source ? { source: source } : {}),
+      ...(startDate ? { startDate: startDate } : {}),
+      ...(endDate ? { endDate: endDate } : {}),
+    });
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?${queryParams.toString()}`;
     navigate(navigatePath);
   };
 
@@ -363,6 +373,7 @@ const AllLeads = () => {
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
+                    maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
                     className="bg-transparent outline-none text-sm w-40"
                     placeholderText="Date range"
@@ -419,7 +430,7 @@ const AllLeads = () => {
         <div className="flex border rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
-              <tr className="">
+              <tr className="whitespace-nowrap">
                 <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
@@ -432,7 +443,10 @@ const AllLeads = () => {
 
             <tbody>
               {isLoadingLeads && (
-                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+                <TableRowSkelton
+                  rows={limit}
+                  columns={tableHeaders?.length + 2}
+                />
               )}
 
               {!isLoadingLeads &&
@@ -576,7 +590,7 @@ const AllLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td className=" whitespace-nowrap">
+                          <td className="whitespace-nowrap">
                             {userName}{" "}
                             {isToday && (
                               <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
@@ -639,7 +653,7 @@ const AllLeads = () => {
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
                   <td
-                    colSpan={tableHeaders?.length + 1}
+                    colSpan={tableHeaders?.length + 2}
                     className="py-6 text-center"
                   >
                     No Leads Found
