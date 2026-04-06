@@ -110,6 +110,7 @@ const Navbar = () => {
     setIsNotificationPopupOpen(false);
   };
   const hid = localStorage.getItem("hid");
+
   const hotels = hotel?.Profile?.hotels || {};
   const hotelName = hotels?.[hid]?.local || "";
   const isLoadingProfile = !hotel || !hotel.Profile;
@@ -126,7 +127,9 @@ const Navbar = () => {
           <FaAlignRight color="#000" />
         </div>
 
+
         <Greeting name={isLoadingProfile ? "Loading..." : hotelName} />
+
         <div className="sm:hidden">
           <div className="w-28 h-10 -ml-2">
             <img
@@ -197,13 +200,15 @@ const Navbar = () => {
           </div>
           <button
             style={{
+
               backgroundColor: letterColorMap[firstLetter],
+
             }}
             onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+              {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
             </p>
           </button>
         </div>
@@ -218,15 +223,13 @@ const Navbar = () => {
           <button
             style={{
               backgroundColor:
-                letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                ],
+              letterColorMap[firstLetter],
             }}
             onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
             className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
           >
             <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
+            {hotel?.Profile?.hotelName?.charAt(0)?.toUpperCase() || "?"}
             </p>
           </button>
         </div>
