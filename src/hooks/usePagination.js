@@ -30,6 +30,7 @@ const usePagination = ({ initialPage = 1, initialLimit = 10 } = {}) => {
     limit,
     total,
     totalPages,
+    setPage,
     setTotal,
     goToPage,
     nextPage,

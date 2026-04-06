@@ -13,8 +13,10 @@ import CustomDropdown from "../../components/ui/Dropdown";
 import WebSocketClient from "../../config/websocketClient";
 import {
   BASE_PATH,
+  LOCAL_STORAGE,
   ROUTES_PATH,
   Stages,
+  TurnAwayCode,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../data/constant";
@@ -23,11 +25,16 @@ import usePagination from "../../hooks/usePagination";
 import { getLeads, updateLead } from "../../services/api/leads.api";
 import {
   bulkImportMetaLeads,
+  deleteLMultipleeadGenForm,
   getMetaAccounts,
 } from "../../services/api/MetaLeads.api";
 
 import { formatDateTime } from "../../utils/formateDate";
 import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
+import { useToast } from "../../context/ToastContext";
+import { fetchUserManagementData } from "../../services/api";
+import { FaTrashAlt } from "react-icons/fa";
 
 const CREATED_FROM = "facebook";
 
@@ -37,6 +44,7 @@ const MetaLeads = () => {
   const [isExporting, setIsExporting] = useState(false);
   const navigate = useNavigate();
 
+  const { showToast } = useToast();
   const [isSync, setIsSync] = useState(true);
   const [allLeads, setAllLeads] = useState([]);
   const [allCampaigns, setAllCampaigns] = useState([]);
@@ -48,14 +56,19 @@ const MetaLeads = () => {
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [isPageRestored, setIsPageRestored] = useState(false);
 
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [allUsers, setAllUsers] = useState([]);
+  const [rowSelected, setRowSelected] = useState([]);
 
   const {
     page,
     limit,
     total,
     totalPages,
+    setPage,
     setTotal,
     goToPage,
     nextPage,
@@ -69,7 +82,10 @@ const MetaLeads = () => {
     { key: "Contact", label: "Phone Number" },
     { key: "Email", label: "Email" },
     { key: "notes", label: "Notes" },
+    { key: "campaign_name", label: "Campaign Name" },
+    { key: "assignee", label: "Attempted By" },
     { key: "status", label: "Stages" },
+    { key: "turnAwayCode", label: "Turn Away Code" },
   ];
 
   const setDateRange = (dates) => {
@@ -183,17 +199,29 @@ const MetaLeads = () => {
     }
   };
 
-  const handleUpdateStage = async (leadId, hid, stage) => {
+  const handleUpdateStage = async ({
+    leadId,
+    hid,
+    stage,
+    followUpDate,
+    turnAwayCode,
+  }) => {
     const payload = {
       leadId: leadId,
       status: stage,
       hid: hid,
+      followUpDate: followUpDate || null,
+      ...(turnAwayCode && { turnAwayCode }),
     };
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
-        // fetchLeads();
-        // return;
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+        return;
       }
     } catch (error) {
       Swal.fire({
@@ -204,7 +232,39 @@ const MetaLeads = () => {
     }
   };
 
+  const handleUserAssign = async (
+    leadId,
+    hid,
+    value,
+    conversationId = null,
+  ) => {
+    try {
+      const payload = {
+        leadId: leadId,
+        hid: hid,
+        ...(conversationId && { conversationId }),
+        assignee: value,
+      };
+
+      const response = await updateLead(payload);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const handleRedirectToPage = (row, index) => {
+    localStorage.setItem(LOCAL_STORAGE.MetaLeadsPage, page);
     const hid = localStorage.getItem("hid");
     const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
     navigate(navigatePath);
@@ -215,21 +275,78 @@ const MetaLeads = () => {
     // });
   };
 
+  const handleDeleteAll = () => {
+    // alert("We are working on it");
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchLeads(false);
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+          setRowSelected([]);
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
+      }
+    });
+  };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
+  const handleRowSelect = (id) => {
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
+  };
+
   useEffect(() => {
     fetchPageConnectionDetails();
+    fetchUsersData();
   }, []);
 
   useEffect(() => {
+    if (!isPageRestored) return; // 🚨 WAIT until page restored
+
     if (!startDate && !endDate) {
       fetchLeads(false);
       return;
     }
 
-    // Fetch ONLY when both dates are selected
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+
+  useEffect(() => {
+    const savedPage = localStorage.getItem(LOCAL_STORAGE.MetaLeadsPage);
+
+    if (savedPage) {
+      setPage(Number(savedPage));
+    }
+
+    setIsPageRestored(true);
+  }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -254,52 +371,53 @@ const MetaLeads = () => {
   }, [allLeads]);
 
   return (
-    <div className="bg-white px-3 md:p-6 space-y-3 md:space-y-6 pt-2">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Meta Leads</h2>
+    <div className="bg-white p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Meta Leads</h2>
 
-        {allLeads?.length > 0 && (
-          <button
-            disabled={isExporting}
-            onClick={exportToExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
-          >
-            Export to Excel{" "}
-            {isExporting && <Loader color="#fefefe" size={12} />}
-          </button>
-        )}
-      </div>
+          {allLeads?.length > 0 && (
+            <button
+              disabled={isExporting}
+              onClick={exportToExcel}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+            >
+              Export to Excel{" "}
+              {isExporting && <Loader color="#fefefe" size={12} />}
+            </button>
+          )}
+        </div>
 
-      <div className="bg-white rounded-xl md:shadow-sm border border-gray-200 px-4 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {/* LEFT SIDE FILTERS */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* SEARCH */}
-            <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-              <IoSearch className="text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search clients..."
-                className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
+        <div className="">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {/* LEFT SIDE FILTERS */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* SEARCH */}
+              <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-gray-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search clients..."
+                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-            <div>
-              <CustomDropdown
-                options={[
-                  {
-                    value: "",
-                    label: "All Stages",
-                  },
-                  ...Stages,
-                ]}
-                onChange={(value) => setStage(value)}
-              />
-            </div>
+              <div>
+                <CustomDropdown
+                  options={[
+                    {
+                      value: "",
+                      label: "All Stages",
+                    },
+                    ...Stages,
+                  ]}
+                  onChange={(value) => setStage(value)}
+                />
+              </div>
 
-            {/* PAGE DROPDOWN */}
-            {/* {pages?.length > 0 && (
+              {/* PAGE DROPDOWN */}
+              {/* {pages?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="Select Page"
@@ -312,8 +430,8 @@ const MetaLeads = () => {
               </div>
             )} */}
 
-            {/* FORM DROPDOWN */}
-            {/* {forms?.length > 0 && (
+              {/* FORM DROPDOWN */}
+              {/* {forms?.length > 0 && (
               <div>
                 <CustomDropdown
                   label="All Forms"
@@ -330,178 +448,300 @@ const MetaLeads = () => {
               </div>
             )} */}
 
-            {/* DATE RANGE */}
-            <div className="relative">
-              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <DatePicker
-                  selectsRange
-                  startDate={startDate}
-                  endDate={endDate}
-                  onChange={(update) => setDateRange(update)}
-                  className="bg-transparent outline-none text-sm w-40"
-                  placeholderText="Date range"
-                  popperClassName="!z-50"
-                />
+              {/* DATE RANGE */}
+              <div className="relative">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                  <DatePicker
+                    selectsRange
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => setDateRange(update)}
+                    className="bg-transparent outline-none text-sm w-40"
+                    placeholderText="Date range"
+                    popperClassName="z-99999!"
+                  />
+                </div>
+
+                {startDate && endDate && (
+                  <span
+                    onClick={() => {
+                      setStartDate(null);
+                      setEndDate(null);
+                    }}
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                  >
+                    <IoIosClose size={18} />
+                  </span>
+                )}
               </div>
 
-              {startDate && endDate && (
-                <span
-                  onClick={() => {
-                    setStartDate(null);
-                    setEndDate(null);
-                  }}
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
-                >
-                  <IoIosClose size={18} />
-                </span>
+              {allCampaigns?.length > 0 && (
+                <div>
+                  <CustomDropdown
+                    label="All Campaigns"
+                    options={[
+                      { value: "", label: "All" },
+                      ...(allCampaigns?.map((c) => ({
+                        value: c,
+                        label: c,
+                      })) || []),
+                    ]}
+                    width="w-60"
+                    onChange={(value) => setSearchTerm(value)}
+                  />
+                </div>
               )}
             </div>
 
-            {allCampaigns?.length > 0 && (
-              <div>
-                <CustomDropdown
-                  label="All Campaigns"
-                  options={[
-                    { value: "", label: "All" },
-                    ...(allCampaigns?.map((c) => ({
-                      value: c,
-                      label: c,
-                    })) || []),
-                  ]}
-                  width="w-60"
-                  onChange={(value) => setSearchTerm(value)}
-                />
-              </div>
-            )}
+            {/* RIGHT ACTION */}
+
+            <button
+              disabled={isSyncing}
+              onClick={handleBulkImportMetaLeads}
+              className="h-10 px-5 rounded-lg bg-primary text-white text-sm font-medium flex items-center gap-2 hover:bg-primary/90 disabled:opacity-60"
+            >
+              Refresh
+              <span className={isSyncing ? "animate-spin" : ""}>
+                <IoMdSync />
+              </span>
+            </button>
           </div>
-
-          {/* RIGHT ACTION */}
-
-          <button
-            disabled={isSyncing}
-            onClick={handleBulkImportMetaLeads}
-            className="h-10 px-5 rounded-lg bg-primary text-white text-sm font-medium flex items-center gap-2 hover:bg-primary/90 disabled:opacity-60"
-          >
-            Refresh
-            <span className={isSyncing ? "animate-spin" : ""}>
-              <IoMdSync />
-            </span>
-          </button>
         </div>
       </div>
 
-      <div className="border rounded-lg overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-primary">
-            <tr>
-              <th className="px-3 py-3 text-white">#</th>
-              {tableHeaders?.map((h) => (
-                <th
-                  key={h.key}
-                  className="px-3 py-3 text-left text-white min-w-40"
-                >
-                  {h.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
+      <div className="flex flex-col flex-1 min-h-0">
+        {rowSelected?.length > 0 && (
+          <button
+            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            onClick={handleDeleteAll}
+          >
+            Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+          </button>
+        )}
+        <div className="border rounded-lg overflow-auto hide-scrollbar">
+          <table className="min-w-full text-sm">
+            <thead className="bg-primary sticky top-0 z-99">
+              <tr>
+                <th className="px-3 py-3 text-white">Select</th>
+                <th className="px-3 py-3 text-white">#</th>
+                {tableHeaders?.map((h) => (
+                  <th
+                    key={h.key}
+                    className="px-3 py-3 text-left text-white min-w-40"
+                  >
+                    {h.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody>
-            {isLoadingLeads && (
-              <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
-            )}
+            <tbody>
+              {isLoadingLeads && (
+                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+              )}
 
-            {!isLoadingLeads &&
-              allLeads?.length > 0 &&
-              allLeads?.map((row, i) => (
-                <tr
-                  key={i}
-                  onClick={() => {
-                    handleRedirectToPage(row, i + limit * (page - 1) + 1);
-                  }}
-                  className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
-                >
-                  <td className="px-3 py-2.5">{i + limit * (page - 1) + 1}</td>
+              {!isLoadingLeads &&
+                allLeads?.length > 0 &&
+                allLeads?.map((row, i) => (
+                  <tr
+                    key={i}
+                    onClick={() => {
+                      handleRedirectToPage(row, i + limit * (page - 1) + 1);
+                    }}
+                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                  >
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rowSelected.includes(row?._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowSelect(row?._id);
+                        }}
+                      />
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
+                    </td>
 
-                  {tableHeaders.map((h) => {
-                    // const timesLabels = ["created_time", "Created_at"];
+                    {tableHeaders.map((h) => {
+                      // const timesLabels = ["created_time", "Created_at"];
 
-                    if (h.key === "Created_at") {
-                      const isLeadCreatedTime = row?.meta?.created_time;
+                      if (h.key === "Created_at") {
+                        const isLeadCreatedTime = row?.meta?.created_time;
+
+                        return (
+                          <td
+                            key={h.key}
+                            className="px-3 py-2 whitespace-nowrap"
+                          >
+                            {formatDateTime(
+                              isLeadCreatedTime
+                                ? isLeadCreatedTime
+                                : row[h.key],
+                            )}
+                          </td>
+                        );
+                      }
+                      if (h.key === "phone_number") {
+                        return (
+                          <td
+                            key={h.key}
+                            className="px-3 py-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
+                          </td>
+                        );
+                      }
+                      if (h.key === "status") {
+                        return (
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <CustomDropdown
+                              label={row.status}
+                              options={Stages}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                if (value === "Follow Up") {
+                                  setSelectedLead(row);
+                                  setShowDatePicker(true);
+                                } else {
+                                  handleUpdateStage(row?._id, row?.hId, value);
+                                }
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+                      if (h.key === "turnAwayCode") {
+                        const turnAwayCode = row[h.key];
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={turnAwayCode || "Select Code"}
+                              options={TurnAwayCode}
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              onChange={(value) => {
+                                handleUpdateStage({
+                                  leadId: row?._id,
+                                  hid: row?.hId,
+                                  stage: "Turn Away",
+                                  turnAwayCode: value,
+                                  conversationId: row?.conversationId,
+                                });
+                              }}
+                            />
+                          </td>
+                        );
+                      }
+                      if (h.key === "notes") {
+                        const isNotes = row[h.key] && row[h.key].length > 0;
+
+                        const noteMessage =
+                          isNotes && row[h.key]?.slice(-1)[0]?.message;
+                        return (
+                          <td className="min-w-150 w-full">
+                            {isNotes ? noteMessage : "-"}
+                          </td>
+                        );
+                      }
+                      if (h.key === "campaign_name") {
+                        const isMeta = row?.meta;
+                        return (
+                          <td className="whitespace-nowrap">
+                            {isMeta ? isMeta?.campaign_name : "-"}
+                          </td>
+                        );
+                      }
+                      if (h.key === "assignee") {
+                        return (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-2"
+                          >
+                            <CustomDropdown
+                              label={row["assignee"] || "Attempted By"}
+                              options={
+                                allUsers?.map((user) => ({
+                                  value: user?.userName,
+                                  label: user?.userName,
+                                })) || []
+                              }
+                              onChange={(value) =>
+                                handleUserAssign(
+                                  row?._id,
+                                  row?.hId,
+                                  value,
+                                  row?.conversationId,
+                                )
+                              }
+                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            />
+                          </td>
+                        );
+                      }
+                      if (h.key === "Name") {
+                        const isName = row[h.key];
+                        const followUpDate = new Date(
+                          row["followUpDate"] || row["followUp"] || "",
+                        );
+                        const today = new Date();
+
+                        const isToday =
+                          followUpDate.getDate() === today.getDate() &&
+                          followUpDate.getMonth() === today.getMonth() &&
+                          followUpDate.getFullYear() === today.getFullYear();
+
+                        const userName = isName
+                          ? isName
+                          : row?.other_details?.full_name || "-";
+                        return (
+                          <td className="whitespace-nowrap">
+                            {userName}{" "}
+                            {isToday && (
+                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                                Follow Up
+                              </span>
+                            )}
+                          </td>
+                        );
+                      }
 
                       return (
                         <td key={h.key} className="px-3 py-2">
-                          {formatDateTime(
-                            isLeadCreatedTime ? isLeadCreatedTime : row[h.key],
-                          )}
+                          {row[h.key]
+                            ? row[h.key]
+                            : row?.created_from === "facebook"
+                              ? row?.other_details["full_name "]
+                              : "-"}
                         </td>
                       );
-                    }
-                    if (h.key === "phone_number") {
-                      return (
-                        <td
-                          key={h.key}
-                          className="px-3 py-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
-                        </td>
-                      );
-                    }
-                    if (h.key === "status") {
-                      return (
-                        <td onClick={(e) => e.stopPropagation()}>
-                          <CustomDropdown
-                            label={row?.status || "Select Status"}
-                            options={Stages || []}
-                            className="border w-40! p-1! rounded-md! bg-gray-100!"
-                            onChange={(value) => {
-                              handleUpdateStage(row?._id, row?.hId, value);
-                            }}
-                          />
-                        </td>
-                      );
-                    }
-                    if (h.key === "notes") {
-                      const isNotes = row[h.key] && row[h.key].length > 0;
+                    })}
+                  </tr>
+                ))}
 
-                      const noteMessage =
-                        isNotes && row[h.key]?.slice(-1)[0]?.message;
-                      return <td>{isNotes ? noteMessage : "-"}</td>;
-                    }
-                    if (h.key === "Name") {
-                      const isName = row[h.key];
-
-                      const userName = isName
-                        ? isName
-                        : row?.other_details?.full_name;
-                      return <td>{userName}</td>;
-                    }
-                    return (
-                      <td key={h.key} className="px-3 py-2">
-                        {row[h.key]
-                          ? row[h.key]
-                          : row?.created_from === "facebook"
-                            ? row?.other_details["full_name "]
-                            : "-"}
-                      </td>
-                    );
-                  })}
+              {!isLoadingLeads && allLeads.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={tableHeaders.length + 1}
+                    className="py-6 text-center"
+                  >
+                    No Leads Found
+                  </td>
                 </tr>
-              ))}
-
-            {!isLoadingLeads && allLeads.length === 0 && (
-              <tr>
-                <td colSpan={7} className="py-6 text-center">
-                  No Leads Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="flex flex-col items-end px-4 py-6">
+      <div className="flex justify-between items-center px-4">
         <Pagination
           page={page}
           totalPages={totalPages}
@@ -518,12 +758,19 @@ const MetaLeads = () => {
         />
       </div>
 
-      {/* <ViewAndManageLeadDrawer
-        leadId={selectedRow?.leadId}
-        hid={selectedRow?.hid}
-        isOpen={selectedRow}
-        onClose={() => setSelectedRow(null)}
-      /> */}
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateStage({
+            leadId: selectedLead?._id,
+            hid: selectedLead?.hId,
+            stage: "Follow Up",
+            followUpDate: date,
+          });
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 };

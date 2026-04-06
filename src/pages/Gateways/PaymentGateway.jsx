@@ -246,7 +246,7 @@ const PaymentGateway = () => {
           </div>
 
           {!dataloading ? (
-            <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-black/20">
+            <table className="w-full text-left bg-primary text-white/90 rounded-sm shadow-black/20">
               <thead>
                 <tr className="border-b">
                   <th className="py-3 px-4 text-[14px] font-medium capitalize">

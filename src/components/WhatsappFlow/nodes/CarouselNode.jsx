@@ -40,37 +40,42 @@ export default function CarouselNode({ id, data }) {
       {/* Cards */}
       <div className="px-3 py-2 space-y-3">
         {cards.map((card, cardIndex) => {
-          const components = card.components || [];
-
-          const header = components.find((c) => c.type === "header")
-            ?.parameters?.[0]?.text;
-
-          const description = components.find((c) => c.type === "body")
-            ?.parameters?.[0]?.text;
-
-          const buttons =
-            components.find((c) => c.type === "buttons")?.buttons || [];
+          const header = card.header;
+          const description = card.body?.text;
+          const buttons = card.action?.buttons || [];
 
           return (
             <div key={cardIndex} className="border rounded-md p-2 bg-gray-50">
-              <div className="text-sm font-semibold">
-                {header || `Card ${cardIndex + 1}`}
-              </div>
+              {/* HEADER */}
+              {header?.type === "image" && header?.image?.link && (
+                <img
+                  src={header.image.link}
+                  alt="card"
+                  className="w-full h-28 object-cover rounded mb-2"
+                />
+              )}
 
+              {header?.type === "text" && (
+                <div className="text-sm font-semibold mb-1">
+                  {header.text || `Card ${cardIndex + 1}`}
+                </div>
+              )}
+
+              {/* BODY */}
               <div className="text-xs text-gray-600 mb-2">{description}</div>
 
-              {/* Buttons */}
-              {buttons.map((btn) => (
+              {/* BUTTONS */}
+              {buttons.map((btn, idx) => (
                 <div
-                  key={btn.reply.id}
+                  key={btn.quick_reply?.id || idx}
                   className="relative bg-gray-100 rounded px-2 py-1 text-xs mb-1 flex justify-between items-center"
                 >
-                  {btn.reply.title}
+                  {btn.quick_reply?.title}
 
                   <Handle
                     type="source"
                     position={Position.Right}
-                    id={btn.reply.id}
+                    id={btn.quick_reply?.id}
                     className="!bg-green-500 !w-2 !h-2"
                   />
                 </div>

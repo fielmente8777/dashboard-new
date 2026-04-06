@@ -6,6 +6,9 @@ import { Link } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
+const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
 import {
   NEW_BASE_URL,
@@ -13,6 +16,7 @@ import {
   WS_BASE_URL,
 } from "../../../../data/constant";
 import {
+  addWhatsAppLead,
   deleteWhatsAppMessage,
   getFlowSession,
   getWhatsappConversationMessages,
@@ -27,10 +31,16 @@ import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
 import VideoMessage from "./VideoMessage";
 import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
+import CustomDropdown from "../../../../components/ui/Dropdown";
+import { fetchUserManagementData } from "../../../../services/api";
+import { updateLead } from "../../../../services/api/leads.api";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
   const menuRef = useRef(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [allUsers, setAllUsers] = useState([]);
 
   // const { isLoaded } = useLoadScript({
   //   googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
@@ -40,8 +50,13 @@ const ChatArea = () => {
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
-  const { selectedConversation, conversations, setMobileActive } =
-    useContext(DataContext);
+  const { confirm } = useConfirm();
+  const {
+    selectedConversation,
+    setSelectedConversation,
+    conversations,
+    setMobileActive,
+  } = useContext(DataContext);
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
@@ -63,6 +78,7 @@ const ChatArea = () => {
   const [templateClick, setTemplateClick] = useState(false);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState();
+  const [expandedMessages, setExpandedMessages] = useState({});
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -283,7 +299,7 @@ const ChatArea = () => {
   };
 
   const handleSelectMode = (message) => {
-    alert("aaya");
+    setOpenMenuIndex(null);
     setSelectedMessages([message?.messageId]); // auto select first message
   };
 
@@ -299,6 +315,11 @@ const ChatArea = () => {
   };
 
   const handleBulkDelete = async () => {
+    const isConfirmed = await confirm(
+      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`,
+    );
+
+    if (!isConfirmed) return;
     try {
       setMessageList((prev) =>
         prev.filter((m) => !selectedMessages.includes(m.messageId)),
@@ -323,28 +344,54 @@ const ChatArea = () => {
     }
   };
 
+  const toggleReadMore = (id) => {
+    setExpandedMessages((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleUserAssign = async (value) => {
+    const isEdit = selectedConversation?.markAsLead;
+
+    const payload = {
+      Contact: selectedConversation.phone,
+      Name: selectedConversation.name,
+      ndid: selectedConversation.ndid,
+      notes: selectedConversation.notes,
+      status: selectedConversation.status,
+      conversationId: selectedConversation._id,
+      hId: selectedConversation?.hid || localStorage.getItem("hid"),
+      assignee: value,
+    };
+    const response = isEdit
+      ? await updateLead(payload)
+      : await addWhatsAppLead(payload);
+
+    setSelectedConversation({ ...selectedConversation, assignee: value });
+  };
+
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
   useEffect(() => {
     fetchTemplate();
-
-    // const handleClickOutside = (event) => {
-    //   if (menuRef.current && !menuRef.current.contains(event.target)) {
-    //     setOpenMenuIndex(null);
-    //   }
-    // };
-
-    // document.addEventListener("mousedown", handleClickOutside);
-
-    // return () => {
-    //   document.removeEventListener("mousedown", handleClickOutside);
-    // };
+    fetchUsersData();
   }, []);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      console.log(serverResponse);
-      if (serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE) {
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
+        normalizePhone(serverResponse?.data?.from) ===
+          normalizePhone(selectedConversation?.phone)
+      ) {
         const { data } = serverResponse;
         const fromPhone = normalizePhone(data.from);
         if (normalizePhone(selectedConversation.phone) !== fromPhone) return;
@@ -367,7 +414,10 @@ const ChatArea = () => {
           }),
         );
       } else if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE
+        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
+        normalizePhone(serverResponse?.data?.to) ===
+          normalizePhone(selectedConversation?.phone)
       ) {
         const { data } = serverResponse;
         setMessageList((prev) => [...prev, data]);
@@ -375,9 +425,10 @@ const ChatArea = () => {
     });
 
     return () => wsRef.current?.close();
-  }, [selectedConversation, conversations]);
+  }, [selectedConversation, conversations, messageList]);
 
   useEffect(() => {
+    setSelectedMessages([]);
     loadMessages(selectedConversation?._id);
     fetchFlowSession();
   }, [selectedConversation?._id]);
@@ -411,18 +462,18 @@ const ChatArea = () => {
         <div className="flex items-center gap-6">
           {selectionMode && (
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleBulkDelete}
-                className="text-red-500 font-medium"
-              >
-                <MdOutlineDelete size={20} />
-              </button>
-
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium">
-                  {selectedMessages.length} items
+                <span className="text-xs font-medium ">
+                  {selectedMessages.length} Messages
                 </span>
               </div>
+
+              <button
+                onClick={handleBulkDelete}
+                className="text-red-600 font-medium size-7 flex justify-center items-center bg-red-200 rounded-full"
+              >
+                <RiDeleteBin6Line size={16} />
+              </button>
             </div>
           )}
           <Link
@@ -431,6 +482,19 @@ const ChatArea = () => {
           >
             <MdCall size={18} /> Call
           </Link>
+
+          <div>
+            <CustomDropdown
+              label={selectedConversation?.assignedTo || "Select User"}
+              options={
+                allUsers?.map((user) => ({
+                  value: user?.userName,
+                  label: user?.userName,
+                })) || []
+              }
+              onChange={(value) => handleUserAssign(value)}
+            />
+          </div>
         </div>
       </div>
 
@@ -511,10 +575,10 @@ const ChatArea = () => {
                   <div
                     className={`flex gap-1 items-center py-2 ${
                       selectedMessages.includes(message?.messageId)
-                        ? "bg-blue-100 border-blue-400"
+                        ? "bg-slate-200 border-blue-400"
                         : isMe
-                          ? "bg-white"
-                          : "bg-white"
+                          ? ""
+                          : ""
                     }`}
                   >
                     {selectionMode && (
@@ -560,8 +624,26 @@ const ChatArea = () => {
                                     )}
 
                                   {/* Actual Message */}
+
                                   <p className="text-sm whitespace-pre-wrap">
-                                    {renderMessageWithLinks(message?.body)}
+                                    {expandedMessages[message._id]
+                                      ? renderMessageWithLinks(message?.body)
+                                      : renderMessageWithLinks(
+                                          message?.body?.slice(0, MAX_LENGTH),
+                                        )}
+
+                                    {message?.body?.length > MAX_LENGTH && (
+                                      <span
+                                        onClick={() =>
+                                          toggleReadMore(message._id)
+                                        }
+                                        className="text-blue-500 cursor-pointer ml-1"
+                                      >
+                                        {expandedMessages[message._id]
+                                          ? " Read less"
+                                          : "... Read more"}
+                                      </span>
+                                    )}
                                   </p>
                                 </div>
                               </div>
@@ -590,12 +672,18 @@ const ChatArea = () => {
                           {(message.messageType === "image" ||
                             message.messageType === "sticker") && (
                             <img
+                              onClick={() =>
+                                setImagePreview(
+                                  message?.media?.url ||
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`,
+                                )
+                              }
                               src={
                                 message.media?.url ||
                                 ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
                               }
                               alt="WhatsApp"
-                              className="mt-2 rounded-lg w-full size-44"
+                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
                             />
                           )}
 
@@ -692,7 +780,7 @@ const ChatArea = () => {
                           <button
                             ref={menuRef}
                             onClick={() => {
-                              // e.stopPropagation();
+                              // e.preventDefault();
                               setOpenMenuIndex(
                                 openMenuIndex === index ? null : index,
                               );
@@ -703,7 +791,7 @@ const ChatArea = () => {
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute right-0 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
                               {![
                                 "image",
                                 "video",
@@ -727,7 +815,8 @@ const ChatArea = () => {
                               </button> */}
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation();
+                                  // e.stopPropagation();
+
                                   handleSelectMode(message);
                                 }}
                                 className="block w-full text-left px-3 py-1 hover:bg-red-100 text-sm text-red-500"
@@ -745,6 +834,35 @@ const ChatArea = () => {
             ) : (
               <p className="text-center text-gray-400">No conversation yet</p>
             )}
+
+            {imagePreview && (
+              <div
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999999"
+                onClick={() => setImagePreview("")}
+              >
+                {/* Prevent closing when clicking on image */}
+                <div
+                  className="relative max-w-4xl w-full px-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setImagePreview("")}
+                    className="absolute -top-10 right-0 text-white text-2xl"
+                  >
+                    ✕
+                  </button>
+
+                  {/* Image */}
+                  <img
+                    src={imagePreview}
+                    alt="preview"
+                    className="w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
+                  />
+                </div>
+              </div>
+            )}
+
             <div ref={bottomRef} />
           </div>
         )}

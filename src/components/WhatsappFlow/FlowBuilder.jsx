@@ -6,6 +6,7 @@ import ReactFlow, {
   addEdge,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
@@ -31,10 +32,13 @@ const nodeTypes = {
 };
 
 export default function FlowBuilder() {
+  // const { project, getViewport } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
+  const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
 
   const onConnect = useCallback(
@@ -117,7 +121,7 @@ export default function FlowBuilder() {
                 title: "Section 1",
                 rows: [
                   {
-                    id: "row_1",
+                    id: `row_1_1_${uuidv4()}`,
                     title: "Option 1",
                   },
                 ],
@@ -126,6 +130,54 @@ export default function FlowBuilder() {
           },
           type: "list",
         },
+        type: "interactive",
+        variable: "",
+      };
+    } else if (type === "carousel") {
+      data = {
+        interactive: {
+          type: "carousel",
+
+          body: {
+            text: "Choose an option",
+          },
+
+          action: {
+            cards: [
+              {
+                card_index: 0,
+
+                // default header (text)
+                header: {
+                  type: "text",
+                  text: "Card Title",
+                },
+
+                body: {
+                  text: "Card description",
+                },
+
+                action: {
+                  buttons: [
+                    {
+                      type: "quick_reply",
+                      quick_reply: {
+                        id: "card_0_btn_0",
+                        title: "Option 1",
+                      },
+                    },
+                  ],
+                },
+
+                // 🔥 UI-only fields (important)
+                headerType: "text", // for frontend toggle
+                headerText: "Card Title",
+                image: null, // file (not URL)
+              },
+            ],
+          },
+        },
+
         type: "interactive",
         variable: "",
       };
@@ -141,8 +193,8 @@ export default function FlowBuilder() {
       id: uuidv4(),
       type,
       position: {
-        x: 200 + Math.random() * 300,
-        y: 100 + Math.random() * 300,
+        x: 250,
+        y: 100,
       },
       data,
     };
@@ -204,29 +256,33 @@ export default function FlowBuilder() {
     fetchFlows();
   }, []);
 
+  console.log(nodes);
+
   return (
-    <div>
-      <div className="flex justify-end p-2 z-50">
+    <div className="bg-white relative w-full">
+      <div className="flex justify-end absolute right-2 top-2 px-2 z-50">
         <button
           onClick={() => handlePublish()}
-          className="bg-slate-800 px-4 py-1 text-white flex items-center gap-1 rounded-sm"
+          className="bg-primary px-4 py-1 text-white flex items-center gap-1 rounded-sm"
         >
           Publish {loading && <Loader color="#fefefe" />}
         </button>
       </div>
 
       <div className="relative">
-        <div className="flex h-[90vh]">
+        <div className="flex h-[82vh]">
           <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-          {/* <div className="flex-1">
+          <div className="flex-1 bg-gray-200">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
                 data: {
                   ...node.data,
                   filesMap,
+                  filesMapCarousel,
                   setFilesMap,
+                  setFilesMapCarousel,
                 },
               }))}
               edges={edges}
@@ -237,14 +293,18 @@ export default function FlowBuilder() {
               onNodeClick={onNodeClick}
               onEdgeClick={onEdgeClick}
               connectionLineType="smoothstep"
-              fitView
             >
               <Background />
               <Controls />
-              <MiniMap position="bottom-right" />
+              <MiniMap
+                position="bottom-right"
+                zoomable
+                pannable
+                nodeStrokeWidth={3}
+              />
             </ReactFlow>
-          </div> */}
-          <WhatsAppFlowsBuilder />
+          </div>
+          {/* <WhatsAppFlowsBuilder /> */}
 
           {selectedNode && (
             <SettingsPanel

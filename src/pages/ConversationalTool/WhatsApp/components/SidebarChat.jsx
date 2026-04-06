@@ -14,7 +14,7 @@ import {
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import NewContactModal from "./NewContactModal";
 
-const tabs = ["Active", "Inactive", "New Contact"];
+const tabs = ["Active", "Inactive", "Add"];
 
 const SidebarChat = () => {
   const [templates, setTemplates] = useState([]);
@@ -111,7 +111,7 @@ const SidebarChat = () => {
     setActiveTab(tab);
     const activeTab = tab.toLowerCase();
 
-    activeTab === "new contact"
+    activeTab === "add"
       ? setOpenNewContactModal(true)
       : activeTab === "active"
         ? setFilteredConversations(activeConversations())
@@ -130,13 +130,10 @@ const SidebarChat = () => {
   }, [debouncedSearch, conversations]);
 
   useEffect(() => {
-    console.log("aaya");
-    console.log(activeTab);
-
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
-      setSelectedConversation(null);
+      // setSelectedConversation(null);
       // setSelectedConversation(actConversations[0]);
     } else if (activeTab === "Inactive" && historyConversations) {
       setFilteredConversations(historyConversations());
@@ -149,21 +146,19 @@ const SidebarChat = () => {
     fetchTemplates();
   }, [conversations]);
 
-  console.log(filteredConversations);
-
   return (
-    <div className="w-full md:w-90 border-b md:border-l md:border-r border-gray-200 flex flex-col bg-white">
+    <div className="w-full md:w-90 border-b  md:border-r border-gray-200 flex flex-col bg-white">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full"
+          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
-      <div className="flex border-b border-gray-200 bg-white rounded-lg overflow-hidden">
+      <div className="flex border-b border-gray-200 bg-white overflow-hidden">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -175,7 +170,7 @@ const SidebarChat = () => {
               className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
                 isActive
                   ? "bg-slate-700 text-white border-b-2 "
-                  : "text-slate-600 hover:bg-slate-100"
+                  : "text-slate-600 hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
               }`}
             >
               <span>{tab}</span>

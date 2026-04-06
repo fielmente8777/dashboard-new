@@ -373,7 +373,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   // console.log(currentLocation);
   return (
     <div
-      className="p-3 md:border-r w-full border-r-gray-200!  flex flex-col h-screen overflow-hidden shadow-md bg-slate-50 md:relative fixed left-0 z-99999"
+      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
       style={{
         left: isMobile ? (isOpen ? "0px" : "0%") : null,
       }}
@@ -381,18 +381,21 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       <div className="flex justify-between items-center mb-4 ">
         {isOpen && (
           <div>
-            <div className="w-28 h-10 -ml-2">
+            {/* <div className="w-28 h-10  ">
               <img
                 src={Logo}
                 alt="logo"
                 className="h-full w-full object-contain"
               />
-            </div>
+            </div> */}
+            <h1 className="font-bold text-xl uppercase text-white tracking-wider">
+              Eazotel
+            </h1>
           </div>
         )}
 
         <span
-          className={`size-8 bg-blue-100 rounded-sm flex items-center justify-center cursor-pointer duration-500 ${
+          className={`size-8  rounded-sm flex items-center justify-center cursor-pointer duration-500 ${
             !isOpen && "ml-2 rotate-180"
           }`}
           onClick={() => {
@@ -407,22 +410,22 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       <div
         className={`${
           isOpen ? "w-full" : "w-0 opacity-0 hidden"
-        } duration-200 text-nowrap`}
+        } duration-200 text-wrap`}
       >
         {loading ? (
-          <div className="bg-gray-100 p-4 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
-            <div className="bg-gray-200 animate-pulse h-2 w-24" />
+          <div className="bg-[#1b4599] p-2 flex flex-col gap-2  animate-pulse rounded-md mb-4 ">
+            <div className="bg-[#1b4599] animate-pulse h-2 w-24" />
             <div className="bg-gray-200 animate-pulse h-2" />
           </div>
         ) : (
           <div
-            className="relative bg-[#0a3a75] border cursor-pointer rounded-md px-3 py-1 flex items-center justify-between mb-4"
+            className="relative bg-[#1b4599] text-white! cursor-pointer rounded-md px-3 py-1 flex items-center justify-between mb-4"
             onClick={() => {
               setIsDropDownOpen(!isDropDownOpen);
             }}
           >
             <div className="w-full">
-              <p className="text-[16px] capitalize text-white font-medium">
+              <p className="text-sm capitalize  font-medium">
                 {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
                 {currentLocation?.local}
               </p>
@@ -430,7 +433,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               {currentLocation?.city &&
                 currentLocation?.state &&
                 currentLocation?.country && (
-                  <p className="text-white/90 text-[15px]">
+                  <p className="text-white/90 text-xs">
                     {currentLocation?.city}
                     {", "}
                     {currentLocation?.state}
@@ -457,7 +460,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                             e.stopPropagation();
                           }}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="bg-gray-300 px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
+                          className=" px-2 py-1 outline-none border rounded-sm w-full focus:border-2 focus:border-green-400"
                         />
                       </div>
                     )}
@@ -469,9 +472,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                             <div
                               className={`${
                                 currentProfile?.hotelName === profile?.hotelName
-                                  ? "bg-gray-300 opacity-80"
-                                  : "bg-gray-200"
-                              }  cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-3`}
+                                  ? "bg-[#1b4599] opacity-80"
+                                  : "bg-[#1b4599] hover:bg-[#1b4599]/80"
+                              }  cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2`}
                               onClick={() => {
                                 handleProfileSwitch(profile);
                               }}
@@ -505,22 +508,22 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                           return (
                             <div
                               key={key + 1}
-                              className={`rounded-sm hover:bg-gray-100  duration-150 p-2 ${
+                              className={`rounded-sm text-white duration-150 p-2 ${
                                 isCurrentLocation
-                                  ? "bg-gray-100 opacity-70 cursor-not-allowed"
-                                  : "bg-gray-200 cursor-pointer"
+                                  ? "bg-[#1b4599]/80 text-white opacity-70 cursor-not-allowed"
+                                  : "bg-[#1b4599]/80 cursor-pointer"
                               }`}
                               onClick={(e) => {
                                 if (!isCurrentLocation)
                                   handleSelectLocation(e, value, key);
                               }}
                             >
-                              <h2 className="text-[16px] font-medium">
+                              <h2 className="text-sm font-medium">
                                 {/* {hotel?.Profile?.hotelName || "Eazotel"} */}
                                 {value?.local}
                               </h2>
 
-                              <p className="text-sm gap-1 text-gray-500 flex items-center">
+                              <p className="text-xs gap-1 text-[#c2ccd6] flex items-center">
                                 <CiLocationOn />
                                 <span>
                                   {value?.city}
@@ -564,7 +567,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               {value?.local}
                             </h2>
 
-                            <p className="text-xs text-gray-500 flex items-center">
+                            <p className="text-xs text-[#c2ccd6] flex items-center">
                               <CiLocationOn />
                               <span>
                                 {value?.city}
@@ -584,9 +587,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 {authUser?.isAdmin && authUser?.role !== "owner" && (
                   <button
                     onClick={(e) => handleAddNewLocation(e)}
-                    className="bg-white rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 text-base font-semibold justify-center py-2 w-full"
+                    className="bg-white text-sm rounded-sm text-primary hover:bg-gray-300 duration-300 flex items-center gap-2 font-semibold justify-center py-2 w-full"
                   >
-                    <MdAddBusiness size={22} /> Add New Location
+                    <MdAddBusiness size={18} /> Add New Location
                   </button>
                 )}
               </div>
@@ -609,7 +612,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
-              <div className="animate-pulse h-10 bg-gray-200" />
+              <div className="animate-pulse h-10 bg-[#0a3a75]/20" />
             ))
           : maniuplateSideBarData?.map((item, index) => {
               if (authUser?.isAdmin) {
@@ -637,15 +640,15 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                             .join("/")
                             .toString() ===
                           item?.subLinks[sidebarActiveIndex]?.link
-                            ? " text-white rounded-sm bg-primary"
-                            : "text-primary"
+                            ? " text-[#c2ccd6] rounded-sm text-sm"
+                            : "text-[#c2ccd6]"
                         }`}
                       >
                         <div className={`flex gap-2 items-center`}>
-                          <span>{item?.icon}</span>
+                          <span className="text-xm">{item?.icon}</span>
 
                           <p
-                            className={`font-medium text-nowrap ${
+                            className={`text-sm text-[#c2ccd6] text-wrap ${
                               isOpen ? "block" : "hidden"
                             }  duration-300 overflow-hidden`}
                           >
@@ -664,11 +667,11 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                                 .join("/")
                                 .toString() ===
                               item?.subLinks[sidebarActiveIndex]?.link
-                                ? " text-white"
+                                ? " text-[#c2ccd6]"
                                 : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                            } ease-linear duration-300 text-[#c2ccd6] mt-1`}
                           >
-                            <Arrow />
+                            <Arrow className="text-xs" />
                           </span>
                         )}
                       </div>
@@ -680,8 +683,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                             .slice(4)
                             .join("/")
                             .toString() === item?.link
-                            ? "bg-[#0a3a75] text-white rounded-sm"
-                            : "text-primary"
+                            ? "text-[#c2ccd6] rounded-sm"
+                            : "text-[#c2ccd6]"
                         } `}
                       >
                         <Link
@@ -696,7 +699,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                           <Link
                             to={item.link}
                             target={item?.target ? "_blank" : "_self"}
-                            className={`flex gap-1 font-medium text-nowrap`}
+                            className={`flex gap-1 text-sm text-[#c2ccd6] text-wrap`}
                           >
                             {item.name}
                           </Link>
@@ -709,7 +712,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                     )}
 
                     {isOpen && openMenus[index] && (
-                      <div className="space-y-2 mt-2 border-2 border-gray-200 bg-gray-200/20 rounded-md p-2">
+                      <div className=" mt-2  rounded-md p-2">
                         {item?.subLinks &&
                           item.subLinks.map((subLink, index) => {
                             if (
@@ -737,9 +740,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                                       .slice(4)
                                       .join("/")
                                       .toString()
-                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                      : "hover:bg-[#0a3a75]/10"
-                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                                      ? " bg-[#1b4599] text-white px-2"
+                                      : "hover:bg-[#1b4599]/10"
+                                  }  flex gap-1 px-4  items-center rounded-md capitalize py-2 text-sm text-[#c2ccd6]`}
                                 >
                                   {subLink.icon} {subLink.name}
                                   {/* {hid}{subLink.link} */}
@@ -776,22 +779,22 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                           toggleMenu(index);
                           dispatch(open());
                         }}
-                        className={`flex justify-between items-center cursor-pointer py-3 px-2 ${
+                        className={`flex justify-between items-center cursor-pointer py-2 px-2 ${
                           pathLocation?.pathname
                             ?.split("/")
                             .slice(4)
                             .join("/")
                             .toString() ===
                           item?.subLinks[sidebarActiveIndex]?.link
-                            ? " text-white rounded-sm bg-primary"
-                            : "text-primary"
+                            ? " text-[#c2ccd6] rounded-sm bg-primary"
+                            : "text-[#c2ccd6]"
                         }`}
                       >
                         <div className={`flex gap-2 items-center`}>
                           <span>{item?.icon}</span>
 
                           <p
-                            className={`font-medium text-nowrap ${
+                            className={` text-sm text-[#c2ccd6] text-wrap ${
                               isOpen ? "block" : "hidden"
                             }  duration-300 overflow-hidden`}
                           >
@@ -812,7 +815,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               item?.subLinks[sidebarActiveIndex]?.link
                                 ? " text-white"
                                 : ""
-                            } ease-linear duration-300 text text-[#575757]/70 mt-1`}
+                            } ease-linear duration-300 text-sm text-[#c2ccd6]`}
                           >
                             <Arrow />
                           </span>
@@ -827,21 +830,18 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                               .slice(4)
                               .join("/")
                               .toString() === item?.link
-                              ? "bg-[#0a3a75] text-white rounded-sm"
-                              : "text-primary"
+                              ? "bg-[#1b4599] text-[#c2ccd6] rounded-sm"
+                              : "text-[#c2ccd6]"
                           } `}
                         >
-                          <Link
-                            to={item.link}
-                            className={`flex gap-1 font-medium`}
-                          >
+                          <Link to={item.link} className={`flex gap-1`}>
                             {item?.icon}
                           </Link>
 
                           {isOpen && (
                             <Link
                               to={item.link}
-                              className={`flex gap-1 font-medium text-nowrap`}
+                              className={`flex gap-1 text-sm  text-[#c2ccd6] text-wrap`}
                             >
                               {item.name}
                             </Link>
@@ -879,9 +879,9 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                                       .slice(4)
                                       .join("/")
                                       .toString()
-                                      ? "bg-[#DBEAFE] text-gray-700 px-2"
-                                      : "hover:bg-[#0a3a75]/10"
-                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-[16px] font-medium text-[#575757]`}
+                                      ? "bg-[#DBEAFE] text-[#c2ccd6] px-2"
+                                      : "hover:bg-[#1b4599]/10"
+                                  }  flex gap-1  items-center rounded-md capitalize py-2 px-3 text-sm text-[#c2ccd6]`}
                                 >
                                   {subLink.icon} {subLink.name}
                                   {/* {hid}{subLink.link} */}
@@ -901,7 +901,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       </div>
 
       <div
-        className="w-[2px] h-full absolute right-0 top-0 bg-white cursor-e-resize"
+        className=" absolute right-0 top-0 bg-transparent cursor-e-resize"
         onMouseDown={handleResize}
       />
 

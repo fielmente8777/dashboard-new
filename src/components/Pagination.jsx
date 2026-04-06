@@ -85,8 +85,8 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
             key={p}
             onClick={() => onPageChange(p)}
             className={`px-3 py-1 border rounded transition ${
-              p === page
-                ? "bg-blue-600 text-white border-blue-600"
+              p === Number(page)
+                ? "bg-primary text-white border-blue-600"
                 : "hover:bg-gray-100"
             }`}
           >

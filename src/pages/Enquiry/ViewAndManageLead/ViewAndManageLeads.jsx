@@ -32,6 +32,8 @@ const ViewAndManageLeads = () => {
   const leadPageNumber = searchParams.get("lead");
   const created_from = searchParams.get("created_from");
 
+  const [showSave, setShowSave] = useState(false);
+
   const [leadPageNumberState, setLeadPageNumberState] =
     useState(leadPageNumber);
 
@@ -73,7 +75,11 @@ const ViewAndManageLeads = () => {
       // const response = await getLeadById(leadId, hid);
       if (response?.success) {
         setLead(response?.result?.docs?.leads[0]);
-        setSelectedDate(response?.result?.docs?.leads[0]?.followUp);
+        const followDate =
+          response?.result?.docs?.leads[0]?.followUpDate ||
+          response?.result?.docs?.leads[0]?.folloUp;
+
+        setSelectedDate(followDate ? new Date(followDate) : null);
 
         const conversationId = response?.result?.docs?.conversationId;
 
@@ -99,7 +105,8 @@ const ViewAndManageLeads = () => {
         leadId: lead._id,
         hid: lead?.hId,
         conversationId: lead?.conversationId,
-        followUp: value,
+        followUpDate: value,
+        status: "Follow Up",
       };
 
       const response = await updateLead(payload);
@@ -185,44 +192,87 @@ const ViewAndManageLeads = () => {
         >
           <IoArrowBack />
         </button>
+
         <div className="flex flex-1  justify-between items-center">
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-          <div className="flex  gap-2 ">
+          <div className="hidden md:flex  gap-2 ">
             {lead?.Contact && (
-              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-[#fd5c01]/90 bg-white font-medium">
+              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white font-medium">
                 <label htmlFor="" className="">
                   Follow Up
                 </label>
-                <DatePicker
-                  // selectsRange
+                {/* <DatePicker
+                  minDate={new Date()}
                   startDate={selectedDate}
-                  // endDate={endDate}
+                  // onChange={(update) => {
+                  //   // setSelectedDate(update);
+                  //   // handleFollow(update);
+                  // }}
+                  shouldCloseOnSelect={false}
                   onChange={(update) => {
                     setSelectedDate(update);
-                    handleFollow(update);
+                    setShowSave(true); // show save button
                   }}
                   className="bg-transparent outline-none text-sm w-40 placeholder:text-[#fd5c01]"
                   placeholderText={`${selectedDate ? new Date(selectedDate).toLocaleString() : " Select Date"}`}
                   popperClassName="!z-50"
+                  showTimeInput
+                  customTimeInput={
+                    <CustomTimeInput onChangeCustom={handleChangeTime} />
+                  }
+                /> */}
+
+                <DatePicker
+                  minDate={new Date()}
+                  selected={selectedDate}
+                  onChange={(date) => {
+                    setSelectedDate(date);
+
+                    // ✅ Only call API when time is selected (not just date)
+                    // if (date && date.getHours() !== 0) {
+                    //   handleFollow(date);
+                    //   setShowSave(false);
+                    // }
+                  }}
+                  onCalendarClose={() => {
+                    if (selectedDate) {
+                      handleFollow(selectedDate); // ✅ runs only once
+                    }
+                  }}
+                  showTimeSelect
+                  timeIntervals={5}
+                  dateFormat="dd/MM/yyyy h:mm aa"
+                  placeholderText="Select Date & Time"
+                  className="bg-transparent outline-none text-sm w-44"
+                  popperClassName="!z-50"
                 />
-                {lead?.followUp && (
-                  <button onClick={() => handleFollow(null)}>X</button>
+                {(lead?.followUp || lead?.followUpDate) && (
+                  <button
+                    onClick={() => {
+                      setSelectedDate(null);
+                      handleFollow(null);
+                    }}
+                  >
+                    X
+                  </button>
+                )}
+
+                {showSave && (
+                  <button
+                    onClick={() => {
+                      handleFollow(selectedDate);
+                      setShowSave(false);
+                    }}
+                    className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                  >
+                    Save
+                  </button>
                 )}
               </div>
             )}
-            {/* {lead?.Contact && (
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setQuickResponseOpen(true)}
-                  className="bg-primary text-white px-2 md:px-5 py-2 rounded flex items-center gap-2 shadow"
-                >
-                  <FaWhatsapp />{" "}
-                  <span className="hidden md:block">Send Quick Response</span>
-                </button>
-              </div>
-            )} */}
           </div>
         </div>
+
         <div className="flex justify-end items-center gap-3">
           {/* Prev Button */}
           <button
@@ -250,7 +300,7 @@ const ViewAndManageLeads = () => {
         <>
           <LeadHeader lead={lead} />
 
-          <div className="grid grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
+          <div className="grid md:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
             <CustomerInfoCard
               lead={lead}
               onClick={() => setQuickResponseOpen(true)}
