@@ -31,6 +31,7 @@ import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import TurnAwayModal from "../../components/Modal/TurnAwayModal";
+import ImportLead from "../../components/button/ImportLead";
 import { FaTrashAlt } from "react-icons/fa";
 import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 
@@ -58,6 +59,8 @@ const AllLeads = () => {
 
   const [allUsers, setAllUsers] = useState([]);
   const [rowSelected, setRowSelected] = useState([]);
+
+  const [open,setOpen]=useState(false);
 
   const {
     page,
@@ -340,6 +343,8 @@ const AllLeads = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">All Leads</h2>
 
+          <div className="flex items-center">
+
           {allLeads?.length > 0 && (
             <button
               disabled={isExporting}
@@ -350,6 +355,9 @@ const AllLeads = () => {
               {isExporting && <Loader color="#fefefe" size={12} />}
             </button>
           )}
+            <ImportLead open={open} setOpen={setOpen} />
+          </div>
+
         </div>
 
         <div className="bg-white">

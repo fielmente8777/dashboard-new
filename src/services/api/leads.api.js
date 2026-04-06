@@ -77,5 +77,19 @@ export const updateLead = async (payload) => {
 
   return data;
 };
+export const importLead = async (payload) => {
+  const { data } = await axios.post(
+    `${NEW_BASE_URL}/api/v1/leads/import?hid=${localStorage.getItem("hid")}`,
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  return data;
+};
 
 export const UpdateLeadStatus = () => {};
