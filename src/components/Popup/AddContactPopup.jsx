@@ -176,8 +176,7 @@ const AddContactPopup = ({
               ) : (
                 <button
                   type="submit"
-                  className="w-full p-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-md transition"
-                >
+                  className="w-full p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold shadow-md transition">
                   Add Contact
                 </button>
               )}

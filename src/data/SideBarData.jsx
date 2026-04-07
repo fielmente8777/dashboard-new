@@ -5,29 +5,36 @@ import {
   FaWhatsapp,
   FaInstagram,
   FaFacebook,
+  FaCalendarCheck,
 } from "react-icons/fa";
 import {
+  FaBots,
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
   FaRankingStar,
+  FaUser,
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoMdSettings, IoIosChatbubbles } from "react-icons/io";
+import { IoMdSettings, IoIosChatbubbles, IoMdGlobe, IoMdEye } from "react-icons/io";
 import {
+  MdCampaign,
+  MdChat,
   MdEmergencyShare,
   MdLink,
+  MdOutlineChatBubbleOutline,
   MdOutlineReviews,
   MdOutlineSos,
+  MdPhone,
   MdUnsubscribe,
 } from "react-icons/md";
-import { SiGoogleanalytics, SiLivechat } from "react-icons/si";
+import { SiGoogleanalytics, SiGooglesheets, SiLivechat } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
-import { PiUsersThreeFill } from "react-icons/pi";
+import { PiChatCircleLight, PiGlobeSimpleLight, PiUsersThreeFill } from "react-icons/pi";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
-import { GrResources } from "react-icons/gr";
+import { GrAnnounce, GrResources } from "react-icons/gr";
 import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
@@ -50,10 +57,11 @@ import { MdPolicy } from "react-icons/md";
 import { MdOutlineFreeCancellation } from "react-icons/md";
 import { MdBedroomParent, MdOutlineInventory } from "react-icons/md";
 import { RiReservedFill } from "react-icons/ri";
-import { IoFastFood } from "react-icons/io5";
+import { IoBookOutline, IoFastFood } from "react-icons/io5";
 import { SiGoogleadsense } from "react-icons/si";
 import { SiGoogleads } from "react-icons/si";
-import { CiViewBoard } from "react-icons/ci";
+import { CiGlobe, CiViewBoard } from "react-icons/ci";
+import { FiDatabase, FiEye, FiUsers } from "react-icons/fi";
 import {
   DocumentIcon,
   ChatIcon,
@@ -68,7 +76,7 @@ export const SidebarData = [
   {
     name: "Dashboard",
     link: ``,
-    icon: <Dashboard />,
+    icon:<MdDashboard color={"#c2ccd6"} size={16} />,
   },
   // {
   //   name: "Live Chat",
@@ -79,56 +87,56 @@ export const SidebarData = [
   //     // {
   //     //   name: "Eazbot",
   //     //   link: `channel/eb/chat`,
-  //     //   icon: <FaWhatsapp size={16} />,
+  //     //   icon: <FaWhatsapp size={18} />,
   //     // },
   //     {
   //       name: "WhatsApp",
   //       link: `channel/wa/chat`,
-  //       icon: <FaWhatsapp size={16} />,
+  //       icon: <FaWhatsapp size={18} />,
   //     },
   //     {
   //       name: "Instagram",
   //       link: `channel/ig/chat`,
-  //       icon: <FaInstagram size={16} />,
+  //       icon: <FaInstagram size={18} />,
   //     },
   //     {
   //       name: "Facebook",
   //       link: `channel/fb/chat`,
-  //       icon: <FaFacebook size={16} />,
+  //       icon: <FaFacebook size={18} />,
   //     },
   //   ],
   // },
   {
     name: "Live Chat",
     link: `channel`,
-    icon: <SiLivechat />,
+    icon: <PiChatCircleLight  />,
     subLinks: [
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
-        icon: <WhatsappIcon />,
+        icon: <MdChat />,
       },
       {
         name: "Instagram",
         link: `channel/ig/chat`,
         icon: <FaInstagram size={16} />,
       },
-      {
-        name: "Facebook",
-        link: `channel/fb/chat`,
-        icon: <FaFacebook size={16} />,
-      },
+      // {
+      //   name: "Facebook",
+      //   link: `channel/fb/chat`,
+      //   icon: <FaFacebook size={18} />,
+      // },
 
       {
         name: "Eazbot",
         link: `channel/eb/chat`,
-        icon: <FaWhatsapp size={16} />,
+        icon: <FaRobot size={18} />,
       },
 
       // {
       //   name: "Templates",
       //   link: `channel/whatsapp/template/create`,
-      //   icon: <FaWhatsapp size={16} />,
+      //   icon: <FaWhatsapp size={18} />,
       // },
     ],
   },
@@ -156,7 +164,7 @@ export const SidebarData = [
     name: "Leads Management",
     link: `leads-management`,
     key: "Enquiries Management",
-    icon: <MdAnalytics size={24} />,
+    icon: <FiUsers />,
     subLinks: [
       {
         name: "All",
@@ -166,78 +174,35 @@ export const SidebarData = [
       {
         name: "Meta",
         link: `leads-management/meta-leads`,
-        icon: <RiMetaFill color="#0266df" />,
+        icon:<PiGlobeSimpleLight size={18} />
+
+        // <RiMetaFill color="#0266df" />,
       },
       {
         name: "WhatsApp",
         link: `leads-management/whatsapp`,
-        icon: <WhatsappIcon />,
+        icon: <MdOutlineChatBubbleOutline />,
       },
 
       {
         name: "Google Ads",
         link: `leads-management/google-ads-leads`,
-        icon: (
-          <svg
-            width="16px"
-            height="16px"
-            viewBox="0 -13 256 256"
-            version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            preserveAspectRatio="xMidYMid"
-            fill="#000000"
-          >
-            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <g>
-                {" "}
-                <path
-                  d="M5.888,166.405103 L90.88,20.9 C101.676138,27.2558621 156.115862,57.3844138 164.908138,63.1135172 L79.9161379,208.627448 C70.6206897,220.906621 -5.888,185.040138 5.888,166.396276 L5.888,166.405103 Z"
-                  fill="#FBBC04"
-                >
-                  {" "}
-                </path>{" "}
-                <path
-                  d="M250.084224,166.401789 L165.092224,20.9055131 C153.210293,1.13172 127.619121,-6.05393517 106.600638,5.62496138 C85.582155,17.3038579 79.182155,42.4624786 91.0640861,63.1190303 L176.056086,208.632961 C187.938017,228.397927 213.52919,235.583582 234.547672,223.904686 C254.648086,212.225789 261.966155,186.175582 250.084224,166.419444 L250.084224,166.401789 Z"
-                  fill="#4285F4"
-                >
-                  {" "}
-                </path>{" "}
-                <ellipse
-                  fill="#34A853"
-                  cx="42.6637241"
-                  cy="187.924414"
-                  rx="42.6637241"
-                  ry="41.6044138"
-                >
-                  {" "}
-                </ellipse>{" "}
-              </g>{" "}
-            </g>
-          </svg>
-        ),
+        icon: <SiGoogleads size={14} />,
       },
       {
         name: "Webform",
         link: `leads-management/webform-leads`,
-        icon: <DocumentIcon />,
+        icon: <SiGooglesheets />,
       },
       {
         name: "Eazbot",
         link: `leads-management/eazbot-leads`,
-        icon: <ChatIcon />,
+        icon: <FaRobot size={18} />,
       },
       {
         name: "Visitors",
         link: `leads-management/all-visitors`,
-        icon: <TeamIcon />,
+        icon: <FiEye />,
       },
 
       // {
@@ -262,7 +227,7 @@ export const SidebarData = [
     name: "Marketing",
     // key: "",
     link: `marketing`,
-    icon: <MdAnalytics size={24} />,
+    icon: <GrAnnounce size={16} />,
     subLinks: [
       {
         name: "Whatsapp Marketing",
@@ -277,68 +242,68 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "Insights & Analytics",
-    link: `insights-analytics`,
-    icon: <SiAnalogue size={22} />,
-    subLinks: [
-      {
-        name: "Google Ads Insights",
-        link: `insights-analytics/google-ads-insights`,
+  // {
+  //   name: "Insights & Analytics",
+  //   link: `insights-analytics`,
+  //   icon: <SiAnalogue size={22} />,
+  //   subLinks: [
+  //     {
+  //       name: "Google Ads Insights",
+  //       link: `insights-analytics/google-ads-insights`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Meta Ads Insights",
-        link: `insights-analytics/meta-ads-insights`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Meta Ads Insights",
+  //       link: `insights-analytics/meta-ads-insights`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Google Analytics",
-        link: `insights-analytics/google-analytics`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Google Analytics",
+  //       link: `insights-analytics/google-analytics`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Google Console",
-        link: `insights-analytics/google-console`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Google Console",
+  //       link: `insights-analytics/google-console`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "GMB Insights",
-        link: `insights-analytics/gmb-insights`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "GMB Insights",
+  //       link: `insights-analytics/gmb-insights`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Social Media Insights",
-        link: `insights-analytics/social-media-insights`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Social Media Insights",
+  //       link: `insights-analytics/social-media-insights`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Website Analytics",
-        link: `insights-analytics/website-analytics`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Website Analytics",
+  //       link: `insights-analytics/website-analytics`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-      {
-        name: "Leads Analytics",
-        link: `insights-analytics/leads-analytics`,
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //     {
+  //       name: "Leads Analytics",
+  //       link: `insights-analytics/leads-analytics`,
 
-        icon: <SiGoogleanalytics size={16} />,
-      },
-    ],
-  },
+  //       icon: <SiGoogleanalytics size={18} />,
+  //     },
+  //   ],
+  // },
 
-  {
-    name: "Google Ads Insights",
-    // key: "",
-    link: `google-ads-insights`,
-    icon: <SiGoogleadsense />,
-  },
+  // {
+  //   name: "Google Ads Insights",
+  //   // key: "",
+  //   link: `google-ads-insights`,
+  //   icon: <SiGoogleadsense />,
+  // },
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -350,7 +315,7 @@ export const SidebarData = [
     name: "Calls Management",
     // key: "",
     link: `calls-management`,
-    icon: <HiOutlineUserGroup />,
+    icon: <MdPhone />,
   },
   // {
   //   name: "Meta",
@@ -385,7 +350,7 @@ export const SidebarData = [
     // key: "Social Media",
     target: "_blank",
     link: `https://social.eazotel.com`,
-    icon: <TiSocialSkype size={24} />,
+    icon: <TiSocialSkype size={18} />,
   },
 
   // {
@@ -397,22 +362,22 @@ export const SidebarData = [
   //     {
   //       name: "Overview",
   //       link: `gmb/overview`,
-  //       icon: <CiViewBoard size={16} />,
+  //       icon: <CiViewBoard size={18} />,
   //     },
   //     {
   //       name: "Rank",
   //       link: `gmb/rank`,
-  //       icon: <FaRankingStar size={16} />,
+  //       icon: <FaRankingStar size={18} />,
   //     },
   //     {
   //       name: "Keywords",
   //       link: `gmb/keywords`,
-  //       icon: <SiGoogleforms size={16} />,
+  //       icon: <SiGoogleforms size={18} />,
   //     },
   //     {
   //       name: "Reviews",
   //       link: `gmb/reviews`,
-  //       icon: <MdOutlineReviews size={16} />,
+  //       icon: <MdOutlineReviews size={18} />,
   //     },
   //   ],
   // },
@@ -432,7 +397,7 @@ export const SidebarData = [
     name: "Booking Engine",
     key: "Booking Engine",
     link: `booking-engine`,
-    icon: <SiGoogleearthengine size={20} />,
+    icon: <FaCalendarCheck size={16} />,
     subLinks: [
       {
         name: "Rooms Setup",
@@ -466,12 +431,12 @@ export const SidebarData = [
     name: "Guest Request Management",
     link: `guest-request-management`,
     key: "GRM",
-    icon: <MdOutlineSos size={26} />,
+    icon: <FaUser size={18} />,
     subLinks: [
       {
         name: "All Requests",
         link: `grm/all-requests`,
-        icon: <FaCodePullRequest size={16} />,
+        icon: <FaCodePullRequest size={14} />,
       },
       // {
       //   name: "Emergency Request",
@@ -489,7 +454,7 @@ export const SidebarData = [
     name: "Reservation Desk",
     link: `reservation-desk`,
     key: "Reservation Desk",
-    icon: <RiReservedFill size={24} />,
+    icon: <IoBookOutline size={18} />,
     // subLinks: [
     //   {
     //     name: "Enquiries",
@@ -503,37 +468,37 @@ export const SidebarData = [
     name: "Content Management system",
     link: ``,
     key: "CMS",
-    icon: <SiPayloadcms size={24} />,
+    icon: <FiDatabase size={18} />,
     subLinks: [
       {
         name: "Profile and Links",
         link: `cms/profile-and-links`,
-        icon: <RiFolderUserFill size={22} />,
+        icon: <RiFolderUserFill size={18} />,
       },
       {
         name: "Gallery",
         link: `cms/gallery`,
-        icon: <RiGalleryFill size={22} />,
+        icon: <RiGalleryFill size={18} />,
       },
       {
         name: "Offers",
         link: `cms/offers`,
-        icon: <BiSolidOffer size={22} />,
+        icon: <BiSolidOffer size={18} />,
       },
       {
         name: "Events",
         link: `cms/events`,
-        icon: <MdEventSeat size={22} />,
+        icon: <MdEventSeat size={18} />,
       },
       {
         name: "Blogs",
         link: `cms/blogs`,
-        icon: <FaBloggerB size={22} />,
+        icon: <FaBloggerB size={18} />,
       },
       {
         name: "Faq",
         link: `cms/faq`,
-        icon: <FaQuestion size={22} />,
+        icon: <FaQuestion size={18} />,
       },
       // {
       //   name: "Newsletter",
@@ -543,17 +508,17 @@ export const SidebarData = [
       {
         name: "Privacy Policy",
         link: `cms/privacy-policy`,
-        icon: <MdPrivacyTip size={22} />,
+        icon: <MdPrivacyTip size={18} />,
       },
       {
         name: "Terms & Conditions",
         link: `cms/terms-and-conditions`,
-        icon: <MdPolicy size={22} />,
+        icon: <MdPolicy size={18} />,
       },
       {
         name: "Cancellation and refund Policy",
         link: `cms/cancellation-and-refund-policy`,
-        icon: <MdOutlineFreeCancellation size={22} />,
+        icon: <MdOutlineFreeCancellation size={20} />,
       },
     ],
   },
@@ -581,7 +546,7 @@ export const SidebarData = [
   //   //   {
   //   //     name: "My Form",
   //   //     link: `lead-form/lead-gen-form`,
-  //   //     icon: <SiGoogleforms size={16} />,
+  //   //     icon: <SiGoogleforms size={18} />,
   //   //   },
   //   // ],
   // },
@@ -590,7 +555,7 @@ export const SidebarData = [
     name: "Payment Gateway",
     key: "Payment Gateway",
     link: `payment-gateway`,
-    icon: <MdPayment size={22} />,
+    icon: <MdPayment />,
   },
 
   {
@@ -610,7 +575,7 @@ export const SidebarData = [
   {
     name: "Newsletter",
     link: `newsletter`,
-    icon: <MdUnsubscribe size={22} />,
+    icon: <MdUnsubscribe size={20} />,
   },
 
   // {
@@ -744,7 +709,7 @@ export const SidebarData = [
     name: "Contacts",
     key: "",
     link: `contacts`,
-    icon: <MdMarkEmailUnread size={24} />,
+    icon: <MdMarkEmailUnread size={18} />,
   },
 
   // {

@@ -506,7 +506,7 @@ function Integration() {
                       className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
                         status
                           ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-primary text-white hover:bg-primary/90"
                       } ${
                         currentIntegrationId === integration.id
                           ? "opacity-70 cursor-not-allowed"

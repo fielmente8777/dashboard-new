@@ -7,6 +7,7 @@ export default function CustomDropdown({
   options,
   onChange,
   width = "w-48",
+  zIndex = 99999,
   ...props
 }) {
   const [selected, setSelected] = useState(label || options[0]?.label);
@@ -57,7 +58,7 @@ export default function CustomDropdown({
   };
 
   return (
-    <div className="relative z-99999">
+    <div className="relativ">
       {/* BUTTON */}
       <button
         ref={buttonRef}
@@ -82,8 +83,9 @@ export default function CustomDropdown({
               width: position.width,
               left: position.left,
               top: position.top,
+              zIndex,
             }}
-            className="absolute z-99999 rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto wrap-break-word"
+            className="absolute rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto wrap-break-word"
           >
             {options.map((opt) => (
               <div

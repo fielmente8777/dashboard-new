@@ -3,13 +3,13 @@ import WebSocketClient from "../../../config/websocketClient";
 import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
 
 import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
+import DataContext from "../../../context/DataContext";
+import useNotificationSound from "../../../hooks/useNotificationSound";
+import { connectWhatsapp } from "../../../services/api/Integration";
 import { getWhatsappConversation } from "../../../services/api/whatsApp";
 import ChatArea from "./components/ChatArea";
-import SidebarChat from "./components/SidebarChat";
 import ProfilePanel from "./components/ProfilePanel";
-import DataContext from "../../../context/DataContext";
-import { connectWhatsapp } from "../../../services/api/Integration";
-import useNotificationSound from "../../../hooks/useNotificationSound";
+import SidebarChat from "./components/SidebarChat";
 
 const WhatsApp = () => {
   const wsRef = useRef(null);
@@ -19,11 +19,11 @@ const WhatsApp = () => {
     setConversations,
     conversations,
     selectedConversation,
-    setSelectedConversation,
-    mobileActive,setMobileActive
+    isLoadingIntegrationStatus,
+    mobileActive,
   } = useContext(DataContext);
-  const [loading, setLoading] = useState(false);
 
+  const [loading, setLoading] = useState(false);
   const playNotification = useNotificationSound(
     "/notification-sound/Sound1.mp3",
   );
@@ -68,13 +68,12 @@ const WhatsApp = () => {
     return newList;
   };
 
-  useEffect(() => {
-    checkIntegrationStatus();
-  }, []);
-
   // 🔹 Fetch contacts → build conversations
-  const getWhatsappConversations = async (loading = true) => {
-    setLoading(loading);
+  const getWhatsappConversations = async () => {
+    setLoading(true);
+
+    if (!integrationStatus?.metaWhatsapp) return setLoading(false);
+
     try {
       const response = await getWhatsappConversation();
 
@@ -87,6 +86,10 @@ const WhatsApp = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkIntegrationStatus();
+  }, []);
 
   // 🔹 WebSocket incoming messages
   useEffect(() => {
@@ -130,7 +133,7 @@ const WhatsApp = () => {
 
   useEffect(() => {
     getWhatsappConversations();
-  }, []);
+  }, [integrationStatus?.metaWhatsapp]);
 
   const handleWhatsappConnect = async () => {
     try {
@@ -144,36 +147,37 @@ const WhatsApp = () => {
     }
   };
 
-  if (loading) return <WhatesAppChatSkeleton />;
+  if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 
   return (
-    <div className="h-[calc(100vh-6.2vh)] flex bg-gray-50">
+    <div className="h-[calc(100vh-8vh)] flex bg-gray-50">
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full">
-        <div className="hidden md:flex w-full">
-          <SidebarChat />
+          <div className="hidden md:flex w-full">
+            <SidebarChat />
 
-          {selectedConversation ? <ChatArea /> : <Fallback />}
-          {selectedConversation && (
-            <ProfilePanel
-              selectedContact={selectedConversation}
-              fetchConversations={getWhatsappConversations}
-            />
-          )}
-        </div>
-        <div className="flex w-full md:hidden  flex-col ">
-          {mobileActive==="sidebar"&&<SidebarChat />}
+            {selectedConversation ? <ChatArea /> : <Fallback />}
+            {selectedConversation && (
+              <ProfilePanel
+                selectedContact={selectedConversation}
+                fetchConversations={getWhatsappConversations}
+              />
+            )}
+          </div>
+          <div className="flex w-full md:hidden  flex-col ">
+            {mobileActive === "sidebar" && <SidebarChat />}
 
-          {mobileActive==="chatarea"&&selectedConversation&& <ChatArea/>}
-          {mobileActive==="profile"&&selectedConversation && (
-            <ProfilePanel
-              selectedContact={selectedConversation}
-              fetchConversations={getWhatsappConversations}
-            />
-          )}
+            {mobileActive === "chatarea" && selectedConversation && (
+              <ChatArea />
+            )}
+            {mobileActive === "profile" && selectedConversation && (
+              <ProfilePanel
+                selectedContact={selectedConversation}
+                fetchConversations={getWhatsappConversations}
+              />
+            )}
+          </div>
         </div>
-        </div>
-
       ) : (
         <div className="flex w-full justify-center py-12 ">
           <div>

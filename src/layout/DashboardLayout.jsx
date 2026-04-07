@@ -5,7 +5,7 @@ import { useState } from "react";
 import ProfileDropDown from "../components/Popup/ProfileDropDown";
 
 export default function DashboardLayout({ children }) {
-  const [sideBarWidth, setSidebarWidth] = useState(340);
+  const [sideBarWidth, setSidebarWidth] = useState(247);
   const [isSmooth, setIsSmooth] = useState(true);
 
   const { isOpen } = useSelector((state) => state.toggle);
@@ -19,9 +19,8 @@ export default function DashboardLayout({ children }) {
           }}
           className={`md:block hidden ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden`}
+          } overflow-hidden sm:overflow-hidden`}
         >
-          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
             <Sidebar
               sideBarWidth={sideBarWidth}
@@ -37,9 +36,8 @@ export default function DashboardLayout({ children }) {
           }}
           className={` ${isOpen ? "block md:hidden" : "hidden"} ${
             isSmooth ? "transition-all duration-300" : ""
-          } overflow-hidden bg-white sm:overflow-hidden w-[100%]`}
+          } overflow-hidden bg-white sm:overflow-hidden w-full`}
         >
-          {/* <div className=" max-sm:hidden !w-[25%] bg-white sm:overflow-hidden rounded-sm mt-[3.4rem] border"> */}
           <div>
             <Sidebar
               sideBarWidth={sideBarWidth}

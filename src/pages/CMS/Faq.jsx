@@ -215,7 +215,7 @@ const Analytics = () => {
             <button
               disabled={loadingAddFaq}
               onClick={addFaq}
-              className="bg-[#0a3a75] disabled:opacity-75 text-white py-2 px-4 rounded flex items-center gap-4 justify-center"
+              className="bg-primary disabled:opacity-75 text-white py-2 px-4 rounded flex items-center gap-4 justify-center"
             >
               Add FAQ {loadingAddFaq && <Loader size={20} color="#fff" />}
             </button>

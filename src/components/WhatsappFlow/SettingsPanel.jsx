@@ -72,6 +72,7 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
         <CarouselSettings
           onSave={(data) => handleDataSave(data)}
           onCancel={() => handleButtonCancel()}
+          data={node.data}
         />
       )}
     </div>

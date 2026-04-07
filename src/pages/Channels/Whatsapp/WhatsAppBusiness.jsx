@@ -34,17 +34,29 @@ import WhatsAppMessageTemplate from "./Templates/Templates";
 import TemplatePreview from "./Templates/TemplatePreview";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import { useToast } from "../../../context/ToastContext";
-
+import TemplateLibrary from "./Templates/TemplateLibrary";
+import { ReactFlowProvider } from "reactflow";
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
-  { id: "templates", label: "Message Templates" },
+  {
+    id: "templates",
+    label: "Message Templates",
+    children: [
+      { id: "create-template", label: "Create Template" },
+      { id: "template-library", label: "Template Library" },
+    ],
+  },
   { id: "auto-message", label: "Auto Message" },
   { id: "credits", label: "Credits" },
-  { id: "whatsapp-flow", label: "WhatsApp Flow " },
+  { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 
 const WhatsAppBusiness = () => {
   const hasFetchedRef = useRef(false);
+
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [activeSubTab, setActiveSubTab] = useState("create-template");
+  const [openDropdown, setOpenDropdown] = useState(null);
 
   const [activeTab, setActiveTab] = useState("overview");
   const [collapsed, setCollapsed] = useState(false);
@@ -106,6 +118,8 @@ const WhatsAppBusiness = () => {
     }
   };
 
+  console.log(selectedTemplate);
+
   useEffect(() => {
     fetchFlows();
   }, []);
@@ -161,15 +175,13 @@ const WhatsAppBusiness = () => {
     return <WhatsappBusinessSkelton />;
   }
 
-  console.log(flows);
-
   return (
     <React.Fragment>
       {accountDetails && (
         <div className="flex h-[82vh]">
           <div
             className={`bg-gray-100/60 shadow! h-full transition-all duration-300
-             ${collapsed ? "w-10" : "w-56"} p-2`}
+  ${collapsed ? "w-10" : "w-56"} p-2`}
           >
             {/* Hamburger */}
             <div className="flex justify-end mb-3">
@@ -178,25 +190,61 @@ const WhatsAppBusiness = () => {
               </button>
             </div>
 
-            {/* Tabs */}
+            {/* Sidebar Tabs */}
             <div className="flex flex-col gap-1">
               {sidebarTabs.map((tab) => {
-                const Icon = tab.icon;
+                const isOpen = openDropdown === tab.id;
 
                 return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition ${collapsed && "opacity-0"} ${
-                      activeTab === tab.id
-                        ? "bg-slate-700 text-white font-medium"
-                        : "hover:bg-gray-100 text-gray-600"
-                    }`}
-                  >
-                    {/* <Icon size={18} /> */}
+                  <div key={tab.id}>
+                    {/* Parent Tab */}
+                    <button
+                      onClick={() => {
+                        if (tab.children) {
+                          setOpenDropdown(isOpen ? null : tab.id);
+                          setActiveTab(tab.id);
+                        } else {
+                          setActiveTab(tab.id);
+                          setOpenDropdown(null);
+                        }
+                      }}
+                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition ${
+                        activeTab === tab.id
+                          ? "bg-slate-700 text-white"
+                          : "text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {!collapsed && <span>{tab.label}</span>}
 
-                    {!collapsed && <span>{tab.label}</span>}
-                  </button>
+                      {tab.children && !collapsed && (
+                        <span className="text-xs transition-all duration-300">
+                          {isOpen ? "▲" : "▼"}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Sub Dropdown */}
+                    {tab.children && isOpen && !collapsed && (
+                      <div className="ml-4 mt-1 flex flex-col gap-1">
+                        {tab.children.map((sub) => (
+                          <button
+                            key={sub.id}
+                            onClick={() => {
+                              setActiveTab(tab.id);
+                              setActiveSubTab(sub.id);
+                            }}
+                            className={`text-left px-3 py-2 rounded-md text-sm ${
+                              activeSubTab === sub.id
+                                ? "bg-gray-300 text-black"
+                                : "text-gray-600 hover:bg-gray-100"
+                            }`}
+                          >
+                            {sub.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -226,8 +274,31 @@ const WhatsAppBusiness = () => {
               </div>
             )}
 
-            {activeTab === "templates" && <CreateTemplate />}
-            {activeTab === "whatsapp-flow" && <FlowBuilder />}
+            {activeTab === "templates" &&
+              activeSubTab === "create-template" && (
+                <CreateTemplate
+                  initialData={selectedTemplate}
+                  onClose={() => {
+                    setSelectedTemplate(null);
+                    setActiveSubTab("template-library");
+                  }}
+                />
+              )}
+
+            {activeTab === "templates" &&
+              activeSubTab === "template-library" && (
+                <TemplateLibrary
+                  onSelectTemplate={(template) => {
+                    setActiveSubTab("create-template");
+                    setSelectedTemplate(template);
+                  }}
+                />
+              )}
+            {activeTab === "whatsapp-flow" && (
+              <ReactFlowProvider>
+                <FlowBuilder />
+              </ReactFlowProvider>
+            )}
           </div>
         </div>
       )}

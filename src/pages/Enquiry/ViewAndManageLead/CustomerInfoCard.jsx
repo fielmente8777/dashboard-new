@@ -2,7 +2,7 @@ import { FaPhone, FaWhatsapp } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import InfoRow from "./InfoRow";
 import CustomDropdown from "../../../components/ui/Dropdown";
-import { NEW_BASE_URL, Stages } from "../../../data/constant";
+import { NEW_BASE_URL, Stages, TurnAwayCode } from "../../../data/constant";
 import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
@@ -10,28 +10,27 @@ import { useToast } from "../../../context/ToastContext";
 import { useContext, useEffect, useState } from "react";
 import { fetchUserManagementData } from "../../../services/api";
 import DataContext from "../../../context/DataContext";
+import DatePickerModal from "../../../components/Modal/DatePickerModal";
 
 const CustomerInfoCard = ({ lead, onClick }) => {
   const { showToast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
   const [agentNumber, setAgentNumber] = useState();
   const [selectedGuestNumber, setSelectedGuestNumber] = useState("");
-  const {
-    integrationStatus,
-    checkIntegrationStatus,
-    isLoadingIntegrationStatus,
-  } = useContext(DataContext);
+  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [callPopup, setCallPopup] = useState(false);
-  if (!lead) return null;
 
-  const handleStageChange = async (value) => {
+  const handleStageChange = async ({ value, followUpDate, turnAwayCode }) => {
     try {
       const payload = {
         leadId: lead._id,
         status: value,
         hid: lead?.hId,
         conversationId: lead?.conversationId,
+        followUpDate: followUpDate || null,
+        ...(turnAwayCode && { turnAwayCode }),
       };
 
       const response = await updateLead(payload);
@@ -133,14 +132,12 @@ const CustomerInfoCard = ({ lead, onClick }) => {
     }
   };
 
-
-  console.log(integrationStatus);
   useEffect(() => {
     fetchUsersData();
-    checkIntegrationStatus()
+    checkIntegrationStatus();
   }, []);
 
-  // console.log(allUsers);
+  if (!lead) return null;
 
   return (
     <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">
@@ -150,9 +147,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         </h3>
 
         {lead?.Contact && (
-          <div
-            className="cursor-pointer flex justify-between items-center py-2 border-b last:border-0"
-          >
+          <div className="cursor-pointer flex justify-between items-center py-2 border-b last:border-0">
             <div>
               <p className="text-sm font-medium text-gray-700">Mobile Number</p>
               <p
@@ -163,21 +158,27 @@ const CustomerInfoCard = ({ lead, onClick }) => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-
-              <div onClick={onClick} className="text-primary rounded bg-orange-600/10 p-2">
+              <div
+                onClick={onClick}
+                className="text-primary rounded bg-primary/10 p-2"
+              >
                 <FaWhatsapp />
               </div>
-              {integrationStatus.exotel ? <div
-                onClick={() => handleCallPopup(lead.Contact)}
-                className="rounded text-primary bg-orange-600/10 p-2">
-                <FaPhone />
-              </div> 
-              :
-                <Link to={`tel:${lead.Contact}`} className="rounded text-primary bg-orange-600/10 p-2" > 
-                <FaPhone />
+              {integrationStatus.exotel ? (
+                <div
+                  onClick={() => handleCallPopup(lead.Contact)}
+                  className="rounded text-primary bg-primary/10 p-2"
+                >
+                  <FaPhone />
+                </div>
+              ) : (
+                <Link
+                  to={`tel:${lead.Contact}`}
+                  className="rounded text-primary bg-primary/10 p-2"
+                >
+                  <FaPhone />
                 </Link>
-                }
-              
+              )}
             </div>
           </div>
           // <InfoRow
@@ -225,10 +226,10 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-2">
-        <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex w-auto flex-col gap-1">
           <label htmlFor="" className="text-sm text-gray-500 ml-1">
-            Assigned to
+            Attempted By
           </label>
           <CustomDropdown
             label={lead?.assignee || "Select User"}
@@ -242,14 +243,38 @@ const CustomerInfoCard = ({ lead, onClick }) => {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 w-auto">
           <label htmlFor="" className="text-sm text-gray-500 ml-1">
             Stages
           </label>
           <CustomDropdown
             label={lead?.status}
             options={Stages}
-            onChange={(value) => handleStageChange(value)}
+            onChange={(value) => {
+              if (value === "Follow Up") {
+                setShowDatePicker(true);
+              } else {
+                handleStageChange({
+                  value,
+                });
+              }
+            }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 w-auto">
+          <label htmlFor="" className="text-sm text-gray-500 ml-1">
+            Turn Away Code
+          </label>
+          <CustomDropdown
+            label={lead?.turnAwayCode || "Select Code"}
+            options={TurnAwayCode}
+            onChange={(value) => {
+              handleStageChange({
+                value: "Turn Away",
+                turnAwayCode: value,
+              });
+            }}
           />
         </div>
       </div>
@@ -295,6 +320,18 @@ const CustomerInfoCard = ({ lead, onClick }) => {
           </div>
         </div>
       )}
+
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleStageChange({
+            value: "Follow Up",
+            followUpDate: date,
+          });
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 };
