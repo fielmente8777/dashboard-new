@@ -5,6 +5,8 @@ import ChannelToggle from "./ChannelToggle";
 import TemplatePreview from "../Templates/TemplatePreview";
 
 const MODULES = [
+  { key: "eazbot", label: "Eazbot Leads" },
+  { key: "webform", label: "Webform Leads" },
   { key: "metaLead", label: "Meta Leads" },
   { key: "googleLead", label: "Google Leads" },
   { key: "whatsapp", label: "WhatsApp" },
@@ -205,7 +207,9 @@ const AutoMessageCard = ({
             >
               <option value="template">Template</option>
               <option value="text">Text</option>
-              <option value="flow">Flow</option>
+              {label.toLowerCase() === "whatsapp" && (
+                <option value="flow">Flow</option>
+              )}
             </select>
 
             {c.type === "template" && (
@@ -235,7 +239,7 @@ const AutoMessageCard = ({
               />
             )}
 
-            {c.type === "flow" && (
+            {c.type === "flow" && label.toLowerCase() === "whatsapp" && (
               <select
                 onChange={(e) => updateConfig(key, "flowId", e.target.value)}
                 className="w-full border px-3 py-2 rounded-md text-sm"

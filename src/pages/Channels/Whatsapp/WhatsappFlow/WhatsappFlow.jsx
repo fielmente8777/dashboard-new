@@ -5,13 +5,15 @@ import FlowScreenBuilder from "./FlowScreenBuilder";
 
 const TEMPLATES = [
   {
-    id: "lead",
+    id: "lead-generation",
+    category: "LEAD_GENERATION",
     title: "Lead Generation",
     desc: "Request user sign up and generate leads effortlessly.",
     icon: "L",
   },
   {
-    id: "feedback",
+    id: "feedback-form",
+    category: "FEEDBACK_FORM",
     title: "Feedback Form",
     desc: "Send feedback forms to customers and get feedback easily.",
     icon: "F",

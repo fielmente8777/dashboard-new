@@ -26,8 +26,29 @@ export default function FlowSettings({ onSave, onCancel, data }) {
   );
 
   const [screen, setScreen] = useState(
-    interactive?.action?.parameters?.flow_action_payload?.screen || "SIGN_UP",
+    interactive?.action?.parameters?.flow_action_payload?.screen,
   );
+
+  console.log(screen);
+
+  const handleFlowChange = (e) => {
+    const selectedFlowId = e.target.value;
+    setFlowId(selectedFlowId);
+
+    const selectedFlow = flowIds.find((f) => f.value === selectedFlowId);
+
+    if (selectedFlow?.screens?.length) {
+      const firstScreen = selectedFlow.screens[0];
+
+      const formattedScreen = firstScreen.title
+        ?.trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "_")
+        .replace(/^_|_$/g, "");
+
+      setScreen(formattedScreen); // ✅ dynamic
+    }
+  };
 
   const handleSave = () => {
     const flowMessage = {
@@ -80,6 +101,7 @@ export default function FlowSettings({ onSave, onCancel, data }) {
         return {
           label: flow?.flowName,
           value: flow?.flowId,
+          screens: flow.screens,
         };
       });
       console.log(flowIds);
@@ -138,7 +160,7 @@ export default function FlowSettings({ onSave, onCancel, data }) {
         <label className="text-sm">Flow ID *</label>
 
         <select
-          onChange={(e) => setFlowId(e.target.value)}
+          onChange={handleFlowChange}
           className="border rounded w-full p-2 mt-1"
         >
           <option value="">Select a flow</option>

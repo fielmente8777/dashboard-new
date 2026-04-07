@@ -53,6 +53,7 @@ const FlowScreenBuilder = ({ flowMeta }) => {
       const payload = {
         flowName: flowMeta?.name,
         screens, // 🔥 important
+        category: flowMeta?.category,
       };
 
       const response = await createWhatAppFlow(payload);
@@ -62,7 +63,13 @@ const FlowScreenBuilder = ({ flowMeta }) => {
           message: "Flow created successfully",
           type: "success",
         });
+
+        return;
       }
+      showToast({
+        message: response?.responseMessage,
+        type: "error",
+      });
     } catch (error) {
       console.log(error);
       showToast({

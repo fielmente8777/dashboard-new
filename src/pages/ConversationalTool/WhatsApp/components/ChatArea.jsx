@@ -7,6 +7,9 @@ import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSke
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { FiX } from "react-icons/fi";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (adjust as needed)
 
 import {
   FaFilePdf,
@@ -89,11 +92,36 @@ const ChatArea = () => {
   const [selectedTemplate, setSelectedTemplate] = useState();
   const [expandedMessages, setExpandedMessages] = useState({});
 
+  const getMessageTypeFromFile = (file) => {
+    if (!file) return "text";
+
+    const type = file.type;
+
+    if (type.startsWith("image/")) return "image";
+    if (type.startsWith("video/")) return "video";
+    if (type.startsWith("audio/")) return "audio";
+
+    // 👇 Everything else = document
+    return "document";
+  };
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
+    if (file && file.size > MAX_FILE_SIZE) {
+      showToast({
+        type: "error",
+        message: "File is too large. Maximum allowed size is 5MB.",
+      });
+      // alert("File is too large. Maximum allowed size is 5MB.");
+      return;
+    }
+
     if (is24HourComplete && !selectedTemplate) {
-      alert("24 hour window expired. Please send a template message.");
+      showToast({
+        type: "error",
+        message: "24 hour window expired. Please send a template message.",
+      });
+      // alert("24 hour window expired. Please send a template message.");
       return;
     }
 
@@ -186,12 +214,13 @@ const ChatArea = () => {
         to: selectedConversation.phone,
         sender: "me",
         direction: "outbound",
-        messageType: file ? "image" : "text",
+        messageType: file ? getMessageTypeFromFile(file) : "text",
         body: file ? null : messageValue,
         media: file
           ? {
-              url: URL.createObjectURL(file), // 👈 show preview instantly
+              url: URL.createObjectURL(file),
               mimeType: file.type,
+              filename: file.name, // ✅ ADD THIS
             }
           : undefined,
         status: "sent",
@@ -222,6 +251,10 @@ const ChatArea = () => {
         );
       }
     } catch (error) {
+      showToast({
+        message: error?.responseMessage || "Failed to send message",
+        type: "error",
+      });
       console.error(error);
     }
   };
@@ -443,6 +476,11 @@ const ChatArea = () => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
+
+  const isImage = file?.type?.startsWith("image/");
+  const isPDF = file?.type === "application/pdf";
+  const isExcel = file?.type?.includes("sheet");
+  const isWord = file?.type?.includes("word");
 
   return (
     <div className="flex-1 flex flex-col">
@@ -752,8 +790,6 @@ const ChatArea = () => {
                               const fileName =
                                 message?.media?.filename || "Document";
 
-                              const isPDF = mime.includes("pdf");
-
                               // 🔥 Detect file type
                               const getIcon = () => {
                                 const lowerMime = mime.toLowerCase();
@@ -1011,7 +1047,7 @@ const ChatArea = () => {
           </div>
         )}
 
-        {file && (
+        {/* {file && (
           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
             <div
               onClick={() => setFile(null)}
@@ -1024,6 +1060,40 @@ const ChatArea = () => {
               alt="file"
               className="w-40 h-20 rounded-md object-contain"
             />
+          </div>
+        )} */}
+
+        {file && (
+          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+            <div
+              onClick={() => setFile(null)}
+              className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-3.5 bg-red-500 rounded-full text-white"
+            >
+              <FiX size={10} />
+            </div>
+
+            {/* ✅ IMAGE PREVIEW */}
+            {isImage ? (
+              <img
+                src={URL.createObjectURL(file)}
+                alt="file"
+                className="w-40 h-20 rounded-md object-contain"
+              />
+            ) : (
+              // ✅ DOCUMENT UI
+              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-gray-50 max-w-60">
+                {/* ICON */}
+                {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+                {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
+                {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+                {!isPDF && !isExcel && !isWord && (
+                  <FaFileAlt className="text-gray-500 text-xl" />
+                )}
+
+                {/* FILE NAME */}
+                <p className="text-xs truncate">{file.name}</p>
+              </div>
+            )}
           </div>
         )}
 
