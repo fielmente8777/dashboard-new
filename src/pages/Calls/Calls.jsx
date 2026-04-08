@@ -1,24 +1,60 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { FaPhone } from "react-icons/fa";
 // import CallDetails from "./CallDetails";
 import { IoIosClose, IoIosPlayCircle } from "react-icons/io";
 import { MdRefresh } from "react-icons/md";
-import { BASE_PATH, NEW_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  LeadStatus,
+  NEW_BASE_URL,
+  ROUTES_PATH,
+  Stages,
+} from "../../data/constant";
 
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Loader from "../../components/Loader";
+import CustomDropdown from "../../components/ui/Dropdown";
+import DatePickerModal from "../../components/Modal/DatePickerModal";
+import { getAllCalls, makeCall, updateCall } from "../../services/api/call.api";
+import { useToast } from "../../context/ToastContext";
+import Pagination from "../../components/Pagination";
+import TablePaginationInfo from "../../components/TablePaginationInfo";
+import usePagination from "../../hooks/usePagination";
+import {
+  TableRowSkelton,
+  TableSkeleton,
+} from "../../components/Skeltons/TableSkelton";
 
 export default function Calls() {
+  const { showToast } = useToast();
+  const navigate = useNavigate();
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentRecordingUrl, setCurrentRecordingUrl] = useState("");
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const {
+    page,
+    limit,
+    total,
+    totalPages,
+    setTotal,
+    goToPage,
+    nextPage,
+    prevPage,
+    changeLimit,
+  } = usePagination({ initialLimit: 20 });
+
   const [allCalls, setAllCalls] = useState([]);
-  const [isTableDataLoading, setIsTableDataLoading] = useState(false);
+  const [isTableDataLoading, setIsTableDataLoading] = useState(true);
   const [IsStatusLoading, setIsStatusLoading] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [formData, setFormData] = useState({
     apiKey: "",
@@ -27,15 +63,40 @@ export default function Calls() {
     accountSID: "",
   });
 
-  const getAllCalls = async () => {
+  const importCalls = async () => {
     setIsTableDataLoading(true);
     try {
-      const { data } = await axios.get(`${NEW_BASE_URL}/api/v1/call/getall`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+      const { data } = await axios.get(
+        `${NEW_BASE_URL}/api/v1/call/import?hid=${localStorage.getItem("hid")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         },
-      });
+      );
       setAllCalls(data?.result?.docs?.Call);
+    } catch (error) {
+      console.error("Error fetching call", error);
+    } finally {
+      setIsTableDataLoading(false);
+    }
+  };
+
+  const fetchAllCalls = async () => {
+    setIsTableDataLoading(true);
+    try {
+      const params = {
+        hid: localStorage.getItem("hid"),
+        page,
+        limit,
+        search: searchTerm,
+      };
+      const response = await getAllCalls(params);
+
+      if (response?.success && response?.responseStatusCode === 200) {
+        setAllCalls(response?.result?.docs?.calls);
+        setTotal(response?.result?.pagination?.total || 0);
+      }
     } catch (error) {
       console.error("Error fetching call", error);
     } finally {
@@ -58,7 +119,7 @@ export default function Calls() {
 
       if (data?.result?.status) {
         setIsConnected(true);
-        getAllCalls();
+        fetchAllCalls();
       } else {
         setIsConnected(false);
       }
@@ -127,32 +188,22 @@ export default function Calls() {
     setShowAudioModal(true);
   };
 
-  useEffect(() => {
-    getConnectStatus();
-  }, []);
-
   const columns = [
-    // "Sid",
-    // "DateCreated",
-    // "DateUpdated",
-    // "AccountSid",
-    "From",
-    "To",
-    "PhoneNumber",
-    "Direction",
-
-    // "PhoneNumberSid",
-    "Status",
-    "Time",
-    // "EndTime",
-    "Duration",
-    "Recording",
-    // "AnsweredBy",
-    // "Uri",
-    // "CustomField",
-    // "RecordingUrl",
-    // "Actions",
+    { label: "From", value: "from" },
+    { label: "To", value: "to" },
+    { label: "Phone Number", value: "phoneNumberSid" },
+    { label: "Direction", value: "direction" },
+    { label: "Status", value: "status" },
+    { label: "Time", value: "startTime" },
+    { label: "Duration", value: "duration" },
+    { label: "Recording", value: "recordingUrl" },
+    { label: "Stage", value: "stage" },
+    { label: "Lead Stage", value: "lead-stage" },
   ];
+
+  const newStages = Stages?.filter((stage) => {
+    return stage?.value !== "Turn Away";
+  });
 
   const [callPopup, setCallPopup] = useState(false);
   const [fromNumber, setFromNumber] = useState("");
@@ -164,26 +215,29 @@ export default function Calls() {
         return;
       }
 
-      const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // authMiddleware expects this
-          },
-          body: JSON.stringify({
-            fromNumber,
-            toNumber,
-          }),
-        },
-      );
+      const response = await makeCall({ fromNumber, toNumber });
 
-      const data = await response.json();
+      // const response = await fetch(
+      //   `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`, // authMiddleware expects this
+      //     },
+      //     body: JSON.stringify({
+      //       fromNumber,
+      //       toNumber,
+      //     }),
+      //   },
+      // );
 
-      if (!response.ok) {
-        alert(data?.error || "Call failed");
-        return;
+      // const data = await response.json();
+      if (response?.success) {
+        showToast({
+          message: response?.responseMessage || "Call initiated successfully",
+          type: "success",
+        });
       }
 
       alert("✅ Call initiated successfully");
@@ -196,46 +250,273 @@ export default function Calls() {
     }
   };
 
-  // console.log(currentRecordingUrl);
+  const handleUpdateCall = async (data) => {
+    const payload = { ...data };
+
+    try {
+      const response = await updateCall(payload);
+      if (response?.success && response?.responseStatusCode === 200) {
+        showToast({
+          message:
+            response?.responseMessage || "Lead stage updated successfully",
+          type: "success",
+        });
+        return;
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
+  const handleRedirectToPage = (row, index) => {
+    // localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
+    const hid = localStorage.getItem("hid");
+
+    const queryParams = new URLSearchParams({
+      sid: row.sid,
+      hid: row?.hid,
+      call: index,
+    });
+
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.CALLS_MANAGEMENT}/all-calls/${row._id}/view?${queryParams.toString()}`;
+    navigate(navigatePath);
+  };
+
+  useEffect(() => {
+    getConnectStatus();
+  }, []);
+
+  useEffect(() => {
+    if (isConnected) {
+      fetchAllCalls();
+    }
+  }, [page, limit, searchTerm, isConnected]);
   return (
     <div className="">
       {/* Calls Table */}
-      <div className="overflow-hidden px-4">
-        <div className="px-6 bg-white  flex justify-between items-center py-4 border-b border-gray-200 b">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
+      <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+        <div className=" flex items-center justify-between">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50">
+              <input
+                type="text"
+                placeholder="Search calls..."
+                className="w-full bg-transparent outline-none text-sm"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
 
-          <button
-            onClick={() => setCallPopup(true)}
-            className="border py-1 px-5 rounded hover:bg-orange-400"
-          >
-            Call Now
-          </button>
+          <div className="flex items-center gap-2">
+            {/* <h2 className="text-lg font-semibold text-gray-900">
+              Recent Calls
+            </h2> */}
 
-          {isConnected && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border font-medium rounded-md gap-1 py-1 text-[#575757] px-3 ">
-                <div
-                  onClick={() => getAllCalls()}
-                  className={`flex justify-end items-center cursor-pointer ${
-                    isTableDataLoading ? "animate-spin" : ""
-                  } `}
-                >
-                  <MdRefresh size={18} />
+            <button
+              onClick={() => setCallPopup(true)}
+              className="border py-1 px-5 rounded hover:bg-orange-400"
+            >
+              Call Now
+            </button>
+
+            {isConnected && (
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border font-medium rounded-md gap-1 py-1 text-[#575757] px-3 ">
+                  <div
+                    onClick={() => importCalls()}
+                    className={`flex justify-end items-center cursor-pointer ${
+                      isTableDataLoading ? "animate-spin" : ""
+                    } `}
+                  >
+                    <MdRefresh size={18} />
+                  </div>
+                  Refresh
                 </div>
-                Refresh
-              </div>
 
-              {/* <div
+                {/* <div
                 className="cursor-pointer"
                 onClick={() => setShowSidebar(true)}
               >
                 <IoMdSettings size={22} />
               </div> */}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="overflow-x-auto mt-4">
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* 📊 TABLE */}
+          <div className="border rounded-lg overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-primary sticky top-0 z-999">
+                <tr>
+                  <th className="px-3 py-2 text-white">#</th>
+                  {columns.map((col) => (
+                    <th
+                      key={col.value}
+                      className="px-3 py-3 text-left text-white"
+                    >
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+
+              <tbody>
+                {/* 🔄 LOADING */}
+                {isTableDataLoading && (
+                  <TableRowSkelton rows={limit} columns={columns?.length} />
+                )}
+
+                {/* ✅ DATA */}
+                {!isTableDataLoading &&
+                  allCalls?.length > 0 &&
+                  allCalls.map((call, i) => (
+                    <tr
+                      key={i}
+                      className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                      onClick={() =>
+                        handleRedirectToPage(call, i + limit * (page - 1) + 1)
+                      }
+                    >
+                      {/* Index */}
+                      <td className="px-3 py-1">
+                        {(i + limit * (page - 1) + 1)
+                          .toString()
+                          .padStart(2, "0")}
+                      </td>
+
+                      {/* From */}
+                      <td className="px-3 py-1">{call.from || "-"}</td>
+
+                      {/* To */}
+                      <td className="px-3 py-1">{call.to || "-"}</td>
+
+                      {/* Phone */}
+                      <td className="px-3 py-1">
+                        {call.phoneNumberSid || "-"}
+                      </td>
+
+                      {/* Direction */}
+                      <td className="px-3 py-1">
+                        {call.direction === "outbound-dial" ? (
+                          <span className="text-green-700">Outgoing</span>
+                        ) : (
+                          <span className="text-orange-700">Incoming</span>
+                        )}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-3 py-1">
+                        <span className="text-xs font-medium">
+                          {call.status || "-"}
+                        </span>
+                      </td>
+
+                      {/* Time */}
+                      <td className="px-3 py-1">
+                        {call.startTime
+                          ? new Date(call.startTime).toLocaleString()
+                          : "-"}
+                      </td>
+
+                      {/* Duration */}
+                      <td className="px-3 py-1">
+                        {call.duration
+                          ? `${Math.floor(call.duration / 60)}m ${
+                              call.duration % 60
+                            }s`
+                          : "-"}
+                      </td>
+
+                      {/* Recording */}
+                      <td
+                        className="px-3 py-1"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {call.recordingUrl ? (
+                          <span
+                            onClick={() => playRecording(call.recordingUrl)}
+                            className="cursor-pointer text-blue-600"
+                          >
+                            Play
+                          </span>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
+                      {/* Stage */}
+                      <td onClick={(e) => e.stopPropagation()} className="py-1">
+                        <CustomDropdown
+                          label={call.stage}
+                          options={newStages}
+                          onChange={(value) => {
+                            if (value === "Follow Up") {
+                              setSelectedRow(call);
+                              setShowDatePicker(true);
+                            } else {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                stage: value,
+                              });
+                            }
+                          }}
+                        />
+                      </td>
+
+                      {/* Lead Status */}
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <CustomDropdown
+                          label={call.leadStatus}
+                          options={LeadStatus}
+                          onChange={(value) =>
+                            handleUpdateCall({
+                              sid: call.sid,
+                              leadStatus: value,
+                            })
+                          }
+                        />
+                      </td>
+                    </tr>
+                  ))}
+
+                {!isTableDataLoading && allCalls?.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={columns.length + 1}
+                      className="py-6 text-center"
+                    >
+                      No Calls Found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center px-4">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            onNext={nextPage}
+            onPrev={prevPage}
+          />
+
+          <TablePaginationInfo
+            limit={limit}
+            onLimitChange={changeLimit}
+            page={page}
+            total={total}
+          />
+        </div>
+
+        {/* <div className="overflow-x-auto mt-4">
           {IsStatusLoading ? (
             <div className="flex justify-center">
               <Loader size={20} color="#000" />
@@ -266,7 +547,7 @@ export default function Calls() {
                       key={col}
                       className="px-4 py-3 text-left font-medium text-gray-600 capitalize tracking-wider whitespace-nowrap"
                     >
-                      {col}
+                      {col?.label}
                     </th>
                   ))}
                 </tr>
@@ -285,124 +566,98 @@ export default function Calls() {
                 ) : allCalls?.length > 0 ? (
                   allCalls?.map((call, idx) => (
                     <tr
+                      onClick={() => {
+                        handleRedirectToPage(call, idx + 10 * (1 - 1) + 1);
+                      }}
                       key={idx}
                       className="hover:bg-gray-50 transition-colors"
                     >
-                      {/* <td className="px-4 py-2 text-gray-900">{call.Sid}</td> */}
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.DateCreated}
-                    </td> */}
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.DateUpdated}
-                    </td> */}
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.AccountSid}
-                    </td> */}
-                      <td className="px-4 py-2 text-gray-900">{call.From}</td>
-                      <td className="px-4 py-2 text-gray-900">{call.To}</td>
+                      <td className="px-4 py-2 text-gray-900">{call.from}</td>
+                      <td className="px-4 py-2 text-gray-900">{call.to}</td>
                       <td className="px-4 py-2 text-gray-900">
-                        {call.PhoneNumber}
+                        {call.phoneNumberSid}
                       </td>
                       <td className="px-4 py-2 text-gray-900">
-                        {call.Direction === "outbound-dial" ? (
+                        {call.direction === "outbound-dial" ? (
                           <span className="text-green-700">Outgoing</span>
                         ) : (
                           <span className="text-orange-700">Incoming</span>
                         )}
                       </td>
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.PhoneNumberSid}
-                    </td> */}
 
-                      {/* Status */}
                       <td className="px-4 py-2 whitespace-nowrap">
                         <span
                           className={`text-gray-800 inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
-                            call.Status === "completed"
+                            call.status === "completed"
                               ? ""
-                              : call.Status === "in-progress"
+                              : call.status === "in-progress"
                                 ? ""
                                 : ""
                           }`}
                         >
                           <FaPhone
                             className={`mr-1 ${
-                              call.Status === "completed"
+                              call.status === "completed"
                                 ? "text-green-700"
                                 : "text-orange-700"
                             }`}
                             size={12}
                           />
-                          {call.Status === "completed"
+                          {call.status === "completed"
                             ? "Call was successfull"
-                            : call.Status === "failed"
+                            : call.status === "failed"
                               ? "Client unanswered"
                               : "Client hung-up before connecting to any user"}
                         </span>
                       </td>
 
-                      {/* <td>{call.Status}</td> */}
+                      <td className="px-4 py-2 text-gray-900">
+                        {new Date(call.startTime).toLocaleTimeString()}
+                      </td>
 
                       <td className="px-4 py-2 text-gray-900">
-                        {new Date(call.StartTime).toLocaleTimeString()}
-                      </td>
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {new Date(call.EndTime).toLocaleTimeString()}
-                    </td> */}
-                      <td className="px-4 py-2 text-gray-900">
-                        {`${Math.floor(call.Duration / 60)} min ${
+                        {`${Math.floor(call.duration / 60)} min ${
                           call.Duration % 60
                         } sec`}
                       </td>
                       <td className="px-4 py-2 text-gray-900 flex justify-center">
                         <span
                           className="cursor-pointer "
-                          onClick={() => playRecording(call?.RecordingUrl)}
+                          onClick={() => playRecording(call?.recordingUrl)}
                         >
-                          {/* {call?.recordingUrl} */}
                           <IoIosPlayCircle size={20} />
                         </span>
                       </td>
 
-                      {/* <td className="px-4 py-2 text-gray-900">{call.AnsweredBy}</td> */}
-                      {/* <td className="px-4 py-2 text-gray-900 break-all">
-                      {call.Uri}
-                    </td> */}
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.CustomField}
-                    </td> */}
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <CustomDropdown
+                          label={call.stage}
+                          options={newStages}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          onChange={(value) => {
+                            if (value === "Follow Up") {
+                              setSelectedRow(call);
+                              setShowDatePicker(true);
+                            } else {
+                              handleUpdateCall({ sid: call.sid, stage: value });
+                            }
+                          }}
+                        />
+                      </td>
 
-                      {/* Recording */}
-                      {/* <td className="px-4 py-2 text-gray-900">
-                      {call.RecordingUrl ? (
-                        <a
-                          href={call.RecordingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Recording Link
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td> */}
-
-                      {/* Actions */}
-                      {/* <td className="px-4 py-2 whitespace-nowrap flex items-center gap-3">
-                      <button
-                        // onClick={() => viewDetails(call)}
-                        className="text-blue-600 hover:text-blue-800 flex items-center"
-                      >
-                        <FaEye className="mr-1" /> View
-                      </button>
-                      <button
-                        // onClick={() => playRecording(call.RecordingUrl)}
-                        className="text-green-600 hover:text-green-800 flex items-center"
-                      >
-                        <FaPlay className="mr-1" /> Play
-                      </button>
-                    </td> */}
+                      <td onClick={(e) => e.stopPropagation()} className="px-2">
+                        <CustomDropdown
+                          label={call.leadStatus}
+                          options={LeadStatus}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          onChange={(value) => {
+                            handleUpdateCall({
+                              sid: call.sid,
+                              leadStatus: value,
+                            });
+                          }}
+                        />
+                      </td>
                     </tr>
                   ))
                 ) : (
@@ -418,28 +673,11 @@ export default function Calls() {
               </tbody>
             </table>
           )}
-
-          {/* {selectedCall && (
-            <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60">
-              <CallDetails
-                call={selectedCall}
-                onClose={() => setSelectedCall(null)}
-                backButton
-              />
-            </div>
-          )} */}
-
-          {/* {selectedCall && (
-            <CallDetail
-              call={selectedCall.callInfo}
-              // conversation={selectedCall.conversation}
-            />
-          )} */}
-        </div>
+        </div> */}
       </div>
 
       {callPopup && (
-        <div className="fixed inset-0 flex justify-center bg-black/50">
+        <div className="fixed inset-0 flex justify-center bg-black/50 z-9999">
           <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             <div className="flex flex-col gap-2">
               <h1>Enter Number to make a call!</h1>
@@ -475,6 +713,7 @@ export default function Calls() {
           </div>
         </div>
       )}
+
       {showSidebar && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
@@ -605,6 +844,19 @@ export default function Calls() {
           </div>
         </div>
       )}
+
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSave={(date) => {
+          handleUpdateCall({
+            followUpDate: date,
+            sid: selectedRow.sid,
+            stage: "Follow Up",
+          });
+          setShowDatePicker(false);
+        }}
+      />
     </div>
   );
 }

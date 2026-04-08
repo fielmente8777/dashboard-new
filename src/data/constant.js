@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL =
 //   "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
 
@@ -270,6 +270,7 @@ const PATHS = {
   CHANGE_PASSWORD: "/change-password",
 
   LEADS_MANAGEMENT: "leads-management",
+  CALLS_MANAGEMENT: "calls-management",
 };
 
 export const ROUTES_PATH = {
@@ -291,6 +292,9 @@ export const ROUTES_PATH = {
   LEADS_MANAGEMENT_ALL_LEADS: `${PATHS.LEADS_MANAGEMENT}/all-leads`,
   LEADS_MANAGEMENT_META_LEADS: `${PATHS.LEADS_MANAGEMENT}/meta-leads`,
   LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
+
+  // calls management
+  CALLS_MANAGEMENT: `${PATHS.CALLS_MANAGEMENT}`,
 };
 
 export const tableHeaders = [
@@ -345,6 +349,21 @@ export const Sources = [
   { label: "Facebook", value: "facebook" },
   { label: "Google", value: "google" },
   { label: "Vistors", value: "visitors" },
+];
+
+export const LeadStatus = [
+  {
+    label: "Reservation",
+    value: "Reservation",
+  },
+  {
+    label: "Enquiry",
+    value: "Enquiry",
+  },
+  {
+    label: "Others",
+    value: "Others",
+  },
 ];
 
 export const LOCAL_STORAGE = {

@@ -8,8 +8,9 @@ import Swal from "sweetalert2";
 import { GrNotes } from "react-icons/gr";
 import { useToast } from "../../../context/ToastContext";
 import { useConfirm } from "../../../context/ConfirmContext";
+import { updateCall } from "../../../services/api/call.api";
 
-const NotesCard = ({ lead, setLead }) => {
+const NotesCard = ({ lead, setLead, callManagement = false }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
 
@@ -25,8 +26,15 @@ const NotesCard = ({ lead, setLead }) => {
     setIsAddActivityOpen(true);
   };
   const handleUpdateNote = async (payload) => {
+    const callUpdatePayload = {
+      notes: payload?.notes,
+      sid: payload?.sid,
+    };
+
     try {
-      const response = await updateLead(payload);
+      const response = callManagement
+        ? await updateCall(callUpdatePayload)
+        : await updateLead(payload);
 
       if (
         response?.success &&
@@ -56,12 +64,21 @@ const NotesCard = ({ lead, setLead }) => {
         : notes.push(activity);
     }
 
-    const payload = {
-      leadId: lead._id,
-      hid: lead?.hId,
-      notes,
-      ...(lead?.conversationId && { conversationId: lead?.conversationId }),
-    };
+    let payload = {};
+
+    if (callManagement) {
+      payload = {
+        sid: lead?.sid,
+        notes,
+      };
+    } else {
+      payload = {
+        leadId: lead._id,
+        hid: lead?.hId,
+        notes,
+        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+      };
+    }
 
     setLead((prev) => ({
       ...prev,
@@ -92,12 +109,20 @@ const NotesCard = ({ lead, setLead }) => {
     setIsEdit(true);
     const notes = [...lead.notes];
     notes.splice(index, 1);
-    const payload = {
-      leadId: lead._id,
-      hid: lead?.hId,
-      notes,
-      ...(lead?.conversationId && { conversationId: lead?.conversationId }),
-    };
+    let payload = {};
+    if (callManagement) {
+      payload = {
+        sid: lead?.sid,
+        notes,
+      };
+    } else {
+      payload = {
+        leadId: lead._id,
+        hid: lead?.hId,
+        notes,
+        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+      };
+    }
     setLead({ ...lead, notes });
     handleUpdateNote(payload);
   };
