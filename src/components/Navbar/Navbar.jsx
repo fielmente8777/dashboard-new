@@ -180,7 +180,7 @@ const Navbar = () => {
             </Link>
             <div
               onClick={() => setOpen(true)}
-              className="flex gap-2 py-1.5 text-white bg-[#0088ff]  justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
+              className="flex gap-2 py-1.5 text-white bg-ternary justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
             >
               <MdStore size={18} />{" "}
               <p className="text-sm font-semibold">EazStore</p>

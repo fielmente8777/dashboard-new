@@ -154,7 +154,7 @@ const SidebarChat = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-primary"
+          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
         />
       </div>
 
@@ -169,7 +169,7 @@ const SidebarChat = () => {
               onClick={() => handleTabChnage(tab)}
               className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
                 isActive
-                  ? "bg-slate-700 text-white border-b-2 "
+                  ? "bg-ternary text-white border-b-2 "
                   : "text-slate-600 hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
               }`}
             >

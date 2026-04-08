@@ -349,7 +349,7 @@ const AllLeads = () => {
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -442,7 +442,7 @@ const AllLeads = () => {
                 <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
-                  <th key={h.key} className={`px-3 py-3 text-left text-white`}>
+                  <th key={h.key} className={`px-3 py-3 text-left text-white whitespace-nowrap`}>
                     {h.label}
                   </th>
                 ))}
@@ -508,7 +508,7 @@ const AllLeads = () => {
                         return (
                           <td
                             key={h.key}
-                            className="px-3 py-2"
+                            className="px-3 flex py-2 "
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
@@ -646,7 +646,7 @@ const AllLeads = () => {
                         );
                       }
                       return (
-                        <td key={h.key} className="px-3 py-2">
+                        <td key={h.key} className="px-3 py-2 whitespace-nowrap">
                           {row[h.key]
                             ? row[h.key] === "undefined"
                               ? "-"

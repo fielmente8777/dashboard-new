@@ -338,7 +338,7 @@ const WebformLeads = () => {
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
