@@ -6,6 +6,7 @@ import Integration from "../AppIntegration/Integration";
 import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
 import Notification from "./Notification";
+import Billing from "../Wallet/Billing";
 
 const Settings = () => {
   // ✅ Centralized config
@@ -21,6 +22,7 @@ const Settings = () => {
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
     // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    { key: "Billing", label: "Billing", component: <Billing /> },
   ];
   const [activeTab, setActiveTab] = useState(TABS[0].key);
 
