@@ -4,6 +4,8 @@ import axios from "axios";
 import KnowledgeBaseForm from "./KnowledgeBaseForm";
 import { JsonEditor } from "json-edit-react";
 import { NEW_BASE_URL, SALES_AGEENT_BASE_URL } from "../../data/constant";
+import UploadDocument from "./UploadDocument";
+import { ArrowBigUp } from "lucide-react";
 const KnowledgeBase = () => {
   const [jsondata, setJsonData] = useState(null);
   const [url, setUrl] = useState("");
@@ -88,6 +90,16 @@ const KnowledgeBase = () => {
     fetchKnowledgeBaseData();
   }, []);
 
+ const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShow(window.scrollY > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold">Knowledge Base</h1>
@@ -113,6 +125,16 @@ const KnowledgeBase = () => {
           }`}
         >
           Manual Entry
+        </button>
+        <button
+          onClick={() => setActiveTab("document")}
+          className={`px-4 py-2 font-medium ${
+            activeTab === "document"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Upload Documents
         </button>
       </div>
 
@@ -144,6 +166,11 @@ const KnowledgeBase = () => {
           <KnowledgeBaseForm onSave={handleFormSave} initialData={jsondata} />
         </div>
       )}
+      {activeTab === "document" && (
+        <div>
+         <UploadDocument/>
+        </div>
+      )}
 
       {/* JSON Viewer */}
       {/* {!jsondata && (
@@ -152,7 +179,8 @@ const KnowledgeBase = () => {
           <p>No data available.</p>
         </div>
       )} */}
-      {kbLoading ? (
+
+      {/* {kbLoading ? (
         <div>Loading...</div>
       ) : !jsondata ? (
         <div className="border rounded-md p-4">
@@ -163,8 +191,11 @@ const KnowledgeBase = () => {
         <div className="border rounded-md p-4">
           <h2 className="text-lg font-semibold mb-3">Data Preview</h2>
           <JsonEditor data={jsondata} />
+          {JSON.stringify(jsondata,null,2)}
         </div>
-      )}
+      )} */}
+
+  <RenderValue data={jsondata} />
 
       {/* Loading State */}
       {loading && (
@@ -173,8 +204,43 @@ const KnowledgeBase = () => {
           <span className="ml-2 text-gray-600">Processing...</span>
         </div>
       )}
+
+      {show&&<button onClick={() =>{
+        console.log("jhjgfc");
+          window.scrollTo({ top: 0, behavior: "smooth" })}} className="border absolute bottom-5 right-5 h-10 w-10 bg-primary text-ternary flex items-center justify-center rounded-full text-xs"><ArrowBigUp size={20}/></button>
+          }
     </div>
   );
 };
 
 export default KnowledgeBase;
+
+
+  const RenderValue = ({ data }) => {
+    if (Array.isArray(data)) {
+      return (
+        <ul className="list-disc ml-5 space-y-1">
+          {data.map((item, idx) => (
+            <li key={idx}>
+              <RenderValue data={item} />
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (typeof data === "object" && data !== null) {
+      return (
+        <div className="ml-4 border-l pl-4 space-y-2">
+          {Object.entries(data).map(([key, value]) => (
+            <div key={key}>
+              <p className="font-medium text-gray-400 capitalize">{key}:</p>
+              <RenderValue data={value} />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return <p className="text-gray-900">{String(data)}</p>;
+  };
