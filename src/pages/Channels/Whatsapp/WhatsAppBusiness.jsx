@@ -5,18 +5,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { FaAd, FaPlus, FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
 import {
   MdAccountBalance,
   MdAdd,
-  MdBalance,
-  MdBook,
   MdClose,
   MdLink,
   MdLinkOff,
-  MdPlusOne,
   MdVerified,
-  MdWallet,
 } from "react-icons/md";
 import WhatsappBusinessSkelton from "../../../components/Skeltons/WhatsappBusinessSkelton";
 import DataContext from "../../../context/DataContext";
@@ -25,17 +21,17 @@ import {
   getWhatsappAccountDetails,
   getWhatsAppFlows,
   getWhatsAppMessageTemplates,
-  updateAutoMessageConfig,
 } from "../../../services/api/whatsApp";
 
 import { FiMenu } from "react-icons/fi";
-import CreateTemplate from "./Templates/CreateTemplate";
-import WhatsAppMessageTemplate from "./Templates/Templates";
-import TemplatePreview from "./Templates/TemplatePreview";
-import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
-import { useToast } from "../../../context/ToastContext";
-import TemplateLibrary from "./Templates/TemplateLibrary";
 import { ReactFlowProvider } from "reactflow";
+import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
+import AutoMessageCard from "./components/AutoMessageCard";
+import CreateTemplate from "./Templates/CreateTemplate";
+import TemplateLibrary from "./Templates/TemplateLibrary";
+import WhatsAppMessageTemplate from "./Templates/Templates";
+import WhatsappFlow from "./WhatsappFlow/WhatsappFlow";
+
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
   {
@@ -48,6 +44,7 @@ const sidebarTabs = [
   },
   { id: "auto-message", label: "Auto Message" },
   { id: "credits", label: "Credits" },
+  { id: "whatsapp-flows", label: "Flows" },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 
@@ -98,6 +95,14 @@ const WhatsAppBusiness = () => {
     }
   };
 
+  const fetchFlows = async () => {
+    const response = await getWhatsAppFlows();
+
+    if (response.success && response.responseStatusCode === 200) {
+      setFlows(response?.result?.docs?.flow || {});
+    }
+  };
+
   useEffect(() => {
     checkIntegrationStatus();
   }, []);
@@ -110,19 +115,13 @@ const WhatsAppBusiness = () => {
     }
   }, [integrationStatus]);
 
-  const fetchFlows = async () => {
-    const response = await getWhatsAppFlows();
-
-    if (response.success && response.responseStatusCode === 200) {
-      setFlows(response?.result?.docs?.flow || {});
-    }
-  };
-
-  console.log(selectedTemplate);
-
   useEffect(() => {
     fetchFlows();
   }, []);
+
+  if (!accountDetails) {
+    return <WhatsappBusinessSkelton />;
+  }
 
   if (!integrationStatus?.metaWhatsapp) {
     return (
@@ -171,17 +170,13 @@ const WhatsAppBusiness = () => {
     );
   }
 
-  if (!accountDetails) {
-    return <WhatsappBusinessSkelton />;
-  }
-
   return (
     <React.Fragment>
       {accountDetails && (
-        <div className="flex h-[82vh]">
+        <div className="flex h-full">
           <div
-            className={`bg-gray-100/60 shadow! h-full transition-all duration-300
-  ${collapsed ? "w-10" : "w-56"} p-2`}
+            className={` bg-gray-100/60 shadow! h-full transition-all duration-300
+                        ${collapsed ? "w-10" : "w-56"} p-2`}
           >
             {/* Hamburger */}
             <div className="flex justify-end mb-3">
@@ -191,7 +186,7 @@ const WhatsAppBusiness = () => {
             </div>
 
             {/* Sidebar Tabs */}
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col h-full scrollbar-hidden overflow-y-auto gap-1">
               {sidebarTabs.map((tab) => {
                 const isOpen = openDropdown === tab.id;
 
@@ -210,8 +205,8 @@ const WhatsAppBusiness = () => {
                       }}
                       className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition ${
                         activeTab === tab.id
-                          ? "bg-slate-700 text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-white"
+                          : "text-gray-600 hover:bg-primary/10 "
                       }`}
                     >
                       {!collapsed && <span>{tab.label}</span>}
@@ -236,7 +231,7 @@ const WhatsAppBusiness = () => {
                             className={`text-left px-3 py-2 rounded-md text-sm ${
                               activeSubTab === sub.id
                                 ? "bg-gray-300 text-black"
-                                : "text-gray-600 hover:bg-gray-100"
+                                : "text-gray-600 hover:bg-gray-200"
                             }`}
                           >
                             {sub.label}
@@ -250,7 +245,7 @@ const WhatsAppBusiness = () => {
             </div>
           </div>
 
-          <div className="h-full overflow-y-auto flex-1">
+          <div className="flex-1 h-full overflow-y-auto scrollbar-hidden">
             {activeTab === "overview" && (
               <div className="w-full gap-4 grid md:grid-cols-2">
                 <div className="flex gap-4 flex-col">
@@ -299,6 +294,8 @@ const WhatsAppBusiness = () => {
                 <FlowBuilder />
               </ReactFlowProvider>
             )}
+
+            {activeTab === "whatsapp-flows" && <WhatsappFlow />}
           </div>
         </div>
       )}
@@ -558,298 +555,6 @@ const WabaDetailsCard = ({ waba, business }) => {
           </span>
         </div> */}
       </div>
-    </div>
-  );
-};
-
-const ChannelToggle = ({ label, value, onChange }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-sm text-gray-700">{label}</span>
-
-    <button
-      onClick={onChange}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-        value ? "bg-green-500" : "bg-gray-300"
-      }`}
-    >
-      <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-          value ? "translate-x-6" : "translate-x-1"
-        }`}
-      />
-    </button>
-  </div>
-);
-
-const AutoMessageCard = ({
-  autoMessage,
-  templates,
-  flows,
-  phoneNumberId,
-  notification,
-}) => {
-  console.log(autoMessage);
-  console.log(templates);
-  const textareaRef = useRef(null);
-
-  const { showToast } = useToast();
-
-  const [channels, setChannels] = useState({
-    metaLead: autoMessage?.metaLead ?? false,
-    googleLead: autoMessage?.googleLead ?? false,
-    whatsapp: autoMessage?.whatsapp ?? false,
-    whatsappNotification: notification?.enable ?? false,
-  });
-
-  const [type, setType] = useState(autoMessage?.type || "template");
-
-  const [templateName, setTemplateName] = useState(
-    autoMessage?.templateName || "",
-  );
-  const [message, setMessage] = useState(autoMessage?.message || "");
-  const [flowId, setFlowId] = useState(autoMessage?.flowId || "");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setChannels({
-      metaLead: autoMessage?.metaLead ?? false,
-      googleLead: autoMessage?.googleLead ?? false,
-      whatsapp: autoMessage?.whatsapp ?? false,
-      whatsappNotification: notification?.enable ?? false,
-    });
-
-    setType(autoMessage?.type || "template");
-    setTemplateName(autoMessage?.templateName || "");
-    setMessage(autoMessage?.message || "");
-  }, [autoMessage]);
-
-  useEffect(() => {
-    if (!textareaRef.current) return;
-
-    const el = textareaRef.current;
-    el.style.height = "auto";
-
-    const lineHeight = 24;
-    const maxRows = 8;
-    el.style.height = Math.min(el.scrollHeight, lineHeight * maxRows) + "px";
-  }, [message]);
-
-  const isAnyChannelEnabled =
-    channels.metaLeads || channels.googleLeads || channels.whatsapp;
-
-  const selectedTemplateObj = templates?.find(
-    (tpl) => tpl.name === templateName,
-  );
-
-  const getComponent = (type) =>
-    selectedTemplateObj?.components?.find((c) => c.type === type);
-
-  const header = getComponent("HEADER");
-  const body = getComponent("BODY");
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-
-      let templatePayload = null;
-
-      if (type === "template" && selectedTemplateObj) {
-        const buttons = getComponent("BUTTONS");
-
-        templatePayload = {
-          name: selectedTemplateObj.name,
-          language: selectedTemplateObj.language || "en",
-          bodyText: body?.text || "",
-          variables: (body?.text?.match(/{{\d+}}/g) || []).length,
-          headerType: header?.format || null,
-          buttons: buttons?.buttons || [],
-        };
-      }
-
-      const payload = {
-        phoneNumberId,
-        channels, // 👈 metaLeads, googleLeads, whatsapp
-        type,
-        message: type === "text" ? message : null,
-        template: templatePayload,
-        ...(flowId && { flowId }),
-      };
-
-      const response = await updateAutoMessageConfig(payload);
-
-      if (response?.success && response.responseStatusCode === 200) {
-        showToast({
-          message: "Auto message updated successfully",
-          type: "success",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const hasChanges =
-    JSON.stringify(channels) !==
-      JSON.stringify({
-        metaLeads: autoMessage?.metaLeads ?? false,
-        googleLeads: autoMessage?.googleLeads ?? false,
-        whatsapp: autoMessage?.whatsapp ?? false,
-        whatsappNotification: autoMessage?.whatsappNotification ?? false,
-      }) ||
-    type !== autoMessage?.type ||
-    templateName !== autoMessage?.templateName ||
-    message !== autoMessage?.message;
-
-  return (
-    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
-      {/* Header */}
-      <h3 className="text-lg font-medium text-gray-600">
-        Auto Messaging Channels
-      </h3>
-
-      {/* Toggles */}
-      <div className="space-y-3">
-        <ChannelToggle
-          label="WhatsApp Notification"
-          value={channels.whatsappNotification}
-          onChange={() =>
-            setChannels((p) => ({
-              ...p,
-              whatsappNotification: !p.whatsappNotification,
-            }))
-          }
-        />
-
-        <ChannelToggle
-          label="Meta Leads"
-          value={channels.metaLead}
-          onChange={() => setChannels((p) => ({ ...p, metaLead: !p.metaLead }))}
-        />
-
-        <ChannelToggle
-          label="Google Leads"
-          value={channels.googleLead}
-          onChange={() =>
-            setChannels((p) => ({ ...p, googleLead: !p.googleLead }))
-          }
-        />
-
-        <ChannelToggle
-          label="WhatsApp"
-          value={channels.whatsapp}
-          onChange={() => setChannels((p) => ({ ...p, whatsapp: !p.whatsapp }))}
-        />
-      </div>
-
-      {!isAnyChannelEnabled && (
-        <p className="text-sm text-gray-500">
-          Auto reply is currently disabled for all channels.
-        </p>
-      )}
-
-      {isAnyChannelEnabled && (
-        <>
-          {/* Type */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              Reply Type
-            </label>
-
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-            >
-              <option value="template">Template Message</option>
-              <option value="text">Custom Text</option>
-              <option value="flow">Flows</option>
-            </select>
-          </div>
-
-          {/* Template Select */}
-          {type === "template" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Select Template
-              </label>
-
-              <select
-                value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-              >
-                <option value="">Select template</option>
-                {templates?.map((tpl) => (
-                  <option key={tpl.name} value={tpl.name}>
-                    {tpl.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Text Message */}
-          {type === "text" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                Message
-              </label>
-
-              <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-                placeholder="Enter auto reply message..."
-              />
-            </div>
-          )}
-
-          {/* Flows */}
-          {type === "flow" && (
-            <div>
-              <label className="text-sm font-medium text-gray-700">Flows</label>
-
-              <div className="flex items-center gap-1.5">
-                <label htmlFor="">{flows?._id}</label>
-                <input
-                  type="radio"
-                  value={flows?._id}
-                  onChange={(e) => setFlowId(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Template Preview */}
-          {type === "template" && selectedTemplateObj && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">
-                WhatsApp Preview
-              </p>
-
-              <TemplatePreview
-                components={selectedTemplateObj.components || []}
-              />
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Save */}
-      {hasChanges && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="bg-green-500 font-medium text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "Saving..." : "Save Configuration"}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

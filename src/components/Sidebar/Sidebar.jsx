@@ -913,25 +913,3 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
 };
 
 export default Sidebar;
-
-// analyticsandreporting: false;
-// bookingEngine: true;
-// channelManager: true;
-// cms: true;
-// conversationaltool: false;
-// eazobot: false;
-// emailmarketing: false;
-// enquiriesManagement: true;
-// foodManager: true;
-// frontDesk: true;
-// gatewayManager: true;
-// guestRequestManagement: true;
-// humanResourceManagement: true;
-// leadgenform: false;
-// reservationDesk: true;
-// seoManager: true;
-// smsmarketing: false;
-// socialMedia: true;
-// themes: false;
-// usermanagement: false;
-// whatsappmarketing: false;

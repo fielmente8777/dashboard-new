@@ -31,6 +31,9 @@ import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import TurnAwayModal from "../../components/Modal/TurnAwayModal";
+import ImportLead from "../../components/button/ImportLead";
+import { FaTrashAlt } from "react-icons/fa";
+import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -55,6 +58,9 @@ const AllLeads = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const [allUsers, setAllUsers] = useState([]);
+  const [rowSelected, setRowSelected] = useState([]);
+
+  const [open,setOpen]=useState(false);
 
   const {
     page,
@@ -228,14 +234,63 @@ const AllLeads = () => {
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}`;
+
+    const queryParams = new URLSearchParams({
+      hid: row?.hId,
+      lead: index,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(stage ? { stage: stage } : {}),
+      ...(source ? { source: source } : {}),
+      ...(startDate ? { startDate: startDate } : {}),
+      ...(endDate ? { endDate: endDate } : {}),
+    });
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?${queryParams.toString()}`;
     navigate(navigatePath);
+  };
+
+  const handleDeleteAll = () => {
+    // alert("We are working on it");
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchLeads(false);
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+          setRowSelected([]);
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
+      }
+    });
   };
 
   const fetchUsersData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
     setAllUsers(usersData);
+  };
+
+  const handleRowSelect = (id) => {
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
   };
 
   useEffect(() => {
@@ -288,16 +343,21 @@ const AllLeads = () => {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">All Leads</h2>
 
+          <div className="flex items-center">
+
           {allLeads?.length > 0 && (
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
             </button>
           )}
+            <ImportLead open={open} setOpen={setOpen} />
+          </div>
+
         </div>
 
         <div className="bg-white">
@@ -321,6 +381,7 @@ const AllLeads = () => {
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
+                    maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
                     className="bg-transparent outline-none text-sm w-40"
                     placeholderText="Date range"
@@ -366,16 +427,22 @@ const AllLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
+        {rowSelected?.length > 0 && (
+          <button
+            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            onClick={handleDeleteAll}
+          >
+            Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+          </button>
+        )}
         <div className="flex border rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
-              <tr className="">
+              <tr className="whitespace-nowrap">
+                <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
-                  <th
-                    key={h.key}
-                    className={`px-3 py-3 text-left text-white`}
-                  >
+                  <th key={h.key} className={`px-3 py-3 text-left text-white whitespace-nowrap`}>
                     {h.label}
                   </th>
                 ))}
@@ -384,7 +451,10 @@ const AllLeads = () => {
 
             <tbody>
               {isLoadingLeads && (
-                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+                <TableRowSkelton
+                  rows={limit}
+                  columns={tableHeaders?.length + 2}
+                />
               )}
 
               {!isLoadingLeads &&
@@ -397,6 +467,20 @@ const AllLeads = () => {
                     }}
                     className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rowSelected.includes(row?._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowSelect(row?._id);
+                        }}
+                      />
+                    </td>
+
                     <td className="px-3 py-2.5">
                       {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
@@ -424,7 +508,7 @@ const AllLeads = () => {
                         return (
                           <td
                             key={h.key}
-                            className="px-3 py-2"
+                            className="px-3 flex py-2 "
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
@@ -514,7 +598,7 @@ const AllLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td className=" whitespace-nowrap">
+                          <td className="whitespace-nowrap">
                             {userName}{" "}
                             {isToday && (
                               <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
@@ -562,7 +646,7 @@ const AllLeads = () => {
                         );
                       }
                       return (
-                        <td key={h.key} className="px-3 py-2">
+                        <td key={h.key} className="px-3 py-2 whitespace-nowrap">
                           {row[h.key]
                             ? row[h.key] === "undefined"
                               ? "-"
@@ -577,7 +661,7 @@ const AllLeads = () => {
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
                   <td
-                    colSpan={tableHeaders?.length + 1}
+                    colSpan={tableHeaders?.length + 2}
                     className="py-6 text-center"
                   >
                     No Leads Found

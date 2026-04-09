@@ -260,3 +260,34 @@ export const updateFlowSession = async (payload) => {
   const data = await response.json();
   return data;
 };
+
+export const createWhatAppFlow = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/flow/create?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const getWhatsAppFlowScreens = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/flow/get?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};

@@ -26,6 +26,8 @@ import ViewAndManageLeadDrawer from "./ViewAndManageLead/ViewAndManageLeadDrawer
 import DatePickerModal from "../../components/Modal/DatePickerModal";
 import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
+import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
+import { FaTrashAlt } from "react-icons/fa";
 
 const CREATED_FROM = "whatsapp";
 
@@ -65,6 +67,7 @@ const WhatsAppLeads = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [allUsers, setAllUsers] = useState([]);
+  const [rowSelected, setRowSelected] = useState([]);
 
   const {
     page,
@@ -237,7 +240,17 @@ const WhatsAppLeads = () => {
   const handleRedirectToPage = (row, index) => {
     localStorage.setItem(LOCAL_STORAGE.WhatsappPage, page);
     const hid = localStorage.getItem("hid");
-    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?hid=${row?.hId}&lead=${index}&created_from=${CREATED_FROM}`;
+    const queryParams = new URLSearchParams({
+      hid: row?.hId,
+      lead: index,
+      created_from: CREATED_FROM,
+      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(stage ? { stage: stage } : {}),
+      ...(startDate ? { startDate: startDate } : {}),
+      ...(endDate ? { endDate: endDate } : {}),
+    });
+    const navigatePath = `${BASE_PATH}/${hid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${row._id}/view?${queryParams.toString()}`;
+
     navigate(navigatePath);
 
     // setSelectedRow({
@@ -250,6 +263,45 @@ const WhatsAppLeads = () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
     setAllUsers(usersData);
+  };
+
+  const handleDeleteAll = () => {
+    // alert("We are working on it");
+    Swal.fire({
+      title: "Are you sure?",
+      text: `This will permanently delete ${"this record"}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const data = await deleteLMultipleeadGenForm(rowSelected);
+        if (data?.Status) {
+          fetchLeads(false);
+          Swal.fire("Deleted!", "The record has been removed.", "success");
+          setRowSelected([]);
+        } else {
+          Swal.fire("Error!", data?.Message, "error");
+        }
+      }
+    });
+  };
+
+  const handleRowSelect = (id) => {
+    if (rowSelected.length < 10) {
+      setRowSelected((prev) =>
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+      );
+    } else {
+      if (rowSelected.includes(id)) {
+        setRowSelected((prev) => prev.filter((item) => item !== id));
+        return;
+      }
+      alert("You can select only 10 rows at a time");
+    }
   };
 
   useEffect(() => {
@@ -300,7 +352,7 @@ const WhatsAppLeads = () => {
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -343,6 +395,7 @@ const WhatsAppLeads = () => {
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
+                    maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
                     className="bg-transparent outline-none text-sm w-40"
                     placeholderText="Date range"
@@ -368,10 +421,19 @@ const WhatsAppLeads = () => {
       </div>
 
       <div className="flex flex-col flex-1 min-h-0">
+        {rowSelected?.length > 0 && (
+          <button
+            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            onClick={handleDeleteAll}
+          >
+            Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
+          </button>
+        )}
         <div className="border rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
+                <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
                   <th
@@ -386,7 +448,10 @@ const WhatsAppLeads = () => {
 
             <tbody>
               {isLoadingLeads && (
-                <TableRowSkelton rows={limit} columns={tableHeaders?.length} />
+                <TableRowSkelton
+                  rows={limit}
+                  columns={tableHeaders?.length + 2}
+                />
               )}
 
               {!isLoadingLeads &&
@@ -399,6 +464,19 @@ const WhatsAppLeads = () => {
                     }}
                     className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
                   >
+                    <td
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rowSelected.includes(row?._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowSelect(row?._id);
+                        }}
+                      />
+                    </td>
                     <td className="px-3 py-2.5">
                       {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
@@ -559,7 +637,7 @@ const WhatsAppLeads = () => {
               {!isLoadingLeads && allLeads.length === 0 && (
                 <tr>
                   <td
-                    colSpan={tableHeaders.length + 1}
+                    colSpan={tableHeaders.length + 2}
                     className="py-6 text-center"
                   >
                     No Leads Found

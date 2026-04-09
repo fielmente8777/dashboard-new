@@ -452,10 +452,10 @@ const ChatArea = () => {
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
           <div onClick={() => setMobileActive("profile")}>
-            <h3 className="text-md md:text-lg font-semibold ">
+            <h3 className="text-md md:text-md text-gray-600 font-medium  capitalize">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm ">+{selectedConversation.phone}</p>
+            <p className="text-xs md:text-sm text-gray-600 ">+{selectedConversation.phone}</p>
           </div>
         </div>
 

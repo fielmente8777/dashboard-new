@@ -53,7 +53,7 @@ export default function Calls() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
 
       if (data?.result?.status) {
@@ -90,7 +90,7 @@ export default function Calls() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       if (data?.success) {
         setShowSidebar(false);
@@ -165,7 +165,7 @@ export default function Calls() {
       }
 
       const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/call/auth/make-call`,
+        `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
         {
           method: "POST",
           headers: {
@@ -176,7 +176,7 @@ export default function Calls() {
             fromNumber,
             toNumber,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -204,15 +204,21 @@ export default function Calls() {
         <div className="px-6 bg-white  flex justify-between items-center py-4 border-b border-gray-200 b">
           <h2 className="text-lg font-semibold text-gray-900">Recent Calls</h2>
 
-          <button onClick={() => setCallPopup(true)} className="border py-1 px-5 rounded hover:bg-orange-400">Call Now</button>
+          <button
+            onClick={() => setCallPopup(true)}
+            className="border py-1 px-5 rounded hover:bg-orange-400"
+          >
+            Call Now
+          </button>
 
           {isConnected && (
             <div className="flex items-center gap-4">
               <div className="flex items-center border font-medium rounded-md gap-1 py-1 text-[#575757] px-3 ">
                 <div
                   onClick={() => getAllCalls()}
-                  className={`flex justify-end items-center cursor-pointer ${isTableDataLoading ? "animate-spin" : ""
-                    } `}
+                  className={`flex justify-end items-center cursor-pointer ${
+                    isTableDataLoading ? "animate-spin" : ""
+                  } `}
                 >
                   <MdRefresh size={18} />
                 </div>
@@ -311,18 +317,20 @@ export default function Calls() {
                       {/* Status */}
                       <td className="px-4 py-2 whitespace-nowrap">
                         <span
-                          className={`text-gray-800 inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${call.Status === "completed"
+                          className={`text-gray-800 inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
+                            call.Status === "completed"
                               ? ""
                               : call.Status === "in-progress"
                                 ? ""
                                 : ""
-                            }`}
+                          }`}
                         >
                           <FaPhone
-                            className={`mr-1 ${call.Status === "completed"
+                            className={`mr-1 ${
+                              call.Status === "completed"
                                 ? "text-green-700"
                                 : "text-orange-700"
-                              }`}
+                            }`}
                             size={12}
                           />
                           {call.Status === "completed"
@@ -342,8 +350,9 @@ export default function Calls() {
                       {new Date(call.EndTime).toLocaleTimeString()}
                     </td> */}
                       <td className="px-4 py-2 text-gray-900">
-                        {`${Math.floor(call.Duration / 60)} min ${call.Duration % 60
-                          } sec`}
+                        {`${Math.floor(call.Duration / 60)} min ${
+                          call.Duration % 60
+                        } sec`}
                       </td>
                       <td className="px-4 py-2 text-gray-900 flex justify-center">
                         <span
@@ -434,12 +443,33 @@ export default function Calls() {
           <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             <div className="flex flex-col gap-2">
               <h1>Enter Number to make a call!</h1>
-              <input value={fromNumber} onChange={(e) => setFromNumber(e.target.value)} placeholder="From number" required className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-              <input value={toNumber} onChange={(e) => setToNumber(e.target.value)} placeholder="Guest number" required className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+              <input
+                value={fromNumber}
+                onChange={(e) => setFromNumber(e.target.value)}
+                placeholder="From number"
+                required
+                className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <input
+                value={toNumber}
+                onChange={(e) => setToNumber(e.target.value)}
+                placeholder="Guest number"
+                required
+                className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
               <div className="flex justify-end gap-3">
-                <button onClick={() => setCallPopup(false)} className="flex justify-end w-fit border py-1 px-5 bg-red-300 rounded hover:bg-orange-400">Cancel</button>
-                <button onClick={handleMakeCall} className="flex justify-end w-fit border py-1 px-5  rounded hover:bg-orange-400">Call Now</button>
-
+                <button
+                  onClick={() => setCallPopup(false)}
+                  className="flex justify-end w-fit border py-1 px-5 bg-red-300 rounded hover:bg-orange-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleMakeCall}
+                  className="flex justify-end w-fit border py-1 px-5  rounded hover:bg-orange-400"
+                >
+                  Call Now
+                </button>
               </div>
             </div>
           </div>

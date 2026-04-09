@@ -16,7 +16,12 @@ import {
   FaUser,
 } from "react-icons/fa6";
 import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoMdSettings, IoIosChatbubbles, IoMdGlobe, IoMdEye } from "react-icons/io";
+import {
+  IoMdSettings,
+  IoIosChatbubbles,
+  IoMdGlobe,
+  IoMdEye,
+} from "react-icons/io";
 import {
   MdCampaign,
   MdChat,
@@ -30,7 +35,11 @@ import {
 } from "react-icons/md";
 import { SiGoogleanalytics, SiGooglesheets, SiLivechat } from "react-icons/si";
 import { MdDashboard } from "react-icons/md";
-import { PiChatCircleLight, PiGlobeSimpleLight, PiUsersThreeFill } from "react-icons/pi";
+import {
+  PiChatCircleLight,
+  PiGlobeSimpleLight,
+  PiUsersThreeFill,
+} from "react-icons/pi";
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
@@ -76,7 +85,7 @@ export const SidebarData = [
   {
     name: "Dashboard",
     link: ``,
-    icon:<MdDashboard color={"#c2ccd6"} size={16} />,
+    icon: <MdDashboard color={"#c2ccd6"} size={16} />,
   },
   // {
   //   name: "Live Chat",
@@ -109,29 +118,29 @@ export const SidebarData = [
   {
     name: "Live Chat",
     link: `channel`,
-    icon: <PiChatCircleLight  />,
+    icon: <PiChatCircleLight />,
     subLinks: [
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
         icon: <MdChat />,
       },
-      {
-        name: "Instagram",
-        link: `channel/ig/chat`,
-        icon: <FaInstagram size={16} />,
-      },
+      // {
+      //   name: "Instagram",
+      //   link: `channel/ig/chat`,
+      //   icon: <FaInstagram size={16} />,
+      // },
       // {
       //   name: "Facebook",
       //   link: `channel/fb/chat`,
       //   icon: <FaFacebook size={18} />,
       // },
 
-      {
-        name: "Eazbot",
-        link: `channel/eb/chat`,
-        icon: <FaRobot size={18} />,
-      },
+      // {
+      //   name: "Eazbot",
+      //   link: `channel/eb/chat`,
+      //   icon: <FaRobot size={18} />,
+      // },
 
       // {
       //   name: "Templates",
@@ -174,7 +183,7 @@ export const SidebarData = [
       {
         name: "Meta",
         link: `leads-management/meta-leads`,
-        icon:<PiGlobeSimpleLight size={18} />
+        icon: <PiGlobeSimpleLight size={18} />,
 
         // <RiMetaFill color="#0266df" />,
       },

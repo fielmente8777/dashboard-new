@@ -1,7 +1,9 @@
+import { FiX } from "react-icons/fi";
 import ButtonsSettings from "./ButtonSetting";
 import CarouselSettings from "./CarouselSettings";
 import ListSetting from "./ListSetting";
 import QuestionSettings from "./QuestionSetting";
+import FlowSettings from "./FlowSetting";
 
 export default function SettingsPanel({ node, setNode, setSelectedNode }) {
   const handleButtonCancel = () => {
@@ -31,10 +33,19 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
     );
 
   return (
-    <div className="fixed w-110 h-[95vh] bg-white top-16 border-l p-4 right-0 overflow-y-auto">
-      <h3 className="font-bold mb-2">Node Settings</h3>
+    <div className="fixed w-110 h-[95vh] bg-white top-16 border-l p-4 right-0 overflow-y-auto z-50">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="font-bold mb-2">Node Settings</h3>
+          <p>Type: {node.type}</p>
+        </div>
 
-      <p>Type: {node.type}</p>
+        <FiX
+          size={20}
+          className="cursor-pointer text-gray-500 hover:text-black"
+          onClick={handleButtonCancel}
+        />
+      </div>
 
       {node.type === "message" && (
         <textarea
@@ -47,6 +58,7 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
         <ButtonsSettings
           onSave={(data) => handleDataSave(data)}
           onCancel={() => handleButtonCancel()}
+          data={node.data}
         />
       )}
 
@@ -65,6 +77,14 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
           data={node.data}
           onSave={(data) => handleDataSave(data)}
           onCancel={() => handleButtonCancel()}
+        />
+      )}
+
+      {node.type === "flow" && (
+        <FlowSettings
+          onSave={(data) => handleDataSave(data)}
+          onCancel={() => handleButtonCancel()}
+          data={node.data}
         />
       )}
 

@@ -31,6 +31,11 @@ const ViewAndManageLeads = () => {
   const hid = searchParams.get("hid");
   const leadPageNumber = searchParams.get("lead");
   const created_from = searchParams.get("created_from");
+  const search = searchParams.get("search");
+  const source = searchParams.get("source");
+  const stage = searchParams.get("stage");
+  const startDate = searchParams.get("startDate");
+  const endDate = searchParams.get("endDate");
 
   const [showSave, setShowSave] = useState(false);
 
@@ -67,7 +72,11 @@ const ViewAndManageLeads = () => {
       page: leadPageNumberState,
       limit: 1,
       ...(created_from && { created_from: created_from }),
-      // stage: stage,
+      ...(search && { search: search }),
+      ...(source && { source: source }),
+      ...(stage && { stage: stage }),
+      ...(startDate && { startDate: startDate }),
+      ...(endDate && { endDate: endDate }),
     };
 
     try {

@@ -10,6 +10,9 @@ content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
         border: "hsl(var(--border))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+
+        primary: "#152547",
+        ternary: "#FC5F07",
       },
      keyframes: {
         ring: {
