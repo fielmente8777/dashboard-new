@@ -222,30 +222,46 @@ const templates = [
 
 const TemplateLibrary = ({ onSelectTemplate }) => {
   return (
-    <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-white">
+    <div className="p-6 bg-gray-50 min-h-screen">
+
+      <div>
+        jkhjghc
+      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {templates.map((template) => (
         <div
           key={template.id}
-          className="bg-primary rounded-xl p-5 flex flex-col justify-between min-h-[160px] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
           onClick={() => onSelectTemplate(template)}
+          className="bg-white rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-[180px] hover:border-ternary/40 transition-all duration-300 cursor-pointer"
         >
+          {/* Header */}
+          <div>
+            <h3 className="font-semibold text-lg text-primary mb-2 hover:text-ternary transition-colors">
+              {template.header}
+            </h3>
 
-          
-          <h3 className="font-semibold text-lg text-white mb-2">{template.header}</h3>
-          <p className="text-sm text-gray-300 leading-relaxed">
-            {template.body}...
-          </p>
+            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+              {template.body}
+            </p>
+          </div>
 
+          {/* Footer */}
           <div className="mt-6 flex justify-between items-center">
-            <span className="text-xs px-3 py-1 bg-ternary/10 text-ternary border border-ternary/20 rounded-md font-medium uppercase tracking-wide">
+            <span className="text-xs px-3 py-1 bg-gray-100 text-primary border border-gray-200 rounded-md font-medium uppercase tracking-wide">
               {template.category}
             </span>
 
-            <button className="text-ternary text-sm font-medium hover:opacity-80 transition-opacity flex items-center gap-1">Use Template →</button>
+            <button className="text-ternary text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+              Use Template →
+            </button>
           </div>
+
+          {/* Accent line */}
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-2xl"></div>
         </div>
       ))}
     </div>
+  </div>
   );
 };
 
