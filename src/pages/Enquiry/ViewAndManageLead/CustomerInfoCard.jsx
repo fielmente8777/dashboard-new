@@ -11,6 +11,7 @@ import { useContext, useEffect, useState } from "react";
 import { fetchUserManagementData } from "../../../services/api";
 import DataContext from "../../../context/DataContext";
 import DatePickerModal from "../../../components/Modal/DatePickerModal";
+import CustomDropdown2 from "../../../components/ui/Dropdown2";
 
 const CustomerInfoCard = ({ lead, onClick }) => {
   const { showToast } = useToast();
@@ -50,13 +51,17 @@ const CustomerInfoCard = ({ lead, onClick }) => {
     }
   };
 
-  const handleUserAssign = async (value) => {
+  const handleUserAssign = async (item) => {
+    const [phone, email] = item.value.split(",");
+
     try {
       const payload = {
         leadId: lead._id,
         hid: lead?.hId,
         conversationId: lead?.conversationId,
-        assignee: value,
+        assignee: item?.label,
+        assigneeNumber: phone || null,
+        assigneeEmail: email || null,
       };
 
       const response = await updateLead(payload);
@@ -231,11 +236,11 @@ const CustomerInfoCard = ({ lead, onClick }) => {
           <label htmlFor="" className="text-sm text-gray-500 ml-1">
             Attempted By
           </label>
-          <CustomDropdown
+          <CustomDropdown2
             label={lead?.assignee || "Select User"}
             options={
               allUsers?.map((user) => ({
-                value: user?.userName,
+                value: `${user?.phone},${user?.emailId}`,
                 label: user?.userName,
               })) || []
             }

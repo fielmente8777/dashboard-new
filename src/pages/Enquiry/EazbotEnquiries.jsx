@@ -31,6 +31,7 @@ import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 import { FaTrashAlt } from "react-icons/fa";
+import CustomDropdown2 from "../../components/ui/Dropdown2";
 
 const CREATED_FROM = "eazbot";
 
@@ -181,18 +182,16 @@ const EazbotLeads = () => {
     }
   };
 
-  const handleUserAssign = async (
-    leadId,
-    hid,
-    value,
-    conversationId = null,
-  ) => {
+  const handleUserAssign = async (leadId, hid, item, conversationId = null) => {
+    const [phone, email] = item.value.split(",");
     try {
       const payload = {
         leadId: leadId,
         hid: hid,
         ...(conversationId && { conversationId }),
-        assignee: value,
+        assignee: item?.label,
+        assigneeNumber: phone || null,
+        assigneeEmail: email || null,
       };
 
       const response = await updateLead(payload);
@@ -321,7 +320,7 @@ const EazbotLeads = () => {
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -546,11 +545,11 @@ const EazbotLeads = () => {
                             onClick={(e) => e.stopPropagation()}
                             className="px-2"
                           >
-                            <CustomDropdown
+                            <CustomDropdown2
                               label={row["assignee"] || "Attempted By"}
                               options={
                                 allUsers?.map((user) => ({
-                                  value: user?.userName,
+                                  value: `${user?.phone},${user?.emailId}`,
                                   label: user?.userName,
                                 })) || []
                               }

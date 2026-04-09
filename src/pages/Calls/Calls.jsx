@@ -1,12 +1,15 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaPhone } from "react-icons/fa";
 // import CallDetails from "./CallDetails";
 import { IoIosClose, IoIosPlayCircle } from "react-icons/io";
 import { MdRefresh } from "react-icons/md";
 import {
   BASE_PATH,
+  GuestType,
   LeadStatus,
+  MasterSegregation,
   NEW_BASE_URL,
+  Priority,
   ROUTES_PATH,
   Stages,
 } from "../../data/constant";
@@ -25,6 +28,10 @@ import {
   TableRowSkelton,
   TableSkeleton,
 } from "../../components/Skeltons/TableSkelton";
+import { fetchUserManagementData } from "../../services/api";
+import CustomDropdown2 from "../../components/ui/Dropdown2";
+import { MdOutlineWifiCalling3 } from "react-icons/md";
+import CustomSubDropdown from "../../components/ui/CustomSubDropdown";
 
 export default function Calls() {
   const { showToast } = useToast();
@@ -32,6 +39,7 @@ export default function Calls() {
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentRecordingUrl, setCurrentRecordingUrl] = useState("");
 
+  const [allUsers, setAllUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const {
@@ -48,6 +56,7 @@ export default function Calls() {
 
   const [allCalls, setAllCalls] = useState([]);
   const [isTableDataLoading, setIsTableDataLoading] = useState(true);
+  const [isImportCallsLoading, setIsImportCallsLoading] = useState(false);
   const [IsStatusLoading, setIsStatusLoading] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -64,9 +73,9 @@ export default function Calls() {
   });
 
   const importCalls = async () => {
-    setIsTableDataLoading(true);
+    setIsImportCallsLoading(true);
     try {
-      const { data } = await axios.get(
+      await axios.get(
         `${NEW_BASE_URL}/api/v1/call/import?hid=${localStorage.getItem("hid")}`,
         {
           headers: {
@@ -74,11 +83,11 @@ export default function Calls() {
           },
         },
       );
-      setAllCalls(data?.result?.docs?.Call);
+      fetchAllCalls();
     } catch (error) {
       console.error("Error fetching call", error);
     } finally {
-      setIsTableDataLoading(false);
+      setIsImportCallsLoading(false);
     }
   };
 
@@ -197,8 +206,11 @@ export default function Calls() {
     { label: "Time", value: "startTime" },
     { label: "Duration", value: "duration" },
     { label: "Recording", value: "recordingUrl" },
+    { label: "Attempted By", value: "assignedTo" },
     { label: "Stage", value: "stage" },
-    { label: "Lead Stage", value: "lead-stage" },
+    { label: "Segregation", value: "segregation" },
+    { label: "Guest Type", value: "guestType" },
+    { label: "Priority", value: "priority" },
   ];
 
   const newStages = Stages?.filter((stage) => {
@@ -271,6 +283,25 @@ export default function Calls() {
     }
   };
 
+  const handleUserAssign = async ({ item, sid }) => {
+    const [phone, email] = item.value.split(",");
+    try {
+      const payload = {
+        sid: sid,
+        assignedTo: item?.label,
+        assigneeNumber: phone || null,
+        assigneeEmail: email || null,
+      };
+
+      handleUpdateCall(payload);
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update lead stage",
+        type: "error",
+      });
+    }
+  };
+
   const handleRedirectToPage = (row, index) => {
     // localStorage.setItem(LOCAL_STORAGE.AllLeads, page);
     const hid = localStorage.getItem("hid");
@@ -285,8 +316,15 @@ export default function Calls() {
     navigate(navigatePath);
   };
 
+  const fetchUsersData = async () => {
+    const token = localStorage.getItem("token");
+    const usersData = await fetchUserManagementData(token);
+    setAllUsers(usersData);
+  };
+
   useEffect(() => {
     getConnectStatus();
+    fetchUsersData();
   }, []);
 
   useEffect(() => {
@@ -294,6 +332,7 @@ export default function Calls() {
       fetchAllCalls();
     }
   }, [page, limit, searchTerm, isConnected]);
+
   return (
     <div className="">
       {/* Calls Table */}
@@ -317,31 +356,24 @@ export default function Calls() {
 
             <button
               onClick={() => setCallPopup(true)}
-              className="border py-1 px-5 rounded hover:bg-orange-400"
+              className="border border-primary/60! py-1 px-5 rounded hover:bg-primary hover:text-white duration-300 flex items-center gap-1"
             >
-              Call Now
+              <MdOutlineWifiCalling3 size={16} /> Call Now
             </button>
 
             {isConnected && (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border font-medium rounded-md gap-1 py-1 text-[#575757] px-3 ">
-                  <div
-                    onClick={() => importCalls()}
-                    className={`flex justify-end items-center cursor-pointer ${
-                      isTableDataLoading ? "animate-spin" : ""
-                    } `}
-                  >
-                    <MdRefresh size={18} />
-                  </div>
-                  Refresh
-                </div>
-
-                {/* <div
-                className="cursor-pointer"
-                onClick={() => setShowSidebar(true)}
+              <div
+                onClick={() => importCalls()}
+                className="flex items-center border font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
               >
-                <IoMdSettings size={22} />
-              </div> */}
+                <div
+                  className={`flex justify-end items-center cursor-pointer ${
+                    isImportCallsLoading ? "animate-spin" : ""
+                  } `}
+                >
+                  <MdRefresh size={18} />
+                </div>
+                Import Calls
               </div>
             )}
           </div>
@@ -357,7 +389,7 @@ export default function Calls() {
                   {columns.map((col) => (
                     <th
                       key={col.value}
-                      className="px-3 py-3 text-left text-white"
+                      className="px-3 py-3 text-left text-white whitespace-nowrap"
                     >
                       {col.label}
                     </th>
@@ -383,25 +415,29 @@ export default function Calls() {
                       }
                     >
                       {/* Index */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         {(i + limit * (page - 1) + 1)
                           .toString()
                           .padStart(2, "0")}
                       </td>
 
                       {/* From */}
-                      <td className="px-3 py-1">{call.from || "-"}</td>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        {call.from || "-"}
+                      </td>
 
                       {/* To */}
-                      <td className="px-3 py-1">{call.to || "-"}</td>
+                      <td className="px-3 py-1 whitespace-nowrap">
+                        {call.to || "-"}
+                      </td>
 
                       {/* Phone */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         {call.phoneNumberSid || "-"}
                       </td>
 
                       {/* Direction */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         {call.direction === "outbound-dial" ? (
                           <span className="text-green-700">Outgoing</span>
                         ) : (
@@ -410,21 +446,21 @@ export default function Calls() {
                       </td>
 
                       {/* Status */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         <span className="text-xs font-medium">
                           {call.status || "-"}
                         </span>
                       </td>
 
                       {/* Time */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         {call.startTime
                           ? new Date(call.startTime).toLocaleString()
                           : "-"}
                       </td>
 
                       {/* Duration */}
-                      <td className="px-3 py-1">
+                      <td className="px-3 py-1 whitespace-nowrap">
                         {call.duration
                           ? `${Math.floor(call.duration / 60)}m ${
                               call.duration % 60
@@ -434,7 +470,7 @@ export default function Calls() {
 
                       {/* Recording */}
                       <td
-                        className="px-3 py-1"
+                        className="px-3 py-1 whitespace-nowrap"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {call.recordingUrl ? (
@@ -449,8 +485,27 @@ export default function Calls() {
                         )}
                       </td>
 
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        <CustomDropdown2
+                          label={call["assignedTo"] || "Attempted By"}
+                          options={
+                            allUsers?.map((user) => ({
+                              value: `${user?.phone},${user?.emailId}`,
+                              label: user?.userName,
+                            })) || []
+                          }
+                          onChange={(value) =>
+                            handleUserAssign({
+                              item: value,
+                              sid: call.sid,
+                            })
+                          }
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                        />
+                      </td>
+
                       {/* Stage */}
-                      <td onClick={(e) => e.stopPropagation()} className="py-1">
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
                         <CustomDropdown
                           label={call.stage}
                           options={newStages}
@@ -465,20 +520,60 @@ export default function Calls() {
                               });
                             }
                           }}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />
                       </td>
 
-                      {/* Lead Status */}
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <CustomDropdown
-                          label={call.leadStatus}
-                          options={LeadStatus}
+                      {/* Segregation */}
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        <CustomSubDropdown
+                          label={call?.segregation?.value}
+                          options={MasterSegregation}
                           onChange={(value) =>
                             handleUpdateCall({
                               sid: call.sid,
-                              leadStatus: value,
+                              segregation: {
+                                label: value.parentValue,
+                                value: value.value,
+                              },
                             })
                           }
+                          // handleUpdateCall({
+                          //   sid: call.sid,
+                          //   leadStatus: value,
+                          // })
+
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                        />
+                      </td>
+
+                      {/* Guest Type  */}
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        <CustomDropdown
+                          label={call.guestType}
+                          options={GuestType}
+                          onChange={(value) => {
+                            handleUpdateCall({
+                              sid: call.sid,
+                              guestType: value,
+                            });
+                          }}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                        />
+                      </td>
+
+                      {/* Priority  */}
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        <CustomDropdown
+                          label={call.priority}
+                          options={Priority}
+                          onChange={(value) => {
+                            handleUpdateCall({
+                              sid: call.sid,
+                              priority: value,
+                            });
+                          }}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />
                       </td>
                     </tr>
@@ -677,38 +772,64 @@ export default function Calls() {
       </div>
 
       {callPopup && (
-        <div className="fixed inset-0 flex justify-center bg-black/50 z-9999">
-          <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+        <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-9999">
+          <div className="w-100 max-w-md p-5 bg-white rounded-xl shadow-xl flex flex-col gap-4">
+            <h1 className="text-lg font-semibold">
+              Enter Number to Make a Call
+            </h1>
+
+            {/* 🔥 From Number (Dropdown + Input) */}
             <div className="flex flex-col gap-2">
-              <h1>Enter Number to make a call!</h1>
+              <label className="text-sm font-medium">From</label>
+
+              <CustomDropdown2
+                options={
+                  allUsers?.map((user) => ({
+                    value: user?.phone,
+                    label: `${user?.userName} (${user?.phone})`,
+                  })) || []
+                }
+                label={fromNumber || "Select User"}
+                onChange={(item) => {
+                  setFromNumber(item?.value);
+                }}
+                className="border p-1 rounded-md bg-gray-100 w-full"
+              />
+
               <input
                 value={fromNumber}
                 onChange={(e) => setFromNumber(e.target.value)}
-                placeholder="From number"
-                required
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Or type number"
+                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+
+            {/* 🔥 To Number */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">To</label>
               <input
                 value={toNumber}
                 onChange={(e) => setToNumber(e.target.value)}
                 placeholder="Guest number"
-                required
-                className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setCallPopup(false)}
-                  className="flex justify-end w-fit border py-1 px-5 bg-red-300 rounded hover:bg-orange-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleMakeCall}
-                  className="flex justify-end w-fit border py-1 px-5  rounded hover:bg-orange-400"
-                >
-                  Call Now
-                </button>
-              </div>
+            </div>
+
+            {/* 🔥 Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setCallPopup(false)}
+                className="px-4 py-1.5 bg-red-100 text-red-600 rounded hover:bg-red-500 duration-300 hover:text-white"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleMakeCall}
+                className="px-4 py-1.5 bg-primary text-white rounded hover:opacity-90"
+              >
+                Call Now
+              </button>
             </div>
           </div>
         </div>

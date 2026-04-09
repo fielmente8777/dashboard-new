@@ -15,37 +15,88 @@ export default function ImportLead({ open, setOpen }) {
   const normalizeKey = (key) => key.toLowerCase().replace(/[^a-z]/g, "");
 
   const FIELD_MAP = {
-    name: ["name", "fullname", "customername"],
+    name: ["name", "fullname", "customername", "clientname"],
     email: ["email", "emailaddress", "mail"],
-    phone: ["phone", "contact", "mobilenumber", "phonenumber"],
+    phone: [
+      "phone",
+      "contact",
+      "mobilenumber",
+      "phonenumber",
+      "whatsappnumber",
+    ],
     status: ["status", "leadstatus", "stage"],
     message: ["message", "leadmessage", "notes"],
     created_from: ["createdfrom", "source", "createdsource", "leadsource"],
-    date: ["date", "createdat", "createdon", "timestamp", "added"],
+    date: [
+      "date",
+      "createdat",
+      "createdon",
+      "timestamp",
+      "added",
+      "datecreated",
+    ],
   };
 
-  const findField = (row, field) => {
-    const keys = Object?.keys(row);
+  const parseToMongoDate = (dateStr) => {
+    if (!dateStr) return null;
 
-    for (let key of keys) {
-      const normalized = normalizeKey(key);
+    const [datePart, timePart] = dateStr.split(" - ");
+    if (!datePart || !timePart) return null;
 
-      if (FIELD_MAP[field].includes(normalized)) {
-        return row[key];
+    const [year, month, day] = datePart.split("-");
+    const [hour, minute] = timePart.split(":");
+
+    const date = new Date(Date.UTC(year, month - 1, day, hour, minute));
+
+    return date.toISOString(); // MongoDB format
+  };
+  // {
+  //     "created_from": "Facebook",
+  //     "Date Created": "2023-02-27 - 19:16",
+  //     "Client Name": "Uzaal Babu",
+  //     "Phone Number": "+977 985-1122665",
+  //     "WhatsApp Number": "+977 985-1122665",
+  //     "Email": "haratikitchen@gmail.com",
+  //     "Notes": "Instagram Lead via Fielmente\nCampaign: Fielmente Lead Generation\nAdset: Intl_Leads_Feb_23 – Copy\nAd: Feb_AD_Lead\n\nWhich Business You Have?: cloud_kitchen\nWhich Service You Are Looking For?: all\nFull Name: Uzaal Babu\nEmail: haratikitchen@gmail.com\nPhone Number: +9779851122665\nCity: Ktm\nCompany Name: Harati kitchen and steel udhyog\nJob Title: Kitchen fabricator"
+  // }
+
+  const findField = (normalizedRow, field) => {
+    for (let key of FIELD_MAP[field]) {
+      if (normalizedRow[key]) {
+        return normalizedRow[key];
       }
     }
-
     return "";
   };
 
+  const normalizeRow = (row) => {
+    const normalized = {};
+
+    for (let key in row) {
+      const cleanKey = normalizeKey(key);
+      normalized[cleanKey] = row[key];
+    }
+
+    return normalized;
+  };
   const transformLead = (row) => {
-    console.log("Row", row);
-    const name = findField(row, "name");
-    const email = findField(row, "email");
-    const phone = findField(row, "phone");
-    const status = findField(row, "status");
-    const message = findField(row, "message");
-    const created_from = findField(row, "created_from");
+    const normalizedRow = normalizeRow(row);
+
+    const name = findField(normalizedRow, "name");
+    const email = findField(normalizedRow, "email");
+    const phone = findField(normalizedRow, "phone");
+    const status = findField(normalizedRow, "status");
+    const message = findField(normalizedRow, "message");
+    const created_from = findField(normalizedRow, "created_from");
+    const created_at = findField(normalizedRow, "date");
+
+    // console.log("Name", name)
+    // console.log("email", email)
+    // console.log("phone", phone)
+    // console.log("status", status)
+    // console.log("message", message)
+    // console.log("created_from", created_from?.toLowerCase())
+    // console.log(created_at, parseToMongoDate(created_at))
 
     return {
       Name: name,
@@ -53,7 +104,8 @@ export default function ImportLead({ open, setOpen }) {
       Contact: phone,
       status: status,
       Message: message,
-      created_from: created_from,
+      created_from: created_from?.toLowerCase(),
+      Created_at: parseToMongoDate(created_at),
       other_details: row, // everything else goes here
     };
   };
@@ -73,7 +125,7 @@ export default function ImportLead({ open, setOpen }) {
       header: true,
       skipEmptyLines: true,
       complete: function (results) {
-        console.log("Result", results);
+        // console.log("Result", results);
         setTotalPage(Math.ceil(results.data.length / chunkSize));
         const transformed = results.data.map(transformLead);
         setLeads(transformed);
@@ -103,6 +155,7 @@ export default function ImportLead({ open, setOpen }) {
     try {
       const leadChunks = chunkArray(leads, chunkSize);
       for (const chunk of leadChunks) {
+        console.log("Chunk ", chunk);
         setCurrentPage((prev) => prev + 1);
         const res = await importLead(chunk);
         const data = res.data;
@@ -131,7 +184,7 @@ export default function ImportLead({ open, setOpen }) {
   return (
     <div className="max-w-3xl mx-auto space-y-4 bg-gray">
       <button
-        className="text-sm font-medium bg-gray-200 p-2.5 rounded-sm ml-2"
+        className="text-sm font-medium bg-primary text-white p-2.5 rounded-sm ml-2"
         onClick={() => setOpen(!open)}
       >
         Import Leads (CSV)
@@ -186,31 +239,35 @@ export default function ImportLead({ open, setOpen }) {
                 <span className="truncate">📄 {fileName}</span>
               </div>
             )}
-            <button
-              className="bg-primary py-1.5 rounded-lg w-full mt-2 text-sm text-white font-medium"
-              onClick={handleImport}
-            >
-              Proceed
-            </button>
+            {fileName && (
+              <button
+                className="bg-primary py-1.5 rounded-lg w-full mt-2 text-sm text-white font-medium"
+                onClick={handleImport}
+              >
+                Upload
+              </button>
+            )}
 
-            <div className="flex flex-col gap-1">
-              <div className="mt-4 flex justify-between text-sm text-gray-600">
-                <p>Uploading...</p>
-                <p>
-                  {currentPage} / {totalPages}
-                </p>
-              </div>
+            {fileName && (
+              <div className="flex flex-col gap-1">
+                <div className="mt-4 flex justify-between text-sm text-gray-600">
+                  <p>Processing...</p>
+                  <p>
+                    {currentPage} / {totalPages}
+                  </p>
+                </div>
 
-              {/* <p className={`${currentPage <= totalPages ? 'w-full bg-gray-300' : `w-[${(currentPage / totalPages) * 100}%] bg-green-600`} h-2 rounded-full `}/> */}
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-green-600 transition-all duration-500"
-                  style={{
-                    width: `${totalPages ? (currentPage / totalPages) * 100 : 0}%`,
-                  }}
-                />
+                {/* <p className={`${currentPage <= totalPages ? 'w-full bg-gray-300' : `w-[${(currentPage / totalPages) * 100}%] bg-green-600`} h-2 rounded-full `}/> */}
+                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-600 transition-all duration-500"
+                    style={{
+                      width: `${totalPages ? (currentPage / totalPages) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

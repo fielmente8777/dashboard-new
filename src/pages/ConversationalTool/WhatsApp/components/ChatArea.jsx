@@ -47,6 +47,7 @@ import { useConfirm } from "../../../../context/ConfirmContext";
 import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
+import CustomDropdown2 from "../../../../components/ui/Dropdown2";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
@@ -68,6 +69,7 @@ const ChatArea = () => {
     setSelectedConversation,
     conversations,
     setMobileActive,
+    setLastMessage,
   } = useContext(DataContext);
 
   const [isTakeOver, setIsTakeOver] = useState(false);
@@ -266,7 +268,12 @@ const ChatArea = () => {
       // setMessageList(response?.result?.messages)
 
       if (response?.success && response?.responseStatusCode === 200) {
-        setMessageList(response?.result?.messages);
+        const messages = response?.result?.messages;
+        setMessageList(messages);
+
+        if (setLastMessage) {
+          setLastMessage(messages[messages.length - 1]);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -393,7 +400,9 @@ const ChatArea = () => {
     }));
   };
 
-  const handleUserAssign = async (value) => {
+  const handleUserAssign = async (item) => {
+    const [phone, email] = item.value.split(",");
+
     const isEdit = selectedConversation?.markAsLead;
 
     const payload = {
@@ -404,11 +413,14 @@ const ChatArea = () => {
       status: selectedConversation.status,
       conversationId: selectedConversation._id,
       hId: selectedConversation?.hid || localStorage.getItem("hid"),
-      assignee: value,
+      assignee: item?.label,
+      assigneeNumber: phone || null,
+      assigneeEmail: email || null,
     };
+
     isEdit ? await updateLead(payload) : await addWhatsAppLead(payload);
 
-    setSelectedConversation({ ...selectedConversation, assignee: value });
+    setSelectedConversation({ ...selectedConversation, assignee: item.label });
   };
 
   const fetchUsersData = async () => {
@@ -497,10 +509,12 @@ const ChatArea = () => {
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
           <div onClick={() => setMobileActive("profile")}>
-            <h3 className="text-md md:text-lg font-semibold ">
+            <h3 className="text-md md:text-md text-gray-600 font-medium  capitalize">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm ">+{selectedConversation.phone}</p>
+            <p className="text-xs md:text-sm text-gray-600 ">
+              +{selectedConversation.phone}
+            </p>
           </div>
         </div>
 
@@ -529,11 +543,11 @@ const ChatArea = () => {
           </Link>
 
           <div>
-            <CustomDropdown
+            <CustomDropdown2
               label={selectedConversation?.assignedTo || "Select User"}
               options={
                 allUsers?.map((user) => ({
-                  value: user?.userName,
+                  value: `${user?.phone},${user?.emailId}`,
                   label: user?.userName,
                 })) || []
               }

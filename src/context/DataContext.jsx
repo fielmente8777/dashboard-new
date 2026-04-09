@@ -39,6 +39,7 @@ export const DataProvider = ({ children }) => {
   const [editButton, setEditButton] = useState(false);
 
   // whatsapp
+  const [lastMessage, setLastMessage] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [is24HoursCompleted, setIs24HoursCompleted] = useState(false);
@@ -347,6 +348,8 @@ export const DataProvider = ({ children }) => {
         pageId,
         mobileActive,
         setMobileActive,
+        lastMessage,
+        setLastMessage,
       }}
     >
       {children}

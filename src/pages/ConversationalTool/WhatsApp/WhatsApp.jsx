@@ -28,6 +28,8 @@ const WhatsApp = () => {
     "/notification-sound/Sound1.mp3",
   );
 
+  const [lastMessage, setLastMessage] = useState({});
+
   const updateConversationWithMessage = (
     conversations,
     incomingMessage,
@@ -183,9 +185,9 @@ const WhatsApp = () => {
           <div>
             <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
               {/* Icon */}
-              <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+              <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-ternary/20">
                 <svg
-                  className="h-7 w-7 text-green-600"
+                  className="h-7 w-7 text-ternary"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -210,7 +212,7 @@ const WhatsApp = () => {
               {/* CTA */}
               <button
                 onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ternary/90  px-6 py-3 text-sm font-medium text-white transition hover:bg-ternary focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 <span>Connect WhatsApp Business</span>
               </button>

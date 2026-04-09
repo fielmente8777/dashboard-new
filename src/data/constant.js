@@ -4,8 +4,7 @@ export const BASE_URL = "https://nexon.eazotel.com";
 
 // export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 export const NEW_BASE_URL = "http://localhost:8000";
-// export const NEW_BASE_URL =
-//   "https://31da-2401-4900-a173-abba-1c4d-805c-ad5b-613d.ngrok-free.app";
+// export const NEW_BASE_URL ="https://8cfd-2409-40d2-10d5-cfcc-bc7a-ca3d-f168-d24c.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
 
@@ -323,6 +322,7 @@ export const Stages = [
   { label: "Qualified", value: "Qualified" },
   { label: "Not Qualified", value: "Not Qualified" },
   { label: "Turn Away", value: "Turn Away" },
+  { label: "Closure", value: "Closure" },
   { label: "Hot", value: "Hot" },
 ];
 
@@ -351,18 +351,120 @@ export const Sources = [
   { label: "Vistors", value: "visitors" },
 ];
 
+// PRE BOOKING
+// PAYMENT (Booking.com)
+// POST BOOKING – PRE ARRIVAL, PROPERTY RULES
+// IN STAY – SUPPORT (FOOD ORDER, LATE CHECKOUT ETC)
+// POST STAY
+// PARTERSHIP
+// NON RELEVANT
+
 export const LeadStatus = [
   {
-    label: "Reservation",
-    value: "Reservation",
+    label: "Pre Booking",
+    value: "Pre Booking",
   },
   {
-    label: "Enquiry",
-    value: "Enquiry",
+    label: "Payment",
+    value: "Payment",
   },
   {
-    label: "Others",
+    label: "Post Booking",
     value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+];
+
+// MASTER SEGREGATION
+export const MasterSegregation = [
+  {
+    label: "PRE BOOKING",
+    value: "Pre Booking",
+    children: [{ label: "Payment", value: "Payment" }],
+  },
+  {
+    label: "POST BOOKING",
+    value: "Post Booking",
+    children: [
+      { label: "Pre Arrival", value: "Pre Arrival" },
+      { label: "Property Rules", value: "Property Rules" },
+    ],
+  },
+  {
+    label: "IN STAY SUPPORT",
+    value: "In Stay Support",
+    children: [
+      { label: "Food Order", value: "Food Order" },
+      { label: "Late Checkout", value: "Late Checkout" },
+    ],
+  },
+  {
+    label: "POST STAY",
+    value: "Post Stay",
+    children: [
+      { label: "Partnership", value: "Partnership" },
+      { label: "Non Relevant", value: "Non Relevant" },
+    ],
+  },
+];
+
+// GUEST TYPE
+export const GuestType = [
+  {
+    label: "Solo",
+    value: "Solo",
+  },
+  {
+    label: "Couple",
+    value: "Couple",
+  },
+  {
+    label: "Family",
+    value: "Family",
+  },
+  {
+    label: "Group",
+    value: "Group",
+  },
+  {
+    label: "Corporate",
+    value: "Corporate",
+  },
+];
+
+// PRIORITY
+export const Priority = [
+  {
+    label: "Low",
+    value: "Low",
+  },
+  {
+    label: "Medium",
+    value: "Medium",
+  },
+  {
+    label: "High",
+    value: "High",
   },
 ];
 
