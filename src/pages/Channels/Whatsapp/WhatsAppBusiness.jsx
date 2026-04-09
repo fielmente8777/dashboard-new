@@ -205,8 +205,8 @@ const WhatsAppBusiness = () => {
                       }}
                       className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition ${
                         activeTab === tab.id
-                          ? "bg-slate-700 text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-primary text-white"
+                          : "text-gray-600 hover:bg-primary/10 "
                       }`}
                     >
                       {!collapsed && <span>{tab.label}</span>}
@@ -231,7 +231,7 @@ const WhatsAppBusiness = () => {
                             className={`text-left px-3 py-2 rounded-md text-sm ${
                               activeSubTab === sub.id
                                 ? "bg-gray-300 text-black"
-                                : "text-gray-600 hover:bg-gray-100"
+                                : "text-gray-600 hover:bg-gray-200"
                             }`}
                           >
                             {sub.label}

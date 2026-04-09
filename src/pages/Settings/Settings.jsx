@@ -6,6 +6,7 @@ import Integration from "../AppIntegration/Integration";
 import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
 import Notification from "./Notification";
+import Billing from "../Wallet/Billing";
 
 const Settings = () => {
   // ✅ Centralized config
@@ -21,6 +22,7 @@ const Settings = () => {
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
     // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    { key: "Billing", label: "Billing", component: <Billing /> },
   ];
   const [activeTab, setActiveTab] = useState(TABS[0].key);
 
@@ -36,8 +38,8 @@ const Settings = () => {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex shrink-0 cursor-pointer ${
-              activeTab === tab.key ? "bg-slate-700 text-white" : "bg-white"
-            } hover:bg-gray-200 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
+              activeTab === tab.key ? "bg-primary text-white" : "bg-white"
+            } hover:bg-gray-300 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
           >
             {tab.label}
           </span>

@@ -172,11 +172,26 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
-            <button onClick={() => setIsNotificationPopupOpen(true)}>
+            {/* <button onClick={() => setIsNotificationPopupOpen(true)}>
               <IoIosNotifications size={22} color="white" />
+            </button> */}
+            <button
+              onClick={() => setIsNotificationPopupOpen(true)}
+              className="group transition-transform duration-200 hover:scale-110 hover:shadow-md"
+            >
+              <IoIosNotifications
+                size={22}
+                className="text-white origin-top transition-transform duration-200 group-hover:animate-ring group-hover:scale-125"
+              />
             </button>
-            <Link to="settings">
+            {/* <Link to="settings">
               <MdSettings size={22} color="white" />
+            </Link> */}
+            <Link to="settings" className="group">
+              <MdSettings
+                size={22}
+                className="text-white transition-transform duration-300 group-hover:rotate-180 group-hover:scale-110"
+              />
             </Link>
             <div
               onClick={() => setOpen(true)}

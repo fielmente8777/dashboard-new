@@ -3,7 +3,7 @@ import { BASE_URL } from "../../data/constant";
 import AddContactPopup from "../../components/Popup/AddContactPopup";
 import { MdDelete } from "react-icons/md";
 import { getContacts } from "../../services/api/contact.api";
-import { formatDateByDay } from "../../utils/formateDate";
+import { formatDateByDay, formatDateTime } from "../../utils/formateDate";
 const Contacts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -76,23 +76,23 @@ const Contacts = () => {
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold mb-4">Contacts</h2>
         <button
-          className="bg-primary py-2 px-5 text-white font-semibold"
+          className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
           onClick={handleAddPopup}
         >
           Add new Contact
         </button>
       </div>
 
-      <table className="w-full  text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-sm">
+      <table className="w-full  text-left bg-primary text-white/90 rounded-sm shadow-sm">
         <thead>
           <tr className="border-b">
             {/* <th className="py-3 px-2 text-[14px] font-medium">Select</th> */}
             <th className="py-3 px-2 text-[14px] font-medium">#</th>
-
+            
+            <th className="py-3 px-2 text-[14px] font-medium">Created Time</th>
             <th className="py-3 px-2 text-[14px] font-medium">Name</th>
             <th className="py-3 px-2 text-[14px] font-medium">Contact</th>
             <th className="py-3 px-2 text-[14px] font-medium">Email</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Date Added</th>
             <th className="py-3 px-2 text-[14px] font-medium">Source</th>
             <th className="py-3 px-2 text-[14px] font-medium">Action</th>
           </tr>
@@ -111,15 +111,17 @@ const Contacts = () => {
                 </td> */}
                 <td className=" flex-1 py-3 px-2">{index + 1}</td>
 
+                <td className=" flex-1 py-3 px-2">
+                  {formatDateTime(row.created_at)}
+                </td>
+
                 <td className="  flex-1 py-3 px-2 whitespace-nowrap">
                   {row?.name.slice(0, 30)}
                 </td>
                 <td className=" flex-1 py-3 px-2">{row.phone}</td>
                 <td className=" flex-1 py-3 px-2">{row.email}</td>
 
-                <td className=" flex-1 py-3 px-2">
-                  {formatDateByDay(row.created_at)}
-                </td>
+                
                 <td className=" flex-1 py-3 px-2 capitalize">
                   {row.added_from}
                   {/* {row.added_from?.toLowerCase() === "eazobot"
