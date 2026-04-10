@@ -29,8 +29,8 @@ import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import AutoMessageCard from "./components/AutoMessageCard";
 import WhatsappFlow from "./WhatsappFlow/WhatsappFlow";
 import TemplateLibrary from "./components/TemplateLibrary";
-import WhatsAppMessageTemplate from "../Whatsapp/components/Templates"
-import CreateTemplate from "../Whatsapp/components/CreateTemplate"
+import WhatsAppMessageTemplate from "../Whatsapp/components/Templates";
+import CreateTemplate from "../Whatsapp/components/CreateTemplate";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -44,7 +44,7 @@ const sidebarTabs = [
   },
   { id: "auto-message", label: "Auto Message" },
   // { id: "credits", label: "Credits" },
-  { id: "whatsapp-flows", label: "Flows" },
+  // { id: "whatsapp-flows", label: "Flows" },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 

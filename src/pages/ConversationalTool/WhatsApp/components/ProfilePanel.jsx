@@ -29,6 +29,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
     setSelectedConversation,
     setConversations,
     setMobileActive,
+    lastMessage,
   } = useContext(DataContext);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
 
@@ -164,20 +165,17 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
 
   return (
     <div className="w-full md:w-80 h-full overflow-y-auto bg-white border-l border-gray-200 flex flex-col">
-      <div className="flex justify-end p-2">
-        
-      </div>
+      <div className="flex justify-end p-2"></div>
       {/* Profile Header */}
       <div className="px-3 md:px-6 md:py-0 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
-         
           <div className="flex items-center">
-              <div className="mr-2 md:hidden">
-            <IoArrowBack
-              size={22}
-              onClick={() => setMobileActive("chatarea")}
-            />
-          </div>
+            <div className="mr-2 md:hidden">
+              <IoArrowBack
+                size={22}
+                onClick={() => setMobileActive("chatarea")}
+              />
+            </div>
             <div className="w-10 h-10 md:w-12 md:h-12 border text-gray-600 border-gray-900 bg-ternary/20 rounded-full flex items-center justify-center  font-bold text-md md:text-lg mr-2 md:mr-4">
               {selectedContact?.name?.charAt(0)?.toUpperCase()}
             </div>
@@ -189,15 +187,13 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
                 +{selectedContact?.phone}
               </p>
             </div>
-
           </div>
           <button
             disabled={isDeleteLoading}
             className="bg-red-200 text-red-600 p-2 font-medium text-sm rounded-sm flex items-center gap-1.5"
             onClick={handleDeleteConversation}
           >
-            <RiDeleteBin6Line />{" "}
-            {isDeleteLoading && <Loader color="#fefefe" />}
+            <RiDeleteBin6Line /> {isDeleteLoading && <Loader color="#fefefe" />}
           </button>
         </div>
 
@@ -214,7 +210,10 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
 
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Last Active</span>
-            <span className="text-gray-900">{`${formatDateByOnlyDay(selectedContact?.last_message?.created_at)} ${formateDateInTimeIS(selectedContact?.last_message?.created_at)} `}</span>
+            <span className="text-gray-900">{`${formatDateByOnlyDay(
+              selectedContact?.last_message?.created_at ||
+                lastMessage?.createdAt,
+            )} ${formateDateInTimeIS(selectedContact?.last_message?.created_at || lastMessage?.createdAt)} `}</span>
           </div>
           {/* <div className="flex justify-between text-sm">
             <span className="text-gray-600">Template Messages</span>

@@ -7,6 +7,18 @@ import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSke
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { FiX } from "react-icons/fi";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (adjust as needed)
+
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFileImage,
+  FaFileAlt,
+} from "react-icons/fa";
+import { MdOutlineFileDownload } from "react-icons/md";
 
 const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
@@ -35,6 +47,7 @@ import { useConfirm } from "../../../../context/ConfirmContext";
 import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
+import CustomDropdown2 from "../../../../components/ui/Dropdown2";
 
 const ChatArea = () => {
   const wsRef = useRef(null);
@@ -56,6 +69,7 @@ const ChatArea = () => {
     setSelectedConversation,
     conversations,
     setMobileActive,
+    setLastMessage,
   } = useContext(DataContext);
 
   const [isTakeOver, setIsTakeOver] = useState(false);
@@ -80,11 +94,36 @@ const ChatArea = () => {
   const [selectedTemplate, setSelectedTemplate] = useState();
   const [expandedMessages, setExpandedMessages] = useState({});
 
+  const getMessageTypeFromFile = (file) => {
+    if (!file) return "text";
+
+    const type = file.type;
+
+    if (type.startsWith("image/")) return "image";
+    if (type.startsWith("video/")) return "video";
+    if (type.startsWith("audio/")) return "audio";
+
+    // 👇 Everything else = document
+    return "document";
+  };
   const handleSendMessage = async (e) => {
     e.preventDefault();
 
+    if (file && file.size > MAX_FILE_SIZE) {
+      showToast({
+        type: "error",
+        message: "File is too large. Maximum allowed size is 5MB.",
+      });
+      // alert("File is too large. Maximum allowed size is 5MB.");
+      return;
+    }
+
     if (is24HourComplete && !selectedTemplate) {
-      alert("24 hour window expired. Please send a template message.");
+      showToast({
+        type: "error",
+        message: "24 hour window expired. Please send a template message.",
+      });
+      // alert("24 hour window expired. Please send a template message.");
       return;
     }
 
@@ -177,12 +216,13 @@ const ChatArea = () => {
         to: selectedConversation.phone,
         sender: "me",
         direction: "outbound",
-        messageType: file ? "image" : "text",
+        messageType: file ? getMessageTypeFromFile(file) : "text",
         body: file ? null : messageValue,
         media: file
           ? {
-              url: URL.createObjectURL(file), // 👈 show preview instantly
+              url: URL.createObjectURL(file),
               mimeType: file.type,
+              filename: file.name, // ✅ ADD THIS
             }
           : undefined,
         status: "sent",
@@ -213,6 +253,10 @@ const ChatArea = () => {
         );
       }
     } catch (error) {
+      showToast({
+        message: error?.responseMessage || "Failed to send message",
+        type: "error",
+      });
       console.error(error);
     }
   };
@@ -224,7 +268,12 @@ const ChatArea = () => {
       // setMessageList(response?.result?.messages)
 
       if (response?.success && response?.responseStatusCode === 200) {
-        setMessageList(response?.result?.messages);
+        const messages = response?.result?.messages;
+        setMessageList(messages);
+
+        if (setLastMessage) {
+          setLastMessage(messages[messages.length - 1]);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -351,7 +400,9 @@ const ChatArea = () => {
     }));
   };
 
-  const handleUserAssign = async (value) => {
+  const handleUserAssign = async (item) => {
+    const [phone, email] = item.value.split(",");
+
     const isEdit = selectedConversation?.markAsLead;
 
     const payload = {
@@ -362,13 +413,14 @@ const ChatArea = () => {
       status: selectedConversation.status,
       conversationId: selectedConversation._id,
       hId: selectedConversation?.hid || localStorage.getItem("hid"),
-      assignee: value,
+      assignee: item?.label,
+      assigneeNumber: phone || null,
+      assigneeEmail: email || null,
     };
-    const response = isEdit
-      ? await updateLead(payload)
-      : await addWhatsAppLead(payload);
 
-    setSelectedConversation({ ...selectedConversation, assignee: value });
+    isEdit ? await updateLead(payload) : await addWhatsAppLead(payload);
+
+    setSelectedConversation({ ...selectedConversation, assignee: item.label });
   };
 
   const fetchUsersData = async () => {
@@ -437,6 +489,11 @@ const ChatArea = () => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
 
+  const isImage = file?.type?.startsWith("image/");
+  const isPDF = file?.type === "application/pdf";
+  const isExcel = file?.type?.includes("sheet");
+  const isWord = file?.type?.includes("word");
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -455,7 +512,9 @@ const ChatArea = () => {
             <h3 className="text-md md:text-md text-gray-600 font-medium  capitalize">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm text-gray-600 ">+{selectedConversation.phone}</p>
+            <p className="text-xs md:text-sm text-gray-600 ">
+              +{selectedConversation.phone}
+            </p>
           </div>
         </div>
 
@@ -484,11 +543,11 @@ const ChatArea = () => {
           </Link>
 
           <div>
-            <CustomDropdown
+            <CustomDropdown2
               label={selectedConversation?.assignedTo || "Select User"}
               options={
                 allUsers?.map((user) => ({
-                  value: user?.userName,
+                  value: `${user?.phone},${user?.emailId}`,
                   label: user?.userName,
                 })) || []
               }
@@ -720,6 +779,115 @@ const ChatArea = () => {
                             </div>
                           )}
 
+                          {/* {message?.messageType === "document" && (
+                            <div>
+                              <a
+                                href={
+                                  message?.media?.url ||
+                                  `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <iframe src />
+                              </a>
+                            </div>
+                          )} */}
+
+                          {message?.messageType === "document" &&
+                            (() => {
+                              const url =
+                                message?.media?.url ||
+                                `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`;
+
+                              const mime = message?.media?.mimeType || "";
+                              const fileName =
+                                message?.media?.filename || "Document";
+
+                              // 🔥 Detect file type
+                              const getIcon = () => {
+                                const lowerMime = mime.toLowerCase();
+
+                                // ✅ PDF
+                                if (lowerMime.includes("pdf")) {
+                                  return (
+                                    <FaFilePdf className="text-red-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ EXCEL (check FIRST before word)
+                                if (
+                                  lowerMime.includes("spreadsheet") ||
+                                  lowerMime.includes("excel") ||
+                                  lowerMime.includes("sheet")
+                                ) {
+                                  return (
+                                    <FaFileExcel className="text-green-600 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ WORD
+                                if (
+                                  lowerMime.includes("wordprocessingml") ||
+                                  lowerMime.includes("msword")
+                                ) {
+                                  return (
+                                    <FaFileWord className="text-blue-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ IMAGE (optional)
+                                if (lowerMime.includes("image")) {
+                                  return (
+                                    <FaFileImage className="text-purple-500 text-3xl" />
+                                  );
+                                }
+
+                                // ✅ DEFAULT
+                                return (
+                                  <FaFileAlt className="text-gray-500 text-3xl" />
+                                );
+                              };
+
+                              return (
+                                <div className="max-w-60">
+                                  {/* 📦 CARD */}
+                                  <div
+                                    onClick={() => window.open(url, "_blank")}
+                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-white flex flex-col justify-center items-center"
+                                  >
+                                    {/* <iframe
+                                      src={url}
+                                      className="w-full h-full pointer-events-none"
+                                      style={{ border: "none" }}
+                                    /> */}
+
+                                    <div className="flex flex-col items-center justify-center text-gray-600 px-2">
+                                      {getIcon()}
+                                    </div>
+
+                                    {/* Overlay */}
+                                    <div className="absolute inset-0 bg-transparent" />
+                                  </div>
+
+                                  {/* 📄 FILE NAME */}
+                                  <p className="text-xs mt-1 truncate text-gray-700">
+                                    {fileName}
+                                  </p>
+
+                                  {/* ⬇️ DOWNLOAD */}
+                                  <a
+                                    href={url}
+                                    download
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="text-xs text-green-600 hover:underline flex items-center gap-1 mt-2"
+                                  >
+                                    <MdOutlineFileDownload size={20} /> Download
+                                  </a>
+                                </div>
+                              );
+                            })()}
+
                           {message?.messageType === "location" && (
                             <div>
                               <iframe
@@ -893,7 +1061,7 @@ const ChatArea = () => {
           </div>
         )}
 
-        {file && (
+        {/* {file && (
           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
             <div
               onClick={() => setFile(null)}
@@ -906,6 +1074,40 @@ const ChatArea = () => {
               alt="file"
               className="w-40 h-20 rounded-md object-contain"
             />
+          </div>
+        )} */}
+
+        {file && (
+          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+            <div
+              onClick={() => setFile(null)}
+              className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-3.5 bg-red-500 rounded-full text-white"
+            >
+              <FiX size={10} />
+            </div>
+
+            {/* ✅ IMAGE PREVIEW */}
+            {isImage ? (
+              <img
+                src={URL.createObjectURL(file)}
+                alt="file"
+                className="w-40 h-20 rounded-md object-contain"
+              />
+            ) : (
+              // ✅ DOCUMENT UI
+              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-gray-50 max-w-60">
+                {/* ICON */}
+                {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+                {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
+                {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+                {!isPDF && !isExcel && !isWord && (
+                  <FaFileAlt className="text-gray-500 text-xl" />
+                )}
+
+                {/* FILE NAME */}
+                <p className="text-xs truncate">{file.name}</p>
+              </div>
+            )}
           </div>
         )}
 

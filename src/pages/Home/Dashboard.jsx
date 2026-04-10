@@ -17,6 +17,7 @@ import DashboardCard from "../../components/Card/DashboardCard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
+import { useSelector } from "react-redux";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -28,6 +29,8 @@ const COLORS = [
 ];
 
 const Dashboard = () => {
+  // const {hid} =
+  const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
 
   const getAnalytics = async () => {
@@ -41,7 +44,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getAnalytics();
-  }, []);
+  }, [hid]);
 
   // -----------------------
   // Derived Values
@@ -51,9 +54,7 @@ const Dashboard = () => {
   const converted = data?.convertedLeads?.[0]?.count || 0;
   const whatsapp = data?.totalWhatsappConversations || 0;
 
-  const conversionRate = total
-    ? ((converted / total) * 100).toFixed(1)
-    : 0;
+  const conversionRate = total ? ((converted / total) * 100).toFixed(1) : 0;
 
   const cleanedSource = useMemo(() => {
     return (
@@ -84,43 +85,39 @@ const Dashboard = () => {
 
   return (
     <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
-      
       {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-              <DashboardCard
-                amount={total}
-                label={"Total Leads"}
-                // progress={item.progress}
-                // key={index}
-              />
-              <DashboardCard
-                amount={converted}
-                label={"Converted Leads"}
-                // progress={item.progress}
-                // key={index}
-              />
-              <DashboardCard
-                amount={conversionRate}
-                label={"Conversion Rate"}
-                progress={conversionRate}
-                // key={index}
-              />
-              <DashboardCard
-                amount={whatsapp}
-                label={"WhatsApp Conversations"}
-                // progress={"20"}
-                // key={index}
-              />
+        <DashboardCard
+          amount={total}
+          label={"Total Leads"}
+          // progress={item.progress}
+          // key={index}
+        />
+        <DashboardCard
+          amount={converted}
+          label={"Converted Leads"}
+          // progress={item.progress}
+          // key={index}
+        />
+        <DashboardCard
+          amount={conversionRate}
+          label={"Conversion Rate"}
+          progress={conversionRate}
+          // key={index}
+        />
+        <DashboardCard
+          amount={whatsapp}
+          label={"WhatsApp Conversations"}
+          // progress={"20"}
+          // key={index}
+        />
       </div>
 
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
         {/* Attractive Source Distribution */}
         <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold mb-4">
-            Source Distribution
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
 
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
@@ -134,20 +131,15 @@ const Dashboard = () => {
                 type="category"
                 dataKey="name"
                 width={100}
-                style={{fontSize:"15px"}}
-                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
-
+                style={{ fontSize: "15px" }}
+                tickFormatter={(value) =>
+                  value.charAt(0).toUpperCase() + value.slice(1)
+                }
               />
               <Tooltip />
-              <Bar
-                dataKey="count"
-                radius={[0, 8, 8, 0]}
-              >
+              <Bar dataKey="count" radius={[0, 8, 8, 0]}>
                 {cleanedSource.map((_, index) => (
-                  <Cell
-                    key={index}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
                 <LabelList dataKey="count" position="right" />
               </Bar>
@@ -157,16 +149,13 @@ const Dashboard = () => {
 
         {/* Status Breakdown */}
         <div className="bg-white rounded md:rounded-lg p-3  md:p-5">
-          <h2 className="text-lg font-semibold mb-4">
-            Stages Breakdown
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Stages Breakdown</h2>
 
-          <ResponsiveContainer width="100%" height={320} >
+          <ResponsiveContainer width="100%" height={320}>
             <BarChart data={cleanedStatus} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" 
-              style={{fontSize:"15px"}} />
-              <YAxis width={50}/>
+              <XAxis dataKey="name" style={{ fontSize: "15px" }} />
+              <YAxis width={50} />
               <Tooltip />
               <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
                 <LabelList dataKey="count" position="top" />
@@ -175,7 +164,7 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
-                {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
          <div className="lg:col-span-3">
                <AnalyticsCard />
              </div>
@@ -185,25 +174,11 @@ const Dashboard = () => {
            </div> */}
       {/* FUNNEL */}
       <div className="bg-white rounded md:rounded-lg p-5">
-        <h2 className="text-lg font-semibold mb-4">
-          Lead Funnel
-        </h2>
+        <h2 className="text-lg font-semibold mb-4">Lead Funnel</h2>
 
-        <FunnelBar
-          label="Open"
-          value={getStatusCount("open")}
-          total={total}
-        />
-        <FunnelBar
-          label="Hot"
-          value={getStatusCount("hot")}
-          total={total}
-        />
-        <FunnelBar
-          label="Converted"
-          value={converted}
-          total={total}
-        />
+        <FunnelBar label="Open" value={getStatusCount("open")} total={total} />
+        <FunnelBar label="Hot" value={getStatusCount("hot")} total={total} />
+        <FunnelBar label="Converted" value={converted} total={total} />
       </div>
     </div>
   );

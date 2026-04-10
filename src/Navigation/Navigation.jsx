@@ -34,6 +34,7 @@ import GRMSettings from "../pages/Grm/Settings";
 import Settings from "../pages/Settings/Settings";
 import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import AllLeads from "../pages/Enquiry/AllLeads";
+import ViewAndManageCalls from "../pages/Calls/viewCallManagement.jsx/ViewAndManageCalls";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -87,6 +88,11 @@ const Navigation = () => {
           path={ROUTES_PATH.LEADS_MANAGEMENT_ALL_LEADS}
           element={<AllLeads />}
         /> */}
+
+        <Route
+          path="calls-management/:slug/:sid/view"
+          element={<ViewAndManageCalls />}
+        />
 
         <Route
           path="leads-management/:slug/:leadId/view"

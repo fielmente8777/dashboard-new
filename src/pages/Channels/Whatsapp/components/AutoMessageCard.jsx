@@ -5,6 +5,8 @@ import ChannelToggle from "./ChannelToggle";
 import TemplatePreview from "../components/TemplatePreview";
 
 const MODULES = [
+  { key: "eazbot", label: "Eazbot Leads" },
+  { key: "webform", label: "Webform Leads" },
   { key: "metaLead", label: "Meta Leads" },
   { key: "googleLead", label: "Google Leads" },
   { key: "whatsapp", label: "WhatsApp" },
@@ -23,8 +25,9 @@ const AutoMessageCard = ({
   templates = [],
   phoneNumberId,
   notification,
+  flows,
 }) => {
-  console.log("autoMessage", autoMessage);
+  const flow = [{ ...flows }];
   const { showToast } = useToast();
 
   const [configs, setConfigs] = useState({});
@@ -204,7 +207,9 @@ const AutoMessageCard = ({
             >
               <option value="template">Template</option>
               <option value="text">Text</option>
-              <option value="flow">Flow</option>
+              {label.toLowerCase() === "whatsapp" && (
+                <option value="flow">Flow</option>
+              )}
             </select>
 
             {c.type === "template" && (
@@ -234,13 +239,23 @@ const AutoMessageCard = ({
               />
             )}
 
-            {c.type === "flow" && (
-              <input
-                value={c.flowId}
+            {c.type === "flow" && label.toLowerCase() === "whatsapp" && (
+              <select
                 onChange={(e) => updateConfig(key, "flowId", e.target.value)}
-                placeholder="Flow ID"
                 className="w-full border px-3 py-2 rounded-md text-sm"
-              />
+                value={c.flowId}
+              >
+                <option value="">Select flow</option>
+                {flow?.map((f) => (
+                  <option key={f._id}>{f._id}</option>
+                ))}
+              </select>
+              // <input
+              //   value={c.flowId}
+              //   onChange={(e) => updateConfig(key, "flowId", e.target.value)}
+              //   placeholder="Flow ID"
+              //   className="w-full border px-3 py-2 rounded-md text-sm"
+              // />
             )}
           </>
         )}

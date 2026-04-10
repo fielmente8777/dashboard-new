@@ -269,6 +269,7 @@ const PATHS = {
   CHANGE_PASSWORD: "/change-password",
 
   LEADS_MANAGEMENT: "leads-management",
+  CALLS_MANAGEMENT: "calls-management",
 };
 
 export const ROUTES_PATH = {
@@ -290,6 +291,9 @@ export const ROUTES_PATH = {
   LEADS_MANAGEMENT_ALL_LEADS: `${PATHS.LEADS_MANAGEMENT}/all-leads`,
   LEADS_MANAGEMENT_META_LEADS: `${PATHS.LEADS_MANAGEMENT}/meta-leads`,
   LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
+
+  // calls management
+  CALLS_MANAGEMENT: `${PATHS.CALLS_MANAGEMENT}`,
 };
 
 export const tableHeaders = [
@@ -318,6 +322,7 @@ export const Stages = [
   { label: "Qualified", value: "Qualified" },
   { label: "Not Qualified", value: "Not Qualified" },
   { label: "Turn Away", value: "Turn Away" },
+  { label: "Closure", value: "Closure" },
   { label: "Hot", value: "Hot" },
 ];
 
@@ -346,6 +351,123 @@ export const Sources = [
   { label: "Vistors", value: "visitors" },
 ];
 
+// PRE BOOKING
+// PAYMENT (Booking.com)
+// POST BOOKING – PRE ARRIVAL, PROPERTY RULES
+// IN STAY – SUPPORT (FOOD ORDER, LATE CHECKOUT ETC)
+// POST STAY
+// PARTERSHIP
+// NON RELEVANT
+
+export const LeadStatus = [
+  {
+    label: "Pre Booking",
+    value: "Pre Booking",
+  },
+  {
+    label: "Payment",
+    value: "Payment",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+  {
+    label: "Post Booking",
+    value: "Others",
+  },
+];
+
+// MASTER SEGREGATION
+export const MasterSegregation = [
+  {
+    label: "PRE BOOKING",
+    value: "Pre Booking",
+    children: [{ label: "Payment", value: "Payment" }],
+  },
+  {
+    label: "POST BOOKING",
+    value: "Post Booking",
+    children: [
+      { label: "Pre Arrival", value: "Pre Arrival" },
+      { label: "Property Rules", value: "Property Rules" },
+    ],
+  },
+  {
+    label: "IN STAY SUPPORT",
+    value: "In Stay Support",
+    children: [
+      { label: "Food Order", value: "Food Order" },
+      { label: "Late Checkout", value: "Late Checkout" },
+    ],
+  },
+  {
+    label: "POST STAY",
+    value: "Post Stay",
+    children: [
+      { label: "Partnership", value: "Partnership" },
+      { label: "Non Relevant", value: "Non Relevant" },
+    ],
+  },
+];
+
+// GUEST TYPE
+export const GuestType = [
+  {
+    label: "Solo",
+    value: "Solo",
+  },
+  {
+    label: "Couple",
+    value: "Couple",
+  },
+  {
+    label: "Family",
+    value: "Family",
+  },
+  {
+    label: "Group",
+    value: "Group",
+  },
+  {
+    label: "Corporate",
+    value: "Corporate",
+  },
+];
+
+// PRIORITY
+export const Priority = [
+  {
+    label: "Low",
+    value: "Low",
+  },
+  {
+    label: "Medium",
+    value: "Medium",
+  },
+  {
+    label: "High",
+    value: "High",
+  },
+];
+
 export const LOCAL_STORAGE = {
   AllLeadsPage: "all-leads-page",
   MetaLeadsPage: "meta-leads-page",
@@ -356,10 +478,9 @@ export const LOCAL_STORAGE = {
   AllVisitorsPage: "all-visitors-page",
 };
 
-
-export const TEMPLATE_FILTER=[
-  {label:"All", value:""},
-  {label:"Utility",value:"UTILITY"},
-  {label:"Marketing",value:"MARKETING"},
-  {label:"Authentication",value:"AUTHENTICATION"},
-]
+export const TEMPLATE_FILTER = [
+  { label: "All", value: "" },
+  { label: "Utility", value: "UTILITY" },
+  { label: "Marketing", value: "MARKETING" },
+  { label: "Authentication", value: "AUTHENTICATION" },
+];

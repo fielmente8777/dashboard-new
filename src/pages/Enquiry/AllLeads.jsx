@@ -34,10 +34,17 @@ import TurnAwayModal from "../../components/Modal/TurnAwayModal";
 import ImportLead from "../../components/button/ImportLead";
 import { FaTrashAlt } from "react-icons/fa";
 import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
+import CustomDropdown2 from "../../components/ui/Dropdown2";
+import ExportLeadsModal from "../../components/Modal/ExportLeadsModal";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
+
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportStartDate, setExportStartDate] = useState(null);
+  const [exportEndDate, setExportEndDate] = useState(null);
+  const [exportRange, setExportRange] = useState("");
 
   const { showToast } = useToast();
   const [allLeads, setAllLeads] = useState([]);
@@ -60,7 +67,7 @@ const AllLeads = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [rowSelected, setRowSelected] = useState([]);
 
-  const [open,setOpen]=useState(false);
+  const [open, setOpen] = useState(false);
 
   const {
     page,
@@ -135,15 +142,21 @@ const AllLeads = () => {
     return cleanedLeads;
   };
 
-  const exportToExcel = async () => {
+  const exportToExcel = async ({ start, end }) => {
+    setShowExportModal(false);
     setIsExporting(true);
     const params = {
       is_export: "excel",
+      ...(start && { startDate: start }),
+      ...(end && { endDate: end }),
+      ...(stage && { stage: stage }),
+      ...(source && { source: source }),
     };
     try {
       const response = await getLeads(params);
       if (response?.success) {
         const leads = response?.result?.docs?.leads || [];
+        console.log(leads);
 
         jsonToCsvExport({
           data: extractRequiredHeaders(leads),
@@ -200,18 +213,16 @@ const AllLeads = () => {
     }
   };
 
-  const handleUserAssign = async (
-    leadId,
-    hid,
-    value,
-    conversationId = null,
-  ) => {
+  const handleUserAssign = async (leadId, hid, item, conversationId = null) => {
+    const [phone, email] = item.value.split(",");
     try {
       const payload = {
         leadId: leadId,
         hid: hid,
         ...(conversationId && { conversationId }),
-        assignee: value,
+        assignee: item?.label,
+        assigneeNumber: phone || null,
+        assigneeEmail: email || null,
       };
 
       const response = await updateLead(payload);
@@ -344,20 +355,18 @@ const AllLeads = () => {
           <h2 className="text-lg font-semibold">All Leads</h2>
 
           <div className="flex items-center">
-
-          {allLeads?.length > 0 && (
-            <button
-              disabled={isExporting}
-              onClick={exportToExcel}
-              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
-            >
-              Export to Excel{" "}
-              {isExporting && <Loader color="#fefefe" size={12} />}
-            </button>
-          )}
+            {allLeads?.length > 0 && (
+              <button
+                disabled={isExporting}
+                onClick={() => setShowExportModal(true)}
+                className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+              >
+                Export to Excel{" "}
+                {isExporting && <Loader color="#fefefe" size={12} />}
+              </button>
+            )}
             <ImportLead open={open} setOpen={setOpen} />
           </div>
-
         </div>
 
         <div className="bg-white">
@@ -444,7 +453,10 @@ const AllLeads = () => {
                 <th className="px-3 py-3 text-white">Select</th>
                 <th className="px-3 py-3 text-white">#</th>
                 {tableHeaders?.map((h) => (
-                  <th key={h.key} className={`px-3 py-3 text-left text-white whitespace-nowrap`}>
+                  <th
+                    key={h.key}
+                    className={`px-3 py-3 text-left text-white whitespace-nowrap`}
+                  >
                     {h.label}
                   </th>
                 ))}
@@ -626,11 +638,11 @@ const AllLeads = () => {
                             onClick={(e) => e.stopPropagation()}
                             className="px-2"
                           >
-                            <CustomDropdown
+                            <CustomDropdown2
                               label={row["assignee"] || "Attempted By"}
                               options={
                                 allUsers?.map((user) => ({
-                                  value: user?.userName,
+                                  value: `${user?.phone},${user?.emailId}`,
                                   label: user?.userName,
                                 })) || []
                               }
@@ -705,6 +717,18 @@ const AllLeads = () => {
           });
           setShowDatePicker(false);
         }}
+      />
+
+      <ExportLeadsModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        isLoading={isExporting}
+        onExport={(start, end) =>
+          exportToExcel({
+            start,
+            end,
+          })
+        }
       />
     </div>
   );

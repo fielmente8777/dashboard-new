@@ -28,6 +28,7 @@ import { useToast } from "../../context/ToastContext";
 import { fetchUserManagementData } from "../../services/api";
 import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 import { FaTrashAlt } from "react-icons/fa";
+import CustomDropdown2 from "../../components/ui/Dropdown2";
 
 const CREATED_FROM = "whatsapp";
 
@@ -206,18 +207,16 @@ const WhatsAppLeads = () => {
     }
   };
 
-  const handleUserAssign = async (
-    leadId,
-    hid,
-    value,
-    conversationId = null,
-  ) => {
+  const handleUserAssign = async (leadId, hid, item, conversationId = null) => {
+    const [phone, email] = item.value.split(",");
     try {
       const payload = {
         leadId: leadId,
         hid: hid,
         ...(conversationId && { conversationId }),
-        assignee: value,
+        assignee: item?.label,
+        assigneeNumber: phone || null,
+        assigneeEmail: email || null,
       };
 
       const response = await updateLead(payload);
@@ -578,11 +577,11 @@ const WhatsAppLeads = () => {
                             onClick={(e) => e.stopPropagation()}
                             className="px-2"
                           >
-                            <CustomDropdown
+                            <CustomDropdown2
                               label={row["assignee"] || "Attempted By"}
                               options={
                                 allUsers?.map((user) => ({
-                                  value: user?.userName,
+                                  value: `${user?.phone},${user?.emailId}`,
                                   label: user?.userName,
                                 })) || []
                               }

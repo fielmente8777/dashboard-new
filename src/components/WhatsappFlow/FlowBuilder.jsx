@@ -47,12 +47,7 @@ const NODE_OPTIONS = [
   {
     key: "flow",
     label: "Flows",
-    icon: "🎠",
-  },
-  {
-    key: "carousel",
-    label: "Carousel",
-    icon: "🎠",
+    icon: "📡",
   },
 ];
 
@@ -70,7 +65,7 @@ export default function FlowBuilder() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState(null);
   const [filesMap, setFilesMap] = useState({});
-  const [filesMapCarousel, setFilesMapCarousel] = useState({});
+  // const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
 
   const [showPopup, setShowPopup] = useState(false);
@@ -309,6 +304,8 @@ export default function FlowBuilder() {
     formData.append("nodes", JSON.stringify(nodes));
     formData.append("edges", JSON.stringify(edges));
 
+    console.log(filesMap);
+
     Object.entries(filesMap).forEach(([blockId, file]) => {
       formData.append(`file_${blockId}`, file);
     });
@@ -366,9 +363,7 @@ export default function FlowBuilder() {
                 data: {
                   ...node.data,
                   filesMap,
-                  filesMapCarousel,
                   setFilesMap,
-                  setFilesMapCarousel,
                 },
               }))}
               edges={edges}

@@ -28,6 +28,8 @@ const WhatsApp = () => {
     "/notification-sound/Sound1.mp3",
   );
 
+  const [lastMessage, setLastMessage] = useState({});
+
   const updateConversationWithMessage = (
     conversations,
     incomingMessage,

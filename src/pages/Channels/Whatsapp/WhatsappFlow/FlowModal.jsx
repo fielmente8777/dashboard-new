@@ -9,7 +9,7 @@ const FlowModal = ({ template, onClose, onSave }) => {
 
     onSave({
       name,
-      category: template?.title, // ✅ fixed
+      category: template?.category, // ✅ fixed
       templateId: template?.id,
     });
   };

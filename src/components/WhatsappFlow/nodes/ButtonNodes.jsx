@@ -71,7 +71,7 @@ export default function ButtonsNode({ id, data }) {
         ))}
 
         {/* Default Path */}
-        <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
+        {/* <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
           Default
           <Handle
             type="source"
@@ -79,7 +79,7 @@ export default function ButtonsNode({ id, data }) {
             id="default"
             className="!bg-green-500 !w-3 !h-3"
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Input Handle */}
