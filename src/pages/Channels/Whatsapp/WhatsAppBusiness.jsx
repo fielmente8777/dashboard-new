@@ -257,7 +257,6 @@ const WhatsAppBusiness = () => {
                   />
                   <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
                 </div>
-                <CreditInfoCard />
                 <AutoMessageCard
                   phoneNumberId={accountDetails?.phoneNumber?.id}
                   autoMessage={accountDetails?.autoMessage}

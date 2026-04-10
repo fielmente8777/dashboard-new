@@ -29,10 +29,14 @@ const Wallet = () => {
     },[])
     return (
         <div>Wallet
+            {/* <button onClick={handleAddSubscription}> Add subscribe</button> */}
+
+
+            
 
 
 
-            <button onClick={handleAddSubscription}> Add subscribe</button>
+
         </div>
     )
 }
