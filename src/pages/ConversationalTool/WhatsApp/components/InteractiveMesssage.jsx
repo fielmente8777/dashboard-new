@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 
 const InteractiveMessage = ({ interactive }) => {
-  console.log(interactive);
+  const scrollRef = useRef(null);
+
   if (!interactive) return null;
 
   const { type, header, body, footer, action } = interactive;
@@ -141,6 +143,90 @@ const InteractiveMessage = ({ interactive }) => {
         >
           {ctaText}
         </button>
+
+        {renderFooter()}
+      </div>
+    );
+  }
+
+  if (type === "carousel") {
+    const scroll = (direction) => {
+      if (!scrollRef.current) return;
+
+      const scrollAmount = 240; // width of one card
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    };
+
+    return (
+      <div className="bg-gray-100 rounded-xl p-3 max-w-sm relative">
+        {renderHeader()}
+        {renderBody()}
+
+        {/* LEFT BUTTON */}
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-1 top-1/2 -translate-y-1/2 bg-primary/80 text-white shadow-md rounded-full size-6 flex items-center justify-center z-10 hover:bg-primary/90"
+        >
+          <FaAngleLeft />
+        </button>
+
+        {/* RIGHT BUTTON */}
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary/80 text-white shadow-md rounded-full size-6 flex items-center justify-center z-10 hover:bg-primary/90"
+        >
+          <FaAngleRight />
+        </button>
+
+        {/* SCROLL CONTAINER */}
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hidden px-6"
+        >
+          {action?.cards?.map((card) => (
+            <div
+              key={card.card_index}
+              className="min-w-[220px] bg-white rounded-xl border p-2 shadow-sm"
+            >
+              {/* Header */}
+              {card?.header?.type === "image" && (
+                <img
+                  src={card.header.image.link}
+                  alt="card"
+                  className="w-full h-32 object-cover rounded-lg mb-2"
+                />
+              )}
+
+              {card?.header?.type === "video" && (
+                <video
+                  src={card.header.video.link}
+                  controls
+                  className="w-full h-32 object-cover rounded-lg mb-2"
+                />
+              )}
+
+              {/* Body */}
+              {card?.body?.text && (
+                <p className="text-sm text-gray-800 mb-2">{card.body.text}</p>
+              )}
+
+              {/* CTA */}
+              {card?.action?.name === "cta_url" && (
+                <button
+                  onClick={() =>
+                    window.open(card.action.parameters.url, "_blank")
+                  }
+                  className="w-full border border-green-500 text-green-600 text-sm rounded-lg py-1.5 px-2 hover:bg-green-50 transition"
+                >
+                  {card.action.parameters.display_text}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
 
         {renderFooter()}
       </div>

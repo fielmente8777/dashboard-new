@@ -90,7 +90,6 @@ import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
-import WhatsAppMessageTemplate from "../Channels/Whatsapp/Templates/Templates";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -226,13 +225,6 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/payment-gateway`]: <PaymentGateway />,
     [`${BASE_PATH}/${hid}/social-media`]: <SocialMedia />,
     [`${BASE_PATH}/${hid}/analytics-and-reporting`]: <AnalyticsReporting />,
-
-    // whatsapp
-    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting`]: (
-      <WhatsAppBusiness />
-    ),
-    [`${BASE_PATH}/${hid}/chat-settings/whatsapp-bussiness-setting/templates`]:
-      <WhatsAppMessageTemplate />,
 
     // Marketplace services
     [`${BASE_PATH}/${hid}/custom-website`]: <Website />,

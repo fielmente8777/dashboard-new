@@ -27,10 +27,10 @@ import { FiMenu } from "react-icons/fi";
 import { ReactFlowProvider } from "reactflow";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import AutoMessageCard from "./components/AutoMessageCard";
-import CreateTemplate from "./Templates/CreateTemplate";
-import TemplateLibrary from "./Templates/TemplateLibrary";
-import WhatsAppMessageTemplate from "./Templates/Templates";
 import WhatsappFlow from "./WhatsappFlow/WhatsappFlow";
+import TemplateLibrary from "./components/TemplateLibrary";
+import WhatsAppMessageTemplate from "../Whatsapp/components/Templates";
+import CreateTemplate from "../Whatsapp/components/CreateTemplate";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -43,7 +43,7 @@ const sidebarTabs = [
     ],
   },
   { id: "auto-message", label: "Auto Message" },
-  { id: "credits", label: "Credits" },
+  // { id: "credits", label: "Credits" },
   // { id: "whatsapp-flows", label: "Flows" },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
@@ -591,7 +591,7 @@ const CreditInfoCard = () => {
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-99999"
         >
           <div className="bg-white w-full max-w-md p-6 space-y-5">
             <h2 className="font-medium text-gray-500 text-center">

@@ -1,4 +1,6 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import CustomDropdown from "../../../../components/ui/Dropdown";
+import { TEMPLATE_FILTER } from "../../../../data/constant";
 
 const templates = [
   {
@@ -217,50 +219,159 @@ const templates = [
   body: "Hi {{1}}, an item matching your description was found at {{2}}.",
   footer: "Contact us to claim",
   buttons: [{ type: "CALL", text: "Call Reception", phone: "{{3}}" }],
+},
+{
+  id: 25,
+  name: "otp_verification",
+  category: "AUTHENTICATION",
+  header: "OTP Verification",
+  body: "Hi {{1}}, your OTP for verification is {{2}}. It is valid for {{3}} minutes.",
+  footer: "Do not share this code with anyone",
+  buttons: [],
+},
+{
+  id: 26,
+  name: "login_alert",
+  category: "AUTHENTICATION",
+  header: "New Login Detected",
+  body: "Hi {{1}}, a new login to your account was detected from {{2}}.",
+  footer: "If this wasn't you, please secure your account immediately",
+  buttons: [],
+},
+{
+  id: 27,
+  name: "password_reset",
+  category: "AUTHENTICATION",
+  header: "Password Reset Request",
+  body: "Hi {{1}}, use this OTP {{2}} to reset your password. Valid for {{3}} minutes.",
+  footer: "If you didn’t request this, ignore this message",
+  buttons: [],
+},
+{
+  id: 28,
+  name: "account_verification",
+  category: "AUTHENTICATION",
+  header: "Verify Your Account",
+  body: "Hi {{1}}, please verify your account using code {{2}}.",
+  footer: "Welcome aboard!",
+  buttons: [],
+},
+{
+  id: 29,
+  name: "two_factor_auth",
+  category: "AUTHENTICATION",
+  header: "2-Step Verification",
+  body: "Hi {{1}}, your 2FA code is {{2}}. It expires in {{3}} minutes.",
+  footer: "Keep your account secure",
+  buttons: [],
+},
+{
+  id: 30,
+  name: "email_verification",
+  category: "AUTHENTICATION",
+  header: "Email Verification",
+  body: "Hi {{1}}, confirm your email using this code: {{2}}.",
+  footer: "This helps us keep your account safe",
+  buttons: [],
 }
 ];
 
+
+
 const TemplateLibrary = ({ onSelectTemplate }) => {
+
+const [category,setCategory]= useState();
+const [search, setSearch] = useState("");
+const [filterData, setFilterData] = useState([]);
+
+const handleFilter = () => {
+  let data = templates;
+
+  // Filter by category
+  if (category) {
+    data = data.filter(
+      (template) =>
+        template.category?.toUpperCase() === category?.toUpperCase()
+    );
+  }
+
+  // Filter by search (name, header, body)
+  if (search.trim()) {
+    const searchValue = search.toLowerCase();
+
+    data = data.filter((template) =>
+      template.name?.toLowerCase().includes(searchValue) ||
+      template.header?.toLowerCase().includes(searchValue) ||
+      template.body?.toLowerCase().includes(searchValue)
+    );
+  }
+  setFilterData(data);
+};
+
+  useEffect(()=>{
+    handleFilter();
+  },[search])
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-
-      <div>
-        /*Filter here*/
-      </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {templates.map((template) => (
-        <div
-          key={template.id}
-          onClick={() => onSelectTemplate(template)}
-          className="bg-white rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-[180px] hover:border-ternary/40 transition-all duration-300 cursor-pointer"
-        >
-          {/* Header */}
-          <div>
-            <h3 className="font-semibold text-lg text-primary mb-2 hover:text-ternary transition-colors">
-              {template.header}
-            </h3>
-
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
-              {template.body}
-            </p>
-          </div>
-
-          {/* Footer */}
-          <div className="mt-6 flex justify-between items-center">
-            <span className="text-xs px-3 py-1 bg-gray-100 text-primary border border-gray-200 rounded-md font-medium uppercase tracking-wide">
-              {template.category}
-            </span>
-
-            <button className="text-ternary text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-              Use Template →
-            </button>
-          </div>
-
-          {/* Accent line */}
-          <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-2xl"></div>
+      <div className="flex items-center gap-2">
+        <div>
+          <input type="search"
+          placeholder="Search template by name, header and body"
+          className="bg-gray-50 border py-2 w-md text-sm px-3 outline-none rounded-lg"
+          onChange={(e)=>setSearch(e.target.value)}
+          />
         </div>
-      ))}
-    </div>
+        <div>
+          <CustomDropdown
+            label="Category"
+            options={TEMPLATE_FILTER}
+            onChange={(value) => setCategory(value)}
+          />
+        </div>
+        </div>
+
+        {filterData.length>0?<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+          {filterData?.map((template) => (
+            <div
+              key={template.id}
+              onClick={() => onSelectTemplate(template)}
+              className="bg-white rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-45 hover:border-ternary/40 transition-all duration-300 cursor-pointer"
+            >
+              {/* Header */}
+              <div>
+                <h3 className="font-semibold text-lg text-primary mb-2 hover:text-ternary transition-colors">
+                  {template.header}
+                </h3>
+
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                  {template.body}
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-6 flex justify-between items-center">
+                <span className="text-xs px-3 py-1 bg-gray-100 text-primary border border-gray-200 rounded-md font-medium uppercase tracking-wide">
+                  {template.category}
+                </span>
+
+                <button className="text-ternary text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Use Template →
+                </button>
+              </div>
+
+              {/* Accent line */}
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-2xl"></div>
+            </div>
+          ))}
+      </div>
+          :
+      <div className="flex flex-col justify-center items-center  text-gray-500 gap-2">
+        <span className="text-4xl">📄</span>
+        <p className="text-lg font-medium">No Templates Yet</p>
+        <p className="text-sm">Templates will be available soon.</p>
+      </div>
+    }
   </div>
   );
 };

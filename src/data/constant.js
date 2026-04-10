@@ -477,3 +477,10 @@ export const LOCAL_STORAGE = {
   GoogleAdsPage: "google-ads-page",
   AllVisitorsPage: "all-visitors-page",
 };
+
+export const TEMPLATE_FILTER = [
+  { label: "All", value: "" },
+  { label: "Utility", value: "UTILITY" },
+  { label: "Marketing", value: "MARKETING" },
+  { label: "Authentication", value: "AUTHENTICATION" },
+];
