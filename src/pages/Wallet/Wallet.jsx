@@ -36,40 +36,36 @@ const Wallet = () => {
     },[]);
     if(!data) return <div>Loading...</div>;
 
-    const cards=[
-        {
-            title:"AI Credits",
-            value: data.ai?.total,
-            used: data.ai?.used,
-            total: data.ai?.total,
-            color:"bg-blue-500",
-            icon:"/assets/ai-icon.png"
-        },
-        {
-            title: "WhatsApp",
-            value: data.whatsapp?.remaining,
-            used: data.whatsapp?.used,
-            total: data.whatsapp?.limit,
-            color: "bg-green-500",
-            icon: "/assets/whatsapp-icon.png"
-        },
-        {
-            title: "Email",
-            value: data.email?.remaining,
-            used: data.email?.used,
-            total: data.email?.limit,
-            color: "bg-yellow-500",
-            icon: "/assets/email-icon.png"
-        },
-        {
-            title: "Campaigns",
-            value: data.campaigns?.remaining,
-            used: data.campaigns?.used,
-            total: data.campaigns?.limit,
-            color: "bg-purple-500",
-            icon: "/assets/campaigns-icon.png"
-        },
-    ];
+    const cards = [
+  {
+    title: "AI Credits",
+    value: 2870,
+    used: 2130,
+    total: 5000,
+    color: "bg-blue-500",
+  },
+  {
+    title: "WhatsApp",
+    value: 340,
+    used: 1660,
+    total: 2000,
+    color: "bg-green-500",
+  },
+  {
+    title: "Email",
+    value: 4540,
+    used: 5460,
+    total: 10000,
+    color: "bg-yellow-500",
+  },
+  {
+    title: "Campaigns",
+    value: 18,
+    used: 32,
+    total: 50,
+    color: "bg-purple-500",
+  },
+];
     const chartData=[
         {date:"Apr 1", ai: 20, whatsapp: 10, email: 511},
         {date:"Apr 2", ai: 30, whatsapp: 15, email: 110},
