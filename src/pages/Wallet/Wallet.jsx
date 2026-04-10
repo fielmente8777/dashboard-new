@@ -31,12 +31,6 @@ const Wallet = () => {
         <div>Wallet
             {/* <button onClick={handleAddSubscription}> Add subscribe</button> */}
 
-
-            
-
-
-
-
         </div>
     )
 }
