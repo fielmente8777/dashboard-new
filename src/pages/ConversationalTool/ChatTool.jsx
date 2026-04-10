@@ -28,7 +28,7 @@ const ChatTool = ({ active, setActive }) => {
           title={item.name}
           className={`duration-300 w-fit p-1 border-2  rounded-md   ${
             item.name === "Instagram"
-              ? "-ml-[1px] text-[#a339a7] hover:bg-[#a339a7] hover:text-white"
+              ? "-ml-px text-[#a339a7] hover:bg-[#a339a7] hover:text-white"
               : ""
           }`}
         >

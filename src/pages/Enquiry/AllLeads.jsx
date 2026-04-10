@@ -404,6 +404,7 @@ const AllLeads = () => {
 
               <div>
                 <CustomDropdown
+                  label={"Source"}
                   options={Sources}
                   onChange={(value) => setSource(value)}
                 />
@@ -411,6 +412,7 @@ const AllLeads = () => {
 
               <div>
                 <CustomDropdown
+                 label={"Stage"}
                   options={[
                     {
                       value: "",

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../../../context/ToastContext";
 import { updateAutoMessageConfig } from "../../../../services/api/whatsApp";
 import ChannelToggle from "./ChannelToggle";
-import TemplatePreview from "../Templates/TemplatePreview";
+import TemplatePreview from "../components/TemplatePreview";
 
 const MODULES = [
   { key: "metaLead", label: "Meta Leads" },

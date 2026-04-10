@@ -12,7 +12,7 @@ import {
   updateAutoMessageConfig,
 } from "../../services/api/whatsApp";
 import { useToast } from "../../context/ToastContext";
-import TemplatePreview from "../Channels/Whatsapp/Templates/TemplatePreview";
+import TemplatePreview from "../Channels/Whatsapp/components/TemplatePreview";
 
 /* 🔘 Toggle */
 const ToggleSwitch = ({ enabled, onChange }) => (

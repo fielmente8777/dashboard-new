@@ -6,15 +6,15 @@ import { features, plans } from "./components/pricingData";
 const Billing = () => {
   return (
     // <div>Billing</div>
-    <div className="bg-gray-50 py-16 px-4">
-  <div className="max-w-5xl mx-auto">
-      <h1 className="text-[48px] leading-[70px] font-semibold text-center text-gray-900 font-jakarta m-0">
+    <div className="py-16 px-4">
+      <div className="max-w-7xl mx-auto">
+      <h1 className="text-2xl font-semibold text-center text-gray-900  m-0">
         Choose the Right Growth <span className="block">Plan for Your Hotel</span>
       </h1>
-      <p className="text-[18px] leading-[29px] font-medium text-gray-500 text-center font-jakarta mb-12">
+      <p className="text-sm text-gray-500 text-center mb-12 mt-3">
         Increase direct bookings, reduce OTA commissions, and grow your hotel's online revenue with Eazotel’s smart marketing and automation tools.
       </p>
-       <div className="bg-white rounded-2xl shadow-md p-8">
+       <div className="bg-white rounded-2xl p-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
         {plans.map((plan, index) => (
           <PricingCard key={index} plan={plan} />

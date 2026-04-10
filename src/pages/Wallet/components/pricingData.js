@@ -1,18 +1,21 @@
 export const plans = [
   {
+    id:1,
     name: "Starter",
-    price: "$0",
+    price: "₹2,999",
     description: "Perfect for small hotels starting their journey toward direct bookings and digital growth.",
     button: "Get Started",
   },
   {
+    id:2,
     name: "Growth",
-    price: "$49",
+    price: "₹4,999",
     description: "For hotels ready to scale direct bookings and reduce OTA commissions.",
     button: "Start Growing",
     highlight: true,
   },
   {
+    id:3,
     name: "Elite",
     price: "Custom",
     description: "Full-service growth solution for hotels that want to maximize direct bookings.",

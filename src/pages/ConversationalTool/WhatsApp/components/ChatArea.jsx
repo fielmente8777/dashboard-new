@@ -880,7 +880,7 @@ const ChatArea = () => {
                 <div
                   onClick={() => setSelectedTemplate(template)}
                   key={template?.id}
-                  className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border !border-green-600 " : "border border-gray-300 opacity-60"} `}
+                  className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-300 opacity-60"} `}
                 >
                   <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
                     {template?.name}

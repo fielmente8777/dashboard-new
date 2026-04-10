@@ -1,12 +1,13 @@
+import { IoCheckmarkSharp } from "react-icons/io5";
 const FeatureTable = ({ features }) => {
   return (
-    <div className="mt-20 text-gray-800 bg-white rounded-2xl p-8 shadow-md">
+    <div className="mt-20 text-primary bg-white rounded-2xl">
       
       <div className="grid grid-cols-4 gap-4 border-b border-gray-200 pb-4 font-semibold">
         <span>Features</span>
-        <span>Starter</span>
-        <span>Growth</span>
-        <span>Elite</span>
+        <span className="flex justify-center">Starter</span>
+        <span className="flex justify-center">Growth</span>
+        <span className="flex justify-center">Elite</span>
       </div>
 
       {features.map((feature, index) => (
@@ -14,11 +15,11 @@ const FeatureTable = ({ features }) => {
           key={index}
           className="grid grid-cols-4 gap-4 py-3 border-b border-gray-100"
         >
-          <span className="text-gray-600">{feature.name}</span>
+          <span className="text-primary">{feature.name}</span>
 
-          <span>{feature.Starter ? "✔️" : "-"}</span>
-          <span>{feature.Growth ? "✔️" : "-"}</span>
-          <span>{feature.Elite ? "✔️" : "-"}</span>
+          <span className="flex justify-center">{feature.Starter ?  <IoCheckmarkSharp className="text-ternary" />: "-"}</span>
+          <span className="flex justify-center">{feature.Growth ?<IoCheckmarkSharp className="text-ternary"/>  : "-"}</span>
+          <span className="flex justify-center">{feature.Elite ? <IoCheckmarkSharp className="text-ternary"/> : "-"}</span>
         </div>
       ))}
     </div>
