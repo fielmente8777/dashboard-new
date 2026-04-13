@@ -9,6 +9,7 @@ import {
 
 const UsageChart = ({ data }) => {
   return (
+    <div className="bg-primary p-6 rounded-xl shadow-sm h-[350px]">
     <div className="bg-white p-5 rounded-xl shadow-sm h-[300px]">
       <h2 className="text-lg font-semibold mb-4">Usage Analytics</h2>
 
@@ -23,6 +24,7 @@ const UsageChart = ({ data }) => {
           <Line type="monotone" dataKey="email" stroke="#f59e0b" />
         </LineChart>
       </ResponsiveContainer>
+    </div>
     </div>
   );
 };
