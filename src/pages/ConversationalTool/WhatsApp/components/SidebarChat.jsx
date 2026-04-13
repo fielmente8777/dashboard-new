@@ -96,14 +96,17 @@ const SidebarChat = () => {
   };
 
   const activeConversations = () => {
-    return conversations.filter(
-      (conv) => !is24HoursCompletedFnc(conv.last_message?.created_at),
+    const conver = conversations.filter(
+      (conv) =>
+        !is24HoursCompletedFnc(conv.last_message?.created_at || conv.createdAt),
     );
+
+    return conver;
   };
 
   const historyConversations = () => {
     return conversations.filter((conv) =>
-      is24HoursCompletedFnc(conv.last_message?.created_at),
+      is24HoursCompletedFnc(conv.last_message?.created_at || conv.createdAt),
     );
   };
 

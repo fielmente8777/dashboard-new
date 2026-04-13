@@ -1,7 +1,42 @@
-import { BASE_URL } from "../../data/constant";
+import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 
-// handle api for uploading image to s3 bucket**
+export const uploadImageToServer = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${NEW_BASE_URL}/api/v1/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    throw error;
+  }
+};
+
+export const deleteImageFromServer = async (imageUrl) => {
+  try {
+    const res = await fetch(`${NEW_BASE_URL}/api/v1/image/delete`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ imageUrl }),
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    throw error;
+  }
+};
+
 export const UploadingImageS3 = async (base64String) => {
   try {
     // console.log("aaya");

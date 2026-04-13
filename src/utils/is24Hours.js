@@ -1,5 +1,5 @@
 export function is24HoursCompletedFnc(date) {
-  if (!date) return false;
+  if (!date) return true;
 
   const inputDate = date instanceof Date ? date : new Date(date);
 

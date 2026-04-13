@@ -1,12 +1,18 @@
 import { useState, useRef } from "react";
 import { FiX, FiUpload, FiImage } from "react-icons/fi";
 import { v4 as uuidv4 } from "uuid";
+import { useToast } from "../../context/ToastContext";
+import {
+  deleteImageFromServer,
+  uploadImageToServer,
+} from "../../services/api/s3Image.api";
+import { isS3Image } from "../../utils/isS3Image";
 
 const transformCardsFromAPI = (cards = []) => {
   return cards.map((card) => ({
     id: uuidv4(),
 
-    type: card.type || "cta_url",
+    type: card?.action?.buttons?.length ? "quick_reply" : "cta_url",
 
     // detect media type
     mediaType: card?.header?.image?.link?.startsWith("http")
@@ -28,10 +34,18 @@ const transformCardsFromAPI = (cards = []) => {
 };
 
 export default function CarouselSettings({ onSave, onCancel, data }) {
+  const { showToast } = useToast();
+  const initialType = data?.interactive?.action?.cards?.[0]?.action?.buttons
+    ?.length
+    ? "quick_reply"
+    : "cta_url";
+
   const fileInputRef = useRef(null);
 
-  const { setFilesMap } = data;
+  // const { setFilesMap } = data;
+  const [filesMap, setFilesMap] = useState({});
 
+  const [globalType, setGlobalType] = useState(initialType);
   const [body, setBody] = useState("Choose an option");
 
   const [cards, setCards] = useState(
@@ -51,7 +65,14 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
   );
 
   // ===== IMAGE HANDLER =====
-  const handleImageUpload = (e, cardId) => {
+  const handleImageUpload = async (e, cardId) => {
+    const card = cards.find((c) => c.id === cardId);
+    const isBucketImage = isS3Image(card?.imageLink);
+
+    if (isBucketImage) {
+      await deleteImageFromServer(card?.imageLink);
+    }
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -74,7 +95,13 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
   };
 
   const addCard = () => {
-    if (cards.length >= 10) return;
+    if (cards.length >= 10) {
+      showToast({
+        type: "error",
+        message: "You can add up to 10 cards",
+      });
+      return;
+    }
 
     setCards((prev) => [
       ...prev,
@@ -92,27 +119,78 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
     ]);
   };
 
-  const removeCard = (cardId) => {
+  const removeCard = async (cardId) => {
+    // const card = cards.find((c) => c.id === cardId);
+
+    // const isBucketImage = isS3Image(card?.imageLink);
+
+    // if(isBucketImage) {
+    //   await deleteImageFromServer(card?.imageLink);
+    // }
+
     setCards((prev) => prev.filter((c) => c.id !== cardId));
   };
 
+  const addButton = (cardIndex) => {
+    const updated = [...cards];
+    if (updated[cardIndex].buttons.length >= 2) {
+      showToast({
+        type: "error",
+        message: "You can add up to 2 buttons per card",
+      });
+      return;
+    } // WhatsApp limit
+
+    updated[cardIndex].buttons.push("New Button");
+    setCards(updated);
+  };
+
+  const removeButton = (cardIndex, btnIndex) => {
+    const updated = [...cards];
+    updated[cardIndex].buttons.splice(btnIndex, 1);
+    setCards(updated);
+  };
+
+  const updateButton = (cardIndex, btnIndex, value) => {
+    const updated = [...cards];
+    updated[cardIndex].buttons[btnIndex] = value;
+    setCards(updated);
+  };
+
   // ===== SAVE =====
-  const handleSave = () => {
+  const handleSave = async () => {
+    const filesMapData = filesMap;
+
+    // 🔥 STEP 1: Upload all images
+    const uploadedMap = {};
+
+    for (const card of cards) {
+      if (card.mediaType === "upload" && filesMap[card.id]) {
+        const file = filesMapData[card.id];
+        const response = await uploadImageToServer(file);
+
+        if (response?.success) {
+          uploadedMap[card.id] = response?.result?.doc?.imageUrl;
+        }
+      }
+    }
+
     const cardsPayload = cards.map((card, index) => {
       const base = {
+        id: card.id,
         card_index: index,
-        type: card.type,
+        type: "cta_url",
         header: {
           type: "image",
           image:
             card.mediaType === "upload"
-              ? { link: card.id } // will replace later with mediaId
+              ? { link: uploadedMap[card.id] } // will replace later with mediaId
               : { link: card.imageLink },
         },
         ...(card?.description && { body: { text: card.description } }),
       };
 
-      if (card.type === "cta_url") {
+      if (globalType === "cta_url") {
         base.action = {
           name: "cta_url",
           parameters: {
@@ -122,7 +200,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
         };
       }
 
-      if (card.type === "button") {
+      if (globalType === "quick_reply") {
         base.action = {
           buttons: card.buttons.map((btn, i) => ({
             type: "quick_reply",
@@ -145,7 +223,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
         action: { cards: cardsPayload },
       },
     };
-    console.log(payload);
+
     onSave(payload);
   };
 
@@ -165,14 +243,28 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
         placeholder="Enter message..."
       />
 
+      {/* Button Type  */}
+      <div className="mb-4">
+        <label className="block text-sm mb-1 font-medium">Button Type</label>
+
+        <select
+          value={globalType}
+          onChange={(e) => setGlobalType(e.target.value)}
+          className="border w-full p-2 rounded"
+        >
+          <option value="cta_url">CTA URL</option>
+          <option value="quick_reply">Quick Reply</option>
+        </select>
+      </div>
+
       {/* Cards */}
-      {cards.map((card, index) => {
+      {cards?.map((card, index) => {
         return (
           <div key={card.id} className="border rounded-xl p-4 mb-5 bg-gray-50">
             <div className="flex justify-between mb-3">
               <h3 className="font-medium">Card {index + 1}</h3>
 
-              {cards.length > 1 && (
+              {cards?.length > 1 && (
                 <button
                   onClick={() => removeCard(card.id)}
                   className="text-red-500"
@@ -183,14 +275,14 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             </div>
 
             {/* TYPE */}
-            <select
+            {/* <select
               value={card.type}
               onChange={(e) => updateCard(index, "type", e.target.value)}
               className="border w-full p-2 mb-3 rounded"
             >
               <option value="cta_url">CTA URL</option>
-              <option value="button">Quick Reply</option>
-            </select>
+              <option value="quick_reply">Quick Reply</option>
+            </select> */}
 
             {/* IMAGE SOURCE TYPE */}
             <select
@@ -207,6 +299,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
               <>
                 <input
                   type="file"
+                  accept="image/jpeg, image/jpg, image/png"
                   ref={fileInputRef}
                   hidden
                   onChange={(e) => handleImageUpload(e, card.id)}
@@ -248,7 +341,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             />
 
             {/* CTA */}
-            {card.type === "cta_url" && (
+            {globalType === "cta_url" && (
               <>
                 <input
                   placeholder="Button Text"
@@ -270,7 +363,42 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             )}
 
             {/* QUICK REPLY */}
-            {card.type === "button" &&
+            {globalType === "quick_reply" && (
+              <>
+                {card.buttons.map((btn, btnIndex) => (
+                  <div key={btnIndex} className="flex gap-2 mb-2">
+                    <input
+                      value={btn}
+                      onChange={(e) =>
+                        updateButton(index, btnIndex, e.target.value)
+                      }
+                      className="border w-full p-2 rounded"
+                      placeholder={`Button ${btnIndex + 1}`}
+                    />
+
+                    {card.buttons.length > 1 && (
+                      <button
+                        onClick={() => removeButton(index, btnIndex)}
+                        className="text-red-500 px-2"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                {/* ADD BUTTON */}
+                {card.buttons.length < 3 && (
+                  <button
+                    onClick={() => addButton(index)}
+                    className="text-green-600 text-sm mt-1"
+                  >
+                    + Add Button
+                  </button>
+                )}
+              </>
+            )}
+            {/* {card.type === "button" &&
               card.buttons.map((btn, i) => (
                 <input
                   key={i}
@@ -282,7 +410,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
                   }}
                   className="border w-full p-2 mb-2 rounded"
                 />
-              ))}
+              ))} */}
           </div>
         );
       })}
