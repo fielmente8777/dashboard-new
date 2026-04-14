@@ -28,8 +28,6 @@ const WhatsApp = () => {
     "/notification-sound/Sound1.mp3",
   );
 
-  const [lastMessage, setLastMessage] = useState({});
-
   const updateConversationWithMessage = (
     conversations,
     incomingMessage,
@@ -89,10 +87,6 @@ const WhatsApp = () => {
     }
   };
 
-  useEffect(() => {
-    checkIntegrationStatus();
-  }, []);
-
   // 🔹 WebSocket incoming messages
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -132,6 +126,10 @@ const WhatsApp = () => {
 
     return () => wsRef.current?.close();
   }, [selectedConversation, conversations]);
+
+  useEffect(() => {
+    checkIntegrationStatus();
+  }, []);
 
   useEffect(() => {
     getWhatsappConversations();

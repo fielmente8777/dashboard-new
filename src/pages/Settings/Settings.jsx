@@ -7,12 +7,20 @@ import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
 import Notification from "./Notification";
 import Billing from "../Wallet/Billing";
+import { useSearchParams } from "react-router-dom";
 
 const Settings = () => {
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab");
+  const template = searchParams.get("template");
   // ✅ Centralized config
   const TABS = [
     { key: "Profile", label: "Profile", component: <Setting /> },
-    { key: "WhatsApp", label: "WhatsApp", component: <WhatsAppBusiness /> },
+    {
+      key: "WhatsApp",
+      label: "WhatsApp",
+      component: <WhatsAppBusiness template={template} />,
+    },
     { key: "Eazbot", label: "Eazbot", component: <Eazobot /> },
     { key: "Integration", label: "Integration", component: <Integration /> },
     {
@@ -24,10 +32,12 @@ const Settings = () => {
     // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
     { key: "Billing", label: "Billing", component: <Billing /> },
   ];
-  const [activeTab, setActiveTab] = useState(TABS[0].key);
+  const [activeTab, setActiveTab] = useState(tab || TABS[0].key);
 
   // ✅ Find active component
-  const activeComponent = TABS.find((tab) => tab.key === activeTab)?.component;
+  const activeComponent = TABS.find(
+    (tab) => tab.key?.toLowerCase() === activeTab?.toLowerCase(),
+  )?.component;
 
   return (
     <div className="w-full flex flex-col h-full">
@@ -38,7 +48,9 @@ const Settings = () => {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex shrink-0 cursor-pointer ${
-              activeTab === tab.key ? "bg-primary text-white" : "bg-white"
+              activeTab?.toLowerCase() === tab.key?.toLowerCase()
+                ? "bg-primary text-white"
+                : "bg-white"
             } hover:bg-gray-300 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
           >
             {tab.label}

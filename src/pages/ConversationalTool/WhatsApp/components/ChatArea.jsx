@@ -1,8 +1,14 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { BsCheckAll, BsCheckLg } from "react-icons/bs";
 import { IoArrowBack } from "react-icons/io5";
 import { MdCall, MdChat, MdClose, MdOutlineDelete } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MessageSkeleton } from "../../../../components/Skeltons/WhatsappChatSkelton";
 import WebSocketClient from "../../../../config/websocketClient";
 import DataContext from "../../../../context/DataContext";
@@ -50,16 +56,11 @@ import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
 
 const ChatArea = () => {
+  const navigate = useNavigate();
   const wsRef = useRef(null);
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
   const [allUsers, setAllUsers] = useState([]);
-
-  // const { isLoaded } = useLoadScript({
-  //   googleMapsApiKey: "YOUR_GOOGLE_MAPS_API_KEY",
-  // });
-
-  // const [marker, setMarker] = useState(null);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -91,6 +92,7 @@ const ChatArea = () => {
 
   const [templateClick, setTemplateClick] = useState(false);
   const [templates, setTemplates] = useState([]);
+  const [templateLoading, setTemplateLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState();
   const [expandedMessages, setExpandedMessages] = useState({});
 
@@ -283,6 +285,7 @@ const ChatArea = () => {
   };
 
   const fetchTemplate = async () => {
+    setTemplateLoading(true);
     try {
       const response = await getWhatsAppMessageTemplates();
       if (response.success) {
@@ -290,6 +293,8 @@ const ChatArea = () => {
       }
     } catch (error) {
       console.log("Error", error);
+    } finally {
+      setTemplateLoading(false);
     }
   };
 
@@ -485,7 +490,7 @@ const ChatArea = () => {
     fetchFlowSession();
   }, [selectedConversation?._id]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
 
@@ -1113,7 +1118,38 @@ const ChatArea = () => {
 
         <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
           <div className="flex gap-2 items-center">
-            {!templateClick ? (
+            {templateLoading ? (
+              <p className="text-xs text-gray-500 animate-pulse">
+                Loading Templates...
+              </p>
+            ) : (
+              <div>
+                {!templateClick ? (
+                  <span
+                    onClick={() => {
+                      if (!templates?.length) {
+                        navigate(
+                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+                        );
+                      }
+
+                      handleTemplate(true);
+                    }}
+                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+                  >
+                    <MdChat className="" /> Templates
+                  </span>
+                ) : (
+                  <span
+                    onClick={() => handleTemplate(false)}
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+                  >
+                    Close Templates <MdClose />
+                  </span>
+                )}
+              </div>
+            )}
+            {/* {!templateClick ? (
               <>
                 {!isTakeOver ? (
                   <span
@@ -1133,7 +1169,7 @@ const ChatArea = () => {
               >
                 Close Templates <MdClose />
               </span>
-            )}
+            )} */}
 
             {isTakeOver && (
               <div className="flex justify-center w-full">

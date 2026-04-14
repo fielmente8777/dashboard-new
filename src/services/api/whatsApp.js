@@ -121,6 +121,36 @@ export const getWhatsappAccountDetails = async () => {
   return data;
 };
 
+export const getWhatsAppProfile = async () => {
+  const response = await fetch(`${NEW_BASE_URL}/api/v1/whatsapp/profile`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  const data = await response.json();
+  return data;
+};
+
+export const updateWhatsAppProfile = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/profile/update`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: payload,
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
 export const createWhatsAppMessageTemplate = async (payload) => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/message/template/create`,

@@ -21,6 +21,8 @@ import {
   getWhatsappAccountDetails,
   getWhatsAppFlows,
   getWhatsAppMessageTemplates,
+  getWhatsAppProfile,
+  updateWhatsAppProfile,
 } from "../../../services/api/whatsApp";
 
 import { FiMenu } from "react-icons/fi";
@@ -31,6 +33,8 @@ import WhatsappFlow from "./WhatsappFlow/WhatsappFlow";
 import TemplateLibrary from "./components/TemplateLibrary";
 import WhatsAppMessageTemplate from "../Whatsapp/components/Templates";
 import CreateTemplate from "../Whatsapp/components/CreateTemplate";
+import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
+import { useToast } from "../../../context/ToastContext";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -48,19 +52,24 @@ const sidebarTabs = [
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 
-const WhatsAppBusiness = () => {
+const WhatsAppBusiness = ({ template = false }) => {
   const hasFetchedRef = useRef(false);
+  const { showToast } = useToast();
 
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState("create-template");
   const [openDropdown, setOpenDropdown] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(
+    template ? "templates" : "overview",
+  );
   const [collapsed, setCollapsed] = useState(false);
   const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [flows, setFlows] = useState({});
+  const [whatsAppProfile, setWhatsAppProfile] = useState({});
+  const [isProfileSaving, setIsProfileSaving] = useState(false);
 
   const handleWhatsappConnect = async () => {
     try {
@@ -81,6 +90,64 @@ const WhatsAppBusiness = () => {
       setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);
+    }
+  }, []);
+
+  const fetchWhatsAppProfile = useCallback(async () => {
+    try {
+      const response = await getWhatsAppProfile();
+      if (response?.success) {
+        setWhatsAppProfile(response?.result?.doc);
+      }
+    } catch (error) {
+      console.error("Error fetching data", error?.message);
+    }
+  }, []);
+
+  const updateWhatsAppProfileFunc = useCallback(async (data) => {
+    setIsProfileSaving(true);
+    try {
+      const formData = new FormData();
+
+      // ✅ Normal fields
+      if (data.about) formData.append("about", data.about);
+      if (data.vertical) formData.append("vertical", data.vertical);
+      if (data?.email) formData.append("email", data.email);
+      if (data?.address) formData.append("address", data.address);
+
+      // ✅ websites (convert to string if array)
+      if (data.websites) {
+        const websites = Array.isArray(data.websites)
+          ? data.websites
+          : [data.websites];
+
+        formData.append("websites", JSON.stringify(websites));
+      }
+
+      // ✅ IMAGE HANDLING
+      if (data.image instanceof File) {
+        // 👉 file upload case
+        formData.append("file", data.image); // 🔥 important: key should match backend (multer)
+      } else if (typeof data.image === "string") {
+        // 👉 URL case
+        formData.append("profile_picture_url", data.image);
+      }
+
+      const response = await updateWhatsAppProfile(formData);
+      if (response?.success) {
+        showToast({
+          message: "Profile updated successfully",
+          type: "success",
+        });
+        fetchWhatsAppProfile();
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update profile",
+        type: "error",
+      });
+    } finally {
+      setIsProfileSaving(false);
     }
   }, []);
 
@@ -112,6 +179,7 @@ const WhatsAppBusiness = () => {
       hasFetchedRef.current = true;
       fetchAccountDetails();
       fetchTemplate();
+      fetchWhatsAppProfile();
     }
   }, [integrationStatus]);
 
@@ -257,7 +325,12 @@ const WhatsAppBusiness = () => {
                   />
                   <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
                 </div>
-                <CreditInfoCard />
+                <WhatsAppProfileCard
+                  profile={whatsAppProfile}
+                  loading={isProfileSaving}
+                  onSave={updateWhatsAppProfileFunc}
+                />
+                {/* <CreditInfoCard /> */}
                 <AutoMessageCard
                   phoneNumberId={accountDetails?.phoneNumber?.id}
                   autoMessage={accountDetails?.autoMessage}
