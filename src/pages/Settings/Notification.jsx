@@ -14,6 +14,12 @@ import {
 import { useToast } from "../../context/ToastContext";
 import TemplatePreview from "../Channels/Whatsapp/components/TemplatePreview";
 
+const callStatuses = [
+  { key: "notAnswered", label: "Not Answered" },
+  { key: "missedCall", label: "Missed Call" },
+  { key: "busy", label: "Busy" },
+];
+
 /* 🔘 Toggle */
 const ToggleSwitch = ({ enabled, onChange }) => (
   <div
@@ -75,11 +81,35 @@ const Notification = () => {
 
   const [callConfig, setCallConfig] = useState({
     enabled: false,
-    type: "text",
-    templateName: "",
-    message: "",
-    flowId: "",
+    configs: {
+      notAnswered: {
+        type: "template",
+        templateName: "",
+        message: "",
+        templateMeta: null,
+      },
+      missedCall: {
+        type: "template",
+        templateName: "",
+        message: "",
+        templateMeta: null,
+      },
+      busy: {
+        type: "template",
+        templateName: "",
+        message: "",
+        templateMeta: null,
+      },
+    },
   });
+
+  // const [callConfig, setCallConfig] = useState({
+  //   enabled: false,
+  //   type: "text",
+  //   templateName: "",
+  //   message: "",
+  //   flowId: "",
+  // });
 
   const [originalCallConfig, setOriginalCallConfig] = useState(callConfig);
 
@@ -114,7 +144,7 @@ const Notification = () => {
       setOriginalData(normalized);
 
       if (callConfig) setCallConfig(callConfig);
-      setOriginalCallConfig(callConfig);
+      // setOriginalCallConfig(callConfig);
     }
   };
 
@@ -172,6 +202,7 @@ const Notification = () => {
         config: data, // ✅ existing
         callConfig: callConfig, // ✅ NEW
       };
+
       await editNotificationData(payload);
       setOriginalData(data);
       showToast({ message: "Saved successfully", type: "success" });
@@ -194,10 +225,16 @@ const Notification = () => {
     });
   };
 
-  const updateCallConfig = (field, value) => {
+  const updateCallConfig = (status, field, value) => {
     setCallConfig((prev) => ({
       ...prev,
-      [field]: value,
+      configs: {
+        ...prev.configs,
+        [status]: {
+          ...prev.configs[status],
+          [field]: value,
+        },
+      },
     }));
   };
 
@@ -238,89 +275,198 @@ const Notification = () => {
           <ChannelToggle
             label="Call Notification"
             value={callConfig.enabled}
-            onChange={() => updateCallConfig("enabled", !callConfig.enabled)}
+            onChange={() =>
+              setCallConfig((prev) => ({
+                ...prev,
+                enabled: !prev.enabled,
+              }))
+            }
           />
 
           {accountDetails?.notification?.enable && callConfig.enabled && (
-            <>
-              <select
-                value={callConfig.type}
-                onChange={(e) => updateCallConfig("type", e.target.value)}
-                className="w-full border px-3 py-2 rounded"
-              >
-                <option value="text">Text</option>
-                <option value="template">Template</option>
-                {/* <option value="flow">Flow</option> */}
-              </select>
+            <div className="space-y-4 grid grid-cols-3 gap-4">
+              {callStatuses?.map((status) => {
+                const config = callConfig?.configs[status?.key] || {};
 
-              {callConfig.type === "text" && (
-                <textarea
-                  value={callConfig.message}
-                  onChange={(e) => updateCallConfig("message", e.target.value)}
-                  className="w-full border px-3 py-2 rounded"
-                />
-              )}
+                return (
+                  <div key={status.key} className="border p-3 rounded bg-white">
+                    <h4 className="font-medium mb-2">{status.label}</h4>
 
-              {callConfig.type === "template" && (
-                <div className="space-y-2">
-                  <select
-                    value={callConfig.templateName}
-                    onChange={(e) => {
-                      const selectedName = e.target.value;
-
-                      const selectedTemplate = templates.find(
-                        (t) => t.name === selectedName,
-                      );
-
-                      if (!selectedTemplate) return;
-
-                      // extract body text
-                      const bodyText =
-                        selectedTemplate.components?.find(
-                          (c) => c.type === "BODY",
-                        )?.text || "";
-
-                      // extract buttons (optional)
-                      const buttons =
-                        selectedTemplate.components?.find(
-                          (c) => c.type === "BUTTONS",
-                        )?.buttons || [];
-
-                      updateCallConfig("templateName", selectedName);
-
-                      updateCallConfig("templateMeta", {
-                        name: selectedTemplate.name,
-                        language: selectedTemplate.language,
-                        bodyText,
-                        variables: (bodyText.match(/{{\d+}}/g) || []).length,
-                        headerType:
-                          selectedTemplate.components?.find(
-                            (c) => c.type === "HEADER",
-                          )?.format || null,
-                        buttons,
-                      });
-                    }}
-                    className="w-full border px-3 py-2 rounded-md text-sm"
-                  >
-                    <option value="">Select template</option>
-                    {templates.map((t) => (
-                      <option key={t.name}>{t.name}</option>
-                    ))}
-                  </select>
-
-                  {callConfig.templateName && (
-                    <TemplatePreview
-                      components={
-                        templates.find(
-                          (t) => t.name === callConfig.templateName,
-                        )?.components || []
+                    {/* TYPE */}
+                    <select
+                      value={config.type}
+                      onChange={(e) =>
+                        updateCallConfig(status.key, "type", e.target.value)
                       }
-                    />
-                  )}
-                </div>
-              )}
-            </>
+                      className="w-full border px-3 py-2 rounded mb-2"
+                    >
+                      {/* <option value="text">Text</option> */}
+                      <option value="template">Template</option>
+                    </select>
+
+                    {/* TEXT */}
+                    {/* {config.type === "text" && (
+                      <textarea
+                        value={config.message}
+                        onChange={(e) =>
+                          updateCallConfig(
+                            status.key,
+                            "message",
+                            e.target.value,
+                          )
+                        }
+                        className="w-full border px-3 py-2 rounded"
+                      />
+                    )} */}
+
+                    {/* TEMPLATE */}
+                    {config.type === "template" && (
+                      <>
+                        <select
+                          value={config.templateName}
+                          onChange={(e) => {
+                            const selectedName = e.target.value;
+                            const selectedTemplate = templates.find(
+                              (t) => t.name === selectedName,
+                            );
+                            if (!selectedTemplate) return;
+
+                            const bodyText =
+                              selectedTemplate.components?.find(
+                                (c) => c.type === "BODY",
+                              )?.text || "";
+
+                            const buttons =
+                              selectedTemplate.components?.find(
+                                (c) => c.type === "BUTTONS",
+                              )?.buttons || [];
+
+                            updateCallConfig(
+                              status.key,
+                              "templateName",
+                              selectedName,
+                            );
+
+                            updateCallConfig(status.key, "templateMeta", {
+                              name: selectedTemplate.name,
+                              language: selectedTemplate.language,
+                              bodyText,
+                              variables: (bodyText.match(/{{\d+}}/g) || [])
+                                .length,
+                              headerType:
+                                selectedTemplate.components?.find(
+                                  (c) => c.type === "HEADER",
+                                )?.format || null,
+                              buttons,
+                            });
+                          }}
+                          className="w-full border px-3 py-2 rounded mb-2"
+                        >
+                          <option value="">Select template</option>
+                          {templates.map((t) => (
+                            <option key={t.name}>{t.name}</option>
+                          ))}
+                        </select>
+
+                        {config.templateName && (
+                          <div className="w-full">
+                            <TemplatePreview
+                              components={
+                                templates.find(
+                                  (t) => t.name === config.templateName,
+                                )?.components || []
+                              }
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
+
+          {/* {accountDetails?.notification?.enable && callConfig.enabled && (
+              <>
+                <select
+                  value={callConfig.type}
+                  onChange={(e) => updateCallConfig("type", e.target.value)}
+                  className="w-full border px-3 py-2 rounded"
+                >
+                  <option value="text">Text</option>
+                  <option value="template">Template</option>
+                  <option value="flow">Flow</option>
+                </select>
+
+                {callConfig.type === "text" && (
+                  <textarea
+                    value={callConfig.message}
+                    onChange={(e) => updateCallConfig("message", e.target.value)}
+                    className="w-full border px-3 py-2 rounded"
+                  />
+                )}
+
+                {callConfig.type === "template" && (
+                  <div className="space-y-2">
+                    <select
+                      value={callConfig.templateName}
+                      onChange={(e) => {
+                        const selectedName = e.target.value;
+
+                        const selectedTemplate = templates.find(
+                          (t) => t.name === selectedName,
+                        );
+
+                        if (!selectedTemplate) return;
+
+                        // extract body text
+                        const bodyText =
+                          selectedTemplate.components?.find(
+                            (c) => c.type === "BODY",
+                          )?.text || "";
+
+                        // extract buttons (optional)
+                        const buttons =
+                          selectedTemplate.components?.find(
+                            (c) => c.type === "BUTTONS",
+                          )?.buttons || [];
+
+                        updateCallConfig("templateName", selectedName);
+
+                        updateCallConfig("templateMeta", {
+                          name: selectedTemplate.name,
+                          language: selectedTemplate.language,
+                          bodyText,
+                          variables: (bodyText.match(/{{\d+}}/g) || []).length,
+                          headerType:
+                            selectedTemplate.components?.find(
+                              (c) => c.type === "HEADER",
+                            )?.format || null,
+                          buttons,
+                        });
+                      }}
+                      className="w-full border px-3 py-2 rounded-md text-sm"
+                    >
+                      <option value="">Select template</option>
+                      {templates.map((t) => (
+                        <option key={t.name}>{t.name}</option>
+                      ))}
+                    </select>
+
+                    {callConfig.templateName && (
+                      <TemplatePreview
+                        components={
+                          templates.find(
+                            (t) => t.name === callConfig.templateName,
+                          )?.components || []
+                        }
+                      />
+                    )}
+                  </div>
+                )}
+              </>
+            )} */}
         </div>
 
         {/* USERS */}

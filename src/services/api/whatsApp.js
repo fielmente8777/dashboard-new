@@ -54,7 +54,7 @@ export const markMessageAsRead = async (conversationId) => {
 
 export const getWhatsappConversation = async () => {
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/conversations/all`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations/all?hid=${localStorage.getItem("hid")}`,
     {
       method: "GET",
       headers: {
@@ -106,7 +106,7 @@ export const deleteConversation = async ({ conversationId, phone }) => {
 
 export const getWhatsappAccountDetails = async () => {
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/account/connection/details`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/account/connection/details?hid=${localStorage.getItem("hid")}`,
     {
       method: "GET",
       headers: {
