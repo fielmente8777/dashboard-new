@@ -29,7 +29,7 @@ const Settings = () => {
       component: <Usermanagement />,
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
-    // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
     { key: "Billing", label: "Billing", component: <Billing /> },
   ];
   const [activeTab, setActiveTab] = useState(tab || TABS[0].key);

@@ -325,12 +325,15 @@ const WhatsAppBusiness = ({ template = false }) => {
                   />
                   <PhoneNumberCard phoneNumber={accountDetails?.phoneNumber} />
                 </div>
+<<<<<<< HEAD
                 <WhatsAppProfileCard
                   profile={whatsAppProfile}
                   loading={isProfileSaving}
                   onSave={updateWhatsAppProfileFunc}
                 />
                 {/* <CreditInfoCard /> */}
+=======
+>>>>>>> 980589b35914f60f95b8f07ca927d5e9031cc6fa
                 <AutoMessageCard
                   phoneNumberId={accountDetails?.phoneNumber?.id}
                   autoMessage={accountDetails?.autoMessage}
