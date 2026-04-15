@@ -93,7 +93,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
   if (!profile) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-4 relative">
+    <div className="bg-white  shadow-sm p-4 space-y-4 relative">
       {/* Header */}
       <div className="flex justify-between items-center">
         <h3 className="font-semibold text-gray-800 text-base">
