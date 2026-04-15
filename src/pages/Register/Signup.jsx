@@ -318,7 +318,7 @@ const Signup = () => {
                   }
                   className="bg-primary disabled:opacity-50 text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center"
                 >
-                  Sumbmit
+                  Submit
                   {spinnerLoader && <Loader size={20} color="white" />}
                 </button>
               </div>

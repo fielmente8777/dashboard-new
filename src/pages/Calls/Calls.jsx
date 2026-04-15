@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaPhone } from "react-icons/fa";
 // import CallDetails from "./CallDetails";
 import { IoIosClose, IoIosPlayCircle } from "react-icons/io";
@@ -12,6 +12,8 @@ import {
   Priority,
   ROUTES_PATH,
   Stages,
+  WEBSOCKET_EVENTS,
+  WS_BASE_URL,
 } from "../../data/constant";
 
 import axios from "axios";
@@ -32,8 +34,10 @@ import { fetchUserManagementData } from "../../services/api";
 import CustomDropdown2 from "../../components/ui/Dropdown2";
 import { MdOutlineWifiCalling3 } from "react-icons/md";
 import CustomSubDropdown from "../../components/ui/CustomSubDropdown";
+import WebSocketClient from "../../config/websocketClient";
 
 export default function Calls() {
+  const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [showAudioModal, setShowAudioModal] = useState(false);
@@ -198,8 +202,8 @@ export default function Calls() {
   };
 
   const columns = [
-    { label: "From", value: "from" },
     { label: "To", value: "to" },
+    { label: "From", value: "from" },
     { label: "Phone Number", value: "phoneNumberSid" },
     { label: "Direction", value: "direction" },
     { label: "Status", value: "status" },
@@ -218,6 +222,8 @@ export default function Calls() {
   });
 
   const [callPopup, setCallPopup] = useState(false);
+  const [incomingCallPopup, setIcomingCallPopup] = useState(false);
+  const [incomingCallData,setIncomingCallData]=useState({});
   const [fromNumber, setFromNumber] = useState("");
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
@@ -323,6 +329,26 @@ export default function Calls() {
   };
 
   useEffect(() => {
+    wsRef.current = new WebSocketClient(WS_BASE_URL);
+
+
+    wsRef.current.connect((serverResponse) => {
+      console.log("server response", serverResponse);
+      if (
+        serverResponse?.event === WEBSOCKET_EVENTS.EXOTEL_CALL &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid")
+      ) {
+        const { data } = serverResponse;
+        setIcomingCallPopup(true);
+        setIncomingCallData(data)
+        console.log("Data", data)
+      }
+    });
+
+    return () => wsRef.current?.close();
+  }, [incomingCallData,incomingCallPopup]);
+
+  useEffect(() => {
     getConnectStatus();
     fetchUsersData();
   }, []);
@@ -367,9 +393,8 @@ export default function Calls() {
                 className="flex items-center border font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
               >
                 <div
-                  className={`flex justify-end items-center cursor-pointer ${
-                    isImportCallsLoading ? "animate-spin" : ""
-                  } `}
+                  className={`flex justify-end items-center cursor-pointer ${isImportCallsLoading ? "animate-spin" : ""
+                    } `}
                 >
                   <MdRefresh size={18} />
                 </div>
@@ -462,9 +487,8 @@ export default function Calls() {
                       {/* Duration */}
                       <td className="px-3 py-1 whitespace-nowrap">
                         {call.duration
-                          ? `${Math.floor(call.duration / 60)}m ${
-                              call.duration % 60
-                            }s`
+                          ? `${Math.floor(call.duration / 60)}m ${call.duration % 60
+                          }s`
                           : "-"}
                       </td>
 
@@ -978,6 +1002,38 @@ export default function Calls() {
           setShowDatePicker(false);
         }}
       />
+
+      {incomingCallPopup &&
+        <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-99999">
+          <div className="w-72 bg-white rounded-2xl shadow-xl p-4 border border-gray-200 animate-slideIn">
+
+            <div className="flex items-center gap-3">
+              <div className="bg-green-100 text-green-600 p-2 rounded-full">
+                📞
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold">Incoming Call</h3>
+                <p className="text-xs text-gray-500">{incomingCallData?.from}</p>
+              </div>
+            </div>
+            <p className="text-xs mt-2 text-center text-gray-500">Please check your phone</p>
+
+            <div className="flex justify-end mt-4">
+              {/* <button className="bg-green-500 hover:bg-green-600 text-white text-sm px-4 py-1.5 rounded-lg">
+                Answer
+              </button> */}
+
+              <button
+                onClick={() => setIcomingCallPopup(!incomingCallPopup)}
+                className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-1.5 rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      }
     </div>
   );
 }
