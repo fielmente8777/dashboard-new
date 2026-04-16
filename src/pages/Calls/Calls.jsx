@@ -341,6 +341,16 @@ export default function Calls() {
         setIcomingCallPopup(true);
         setIncomingCallData(data);
         console.log("Data", data);
+      } else if (
+        serverResponse?.event === WEBSOCKET_EVENTS.EXOTEL_CALL_ANSWERED &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid")
+      ) {
+        setIcomingCallPopup(false);
+      } else if (
+        serverResponse?.event === WEBSOCKET_EVENTS.EXOTEL_CALL_MISSED &&
+        serverResponse?.data?.ndid === localStorage.getItem("ndid")
+      ) {
+        setIcomingCallPopup(false);
       }
     });
 

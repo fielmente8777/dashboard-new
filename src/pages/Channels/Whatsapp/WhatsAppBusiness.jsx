@@ -35,11 +35,12 @@ import WhatsAppMessageTemplate from "../Whatsapp/components/Templates";
 import CreateTemplate from "../Whatsapp/components/CreateTemplate";
 import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
 import { useToast } from "../../../context/ToastContext";
+import Flows from "./components/Flows";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
   {
-    id: "templates",
+    id: "create-template",
     label: "Message Templates",
     children: [
       { id: "create-template", label: "Create Template" },
@@ -48,7 +49,14 @@ const sidebarTabs = [
   },
   { id: "auto-message", label: "Auto Message" },
   // { id: "credits", label: "Credits" },
-  // { id: "whatsapp-flows", label: "Flows" },
+  {
+    id: "whatsapp-flows",
+    label: "Flows",
+    children: [
+      { id: "whatsapp-flows", label: "Create Flow" },
+      { id: "flows", label: "Flows" },
+    ],
+  },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
 ];
 
@@ -266,6 +274,7 @@ const WhatsAppBusiness = ({ template = false }) => {
                         if (tab.children) {
                           setOpenDropdown(isOpen ? null : tab.id);
                           setActiveTab(tab.id);
+                          setActiveSubTab(tab.id);
                         } else {
                           setActiveTab(tab.id);
                           setOpenDropdown(null);
@@ -293,7 +302,7 @@ const WhatsAppBusiness = ({ template = false }) => {
                           <button
                             key={sub.id}
                             onClick={() => {
-                              setActiveTab(tab.id);
+                              // setActiveTab(tab.id);
                               setActiveSubTab(sub.id);
                             }}
                             className={`text-left px-3 py-2 rounded-md text-sm ${
@@ -342,7 +351,7 @@ const WhatsAppBusiness = ({ template = false }) => {
               </div>
             )}
 
-            {activeTab === "templates" &&
+            {activeTab === "create-template" &&
               activeSubTab === "create-template" && (
                 <CreateTemplate
                   initialData={selectedTemplate}
@@ -353,7 +362,7 @@ const WhatsAppBusiness = ({ template = false }) => {
                 />
               )}
 
-            {activeTab === "templates" &&
+            {activeTab === "create-template" &&
               activeSubTab === "template-library" && (
                 <TemplateLibrary
                   onSelectTemplate={(template) => {
@@ -362,13 +371,16 @@ const WhatsAppBusiness = ({ template = false }) => {
                   }}
                 />
               )}
+
             {activeTab === "whatsapp-flow" && (
               <ReactFlowProvider>
                 <FlowBuilder />
               </ReactFlowProvider>
             )}
 
-            {activeTab === "whatsapp-flows" && <WhatsappFlow />}
+            {activeSubTab === "whatsapp-flows" && <WhatsappFlow />}
+
+            {activeSubTab === "flows" && <Flows />}
           </div>
         </div>
       )}

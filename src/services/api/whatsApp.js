@@ -245,6 +245,7 @@ export const getWhatsAppLeads = async () => {
   return data;
 };
 
+// whatsapp flow for whatsapp messages flows
 export const getWhatsAppFlows = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
@@ -291,6 +292,7 @@ export const updateFlowSession = async (payload) => {
   return data;
 };
 
+// for whatsapp flow
 export const createWhatAppFlow = async (payload) => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/flow/create?hid=${localStorage.getItem("hid")}`,
