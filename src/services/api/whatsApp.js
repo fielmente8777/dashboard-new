@@ -323,3 +323,42 @@ export const getWhatsAppFlowScreens = async () => {
   const data = await response.json();
   return data;
 };
+
+export const broadCastCampaign = async (payload) => {
+  const params = new URLSearchParams();
+  params.append("hid", localStorage.getItem("hid"));
+
+  // if(payload?.sou) params.append("from", payload?.from);
+
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/send?${params.toString()}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const getCampaignUsers = async (prms) => {
+  const params = new URLSearchParams();
+  params.append("hid", localStorage.getItem("hid"));
+  if (prms.source) params.append("source", prms.source);
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/users?${params.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};

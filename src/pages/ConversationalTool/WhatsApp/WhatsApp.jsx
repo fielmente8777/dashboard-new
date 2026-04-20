@@ -94,6 +94,8 @@ const WhatsApp = () => {
     wsRef.current.connect((serverResponse) => {
       const { data } = serverResponse;
 
+      console.log(data);
+
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
@@ -105,6 +107,7 @@ const WhatsApp = () => {
           lastMessage: null,
           unreadCount: 0,
           updatedAt: new Date(),
+          createdAt: data?.createdAt,
         };
 
         if (data?.ndid === localStorage.getItem("ndid")) {
