@@ -10,6 +10,7 @@ import handleLocalStorage from "../utils/handleLocalStorage";
 import { getCookie } from "../utils/handleCookies";
 import { useNavigate } from "react-router-dom";
 import { BASE_PATH } from "../data/constant";
+import { isExpired } from "../utils/isExpired";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,6 @@ const GlobalDataProvider = () => {
   }, [token]);
 
   useEffect(() => {
-    // console.log(hotel);
     if (hotel?.Data?.ndid) {
       localStorage.setItem("ndid", hotel.Data.ndid);
     }
@@ -52,6 +52,12 @@ const GlobalDataProvider = () => {
   }, [hotel]);
 
   useEffect(() => {
+    // if (hotel?.Profile?.plan?.endDate) {
+    //   const isExpire = isExpired(hotel?.Profile?.plan?.endDate);
+    //   if (isExpire) {
+    //     return navigate(`/plans`);
+    //   }
+    // }
     if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
   }, [hid]);
 

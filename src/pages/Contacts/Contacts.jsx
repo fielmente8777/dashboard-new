@@ -128,6 +128,7 @@ const Contacts = () => {
           open={campaignOpen}
           setOpen={setCampaignOpen}
           contacts={selectedUsersIds}
+          setContacts={setSelectedUsersIds}
         />
       </div>
 

@@ -421,7 +421,7 @@ const AllLeads = () => {
 
               <div>
                 <CustomDropdown
-                 label={"Stage"}
+                  label={"Stage"}
                   options={[
                     {
                       value: "",
@@ -541,9 +541,6 @@ const AllLeads = () => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
                                   setShowDatePicker(true);
-                                } else if (value === "Turn Away") {
-                                  setSelectedLead(row);
-                                  setShowTurnAwayModal(true);
                                 } else {
                                   handleUpdateStage({
                                     leadId: row?._id,

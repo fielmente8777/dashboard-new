@@ -13,20 +13,18 @@ import { ToastProvider } from "./context/ToastContext.jsx";
 import { ConfirmProvider } from "./context/ConfirmContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Provider store={store}>
-      <DataProvider>
-        <BrowserRouter>
-          <GlobalDataProvider />
-          <ToastProvider>
-            <ConfirmProvider>
-              {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
-              <App />
-            </ConfirmProvider>
-          </ToastProvider>
-          <ProfileDropDown />
-        </BrowserRouter>
-      </DataProvider>
-    </Provider>
-  </StrictMode>,
+  <Provider store={store}>
+    <DataProvider>
+      <BrowserRouter>
+        <GlobalDataProvider />
+        <ToastProvider>
+          <ConfirmProvider>
+            {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
+            <App />
+          </ConfirmProvider>
+        </ToastProvider>
+        <ProfileDropDown />
+      </BrowserRouter>
+    </DataProvider>
+  </Provider>,
 );

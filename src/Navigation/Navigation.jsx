@@ -35,6 +35,7 @@ import Settings from "../pages/Settings/Settings";
 import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import AllLeads from "../pages/Enquiry/AllLeads";
 import ViewAndManageCalls from "../pages/Calls/viewCallManagement.jsx/ViewAndManageCalls";
+import Plan from "../pages/Plans/Plan";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -45,6 +46,7 @@ const Navigation = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/onboarding/form" element={<OnboardingForm />} />
+      <Route path="plans" element={<Plan />} />
 
       {/* Protected Routes */}
       <Route path="/" element={<ProtectedRoute />}>

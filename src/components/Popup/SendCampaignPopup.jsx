@@ -8,7 +8,7 @@ import TemplatePreview from "../../pages/Channels/Whatsapp/components/TemplatePr
 import { useToast } from "../../context/ToastContext";
 import { NEW_BASE_URL, Sources } from "../../data/constant";
 
-const SendCampaignPopup = ({ open, setOpen, contacts }) => {
+const SendCampaignPopup = ({ open, setOpen, contacts, setContacts }) => {
   const { showToast } = useToast();
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
@@ -58,21 +58,23 @@ const SendCampaignPopup = ({ open, setOpen, contacts }) => {
         ...(source && { source }),
       };
 
+      console.log(payload);
+
       const response = await broadCastCampaign(payload);
 
       // const data = await res.json();
 
       // console.log("Campaign response:", data);
       setOpen(false);
+      setContacts([]);
     } catch (err) {
       console.error(err);
-      alert("Failed to send campaign");
     } finally {
       setIsSending(false);
     }
   };
 
-  const handleSourceChange = async (source) => {
+  const handleSourceChange = async (source = null) => {
     setSelectedSource(source);
     setIsFetchingUsers(true);
 
@@ -113,6 +115,16 @@ const SendCampaignPopup = ({ open, setOpen, contacts }) => {
 
     fetchTemplates();
   }, [open]);
+
+  useEffect(() => {
+    if (contacts.length > 0) {
+      setTotalUser(contacts.length);
+    }
+  }, [contacts]);
+
+  useEffect(() => {
+    handleSourceChange();
+  }, []);
 
   if (!open) return null;
 
@@ -202,7 +214,7 @@ const SendCampaignPopup = ({ open, setOpen, contacts }) => {
 
           <button
             // disabled={isSendDisabled}
-            onClick={handleSend}
+            onClick={() => handleSend()}
             // disabled={loading}
             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
           >

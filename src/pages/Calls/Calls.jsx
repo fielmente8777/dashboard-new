@@ -143,6 +143,7 @@ export default function Calls() {
       console.error("Error fetching call");
     } finally {
       setIsStatusLoading(false);
+      setIsTableDataLoading(false);
     }
   };
 
@@ -158,7 +159,7 @@ export default function Calls() {
     // console.log(formData);
     try {
       const { data } = await axios.post(
-        `${NEW_BASE_URL}/api/v1/call/auth/connect`,
+        `${NEW_BASE_URL}/api/v1/call/auth/connect?hid=${localStorage.getItem("hid")}`,
         formData,
         {
           headers: {
