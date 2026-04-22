@@ -52,12 +52,12 @@ const GlobalDataProvider = () => {
   }, [hotel]);
 
   useEffect(() => {
-    // if (hotel?.Profile?.plan?.endDate) {
-    //   const isExpire = isExpired(hotel?.Profile?.plan?.endDate);
-    //   if (isExpire) {
-    //     return navigate(`/plans`);
-    //   }
-    // }
+    if (hotel?.Profile?.plan?.endDate) {
+      const isExpire = isExpired(hotel?.Profile?.plan?.endDate);
+      if (isExpire) {
+        return navigate(`/plans`);
+      }
+    }
     if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
   }, [hid]);
 

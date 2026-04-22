@@ -287,6 +287,10 @@ const InteractiveMessage = ({ interactive }) => {
     );
   }
 
+  if (type === "list_reply" || type === "button_reply") {
+    return null;
+  }
+
   return (
     <div className="bg-gray-100 text-xs p-2 rounded">
       Unsupported interactive type: {type}
