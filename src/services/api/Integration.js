@@ -39,14 +39,17 @@ export const connectMetaLead = async () => {
 };
 
 export const disconnectIntegration = async (id) => {
-  const response = await fetch(`${NEW_BASE_URL}/api/v1/integration/update`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/integration/update?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ id }),
     },
-    body: JSON.stringify({ id }),
-  });
+  );
 
   const data = await response.json();
 

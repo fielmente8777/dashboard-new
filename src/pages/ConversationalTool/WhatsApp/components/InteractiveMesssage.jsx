@@ -1,7 +1,20 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 
 const InteractiveMessage = ({ interactive }) => {
+  const [flowPopup, setFlowPopup] = useState({
+    open: false,
+    data: null,
+  });
+
+  const handleFlowClick = (message) => {
+    console.log(message);
+    setFlowPopup({
+      open: true,
+      data: message?.data || null,
+    });
+  };
+
   const scrollRef = useRef(null);
 
   if (!interactive) return null;
@@ -123,28 +136,69 @@ const InteractiveMessage = ({ interactive }) => {
   // =========================
   // 🔁 FLOW TYPE
   // =========================
-  if (type === "flow") {
+  if (type === "flow_response" || type === "flow") {
     const ctaText = action?.parameters?.flow_cta || "Open";
 
     return (
-      <div className="bg-gray-100 rounded-xl p-3 max-w-xs">
-        {renderHeader()}
-        {renderBody()}
+      <div>
+        {flowPopup.open && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setFlowPopup({ open: false, data: null })}
+          >
+            <div
+              className="bg-white rounded-xl w-[90%] max-w-md p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg font-semibold">Flow Details</h2>
+                <button
+                  onClick={() => setFlowPopup({ open: false, data: null })}
+                  className="text-gray-500"
+                >
+                  ✕
+                </button>
+              </div>
 
-        {/* CTA Button */}
-        <button
-          className="w-full bg-green-500 text-white text-sm py-2 rounded-lg hover:bg-green-600 transition"
-          onClick={() => {
-            console.log("Flow clicked:", action?.parameters);
+              {/* Body */}
+              <div className="space-y-2 max-h-80 overflow-auto">
+                {flowPopup.data ? (
+                  Object.entries(flowPopup.data).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex justify-between border-b pb-1 text-sm"
+                    >
+                      <span className="font-medium text-gray-600">{key}</span>
+                      <span className="text-gray-800">{value}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-400">No data available</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
-            // 👉 You can trigger your flow handler here
-            // openFlow(action.parameters)
-          }}
+        <div
+          className={`bg-gray-100 rounded-xl p-3 max-w-xs ${type === "flow_response" && "cursor-pointer"}`}
         >
-          {ctaText}
-        </button>
+          {renderHeader()}
+          {renderBody()}
 
-        {renderFooter()}
+          {/* CTA Button */}
+          <button
+            className="w-full bg-green-500 text-white text-sm py-2 rounded-lg hover:bg-green-600 transition"
+            onClick={() => {
+              handleFlowClick(interactive);
+            }}
+          >
+            {ctaText}
+          </button>
+
+          {renderFooter()}
+        </div>
       </div>
     );
   }
@@ -231,6 +285,10 @@ const InteractiveMessage = ({ interactive }) => {
         {renderFooter()}
       </div>
     );
+  }
+
+  if (type === "list_reply" || type === "button_reply") {
+    return null;
   }
 
   return (

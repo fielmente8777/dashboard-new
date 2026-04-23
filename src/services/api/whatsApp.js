@@ -122,14 +122,17 @@ export const getWhatsappAccountDetails = async () => {
 };
 
 export const getWhatsAppProfile = async () => {
-  const response = await fetch(`${NEW_BASE_URL}/api/v1/whatsapp/profile`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/profile?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     },
-  });
+  );
 
   const data = await response.json();
   return data;
@@ -137,7 +140,7 @@ export const getWhatsAppProfile = async () => {
 
 export const updateWhatsAppProfile = async (payload) => {
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/profile/update`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/profile/update?hid=${localStorage.getItem("hid")}`,
     {
       method: "POST",
       headers: {
@@ -245,6 +248,7 @@ export const getWhatsAppLeads = async () => {
   return data;
 };
 
+// whatsapp flow for whatsapp messages flows
 export const getWhatsAppFlows = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
@@ -291,6 +295,7 @@ export const updateFlowSession = async (payload) => {
   return data;
 };
 
+// for whatsapp flow
 export const createWhatAppFlow = async (payload) => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/flow/create?hid=${localStorage.getItem("hid")}`,
@@ -310,6 +315,45 @@ export const createWhatAppFlow = async (payload) => {
 export const getWhatsAppFlowScreens = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/flow/get?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const broadCastCampaign = async (payload) => {
+  const params = new URLSearchParams();
+  params.append("hid", localStorage.getItem("hid"));
+
+  // if(payload?.sou) params.append("from", payload?.from);
+
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/send?${params.toString()}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
+export const getCampaignUsers = async (prms) => {
+  const params = new URLSearchParams();
+  params.append("hid", localStorage.getItem("hid"));
+  if (prms.source) params.append("source", prms.source);
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/users?${params.toString()}`,
     {
       method: "GET",
       headers: {

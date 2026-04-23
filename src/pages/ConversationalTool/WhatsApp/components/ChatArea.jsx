@@ -75,7 +75,8 @@ const ChatArea = () => {
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
-    selectedConversation?.last_message?.created_at,
+    selectedConversation?.last_message?.created_at ||
+      selectedConversation?.createdAt,
   );
 
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
@@ -324,7 +325,6 @@ const ChatArea = () => {
     };
     try {
       const response = await updateFlowSession(payload);
-      console.log(response);
       if (response?.success) {
         showToast({
           message: response?.responseMessage,
@@ -1065,22 +1065,6 @@ const ChatArea = () => {
               ))}
           </div>
         )}
-
-        {/* {file && (
-          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
-            <div
-              onClick={() => setFile(null)}
-              className="flex justify-center items-center absolute left-1 -top-2 cursor-pointer size-4 bg-red-500 rounded-full text-white text-xs"
-            >
-              X
-            </div>
-            <img
-              src={URL.createObjectURL(file)}
-              alt="file"
-              className="w-40 h-20 rounded-md object-contain"
-            />
-          </div>
-        )} */}
 
         {file && (
           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">

@@ -95,7 +95,7 @@ export default function FlowSettings({ onSave, onCancel, data }) {
     const response = await getWhatsAppFlowScreens();
 
     if (response?.success) {
-      const flowScreens = response?.result?.docs || [];
+      const flowScreens = response?.result?.docs?.flows || [];
 
       const flowIds = flowScreens?.map((flow) => {
         return {
@@ -104,7 +104,7 @@ export default function FlowSettings({ onSave, onCancel, data }) {
           screens: flow.screens,
         };
       });
-      console.log(flowIds);
+
       setFlowIds(flowIds);
     }
   };

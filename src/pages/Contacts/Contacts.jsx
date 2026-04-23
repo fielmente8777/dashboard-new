@@ -1,17 +1,49 @@
 import { useEffect, useState } from "react";
-import { BASE_URL } from "../../data/constant";
-import AddContactPopup from "../../components/Popup/AddContactPopup";
 import { MdDelete } from "react-icons/md";
+import AddContactPopup from "../../components/Popup/AddContactPopup";
+import SendCampaignPopup from "../../components/Popup/SendCampaignPopup";
+import { BASE_URL } from "../../data/constant";
 import { getContacts } from "../../services/api/contact.api";
-import { formatDateByDay, formatDateTime } from "../../utils/formateDate";
+import { formatDateTime } from "../../utils/formateDate";
+
 const Contacts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const [campaignOpen, setCampaignOpen] = useState(false);
+  const [selectedUsersIds, setSelectedUsersIds] = useState([]);
 
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState({});
 
   const [isEdit, setIsEdit] = useState(false);
+
+  const handleSelectContact = (id) => {
+    setSelectedUsersIds((prev) => {
+      const exists = prev.includes(id);
+
+      if (exists) {
+        return prev.filter((c) => c !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleSelectAll = (checked) => {
+    // if (checked) {
+    //   setSelectedContacts((prev) => {
+    //     const newContacts = currentItems.filter(
+    //       (c) => !prev.find((p) => p._id === c._id),
+    //     );
+    //     return [...prev, ...newContacts];
+    //   });
+    // } else {
+    //   setSelectedContacts((prev) =>
+    //     prev.filter((c) => !currentItems.find((ci) => ci._id === c._id)),
+    //   );
+    // }
+  };
 
   const getContactsData = async () => {
     // API call to fetch contacts will be here
@@ -75,20 +107,47 @@ const Contacts = () => {
     <div className="p-2">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold mb-4">Contacts</h2>
-        <button
-          className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
-          onClick={handleAddPopup}
-        >
-          Add new Contact
-        </button>
+
+        <div className="flex gap-2">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
+            onClick={handleAddPopup}
+          >
+            Add new Contact
+          </button>
+
+          <button
+            onClick={() => setCampaignOpen(true)}
+            className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
+          >
+            Send Campaign
+          </button>
+        </div>
+
+        <SendCampaignPopup
+          open={campaignOpen}
+          setOpen={setCampaignOpen}
+          contacts={selectedUsersIds}
+          setContacts={setSelectedUsersIds}
+        />
       </div>
 
       <table className="w-full  text-left bg-primary text-white/90 rounded-sm shadow-sm">
         <thead>
           <tr className="border-b">
             {/* <th className="py-3 px-2 text-[14px] font-medium">Select</th> */}
+
+            <th className="py-3 px-2 text-[14px] font-medium">
+              <input
+                type="checkbox"
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                checked={
+                  currentItems.length > 0 &&
+                  currentItems.every((c) => selectedUsersIds.includes(c.id))
+                }
+              />
+            </th>
             <th className="py-3 px-2 text-[14px] font-medium">#</th>
-            
             <th className="py-3 px-2 text-[14px] font-medium">Created Time</th>
             <th className="py-3 px-2 text-[14px] font-medium">Name</th>
             <th className="py-3 px-2 text-[14px] font-medium">Contact</th>
@@ -106,9 +165,14 @@ const Contacts = () => {
                 onClick={() => handlePopup(row)}
                 className="py-1 border-b odd:bg-gray-50 even:bg-gray-100 text-black"
               >
-                {/* <td className="py-3 px-2">
-                  <input type="checkbox" />
-                </td> */}
+                <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={selectedUsersIds.includes(row._id)}
+                    onChange={() => handleSelectContact(row?._id)}
+                  />
+                </td>
+
                 <td className=" flex-1 py-3 px-2">{index + 1}</td>
 
                 <td className=" flex-1 py-3 px-2">
@@ -121,7 +185,6 @@ const Contacts = () => {
                 <td className=" flex-1 py-3 px-2">{row.phone}</td>
                 <td className=" flex-1 py-3 px-2">{row.email}</td>
 
-                
                 <td className=" flex-1 py-3 px-2 capitalize">
                   {row.added_from}
                   {/* {row.added_from?.toLowerCase() === "eazobot"

@@ -3,12 +3,23 @@ import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 import { useState } from "react";
 import ProfileDropDown from "../components/Popup/ProfileDropDown";
+import { isExpired } from "../utils/isExpired";
+import { useNavigate } from "react-router-dom";
+import { BASE_PATH } from "../data/constant";
+import handleLocalStorage from "../utils/handleLocalStorage";
 
 export default function DashboardLayout({ children }) {
   const [sideBarWidth, setSidebarWidth] = useState(247);
   const [isSmooth, setIsSmooth] = useState(true);
+  const navigate = useNavigate();
 
   const { isOpen } = useSelector((state) => state.toggle);
+
+  // const isExpire = isExpired(PLAN.endDate);
+
+  // if (isExpire) {
+  //   return navigate(`${BASE_PATH}/${localStorage.getItem("hid")}/plans`);
+  // }
 
   return (
     <div className="flex h-screen overflow-hidden">
