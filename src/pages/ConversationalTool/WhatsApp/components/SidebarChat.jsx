@@ -308,6 +308,8 @@ const SidebarChat = () => {
                     )} */}
                   </div>
                 </div>
+
+                <div className="flex justify-end">helo</div>
               </div>
             </div>
           ))
