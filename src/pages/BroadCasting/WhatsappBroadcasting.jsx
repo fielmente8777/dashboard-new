@@ -13,8 +13,9 @@ const campaignHeaders = [
   { key: "templateName", label: "Template" },
   { key: "audience", label: "Audience" },
   { key: "sent", label: "Sent" },
-  { key: "deliveredCount", label: "Delivered" },
   { key: "failedCount", label: "Failed" },
+  { key: "deliveredCount", label: "Delivered" },
+  { key: "readCount", label: "Read" },
   { key: "date", label: "Date" },
   { key: "status", label: "Status" },
 ];
@@ -172,14 +173,19 @@ const WhatsappBroadcasting = () => {
                         </span>
                       </td>
 
+                      {/* Failed */}
+                      <td className="px-3 py-2 text-red-600">
+                        {campaign.failedCount || 0}
+                      </td>
+
                       {/* Delivered */}
                       <td className="px-3 py-2 text-green-600">
                         {campaign.deliveredCount || 0}
                       </td>
 
-                      {/* Failed */}
-                      <td className="px-3 py-2 text-red-600">
-                        {campaign.failedCount || 0}
+                      {/* Read */}
+                      <td className="px-3 py-2 text-green-600">
+                        {campaign.readCount || 0}
                       </td>
 
                       {/* Date */}

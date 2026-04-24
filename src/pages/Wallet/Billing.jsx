@@ -6,23 +6,22 @@ import { NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
 
 const Billing = () => {
-  const [plans, setPlans] =useState([]);
+  const [plans, setPlans] = useState([]);
 
-   const fetchPlans = async () => {
-      try {
-        const response = await axios.get(`${NEW_BASE_URL}/api/v1/subscription/plans`);
-        const data = response.data;
-        setPlans(data?.result?.data); // Assuming the API returns an object with a 'plans' array
-      } catch (error) {
-        console.error("Error fetching plans:", error);
-      }
-    };
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get(
+        `${NEW_BASE_URL}/api/v1/subscription/plans`,
+      );
+      const data = response.data;
+      setPlans(data?.result?.data); // Assuming the API returns an object with a 'plans' array
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+    }
+  };
   useEffect(() => {
     fetchPlans();
   }, []);
-
-
-
 
   return (
     // <div>Billing</div>
@@ -40,7 +39,7 @@ const Billing = () => {
         <div className="bg-white rounded-2xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {plans.slice(1, 4).map((plan, index) => (
-              <PricingCard key={index+1} plan={plan} />
+              <PricingCard key={index + 1} plan={plan} />
             ))}
           </div>
           {/* <div className="mt-20 bg-white rounded-2xl shadow-md p-8"> */}
