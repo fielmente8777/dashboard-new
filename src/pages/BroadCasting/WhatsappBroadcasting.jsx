@@ -7,6 +7,7 @@ import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
 import { getStatusStyle } from "../../utils/getStatusStyle";
 import { formatDateTime } from "../../utils/formateDate";
 import { IoMdRefresh } from "react-icons/io";
+import { FiInbox } from "react-icons/fi";
 
 const campaignHeaders = [
   { key: "name", label: "Campaign Name" },
@@ -26,6 +27,7 @@ const WhatsappBroadcasting = () => {
   const [templates, setTemplates] = useState([]);
   const [filter, setFilter] = useState("all");
   const [isRefresh, setIsRefresh] = useState(false);
+  const [isLoadingCampaign, setIsLoadingCampaign] = useState(false);
 
   // const filteredCampaigns =
   //   filter === "all"
@@ -47,6 +49,7 @@ const WhatsappBroadcasting = () => {
   };
 
   const fetchCampaigns = async () => {
+    setIsLoadingCampaign(true);
     try {
       const response = await getCampaign();
       if (response.success) {
@@ -56,6 +59,7 @@ const WhatsappBroadcasting = () => {
     } catch (err) {
       console.error(err);
     } finally {
+      setIsLoadingCampaign(false);
       setIsRefresh(false);
     }
   };
@@ -133,7 +137,16 @@ const WhatsappBroadcasting = () => {
             </thead>
 
             <tbody>
-              {campaignsData?.length > 0 ? (
+              {isLoadingCampaign ? (
+                <tr>
+                  <td
+                    colSpan={campaignHeaders.length + 1}
+                    className="py-3 px-3 text-center"
+                  >
+                    Loading...
+                  </td>
+                </tr>
+              ) : campaignsData?.length > 0 ? (
                 campaignsData.map((campaign, i) => {
                   const percent =
                     campaign.totalRecipients > 0
@@ -208,11 +221,13 @@ const WhatsappBroadcasting = () => {
                 })
               ) : (
                 <tr>
-                  <td
-                    colSpan={campaignHeaders.length + 1}
-                    className="py-6 text-center"
-                  >
-                    No Campaigns Found
+                  <td colSpan={campaignHeaders.length + 1} className="py-3">
+                    <div className="flex flex-col items-center justify-center text-gray-500">
+                      {/* Title */}
+                      <p className="text-base font-semibold text-gray-400">
+                        No Campaigns Yet
+                      </p>
+                    </div>
                   </td>
                 </tr>
               )}
