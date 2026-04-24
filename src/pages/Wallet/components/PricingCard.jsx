@@ -1,8 +1,82 @@
+import { NEW_BASE_URL } from "../../../data/constant";
+
 const PricingCard = ({ plan }) => {
 
-  const handleUpgrade = (id) => {
+
+function loadRazorpay() {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+  const handleUpgrade =async (id) => {
+    const isLoaded = await loadRazorpay();
+
+  if (!isLoaded) {
+    alert("Razorpay SDK failed to load");
+    return;
+  }
     // Implement upgrade logic here, e.g., redirect to checkout page
     alert(`Upgrading to ${plan.planName} plan with price ₹${plan.price} , plan id: ${id}`);
+
+    // create order 
+
+    try {
+      const response = await fetch(`${NEW_BASE_URL}/api/v1/subscription/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:`Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ amount: plan.price, planId: id }),
+      });
+      const order = await response.json();
+      console.log('Order created:', order);
+
+
+
+    // open razorpay checkout with order details
+      const options = {
+        key: 'rzp_test_UZ0V9jh3jMC0C9', // Replace with your Razorpay API key
+        amount: order.amount, // Amount in paise
+        // currency: order.currency,
+        currency: "INR",
+        name: "Eazotel Technologies Pvt Ltd",
+        description: plan.name,
+        order_id: order.orderId,
+
+        handler: async function (response) {
+          // Handle successful payment here, e.g., verify payment and update subscription status
+          await fetch(`${NEW_BASE_URL}/api/v1/subscription/verify-payment`, {
+            method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({...response, planId: id}),
+            });
+
+            alert("Payment successful");
+            console.log('Payment successful:', response);
+        },
+        prefill: {
+          name: 'Customer Name',
+          email: 'customer@email.com'
+        },
+        theme: {
+          color: '#152547'
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    }
+    catch (error) {
+      console.error('Error creating order:', error);
+    }
   }
   return (
     <div

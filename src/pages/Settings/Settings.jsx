@@ -8,6 +8,7 @@ import Wallet from "../Wallet/Wallet";
 import Notification from "./Notification";
 import Billing from "../Wallet/Billing";
 import { useSearchParams } from "react-router-dom";
+import Subscription from "../Wallet/Subscription";
 
 const Settings = () => {
   const [searchParams] = useSearchParams();
@@ -29,8 +30,9 @@ const Settings = () => {
       component: <Usermanagement />,
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
-    { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
-    { key: "Billing", label: "Billing", component: <Billing /> },
+    // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    // { key: "Billing", label: "Billing", component: <Billing /> },
+    { key: "Subscription", label: "Subscription", component: <Subscription /> },
   ];
   const [activeTab, setActiveTab] = useState(tab || TABS[0].key);
 

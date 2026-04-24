@@ -18,6 +18,7 @@ import DashboardCard from "../../components/Card/DashboardCard";
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
+import Loading from "../../components/Loading";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -81,7 +82,7 @@ const Dashboard = () => {
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
-  if (!data) return <div className="p-6">Loading...</div>;
+  if (!data) return <Loading />;
 
   return (
     <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">

@@ -20,6 +20,10 @@ const Billing = () => {
   useEffect(() => {
     fetchPlans();
   }, []);
+
+
+
+
   return (
     // <div>Billing</div>
     <div className="py-16 max-md:px-4 max-w-7xl  mx-auto ">
