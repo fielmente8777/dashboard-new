@@ -58,10 +58,9 @@ const Navbar = () => {
     }
   }, [dispatch, token]);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const { setAuth, homeNotifications, emergencyNotifications } =
-    useContext(DataContext);
+  const { homeNotifications, emergencyNotifications } = useContext(DataContext);
   const [open, setOpen] = useState(false);
   // const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
   //   useState(false);
@@ -103,8 +102,6 @@ const Navbar = () => {
   //   navigate("/login");
   //   // }, 1000)
   // };
-
-  console.log(hotel);
 
   const onNotificationPopupClose = () => {
     setIsNotificationPopupOpen(false);

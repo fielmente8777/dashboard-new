@@ -12,9 +12,7 @@ export default function CustomDropdown({
   disabled = false,
   ...props
 }) {
-
-
-  console.log("Label",label)
+  console.log("Label", label);
   const [selected, setSelected] = useState(multiple ? [] : label);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
@@ -138,9 +136,7 @@ export default function CustomDropdown({
     };
   }, [open]);
 
-
-
-  console.log(selected)
+  console.log(selected);
 
   return (
     <div className="relative">
@@ -155,7 +151,6 @@ export default function CustomDropdown({
             : "bg-gray-50 text-gray-700 hover:bg-gray-100"
         } ${props.className}`}
       >
-       
         <div className="flex flex-wrap gap-1 flex-1">
           {multiple ? (
             selected.length > 0 ? (
@@ -176,7 +171,7 @@ export default function CustomDropdown({
               <span className="text-gray-400">Select</span>
             )
           ) : (
-            <span>{getLabel(selected) ||"Selct"}</span>
+            <span>{getLabel(selected) || "Selct"}</span>
             // <span>{label?label:""}</span>
           )}
         </div>

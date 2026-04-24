@@ -13,6 +13,7 @@ import {
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import NewContactModal from "./NewContactModal";
+import { FaUser } from "react-icons/fa";
 
 const tabs = ["Active", "Inactive", "Add"];
 
@@ -232,13 +233,19 @@ const SidebarChat = () => {
             >
               {/* Avatar */}
               <div className="relative">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${getAvatarColor(
-                    conv?.name,
-                  )}`}
-                >
-                  {conv?.name?.charAt(0).toUpperCase()}
-                </div>
+                {conv.name ? (
+                  <div
+                    className={`size-10 rounded-full flex items-center justify-center text-white font-medium ${getAvatarColor(
+                      conv?.name,
+                    )}`}
+                  >
+                    {conv?.name?.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <div className="size-10 rounded-full flex items-center justify-center text-white font-medium bg-gray-400">
+                    <FaUser />
+                  </div>
+                )}
 
                 {conv?.unread_count > 0 && (
                   <div className="absolute -top-1 -right-1 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
@@ -254,6 +261,10 @@ const SidebarChat = () => {
                     {conv?.name}
 
                     <span className="text-[10px] mt-1">{conv?.phone}</span>
+
+                    <p className="text-sm text-gray-500 truncate mt-1 w-44">
+                      {conv?.last_message?.text || "No messages yet"}
+                    </p>
                   </p>
 
                   {conv.updatedAt && (
@@ -263,36 +274,40 @@ const SidebarChat = () => {
                   )}
                 </div>
 
-                <div className="flex justify-between">
-                  <p className="text-sm text-gray-500 truncate mt-1 w-44">
-                    {conv?.last_message?.text || "No messages yet"}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
-                      {conv?.adAttribution?.sourceType || "Ad"}
-                    </span>
+                <div className="flex justify-between mt-2">
+                  <div className="flex justify-end text-xs text-green-00 bg-green-200 w-fit px-2 rounded-full">
+                    {conv?.status?.toLowerCase() === "active"
+                      ? "Open"
+                      : conv?.status}
+                  </div>
 
-                    {conv?.adAttribution?.sourceUrl ? (
-                      conv?.adAttribution?.sourceUrl.match(
-                        /^https:\/\/www.instagram.com/,
-                      ) ? (
-                        <InstaICon />
-                      ) : conv?.adAttribution?.sourceUrl.match(
-                          /^https:\/\/www.facebook.com/,
+                  <div className="flex justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
+                        {conv?.adAttribution?.sourceType || "Ad"}
+                      </span>
+
+                      {conv?.adAttribution?.sourceUrl ? (
+                        conv?.adAttribution?.sourceUrl.match(
+                          /^https:\/\/www.instagram.com/,
                         ) ? (
-                        <FacebookIcon />
-                      ) : conv?.adAttribution?.sourceUrl.match(
-                          /^https:\/\/wa.me/,
-                        ) ? (
-                        <WhatsappIcon />
+                          <InstaICon />
+                        ) : conv?.adAttribution?.sourceUrl.match(
+                            /^https:\/\/www.facebook.com/,
+                          ) ? (
+                          <FacebookIcon />
+                        ) : conv?.adAttribution?.sourceUrl.match(
+                            /^https:\/\/wa.me/,
+                          ) ? (
+                          <WhatsappIcon />
+                        ) : (
+                          ""
+                        )
                       ) : (
-                        ""
-                      )
-                    ) : (
-                      <GoogleAdsIcon />
-                    )}
+                        <GoogleAdsIcon />
+                      )}
 
-                    {/* {conv?.adAttribution?.sourceUrl &&
+                      {/* {conv?.adAttribution?.sourceUrl &&
                     conv?.adAttribution?.sourceUrl.startsWith(
                       "https://www.instagram.com",
                     ) ? (
@@ -306,10 +321,9 @@ const SidebarChat = () => {
                     ) : (
                       <GoogleAdsIcon />
                     )} */}
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex justify-end">helo</div>
               </div>
             </div>
           ))

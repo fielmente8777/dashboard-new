@@ -1,119 +1,68 @@
-import { useState, useEffect } from "react";
-import { createWhatsappCampaignService } from "../../services/api/broadcast.api";
+import { useEffect, useState } from "react";
+import {
+  getCampaign,
+  getWhatsAppMessageTemplates,
+} from "../../services/api/whatsApp";
+import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
+import { getStatusStyle } from "../../utils/getStatusStyle";
+import { formatDateTime } from "../../utils/formateDate";
+import { IoMdRefresh } from "react-icons/io";
 
-const MESSAGE_LIMIT = 1000; // Tier 1 Limit
-const campaignsData = [
-  {
-    id: 1,
-    name: "Summer Offer 20% OFF",
-    channel: "WhatsApp",
-    audience: "All Leads",
-    sent: 1250,
-    delivered: 1180,
-    status: "sent",
-    date: "25 Feb 2026",
-  },
-  {
-    id: 2,
-    name: "Hotel Festive Promo",
-    channel: "WhatsApp",
-    audience: "New Users",
-    sent: 0,
-    delivered: 0,
-    status: "scheduled",
-    date: "02 Mar 2026",
-  },
-  {
-    id: 3,
-    name: "Last Minute Deal",
-    channel: "WhatsApp",
-    audience: "Website Visitors",
-    sent: 540,
-    delivered: 320,
-    status: "inprogress",
-    date: "27 Feb 2026",
-  },
+const campaignHeaders = [
+  { key: "name", label: "Campaign Name" },
+  { key: "templateName", label: "Template" },
+  { key: "audience", label: "Audience" },
+  { key: "sent", label: "Sent" },
+  { key: "deliveredCount", label: "Delivered" },
+  { key: "failedCount", label: "Failed" },
+  { key: "date", label: "Date" },
+  { key: "status", label: "Status" },
 ];
+
 const WhatsappBroadcasting = () => {
+  const [campaignsData, setCampaignsData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-
-  const [campaignName, setCampaignName] = useState("");
-  const [templateType, setTemplateType] = useState("utility");
-
-  const [audienceFilter, setAudienceFilter] = useState("last30days");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [source, setSource] = useState("");
-
-  const [estimatedUsers, setEstimatedUsers] = useState(0);
-
-  const pricing = {
-    utility: 0.05,
-    marketing: 0.1,
-  };
-
-  // 🔥 Simulate fetching audience count from backend
-  useEffect(() => {
-    const fetchAudienceCount = async () => {
-      // Replace with real API call
-      let count = Math.floor(Math.random() * 2500) + 100;
-      setEstimatedUsers(count);
-    };
-
-    fetchAudienceCount();
-  }, [audienceFilter, startDate, endDate, source]);
-
-  const totalPrice = estimatedUsers * pricing[templateType];
-  const exceedsLimit = estimatedUsers > MESSAGE_LIMIT;
-
-  const createWhatsappCampaign = async () => {
-    try {
-      if (exceedsLimit) {
-        alert("Audience exceeds Tier 1 limit (1000 users). Please split campaign.");
-        return;
-      }
-
-      const payload = {
-        campaignName,
-        templateType,
-        audienceFilter,
-        startDate,
-        endDate,
-        source,
-        estimatedUsers,
-        totalPrice,
-      };
-
-      const response = await createWhatsappCampaignService(payload);
-      console.log(response);
-
-      setIsOpen(false);
-    } catch (error) {
-      console.log("Error creating campaign", error);
-    }
-  };
-
-
-
+  const [templates, setTemplates] = useState([]);
   const [filter, setFilter] = useState("all");
+  const [isRefresh, setIsRefresh] = useState(false);
 
-  const filteredCampaigns =
-    filter === "all"
-      ? campaignsData
-      : campaignsData.filter((c) => c.status === filter);
+  // const filteredCampaigns =
+  //   filter === "all"
+  //     ? campaignsData
+  //     : campaignsData.filter((c) => c.status === filter);
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "sent":
-        return "bg-green-100 text-green-700";
-      case "scheduled":
-        return "bg-yellow-100 text-yellow-700";
-      case "inprogress":
-        return "bg-blue-100 text-blue-700";
-      default:
-        return "bg-gray-100 text-gray-600";
+  const fetchTemplates = async () => {
+    try {
+      // setIsTemplateLoading(true);
+      const response = await getWhatsAppMessageTemplates();
+      if (response.success) {
+        setTemplates(response?.result?.docs?.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      // setIsTemplateLoading(false);
     }
   };
+
+  const fetchCampaigns = async () => {
+    try {
+      const response = await getCampaign();
+      if (response.success) {
+        setCampaignsData(response?.result?.docs?.campaigns || []);
+        // setTemplates(response?.result?.docs?.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsRefresh(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCampaigns();
+    fetchTemplates();
+  }, []);
 
   return (
     <div className="p-6">
@@ -131,229 +80,202 @@ const WhatsappBroadcasting = () => {
       <hr className="mt-4" />
 
       <div className="py-4 bg-gray-50 min-h-screen">
-     
+        {/* Filters */}
+        <div className="flex justify-between items-center">
+          <div className="flex mb-2">
+            {["all", "sent", "scheduled", "inprogress"].map((item) => (
+              <button
+                key={item}
+                onClick={() => setFilter(item)}
+                className={`px-4 py-2 font-medium text-sm capitalize ${
+                  filter === item
+                    ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
+                    : "bg-white border !border-white text-gray-600"
+                }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
 
-      {/* Filters */}
-      <div className="flex mb-2">
-        {["all", "sent", "scheduled", "inprogress"].map((item) => (
           <button
-            key={item}
-            onClick={() => setFilter(item)}
-            className={`px-4 py-2 font-medium text-sm capitalize ${
-              filter === item
-                ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
-                : "bg-white border !border-white text-gray-600"
-            }`}
+            disabled={isRefresh}
+            onClick={() => {
+              fetchCampaigns();
+              setIsRefresh(!isRefresh);
+            }}
+            className="border px-4 py-2 bg-primary text-white rounded-md text-sm flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed!"
           >
-            {item}
+            <span className={`${isRefresh && "animate-spin"}`}>
+              <IoMdRefresh size={20} />
+            </span>{" "}
+            Refresh
           </button>
-        ))}
-      </div>
-
-      {/* Campaign Table */}
-      <div className="bg-white border-l border-r border-t mt-4">
-        <div className="grid grid-cols-6 p-4 border-b text-sm font-medium text-gray-500">
-          <div>Campaign Name</div>
-          <div>Channel</div>
-          <div>Audience</div>
-          <div>Sent</div>
-          <div>Date</div>
-          <div>Status</div>
         </div>
 
-        {filteredCampaigns.map((campaign) => (
-          <div
-            key={campaign.id}
-            className="grid grid-cols-6 p-4 border-b text-sm hover:bg-gray-50"
-          >
-            <div className="font-medium text-gray-800">
-              {campaign.name}
-            </div>
-            <div>{campaign.channel}</div>
-            <div>{campaign.audience}</div>
-            <div>{campaign.sent}</div>
-            <div>{campaign.date}</div>
-            <div>
-              <span
-                className={`px-3 py-1 text-xs rounded-full capitalize ${getStatusStyle(
-                  campaign.status
-                )}`}
-              >
-                {campaign.status}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
-          <div className="bg-white w-[600px] p-6 rounded-xl">
-            <h2 className="text-lg font-semibold mb-4">
-              Create WhatsApp Campaign
-            </h2>
+        {/* Campaign Table */}
+        <div className="border rounded-lg overflow-x-auto hide-scrollba mt-6">
+          <table className="min-w-full text-sm">
+            <thead className="bg-primary sticky top-0 z-10">
+              <tr>
+                <th className="px-3 py-3 text-white">#</th>
 
-            {/* Campaign Name */}
-            <div className="mb-4">
-              <label className="block mb-1">Campaign Name</label>
-              <input
-                className="w-full border p-2 rounded-md"
-                value={campaignName}
-                onChange={(e) => setCampaignName(e.target.value)}
-              />
-            </div>
+                {campaignHeaders.map((h) => (
+                  <th
+                    key={h.key}
+                    className="px-3 py-3 text-left text-white min-w-40"
+                  >
+                    {h.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-            {/* Template Type */}
-            <div className="mb-4">
-              <label className="block mb-1">Template Type</label>
-              <select
-                className="w-full border p-2 rounded-md"
-                value={templateType}
-                onChange={(e) => setTemplateType(e.target.value)}
-              >
-                <option value="utility">Utility</option>
-                <option value="marketing">Marketing</option>
-              </select>
-            </div>
+            <tbody>
+              {campaignsData?.length > 0 ? (
+                campaignsData.map((campaign, i) => {
+                  const percent =
+                    campaign.totalRecipients > 0
+                      ? Math.round(
+                          (campaign.sentCount / campaign.totalRecipients) * 100,
+                        )
+                      : 0;
 
-            {/* Audience Filter */}
-            <div className="mb-4">
-              <label className="block mb-1">Audience Based On</label>
-              <select
-                className="w-full border p-2 rounded-md"
-                value={audienceFilter}
-                onChange={(e) => setAudienceFilter(e.target.value)}
-              >
-                <option value="last30days">Last 30 Days</option>
-                <option value="dateRange">Custom Date Range</option>
-              </select>
-            </div>
+                  return (
+                    <tr
+                      key={campaign._id}
+                      className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50"
+                    >
+                      {/* Index */}
+                      <td className="px-3 py-2">
+                        {(i + 1).toString().padStart(2, "0")}
+                      </td>
 
-            {/* Date Range */}
-            {audienceFilter === "dateRange" && (
-              <div className="flex gap-3 mb-4">
-                <input
-                  type="date"
-                  className="border p-2 rounded-md w-full"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="border p-2 rounded-md w-full"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </div>
-            )}
+                      {/* Campaign Name */}
+                      <td className="px-3 py-2 font-medium text-gray-800">
+                        {campaign.name}
+                      </td>
 
-            {/* Source */}
-            <div className="mb-4">
-              <label className="block mb-1">Source</label>
-              <select
-                className="w-full border p-2 rounded-md"
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-              >
-                <option value="">All Sources</option>
-                <option value="google_ads">Google Ads</option>
-                <option value="meta">Meta Leads</option>
-                <option value="website">Website</option>
-                <option value="eazbot">Eazbot</option>
-                <option value="webform">Webform</option>
-              </select>
-            </div>
+                      {/* Template */}
+                      <td className="px-3 py-2">
+                        {campaign.templateName || "-"}
+                      </td>
 
-            {/* Estimated Users */}
-            <div className="mb-2 text-sm">
-              <strong>Estimated Users:</strong> {estimatedUsers}
-            </div>
+                      {/* Audience */}
+                      <td className="px-3 py-2">{campaign.totalRecipients}</td>
 
-            {exceedsLimit && (
-              <div className="mb-2 text-red-600 text-sm">
-                ⚠ Tier 1 limit exceeded (1000 users/day). 
-                You must split this campaign.
-              </div>
-            )}
+                      {/* Sent */}
+                      <td className="px-3 py-2">
+                        {campaign.sentCount}/{campaign.totalRecipients}
+                        <span className="text-xs text-gray-600 ml-1">
+                          ({percent}%)
+                        </span>
+                      </td>
 
-            {/* Price */}
-            <div className="mb-4 text-sm">
-              <strong>Total Price:</strong> ${totalPrice.toFixed(2)}
-            </div>
+                      {/* Delivered */}
+                      <td className="px-3 py-2 text-green-600">
+                        {campaign.deliveredCount || 0}
+                      </td>
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="border px-4 py-2 rounded-md"
-              >
-                Cancel
-              </button>
+                      {/* Failed */}
+                      <td className="px-3 py-2 text-red-600">
+                        {campaign.failedCount || 0}
+                      </td>
 
-              <button
-                onClick={createWhatsappCampaign}
-                disabled={!campaignName || exceedsLimit}
-                className="bg-green-600 text-white px-4 py-2 rounded-md disabled:bg-gray-400"
-              >
-                Create Campaign
-              </button>
-            </div>
-          </div>
+                      {/* Date */}
+                      <td className="px-3 py-2 whitespace-nowrap">
+                        {formatDateTime(campaign.createdAt)}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-3 py-2">
+                        <span
+                          className={`px-3 py-1 rounded-full capitalize ${getStatusStyle(
+                            campaign.status,
+                          )}`}
+                        >
+                          {campaign.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td
+                    colSpan={campaignHeaders.length + 1}
+                    className="py-6 text-center"
+                  >
+                    No Campaigns Found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
+
+      <CreateWhatsAppCampaign
+        templates={templates}
+        onClose={() => setIsOpen(false)}
+        open={isOpen}
+      />
     </div>
   );
 };
 
 export default WhatsappBroadcasting;
 
+{
+  /* Template Type */
+}
+// <div className="mb-4">
+//   <label className="block text-sm font-medium mb-1">
+//     Template Type
+//   </label>
+//   <select
+//     value={templateType}
+//     onChange={(e) => setTemplateType(e.target.value)}
+//     className="w-full border rounded-md p-2"
+//   >
+//     <option value="utility">Utility</option>
+//     <option value="marketing">Marketing</option>
+//   </select>
+// </div>
 
+{
+  /* Template */
+}
+//           <div className="mb-4">
+//             <label className="text-sm font-medium text-gray-700">
+//               Select Template
+//             </label>
 
- {/* Template Type */}
-            // <div className="mb-4">
-            //   <label className="block text-sm font-medium mb-1">
-            //     Template Type
-            //   </label>
-            //   <select
-            //     value={templateType}
-            //     onChange={(e) => setTemplateType(e.target.value)}
-            //     className="w-full border rounded-md p-2"
-            //   >
-            //     <option value="utility">Utility</option>
-            //     <option value="marketing">Marketing</option>
-            //   </select>
-            // </div>
+//             <select
+//               value={templateName}
+//               onChange={(e) => setTemplateName(e.target.value)}
+//               className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
+//             >
+//               <option value="">Select template</option>
 
-            {/* Template */}
-  //           <div className="mb-4">
-  //             <label className="text-sm font-medium text-gray-700">
-  //               Select Template
-  //             </label>
-
-  //             <select
-  //               value={templateName}
-  //               onChange={(e) => setTemplateName(e.target.value)}
-  //               className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-  //             >
-  //               <option value="">Select template</option>
-
-  //               {templates?.map((tpl) => (
-  //                 <option key={tpl.name} value={tpl.name}>
-  //                   {tpl.name}
-  //                 </option>
-  //               ))}
-  //             </select>
-  //           </div>
-  // useEffect(()=>{
-  //   fetchTemplate();
-  // },[])
-  // const [templates, setTemplates] = useState([]);
-  // const fetchTemplate = async () => {
-  //     try {
-  //       const response = await getWhatsAppMessageTemplates();
-  //       if (response.success) {
-  //         setTemplates(response?.result?.docs?.data || []);
-  //       }
-  //     } catch (error) {
-  //       console.log("Error", error);
-  //     }
-  // };
+//               {templates?.map((tpl) => (
+//                 <option key={tpl.name} value={tpl.name}>
+//                   {tpl.name}
+//                 </option>
+//               ))}
+//             </select>
+//           </div>
+// useEffect(()=>{
+//   fetchTemplate();
+// },[])
+// const [templates, setTemplates] = useState([]);
+// const fetchTemplate = async () => {
+//     try {
+//       const response = await getWhatsAppMessageTemplates();
+//       if (response.success) {
+//         setTemplates(response?.result?.docs?.data || []);
+//       }
+//     } catch (error) {
+//       console.log("Error", error);
+//     }
+// };

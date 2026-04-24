@@ -156,7 +156,7 @@ export const updateWhatsAppProfile = async (payload) => {
 
 export const createWhatsAppMessageTemplate = async (payload) => {
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/create`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/create?hid=${localStorage.getItem("hid")}`,
     {
       method: "POST",
       headers: {
@@ -327,14 +327,31 @@ export const getWhatsAppFlowScreens = async () => {
   return data;
 };
 
-export const broadCastCampaign = async (payload) => {
+export const getCampaign = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+  console.log(data);
+  return data;
+};
+
+export const createCampaign = async (payload) => {
   const params = new URLSearchParams();
   params.append("hid", localStorage.getItem("hid"));
 
   // if(payload?.sou) params.append("from", payload?.from);
 
   const response = await fetch(
-    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/send?${params.toString()}`,
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/create?${params.toString()}`,
     {
       method: "POST",
       headers: {
@@ -347,7 +364,6 @@ export const broadCastCampaign = async (payload) => {
   const data = await response.json();
   return data;
 };
-
 export const getCampaignUsers = async (prms) => {
   const params = new URLSearchParams();
   params.append("hid", localStorage.getItem("hid"));

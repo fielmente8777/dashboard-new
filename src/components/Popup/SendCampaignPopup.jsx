@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  broadCastCampaign,
   getCampaignUsers,
   getWhatsAppMessageTemplates,
 } from "../../services/api/whatsApp";
@@ -60,7 +59,7 @@ const SendCampaignPopup = ({ open, setOpen, contacts, setContacts }) => {
 
       console.log(payload);
 
-      const response = await broadCastCampaign(payload);
+      // const response = await broadCastCampaign(payload);
 
       // const data = await res.json();
 

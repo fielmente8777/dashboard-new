@@ -1,8 +1,11 @@
 export const isExpired = (endDate) => {
   if (!endDate) return true;
 
-  const now = new Date();
-  const expiry = new Date(endDate);
+  const now = new Date().getTime();
+  const expiry = new Date(endDate).getTime();
 
-  return expiry < now;
+  console.log("now", now);
+  console.log("expiry", expiry);
+
+  return expiry <= now;
 };
