@@ -120,7 +120,7 @@ const Setting = () => {
   return (
     <div>
       <div className="bg-gray-100 p-5 space-y-5">
-        <div className="max-w-full mx-auto bg-white p-8 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-4">
+        <div className="max-w-full mx-auto bg-white p-8 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
           {/* Profile info */}
 
           {/* user type and email */}
@@ -146,7 +146,7 @@ const Setting = () => {
 
             <div className="">
               <p className="text-gray-800 font-medium">{profile.hotelName}</p>
-              <p className="text-sm text-gray-600 break-words">
+              <p className="text-sm text-gray-600 wrap-break-word">
                 {profile.hotelDescription}{" "}
               </p>
             </div>
@@ -167,16 +167,16 @@ const Setting = () => {
             </p>
           </div>
           {/* Subscription */}
-          <div className="space-y-1">
+          {/* <div className="space-y-1">
             <div className="flex gap-4">
               <h3 className="font-semibold text-gray-700">Subscription Plan</h3>
-              <p className="text-gray-800 font-medium">{profile.plan?.name}</p>
+              <p className="text-gray-800 font-medium">{hotel?.SubscriptionDetails?.planId.planName}</p>
             </div>
             <p className="text-sm text-gray-500">
               <b>Active from :</b> {profile.plan?.activationDate} to{" "}
               {profile.plan?.expiryDate}
             </p>
-          </div>
+          </div> */}
 
           {/* <div>
               <select

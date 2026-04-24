@@ -93,4 +93,5 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
     --color-text-gray: #747474;
     --color-text-light: #ABABAB;
     --color-text-black: #363636;
+    --gradient-hero: linear-gradient(135deg, oklch(0.255 0.065 264) 0%, oklch(0.32 0.08 270) 50%, oklch(0.685 0.205 38) 130%);
 } 
