@@ -21,7 +21,8 @@ const NewContactModal = ({ templates = [], onClose }) => {
   const [countryCode, setCountryCode] = useState("+91");
   const [phone, setPhone] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [variables, setVariables] = useState({});
+  const [variables, setVariables] = useState([]);
+  const [headerVaribales, setHeaderVariables] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const bodyText = useMemo(() => {
@@ -33,13 +34,27 @@ const NewContactModal = ({ templates = [], onClose }) => {
   const handleTemplateSelect = (tpl) => {
     setSelectedTemplate(tpl);
 
-    const vars = extractVariables(
-      tpl.components?.find((c) => c.type === "BODY")?.text || "",
-    );
+    console.log(tpl);
 
-    const initVars = {};
-    vars.forEach((v) => (initVars[v] = ""));
-    setVariables(initVars);
+    const bodyVars =
+      tpl.components?.find((c) => c.type === "BODY")?.example?.body_text?.[0] ||
+      [];
+
+    const headerVars =
+      tpl.components?.find((c) => c.type === "HEADER")?.example?.header_text ||
+      [];
+
+    setHeaderVariables(() => [...headerVars]);
+    setVariables(() => [...bodyVars]);
+
+    // const headerVars = tpl.;
+
+    // const initVars = {};
+    // const initHeaderVars = {};
+    // vars.forEach((v) => (initVars[v] = ""));
+    // headerVars.forEach((v) => (initHeaderVars[v] = ""));
+    // setVariables(initVars);
+    // setHeaderVariables(initHeaderVars);
   };
 
   const handleSend = async () => {
@@ -53,15 +68,17 @@ const NewContactModal = ({ templates = [], onClose }) => {
         phone: `${normalizeCountryCode}${phone}`,
         templateName: selectedTemplate.name,
         templateLanguage: selectedTemplate.language || "en",
-        templateParams: Object.keys(variables)
-          .sort((a, b) => Number(a) - Number(b))
-          .map((k) => variables[k]),
+        templateParams: variables,
+        templateParamsHeader: headerVaribales,
       });
       onClose();
     } finally {
       setLoading(false);
     }
   };
+
+  console.log(variables);
+  console.log(headerVaribales);
 
   return (
     <div className="fixed inset-0 z-999999999 flex items-center justify-center bg-black/40">

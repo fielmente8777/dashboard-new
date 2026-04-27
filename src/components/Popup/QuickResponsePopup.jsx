@@ -9,6 +9,7 @@ import {
   renderTemplatePreview,
 } from "../../utils/whatsappTemplate";
 import { IoArrowBack } from "react-icons/io5";
+import TemplatePreview from "../../pages/Channels/Whatsapp/components/TemplatePreview";
 
 // Step 1: Define channels
 const channels = [
@@ -69,91 +70,91 @@ const TemplateCard = ({ template, selected, onSelect }) => {
   );
 };
 
-const TemplatePreview = ({ template, values, setValues }) => {
-  const handleChange = (key, value) => {
-    setValues((prev) => ({ ...prev, [key]: value }));
-  };
+// const TemplatePreview = ({ template, values, setValues }) => {
+//   const handleChange = (key, value) => {
+//     setValues((prev) => ({ ...prev, [key]: value }));
+//   };
 
-  const renderedText = renderTemplatePreview(template.body, values);
+//   const renderedText = renderTemplatePreview(template.body, values);
 
-  return (
-    <div className=" rounded mt-4">
-      <div className="">
-        {/* message preview  */}
-        <div className="flex-1">
-          <div className="flex justify-end mb-4">
-            <div className="relative max-w-90 w-full rounded-2xl rounded-br-sm bg-[#e7fce3] px-4 py-3 shadow-sm">
-              {/* message text */}
-              <p className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
-                {renderedText}
-              </p>
+//   return (
+//     <div className=" rounded mt-4">
+//       <div className="">
+//         {/* message preview  */}
+//         <div className="flex-1">
+//           <div className="flex justify-end mb-4">
+//             <div className="relative max-w-90 w-full rounded-2xl rounded-br-sm bg-[#e7fce3] px-4 py-3 shadow-sm">
+//               {/* message text */}
+//               <p className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
+//                 {renderedText}
+//               </p>
 
-              {/* time + ticks */}
-              <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-gray-500">
-                <span>10:30 AM</span>
-                <svg
-                  width="16"
-                  height="10"
-                  viewBox="0 0 16 10"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M1 5L4 8L9 2"
-                    stroke="#4ade80"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6 5L9 8L14 2"
-                    stroke="#4ade80"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
+//               {/* time + ticks */}
+//               <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-gray-500">
+//                 <span>10:30 AM</span>
+//                 <svg
+//                   width="16"
+//                   height="10"
+//                   viewBox="0 0 16 10"
+//                   fill="none"
+//                   xmlns="http://www.w3.org/2000/svg"
+//                 >
+//                   <path
+//                     d="M1 5L4 8L9 2"
+//                     stroke="#4ade80"
+//                     strokeWidth="1.5"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                   />
+//                   <path
+//                     d="M6 5L9 8L14 2"
+//                     stroke="#4ade80"
+//                     strokeWidth="1.5"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                   />
+//                 </svg>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
 
-        {/* Variable Inputs */}
-        <div className="w-full ">
-          {/* Variable Inputs */}
-          {template.variables.length > 0 && (
-            <div className=" ">
-              <p className="text-sm font-medium mb-2">Variables</p>
+//         {/* Variable Inputs */}
+//         <div className="w-full ">
+//           {/* Variable Inputs */}
+//           {template.variables.length > 0 && (
+//             <div className=" ">
+//               <p className="text-sm font-medium mb-2">Variables</p>
 
-              <div className="grid grid-cols-4 gap-2">
-                {template &&
-                  template.variables?.length > 0 &&
-                  template.variables.map((v) => {
-                    const index = v.replace(/[{}]/g, "");
-                    return (
-                      <div className="relative max-w-40">
-                        <input
-                          key={v}
-                          type="text"
-                          placeholder={`Value for {{${index}}}`}
-                          className="w-full border rounded p-2 outline-none border-gray-200 focus:border-gray-300! focus:border-2"
-                          onChange={(e) => handleChange(index, e.target.value)}
-                        />
+//               <div className="grid grid-cols-4 gap-2">
+//                 {template &&
+//                   template.variables?.length > 0 &&
+//                   template.variables.map((v) => {
+//                     const index = v.replace(/[{}]/g, "");
+//                     return (
+//                       <div className="relative max-w-40">
+//                         <input
+//                           key={v}
+//                           type="text"
+//                           placeholder={`Value for {{${index}}}`}
+//                           className="w-full border rounded p-2 outline-none border-gray-200 focus:border-gray-300! focus:border-2"
+//                           onChange={(e) => handleChange(index, e.target.value)}
+//                         />
 
-                        <span className="absolute left-0 -top-3 text-red-500 text-xl">
-                          *
-                        </span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
+//                         <span className="absolute left-0 -top-3 text-red-500 text-xl">
+//                           *
+//                         </span>
+//                       </div>
+//                     );
+//                   })}
+//               </div>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
 // Main Component
 const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
@@ -172,11 +173,11 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
   const [selectedTab, setSelectedTab] = useState("text");
   const [text, setText] = useState("");
   const [values, setValues] = useState({});
+  // const [headerVariables, setHeaderVariables] = useState([]);
+  // const [bodyVariables, setBodyVariables] = useState([]);
 
   const handleSend = async () => {
     const phone = normalizePhone(lead.Contact);
-
-    console.log(values);
 
     const payload = {
       phone,
@@ -189,9 +190,17 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
     if (selectedTab === "whatsapp templates") {
       payload.templateLanguage = selectedTemplate.language;
       payload.templateName = selectedTemplate.name;
-      payload.templateParams = Object.values(values)
-        ?.map((v) => v.trim())
-        ?.filter(Boolean);
+      // payload.templateParams = Object.values(values)
+      //   ?.map((v) => v.trim())
+      //   ?.filter(Boolean);
+
+      payload.templateParams =
+        selectedTemplate?.components?.find((c) => c.type === "BODY")?.example
+          ?.body_text[0] || [];
+
+      payload.templateParamsHeader =
+        selectedTemplate?.components?.find((c) => c.type === "HEADER")?.example
+          ?.header_text || [];
 
       if (
         payload?.templateParams?.length < selectedTemplate?.variables?.length
@@ -220,7 +229,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-99999">
       <div className="bg-white rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
         {/* Left Panel */}
         <div className="md:w-64 w-full bg-gray-100 p-4 space-y-6">
@@ -281,7 +290,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
           {selectedTab === "whatsapp templates" && (
             <div className="space-y-2 max-h-90 overflow-y-auto">
               {!selectedTemplate &&
-                normalizeTemplates?.map((template) => (
+                templates?.map((template) => (
                   <TemplateCard
                     key={template.id}
                     template={template}
@@ -307,9 +316,20 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
 
                   {selectedTemplate && (
                     <TemplatePreview
-                      template={selectedTemplate}
-                      values={values}
-                      setValues={setValues}
+                      components={selectedTemplate?.components}
+                      // headerVariables={
+                      //   selectedTemplate?.components?.find(
+                      //     (c) => c.type === "HEADER",
+                      //   ).example?.header_text || []
+                      // }
+                      // bodyVariables={
+                      //   selectedTemplate?.components?.find(
+                      //     (c) => c.type === "BODY",
+                      //   ).example?.body_text[0] || []
+                      // }
+                      // bodyVariables={bodyVariables}
+                      // values={values}
+                      // setValues={setValues}
                     />
                   )}
 

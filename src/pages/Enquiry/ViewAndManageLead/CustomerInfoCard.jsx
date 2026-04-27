@@ -219,14 +219,15 @@ const CustomerInfoCard = ({ lead, onClick }) => {
 
         {lead?.source_url && (
           <Link
+            style={{
+              wordBreak: "break-all",
+            }}
             target="_blank"
             to={lead.source_url}
-            className="text-sm text-gray-500 mt-4 inline-block"
+            className="text-sm mt-4 whitespace-pre-wrap text-blue-500"
           >
-            <strong>Source:</strong>{" "}
-            <span className="text-primary underline text-xs">
-              {lead.source_url.slice(0, 70)}…
-            </span>
+            <strong className="text-gray-500 ">Source:</strong>{" "}
+            {lead.source_url}
           </Link>
         )}
       </div>

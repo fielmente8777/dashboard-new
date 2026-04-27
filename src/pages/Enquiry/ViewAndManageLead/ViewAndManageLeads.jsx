@@ -317,7 +317,16 @@ const ViewAndManageLeads = () => {
             {lead?.other_details && (
               <OtherDetailsCard otherDetails={lead?.other_details} />
             )}
-            <NotesCard lead={lead} setLead={setLead} />
+
+            <div className="space-y-2">
+              {lead?.Message && (
+                <div className="bg-white p-4 rounded-md space-y-2">
+                  <h3 className="font-semibold text-gray-800">Message</h3>
+                  <p className="text-sm"> {lead?.Message}</p>
+                </div>
+              )}
+              <NotesCard lead={lead} setLead={setLead} />
+            </div>
 
             {lead?.chats?.length > 0 && (
               <ConversationsCard chats={lead?.chats} />

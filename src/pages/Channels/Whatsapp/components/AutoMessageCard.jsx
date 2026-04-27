@@ -90,7 +90,6 @@ const AutoMessageCard = ({
 
   // ---------------- UPDATE ----------------
   const updateConfig = (module, key, value) => {
-    console.log("updateConfig", module, key, value);
     setConfigs((prev) => {
       // ✅ Sync only if apply-all is ON
       if (applyToAll) {
@@ -130,7 +129,10 @@ const AutoMessageCard = ({
       name: tpl.name,
       language: tpl.language || "en",
       bodyText: body?.text || "",
-      variables: (body?.text?.match(/{{\d+}}/g) || []).length,
+      variables: body?.example?.body_text?.[0] || [],
+      headerVariables: header?.example?.header_text || [],
+      // variables: (body?.text?.match(/{{\d+}}/g) || []).length,
+      // headerVariables: header?.text?.match(/{{\d+}}/g) || [],
       headerType: header?.format || null,
       buttons: buttons?.buttons || [],
     };
@@ -206,7 +208,7 @@ const AutoMessageCard = ({
               className="w-full border px-3 py-2 rounded-md text-sm"
             >
               <option value="template">Template</option>
-              <option value="text">Text</option>
+              {/* <option value="text">Text</option> */}
               {label.toLowerCase() === "whatsapp" && (
                 <option value="flow">Flow</option>
               )}

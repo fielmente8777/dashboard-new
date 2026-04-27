@@ -12,7 +12,6 @@ export default function CustomDropdown({
   disabled = false,
   ...props
 }) {
-  console.log("Label", label);
   const [selected, setSelected] = useState(multiple ? [] : label);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
@@ -135,8 +134,6 @@ export default function CustomDropdown({
       window.removeEventListener("resize", updatePosition);
     };
   }, [open]);
-
-  console.log(selected);
 
   return (
     <div className="relative">

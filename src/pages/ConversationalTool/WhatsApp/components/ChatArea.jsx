@@ -133,7 +133,12 @@ const ChatArea = () => {
     try {
       if (selectedTemplate) {
         const templateParams =
-          selectedTemplate.components?.[0]?.example?.body_text?.[0] || [];
+          selectedTemplate?.components?.find((c) => c.type === "BODY")?.example
+            ?.body_text?.[0] || [];
+
+        const templateParamsHeader =
+          selectedTemplate?.components?.find((c) => c.type === "HEADER")
+            ?.example?.header_text || [];
 
         const templateText =
           selectedTemplate.components?.find((c) => c.type === "BODY")?.text ||
@@ -151,6 +156,7 @@ const ChatArea = () => {
           templateName: selectedTemplate.name,
           templateLanguage: selectedTemplate.language || "en",
           templateParams: templateParams,
+          templateParamsHeader: templateParamsHeader,
         };
 
         const optimisticMessage = {
@@ -263,6 +269,7 @@ const ChatArea = () => {
       console.error(error);
     }
   };
+  console.log(selectedTemplate);
 
   const loadMessages = async (conversationId) => {
     setLoadingMessages(true);
@@ -673,6 +680,7 @@ const ChatArea = () => {
                         <div className="mt-4">
                           {/* TEXT */}
                           {(message.messageType === "text" ||
+                            message?.messageType === "unsupported" ||
                             message?.messageType === "interactive") &&
                             message.body && (
                               <div className="max-w-xs ml-auto mt-3">
@@ -943,6 +951,11 @@ const ChatArea = () => {
                                     <BsCheckAll size={18} />
                                   </span>
                                 )}{" "}
+                                {message.status === "failed" && (
+                                  <span className="text-red-500 flex items-center">
+                                    failed <FiX />
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>
@@ -1047,7 +1060,7 @@ const ChatArea = () => {
         className="bg-white border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
-          <div className=" mb-2 grid grid-cols-2 lg:grid-cols-4 max-h-50  gap-2 overflow-auto scrollbar-hidden">
+          <div className="mb-2 grid grid-cols-2 lg:grid-cols-4 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
             {templates?.length > 0 &&
               templates?.map((template) => (
                 <div

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FaPhone } from "react-icons/fa";
+import { FaPhone, FaWhatsapp } from "react-icons/fa";
 // import CallDetails from "./CallDetails";
 import { IoIosClose, IoIosPlayCircle } from "react-icons/io";
 import { MdRefresh } from "react-icons/md";
@@ -35,6 +35,9 @@ import CustomDropdown2 from "../../components/ui/Dropdown2";
 import { MdOutlineWifiCalling3 } from "react-icons/md";
 import CustomSubDropdown from "../../components/ui/CustomSubDropdown";
 import WebSocketClient from "../../config/websocketClient";
+import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
+import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
+import { timeAgo } from "../../utils/formateDate";
 
 export default function Calls() {
   const wsRef = useRef(null);
@@ -66,6 +69,10 @@ export default function Calls() {
   const [isConnected, setIsConnected] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+
+  const [templates, setTemplates] = useState([]);
+  const [quickResponseOpen, setQuickResponseOpen] = useState(false);
+  const [lead, setLead] = useState(null);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -203,9 +210,10 @@ export default function Calls() {
   };
 
   const columns = [
-    { label: "To", value: "to" },
     { label: "From", value: "from" },
+    { label: "To", value: "to" },
     { label: "Phone Number", value: "phoneNumberSid" },
+    { label: "WhatsApp", value: "whatsapp" },
     { label: "Direction", value: "direction" },
     { label: "Status", value: "status" },
     { label: "Time", value: "startTime" },
@@ -329,6 +337,13 @@ export default function Calls() {
     setAllUsers(usersData);
   };
 
+  const fetchTemplates = async () => {
+    const response = await getWhatsAppMessageTemplates();
+    if (response.success) {
+      setTemplates(response?.result?.docs?.data || []);
+    }
+  };
+
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
@@ -361,6 +376,7 @@ export default function Calls() {
   useEffect(() => {
     getConnectStatus();
     fetchUsersData();
+    fetchTemplates();
   }, []);
 
   useEffect(() => {
@@ -368,6 +384,8 @@ export default function Calls() {
       fetchAllCalls();
     }
   }, [page, limit, searchTerm, isConnected]);
+
+  console.log(allCalls);
 
   return (
     <div className="">
@@ -472,6 +490,22 @@ export default function Calls() {
                         {call.phoneNumberSid || "-"}
                       </td>
 
+                      <td
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setQuickResponseOpen(true);
+                          setLead({
+                            Contact:
+                              call?.direction === "inbound"
+                                ? call?.from
+                                : call?.to,
+                          });
+                        }}
+                        className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
+                      >
+                        <FaWhatsapp size={20} />
+                      </td>
+
                       {/* Direction */}
                       <td className="px-3 py-1 whitespace-nowrap">
                         {call.direction === "outbound-dial" ? (
@@ -490,9 +524,10 @@ export default function Calls() {
 
                       {/* Time */}
                       <td className="px-3 py-1 whitespace-nowrap">
-                        {call.startTime
+                        {/* {call.startTime
                           ? new Date(call.startTime).toLocaleString()
-                          : "-"}
+                          : "-"} */}
+                        {timeAgo(new Date(call.startTime))}
                       </td>
 
                       {/* Duration */}
@@ -646,6 +681,13 @@ export default function Calls() {
             total={total}
           />
         </div>
+
+        <QuickResponsePopup
+          setOpen={() => setQuickResponseOpen(false)}
+          open={quickResponseOpen}
+          lead={lead}
+          templates={templates || []}
+        />
 
         {/* <div className="overflow-x-auto mt-4">
           {IsStatusLoading ? (
