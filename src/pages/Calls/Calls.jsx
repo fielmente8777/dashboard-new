@@ -10,6 +10,7 @@ import {
   MasterSegregation,
   NEW_BASE_URL,
   Priority,
+  Property,
   ROUTES_PATH,
   Stages,
   WEBSOCKET_EVENTS,
@@ -187,25 +188,25 @@ export default function Calls() {
     }
   };
 
-  const playRecording = async (callUrl) => {
+  const playRecording = async ({ callUrl, callSid }) => {
     // console.log(recordingUrl);
     // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
     setCurrentRecordingUrl(callUrl);
 
-    try {
-      // const { data } = await axios.get(
-      //   `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   }
-      // );
-      // console.log(data);
-      // setCurrentRecordingUrl(data?.result?.docs);
-    } catch (error) {
-      // console.log(error);
-    }
+    // try {
+    //   const { data } = await axios.get(
+    //     `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+    //     {
+    //       headers: {
+    //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //       },
+    //     },
+    //   );
+    //   console.log(data);
+    //   setCurrentRecordingUrl(data?.result?.docs);
+    // } catch (error) {
+    //   // console.log(error);
+    // }
     setShowAudioModal(true);
   };
 
@@ -219,15 +220,16 @@ export default function Calls() {
     { label: "Time", value: "startTime" },
     { label: "Duration", value: "duration" },
     { label: "Recording", value: "recordingUrl" },
-    { label: "Attempted By", value: "assignedTo" },
-    { label: "Stage", value: "stage" },
+    // { label: "Attempted By", value: "assignedTo" },
+    { label: "Property", value: "property" },
     { label: "Segregation", value: "segregation" },
     { label: "Guest Type", value: "guestType" },
     { label: "Priority", value: "priority" },
+    { label: "Stage", value: "stage" },
   ];
 
   const newStages = Stages?.filter((stage) => {
-    return stage?.value !== "Turn Away";
+    return stage?.value === "Closure" || stage?.value === "Follow Up";
   });
 
   const [callPopup, setCallPopup] = useState(false);
@@ -546,7 +548,12 @@ export default function Calls() {
                       >
                         {call.recordingUrl ? (
                           <span
-                            onClick={() => playRecording(call.recordingUrl)}
+                            onClick={() =>
+                              playRecording({
+                                callUrl: call.recordingUrl,
+                                callSid: call.sid,
+                              })
+                            }
                             className="cursor-pointer text-blue-600"
                           >
                             Play
@@ -556,7 +563,8 @@ export default function Calls() {
                         )}
                       </td>
 
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                      {/* Attempted By  */}
+                      {/* <td onClick={(e) => e.stopPropagation()} className="p-1">
                         <CustomDropdown2
                           label={call["assignedTo"] || "Attempted By"}
                           options={
@@ -573,24 +581,19 @@ export default function Calls() {
                           }
                           className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />
-                      </td>
+                      </td> */}
 
-                      {/* Stage */}
+                      {/* Property  */}
                       <td onClick={(e) => e.stopPropagation()} className="p-1">
                         <CustomDropdown
-                          label={call.stage}
-                          options={newStages}
-                          onChange={(value) => {
-                            if (value === "Follow Up") {
-                              setSelectedRow(call);
-                              setShowDatePicker(true);
-                            } else {
-                              handleUpdateCall({
-                                sid: call.sid,
-                                stage: value,
-                              });
-                            }
-                          }}
+                          label={call?.property || "Select"}
+                          options={Property}
+                          onChange={(value) =>
+                            handleUpdateCall({
+                              property: value,
+                              sid: call.sid,
+                            })
+                          }
                           className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />
                       </td>
@@ -643,6 +646,26 @@ export default function Calls() {
                               sid: call.sid,
                               priority: value,
                             });
+                          }}
+                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                        />
+                      </td>
+
+                      {/* Stage */}
+                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        <CustomDropdown
+                          label={call.stage}
+                          options={newStages}
+                          onChange={(value) => {
+                            if (value === "Follow Up") {
+                              setSelectedRow(call);
+                              setShowDatePicker(true);
+                            } else {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                stage: value,
+                              });
+                            }
                           }}
                           className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />

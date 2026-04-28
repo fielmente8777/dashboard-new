@@ -329,6 +329,17 @@ export const Stages = [
   { label: "Hot", value: "Hot" },
 ];
 
+export const Property = [
+  {
+    label: "HOTEL AMAITI",
+    value: "Hotel Amaiti",
+  },
+  {
+    label: "CHARME DE PONDICHERRY",
+    value: "Charme De Pondicherry",
+  },
+];
+
 export const TurnAwayCode = [
   { label: "GD", value: "GD" },
   { label: "JE", value: "JE" },

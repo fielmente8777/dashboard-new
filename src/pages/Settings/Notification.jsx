@@ -336,6 +336,16 @@ const Notification = () => {
                                 (c) => c.type === "BODY",
                               )?.text || "";
 
+                            const bodyVariables =
+                              selectedTemplate.components?.find(
+                                (c) => c.type === "BODY",
+                              )?.example?.body_text[0] || [];
+
+                            const headerVariables =
+                              selectedTemplate.components?.find(
+                                (c) => c.type === "HEADER",
+                              )?.example?.header_text || [];
+
                             const buttons =
                               selectedTemplate.components?.find(
                                 (c) => c.type === "BUTTONS",
@@ -351,8 +361,8 @@ const Notification = () => {
                               name: selectedTemplate.name,
                               language: selectedTemplate.language,
                               bodyText,
-                              variables: (bodyText.match(/{{\d+}}/g) || [])
-                                .length,
+                              variables: bodyVariables,
+                              headerVariables,
                               headerType:
                                 selectedTemplate.components?.find(
                                   (c) => c.type === "HEADER",

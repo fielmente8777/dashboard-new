@@ -36,6 +36,7 @@ import CreateTemplate from "../Whatsapp/components/CreateTemplate";
 import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
 import { useToast } from "../../../context/ToastContext";
 import Flows from "./components/Flows";
+import ChannelToggle from "./components/ChannelToggle";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -476,27 +477,33 @@ const PhoneNumberCard = ({ phoneNumber }) => {
       </div>
 
       {/* Status Summary Row */}
-      <div className="flex items-center gap-3 mb-4 text-sm">
-        <span
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium ${
-            isConnected
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-600"
-          }`}
-        >
-          {isConnected ? (
-            <MdLink className="w-4 h-4" />
-          ) : (
-            <MdLinkOff className="w-4 h-4" />
-          )}
-          {isConnected ? "Connected" : "Not Connected"}
-        </span>
-
-        {!isCloudApi && (
-          <span className="text-xs text-gray-500">
-            Requires Cloud API to send messages
+      <div className="flex justify-between items-center gap-3 mb-4 text-sm">
+        <div>
+          <span
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium ${
+              isConnected
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-600"
+            }`}
+          >
+            {isConnected ? (
+              <MdLink className="w-4 h-4" />
+            ) : (
+              <MdLinkOff className="w-4 h-4" />
+            )}
+            {isConnected ? "Connected" : "Not Connected"}
           </span>
-        )}
+          {!isCloudApi && (
+            <span className="text-xs text-gray-500">
+              Requires Cloud API to send messages
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <label className="inline-block">Enable Cloud API</label>
+          <ChannelToggle />
+        </div>
       </div>
 
       {/* Details Grid */}
