@@ -39,8 +39,11 @@ import WebSocketClient from "../../config/websocketClient";
 import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
+import { useSelector } from "react-redux";
 
 export default function Calls() {
+  const { user: hotel } = useSelector((state) => state.userProfile);
+  console.log(hotel);
   const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -235,7 +238,9 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState("");
+  const [fromNumber, setFromNumber] = useState(
+    hotel?.Profile?.hotelPhone || "",
+  );
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
     try {
@@ -386,8 +391,6 @@ export default function Calls() {
       fetchAllCalls();
     }
   }, [page, limit, searchTerm, isConnected]);
-
-  console.log(allCalls);
 
   return (
     <div className="">
@@ -600,15 +603,15 @@ export default function Calls() {
 
                       {/* Segregation */}
                       <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomSubDropdown
+                        <CustomDropdown
                           label={call?.segregation?.value}
                           options={MasterSegregation}
                           onChange={(value) =>
                             handleUpdateCall({
                               sid: call.sid,
                               segregation: {
-                                label: value.parentValue,
-                                value: value.value,
+                                label: value,
+                                value: value,
                               },
                             })
                           }
@@ -881,9 +884,9 @@ export default function Calls() {
 
             {/* 🔥 From Number (Dropdown + Input) */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">From</label>
+              {/* <label className="text-sm font-medium">From</label> */}
 
-              <CustomDropdown2
+              {/* <CustomDropdown2
                 options={
                   allUsers?.map((user) => ({
                     value: user?.phone,
@@ -902,7 +905,7 @@ export default function Calls() {
                 onChange={(e) => setFromNumber(e.target.value)}
                 placeholder="Or type number"
                 className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              /> */}
             </div>
 
             {/* 🔥 To Number */}

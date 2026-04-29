@@ -97,18 +97,34 @@ const SidebarChat = () => {
   };
 
   const activeConversations = () => {
-    const conver = conversations.filter(
-      (conv) =>
-        !is24HoursCompletedFnc(conv.last_message?.created_at || conv.createdAt),
-    );
+    const conver = conversations
+      .filter(
+        (conv) =>
+          !is24HoursCompletedFnc(
+            conv.last_message?.updated_at || conv.createdAt,
+          ),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.last_message?.updated_at || b.createdAt) -
+          new Date(a.last_message?.updated_at || a.createdAt),
+      );
+
+    console.log(conver);
 
     return conver;
   };
 
   const historyConversations = () => {
-    return conversations.filter((conv) =>
-      is24HoursCompletedFnc(conv.last_message?.created_at || conv.createdAt),
-    );
+    return conversations
+      .filter((conv) =>
+        is24HoursCompletedFnc(conv.last_message?.updated_at || conv.createdAt),
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.last_message?.updated_at || b.createdAt) -
+          new Date(a.last_message?.updated_at || a.createdAt),
+      );
   };
 
   const handleTabChnage = (tab) => {
@@ -134,6 +150,7 @@ const SidebarChat = () => {
   }, [debouncedSearch, conversations]);
 
   useEffect(() => {
+    console.log("aaya");
     if (activeTab === "active" && activeConversations) {
       const actConversations = activeConversations();
       setFilteredConversations(actConversations);
