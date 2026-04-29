@@ -3,6 +3,7 @@ import { NEW_BASE_URL } from '../../data/constant';
 import { Badge, Calendar, Check, CreditCard, Crown, Headphones, Receipt, RefreshCw, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Loading from '../../components/Loading';
+import { APPS } from '../../data/enum';
 
 const Subscription = () => {
 
@@ -128,21 +129,55 @@ const Subscription = () => {
                 </div> */}
 
                 {/* Modules */}
-                    {/* <div className="rounded-md">
-                        <div className="p-6">
-                            <h3 className="text-lg font-semibold mb-4">Modules</h3>
+                    <div className="rounded-md">
+                        <div className="">
+                            <h3 className="text-lg font-semibold mb-4">Apps</h3>
                             <div className="grid grid-cols-2 gap-2">
-                                {Object.entries(subscription?.planId?.modules || {}).map(([key, value]) => (
-                                    <div key={key} className="flex justify-between text-sm">
-                                        <span className="capitalize">{key}</span>
-                                        <span className={value ? "text-green-600" : "text-red-500"}>
-                                            {value ? "✔" : "✖"}
+                                {subscription?.apps?.map((app, index) => {
+                                    const isExpired = new Date(app.endDate) < new Date();
+                                    
+                                    return(
+                                    
+                                    <div key={app.appId} className="flex gap-1 items-center justify-between text-sm bg-gray-100 rounded-lg p-3 px-4 border border-gray-200">
+
+                                        <div className='flex flex-col gap-1'>
+
+                                        <span className="capitalize font-medium">{APPS[app.appId]}</span>
+                                        
+                                        <div className="text-xs text-gray-500">
+
+                                        <p>
+                                            Start Date: {new Date(app.startDate).toLocaleDateString("en-IN", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                        })}
+                                        {" "}
+                                        End Date: {new Date(app.endDate).toLocaleDateString("en-IN", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                        })}
+                                        </p>
+                                        </div>
+                                        </div>
+
+
+                                        <span
+                                            className={`text-sm font-medium px-2 py-1 rounded-md ${
+                                                isExpired
+                                                ? "bg-gray-200 text-gray-600"
+                                                : "bg-green-100 text-green-600"
+                                                }`}
+                                            >
+                                            {isExpired ? "Expired" :"Active"}
                                         </span>
+
                                     </div>
-                                ))}
+                                )})}
                             </div>
                         </div>
-                    </div> */}
+                    </div>
 
                 {/* Limits */}
                 {/* <div className="rounded-md">
