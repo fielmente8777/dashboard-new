@@ -50,6 +50,7 @@ const WhatsApp = () => {
         text: incomingMessage.body || incomingMessage.text,
         sender: incomingMessage.sender,
         created_at: incomingMessage.createdAt || new Date(),
+        updated_at: incomingMessage.updatedAt || new Date(),
       },
       unread_count:
         conv._id === selectedConversationId
