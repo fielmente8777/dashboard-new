@@ -73,7 +73,11 @@ const WhatsAppBusiness = ({ template = false }) => {
     template ? "templates" : "overview",
   );
   const [collapsed, setCollapsed] = useState(false);
-  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
+  const {
+    integrationStatus,
+    checkIntegrationStatus,
+    isLoadingIntegrationStatus,
+  } = useContext(DataContext);
   const [accountDetails, setAccountDetails] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [flows, setFlows] = useState({});
@@ -195,6 +199,9 @@ const WhatsAppBusiness = ({ template = false }) => {
   useEffect(() => {
     fetchFlows();
   }, []);
+
+  console.log(accountDetails);
+  console.log(integrationStatus);
 
   if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
