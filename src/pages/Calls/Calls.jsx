@@ -401,6 +401,13 @@ export default function Calls() {
       return "Client Unanswered";
     } else if (status === "no-answer" && direction === "inbound") {
       return "No user answered";
+    } else if (
+      status === "completed" &&
+      (direction === "inbound" ||
+        direction === "outbound-dial" ||
+        direction === "outbound-api")
+    ) {
+      return "Call Successfull";
     }
 
     return "test";
