@@ -66,12 +66,14 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     authUser,
     hid,
     loading,
-    isAuthLoading,
   } = useSelector((state) => state.userProfile);
+  console.log(authUser);
+
+  const { subscription } = useSelector((state) => state?.subscription);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
   const [allClients, setAllClients] = useState([]);
-  const { setAuth } = useContext(DataContext);
+  // const { setAuth } = useContext(DataContext);
   const { isOpen } = useSelector((state) => state.toggle);
 
   const dispatch = useDispatch();
@@ -368,9 +370,6 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     };
   });
 
-  // console.log(authUser);
-  // console.log(hotel);
-  // console.log(currentLocation);
   return (
     <div
       className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
@@ -474,13 +473,13 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                                 currentProfile?.hotelName === profile?.hotelName
                                   ? "bg-[#1b4599] opacity-80"
                                   : "bg-[#1b4599] hover:bg-[#1b4599]/80"
-                              }  cursor-pointer rounded-sm hover:bg-gray-100  duration-150 p-2`}
+                              }  cursor-pointer rounded-sm hover:bg-primary/20  duration-150 p-2`}
                               onClick={() => {
                                 handleProfileSwitch(profile);
                               }}
                             >
                               <h2>{profile?.hotelName}</h2>
-                              <p className="text-xs text-gray-500 flex items-center">
+                              <p className="text-xs text-white/80 flex items-center">
                                 <CiLocationOn />
                                 <span>
                                   {hotel?.city}
@@ -495,6 +494,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                         })}
                       </div>
                     )}
+
                     {hotel?.Profile?.hotels &&
                       Object.entries(hotel?.Profile?.hotels).map(
                         ([key, value]) => {
@@ -612,13 +612,14 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
       <div className="flex-1 overflow-x-hidden scrollbar-hidden space-y-2">
         {loading
           ? Array.from({ length: 10 }).map((_, index) => (
-              <div className="animate-pulse h-10 bg-[#0a3a75]/20" />
+              <div className="animate-pulse h-10 bg-[#0a3a75]/20" key={index} />
             ))
           : maniuplateSideBarData?.map((item, index) => {
               if (authUser?.isAdmin) {
                 const key = item.key;
 
-                if (key && !authUser?.accessScope[accessScopeMap[key]])
+                // if (key && !authUser?.accessScope[accessScopeMap[key]])
+                if (key && !subscription?.planId?.features[accessScopeMap[key]])
                   return null;
                 return (
                   <div key={index} className="flex flex-col">
@@ -762,11 +763,12 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                   )[0];
 
                 const key = item?.key;
-                if (
-                  key &&
-                  currentLocationAccessScope &&
-                  !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
-                )
+                // if (
+                //   key &&
+                //   currentLocationAccessScope &&
+                //   !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+                // )
+                if (key && !subscription?.planId?.features[accessScopeMap[key]])
                   return null;
 
                 return (

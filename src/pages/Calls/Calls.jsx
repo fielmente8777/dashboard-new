@@ -392,6 +392,22 @@ export default function Calls() {
     }
   }, [page, limit, searchTerm, isConnected]);
 
+  const getCallStatus = (status, direction) => {
+    console.log(status, direction);
+    if (
+      status === "no-answer" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
+    ) {
+      return "Client Unanswered";
+    } else if (status === "no-answer" && direction === "inbound") {
+      return "No user answered";
+    }
+
+    return "test";
+  };
+
+  // console.log(new Date("2026-05-04T13:50"));
+
   return (
     <div className="">
       {/* Calls Table */}
@@ -465,109 +481,125 @@ export default function Calls() {
                 {/* ✅ DATA */}
                 {!isTableDataLoading &&
                   allCalls?.length > 0 &&
-                  allCalls.map((call, i) => (
-                    <tr
-                      key={i}
-                      className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
-                      onClick={() =>
-                        handleRedirectToPage(call, i + limit * (page - 1) + 1)
-                      }
-                    >
-                      {/* Index */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {(i + limit * (page - 1) + 1)
-                          .toString()
-                          .padStart(2, "0")}
-                      </td>
+                  allCalls.map((call, i) => {
+                    const startTime = new Intl.DateTimeFormat("sv-SE", {
+                      timeZone: "Asia/Kolkata",
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: false,
+                    })
+                      .format(new Date(call?.startTime))
+                      .replace(" ", "T");
 
-                      {/* From */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.from || "-"}
-                      </td>
-
-                      {/* To */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.to || "-"}
-                      </td>
-
-                      {/* Phone */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.phoneNumberSid || "-"}
-                      </td>
-
-                      <td
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setQuickResponseOpen(true);
-                          setLead({
-                            Contact:
-                              call?.direction === "inbound"
-                                ? call?.from
-                                : call?.to,
-                          });
-                        }}
-                        className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
+                    return (
+                      <tr
+                        key={i}
+                        className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                        onClick={() =>
+                          handleRedirectToPage(call, i + limit * (page - 1) + 1)
+                        }
                       >
-                        <FaWhatsapp size={20} />
-                      </td>
+                        {/* Index */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {(i + limit * (page - 1) + 1)
+                            .toString()
+                            .padStart(2, "0")}
+                        </td>
 
-                      {/* Direction */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.direction === "outbound-dial" ? (
-                          <span className="text-green-700">Outgoing</span>
-                        ) : (
-                          <span className="text-orange-700">Incoming</span>
-                        )}
-                      </td>
+                        {/* From */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.from || "-"}
+                        </td>
 
-                      {/* Status */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-xs font-medium">
-                          {call.status || "-"}
-                        </span>
-                      </td>
+                        {/* To */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.to || "-"}
+                        </td>
 
-                      {/* Time */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {/* {call.startTime
+                        {/* Phone */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.phoneNumberSid || "-"}
+                        </td>
+
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickResponseOpen(true);
+                            setLead({
+                              Contact:
+                                call?.direction === "inbound"
+                                  ? call?.from
+                                  : call?.to,
+                            });
+                          }}
+                          className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
+                        >
+                          <FaWhatsapp size={20} />
+                        </td>
+
+                        {/* Direction */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.direction === "outbound-dial" ||
+                          call.direction === "outbound-api" ? (
+                            <span className="text-green-700">Outgoing</span>
+                          ) : (
+                            <span className="text-orange-700">Incoming</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          <span className="text-xs font-medium">
+                            {getCallStatus(call.status, call.direction)}{" "}
+                            {call?.status}
+                          </span>
+                        </td>
+
+                        {/* Time */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {/* {call.startTime
                           ? new Date(call.startTime).toLocaleString()
                           : "-"} */}
-                        {timeAgo(new Date(call.startTime))}
-                      </td>
+                          {timeAgo(startTime)}
+                        </td>
 
-                      {/* Duration */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.duration
-                          ? `${Math.floor(call.duration / 60)}m ${
-                              call.duration % 60
-                            }s`
-                          : "-"}
-                      </td>
+                        {/* Duration */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.duration
+                            ? `${Math.floor(call.duration / 60)}m ${
+                                call.duration % 60
+                              }s`
+                            : "-"}
+                        </td>
 
-                      {/* Recording */}
-                      <td
-                        className="px-3 py-1 whitespace-nowrap"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {call.recordingUrl ? (
-                          <span
-                            onClick={() =>
-                              playRecording({
-                                callUrl: call.recordingUrl,
-                                callSid: call.sid,
-                              })
-                            }
-                            className="cursor-pointer text-blue-600"
-                          >
-                            Play
-                          </span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
+                        {/* Recording */}
+                        <td
+                          className="px-3 py-1 whitespace-nowrap"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {call.recordingUrl ? (
+                            <span
+                              onClick={() =>
+                                playRecording({
+                                  callUrl: call.recordingUrl,
+                                  callSid: call.sid,
+                                })
+                              }
+                              className="cursor-pointer text-blue-600"
+                            >
+                              Play
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
 
-                      {/* Attempted By  */}
-                      {/* <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        {/* Attempted By  */}
+                        {/* <td onClick={(e) => e.stopPropagation()} className="p-1">
                         <CustomDropdown2
                           label={call["assignedTo"] || "Attempted By"}
                           options={
@@ -586,95 +618,111 @@ export default function Calls() {
                         />
                       </td> */}
 
-                      {/* Property  */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call?.property || "Select"}
-                          options={Property}
-                          onChange={(value) =>
-                            handleUpdateCall({
-                              property: value,
-                              sid: call.sid,
-                            })
-                          }
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
+                        {/* Property  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call?.property || "Select"}
+                            options={Property}
+                            onChange={(value) =>
+                              handleUpdateCall({
+                                property: value,
+                                sid: call.sid,
+                              })
+                            }
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
 
-                      {/* Segregation */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call?.segregation?.value}
-                          options={MasterSegregation}
-                          onChange={(value) =>
-                            handleUpdateCall({
-                              sid: call.sid,
-                              segregation: {
-                                label: value,
-                                value: value,
-                              },
-                            })
-                          }
-                          // handleUpdateCall({
-                          //   sid: call.sid,
-                          //   leadStatus: value,
-                          // })
-
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
-
-                      {/* Guest Type  */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.guestType}
-                          options={GuestType}
-                          onChange={(value) => {
-                            handleUpdateCall({
-                              sid: call.sid,
-                              guestType: value,
-                            });
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
-
-                      {/* Priority  */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.priority}
-                          options={Priority}
-                          onChange={(value) => {
-                            handleUpdateCall({
-                              sid: call.sid,
-                              priority: value,
-                            });
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
-
-                      {/* Stage */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.stage}
-                          options={newStages}
-                          onChange={(value) => {
-                            if (value === "Follow Up") {
-                              setSelectedRow(call);
-                              setShowDatePicker(true);
-                            } else {
+                        {/* Segregation */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call?.segregation?.value}
+                            options={MasterSegregation}
+                            onChange={(value) =>
                               handleUpdateCall({
                                 sid: call.sid,
-                                stage: value,
-                              });
+                                segregation: {
+                                  label: value,
+                                  value: value,
+                                },
+                              })
                             }
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                            // handleUpdateCall({
+                            //   sid: call.sid,
+                            //   leadStatus: value,
+                            // })
+
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+
+                        {/* Guest Type  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.guestType}
+                            options={GuestType}
+                            onChange={(value) => {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                guestType: value,
+                              });
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+
+                        {/* Priority  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.priority}
+                            options={Priority}
+                            onChange={(value) => {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                priority: value,
+                              });
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+
+                        {/* Stage */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.stage}
+                            options={newStages}
+                            onChange={(value) => {
+                              if (value === "Follow Up") {
+                                setSelectedRow(call);
+                                setShowDatePicker(true);
+                              } else {
+                                handleUpdateCall({
+                                  sid: call.sid,
+                                  stage: value,
+                                });
+                              }
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
 
                 {!isTableDataLoading && allCalls?.length === 0 && (
                   <tr>

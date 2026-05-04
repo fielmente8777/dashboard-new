@@ -70,8 +70,6 @@ export const timeAgo = (dateString) => {
   const now = new Date();
   const past = new Date(dateString);
 
-  console.log("now", now, "past", past);
-
   if (isNaN(past.getTime())) return "-";
 
   let diffInSeconds = Math.floor((now - past) / 1000);

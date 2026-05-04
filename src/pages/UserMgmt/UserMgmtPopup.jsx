@@ -60,13 +60,19 @@ export const accessScopeMap = {
   "SMS Marketing": "smsmarketing",
   "User Management": "usermanagement",
   "WhatsApp Marketing": "whatsappmarketing",
+  WhatsApp: "whatsapp",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
-      const { showToast } = useToast();
+  const { showToast } = useToast();
 
   const { user } = useSelector((state) => state?.userProfile);
-  const [form, setForm] = useState({ name: "",phone:"", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    password: "",
+  });
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [currentLocation, setCurrentLocation] = useState(""); // selected location
 
@@ -94,13 +100,13 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       prev.map((entry) =>
         entry.hid === location
           ? {
-            ...entry,
-            accessScope: entry.accessScope.includes(role)
-              ? entry.accessScope.filter((r) => r !== role)
-              : [...entry.accessScope, role],
-          }
-          : entry
-      )
+              ...entry,
+              accessScope: entry.accessScope.includes(role)
+                ? entry.accessScope.filter((r) => r !== role)
+                : [...entry.accessScope, role],
+            }
+          : entry,
+      ),
     );
   };
 
@@ -108,14 +114,14 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
   const removeLocation = (location) => {
     // console.log(location);
     setSelectedLocations((prev) =>
-      prev.filter((entry) => entry.hid !== location)
+      prev.filter((entry) => entry.hid !== location),
     );
     // Also reset currentLocation if it matches removed one
     if (currentLocation === location) setCurrentLocation("");
   };
 
   const handleSubmit = async () => {
-    const { name,phone, email, password } = form;
+    const { name, phone, email, password } = form;
 
     const allPermissions = {
       analyticsandreporting: false,
@@ -156,13 +162,19 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
       };
     });
 
-    if (!name ||!phone|| !email || !password || selectedLocations.length === 0) {
+    if (
+      !name ||
+      !phone ||
+      !email ||
+      !password ||
+      selectedLocations.length === 0
+    ) {
       // Swal.fire({
       //   icon: "warning",
       //   title: "Incomplete Form",
       //   text: "Please fill all fields and assign at least one location with roles.",
       // });
-        showToast({
+      showToast({
         message: "Please fill all fields and assign at least one location",
         type: "warning",
       });
@@ -171,7 +183,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
     const formData = {
       emailId: email,
-      phone:phone,
+      phone: phone,
       displayName: name,
       userName: name,
       role: "admin",
@@ -189,12 +201,12 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         //   title: "Created Successfully",
         //   text: result?.Message,
         // });
-        
+
         showToast({
-        message: result?.Message||"User created successfully",
-        type: "success",
-      });
-        setForm({ name: "",phone:"", email: "", password: "" });
+          message: result?.Message || "User created successfully",
+          type: "success",
+        });
+        setForm({ name: "", phone: "", email: "", password: "" });
         setSelectedLocations([]);
         onClose();
         fetchData();
@@ -206,12 +218,13 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         // });
 
         showToast({
-        message: result?.Message||"Something went wronge try again",
-        type: "error",
-      });}
+          message: result?.Message || "Something went wronge try again",
+          type: "error",
+        });
+      }
     } catch (error) {
       showToast({
-        message: error.message||"Something went wronge try again",
+        message: error.message || "Something went wronge try again",
         type: "error",
       });
       // Swal.fire({
@@ -223,11 +236,10 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
   };
 
   return (
-
-
     <div
-      className={`fixed inset-0 px-5 z-99999 flex items-center justify-center bg-black/50 bg-opacity-90 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+      className={`fixed inset-0 px-5 z-99999 flex items-center justify-center bg-black/50 bg-opacity-90 transition-opacity ${
+        isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`}
     >
       <div className="bg-white grid md:grid-cols-8 gap-6 rounded-md shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
         <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
@@ -243,7 +255,6 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         </div>
 
         <div className="md:col-span-5 space-y-8">
-  
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
             <h2 className="text-xl text-primary font-bold">Create New User</h2>
             <button
@@ -305,7 +316,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
                       className="px-8 text-primary font-medium disabled:text-gray-400"
                       value={`${key}-${value?.city}`}
                       disabled={selectedLocations.some(
-                        (loc) => loc.hid === key
+                        (loc) => loc.hid === key,
                       )}
                     >
                       {value.city}
@@ -315,13 +326,11 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             </div>
           </div>
 
-  
           {selectedLocations.map((locEntry) => (
             <div
               key={locEntry.location}
               className="mt-4 border border-primary/30 p-4 rounded-md relative shadow-md shadow-black/10 space-y-2"
             >
-
               <button
                 onClick={() => removeLocation(locEntry.hid)}
                 className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-2xl"
@@ -361,7 +370,6 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
             </div>
           ))}
 
-   
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               onClick={handleSubmit}
@@ -379,7 +387,6 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         </div>
       </div>
     </div>
-
   );
 };
 
