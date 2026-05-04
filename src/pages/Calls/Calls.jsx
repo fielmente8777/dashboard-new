@@ -408,9 +408,13 @@ export default function Calls() {
         direction === "outbound-api")
     ) {
       return "Call Successfull";
+    } else if (
+      status === "busy" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
+    ) {
+      return "Client Busy";
     }
-
-    return "test";
+    return status;
   };
 
   // console.log(new Date("2026-05-04T13:50"));
@@ -561,8 +565,7 @@ export default function Calls() {
                         {/* Status */}
                         <td className="px-3 py-1 whitespace-nowrap">
                           <span className="text-xs font-medium">
-                            {getCallStatus(call.status, call.direction)}{" "}
-                            {call?.status}
+                            {getCallStatus(call.status, call.direction)}
                           </span>
                         </td>
 

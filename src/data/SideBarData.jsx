@@ -118,7 +118,7 @@ export const SidebarData = [
   {
     name: "Live Chat",
     link: `channel`,
-    key: "whatsapp",
+    // key: "whatsapp",
     icon: <PiChatCircleLight />,
     subLinks: [
       {
