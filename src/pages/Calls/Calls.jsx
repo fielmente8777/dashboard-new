@@ -506,6 +506,8 @@ export default function Calls() {
                       .format(new Date(call?.startTime))
                       .replace(" ", "T");
 
+                    console.log("start", startTime);
+
                     return (
                       <tr
                         key={i}

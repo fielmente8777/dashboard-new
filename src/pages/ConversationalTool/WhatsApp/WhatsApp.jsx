@@ -105,11 +105,14 @@ const WhatsApp = () => {
           phone: data.phone,
           name: data.name,
           profile_image: data.profile_image,
-          lastMessage: null,
+          last_message: data?.last_message,
+          status: data?.status,
           unreadCount: 0,
           updatedAt: new Date(),
           createdAt: data?.createdAt,
         };
+
+        console.log("data", data);
 
         if (data?.ndid === localStorage.getItem("ndid")) {
           playNotification();

@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
-// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-export const NEW_BASE_URL = "http://localhost:8000";
+export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+// export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL ="https://9979-2409-40d2-10e3-a381-8543-29db-31b1-4dde.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
@@ -409,6 +409,14 @@ export const LeadStatus = [
   },
 ];
 
+// PRE BOOKING
+// PAYMENT
+// POST BOOKING
+// IN STAY
+// POST STAY
+// PARTERSHIP
+// NON RELEVANT
+
 // MASTER SEGREGATION
 
 // MASTER SEGREGATION
@@ -452,12 +460,14 @@ export const LeadStatus = [
 //   },
 // ];
 export const MasterSegregation = [
-  { value: "Master Segregation", label: "MASTER SEGREGATION" },
-  { value: "Pre Booking", label: "PRE BOOKING" },
+  // { value: "Master Segregation", label: "MASTER SEGREGATION" },
   { value: "Payment", label: "PAYMENT" },
   { value: "Post Booking", label: "POST BOOKING" },
-  { value: "In Stay Support", label: "IN STAY SUPPORT" },
+  { value: "Pre Booking", label: "PRE BOOKING" },
+  { value: "In Stay", label: "IN STAY" },
   { value: "Post Stay", label: "POST STAY" },
+  { value: "Partnership", label: "PARTNERSHIP" },
+  { value: "Non Relevant", label: "NON RELEVANT" },
 ];
 
 // GUEST TYPE
