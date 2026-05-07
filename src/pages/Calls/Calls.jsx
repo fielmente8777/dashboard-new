@@ -395,21 +395,34 @@ export default function Calls() {
   }, [page, limit, searchTerm, isConnected]);
 
   const getCallStatus = (status, direction) => {
-    console.log(status, direction);
     if (
       status === "no-answer" &&
       (direction === "outbound-dial" || direction === "outbound-api")
     ) {
       return "Client Unanswered";
-    } else if (status === "no-answer" && direction === "inbound") {
+    } else if (
+      (status === "no-answer" || status === "incomplete") &&
+      (direction === "inbound" || direction === "incoming")
+    ) {
       return "No user answered";
+    } else if (
+      status === "call-attempt" &&
+      (direction === "incoming" || direction === "inbound")
+    ) {
+      return "Client hung-up before connecting to any user";
     } else if (
       status === "completed" &&
       (direction === "inbound" ||
+        direction === "incoming" ||
         direction === "outbound-dial" ||
         direction === "outbound-api")
     ) {
-      return "Call Successfull";
+      return "Call was successfull";
+    } else if (
+      status === "client-hangup" &&
+      (direction === "inbound" || direction === "incoming")
+    ) {
+      return "Client hangup during call";
     } else if (
       status === "busy" &&
       (direction === "outbound-dial" || direction === "outbound-api")
