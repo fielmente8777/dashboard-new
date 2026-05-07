@@ -619,8 +619,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 const key = item.key;
 
                 // if (key && !authUser?.accessScope[accessScopeMap[key]])
-                if (key && !subscription?.planId?.features[accessScopeMap[key]])
-                  return null;
+                // if (key && !subscription?.planId?.features[accessScopeMap[key]])
+                //   return null;
                 return (
                   <div key={index} className="flex flex-col">
                     {item?.subLinks ? (
@@ -768,8 +768,8 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                 //   currentLocationAccessScope &&
                 //   !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
                 // )
-                if (key && !subscription?.planId?.features[accessScopeMap[key]])
-                  return null;
+                // if (key && !subscription?.planId?.features[accessScopeMap[key]])
+                //   return null;
 
                 return (
                   <div key={index} className="flex flex-col gap-1">

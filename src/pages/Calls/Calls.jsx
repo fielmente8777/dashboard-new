@@ -238,9 +238,11 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState(
-    hotel?.Profile?.hotelPhone || "",
-  );
+  // const [fromNumber, setFromNumber] = useState(
+  //   hotel?.Profile?.hotelPhone || "",
+  // );
+
+  const [fromNumber, setFromNumber] = useState("7497042180");
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
     try {
@@ -276,7 +278,7 @@ export default function Calls() {
 
       alert("✅ Call initiated successfully");
       setCallPopup(false);
-      setFromNumber("");
+      // setFromNumber("");
       setToNumber("");
     } catch (error) {
       console.error("Call error:", error);
@@ -493,20 +495,22 @@ export default function Calls() {
                 {!isTableDataLoading &&
                   allCalls?.length > 0 &&
                   allCalls.map((call, i) => {
-                    const startTime = new Intl.DateTimeFormat("sv-SE", {
-                      timeZone: "Asia/Kolkata",
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false,
-                    })
-                      .format(new Date(call?.startTime))
-                      .replace(" ", "T");
-
+                    const startTime = call?.startTime;
                     console.log("start", startTime);
+                    // const startTime = new Intl.DateTimeFormat("sv-SE", {
+                    //   timeZone: "Asia/Kolkata",
+                    //   year: "numeric",
+                    //   month: "2-digit",
+                    //   day: "2-digit",
+                    //   hour: "2-digit",
+                    //   minute: "2-digit",
+                    //   second: "2-digit",
+                    //   hour12: false,
+                    // })
+                    //   .format(new Date(call?.startTime))
+                    //   .replace(" ", "T");
+
+                    // console.log("start", startTime);
 
                     return (
                       <tr
