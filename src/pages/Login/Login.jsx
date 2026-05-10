@@ -302,7 +302,7 @@ const Login = () => {
                 <p className="text-sm max-sm:text-center font-medium text-text-gray -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
-                    to="http://localhost:3001/sign-in"
+                    to="/signup"
                     className="text-secondary font-medium inline-block"
                   >
                     Sign Up

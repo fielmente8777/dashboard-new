@@ -126,6 +126,14 @@ function Integration() {
       category: "Analytics",
       color: "bg-white",
     },
+    {
+      id: "googleAnalytics",
+      name: "Google Analytics",
+      description: "Connect and fetch GA properties",
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
+      status: "not-connected",
+      category: "Analytics",
+    }
   ]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -222,6 +230,14 @@ function Integration() {
       };
       handleConnection();
       return;
+    }
+    else if (id === "googleAnalytics") {
+      const hid = localStorage.getItem("hid");
+    
+      window.open(
+        `http://localhost:5000/google/auth?hid=${hid}`,
+        "_self"
+      );
     } else if (id === "gmb") {
       const handleConnection = async () => {
         try {

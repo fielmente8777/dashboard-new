@@ -32,9 +32,26 @@ export const UserSignUp = async (userData) => {
       `${BASE_URL}/eazotel/createwebsite`,
       {
         register: "true",
+
         emailId: userData.email,
-        userName: "",
+
+        userName: userData.hotelName,
+
         accesskey: userData.password,
+
+        hotelName: userData.hotelName,
+
+        phoneNumber: userData.phoneNumber,
+
+        address: userData.address,
+
+        country: userData.country,
+
+        state: userData.state,
+
+        city: userData.city,
+
+        planName: "P2",
       },
       {
         headers: {
