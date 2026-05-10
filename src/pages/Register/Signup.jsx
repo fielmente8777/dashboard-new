@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Banner from "../../assets/HotelVhNPHJ.png";
 import Logo from "../../assets/companylogo.b.png";
-import { loginUser } from "../../redux/slice/LoginSlice";
+import { UserSignUp } from "../../services/api/auth.api";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { setCookie } from "../../utils/handleCookies";
 import Whatsapp from "../../components/Contacts/WhtasApp";
@@ -34,7 +33,6 @@ const Signup = () => {
   const [spinnerLoader, setSpinnerLoader] = useState(false);
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,7 +43,7 @@ const Signup = () => {
     e.preventDefault();
     setSpinnerLoader(true);
     // Dispatch login action
-    const response = await dispatch(loginUser(formData));
+    const response = await UserSignUp(formData);
     let timerInterval;
     if (response.success === false) {
       setSpinnerLoader(false);
@@ -65,8 +63,8 @@ const Signup = () => {
           clearInterval(timerInterval);
         },
       });
-    } else if (response.data.Status) {
-      const token = response?.data?.Token;
+    } else if (response.Status) {
+      const token = response?.Token;
       handleLocalStorage("token", token || "");
       setCookie("token", token || "");
       setSpinnerLoader(false);
@@ -335,6 +333,43 @@ const Signup = () => {
                   className="bg-primary disabled:opacity-50 text-white px-4 py-2 rounded-full max-w-28 shadow-md w-full flex justify-center gap-3 items-center"
                   onClick={(e) => {
                     e.preventDefault();
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                    if (!emailRegex.test(formData.email)) {
+                      Swal.fire({
+                        icon: "error",
+
+                        title: "Invalid Email",
+
+                        text: "Please enter a valid email address",
+                      });
+
+                      return;
+                    }
+
+                    if (formData.phoneNumber.length !== 10) {
+                      Swal.fire({
+                        icon: "error",
+
+                        title: "Invalid Phone Number",
+
+                        text: "Phone number must be 10 digits",
+                      });
+
+                      return;
+                    }
+
+                    if (formData.password.length < 6) {
+                      Swal.fire({
+                        icon: "error",
+
+                        title: "Weak Password",
+
+                        text: "Password must be at least 6 characters",
+                      });
+
+                      return;
+                    }
                     setStep(step + 1);
                   }}
                 >
