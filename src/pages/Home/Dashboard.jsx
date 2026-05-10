@@ -32,11 +32,13 @@ const Dashboard = () => {
   // const {hid} =
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState("");
 
   const getAnalytics = async () => {
     try {
       const response = await getAnalyticsService();
       setData(response?.result?.docs);
+      setLastUpdated(new Date().toLocaleTimeString());
     } catch (error) {
       console.log("Error fetching analytics:", error);
     }
@@ -81,11 +83,40 @@ const Dashboard = () => {
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
-  if (!data) return <div className="p-6">Loading...</div>;
+  if (!data) {
+    return (
+      <div className="p-6 space-y-6 animate-pulse">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((item) => (
+            <div key={item} className="bg-white h-28 rounded-lg" />
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white h-80 rounded-lg" />
+          <div className="bg-white h-80 rounded-lg" />
+        </div>
+
+        <div className="bg-white h-40 rounded-lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
       {/* KPI CARDS */}
+      <div className="flex justify-end">
+        <button
+          onClick={getAnalytics}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+        >
+          Refresh Analytics
+        </button>
+
+        <p className="text-sm text-gray-500 mt-2">
+          Last updated: {lastUpdated}
+        </p>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         <DashboardCard
           amount={total}
@@ -100,7 +131,7 @@ const Dashboard = () => {
           // key={index}
         />
         <DashboardCard
-          amount={conversionRate}
+          amount={`${conversionRate}%`}
           label={"Conversion Rate"}
           progress={conversionRate}
           // key={index}
@@ -119,49 +150,61 @@ const Dashboard = () => {
         <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
 
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart
-              data={cleanedSource}
-              layout="vertical"
-              margin={{ right: 30 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={100}
-                style={{ fontSize: "15px" }}
-                tickFormatter={(value) =>
-                  value.charAt(0).toUpperCase() + value.slice(1)
-                }
-              />
-              <Tooltip />
-              <Bar dataKey="count" radius={[0, 8, 8, 0]}>
-                {cleanedSource.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-                <LabelList dataKey="count" position="right" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {cleanedSource.length === 0 ? (
+            <div className="h-[320px] flex items-center justify-center text-gray-400">
+              No source data available
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={cleanedSource}
+                layout="vertical"
+                margin={{ right: 30 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  width={100}
+                  style={{ fontSize: "15px" }}
+                  tickFormatter={(value) =>
+                    value.charAt(0).toUpperCase() + value.slice(1)
+                  }
+                />
+                <Tooltip />
+                <Bar dataKey="count" radius={[0, 8, 8, 0]}>
+                  {cleanedSource.map((_, index) => (
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                  <LabelList dataKey="count" position="right" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Status Breakdown */}
         <div className="bg-white rounded md:rounded-lg p-3  md:p-5">
           <h2 className="text-lg font-semibold mb-4">Stages Breakdown</h2>
 
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={cleanedStatus} margin={{ top: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" style={{ fontSize: "15px" }} />
-              <YAxis width={50} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
-                <LabelList dataKey="count" position="top" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          {cleanedStatus.length === 0 ? (
+            <div className="h-[320px] flex items-center justify-center text-gray-400">
+              No status data available
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={cleanedStatus} margin={{ top: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" style={{ fontSize: "15px" }} />
+                <YAxis width={50} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
+                  <LabelList dataKey="count" position="top" />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
       {/* <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
