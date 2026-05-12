@@ -18,7 +18,7 @@ import { formatDateTime } from "../../utils/formateDate";
 
 const Subscription = () => {
   const [subscription, setSubscription] = useState(null);
-  const [payments,setPayments]=useState([]);
+  const [payments, setPayments] = useState([]);
   const fetchMySubscription = async () => {
     try {
       const response = await fetch(`${NEW_BASE_URL}/api/v1/subscription/my`, {
@@ -49,11 +49,10 @@ const Subscription = () => {
     fetchMySubscription();
   }, []);
 
-
-  console.log(payments)
   if (!subscription) {
     return <Loading />;
   }
+
   return (
     <div className="min-h-screen bg-background ">
       <header
@@ -156,7 +155,8 @@ const Subscription = () => {
                   >
                     <div className="flex flex-col gap-1">
                       <span className="capitalize font-medium">
-                        {APPS[app._id]}
+                        {/* {APPS[app.appId]} */}
+                        {app?.appId?.name}
                       </span>
 
                       <div className="text-xs text-gray-500">
@@ -266,24 +266,22 @@ const Subscription = () => {
         </section>
       </div>
 
-
-<div className="max-w-6xl mx-auto py-10 space-y-4">
-  <div className="flex items-start gap-3 mb-5">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
-              <CreditCard className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Payment information
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Latest billing references
-              </p>
-            </div>
+      <div className="max-w-6xl mx-auto py-10 space-y-4">
+        <div className="flex items-start gap-3 mb-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
+            <CreditCard className="h-5 w-5" />
           </div>
-      <PaymentTable payments={payments}/>
-
-  </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Payment information
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Latest billing references
+            </p>
+          </div>
+        </div>
+        <PaymentTable payments={payments} />
+      </div>
     </div>
   );
 };
@@ -335,7 +333,6 @@ function ToggleRow({ label, enabled }) {
   );
 }
 
-
 const PaymentTable = ({ payments }) => {
   return (
     <div className="overflow-x-auto border-gray-200">
@@ -375,11 +372,7 @@ const PaymentTable = ({ payments }) => {
               <tr
                 key={payment._id}
                 className={`transition-all duration-200 hover:bg-primary/5
-                  ${
-                    index % 2 === 0
-                      ? "bg-white"
-                      : "bg-gray-50"
-                  }`}
+                  ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
               >
                 <td className="px-5 py-3 text-sm text-gray-700">
                   {payment.orderId}
@@ -394,7 +387,7 @@ const PaymentTable = ({ payments }) => {
                 </td>
 
                 <td className="px-5 py-3 font-semibold text-primary">
-                  ₹{payment.amount/100}
+                  ₹{payment.amount / 100}
                 </td>
 
                 <td className="px-5 py-3 text-sm text-gray-700 uppercase text-center">
@@ -408,8 +401,8 @@ const PaymentTable = ({ payments }) => {
                         payment.status === "SUCCESS"
                           ? "bg-green-100 text-green-700"
                           : payment.status === "created"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                       }`}
                   >
                     {payment.status}
@@ -428,9 +421,7 @@ const PaymentTable = ({ payments }) => {
           </tbody>
         </table>
       ) : (
-        <div className="p-8 text-center text-gray-500">
-          No payments found
-        </div>
+        <div className="p-8 text-center text-gray-500">No payments found</div>
       )}
     </div>
   );

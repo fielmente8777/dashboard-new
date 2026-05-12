@@ -118,12 +118,13 @@ export const SidebarData = [
   {
     name: "Live Chat",
     link: `channel`,
-    // key: "whatsapp",
+    key: "WhatsApp",
     icon: <PiChatCircleLight />,
     subLinks: [
       {
         name: "WhatsApp",
         link: `channel/wa/chat`,
+        // key: "whatsapp",
         icon: <MdChat />,
       },
       // {
@@ -173,7 +174,7 @@ export const SidebarData = [
   {
     name: "Leads Management",
     link: `leads-management`,
-    key: "Enquiries Management",
+    key: "Leads Management",
     icon: <FiUsers />,
     subLinks: [
       {
@@ -183,6 +184,7 @@ export const SidebarData = [
       },
       {
         name: "Meta",
+        // key: "Meta",
         link: `leads-management/meta-leads`,
         icon: <PiGlobeSimpleLight size={18} />,
 
@@ -190,6 +192,7 @@ export const SidebarData = [
       },
       {
         name: "WhatsApp",
+        // key: "WhatsApp",
         link: `leads-management/whatsapp`,
         icon: <MdOutlineChatBubbleOutline />,
       },
@@ -233,24 +236,24 @@ export const SidebarData = [
     ],
   },
 
-  {
-    name: "Marketing",
-    // key: "",
-    link: `marketing`,
-    icon: <GrAnnounce size={16} />,
-    subLinks: [
-      {
-        name: "Whatsapp Marketing",
-        link: `marketing/whatsapp-marketing`,
-        icon: <RiWhatsappFill color="green" />,
-      },
-      {
-        name: "Email Marketing",
-        link: `marketing/email-marketing`,
-        icon: <MailIcon />,
-      },
-    ],
-  },
+  // {
+  //   name: "Marketing",
+  //   // key: "",
+  //   link: `marketing`,
+  //   icon: <GrAnnounce size={16} />,
+  //   subLinks: [
+  //     {
+  //       name: "Whatsapp Marketing",
+  //       link: `marketing/whatsapp-marketing`,
+  //       icon: <RiWhatsappFill color="green" />,
+  //     },
+  //     {
+  //       name: "Email Marketing",
+  //       link: `marketing/email-marketing`,
+  //       icon: <MailIcon />,
+  //     },
+  //   ],
+  // },
 
   // {
   //   name: "Insights & Analytics",
@@ -323,7 +326,7 @@ export const SidebarData = [
 
   {
     name: "Calls Management",
-    // key: "",
+    key: "Exotel",
     link: `calls-management`,
     icon: <MdPhone />,
   },
@@ -357,7 +360,7 @@ export const SidebarData = [
   // },
   {
     name: "Social Media",
-    // key: "Social Media",
+    key: "Social Media",
     target: "_blank",
     link: `https://social.eazotel.com`,
     icon: <TiSocialSkype size={18} />,

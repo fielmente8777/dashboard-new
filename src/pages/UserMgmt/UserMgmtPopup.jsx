@@ -8,6 +8,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 // import { z } from "zod";
 import { X, UserPlus, MapPin, Shield } from "lucide-react";
+
 export const accessRoles = [
   "CMS",
   "Social Media",
@@ -39,9 +40,9 @@ export const accessRoles = [
 
 export const accessScopeMap = {
   CMS: "cms",
-  "Booking Engine": "bookingEngine",
+  "Booking Engine": "booking_engine",
   "Front Desk": "frontDesk",
-  "Social Media": "socialMedia",
+  "Social Media": "social_media",
   "Enquiries Management": "enquiriesManagement",
   "Reservation Desk": "reservationDesk",
   Frontdesk: "frontDesk",
@@ -52,7 +53,7 @@ export const accessScopeMap = {
   "Payment Gateway": "gatewayManager",
   "Leads Form": "leadgenform",
   HRM: "humanResourceManagement",
-  GRM: "guestRequestManagement",
+  GRM: "grm",
   "Analytics Reporting": "analyticsandreporting",
   "Conversational Tool": "conversationaltool",
   Eazobot: "eazobot",
@@ -61,6 +62,8 @@ export const accessScopeMap = {
   "User Management": "usermanagement",
   "WhatsApp Marketing": "whatsappmarketing",
   WhatsApp: "whatsapp",
+  Exotel: "exotel",
+  "Leads Management": "lead_management",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {

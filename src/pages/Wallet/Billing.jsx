@@ -1,6 +1,13 @@
 import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { NEW_BASE_URL } from "../../data/constant";
+import { useDispatch, useSelector } from "react-redux";
+import { daysLeft } from "../../utils/daysLeft";
+import {
+  clearSubscription,
+  clearSubscriptionApps,
+} from "../../redux/slice/subscriptionDataSlice";
+import { Link } from "react-router-dom";
 
 // Plan data
 const PLANS = [
@@ -22,7 +29,7 @@ const APPS_DATA = [
 const formatPrice = (num) => `₹${num.toLocaleString("en-IN")}`;
 
 // Individual Plan Card Component
-const PlanCard = ({ plan, isSelected, onSelect }) => {
+const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
   // console.log("Rendering PlanCard:", plan.planName, "Selected:", isSelected);
   const priceFormatted = formatPrice(plan.price);
   const formatModuleName = (key) => {
@@ -37,10 +44,13 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
 
     return map[key] || key;
   };
+
+  const planName = plan.planName;
+
   return (
     <div
-      className={`  relative bg-white border! rounded-xl p-5 cursor-pointer transition-all duration-200  hover:border-primary! hover:-translate-y-1 ${isSelected === plan._id ? "border-navy bg-navy shadow-lg -translate-y-1" : "border-gray-200"} ${plan.planName === "PRO" && isSelected !== plan._id ? "border-ternary!" : ""}`}
-      onClick={onSelect}
+      className={`${isPurchased && "opacity-60 cursor-not-allowed"}  relative bg-white border! rounded-xl p-5 cursor-pointer transition-all duration-200  hover:border-primary! hover:-translate-y-1 ${isSelected === plan._id ? "border-navy bg-navy shadow-lg -translate-y-1" : "border-gray-200"} ${plan.planName === "PRO" && isSelected !== plan._id ? "border-ternary!" : ""}`}
+      onClick={!isPurchased && onSelect}
     >
       {plan.planName === "PRO" && isSelected !== plan._id && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-ternary! text-white text-[11px] font-bold tracking-wide uppercase px-3.5 py-1 rounded-full whitespace-nowrap shadow-md z-99999">
@@ -54,7 +64,7 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
       </div>
       <div className="flex items-baseline gap-0.5">
         <span className={`text-3xl font-bold tracking-tight `}>
-          {priceFormatted}
+          {planName === "ENTERPRISE" ? 0 : priceFormatted}
         </span>
         <span className={`text-xs font-medium text-gray-400`}>/mo</span>
       </div>
@@ -84,9 +94,17 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
             <polyline points="1.5 5.5 4.5 8.5 10.5 2"></polyline>
           </svg>
         </span>
-        <span>{isSelected === plan._id ? "Selected" : "Select plan"}</span>
-      </button>
 
+        {planName === "ENTERPRISE" ? (
+          <Link to={`https://wa.me/+919501868775`} target="_blank">
+            Contact Us
+          </Link>
+        ) : isPurchased ? (
+          "Purchased"
+        ) : (
+          <span>{isSelected === plan._id ? "Selected" : "Select plan"}</span>
+        )}
+      </button>
       <div>
         {Object.values(plan.modules).some(Boolean) && (
           <div className="mt-4">
@@ -112,7 +130,7 @@ const PlanCard = ({ plan, isSelected, onSelect }) => {
 };
 
 // App Card Component
-const AppCard = ({ app, isSelected, onToggle, locked }) => {
+const AppCard = ({ app, isSelected, onToggle, locked, isPurchased }) => {
   const IconMap = {
     "WhatsApp Chat": "💬",
     "Lead Management": "🎯",
@@ -127,7 +145,7 @@ const AppCard = ({ app, isSelected, onToggle, locked }) => {
   };
   return (
     <div
-      className={`bg-white border rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-200 ${locked ? "opacity-50 pointer-events-none border-gray-200" : isSelected ? "border-ternary bg-ternary-pale " : "border-gray-200 hover:border-navy-muted hover:-translate-y-0.5 "}`}
+      className={`bg-white border rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-200 ${locked ? "opacity-50 pointer-events-none border-gray-200" : isSelected ? "border-ternary bg-ternary-pale " : "border-gray-200 hover:border-navy-muted hover:-translate-y-0.5"}`}
     >
       <div
         className={`w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base shrink-0 ${isSelected ? "bg-ternary/10" : ""}`}
@@ -144,11 +162,11 @@ const AppCard = ({ app, isSelected, onToggle, locked }) => {
         </div>
       </div>
       <button
-        onClick={onToggle}
+        onClick={() => !isPurchased && onToggle(app)}
         disabled={locked}
-        className={`app-toggle shrink-0 w-16 py-1.5 px-2 rounded-full text-xs font-semibold border-2 transition-all text-center ${isSelected ? "bg-ternary border-ternary text-white hover:bg-ternary-light" : "border-gray-300 bg-transparent text-gray-600 hover:border-navy hover:text-navy"}`}
+        className={`app-toggle shrink-0 w-20 py-1.5 px-2 rounded-full text-xs font-semibold border-2 transition-all text-center ${isSelected ? "bg-ternary border-ternary text-white hover:bg-ternary-light" : "border-gray-300 bg-transparent text-gray-600 hover:border-navy hover:text-navy"}`}
       >
-        {isSelected ? "Remove" : "Add"}
+        {isPurchased ? "Purchased" : isSelected ? "Remove" : "Add"}
       </button>
     </div>
   );
@@ -161,38 +179,45 @@ const BillingSummary = ({
   teamCount,
   appInteracted,
   onRemoveApp,
+  purchasedApps,
+  activePlanId,
+  daysLeft,
 }) => {
-  const [validFor, setValidFor] = useState("month");
-  const totalRef = useRef(null);
-  const appsTotal = selectedApps?.reduce(
-    (sum, p) => sum + p.price,
-    0,
+  const monthLeft = Math.max(1, Math.floor(daysLeft / 30));
+
+  console.log("Days left", monthLeft);
+  const [validFor, setValidFor] = useState(
+    monthLeft === 1 ? "month" : monthLeft === 3 ? "quarter" : "6month",
   );
+  const totalRef = useRef(null);
+
+  // const appsTotal = selectedApps?.reduce((sum, p) => sum + p.price, 0);
+
   const teamCost = teamCount * 500;
-  let multiplyBy= validFor==="month"?1:validFor==="quarter"?3: validFor==="6month"?6:12;
+  let multiplyBy =
+    validFor === "month"
+      ? 1
+      : validFor === "quarter"
+        ? 3
+        : validFor === "6month"
+          ? 6
+          : 12;
 
-  let discount=validFor==="month"?5:validFor==="quarter"?10: validFor==="6month"?15:30;
+  let discount =
+    validFor === "month"
+      ? 5
+      : validFor === "quarter"
+        ? 10
+        : validFor === "6month"
+          ? 15
+          : 30;
 
-  const subtotal = selectedPlan
-  ? (selectedPlan.price + appsTotal + teamCost) * multiplyBy
-  : 0;
+  console.log(multiplyBy);
 
-  const total = subtotal - (subtotal * discount) / 100;
-
-  useEffect(() => {
-    if (totalRef.current && selectedPlan) {
-      totalRef.current.classList.remove("total-bump");
-      void totalRef.current.offsetWidth;
-      totalRef.current.classList.add("total-bump");
-    }
-  }, [total, selectedPlan,validFor]);
-
-
-  const handlePayment=()=>{
-
-    console.log("selected Apps", selectedApps)
-    console.log("checkout done", selectedPlan)
-  }
+  const handlePayment = () => {
+    console.log("selected Apps", selectedApps);
+    console.log("checkout done", selectedPlan);
+  };
 
   function loadRazorpay() {
     return new Promise((resolve) => {
@@ -203,51 +228,59 @@ const BillingSummary = ({
       document.body.appendChild(script);
     });
   }
-  const handleUpgrade =async () => {
+
+  const newApps = selectedApps?.filter(
+    (app) =>
+      !purchasedApps?.some((purchased) => purchased.appId?._id === app._id),
+  );
+
+  const handleUpgrade = async () => {
     const isLoaded = await loadRazorpay();
 
-  if (!isLoaded) {
-    alert("Razorpay SDK failed to load");
-    return;
-  }
-    // Implement upgrade logic here, e.g., redirect to checkout page
-    alert(`Upgrading to ${selectedPlan.planName} plan with price ₹${selectedPlan.price} , plan id: ${selectedPlan._id}}`);
-    console.log("Selected App", selectedApps)
-
-    const payload={
-      planId:selectedPlan?._id,
-      appIds:selectedApps?.map((app)=>app._id),
-      validFor:multiplyBy,
-      discount:discount,
-      teamCount:teamCount,
-      teamCost:teamCost
+    if (!isLoaded) {
+      alert("Razorpay SDK failed to load");
+      return;
     }
+    // Implement upgrade logic here, e.g., redirect to checkout page
+    alert(
+      `Upgrading to ${selectedPlan.planName} plan with price ₹${selectedPlan.price} , plan id: ${selectedPlan._id}}`,
+    );
+    console.log("Selected App", selectedApps);
 
-      console.log("AppIds",payload)
+    const payload = {
+      planId: selectedPlan?._id,
+      appIds: newApps?.map((app) => app._id),
+      validFor: multiplyBy,
+      discount: discount,
+      teamCount: teamCount,
+      teamCost: teamCost,
+    };
 
+    console.log("AppIds", payload);
 
-    // create order 
+    // create order
 
     try {
-      const response = await fetch(`${NEW_BASE_URL}/api/v1/subscription/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization:`Bearer ${localStorage.getItem("token")}`,
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/subscription/create-order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
       const order = await response.json();
-      console.log('Order created:', order);
-      if(order.success===false){
-        return "Already exist"
+      console.log("Order created:", order);
+      if (order.success === false) {
+        return "Already exist";
       }
 
-
-
-    // open razorpay checkout with order details
+      // open razorpay checkout with order details
       const options = {
-        key: 'rzp_test_UZ0V9jh3jMC0C9', // Replace with your Razorpay API key
+        key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
         amount: order.result.doc.amount, // Amount in paise
         // currency: order.currency,
         currency: "INR",
@@ -259,32 +292,59 @@ const BillingSummary = ({
           // Handle successful payment here, e.g., verify payment and update subscription status
           await fetch(`${NEW_BASE_URL}/api/v1/subscription/verify-payment`, {
             method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("token")}`,
-              },
-              body: JSON.stringify({...response,validFor:multiplyBy, planId: selectedPlan?._id,appIds:selectedApps?.map((app)=>app._id)}),
-            });
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              ...response,
+              validFor: multiplyBy,
+              planId: selectedPlan?._id,
+              appIds: newApps?.map((app) => app._id),
+            }),
+          });
 
-            alert("Payment successful");
-            console.log("'Payment successful:', response");
+          alert("Payment successful");
+          console.log("'Payment successful:', response");
         },
         prefill: {
-          name: 'Customer Name',
-          email: 'customer@email.com'
+          name: "Customer Name",
+          email: "customer@email.com",
         },
         theme: {
-          color: '#152547'
-        }
+          color: "#152547",
+        },
       };
 
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
+    } catch (error) {
+      console.error("Error creating order:", error);
     }
-    catch (error) {
-      console.error('Error creating order:', error);
+  };
+
+  const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0);
+
+  const subtotal = selectedPlan
+    ? ((selectedPlan?._id === activePlanId?._id ? 0 : selectedPlan.price) +
+        appsTotal +
+        teamCost) *
+      multiplyBy
+    : 0;
+
+  const total = subtotal - (subtotal * discount) / 100;
+
+  // const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0);
+
+  const prorateVisible = appInteracted && appNames.length > 0;
+
+  useEffect(() => {
+    if (totalRef.current && selectedPlan) {
+      totalRef.current.classList.remove("total-bump");
+      void totalRef.current.offsetWidth;
+      totalRef.current.classList.add("total-bump");
     }
-  }
+  }, [total, selectedPlan, validFor]);
 
   if (!selectedPlan) {
     return (
@@ -323,64 +383,61 @@ const BillingSummary = ({
     );
   }
 
-  const prorateVisible = appInteracted && appNames.length > 0;
-
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
       <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
         <div className="text-base font-bold text-navy">Billing summary</div>
-        
       </div>
-      
+
       <div className="flex gap-2 flex-wrap">
-  <button
-    onClick={() => setValidFor("month")}
-    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
+        <button
+          onClick={() => setValidFor("month")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
       ${
         validFor === "month"
           ? "bg-blue-500 text-white shadow-md"
           : "bg-gray-100 text-gray-600 hover:bg-blue-100"
       }`}
-  >
-    Monthly
-  </button>
+        >
+          Monthly
+        </button>
 
-  <button
-    onClick={() => setValidFor("quarter")}
-    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
+        <button
+          onClick={() => setValidFor("quarter")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
       ${
         validFor === "quarter"
           ? "bg-purple-500 text-white shadow-md"
           : "bg-gray-100 text-gray-600 hover:bg-purple-100"
       }`}
-  >
-    Quarterly
-  </button>
+        >
+          Quarterly
+        </button>
 
-  <button
-    onClick={() => setValidFor("6month")}
-    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
+        <button
+          onClick={() => setValidFor("6month")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
       ${
         validFor === "6month"
           ? "bg-orange-500 text-white shadow-md"
           : "bg-gray-100 text-gray-600 hover:bg-orange-100"
       }`}
-  >
-    6 Months
-  </button>
+        >
+          6 Months
+        </button>
 
-  <button
-    onClick={() => setValidFor("year")}
-    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
+        <button
+          onClick={() => setValidFor("year")}
+          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
       ${
         validFor === "year"
           ? "bg-green-500 text-white shadow-md"
           : "bg-gray-100 text-gray-600 hover:bg-green-100"
       }`}
-  >
-    Yearly
-  </button>
-</div>
+        >
+          Yearly
+        </button>
+      </div>
       <div>
         {/* Plan Section */}
         <div className="mb-4">
@@ -394,20 +451,17 @@ const BillingSummary = ({
             <span className="text-sm font-semibold text-gray-800 shrink-0">
               {formatPrice(selectedPlan.price)}/mo
             </span>
-
           </div>
         </div>
 
         {/* Apps Section */}
-        {selectedApps?.length > 0 && (
+        {/* {selectedApps?.length > 0 && (
           <div className="mb-4">
             <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
               Add-on apps
             </div>
             <div className="space-y-1">
               {selectedApps?.map((app) => {
-
-                console.log("App",app)
                 return (
                   <div
                     key={app?._id}
@@ -431,6 +485,61 @@ const BillingSummary = ({
               })}
             </div>
           </div>
+        )} */}
+
+        {purchasedApps?.length > 0 && (
+          <div className="mb-4">
+            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
+              Current apps
+            </div>
+
+            <div className="space-y-1">
+              {purchasedApps.map((app) => (
+                <div
+                  key={app._id}
+                  className="flex justify-between items-center py-1 text-[12.5px]"
+                >
+                  <span className="text-gray-500">{app.appId?.name}</span>
+
+                  <span className="font-semibold text-gray-400">
+                    Already Active
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {newApps?.length > 0 && (
+          <div className="mb-4">
+            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
+              New add-on apps
+            </div>
+
+            <div className="space-y-1">
+              {newApps.map((app) => (
+                <div
+                  key={app._id}
+                  className="flex justify-between items-center py-1 text-[12.5px]"
+                >
+                  <span className="text-gray-600">{app.name}</span>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-gray-800">
+                      {formatPrice(app.price)}
+                    </span>
+
+                    <button
+                      onClick={() => onRemoveApp(app)}
+                      className="text-gray-300 hover:text-ternary text-base leading-4 font-bold transition"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* Team Section */}
@@ -443,61 +552,58 @@ const BillingSummary = ({
             <span className="text-sm font-semibold text-gray-800">
               {formatPrice(teamCost)}/mo
             </span>
-
-
           </div>
         </div>
 
         <hr className="my-3 border-gray-200" />
 
         <div className="flex justify-between items-baseline mb-2">
-        <div className="flex flex-col w-full">
+          <div className="flex flex-col w-full">
+            <div>
+              <span className="text-[15px] font-bold text-navy">
+                Total Montly Price
+              </span>
 
-        <div>
+              <div className="flex flex-col items-end">
+                {discount > 0 && (
+                  <span className="text-md font-medium line-through text-navy tracking-tight transition-all">
+                    {formatPrice(subtotal / multiplyBy)}/mo
+                  </span>
+                )}
 
-          <span className="text-[15px] font-bold text-navy">
-            Total Montly Price
-          </span>
+                <span
+                  ref={totalRef}
+                  className="text-xl font-bold text-navy tracking-tight transition-all"
+                >
+                  {formatPrice(total / multiplyBy)}/mo
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="text-[15px] font-bold text-navy">
+                Total Price for {multiplyBy} months
+              </span>
 
+              <div className="flex flex-col items-end">
+                {discount > 0 && (
+                  <span className="text-md font-medium line-through text-navy tracking-tight transition-all">
+                    {formatPrice(subtotal)}
+                  </span>
+                )}
 
-          <div className="flex flex-col items-end">
-
-            {discount>0&&<span className="text-md font-medium line-through text-navy tracking-tight transition-all">{formatPrice(subtotal/multiplyBy)}/mo</span>}
-
-            <span
-              ref={totalRef}
-              className="text-xl font-bold text-navy tracking-tight transition-all"
-            >
-              {formatPrice(total/multiplyBy)}/mo
-            </span>
+                <span
+                  ref={totalRef}
+                  className="text-xl font-bold text-navy tracking-tight transition-all"
+                >
+                  {formatPrice(total)}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-
-          <span className="text-[15px] font-bold text-navy">
-            Total Price for {multiplyBy} months
-          </span>
-
-
-          <div className="flex flex-col items-end">
-
-            {discount>0&&<span className="text-md font-medium line-through text-navy tracking-tight transition-all">{formatPrice(subtotal)}</span>}
-
-            <span
-              ref={totalRef}
-              className="text-xl font-bold text-navy tracking-tight transition-all"
-            >
-              {formatPrice(total)}
-            </span>
-          </div>
-        </div>
-
-          
-        </div>
-
-          
-        </div>
-            <p className="text-green-500 font-medium">{discount}% Discount applied</p>
+        <p className="text-green-500 font-medium">
+          {discount}% Discount applied
+        </p>
 
         {prorateVisible && (
           <div className="mt-2 p-2 bg-ternary-pale border border-ternary-border rounded-sm text-[11.5px] text-ternary leading-relaxed">
@@ -507,8 +613,9 @@ const BillingSummary = ({
       </div>
 
       <button
+        disabled={!newApps?.length}
         onClick={handleUpgrade}
-        className="w-full mt-5 py-3.5 rounded-md bg-ternary text-white font-bold text-sm hover:bg-ternary-light transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+        className="w-full mt-5 py-3.5 rounded-md bg-ternary text-white font-bold text-sm hover:bg-ternary-light transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed!"
       >
         <span>Continue to payment</span>
         <span className="text-lg transition-transform group-hover:translate-x-0.5">
@@ -531,20 +638,26 @@ const BillingSummary = ({
 
 // Main App Component
 const Billing = () => {
+  const { subscription } = useSelector((state) => state?.subscription);
+  const dispatch = useDispatch();
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [activePlanId, setActivePlanId] = useState(null);
   const [selectedApps, setselectedApps] = useState([]);
   const [teamCount, setTeamCount] = useState(0);
   const [appInteracted, setAppInteracted] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [apps, setApps] = useState([]);
 
   const handlePlanSelect = (plan) => {
+    setselectedApps([]);
+    setActivePlanId(null);
     setSelectedPlan(plan);
+    dispatch(clearSubscriptionApps());
   };
 
   const handleToggleApp = (app) => {
     setselectedApps((prev) => {
-      const alreadySelected = prev?.some(
-        (item) => item._id === app._id
-      );
+      const alreadySelected = prev?.some((item) => item._id === app._id);
 
       if (alreadySelected) {
         return prev?.filter((item) => item?._id !== app?._id);
@@ -556,7 +669,9 @@ const Billing = () => {
 
   const handleRemoveApp = (app) => {
     // return null;
-    setselectedApps((prev)=>{prev?.filter((item) => item._id !== app._id)});
+    setselectedApps((prev) => {
+      prev?.filter((item) => item._id !== app._id);
+    });
   };
 
   const handleTeamChange = (delta) => {
@@ -570,10 +685,18 @@ const Billing = () => {
     return false;
   };
 
-  const appsLocked = !selectedPlan;
+  const isPurchasedApp = (appId) => {
+    return subscription?.apps?.some((item) => item?.appId?._id === appId);
+  };
 
-  const [plans, setPlans] = useState([]);
-  const [apps, setApps] = useState([]);
+  const isPurchasedPlan = (planId) => {
+    return (
+      subscription?.planId?._id === planId &&
+      new Date(subscription?.endDate) > Date.now()
+    );
+  };
+
+  const appsLocked = !selectedPlan;
 
   const fetchPlans = async () => {
     try {
@@ -581,8 +704,12 @@ const Billing = () => {
         `${NEW_BASE_URL}/api/v1/subscription/plans`,
       );
       const data = response.data;
+
       setPlans(data?.result?.data.plans);
       setApps(data?.result?.data.apps);
+      setSelectedPlan(subscription?.planId);
+      setActivePlanId(subscription?.planId);
+      setselectedApps(() => subscription?.apps?.map((app) => app.appId) || []);
       // Assuming the API returns an object with a 'plans' array
     } catch (error) {
       console.error("Error fetching plans:", error);
@@ -592,9 +719,6 @@ const Billing = () => {
     fetchPlans();
   }, []);
 
-
-
-  console.log("Slectedd App". selectedApps)
   return (
     <div className="bg-[#f8f9fc]">
       <div className="max-w-280 mx-auto px-4 sm:px-6 py-8 md:py-12 ">
@@ -639,6 +763,7 @@ const Billing = () => {
                       plan={plan}
                       isSelected={isPlanSelected(plan._id)}
                       onSelect={() => handlePlanSelect(plan)}
+                      isPurchased={isPurchasedPlan(plan._id)}
                     />
                   );
                 })}
@@ -670,8 +795,9 @@ const Billing = () => {
                     key={app._id}
                     app={app}
                     isSelected={selectedApps?.some(
-                      (selectedApp) => selectedApp._id === app._id
+                      (selectedApp) => selectedApp._id === app._id,
                     )}
+                    isPurchased={isPurchasedApp(app._id)}
                     onToggle={() => handleToggleApp(app)}
                     locked={appsLocked}
                   />
@@ -724,6 +850,9 @@ const Billing = () => {
             teamCount={teamCount}
             appInteracted={appInteracted}
             onRemoveApp={handleToggleApp}
+            purchasedApps={subscription?.apps || []}
+            activePlanId={activePlanId}
+            daysLeft={daysLeft(subscription?.endDate)}
           />
         </div>
       </div>
