@@ -210,7 +210,7 @@ const BillingSummary = ({
         ? 10
         : validFor === "6month"
           ? 15
-          : 30;
+          : 40;
 
   console.log(multiplyBy);
 
