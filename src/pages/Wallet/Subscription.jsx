@@ -358,9 +358,9 @@ const PaymentTable = ({ payments }) => {
               <th className="px-5 py-3 text-left text-sm font-semibold">
                 Status
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              {/* <th className="px-5 py-3 text-left text-sm font-semibold">
                 Paid At
-              </th>
+              </th> */}
               <th className="px-5 py-3 text-left text-sm font-semibold">
                 Created At
               </th>
@@ -409,9 +409,9 @@ const PaymentTable = ({ payments }) => {
                   </span>
                 </td>
 
-                <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
+                {/* <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
                   {formatDateTime(payment.paidAt)}
-                </td>
+                </td> */}
 
                 <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
                   {formatDateTime(payment.createdAt)}
