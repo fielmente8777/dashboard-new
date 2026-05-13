@@ -15,11 +15,20 @@ import {
   disconnectIntegration,
 } from "../../services/api/Integration";
 import IntegrationSkelton from "../../components/Skeltons/IntegrationSkelton";
+import { useSelector } from "react-redux";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
+const mapIntegrationId = {
+  metaWhatsapp: "whatsapp",
+  exotel: "exotel",
+  meta: "meta",
+};
+
 function Integration() {
   const navigate = useNavigate();
+  const { subscription } = useSelector((state) => state?.subscription);
+
   const {
     integrationStatus,
     checkIntegrationStatus,
@@ -450,6 +459,13 @@ function Integration() {
                 status = integrationStatus[integration?.id]?.status;
               } else {
                 status = integrationStatus[integration?.id] ?? false;
+              }
+
+              if (
+                subscription?.appAccess &&
+                !subscription?.appAccess[mapIntegrationId[integration?.id]]
+              ) {
+                return null;
               }
 
               return (
