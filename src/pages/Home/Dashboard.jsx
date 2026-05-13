@@ -20,7 +20,7 @@ import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
 import Loading from "../../components/Loading";
 
-// 1. IMPORT YOUR NEW CHART HERE
+
 import GoogleAnalyticsChart from "../../components/GoogleAnalyticsChart"; 
 import TopPagesTable from "../../components/TopPagesTable";
 const COLORS = [
@@ -110,9 +110,8 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* --------------------------------------------------- */}
       {/* 2. GOOGLE ANALYTICS CHART PLACED HERE (FULL WIDTH)  */}
-      {/* --------------------------------------------------- */}
+     
       <div className="w-full">
         <GoogleAnalyticsChart />
         <TopPagesTable />

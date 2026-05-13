@@ -32,7 +32,7 @@ const emailParam = searchParams.get("email");
 const showPropertyModal = gaConnectedParam === "true" && !!emailParam;
 
 useEffect(() => {
-  // Only trigger on mount or if URL params exist but state is empty
+  
   if (gaConnectedParam === "true" && emailParam && !googleEmail) {
     setGoogleEmail(emailParam);
     if (properties.length === 0 && !propertiesLoading) {
@@ -40,7 +40,7 @@ useEffect(() => {
       fetchGoogleProperties(emailParam);
     }
   }
-}, [gaConnectedParam, emailParam]); // depend on the derived values, not the object
+}, [gaConnectedParam, emailParam]); 
 
 const fetchGoogleProperties = async (email) => {
   try {
@@ -73,7 +73,7 @@ const saveGoogleProperty = async () => {
     
     navigate(window.location.pathname, { replace: true });
 
-    // Reset local state
+  
     setProperties([]);
     setSelectedProperty("");
     setGoogleEmail("");

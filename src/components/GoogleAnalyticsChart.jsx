@@ -17,13 +17,13 @@ const GoogleAnalyticsChart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // New Dropdown States
+  
   const [properties, setProperties] = useState([]);
   const [activePropertyId, setActivePropertyId] = useState("");
   const [email, setEmail] = useState("");
   const [isSwitching, setIsSwitching] = useState(false);
 
-  // 1. Fetch the main chart data
+  
   const fetchAnalytics = async () => {
     const hid = localStorage.getItem("hid");
     if (!hid) {
@@ -56,7 +56,6 @@ const GoogleAnalyticsChart = () => {
     }
   };
 
-  // 2. Fetch the list of properties for the dropdown
   const fetchPropertiesList = async (userEmail) => {
     try {
       const { data } = await axios.get(`http://localhost:8001/google/properties?email=${userEmail}`);
@@ -76,7 +75,7 @@ const GoogleAnalyticsChart = () => {
   const handlePropertyChange = async (e) => {
     const newPropertyId = e.target.value;
     setActivePropertyId(newPropertyId);
-    setIsSwitching(true); // Turns on the mini-loader over the chart
+    setIsSwitching(true); 
 
     try {
       const hid = localStorage.getItem("hid");
