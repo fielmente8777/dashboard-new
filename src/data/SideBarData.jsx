@@ -87,34 +87,6 @@ export const SidebarData = [
     link: ``,
     icon: <MdDashboard color={"#c2ccd6"} size={16} />,
   },
-  // {
-  //   name: "Live Chat",
-  //   key: "Conversational Tool",
-  //   link: `chat`,
-  //   icon: <IoIosChatbubbles size={24} />,
-  //   subLinks: [
-  //     // {
-  //     //   name: "Eazbot",
-  //     //   link: `channel/eb/chat`,
-  //     //   icon: <FaWhatsapp size={18} />,
-  //     // },
-  //     {
-  //       name: "WhatsApp",
-  //       link: `channel/wa/chat`,
-  //       icon: <FaWhatsapp size={18} />,
-  //     },
-  //     {
-  //       name: "Instagram",
-  //       link: `channel/ig/chat`,
-  //       icon: <FaInstagram size={18} />,
-  //     },
-  //     {
-  //       name: "Facebook",
-  //       link: `channel/fb/chat`,
-  //       icon: <FaFacebook size={18} />,
-  //     },
-  //   ],
-  // },
   {
     name: "Live Chat",
     link: `channel`,
@@ -142,12 +114,6 @@ export const SidebarData = [
       //   name: "Eazbot",
       //   link: `channel/eb/chat`,
       //   icon: <FaRobot size={18} />,
-      // },
-
-      // {
-      //   name: "Templates",
-      //   link: `channel/whatsapp/template/create`,
-      //   icon: <FaWhatsapp size={18} />,
       // },
     ],
   },
@@ -217,17 +183,6 @@ export const SidebarData = [
         link: `leads-management/all-visitors`,
         icon: <FiEye />,
       },
-
-      // {
-      //   name: "Enquiries",
-      //   link: `enquiries-management/enquiries`,
-      //   icon: <MdLeaderboard size={18} />,
-      // },
-      // {
-      //   name: "Eazbot Visitors",
-      //   link: `enquiries-management/eazbot-visitors`,
-      //   icon: <MdLeaderboard size={18} />,
-      // },
       // {
       //   name: "Form",
       //   link: `enquiries-management/lead-gen-form`,
@@ -236,24 +191,24 @@ export const SidebarData = [
     ],
   },
 
-  // {
-  //   name: "Marketing",
-  //   // key: "",
-  //   link: `marketing`,
-  //   icon: <GrAnnounce size={16} />,
-  //   subLinks: [
-  //     {
-  //       name: "Whatsapp Marketing",
-  //       link: `marketing/whatsapp-marketing`,
-  //       icon: <RiWhatsappFill color="green" />,
-  //     },
-  //     {
-  //       name: "Email Marketing",
-  //       link: `marketing/email-marketing`,
-  //       icon: <MailIcon />,
-  //     },
-  //   ],
-  // },
+  {
+    name: "Marketing",
+    key: "WhatsApp",
+    link: `marketing`,
+    icon: <GrAnnounce size={16} />,
+    subLinks: [
+      {
+        name: "Whatsapp Marketing",
+        link: `marketing/whatsapp-marketing`,
+        icon: <RiWhatsappFill color="green" />,
+      },
+      // {
+      //   name: "Email Marketing",
+      //   link: `marketing/email-marketing`,
+      //   icon: <MailIcon />,
+      // },
+    ],
+  },
 
   // {
   //   name: "Insights & Analytics",
@@ -311,12 +266,12 @@ export const SidebarData = [
   //   ],
   // },
 
-  // {
-  //   name: "Google Ads Insights",
-  //   // key: "",
-  //   link: `google-ads-insights`,
-  //   icon: <SiGoogleadsense />,
-  // },
+  {
+    name: "Google Ads Insights",
+    key: "Google Ads Insights",
+    link: `google-ads-insights`,
+    icon: <SiGoogleadsense />,
+  },
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -566,7 +521,7 @@ export const SidebarData = [
 
   {
     name: "Payment Gateway",
-    key: "Payment Gateway",
+    // key: "Payment Gateway",
     link: `payment-gateway`,
     icon: <MdPayment />,
   },
