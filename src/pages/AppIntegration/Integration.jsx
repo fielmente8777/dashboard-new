@@ -5,7 +5,7 @@ import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
 import { BASE_PATH, BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
 import DataContext from "../../context/DataContext";
@@ -16,6 +16,7 @@ import {
 } from "../../services/api/Integration";
 import IntegrationSkelton from "../../components/Skeltons/IntegrationSkelton";
 import { useSelector } from "react-redux";
+import { Lock } from "lucide-react";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
@@ -23,6 +24,8 @@ const mapIntegrationId = {
   metaWhatsapp: "whatsapp",
   exotel: "exotel",
   meta: "meta",
+  googleadsinsights: "googleadsinsights",
+  googleanalytics: "googleanalytics"
 };
 
 function Integration() {
@@ -73,8 +76,17 @@ function Integration() {
       color: "",
     },
     {
-      id: "googleAdsInsight",
+      id: "googleadsinsights",
       name: "Google Ads Insights",
+      description: "Track google ads metrics.",
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
+      status: "not-connected",
+      category: "Analytics",
+      color: "",
+    },
+    {
+      id: "googleanalytics",
+      name: "Google Analytics",
       description: "Track google ads metrics.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
@@ -253,7 +265,7 @@ function Integration() {
       };
       handleConnection();
       return;
-    } else if (id === "googleAdsInsight") {
+    } else if (id === "googleadsinsights") {
       const handleConnection = async () => {
         try {
           // console.log("Connecting with google")
@@ -437,11 +449,10 @@ function Integration() {
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                  selectedFilter === category
+                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
                     ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                  }`}
               >
                 {category}
               </button>
@@ -455,23 +466,23 @@ function Integration() {
             filteredIntegrations?.map((integration) => {
               let status = false;
 
-              if (integration?.id === "googleAdsInsight") {
+              if (integration?.id === "googleadsinsights") {
                 status = integrationStatus[integration?.id]?.status;
               } else {
                 status = integrationStatus[integration?.id] ?? false;
               }
 
-              if (
-                subscription?.appAccess &&
-                !subscription?.appAccess[mapIntegrationId[integration?.id]]
-              ) {
-                return null;
-              }
+              // if (
+              //   subscription?.appAccess &&
+              //   !subscription?.appAccess[mapIntegrationId[integration?.id]]
+              // ) {
+              //   return null;
+              // }
 
               return (
                 <div
                   key={integration?.id}
-                  className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+                  className={`${subscription?.appAccess && !subscription?.appAccess[mapIntegrationId[integration?.id]] ? "" : ""} relative bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm`}
                 >
                   <div className="p-6">
                     {/* Icon */}
@@ -483,11 +494,10 @@ function Integration() {
                           {integration?.img ? (
                             <img
                               src={integration?.img}
-                              className={`${
-                                integration.id === "otp-less"
+                              className={`${integration.id === "otp-less"
                                   ? "w-40 -ml-4"
                                   : "w-16 -ml-2"
-                              }  object-contain`}
+                                }  object-contain`}
                             />
                           ) : (
                             integration?.icon
@@ -519,15 +529,13 @@ function Integration() {
                           handleDisconnectIntegration(integration.id);
                         }
                       }}
-                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
-                        status
+                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${status
                           ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                           : "bg-primary text-white hover:bg-primary/90"
-                      } ${
-                        currentIntegrationId === integration.id
+                        } ${currentIntegrationId === integration.id
                           ? "opacity-70 cursor-not-allowed"
                           : ""
-                      }`}
+                        }`}
                     >
                       {currentIntegrationId === integration.id ? (
                         <>
@@ -541,6 +549,15 @@ function Integration() {
                       )}
                     </button>
                   </div>
+
+
+                  {subscription?.appAccess && !subscription?.appAccess[mapIntegrationId[integration?.id]] &&
+                    <div className="bg-white/80 text-white absolute top-0 left-0 w-full h-full flex justify-center items-center z-50">
+                      <Link to="/plans" className="px-4 py-2 bg-primary shadow-md rounded-lg text-sm flex items-center gap-2">
+                        Upgrade <Lock size={18}/>
+                      </Link>
+                    </div>}
+
                 </div>
               );
             })}
