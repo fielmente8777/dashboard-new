@@ -14,9 +14,11 @@ import {
 import { Link } from "react-router-dom";
 import Loading from "../../components/Loading";
 import { APPS } from "../../data/enum";
+import { formatDateTime } from "../../utils/formateDate";
 
 const Subscription = () => {
   const [subscription, setSubscription] = useState(null);
+  const [payments, setPayments] = useState([]);
   const fetchMySubscription = async () => {
     try {
       const response = await fetch(`${NEW_BASE_URL}/api/v1/subscription/my`, {
@@ -28,6 +30,7 @@ const Subscription = () => {
       });
       const result = await response.json();
       setSubscription(result?.result?.docs);
+      setPayments(result?.result?.payments);
       console.log("My subscription:", result?.result?.docs);
     } catch (error) {
       console.error("Error fetching subscription:", error);
@@ -49,6 +52,7 @@ const Subscription = () => {
   if (!subscription) {
     return <Loading />;
   }
+
   return (
     <div className="min-h-screen bg-background ">
       <header
@@ -146,12 +150,13 @@ const Subscription = () => {
 
                 return (
                   <div
-                    key={app.appId}
+                    key={app._id}
                     className="flex gap-1 items-center justify-between text-sm bg-gray-100 rounded-lg p-3 px-4 border border-gray-200"
                   >
                     <div className="flex flex-col gap-1">
                       <span className="capitalize font-medium">
-                        {APPS[app.appId]}
+                        {/* {APPS[app.appId]} */}
+                        {app?.appId?.name}
                       </span>
 
                       <div className="text-xs text-gray-500">
@@ -204,7 +209,7 @@ const Subscription = () => {
                 </div> */}
 
         <section className="">
-          <div className="flex items-start gap-3 mb-5">
+          {/* <div className="flex items-start gap-3 mb-5">
             <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
               <CreditCard className="h-5 w-5" />
             </div>
@@ -216,8 +221,8 @@ const Subscription = () => {
                 Latest billing references
               </p>
             </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          </div> */}
+          {/* <div className="grid md:grid-cols-2 gap-4">
             <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
               <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-ternary/10 text-ternary/80">
                 <Receipt className="h-4 w-4" />
@@ -244,7 +249,7 @@ const Subscription = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link
@@ -259,6 +264,23 @@ const Subscription = () => {
             </button>
           </div>
         </section>
+      </div>
+
+      <div className="max-w-6xl mx-auto py-10 space-y-4">
+        <div className="flex items-start gap-3 mb-5">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
+            <CreditCard className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Payment information
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Latest billing references
+            </p>
+          </div>
+        </div>
+        <PaymentTable payments={payments} />
       </div>
     </div>
   );
@@ -310,3 +332,97 @@ function ToggleRow({ label, enabled }) {
     </div>
   );
 }
+
+const PaymentTable = ({ payments }) => {
+  return (
+    <div className="overflow-x-auto border-gray-200">
+      {payments && payments.length > 0 ? (
+        <table className="w-full border-collapse">
+          <thead className="bg-primary text-white">
+            <tr>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Order Id
+              </th>
+              {/* <th className="px-5 py-3 text-left text-sm font-semibold">
+                Plan Id
+              </th> */}
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Payment Id
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Amount
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Currency
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Status
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Paid At
+              </th>
+              <th className="px-5 py-3 text-left text-sm font-semibold">
+                Created At
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {payments.map((payment, index) => (
+              <tr
+                key={payment._id}
+                className={`transition-all duration-200 hover:bg-primary/5
+                  ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+              >
+                <td className="px-5 py-3 text-sm text-gray-700">
+                  {payment.orderId}
+                </td>
+
+                {/* <td className="px-5 py-3 text-sm text-gray-700">
+                  {payment.planId}
+                </td> */}
+
+                <td className="px-5 py-3 text-sm text-gray-700">
+                  {payment.paymentId}
+                </td>
+
+                <td className="px-5 py-3 font-semibold text-primary">
+                  ₹{payment.amount / 100}
+                </td>
+
+                <td className="px-5 py-3 text-sm text-gray-700 uppercase text-center">
+                  {payment.currency}
+                </td>
+
+                <td className="px-5 py-3">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold uppercase
+                      ${
+                        payment.status === "SUCCESS"
+                          ? "bg-green-100 text-green-700"
+                          : payment.status === "created"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                    {payment.status}
+                  </span>
+                </td>
+
+                <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
+                  {formatDateTime(payment.paidAt)}
+                </td>
+
+                <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
+                  {formatDateTime(payment.createdAt)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <div className="p-8 text-center text-gray-500">No payments found</div>
+      )}
+    </div>
+  );
+};

@@ -31,6 +31,15 @@ const subscriptionSlice = createSlice({
       state.error = null;
       state.loading = false;
     },
+
+    clearSubscriptionApps: (state) => {
+      state.subscription = {
+        ...state.subscription,
+        apps: [],
+      };
+      state.error = null;
+      state.loading = false;
+    },
   },
 });
 
@@ -39,6 +48,7 @@ export const {
   getSubscriptionSuccess,
   getSubscriptionFailure,
   clearSubscription,
+  clearSubscriptionApps,
 } = subscriptionSlice.actions;
 
 export default subscriptionSlice.reducer;
