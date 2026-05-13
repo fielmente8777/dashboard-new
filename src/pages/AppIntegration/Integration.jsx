@@ -5,7 +5,7 @@ import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
 import { BASE_PATH, BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useSearchParams } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
 import DataContext from "../../context/DataContext";
@@ -20,6 +20,73 @@ import IntegrationSkelton from "../../components/Skeltons/IntegrationSkelton";
 
 function Integration() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+
+const [properties, setProperties] = useState([]);
+const [selectedProperty, setSelectedProperty] = useState("");
+const [googleEmail, setGoogleEmail] = useState("");
+const [propertiesLoading, setPropertiesLoading] = useState(false);
+const gaConnectedParam = searchParams.get("ga_connected");
+const emailParam = searchParams.get("email");
+const showPropertyModal = gaConnectedParam === "true" && !!emailParam;
+
+useEffect(() => {
+  // Only trigger on mount or if URL params exist but state is empty
+  if (gaConnectedParam === "true" && emailParam && !googleEmail) {
+    setGoogleEmail(emailParam);
+    if (properties.length === 0 && !propertiesLoading) {
+      setPropertiesLoading(true);
+      fetchGoogleProperties(emailParam);
+    }
+  }
+}, [gaConnectedParam, emailParam]); // depend on the derived values, not the object
+
+const fetchGoogleProperties = async (email) => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8001/google/properties?email=${email}`
+    );
+    setProperties(response.data.properties || []);
+  } catch (error) {
+    console.error("Failed to fetch GA properties:", error);
+  } finally {
+    setPropertiesLoading(false);
+  }
+};
+
+const saveGoogleProperty = async () => {
+  if (!selectedProperty) {
+    alert("Please select a property first.");
+    return;
+  }
+
+  try {
+    const hid = localStorage.getItem("hid");
+
+    await axios.post(`http://localhost:8001/google/save-property`, {
+      hid,
+      email: googleEmail,
+      property_id: selectedProperty,
+    });
+
+    
+    navigate(window.location.pathname, { replace: true });
+
+    // Reset local state
+    setProperties([]);
+    setSelectedProperty("");
+    setGoogleEmail("");
+
+    checkIntegrationStatus();
+
+    alert("Google Analytics connected successfully!");
+  } catch (error) {
+    console.error("Failed to save GA property:", error);
+    alert("Failed to save property. Please try again.");
+  }
+};
+
   const {
     integrationStatus,
     checkIntegrationStatus,
@@ -41,6 +108,8 @@ function Integration() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showOtpLessSidebar, setOtpLessSidebar] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
+
+  
 
   const [integrations] = useState([
     {
@@ -126,6 +195,25 @@ function Integration() {
       category: "Analytics",
       color: "bg-white",
     },
+    {
+
+      id: "googleAnalytics",
+    
+      name: "Google Analytics",
+    
+      description:
+    
+        "Connect Google Analytics account to track website traffic and hotel performance insights.",
+    
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
+    
+      status: "not-connected",
+    
+      category: "Analytics",
+    
+      color: "",
+    
+    },
   ]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
@@ -210,7 +298,7 @@ function Integration() {
         try {
           // console.log("Connecting with google")
           const response = await axios.get(
-            `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
+            `http://localhost:8001/api/v1/emails/google/login?ndid=${localStorage.getItem(
               "ndid",
             )}`,
           );
@@ -226,7 +314,7 @@ function Integration() {
       const handleConnection = async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8000/api/v1/gmb/connect`,
+            `http://localhost:8001/api/v1/gmb/connect`,
             {
               params: {
                 ndid: localStorage.getItem("ndid"),
@@ -259,6 +347,48 @@ function Integration() {
       };
       handleConnection();
     }
+  
+else if (id === "googleAnalytics") {
+  const hid = localStorage.getItem("hid");
+  const authUrl = `http://localhost:8001/google/auth?hid=${hid}`;
+
+  const width = 500;
+  const height = 600;
+  const left = window.screen.width / 2 - width / 2;
+  const top = window.screen.height / 2 - height / 2;
+
+
+  const authWindow = window.open(
+    authUrl,
+    "GoogleAnalyticsAuth",
+    `width=${width},height=${height},top=${top},left=${left}`
+  );
+
+  
+  const messageListener = (event) => {
+    
+    if (event.origin !== "http://localhost:8001") return;
+
+    if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
+   
+      const newEmail = event.data.email;
+      
+      
+      setGoogleEmail(newEmail);
+      setPropertiesLoading(true);
+      fetchGoogleProperties(newEmail);
+      
+    
+      navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });
+
+      
+      window.removeEventListener("message", messageListener);
+    }
+  };
+
+  window.addEventListener("message", messageListener);
+  return;
+}
     // setIntegrations(
     //   integrations.map((integration) => {
     //     if (integration.id === id) {
@@ -384,11 +514,10 @@ function Integration() {
     fetchForms();
     fetchleads();
   }, []);
-
   if (isLoadingIntegrationStatus) {
     return <IntegrationSkelton />;
   }
-
+  
   return (
     <div className="bg-[#f7f7f7]">
       {/* Header */}
@@ -492,7 +621,56 @@ function Integration() {
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
                       {integration.description}
                     </p>
+          {integration.id === "googleAnalytics" &&
+        properties.length > 0 && (
 
+          <div className="mb-4">
+
+            <select
+              className="w-full border rounded-md p-2 text-sm"
+              value={selectedProperty}
+              onChange={(e) => setSelectedProperty(e.target.value)}
+            >
+
+              <option value="">
+                Select Property
+              </option>
+
+              {properties.map((property) => (
+                <option
+                  key={property.property_id}
+                  value={property.property_id}
+                >
+                  {property.name}
+                </option>
+              ))}
+
+            </select>
+
+          </div>
+        )}
+
+                  {/* SAVE PROPERTY BUTTON */}
+
+                      {integration.id === "googleAnalytics" &&
+
+                      properties.length > 0 &&
+
+                      selectedProperty && (
+
+                      <button
+
+                        onClick={saveGoogleProperty}
+
+                        className="w-full mb-3 bg-green-600 text-white py-2 rounded-sm"
+
+                      >
+
+                        Save Property
+
+                      </button>
+
+                      )}
                     {/* Action Button */}
                     <button
                       disabled={currentIntegrationId === integration.id}
@@ -711,6 +889,104 @@ function Integration() {
           </div>
         </div>
       )}
+      
+{showPropertyModal && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.6)",
+      zIndex: 999999,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <div
+      style={{
+        background: "white",
+        padding: "32px",
+        borderRadius: "12px",
+        width: "420px",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+      }}
+    >
+      <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>
+        Select Google Analytics Property
+      </h2>
+      <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+        Connected as <strong>{googleEmail || emailParam}</strong>
+      </p>
+
+      {propertiesLoading ? (
+        <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>
+          Loading properties...
+        </p>
+      ) : properties.length === 0 ? (
+        <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>
+          No GA4 properties found for this account.
+        </p>
+      ) : (
+        <>
+          <select
+            value={selectedProperty}
+            onChange={(e) => setSelectedProperty(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              fontSize: "14px",
+            }}
+          >
+            <option value="">— Select a Property —</option>
+            {properties.map((property) => (
+              <option key={property.property_id} value={property.property_id}>
+                {property.name} ({property.account})
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={saveGoogleProperty}
+            disabled={!selectedProperty}
+            style={{
+              width: "100%",
+              marginTop: "16px",
+              padding: "12px",
+              background: selectedProperty ? "#16a34a" : "#ccc",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "15px",
+              fontWeight: 600,
+              cursor: selectedProperty ? "pointer" : "not-allowed",
+            }}
+          >
+            Save & Connect
+          </button>
+        </>
+      )}
+
+      <button
+        onClick={() => navigate(window.location.pathname, { replace: true })}
+        style={{
+          width: "100%",
+          marginTop: "10px",
+          padding: "10px",
+          background: "transparent",
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          fontSize: "14px",
+          cursor: "pointer",
+          color: "#666",
+        }}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 }
