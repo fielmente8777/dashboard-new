@@ -592,9 +592,13 @@ else if (id === "googleAnalytics") {
                 status = integrationStatus[integration?.id] ?? false;
               }
 
+              const mappedId = mapIntegrationId[integration?.id];
+              
+             
               if (
                 subscription?.appAccess &&
-                !subscription?.appAccess[mapIntegrationId[integration?.id]]
+                mappedId && 
+                !subscription?.appAccess[mappedId]
               ) {
                 return null;
               }
