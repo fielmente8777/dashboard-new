@@ -238,11 +238,12 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  // const [fromNumber, setFromNumber] = useState(
-  //   hotel?.Profile?.hotelPhone || "",
-  // );
+  const [fromNumber, setFromNumber] = useState(
+    hotel?.Profile?.hotelPhone || "",
+  );
 
-  const [fromNumber, setFromNumber] = useState("7497042180");
+  console.log(hotel?.Profile?.hotelPhone);
+
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
     try {
@@ -354,6 +355,12 @@ export default function Calls() {
   };
 
   useEffect(() => {
+    if (hotel?.Profile?.hotelPhone) {
+      setFromNumber(hotel?.Profile?.hotelPhone);
+    }
+  }, [hotel]);
+
+  useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
@@ -431,8 +438,6 @@ export default function Calls() {
     }
     return status;
   };
-
-  // console.log(new Date("2026-05-04T13:50"));
 
   return (
     <div className="">
