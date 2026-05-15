@@ -77,6 +77,7 @@ export default function Calls() {
   const [templates, setTemplates] = useState([]);
   const [quickResponseOpen, setQuickResponseOpen] = useState(false);
   const [lead, setLead] = useState(null);
+  const [audioLoading, setAudioLoading] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -191,26 +192,76 @@ export default function Calls() {
     }
   };
 
-  const playRecording = async ({ callUrl, callSid }) => {
-    // console.log(recordingUrl);
-    // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
-    setCurrentRecordingUrl(callUrl);
+  // const playRecording = async ({ callUrl, callSid }) => {
+  //   // console.log(recordingUrl);
+  //   // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
+  //   setCurrentRecordingUrl(callUrl);
 
-    // try {
-    //   const { data } = await axios.get(
-    //     `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
-    //     {
-    //       headers: {
-    //         Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //       },
-    //     },
-    //   );
-    //   console.log(data);
-    //   setCurrentRecordingUrl(data?.result?.docs);
-    // } catch (error) {
-    //   // console.log(error);
-    // }
-    setShowAudioModal(true);
+  //   // try {
+  //   //   const { data } = await axios.get(
+  //   //     `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+  //   //     {
+  //   //       headers: {
+  //   //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //   //       },
+  //   //     },
+  //   //   );
+  //   //   console.log(data);
+  //   //   setCurrentRecordingUrl(data?.result?.docs);
+  //   // } catch (error) {
+  //   //   // console.log(error);
+  //   // }
+  //   setShowAudioModal(true);
+  // };
+
+  // const playRecording = async ({ callSid }) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       },
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (data?.success && data?.responseStatusCode === 200) {
+  //       setCurrentRecordingUrl(data?.result?.doc?.recordingUrl);
+  //       setShowAudioModal(true);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const playRecording = async ({ callSid }) => {
+    try {
+      setAudioLoading(true);
+      setShowAudioModal(true);
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to fetch recording");
+      }
+      // AUDIO BLOB
+      const blob = await response.blob();
+      // LOCAL AUDIO URL
+      const audioUrl = URL.createObjectURL(blob);
+      setCurrentRecordingUrl(audioUrl);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setAudioLoading(false);
+    }
   };
 
   const columns = [
@@ -241,8 +292,6 @@ export default function Calls() {
   const [fromNumber, setFromNumber] = useState(
     hotel?.Profile?.hotelPhone || "",
   );
-
-  console.log(hotel?.Profile?.hotelPhone);
 
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
@@ -514,7 +563,7 @@ export default function Calls() {
                   allCalls?.length > 0 &&
                   allCalls.map((call, i) => {
                     const startTime = call?.startTime;
-                    console.log("start", startTime);
+
                     // const startTime = new Intl.DateTimeFormat("sv-SE", {
                     //   timeZone: "Asia/Kolkata",
                     //   year: "numeric",
@@ -1129,24 +1178,38 @@ export default function Calls() {
                 <span className="font-bold text-black">X</span>
               </button>
             </div>
-            <div className="space-y-4">
-              {/* <audio controls className="w-full" ref={audioPlayerRef}>
-                <source src={currentRecordingUrl} type="audio/mpeg" />
-                Your browser does not support the audio element.
-              </audio> */}
 
-              <audio controls>
-                <source src={currentRecordingUrl} type="audio/mp3" />
-              </audio>
+            <div className="p-5">
+              {audioLoading ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                  {/* Loader */}
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
 
-              {/* <div className="flex justify-end">
-                <button
-                  // onClick={downloadRecording}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <i className="fas fa-download mr-2"></i>Download
-                </button>
-              </div> */}
+                  <p className="mt-4 text-sm font-medium text-gray-700">
+                    Loading recording...
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Please wait while audio buffer is preparing
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <audio
+                      controls
+                      autoPlay
+                      src={currentRecordingUrl}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    Recording ready to play
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
