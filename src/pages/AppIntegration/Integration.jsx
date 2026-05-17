@@ -30,6 +30,52 @@ function Integration() {
 
   const [searchParams] = useSearchParams();
 
+  // GMB States
+  const [gmbLocations, setGmbLocations] = useState([]);
+  const [selectedGmbLocation, setSelectedGmbLocation] = useState("");
+  const [showGmbModal, setShowGmbModal] = useState(false);
+  const [gmbLoading, setGmbLoading] = useState(false);
+
+
+  const fetchGmbLocations = async () => {
+    try {
+      setGmbLoading(true);
+      const response = await axios.get(`http://localhost:8000/api/v1/gmb/locations`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setGmbLocations(response.data.locations || []);
+    } catch (error) {
+      console.error("Failed to fetch GMB locations:", error);
+      alert("Failed to fetch locations. Please try again.");
+    } finally {
+      setGmbLoading(false);
+    }
+  };
+
+  const handleSaveGmbLocation = async () => {
+    if (!selectedGmbLocation) return alert("Please select a location");
+    
+    // Find the full object from the array
+    const locationData = gmbLocations.find(loc => loc.locationId === selectedGmbLocation);
+    
+    try {
+      await axios.post(`http://localhost:8000/api/v1/gmb/save-location`, {
+        locationId: locationData.locationId,
+        accountId: locationData.accountId,
+        title: locationData.title
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+
+      alert("GMB Connected Successfully!");
+      setShowGmbModal(false);
+      checkIntegrationStatus(); // Refresh cards
+    } catch (error) {
+      console.error("Failed to save GMB location", error);
+      alert("Error saving location.");
+    }
+  };
+
 
 const [properties, setProperties] = useState([]);
 const [selectedProperty, setSelectedProperty] = useState("");
@@ -309,7 +355,7 @@ const saveGoogleProperty = async () => {
         try {
           // console.log("Connecting with google")
           const response = await axios.get(
-            `http://localhost:8001/api/v1/emails/google/login?ndid=${localStorage.getItem(
+            `http://localhost:8000/api/v1/emails/google/login?ndid=${localStorage.getItem(
               "ndid",
             )}`,
           );
@@ -324,26 +370,43 @@ const saveGoogleProperty = async () => {
     } else if (id === "gmb") {
       const handleConnection = async () => {
         try {
+          // 1. Get the Google Auth URL from Backend (Yahan 8000 hai)
           const response = await axios.get(
-            `http://localhost:8001/api/v1/gmb/connect`,
-            {
-              params: {
-                ndid: localStorage.getItem("ndid"),
-              },
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                "Content-Type": "application/json",
-              },
-            },
+            `http://localhost:8000/api/v1/gmb/connect?ndid=${localStorage.getItem("ndid")}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
           );
-          window.open(response.data.url, "_blank");
+
+          // 2. Open Popup
+          const width = 500;
+          const height = 600;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(response.data.url, "GMBAuth", `width=${width},height=${height},top=${top},left=${left}`);
+
+         
+          const messageListener = (event) => {
+            console.log("Message received from:", event.origin, event.data); 
+            
+            if (event.origin !== "http://localhost:8000") return;
+
+            if (event.data?.type === "GMB_OAUTH_SUCCESS") {
+              window.removeEventListener("message", messageListener);
+              
+              setShowGmbModal(true);
+              fetchGmbLocations();
+            }
+          };
+
+          window.addEventListener("message", messageListener);
         } catch (error) {
-          console.error("Error connecting google:", error);
+          console.error("Error connecting GMB:", error);
         }
       };
       handleConnection();
       return;
-    } else if (id === "googleAdsInsight") {
+      
+    }
+     else if (id === "googleAdsInsight") {
       const handleConnection = async () => {
         try {
           // console.log("Connecting with google")
@@ -1009,6 +1072,51 @@ else if (id === "googleAnalytics") {
     </div>
   </div>
 )}
+{showGmbModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 999999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ background: "white", padding: "32px", borderRadius: "12px", width: "420px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>Select Google Business Profile</h2>
+            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>Choose the hotel location to connect.</p>
+
+            {gmbLoading ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>Loading your properties...</p>
+            ) : gmbLocations.length === 0 ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>No Google Business Profiles found for this account.</p>
+            ) : (
+              <>
+                <select
+                  value={selectedGmbLocation}
+                  onChange={(e) => setSelectedGmbLocation(e.target.value)}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", marginBottom: "16px" }}
+                >
+                  <option value="">— Select a Location —</option>
+                  {gmbLocations.map((loc) => (
+                    <option key={loc.locationId} value={loc.locationId}>
+                      {loc.title}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleSaveGmbLocation}
+                  disabled={!selectedGmbLocation}
+                  style={{ width: "100%", padding: "12px", background: selectedGmbLocation ? "#16a34a" : "#ccc", color: "white", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: 600, cursor: selectedGmbLocation ? "pointer" : "not-allowed" }}
+                >
+                  Save & Connect
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => setShowGmbModal(false)}
+              style={{ width: "100%", marginTop: "10px", padding: "10px", background: "transparent", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", cursor: "pointer", color: "#666" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

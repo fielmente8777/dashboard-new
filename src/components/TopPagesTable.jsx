@@ -29,27 +29,27 @@ const TopPagesTable = () => {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Performance Insights</h2>
       
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-gray-200 text-sm text-gray-600">
-              <th className="pb-3 font-medium">Page/Screen Name</th>
-              <th className="pb-3 font-medium">Views</th>
-              <th className="pb-3 font-medium">Active Users</th>
-              <th className="pb-3 font-medium">Bounce Rate</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pages.map((page, index) => (
-              <tr key={index} className="border-b border-gray-100 last:border-none text-sm text-gray-800">
-                <td className="py-3 pr-4 max-w-[300px] truncate" title={page.pageName}>{page.pageName}</td>
-                <td className="py-3">{page.views}</td>
-                <td className="py-3">{page.users}</td>
-                <td className="py-3">{page.bounceRate}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 text-sm text-gray-600">
+                  <th className="pb-3 font-medium">Page/Screen Name</th>
+                  <th className="pb-3 font-medium">Views</th>
+                  <th className="pb-3 font-medium">Active Users</th>
+                  {/* BOUNCE RATE HEADER DELETED FROM HERE */}
+                </tr>
+              </thead>
+              <tbody>
+                {pages.map((page, index) => (
+                  <tr key={index} className="border-b border-gray-100 last:border-none text-sm text-gray-800">
+                    <td className="py-3 pr-4 max-w-[300px] truncate" title={page.pageName}>{page.pageName}</td>
+                    <td className="py-3">{page.views}</td>
+                    <td className="py-3">{page.users}</td>
+                    {/* BOUNCE RATE DATA DELETED FROM HERE */}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
     </div>
   );
 };
