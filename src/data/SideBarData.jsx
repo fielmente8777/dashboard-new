@@ -266,12 +266,7 @@ export const SidebarData = [
   //   ],
   // },
 
-  {
-    name: "Google Ads Insights",
-    key: "Google Ads Insights",
-    link: `google-ads-insights`,
-    icon: <SiGoogleadsense />,
-  },
+ 
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -284,6 +279,18 @@ export const SidebarData = [
     key: "Exotel",
     link: `calls-management`,
     icon: <MdPhone />,
+  },
+
+   {
+    name: "Google Ads Insights",
+    key: "Google Ads Insights",
+    link: `google-ads-insights`,
+    icon: <SiGoogleadsense />,
+  },
+   {
+    name: "Google Analytics",
+    link: `insights-analytics/google-analytics`,
+    icon: <SiGoogleanalytics size={18} />,
   },
   // {
   //   name: "Meta",
