@@ -212,7 +212,9 @@ const BillingSummary = ({
           ? 15
           : 40;
 
-  let gst = 18;
+  let gst=18
+
+  console.log(multiplyBy);
 
   const handlePayment = () => {
     console.log("selected Apps", selectedApps);

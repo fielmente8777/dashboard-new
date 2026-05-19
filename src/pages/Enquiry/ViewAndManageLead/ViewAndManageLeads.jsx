@@ -193,7 +193,7 @@ const ViewAndManageLeads = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6">
+    <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6 relative">
       <div className="flex items-center  gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
@@ -307,7 +307,7 @@ const ViewAndManageLeads = () => {
 
       {activeTab === 0 && (
         <>
-          <LeadHeader lead={lead} onCreateBooking={() => console.log("aaya")} />
+          <LeadHeader lead={lead} />
 
           <div className="grid md:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
             <CustomerInfoCard

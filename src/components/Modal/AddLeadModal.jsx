@@ -11,6 +11,7 @@ import Loader from "../Loader";
 import DatePicker from "react-datepicker";
 import { addLeadGenForm } from "../../services/api/MetaLeads.api";
 import { useSelector } from "react-redux";
+import { useToast } from "../../context/ToastContext";
 
 const defaultForm = {
   Name: "",
@@ -25,6 +26,7 @@ const defaultForm = {
 };
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
+  const { showToast } = useToast();
   const { user: hotel } = useSelector((state) => state.userProfile);
   const [formData, setFormData] = useState(defaultForm);
   const [source, setSource] = useState(Sources[0]?.value);
@@ -69,12 +71,11 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       setIsLoading(true);
 
       const response = await addLeadGenForm(formDataPayload);
-      console.log(response);
-      if (response?.success) {
-        Swal.fire({
-          icon: "success",
+
+      if (response?.Status) {
+        showToast("success", {
           title: "Success",
-          text: "Lead created successfully",
+          message: response?.Message || "Lead created successfully",
         });
         setFormData(defaultForm);
         onSuccess?.();
