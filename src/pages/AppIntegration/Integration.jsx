@@ -30,7 +30,7 @@ function Integration() {
 
   const [searchParams] = useSearchParams();
 
-  // GMB States
+  
   const [gmbLocations, setGmbLocations] = useState([]);
   const [selectedGmbLocation, setSelectedGmbLocation] = useState("");
   const [showGmbModal, setShowGmbModal] = useState(false);
@@ -452,10 +452,7 @@ else if (id === "googleAnalytics") {
       setPropertiesLoading(true);
       fetchGoogleProperties(newEmail);
       
-    
-      navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });
-
-      
+      navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });      
       window.removeEventListener("message", messageListener);
     }
   };
