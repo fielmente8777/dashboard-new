@@ -307,7 +307,7 @@ const ViewAndManageLeads = () => {
 
       {activeTab === 0 && (
         <>
-          <LeadHeader lead={lead} />
+          <LeadHeader lead={lead} onCreateBooking={() => console.log("aaya")} />
 
           <div className="grid md:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
             <CustomerInfoCard

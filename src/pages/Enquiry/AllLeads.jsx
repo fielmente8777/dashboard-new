@@ -665,6 +665,16 @@ const AllLeads = () => {
                           </td>
                         );
                       }
+
+                      if (h.key === "created_from") {
+                        return (
+                          <td className=" whitespace-nowrap">
+                            {row["created_from"] === "facebook"
+                              ? "meta"
+                              : row["created_from"] || "-"}
+                          </td>
+                        );
+                      }
                       return (
                         <td key={h.key} className="px-3 py-2 whitespace-nowrap">
                           {row[h.key]

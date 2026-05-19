@@ -49,6 +49,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       Contact: formData.Contact,
       Email: formData.Email,
       hId: localStorage.getItem("hid"),
+      ndid: localStorage.getItem("ndid"),
       Name: formData.Name,
       campaign_name: formData.campaign_name,
       notes: formData.notes,
@@ -61,6 +62,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         : null,
       numberOfGuest: formData.numberOfGuests,
       created_from: source,
+      Created_at: new Date(),
     };
 
     try {
