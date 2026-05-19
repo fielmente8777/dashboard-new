@@ -10,9 +10,11 @@ const LeadHeader = ({ lead }) => {
         {lead?.Name || "Lead"}
       </h1>
 
-      <button onClick={()=>setOpenReservationForm(!openReservationForm)} className="bg-orange-600 px-3 py-1 rounded-md text-sm font-medium! text-white">
+      {/* <button 
+      onClick={()=>setOpenReservationForm(!openReservationForm)}
+       className="bg-orange-600 px-3 py-1 rounded-md text-sm font-medium! text-white">
         Convert
-      </button>
+      </button> */}
       {/* <p className="text-sm text-gray-500 mt-1">Lead ID: {lead?._id}</p> */}
 
       {openReservationForm&&<div className="absolute top-0 left-0 h-screen w-full flex items-center justify-center border bg-black/30 z-50">
