@@ -33,7 +33,7 @@ function Integration() {
 
   const [searchParams] = useSearchParams();
 
-  // GMB States
+  
   const [gmbLocations, setGmbLocations] = useState([]);
   const [selectedGmbLocation, setSelectedGmbLocation] = useState("");
   const [showGmbModal, setShowGmbModal] = useState(false);
@@ -439,29 +439,17 @@ function Integration() {
       );
 
 
-      const messageListener = (event) => {
-
-        if (event.origin !== BASE_URL) return;
-
-        if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
-
-          const newEmail = event.data.email;
-
-
-          setGoogleEmail(newEmail);
-          setPropertiesLoading(true);
-          fetchGoogleProperties(newEmail);
-
-
-          navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });
-
-
-          window.removeEventListener("message", messageListener);
-        }
-      };
-
-      window.addEventListener("message", messageListener);
-      return;
+    if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
+   
+      const newEmail = event.data.email;
+      
+      
+      setGoogleEmail(newEmail);
+      setPropertiesLoading(true);
+      fetchGoogleProperties(newEmail);
+      
+      navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });      
+      window.removeEventListener("message", messageListener);
     }
     // setIntegrations(
     //   integrations.map((integration) => {
@@ -592,6 +580,7 @@ function Integration() {
     return <IntegrationSkelton />;
   }
 
+}
 
   console.log("jhgv ", integrations)
   return (

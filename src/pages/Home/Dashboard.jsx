@@ -19,7 +19,15 @@ import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
 import Loading from "../../components/Loading";
+import AudienceInsights from "../../components/AudienceInsight";
 
+// ===== GA COMPONENTS =====
+import GoogleAnalyticsChart from "../../components/GoogleAnalyticsChart";
+import TrafficSources from "../../components/TrafficSources";
+import TopPagesTable from "../../components/TopPagesTable";
+import ConversionEvents from "../../components/ConversionEvent";
+import DeviceAnalytics from "../../components/DeviceAnalytics";
+import GeoAnalytics from "../../components/GeoAnalytics";
 
 const COLORS = [
   "#22c55e",
@@ -51,7 +59,6 @@ const Dashboard = () => {
   // -----------------------
   // Derived Values
   // -----------------------
-
   const total = data?.totalLeads?.[0]?.count || 0;
   const converted = data?.convertedLeads?.[0]?.count || 0;
   const whatsapp = data?.totalWhatsappConversations || 0;
@@ -89,31 +96,21 @@ const Dashboard = () => {
     <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
       {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-        <DashboardCard
-          amount={total}
-          label={"Total Leads"}
-        />
-        <DashboardCard
-          amount={converted}
-          label={"Converted Leads"}
-        />
+        <DashboardCard amount={total} label={"Total Leads"} />
+        <DashboardCard amount={converted} label={"Converted Leads"} />
         <DashboardCard
           amount={conversionRate}
           label={"Conversion Rate"}
           progress={conversionRate}
         />
-        <DashboardCard
-          amount={whatsapp}
-          label={"WhatsApp Conversations"}
-        />
+        <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
       </div>
 
-      
-
+     
      
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Attractive Source Distribution */}
+        {/* Source Distribution */}
         <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
 
@@ -162,6 +159,17 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
+       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
+      <div className="w-full space-y-6">
+        <GoogleAnalyticsChart />
+        <TrafficSources />
+        <TopPagesTable />
+        <ConversionEvents />
+        <DeviceAnalytics />
+        <GeoAnalytics />
+        <AudienceInsights />
+      </div>
+
 
       {/* FUNNEL */}
       <div className="bg-white rounded md:rounded-lg p-5">
