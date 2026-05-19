@@ -118,7 +118,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
     try {
       const response= await axios.get(`${BASE_URL}/room/${localStorage.getItem("token")}/${localStorage.getItem("hid")}`)
       console.log("Response", response.data)
-      setRooms(response.data.data)
+      setRooms(response.data?.data)
     } catch (error) {
       console.log("Error",error)
     }
@@ -209,7 +209,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Room Type</label>
                 <select className={inp} value={form.roomType} onChange={(e) => set("roomType", e.target.value)}>
-                  {rooms.map((r) => (
+                  {rooms?.map((r) => (
                     <option key={r._id} value={r._id}>{r.roomName} — ₹{r.price.toLocaleString()}/night</option>
                   ))}
                 </select>
@@ -217,7 +217,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Meal Plan</label>
                 <select className={inp} value={form.mealPlan} onChange={(e) => set("mealPlan", e.target.value)}>
-                  {MEAL_PLANS.map((m) => (
+                  {MEAL_PLANS?.map((m) => (
                     <option key={m.id} value={m.id}>{m.name}{m.price > 0 ? ` — ₹${m.price}/guest/night` : ""}</option>
                   ))}
                 </select>
