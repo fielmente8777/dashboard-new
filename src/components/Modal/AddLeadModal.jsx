@@ -64,7 +64,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         : null,
       numberOfGuest: formData.numberOfGuests,
       created_from: source,
-      Created_at: new Date(),
+      // Created_at: new Date(),
     };
 
     try {
@@ -75,7 +75,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       if (response?.Status) {
         showToast("success", {
           title: "Success",
-          message: response?.Message || "Lead created successfully",
+          message: "Lead created successfully",
         });
         setFormData(defaultForm);
         onSuccess?.();
