@@ -4,10 +4,10 @@ import { BASE_URL } from "../../../data/constant";
 import { addReservation } from "../../../services/api/bookingEngine";
 
 const ROOM_TYPES = [
-  { id: "deluxe", name: "Deluxe Room", price: 4500 },
-  { id: "superior", name: "Superior Room", price: 6500 },
-  { id: "suite", name: "Suite", price: 12000 },
-  { id: "presidential", name: "Presidential Suite", price: 25000 },
+  { id: "deluxe", name: "Deluxe Room", price: 0 },
+  { id: "superior", name: "Superior Room", price: 0 },
+  { id: "suite", name: "Suite", price: 0 },
+  { id: "presidential", name: "Presidential Suite", price: 0 },
 ];
 
 const MEAL_PLANS = [
