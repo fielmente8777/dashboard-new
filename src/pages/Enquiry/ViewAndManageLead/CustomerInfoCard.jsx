@@ -12,8 +12,10 @@ import { fetchUserManagementData } from "../../../services/api";
 import DataContext from "../../../context/DataContext";
 import DatePickerModal from "../../../components/Modal/DatePickerModal";
 import CustomDropdown2 from "../../../components/ui/Dropdown2";
+import { formatDate, formatDateTime } from "../../../utils/formateDate";
 
 const CustomerInfoCard = ({ lead, onClick }) => {
+  console.log(lead);
   const { showToast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
   const [agentNumber, setAgentNumber] = useState();
@@ -147,9 +149,11 @@ const CustomerInfoCard = ({ lead, onClick }) => {
   return (
     <div className="flex flex-col bg-white rounded-lg md:shadow-sm p-5 h-auto">
       <div className="flex-1">
-        <h3 className="font-semibold text-gray-800 mb-4">
-          Customer Information
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-gray-800 ">Customer Information</h3>
+
+          <span className="text-sm">{formatDateTime(lead?.Created_at)}</span>
+        </div>
 
         {lead?.Contact && (
           <div className="cursor-pointer flex justify-between items-center py-2 border-b last:border-0">

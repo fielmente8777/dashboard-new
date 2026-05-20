@@ -12,7 +12,7 @@ import { Handle, Position, useReactFlow } from "reactflow";
 import { NEW_BASE_URL } from "../../../data/constant";
 
 export default function SendMessageNode({ id, data }) {
-  const { getNodes, setNodes } = useReactFlow();
+  const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const nodes = getNodes();
   const [blocks, setBlocks] = useState(data?.blocks || []);
 
@@ -101,7 +101,13 @@ export default function SendMessageNode({ id, data }) {
 
   const removeNode = () => {
     const updatedNodes = nodes.filter((node) => node.id !== id);
+
+    const updatedEdges = getEdges().filter(
+      (edge) => edge.source !== id && edge.target !== id,
+    );
+
     setNodes(updatedNodes);
+    setEdges(updatedEdges);
   };
 
   return (

@@ -760,7 +760,7 @@ const ChatArea = () => {
                                   {message.template?.template?.name}
                                 </p>
 
-                                <p className="text-sm">
+                                <pre className="text-sm whitespace-pre-wrap font-sans">
                                   {message.body ? (
                                     message.body
                                   ) : (
@@ -768,7 +768,7 @@ const ChatArea = () => {
                                       No text defined
                                     </span>
                                   )}
-                                </p>
+                                </pre>
                               </div>
                             )}
 
