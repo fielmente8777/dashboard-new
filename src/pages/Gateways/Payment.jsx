@@ -44,7 +44,13 @@ function Payment() {
   };
   return (
     <>
-      <div className="paymentgateway">
+          
+    <div className="border">
+      <img src={Razorpay} alt="Razorpay" className="w-50 h-50"/>
+        jbhkbkb
+    </div>
+
+      {/* <div className="paymentgateway">
         <div className="c-cards">
           <Card className="c-crd-inr">
             <Card.Img
@@ -107,8 +113,8 @@ function Payment() {
             <button style={{ background: "red" }}>Coming Soon</button>
           </Card>
         </div>
-      </div>
-      {gateway.Type === "Razorpay" ? (
+      </div> */}
+      {/* {gateway.Type === "Razorpay" ? (
         <div>
           <div
             style={{
@@ -220,7 +226,7 @@ function Payment() {
         </div>
       ) : (
         ""
-      )}
+      )} */}
     </>
   );
 }

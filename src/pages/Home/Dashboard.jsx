@@ -42,6 +42,7 @@ const COLORS = [
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
+  const [dateRange, setDateRange] = useState(""); 
 
   const getAnalytics = async () => {
     try {
@@ -90,21 +91,84 @@ const Dashboard = () => {
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
+
+
+  const handleDateSelect = (e) => {
+    const { value } = e.target;
+    setDateRange(value);
+    const now = new Date();
+
+    if (value === "all") {
+      setEnquires(enquiresList);
+      return;
+    }
+
+    let days = 7;
+    if (value === "30d") days = 30;
+    else if (value === "90d") days = 90;
+
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+
+    const filtered = enquiresList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    const filteredEazobot = eazobotEnquiriesList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    setData(filtered);
+  };
+
   if (!data) return <Loading />;
 
   return (
     <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
       {/* KPI CARDS */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-        <DashboardCard amount={total} label={"Total Leads"} />
-        <DashboardCard amount={converted} label={"Converted Leads"} />
+        <DashboardCard amount={total} label={"Total Leads"}  progress={0}/>
+        <DashboardCard amount={converted} label={"Converted Leads"} progress={0} />
         <DashboardCard
           amount={conversionRate}
           label={"Conversion Rate"}
           progress={conversionRate}
         />
-        <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
+        <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} progress={0} />
       </div>
+
+      <div>
+            <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 border">
+            <div className="lg:col-span-3">
+              <AnalyticsCard />
+            </div>
+            <div className="md:hidden lg:block lg:col-span-2">
+              <TemperatureCard />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+            <Review />
+            <div className="hidden md:block lg:hidden">
+              <TemperatureCard />
+            </div>
+            <Services />
+
+            <div className="lg:col-span-2">
+              <MiniLineChartCard
+                title="Other"
+                value="0.00"
+                changePercent={0.0}
+                isPositive={false}
+                currentData={[20, 15, 30, 35, 25, 50]}
+                lastWeekData={[25, 30, 22, 40, 33, 38]}
+              />
+            </div>
+          </div>
 
      
      
