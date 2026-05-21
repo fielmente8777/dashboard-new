@@ -282,7 +282,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
             <button
               disabled={isLoading}
               type="submit"
-              disabled={isLoading}
+              
               className="bg-primary text-white px-5 py-2 rounded-lg flex items-center gap-2"
             >
               Create {isLoading && <Loader size={14} color="white" />}

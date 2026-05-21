@@ -90,7 +90,7 @@ import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
-import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
+
 
 const DynamicPage = () => {
   const location = useLocation();

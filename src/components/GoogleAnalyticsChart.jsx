@@ -101,18 +101,31 @@ const GoogleAnalyticsChart = () => {
     setIsSwitching(true);
     try {
       const hid = localStorage.getItem("hid");
+      
+      // 1. Backend mein naya hotel save kiya
       await axios.post(`${BASE_URL}/google/save-property`, {
         hid, email, property_id: newPropertyId,
       });
+      
+      // ==========================================
+      // THE FIX: LOUDSPEAKER KO UPAR KAR DIYA!
+      // ==========================================
+      // Jaise hi save ho jaye, turant Dashboard ko bata do taaki CRM aur Cards load hona shuru ho jayein
+      window.dispatchEvent(
+        new CustomEvent("dashboard_property_changed", {
+          detail: { property_id: newPropertyId },
+        })
+      );
+      
+      // Iske baad aaram se apne charts load hone do
       await fetchAnalytics();
-      window.dispatchEvent(new Event("dashboard_property_changed"));
+      
     } catch (err) {
       alert("Failed to switch property.");
     } finally {
       setIsSwitching(false);
     }
   };
-
   const totals = {
     users: chartData.reduce((s, i) => s + i.users, 0),
     newUsers: chartData.reduce((s, i) => s + (i.newUsers || 0), 0),
