@@ -6,6 +6,7 @@ import {
 } from "recharts";
 import { FiCalendar, FiTrendingUp, FiUsers, FiEye, FiActivity, FiClock } from "react-icons/fi";
 import Loader from "./Loader";
+import { BASE_URL } from "../data/constant";
 
 const dateOptions = [
   { label: "Today", start: "today", end: "today" },
@@ -50,7 +51,7 @@ const GoogleAnalyticsChart = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-data/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-data/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
 
       if (data.error) {
@@ -72,7 +73,7 @@ const GoogleAnalyticsChart = () => {
 
   const fetchPropertiesList = async (userEmail) => {
     try {
-      const { data } = await axios.get(`http://localhost:8001/google/properties?email=${userEmail}`);
+      const { data } = await axios.get(`${BASE_URL}/google/properties?email=${userEmail}`);
       if (data.properties) setProperties(data.properties);
     } catch (err) {
       console.error(err);
@@ -100,18 +101,31 @@ const GoogleAnalyticsChart = () => {
     setIsSwitching(true);
     try {
       const hid = localStorage.getItem("hid");
-      await axios.post(`http://localhost:8001/google/save-property`, {
+      
+      // 1. Backend mein naya hotel save kiya
+      await axios.post(`${BASE_URL}/google/save-property`, {
         hid, email, property_id: newPropertyId,
       });
+      
+      // ==========================================
+      // THE FIX: LOUDSPEAKER KO UPAR KAR DIYA!
+      // ==========================================
+      // Jaise hi save ho jaye, turant Dashboard ko bata do taaki CRM aur Cards load hona shuru ho jayein
+      window.dispatchEvent(
+        new CustomEvent("dashboard_property_changed", {
+          detail: { property_id: newPropertyId },
+        })
+      );
+      
+      // Iske baad aaram se apne charts load hone do
       await fetchAnalytics();
-      window.dispatchEvent(new Event("dashboard_property_changed"));
+      
     } catch (err) {
       alert("Failed to switch property.");
     } finally {
       setIsSwitching(false);
     }
   };
-
   const totals = {
     users: chartData.reduce((s, i) => s + i.users, 0),
     newUsers: chartData.reduce((s, i) => s + (i.newUsers || 0), 0),

@@ -85,6 +85,40 @@ const gaConnectedParam = searchParams.get("ga_connected");
 const emailParam = searchParams.get("email");
 const showPropertyModal = gaConnectedParam === "true" && !!emailParam;
 
+const [isGaConnected, setIsGaConnected] = useState(false);
+
+
+
+const handleDisconnectGA = async () => {
+  setCurrentIntegrationId("googleAnalytics");
+  try {
+    const hid = localStorage.getItem("hid");
+    await axios.post(`${BASE_URL}/google/disconnect`, { hid });
+    setIsGaConnected(false); // UI ko turant 'not-connected' kar dega
+    alert("Google Analytics disconnected!");
+  } catch (error) {
+    console.error("Failed to disconnect GA:", error);
+    alert("Failed to disconnect. Please try again.");
+  } finally {
+    setCurrentIntegrationId(null);
+  }
+};
+const checkGaStatus = async () => {
+  try {
+    const hid = localStorage.getItem("hid");
+    if (!hid) return;
+    const response = await axios.get(`${BASE_URL}/google/status/${hid}`);
+    setIsGaConnected(response.data.connected);
+  } catch (error) {
+    console.error("Error checking GA status:", error);
+  }
+};
+
+
+useEffect(() => {
+  checkGaStatus();
+}, []);
+
 useEffect(() => {
   
   if (gaConnectedParam === "true" && emailParam && !googleEmail) {
@@ -99,7 +133,7 @@ useEffect(() => {
 const fetchGoogleProperties = async (email) => {
   try {
     const response = await axios.get(
-      `http://localhost:8001/google/properties?email=${email}`
+      `${BASE_URL}/google/properties?email=${email}`
     );
     setProperties(response.data.properties || []);
   } catch (error) {
@@ -118,7 +152,7 @@ const saveGoogleProperty = async () => {
   try {
     const hid = localStorage.getItem("hid");
 
-    await axios.post(`http://localhost:8001/google/save-property`, {
+    await axios.post(`${BASE_URL}/google/save-property`, {
       hid,
       email: googleEmail,
       property_id: selectedProperty,
@@ -133,6 +167,7 @@ const saveGoogleProperty = async () => {
     setGoogleEmail("");
 
     checkIntegrationStatus();
+    checkGaStatus();
 
     alert("Google Analytics connected successfully!");
   } catch (error) {
@@ -424,7 +459,7 @@ const saveGoogleProperty = async () => {
   
 else if (id === "googleAnalytics") {
   const hid = localStorage.getItem("hid");
-  const authUrl = `http://localhost:8001/google/auth?hid=${hid}`;
+  const authUrl = `${BASE_URL}/google/auth?hid=${hid}`;
 
   const width = 500;
   const height = 600;
@@ -441,7 +476,7 @@ else if (id === "googleAnalytics") {
   
   const messageListener = (event) => {
     
-    if (event.origin !== "http://localhost:8001") return;
+    if (event.origin !== "${BASE_URL}") return;
 
     if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
    
@@ -648,7 +683,9 @@ else if (id === "googleAnalytics") {
 
               if (integration?.id === "googleAdsInsight") {
                 status = integrationStatus[integration?.id]?.status;
-              } else {
+              } else if (integration?.id === "googleAnalytics") {
+                status = isGaConnected; 
+              }else {
                 status = integrationStatus[integration?.id] ?? false;
               }
 
@@ -760,7 +797,12 @@ else if (id === "googleAnalytics") {
                         if (!status) {
                           toggleIntegration(integration.id);
                         } else {
+                          if (integration.id === "googleAnalytics") {
+                            handleDisconnectGA(); // Agar GA hai toh Python wala chalao
+                          }
+                          else {
                           handleDisconnectIntegration(integration.id);
+                          }
                         }
                       }}
                       className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
