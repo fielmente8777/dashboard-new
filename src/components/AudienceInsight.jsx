@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import Loader from "./Loader";
+import { BASE_URL } from "../data/constant";
 
 // Premium Google Colors
 const COLORS = ["#1a73e8", "#00A94B", "#f9ab00", "#ea4335"];
@@ -22,7 +23,7 @@ const AudienceInsights = () => {
         setLoading(true);
         // NOTICE THE URL NOW USES DYNAMIC DATES
         const response = await axios.get(
-          `http://localhost:8001/google/analytics-audience/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+          `${BASE_URL}/google/analytics-audience/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
         );
         setData(response.data);
       } catch (err) {

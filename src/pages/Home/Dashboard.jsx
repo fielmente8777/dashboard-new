@@ -256,17 +256,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ===== GOOGLE ANALYTICS SECTION ===== */}
-      <div className="w-full space-y-6">
-        <GoogleAnalyticsChart />
-        <TrafficSources />
-        <TopPagesTable />
-        <ConversionEvents />
-        <DeviceAnalytics />
-        <GeoAnalytics />
-        <AudienceInsights />
-      </div>
-
+     
+     
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Distribution */}
@@ -316,6 +307,17 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
+       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
+      <div className="w-full space-y-6">
+        <GoogleAnalyticsChart />
+        <TrafficSources />
+        <TopPagesTable />
+        <ConversionEvents />
+        <DeviceAnalytics />
+        <GeoAnalytics />
+        <AudienceInsights />
+      </div>
+
 
       {/* FUNNEL */}
       <div className="bg-white rounded md:rounded-lg p-5">

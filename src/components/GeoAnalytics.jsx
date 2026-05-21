@@ -3,6 +3,7 @@ import axios from "axios";
 import {
   BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell
 } from "recharts";
+import { BASE_URL } from "../data/constant";
 
 const GeoAnalytics = () => {
   const [data, setData] = useState({ countries: [], cities: [] });
@@ -16,7 +17,7 @@ const GeoAnalytics = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-geo/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-geo/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
       const countries = data.countries || [];
       const cities = data.cities || [];

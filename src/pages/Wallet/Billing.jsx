@@ -212,6 +212,8 @@ const BillingSummary = ({
           ? 15
           : 40;
 
+  let gst=18
+
   console.log(multiplyBy);
 
   const handlePayment = () => {
@@ -254,6 +256,7 @@ const BillingSummary = ({
       discount: discount,
       teamCount: teamCount,
       teamCost: teamCost,
+      gst: gst,
     };
 
     console.log("AppIds", payload);
@@ -280,7 +283,8 @@ const BillingSummary = ({
 
       // open razorpay checkout with order details
       const options = {
-        key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
+        // key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
+        key: "rzp_test_UZ0V9jh3jMC0C9",
         amount: order.result.doc.amount, // Amount in paise
         // currency: order.currency,
         currency: "INR",
@@ -332,7 +336,10 @@ const BillingSummary = ({
       multiplyBy
     : 0;
 
-  const total = subtotal - (subtotal * discount) / 100;
+  const amountAfterDiscount = subtotal - (subtotal * discount) / 100;
+  const total = amountAfterDiscount + (amountAfterDiscount * 18) / 100;
+
+  // const total = subtotal - (subtotal * discount) / 100;
 
   // const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0);
 

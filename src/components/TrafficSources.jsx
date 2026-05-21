@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { BASE_URL } from "../data/constant";
 
 const CHANNEL_COLORS = {
   "Organic Search": "#1a73e8",
@@ -25,7 +26,7 @@ const TrafficSources = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-traffic-sources/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-traffic-sources/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
       setData({ channels: data.channels || [], sources: data.sources || [] });
     } catch (err) {

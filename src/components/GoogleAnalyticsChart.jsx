@@ -177,8 +177,8 @@ const GoogleAnalyticsChart = () => {
       {/* Header */}
       <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Website Analytics</h2>
-          <p className="text-xs text-gray-500 mt-0.5">{email}</p>
+          <h2 className="text-xl font-semibold text-gray-900">Eaz Analytics</h2>
+          {/* <p className="text-xs text-gray-500 mt-0.5">{email}</p> */}
         </div>
 
         <div className="flex items-center gap-3">

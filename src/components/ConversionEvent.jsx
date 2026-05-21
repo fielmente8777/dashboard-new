@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiTarget, FiZap } from "react-icons/fi";
+import { BASE_URL } from "../data/constant";
 
 const ConversionEvents = () => {
   const [data, setData] = useState({ events: [], conversions: [] });
@@ -13,7 +14,7 @@ const ConversionEvents = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-conversions/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-conversions/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
       setData({ events: data.events || [], conversions: data.conversions || [] });
     } catch (err) {

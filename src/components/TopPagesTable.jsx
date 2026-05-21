@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { BASE_URL } from "../data/constant";
 import { FiExternalLink } from "react-icons/fi";
 
 const TopPagesTable = () => {
@@ -13,7 +14,7 @@ const TopPagesTable = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-pages/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-pages/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
       setPages(data.topPages || []);
     } catch (err) {

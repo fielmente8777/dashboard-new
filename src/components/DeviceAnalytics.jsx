@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { FiMonitor, FiSmartphone, FiTablet } from "react-icons/fi";
+import { BASE_URL } from "../data/constant";
 
 const DEVICE_COLORS = { desktop: "#1a73e8", mobile: "#10b981", tablet: "#f59e0b" };
 const DEVICE_ICONS = { Desktop: FiMonitor, Mobile: FiSmartphone, Tablet: FiTablet };
@@ -17,7 +18,7 @@ const DeviceAnalytics = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:8001/google/analytics-devices/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `${BASE_URL}/google/analytics-devices/${hid}?startDate=${dateRange.start}&endDate=${dateRange.end}`
       );
       setData({
         devices: data.devices || [],

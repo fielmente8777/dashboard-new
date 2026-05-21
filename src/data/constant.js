@@ -363,6 +363,11 @@ export const Sources = [
   { label: "Facebook", value: "facebook" },
   { label: "Google", value: "google" },
   { label: "Vistors", value: "visitors" },
+  { label: "Exotel", value: "exotel" },
+  { label: "Insta - Ad & DM", value: "insta_ad_dm" },
+  { label: "Front desk", value: "front_desk" },
+  { label: "Booking Engine", value: "booking_engine" },
+  { label: "Email", value: "email" },
 ];
 
 // PRE BOOKING

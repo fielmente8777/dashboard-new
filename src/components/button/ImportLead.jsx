@@ -69,6 +69,9 @@ export default function ImportLead({ open, setOpen }) {
     return "";
   };
 
+
+  
+
   const normalizeRow = (row) => {
     const normalized = {};
 
