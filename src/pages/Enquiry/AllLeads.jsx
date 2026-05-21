@@ -101,6 +101,17 @@ const AllLeads = () => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
+
+    if (start && end) {
+      localStorage.setItem(
+        `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+        start.toISOString(),
+      );
+      localStorage.setItem(
+        `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+        end.toISOString(),
+      );
+    }
   };
 
   const fetchLeads = async (withDateFilter = false, lastPage) => {
@@ -331,11 +342,21 @@ const AllLeads = () => {
   useEffect(() => {
     fetchUsersData();
     const savedPage = localStorage.getItem(LOCAL_STORAGE.AllLeads);
+    const startDate = localStorage.getItem(
+      `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+    );
+    const endDate = localStorage.getItem(
+      `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+    );
 
     if (savedPage) {
       setPage(Number(savedPage));
     }
 
+    if (startDate && endDate) {
+      setStartDate(startDate);
+      setEndDate(endDate);
+    }
     setIsPageRestored(true);
   }, []);
 
@@ -412,6 +433,12 @@ const AllLeads = () => {
                     onClick={() => {
                       setStartDate(null);
                       setEndDate(null);
+                      localStorage.removeItem(
+                        `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+                      );
+                      localStorage.removeItem(
+                        `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+                      );
                     }}
                     className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
                   >
