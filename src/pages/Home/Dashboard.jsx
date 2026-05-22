@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
+import GscSettings from "../../components/GscSettings";
 import axios from "axios";
 import {
   PieChart,
@@ -30,6 +31,7 @@ import TopPagesTable from "../../components/TopPagesTable";
 import ConversionEvents from "../../components/ConversionEvent";
 import DeviceAnalytics from "../../components/DeviceAnalytics";
 import GeoAnalytics from "../../components/GeoAnalytics";
+import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
 const COLORS = [
   "#22c55e",
@@ -312,6 +314,8 @@ const Dashboard = () => {
         <GoogleAnalyticsChart />
         <TrafficSources />
         <TopPagesTable />
+        <GscSettings />
+        <SearchConsoleQueries />
         <ConversionEvents />
         <DeviceAnalytics />
         <GeoAnalytics />

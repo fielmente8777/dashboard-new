@@ -59,6 +59,8 @@ const GoogleAnalyticsChart = () => {
       } else {
         setChartData(data.chartData);
         setActivePropertyId(data.activePropertyId);
+        // Save active property so GSC widget can read it on load/refresh
+        localStorage.setItem("activePropertyId", data.activePropertyId);
         setEmail(data.email);
         if (data.email && properties.length === 0) {
           fetchPropertiesList(data.email);
@@ -101,25 +103,25 @@ const GoogleAnalyticsChart = () => {
     setIsSwitching(true);
     try {
       const hid = localStorage.getItem("hid");
-      
-      // 1. Backend mein naya hotel save kiya
+
+      // 1. Backend mein naya property save kiya
       await axios.post(`${BASE_URL}/google/save-property`, {
         hid, email, property_id: newPropertyId,
       });
-      
-      // ==========================================
-      // THE FIX: LOUDSPEAKER KO UPAR KAR DIYA!
-      // ==========================================
-      // Jaise hi save ho jaye, turant Dashboard ko bata do taaki CRM aur Cards load hona shuru ho jayein
+
+      // 2. property_id ko localStorage mein save karo taaki GSC component padh sake
+      localStorage.setItem("activePropertyId", newPropertyId);
+
+      // 3. Dashboard ko bata do taaki GSC aur cards turant update ho jayein
       window.dispatchEvent(
         new CustomEvent("dashboard_property_changed", {
           detail: { property_id: newPropertyId },
         })
       );
-      
-      // Iske baad aaram se apne charts load hone do
+
+      // 4. Apne charts load hone do
       await fetchAnalytics();
-      
+
     } catch (err) {
       alert("Failed to switch property.");
     } finally {
