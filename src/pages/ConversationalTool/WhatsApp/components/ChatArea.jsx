@@ -68,6 +68,7 @@ const ChatArea = () => {
   const {
     selectedConversation,
     setSelectedConversation,
+    setConversations,
     conversations,
     setMobileActive,
     setLastMessage,
@@ -75,8 +76,7 @@ const ChatArea = () => {
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
-    selectedConversation?.last_message?.created_at ||
-      selectedConversation?.createdAt,
+    selectedConversation?.last_message?.created_at,
   );
 
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
@@ -182,6 +182,22 @@ const ChatArea = () => {
 
         // Push instantly to UI (optimistic update)
         setMessageList((prev) => [...prev, optimisticMessage]);
+        setConversations((prevConversations) =>
+          prevConversations.map((conv) => {
+            if (conv._id === selectedConversation._id) {
+              return {
+                ...conv,
+                last_message: {
+                  text: messageValue || "template",
+                  type: messageValue ? "text" : "template",
+                  sender: "me",
+                  updated_at: new Date(),
+                },
+              };
+            }
+            return conv;
+          }),
+        );
 
         const response = await sendWhatsAppMessage(templatePayload);
 
@@ -240,6 +256,22 @@ const ChatArea = () => {
       };
       // Push optimistic message
       setMessageList((prev) => [...prev, optimisticMessage]);
+      setConversations((prevConversations) =>
+        prevConversations.map((conv) => {
+          if (conv._id === selectedConversation._id) {
+            return {
+              ...conv,
+              last_message: {
+                text: messageValue || "template",
+                type: messageValue ? "text" : "template",
+                sender: "me",
+                updated_at: new Date(),
+              },
+            };
+          }
+          return conv;
+        }),
+      );
       setMessageValue("");
       setFile(null);
       setSelectedTemplate(null);
@@ -269,7 +301,6 @@ const ChatArea = () => {
       console.error(error);
     }
   };
-  console.log(selectedTemplate);
 
   const loadMessages = async (conversationId) => {
     setLoadingMessages(true);
@@ -547,6 +578,7 @@ const ChatArea = () => {
               </button>
             </div>
           )}
+
           <Link
             to={`tel:${selectedConversation?.phone}`}
             className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"

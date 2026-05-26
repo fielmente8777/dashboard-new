@@ -11,6 +11,7 @@ import { getCookie } from "../utils/handleCookies";
 import { useNavigate } from "react-router-dom";
 import { BASE_PATH } from "../data/constant";
 import { isExpired } from "../utils/isExpired";
+import { fetchSubscriptionData } from "../redux/slice/subscriptionDataSlice";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
@@ -30,6 +31,7 @@ const GlobalDataProvider = () => {
       dispatch(fetchWebsiteData(token, HID));
       dispatch(fetchUserProfile(token));
       dispatch(fetchAuthUserProfile(token));
+      dispatch(fetchSubscriptionData(token));
       // if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
     }
   }, [token]);

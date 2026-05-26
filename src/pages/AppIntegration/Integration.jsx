@@ -5,7 +5,7 @@ import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
 import { BASE_PATH, BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
 import DataContext from "../../context/DataContext";
@@ -15,11 +15,138 @@ import {
   disconnectIntegration,
 } from "../../services/api/Integration";
 import IntegrationSkelton from "../../components/Skeltons/IntegrationSkelton";
+import { useSelector } from "react-redux";
+import { Lock } from "lucide-react";
 
 // import { Mail, TrendingUp, Calendar, MessageSquare, Database, Cloud, Search, ChevronRight } from 'lucide-react';
 
+const mapIntegrationId = {
+  metaWhatsapp: "whatsapp",
+  exotel: "exotel",
+  meta: "meta",
+  googleadsinsights: "googleadsinsights",
+  google_analytics: "google_analytics"
+};
+
 function Integration() {
   const navigate = useNavigate();
+
+  const [searchParams] = useSearchParams();
+
+  
+  const [gmbLocations, setGmbLocations] = useState([]);
+  const [selectedGmbLocation, setSelectedGmbLocation] = useState("");
+  const [showGmbModal, setShowGmbModal] = useState(false);
+  const [gmbLoading, setGmbLoading] = useState(false);
+
+
+  const fetchGmbLocations = async () => {
+    try {
+      setGmbLoading(true);
+      const response = await axios.get(`http://localhost:8000/api/v1/gmb/locations`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+      setGmbLocations(response.data.locations || []);
+    } catch (error) {
+      console.error("Failed to fetch GMB locations:", error);
+      alert("Failed to fetch locations. Please try again.");
+    } finally {
+      setGmbLoading(false);
+    }
+  };
+
+  const handleSaveGmbLocation = async () => {
+    if (!selectedGmbLocation) return alert("Please select a location");
+
+    // Find the full object from the array
+    const locationData = gmbLocations.find(loc => loc.locationId === selectedGmbLocation);
+
+    try {
+      await axios.post(`http://localhost:8000/api/v1/gmb/save-location`, {
+        locationId: locationData.locationId,
+        accountId: locationData.accountId,
+        title: locationData.title
+      }, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      });
+
+      alert("GMB Connected Successfully!");
+      setShowGmbModal(false);
+      checkIntegrationStatus(); // Refresh cards
+    } catch (error) {
+      console.error("Failed to save GMB location", error);
+      alert("Error saving location.");
+    }
+  };
+
+
+  const [properties, setProperties] = useState([]);
+  const [selectedProperty, setSelectedProperty] = useState("");
+  const [googleEmail, setGoogleEmail] = useState("");
+  const [propertiesLoading, setPropertiesLoading] = useState(false);
+  const gaConnectedParam = searchParams.get("ga_connected");
+  const emailParam = searchParams.get("email");
+  const showPropertyModal = gaConnectedParam === "true" && !!emailParam;
+
+  useEffect(() => {
+
+    if (gaConnectedParam === "true" && emailParam && !googleEmail) {
+      setGoogleEmail(emailParam);
+      if (properties.length === 0 && !propertiesLoading) {
+        setPropertiesLoading(true);
+        fetchGoogleProperties(emailParam);
+      }
+    }
+  }, [gaConnectedParam, emailParam]);
+
+  const fetchGoogleProperties = async (email) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/google/properties?email=${email}`
+      );
+      setProperties(response.data.properties || []);
+    } catch (error) {
+      console.error("Failed to fetch GA properties:", error);
+    } finally {
+      setPropertiesLoading(false);
+    }
+  };
+
+  const saveGoogleProperty = async () => {
+    if (!selectedProperty) {
+      alert("Please select a property first.");
+      return;
+    }
+
+    try {
+      const hid = localStorage.getItem("hid");
+
+      await axios.post(`${BASE_URL}/google/save-property`, {
+        hid,
+        email: googleEmail,
+        property_id: selectedProperty,
+      });
+
+
+      navigate(window.location.pathname, { replace: true });
+
+
+      setProperties([]);
+      setSelectedProperty("");
+      setGoogleEmail("");
+
+      checkIntegrationStatus();
+
+      alert("Google Analytics connected successfully!");
+    } catch (error) {
+      console.error("Failed to save GA property:", error);
+      alert("Failed to save property. Please try again.");
+    }
+  };
+
+  const { subscription } = useSelector((state) => state?.subscription);
+
+
   const {
     integrationStatus,
     checkIntegrationStatus,
@@ -41,6 +168,8 @@ function Integration() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [showOtpLessSidebar, setOtpLessSidebar] = useState(false);
   const [isCreateConnectLoading, setIsCreateConnectLoading] = useState(false);
+
+
 
   const [integrations] = useState([
     {
@@ -64,7 +193,7 @@ function Integration() {
       color: "",
     },
     {
-      id: "googleAdsInsight",
+      id: "googleadsinsights",
       name: "Google Ads Insights",
       description: "Track google ads metrics.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
@@ -125,6 +254,25 @@ function Integration() {
       status: "not-connected",
       category: "Analytics",
       color: "bg-white",
+    },
+    {
+
+      id: "google_analytics",
+
+      name: "Google Analytics",
+
+      description:
+
+        "Connect Google Analytics account to track website traffic and hotel performance insights.",
+
+      icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
+
+      status: "not-connected",
+
+      category: "Analytics",
+
+      color: "",
+
     },
   ]);
 
@@ -225,26 +373,41 @@ function Integration() {
     } else if (id === "gmb") {
       const handleConnection = async () => {
         try {
+          // 1. Get the Google Auth URL from Backend (Yahan 8000 hai)
           const response = await axios.get(
-            `http://localhost:8000/api/v1/gmb/connect`,
-            {
-              params: {
-                ndid: localStorage.getItem("ndid"),
-              },
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-                "Content-Type": "application/json",
-              },
-            },
+            `http://localhost:8000/api/v1/gmb/connect?ndid=${localStorage.getItem("ndid")}`,
+            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
           );
-          window.open(response.data.url, "_blank");
+
+          // 2. Open Popup
+          const width = 500;
+          const height = 600;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(response.data.url, "GMBAuth", `width=${width},height=${height},top=${top},left=${left}`);
+
+
+          const messageListener = (event) => {
+            console.log("Message received from:", event.origin, event.data);
+
+            if (event.origin !== "http://localhost:8000") return;
+
+            if (event.data?.type === "GMB_OAUTH_SUCCESS") {
+              window.removeEventListener("message", messageListener);
+
+              setShowGmbModal(true);
+              fetchGmbLocations();
+            }
+          };
+
+          window.addEventListener("message", messageListener);
         } catch (error) {
-          console.error("Error connecting google:", error);
+          console.error("Error connecting GMB:", error);
         }
       };
       handleConnection();
       return;
-    } else if (id === "googleAdsInsight") {
+    } else if (id === "googleadsinsights") {
       const handleConnection = async () => {
         try {
           // console.log("Connecting with google")
@@ -258,6 +421,35 @@ function Integration() {
         }
       };
       handleConnection();
+    }
+    else if (id === "google_analytics") {
+      const hid = localStorage.getItem("hid");
+      const authUrl = `${BASE_URL}/google/auth?hid=${hid}`;
+
+      const width = 500;
+      const height = 600;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+
+
+      const authWindow = window.open(
+        authUrl,
+        "GoogleAnalyticsAuth",
+        `width=${width},height=${height},top=${top},left=${left}`
+      );
+
+
+    if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
+   
+      const newEmail = event.data.email;
+      
+      
+      setGoogleEmail(newEmail);
+      setPropertiesLoading(true);
+      fetchGoogleProperties(newEmail);
+      
+      navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });      
+      window.removeEventListener("message", messageListener);
     }
     // setIntegrations(
     //   integrations.map((integration) => {
@@ -384,11 +576,13 @@ function Integration() {
     fetchForms();
     fetchleads();
   }, []);
-
   if (isLoadingIntegrationStatus) {
     return <IntegrationSkelton />;
   }
 
+}
+
+  console.log("jhgv ", integrations)
   return (
     <div className="bg-[#f7f7f7]">
       {/* Header */}
@@ -428,11 +622,10 @@ function Integration() {
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
-                  selectedFilter === category
-                    ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
+                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
               >
                 {category}
               </button>
@@ -446,16 +639,23 @@ function Integration() {
             filteredIntegrations?.map((integration) => {
               let status = false;
 
-              if (integration?.id === "googleAdsInsight") {
+              if (integration?.id === "googleadsinsights") {
                 status = integrationStatus[integration?.id]?.status;
               } else {
                 status = integrationStatus[integration?.id] ?? false;
               }
 
+              // if (
+              //   subscription?.appAccess &&
+              //   !subscription?.appAccess[mapIntegrationId[integration?.id]]
+              // ) {
+              //   return null;
+              // }
+
               return (
                 <div
                   key={integration?.id}
-                  className="bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm"
+                  className={`${subscription?.appAccess && !subscription?.appAccess[mapIntegrationId[integration?.id]] ? "" : ""} relative bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm`}
                 >
                   <div className="p-6">
                     {/* Icon */}
@@ -467,11 +667,10 @@ function Integration() {
                           {integration?.img ? (
                             <img
                               src={integration?.img}
-                              className={`${
-                                integration.id === "otp-less"
-                                  ? "w-40 -ml-4"
-                                  : "w-16 -ml-2"
-                              }  object-contain`}
+                              className={`${integration.id === "otp-less"
+                                ? "w-40 -ml-4"
+                                : "w-16 -ml-2"
+                                }  object-contain`}
                             />
                           ) : (
                             integration?.icon
@@ -492,7 +691,56 @@ function Integration() {
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
                       {integration.description}
                     </p>
+                    {integration.id === "google_analytics" &&
+                      properties.length > 0 && (
 
+                        <div className="mb-4">
+
+                          <select
+                            className="w-full border rounded-md p-2 text-sm"
+                            value={selectedProperty}
+                            onChange={(e) => setSelectedProperty(e.target.value)}
+                          >
+
+                            <option value="">
+                              Select Property
+                            </option>
+
+                            {properties.map((property) => (
+                              <option
+                                key={property.property_id}
+                                value={property.property_id}
+                              >
+                                {property.name}
+                              </option>
+                            ))}
+
+                          </select>
+
+                        </div>
+                      )}
+
+                    {/* SAVE PROPERTY BUTTON */}
+
+                    {integration.id === "google_analytics" &&
+
+                      properties.length > 0 &&
+
+                      selectedProperty && (
+
+                        <button
+
+                          onClick={saveGoogleProperty}
+
+                          className="w-full mb-3 bg-green-600 text-white py-2 rounded-sm"
+
+                        >
+
+                          Save Property
+
+                        </button>
+
+                      )}
                     {/* Action Button */}
                     <button
                       disabled={currentIntegrationId === integration.id}
@@ -503,15 +751,13 @@ function Integration() {
                           handleDisconnectIntegration(integration.id);
                         }
                       }}
-                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${
-                        status
-                          ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                          : "bg-primary text-white hover:bg-primary/90"
-                      } ${
-                        currentIntegrationId === integration.id
+                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${status
+                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        : "bg-primary text-white hover:bg-primary/90"
+                        } ${currentIntegrationId === integration.id
                           ? "opacity-70 cursor-not-allowed"
                           : ""
-                      }`}
+                        }`}
                     >
                       {currentIntegrationId === integration.id ? (
                         <>
@@ -525,6 +771,15 @@ function Integration() {
                       )}
                     </button>
                   </div>
+
+
+                  {subscription?.appAccess && !subscription?.appAccess[mapIntegrationId[integration?.id]] &&
+                    <div className="bg-white/80 text-white absolute top-0 left-0 w-full h-full flex justify-center items-center z-50">
+                      <Link to="/plans" className="px-4 py-2 bg-primary shadow-md rounded-lg text-sm flex items-center gap-2">
+                        Upgrade <Lock size={18} />
+                      </Link>
+                    </div>}
+
                 </div>
               );
             })}
@@ -711,6 +966,149 @@ function Integration() {
           </div>
         </div>
       )}
+
+      {showPropertyModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 999999,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              padding: "32px",
+              borderRadius: "12px",
+              width: "420px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            }}
+          >
+            <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>
+              Select Google Analytics Property
+            </h2>
+            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+              Connected as <strong>{googleEmail || emailParam}</strong>
+            </p>
+
+            {propertiesLoading ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>
+                Loading properties...
+              </p>
+            ) : properties.length === 0 ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>
+                No GA4 properties found for this account.
+              </p>
+            ) : (
+              <>
+                <select
+                  value={selectedProperty}
+                  onChange={(e) => setSelectedProperty(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                  }}
+                >
+                  <option value="">— Select a Property —</option>
+                  {properties.map((property) => (
+                    <option key={property.property_id} value={property.property_id}>
+                      {property.name} ({property.account})
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={saveGoogleProperty}
+                  disabled={!selectedProperty}
+                  style={{
+                    width: "100%",
+                    marginTop: "16px",
+                    padding: "12px",
+                    background: selectedProperty ? "#16a34a" : "#ccc",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "8px",
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    cursor: selectedProperty ? "pointer" : "not-allowed",
+                  }}
+                >
+                  Save & Connect
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => navigate(window.location.pathname, { replace: true })}
+              style={{
+                width: "100%",
+                marginTop: "10px",
+                padding: "10px",
+                background: "transparent",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                fontSize: "14px",
+                cursor: "pointer",
+                color: "#666",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {showGmbModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 999999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ background: "white", padding: "32px", borderRadius: "12px", width: "420px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>Select Google Business Profile</h2>
+            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>Choose the hotel location to connect.</p>
+
+            {gmbLoading ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>Loading your properties...</p>
+            ) : gmbLocations.length === 0 ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>No Google Business Profiles found for this account.</p>
+            ) : (
+              <>
+                <select
+                  value={selectedGmbLocation}
+                  onChange={(e) => setSelectedGmbLocation(e.target.value)}
+                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", marginBottom: "16px" }}
+                >
+                  <option value="">— Select a Location —</option>
+                  {gmbLocations.map((loc) => (
+                    <option key={loc.locationId} value={loc.locationId}>
+                      {loc.title}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleSaveGmbLocation}
+                  disabled={!selectedGmbLocation}
+                  style={{ width: "100%", padding: "12px", background: selectedGmbLocation ? "#16a34a" : "#ccc", color: "white", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: 600, cursor: selectedGmbLocation ? "pointer" : "not-allowed" }}
+                >
+                  Save & Connect
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => setShowGmbModal(false)}
+              style={{ width: "100%", marginTop: "10px", padding: "10px", background: "transparent", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", cursor: "pointer", color: "#666" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
