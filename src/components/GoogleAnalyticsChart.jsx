@@ -104,15 +104,14 @@ const GoogleAnalyticsChart = () => {
     try {
       const hid = localStorage.getItem("hid");
 
-      // 1. Backend mein naya property save kiya
+     
       await axios.post(`${BASE_URL}/google/save-property`, {
         hid, email, property_id: newPropertyId,
       });
 
-      // 2. property_id ko localStorage mein save karo taaki GSC component padh sake
       localStorage.setItem("activePropertyId", newPropertyId);
 
-      // 3. Dashboard ko bata do taaki GSC aur cards turant update ho jayein
+     
       window.dispatchEvent(
         new CustomEvent("dashboard_property_changed", {
           detail: { property_id: newPropertyId },

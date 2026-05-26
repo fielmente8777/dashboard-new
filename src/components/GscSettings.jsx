@@ -27,7 +27,7 @@ const GscSettings = () => {
       setLoading(true);
       const { data } = await axios.get(`${BASE_URL}/google/gsc-settings/${propertyId}`);
       if (data.configured) {
-        // Domain is set (manually OR auto-detected) -> show compact view, hide form
+        
         setRawDomain(data.rawDomain || "");
         setPropertyType(data.propertyType || "domain");
         setEmail(data.email || "");
@@ -56,7 +56,7 @@ const GscSettings = () => {
     loadSettings();
   }, [loadSettings]);
 
-  // Reload when the property changes elsewhere in the app
+
   useEffect(() => {
     const handleProp = () => loadSettings();
     window.addEventListener("dashboard_property_changed", handleProp);
@@ -97,12 +97,12 @@ const GscSettings = () => {
         propertyType,
       });
 
-      // Notify the dashboard so the queries widget re-fetches immediately
+      
       window.dispatchEvent(new CustomEvent("dashboard_property_changed", {
         detail: { property_id: propertyId },
       }));
 
-      // Collapse back to compact view with the new domain
+     
       setSavedDomain(rawDomain.trim());
       setIsConfigured(true);
       setIsEditing(false);

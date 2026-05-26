@@ -57,9 +57,7 @@ const SearchConsoleQueries = () => {
       // Backend returns 200 even for expected failures, with an error_code
       setStatusCode(data.error_code || null);
       setQueries(data.topQueries || []);
-      // GSC is working (saved domain OR backend auto-detected it on this call).
-      // Tell GscSettings to re-check and collapse to its compact view, since
-      // its initial load may have run BEFORE auto-detection wrote to the DB.
+      
       if (!data.error_code) {
         window.dispatchEvent(
           new CustomEvent("gsc_configured", { detail: { property_id: propertyId } })
@@ -75,18 +73,18 @@ const SearchConsoleQueries = () => {
     }
   }, []);
 
-  // Initial load + whenever date range changes
+  
   useEffect(() => {
     const propertyId = localStorage.getItem("activePropertyId");
     fetchQueries(dateRange, propertyId);
   }, [dateRange, fetchQueries]);
 
-  // Event bus listeners
+  
   useEffect(() => {
     const handleDate = (e) => {
       if (e.detail) setDateRange({ start: e.detail.start, end: e.detail.end });
     };
-    // Property switch: event se naya property_id lo (warna localStorage se)
+   
     const handleProp = (e) => {
       const propertyId =
         e.detail?.property_id || localStorage.getItem("activePropertyId");
@@ -102,7 +100,7 @@ const SearchConsoleQueries = () => {
 
   const maxClicks = queries.length ? Math.max(...queries.map((q) => q.clicks)) : 0;
 
-  // Aggregate totals for the header summary chips
+  
   const totals = queries.reduce(
     (acc, q) => {
       acc.clicks += q.clicks || 0;
