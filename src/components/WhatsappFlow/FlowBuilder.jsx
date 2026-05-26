@@ -337,6 +337,9 @@ export default function FlowBuilder() {
     }
   };
 
+  console.log(nodes);
+  console.log(edges);
+
   useEffect(() => {
     fetchFlows();
   }, []);

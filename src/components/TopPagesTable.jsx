@@ -88,7 +88,7 @@ const TopPagesTable = () => {
                           title={page.fullUrl}
                         >
                           <FiExternalLink className="w-3 h-3 flex-shrink-0" />
-                          {page.fullUrl.replace('https://','')}
+                          {page.fullUrl?.replace('https://','')}
                         </a>
                       </div>
                     </div>

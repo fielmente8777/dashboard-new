@@ -164,6 +164,38 @@ const Dashboard = () => {
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
+
+
+  const handleDateSelect = (e) => {
+    const { value } = e.target;
+    setDateRange(value);
+    const now = new Date();
+
+    if (value === "all") {
+      setEnquires(enquiresList);
+      return;
+    }
+
+    let days = 7;
+    if (value === "30d") days = 30;
+    else if (value === "90d") days = 90;
+
+    const cutoff = new Date();
+    cutoff.setDate(now.getDate() - days);
+
+    const filtered = enquiresList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    const filteredEazobot = eazobotEnquiriesList.filter((item) => {
+      const createdDate = new Date(item.Created_at);
+      return createdDate >= cutoff;
+    });
+
+    setData(filtered);
+  };
+
   if (!data) return <Loading />;
 
   return (
@@ -257,6 +289,37 @@ const Dashboard = () => {
           
         </div>
       </div>
+
+      <div>
+            {/* <AdLeadsAnalytics showTitle={false} rangeDate={dateRange} /> */}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 border">
+            <div className="lg:col-span-3">
+              <AnalyticsCard />
+            </div>
+            <div className="md:hidden lg:block lg:col-span-2">
+              <TemperatureCard />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 pb-10">
+            {/* <Review /> */}
+            <div className="hidden md:block lg:hidden">
+              <TemperatureCard />
+            </div>
+            {/* <Services /> */}
+
+            <div className="lg:col-span-2">
+              <MiniLineChartCard
+                title="Other"
+                value="0.00"
+                changePercent={0.0}
+                isPositive={false}
+                currentData={[20, 15, 30, 35, 25, 50]}
+                lastWeekData={[25, 30, 22, 40, 33, 38]}
+              />
+            </div>
+          </div>
 
      
      

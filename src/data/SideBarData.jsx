@@ -540,12 +540,12 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
 
-  // {
-  //   name: "Front Desk",
-  //   key: "Front Desk",
-  //   link: `front-desk`,
-  //   icon: <HiOutlineUserGroup />,
-  // },
+  {
+    name: "Front Desk",
+    // key: "Front Desk",
+    link: `front-desk`,
+    icon: <HiOutlineUserGroup />,
+  },
 
   {
     name: "Newsletter",

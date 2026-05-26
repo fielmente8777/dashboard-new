@@ -93,6 +93,17 @@ const MetaLeads = () => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
+
+    if (start && end) {
+      localStorage.setItem(
+        `${LOCAL_STORAGE.MetaLeadsPage}.startDate`,
+        start.toISOString(),
+      );
+      localStorage.setItem(
+        `${LOCAL_STORAGE.MetaLeadsPage}.endDate`,
+        end.toISOString(),
+      );
+    }
   };
 
   const fetchLeads = async (withDateFilter = false) => {
@@ -349,9 +360,19 @@ const MetaLeads = () => {
 
   useEffect(() => {
     const savedPage = localStorage.getItem(LOCAL_STORAGE.MetaLeadsPage);
+    const startDate = localStorage.getItem(
+      `${LOCAL_STORAGE.MetaLeadsPage}.startDate`,
+    );
+    const endDate = localStorage.getItem(
+      `${LOCAL_STORAGE.MetaLeadsPage}.endDate`,
+    );
 
     if (savedPage) {
       setPage(Number(savedPage));
+    }
+    if (startDate && endDate) {
+      setStartDate(startDate);
+      setEndDate(endDate);
     }
 
     setIsPageRestored(true);

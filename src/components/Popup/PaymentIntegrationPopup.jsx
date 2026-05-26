@@ -9,6 +9,32 @@ const PaymentIntegrationPopup = ({
 }) => {
     const [apiKey, setApiKey] = React.useState("");
     const [secretkey, setSecretKey] = React.useState("");
+     const handleOnConfirm = async (title, apiKey, secretkey) => {
+    
+        // console.log(title, apiKey, secretkey);
+        if (title === "Razorpay") {
+          if (!apiKey || !secretkey) {
+            Swal.fire({
+              icon: "warning",
+              titleText: "Warning",
+              text: "Please fill all the fields",
+              confirmButtonText: "Ok"
+            })
+            return "Please fill all the fields";
+          }
+    
+          const response = await axios.post(`${BASE_URL}/razorpay/edit/gateway`, {
+            Token: handleLocalStorage("token"),
+            hId: handleLocalStorage("hid"),
+            type: title,
+            API_KEY: apiKey,
+            SECRET_KEY: secretkey,
+          })
+    
+          // console.log(response);
+        }
+        alert("Payment Gateway Activated");
+      }
     return (
         <>
             {open && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50">
