@@ -192,11 +192,11 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
 
-    [`${BASE_PATH}/${hid}/insights-analytics/google-ads-insights`]: (
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: (
       <GoogleAdsInsights />
     ),
     [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
-    // [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <GoogleAnalytics />,
+    [`${BASE_PATH}/${hid}/google-analytics`]: <GoogleAnalytics />,
     [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (

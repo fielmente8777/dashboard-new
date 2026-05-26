@@ -289,6 +289,7 @@ export const SidebarData = [
   },
    {
     name: "Google Analytics",
+    key: "Google Ads Insights",
     link: `insights-analytics/google-analytics`,
     icon: <SiGoogleanalytics size={18} />,
   },
