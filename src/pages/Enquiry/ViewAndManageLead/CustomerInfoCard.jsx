@@ -142,6 +142,42 @@ const CustomerInfoCard = ({ lead, onClick }) => {
     checkIntegrationStatus();
   }, []);
 
+  const getQueryParams = (url) => {
+  try {
+    const params = new URL(url).searchParams;
+    return Object.fromEntries(params.entries());
+  } catch {
+    return {};
+  }
+};
+
+const friendlyLabels = {
+  utm_source: "Lead Source",
+  utm_medium: "Marketing Type",
+  utm_campaign: "Marketing Campaign",
+  utm_term: "Search Keyword",
+  utm_content: "Ad Version",
+
+  hsa_acc: "Advertising Account",
+  hsa_cam: "Campaign ID",
+  hsa_grp: "Ad Group",
+  hsa_ad: "Advertisement ID",
+  hsa_src: "Traffic Source",
+  hsa_tgt: "Target Audience",
+  hsa_kw: "Keyword Triggered",
+  hsa_mt: "Match Type",
+  hsa_net: "Advertising Network",
+  hsa_ver: "Tracking Version",
+
+  gad_source: "Google Ad Source",
+  gad_campaignid: "Google Campaign",
+
+  gbraid: "Mobile Ad Tracking",
+  gclid: "Google Click Reference",
+};
+
+  const queryParams = getQueryParams(lead?.source_url);
+
   if (!lead) return null;
 
   return (
@@ -230,6 +266,32 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             {lead.source_url}
           </Link>
         )}
+
+
+        <div className="mt-4 text-sm text-gray-700 border p-4 rounded-xl">
+  <h1 className="font-semibold mb-3">URL Parameters</h1>
+
+        {Object.keys(queryParams)?.length > 0 ? (
+          <div className="space-y-2">
+            {Object.entries(queryParams)?.map(([key, value]) => (
+              <div
+                key={key}
+                className="flex justify-between gap-4 border-b pb-2 last:border-b-0"
+              >
+                <span className="font-medium text-gray-600">
+                  {friendlyLabels[key] || key.replace(/_/g, " ")}
+                </span>
+
+                <span className="text-gray-800 break-all text-right">
+                  {decodeURIComponent(value)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500">No URL parameters found</p>
+        )}
+      </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -287,7 +349,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
 
       {callPopup && (
         <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
-          <div className="w-[400px] h-[200px] max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+          <div className="w-[400px] h-50 max-w-md p-4 bg-white shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             <div className="flex flex-col gap-2">
               <h1>Enter Number to make a call!</h1>
               <CustomDropdown

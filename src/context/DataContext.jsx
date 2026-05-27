@@ -289,9 +289,30 @@ export const DataProvider = ({ children }) => {
   //   };
   // }, []);
 
+
+  const Theme=[
+    {
+      text: '#9CA1A0',
+    fontFamily: "",
+    buttonBg: '#2A9B63',
+    backBg: '#1e293b',
+    bgColor: '#0f172a',
+    },
+    {
+      text: '#000',
+    fontFamily: 'Arial',
+    buttonBg: '#ddd',
+    backBg: '#ddd122',
+    bgColor: '#ccc'
+    }
+  ]
+    const [theme, setTheme] = useState(Theme[0]);
+
   return (
     <DataContext.Provider
       value={{
+        Theme,
+        theme, setTheme,
         // socket,
         host,
         auth,

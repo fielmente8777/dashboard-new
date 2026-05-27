@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
 import GscSettings from "../../components/GscSettings";
 import axios from "axios";
@@ -33,6 +33,7 @@ import DeviceAnalytics from "../../components/DeviceAnalytics";
 import GeoAnalytics from "../../components/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
+import DataContext from "../../context/DataContext";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -46,6 +47,9 @@ const COLORS = [
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
+
+
+const {theme, setTheme,Theme} = useContext(DataContext);
 
   // 1. STATE FOR OUR CLEAN GA METRICS
   const [gaMetrics, setGaMetrics] = useState({
@@ -167,7 +171,11 @@ const Dashboard = () => {
   if (!data) return <Loading />;
 
   return (
-    <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
+    <div className={`p-3 md:p-6   min-h-screen space-y-3 md:space-y-6`}
+      style={{
+        backgroud:theme.bgColor
+      }}
+    >
       
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>

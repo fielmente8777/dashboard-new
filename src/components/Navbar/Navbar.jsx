@@ -113,6 +113,14 @@ const Navbar = () => {
 
   const firstLetter =
     hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
+    const {theme, setTheme,Theme} = useContext(DataContext);
+
+    const toggleTheme = (index) => {
+      setTheme(prevTheme => prevTheme === Theme[0] ? Theme[1] : Theme[0]);
+    }
+
+
+    console.log("hejrter", theme)
   return (
     <div className="left-0 top-0">
       <div className="py-2 z-10 bg-blue-100  sm:bg-primary flex cardShadow px-4 items-center justify-between top-0 w-full ">
@@ -172,6 +180,11 @@ const Navbar = () => {
             {/* <button onClick={() => setIsNotificationPopupOpen(true)}>
               <IoIosNotifications size={22} color="white" />
             </button> */}
+              <button onClick={() => toggleTheme(0)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl transition" 
+              >
+              {theme === Theme[0] ? 
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg> : <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3 7 7 0 0021 12.8z" /></svg>}
+            </button>
             <button
               onClick={() => setIsNotificationPopupOpen(true)}
               className="group transition-transform duration-200 hover:scale-110 hover:shadow-md"
