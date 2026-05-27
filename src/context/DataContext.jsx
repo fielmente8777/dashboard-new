@@ -142,10 +142,11 @@ export const DataProvider = ({ children }) => {
         },
       );
 
-      if (bookingDataResponse.ok) {
-        const bookingData = await bookingDataResponse.json();
+      const result=await bookingDataResponse.json();
 
-        setBookingData(bookingData);
+      console.log("Booking Data Response:", result);
+      if (result.Status) {
+        setBookingData(result.Details);
       } else {
         console.error("Failed to fetch booking data");
       }
