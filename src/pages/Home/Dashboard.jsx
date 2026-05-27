@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
 import GscSettings from "../../components/GscSettings";
 import axios from "axios";
@@ -33,7 +33,6 @@ import DeviceAnalytics from "../../components/DeviceAnalytics";
 import GeoAnalytics from "../../components/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
-import DataContext from "../../context/DataContext";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -47,9 +46,6 @@ const COLORS = [
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
-
-
-const {theme, setTheme,Theme} = useContext(DataContext);
 
   // 1. STATE FOR OUR CLEAN GA METRICS
   const [gaMetrics, setGaMetrics] = useState({
@@ -171,15 +167,11 @@ const {theme, setTheme,Theme} = useContext(DataContext);
   if (!data) return <Loading />;
 
   return (
-    <div className={`p-3 md:p-6   min-h-screen space-y-3 md:space-y-6`}
-      style={{
-        backgroud:theme.bgColor
-      }}
-    >
+    <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-3">
+        <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted mb-3">
           CRM Data (Actual Leads)
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
@@ -198,12 +190,13 @@ const {theme, setTheme,Theme} = useContext(DataContext);
      <div className="mt-8 mb-4">
         {/* Header with Live Loading Indicator */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight">
-            Website Actions <span className="text-sm font-medium text-gray-400 ml-2">(Google Analytics)</span>
+          <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted tracking-tight">
+            Website Actions <span className="text-sm font-medium text-app-text-muted ml-2">(Google Analytics)</span>
           </h2>
           
           {/* Awesome loading indicator for UX */}
           {isGaLoading && (
+
             <span className="flex items-center gap-2 text-sm text-blue-600 font-medium animate-pulse">
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               Fetching live data...
@@ -218,12 +211,12 @@ const {theme, setTheme,Theme} = useContext(DataContext);
           }`}
         >
           {/* Card 1: WhatsApp Clicks */}
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             {/* Background Glow Element */}
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
             <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-green-50 text-green-600 shadow-sm border border-green-100">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-green-600 shadow-sm border border-green-100">
                 <FaWhatsapp className="w-7 h-7" />
               </div>
               <div>
@@ -234,11 +227,11 @@ const {theme, setTheme,Theme} = useContext(DataContext);
           </div>
 
           {/* Card 2: Call Button Clicks */}
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
             <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-blue-50 text-blue-600 shadow-sm border border-blue-100">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-blue-600 shadow-sm border border-blue-100">
                 <FaPhoneAlt className="w-6 h-6" />
               </div>
               <div>
@@ -249,11 +242,11 @@ const {theme, setTheme,Theme} = useContext(DataContext);
           </div>
 
           {/* Card 3: Form Submissions */}
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
             <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-purple-50 text-purple-600 shadow-sm border border-purple-100">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-purple-600 shadow-sm border border-purple-100">
                 <FaWpforms className="w-7 h-7" />
               </div>
               <div>
@@ -271,7 +264,7 @@ const {theme, setTheme,Theme} = useContext(DataContext);
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Distribution */}
-        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
+        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
@@ -302,7 +295,7 @@ const {theme, setTheme,Theme} = useContext(DataContext);
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
+        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Stages Breakdown</h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={cleanedStatus} margin={{ top: 20 }}>
@@ -332,7 +325,7 @@ const {theme, setTheme,Theme} = useContext(DataContext);
 
 
       {/* FUNNEL */}
-      <div className="bg-white rounded md:rounded-lg p-5">
+      <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">
         <h2 className="text-lg font-semibold mb-4">Lead Funnel</h2>
 
         <FunnelBar label="Open" value={getStatusCount("open")} total={total} />
@@ -344,7 +337,7 @@ const {theme, setTheme,Theme} = useContext(DataContext);
 };
 
 const Card = ({ title, value }) => (
-  <div className="bg-white rounded p-5">
+  <div className="bg-app-surface dark:bg-app-surface rounded p-5">
     <p className="text-gray-500 text-sm">{title}</p>
     <h3 className="text-3xl font-bold mt-2">{value}</h3>
   </div>

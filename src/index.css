@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    --app-bg: #f8f8fb;
+    --app-surface: #ffffff;
+    --app-surface-secondary: #f3f4f6;
+    --app-text: #363636;
+    --app-text-muted: #747474;
+    --app-text-faint: #ababab;
+    --app-border: #e5e7eb;
+    --app-navbar: #152547;
+    --app-navbar-mobile: #dbeafe;
+    --app-shadow: rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+    --app-bg: #0f1419;
+    --app-surface: #1a1f2e;
+    --app-surface-secondary: #242b3d;
+    --app-text: #e8eaed;
+    --app-text-muted: #9ca3af;
+    --app-text-faint: #6b7280;
+    --app-border: #2d3748;
+    --app-navbar: #0d1117;
+    --app-navbar-mobile: #0d1117;
+    --app-shadow: rgba(0, 0, 0, 0.35);
+}
  
 *, :after, :before {
     border-color:  #e5e7eb;
@@ -18,7 +46,9 @@ body {
   font-style: normal;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f8f8fb;
+    background-color: var(--app-bg);
+    color: var(--app-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 code {
@@ -93,5 +123,40 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
     --color-text-gray: #747474;
     --color-text-light: #ABABAB;
     --color-text-black: #363636;
+    --color-app-bg: var(--app-bg);
+    --color-app-surface: var(--app-surface);
+    --color-app-surface-secondary: var(--app-surface-secondary);
+    --color-app-text: var(--app-text);
+    --color-app-text-muted: var(--app-text-muted);
+    --color-app-border: var(--app-border);
+    --color-app-navbar: var(--app-navbar);
     --gradient-hero: linear-gradient(135deg, oklch(0.255 0.065 264) 0%, oklch(0.32 0.08 270) 50%, oklch(0.685 0.205 38) 130%);
+}
+
+@layer base {
+    .dark .bg-white {
+        background-color: var(--app-surface);
+    }
+
+    .dark .bg-gray-50,
+    .dark .bg-gray-100 {
+        background-color: var(--app-surface-secondary);
+    }
+
+    .dark .text-gray-800,
+    .dark .text-gray-700,
+    .dark .text-gray-600 {
+        color: var(--app-text);
+    }
+
+    .dark .text-gray-500,
+    .dark .text-gray-400 {
+        color: var(--app-text-muted);
+    }
+
+    .dark .border-gray-100,
+    .dark .border-gray-200,
+    .dark .border-gray-300 {
+        border-color: var(--app-border);
+    }
 } 

@@ -157,7 +157,7 @@ const GoogleAnalyticsChart = () => {
 
   if (loading && !isSwitching) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="flex justify-center items-center h-64 bg-app-surface dark:bg-app-surface rounded-lg shadow-sm border border-gray-200">
         <Loader color="#132e69" />
       </div>
     );
@@ -165,7 +165,7 @@ const GoogleAnalyticsChart = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-red-100">
+      <div className="flex justify-center items-center h-64 bg-app-surface dark:bg-app-surface rounded-lg shadow-sm border border-red-100">
         <p className="text-red-500 font-medium">{error}</p>
       </div>
     );
@@ -174,11 +174,11 @@ const GoogleAnalyticsChart = () => {
   const tabKeys = Object.keys(TAB_CONFIG);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full overflow-hidden">
+    <div className="bg-app-surface dark:bg-app-surface rounded-xl shadow-sm border border-gray-200 w-full overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-app-surface dark:bg-app-surface">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Eaz Analytics</h2>
+          <h2 className="text-xl font-semibold text-app-text dark:text-app-text-muted">Eaz Analytics</h2>
           {/* <p className="text-xs text-gray-500 mt-0.5">{email}</p> */}
         </div>
 
@@ -188,7 +188,7 @@ const GoogleAnalyticsChart = () => {
               value={activePropertyId}
               onChange={handlePropertyChange}
               disabled={isSwitching}
-              className="border border-gray-200 text-gray-700 bg-white text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
+              className="border border-gray-200 text-gray-700 bg-app-surface dark:bg-app-surface  text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
             >
               {properties.map((prop) => (
                 <option key={prop.property_id} value={prop.property_id}>
@@ -202,7 +202,7 @@ const GoogleAnalyticsChart = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-md hover:border-gray-300 text-sm text-gray-700 font-medium shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 bg-app-surface dark:bg-app-surface border border-gray-200 rounded-md hover:border-gray-300 text-sm text-gray-700 font-medium shadow-sm"
             >
               <FiCalendar className="w-4 h-4 text-gray-500" />
               {dateRange.label}
@@ -211,7 +211,7 @@ const GoogleAnalyticsChart = () => {
               </svg>
             </button>
             {isDateDropdownOpen && (
-              <div className="absolute right-0 top-10 w-56 bg-white border border-gray-200 shadow-xl rounded-lg py-2 z-50">
+              <div className="absolute right-0 top-10 w-56 bg-app-surface dark:bg-app-surface border border-gray-200 shadow-xl rounded-lg py-2 z-50">
                 {dateOptions.map((opt, i) => (
                   <div
                     key={i}
@@ -243,7 +243,7 @@ const GoogleAnalyticsChart = () => {
                 idx > 0 ? "border-l border-l-gray-100" : ""
               } ${
                 isActive
-                  ? "bg-white"
+                  ? "bg-app-surface dark:bg-app-surface"
                   : "bg-gray-50/40 hover:bg-gray-50 border-t-transparent"
               }`}
               style={isActive ? { borderTopColor: conf.color } : {}}
@@ -270,7 +270,7 @@ const GoogleAnalyticsChart = () => {
       <div className="p-6">
         <div className="w-full h-[340px] relative">
           {isSwitching && (
-            <div className="absolute inset-0 flex justify-center items-center bg-white/60 backdrop-blur-sm z-10">
+            <div className="absolute inset-0 flex justify-center items-center bg-app-surface dark:bg-app-surface/60 backdrop-blur-sm z-10">
               <Loader color="#132e69" />
             </div>
           )}
