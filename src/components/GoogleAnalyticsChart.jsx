@@ -188,7 +188,7 @@ const GoogleAnalyticsChart = () => {
               value={activePropertyId}
               onChange={handlePropertyChange}
               disabled={isSwitching}
-              className="border border-gray-200 text-gray-700 bg-app-surface dark:bg-app-surface  text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
+              className="border border-gray-200 text-app-text dark:text-app-text-muted bg-app-surface dark:bg-app-surface  text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
             >
               {properties.map((prop) => (
                 <option key={prop.property_id} value={prop.property_id}>
@@ -202,22 +202,22 @@ const GoogleAnalyticsChart = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-app-surface dark:bg-app-surface border border-gray-200 rounded-md hover:border-gray-300 text-sm text-gray-700 font-medium shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 bg-app-surface dark:bg-app-surface border border-gray-200 rounded-md hover:border-gray-300 text-sm  font-medium text-app-text dark:text-app-text-muted shadow-sm"
             >
-              <FiCalendar className="w-4 h-4 text-gray-500" />
+              <FiCalendar className="w-4 h-4 text-app-text dark:text-app-text-muted" />
               {dateRange.label}
               <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             {isDateDropdownOpen && (
-              <div className="absolute right-0 top-10 w-56 bg-app-surface dark:bg-app-surface border border-gray-200 shadow-xl rounded-lg py-2 z-50">
+              <div className="absolute right-0 top-10 w-56 bg-app-surface dark:bg-app-surface border border-gray-200  shadow-xl rounded-lg py-2 z-50">
                 {dateOptions.map((opt, i) => (
                   <div
                     key={i}
                     onClick={() => { setDateRange(opt); setIsDateDropdownOpen(false); }}
                     className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 ${
-                      dateRange.label === opt.label ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                      dateRange.label === opt.label ? "bg-blue-50 text-blue-600 font-medium" : "text-app-text dark:text-app-text-muted"
                     }`}
                   >
                     {opt.label}
@@ -251,13 +251,13 @@ const GoogleAnalyticsChart = () => {
               <div className="flex items-center gap-2 mb-1.5">
                 <Icon className="w-3.5 h-3.5" style={{ color: isActive ? conf.color : "#9ca3af" }} />
                 <span className={`text-[11px] font-semibold uppercase tracking-wider ${
-                  isActive ? "text-gray-700" : "text-gray-500"
+                  isActive ? "text-app-text dark:text-app-text-muted" : "text-app-text dark:text-app-text-muted"
                 }`}>
                   {conf.label}
                 </span>
               </div>
               <div className={`text-2xl font-bold tracking-tight ${
-                isActive ? "text-gray-900" : "text-gray-600"
+                isActive ? "text-app-text dark:text-app-text-muted" : "text-app-text dark:text-app-text-muted"
               }`}>
                 {formatValue(key, totals[key])}
               </div>
@@ -275,7 +275,7 @@ const GoogleAnalyticsChart = () => {
             </div>
           )}
           {chartData.length === 0 ? (
-            <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+            <div className="flex justify-center items-center h-full text-app-text dark:text-app-text-faint text-sm">
               No traffic data available.
             </div>
           ) : (

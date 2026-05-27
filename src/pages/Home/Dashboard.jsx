@@ -221,7 +221,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">WhatsApp</p>
-                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.whatsapp_clicks}</h3>
+                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.whatsapp_clicks}</h3>
               </div>
             </div>
           </div>
@@ -236,7 +236,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Call Clicks</p>
-                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.call_clicks}</h3>
+                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.call_clicks}</h3>
               </div>
             </div>
           </div>
@@ -251,7 +251,7 @@ const Dashboard = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Form Fills</p>
-                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.form_submissions}</h3>
+                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.form_submissions}</h3>
               </div>
             </div>
           </div>
@@ -265,7 +265,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Distribution */}
         <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text-muted mb-4">Source Distribution</h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={cleanedSource}
@@ -296,7 +296,7 @@ const Dashboard = () => {
 
         {/* Status Breakdown */}
         <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold mb-4">Stages Breakdown</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text-muted mb-4">Stages Breakdown</h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={cleanedStatus} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
