@@ -289,9 +289,53 @@ export const DataProvider = ({ children }) => {
   //   };
   // }, []);
 
+
+  const THEME_STORAGE_KEY = "eazotel_color_mode";
+
+  const getInitialColorMode = () => {
+    try {
+      const saved = localStorage.getItem(THEME_STORAGE_KEY);
+      if (saved === "dark" || saved === "light") return saved;
+    } catch {
+      // ignore storage errors
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  };
+
+  const [colorMode, setColorMode] = useState(getInitialColorMode);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", colorMode === "dark");
+
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, colorMode);
+    } catch {
+      // ignore storage errors
+    }
+
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+      metaTheme.setAttribute(
+        "content",
+        colorMode === "dark" ? "#0f1419" : "#152547",
+      );
+    }
+  }, [colorMode]);
+
+  const toggleColorMode = () => {
+    setColorMode((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   return (
     <DataContext.Provider
       value={{
+        colorMode,
+        setColorMode,
+        toggleColorMode,
+        isDarkMode: colorMode === "dark",
         // socket,
         host,
         auth,

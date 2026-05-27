@@ -4,6 +4,8 @@ export default {
 
 content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 
+  darkMode: "class",
+
   theme: {
     extend: {
       colors: {
@@ -13,6 +15,13 @@ content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
 
         primary: "#152547",
         ternary: "#FC5F07",
+        "app-bg": "var(--app-bg)",
+        "app-surface": "var(--app-surface)",
+        "app-surface-secondary": "var(--app-surface-secondary)",
+        "app-text": "var(--app-text)",
+        "app-text-muted": "var(--app-text-muted)",
+        "app-border": "var(--app-border)",
+        "app-navbar": "var(--app-navbar)",
       },
      keyframes: {
         ring: {

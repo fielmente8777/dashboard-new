@@ -77,13 +77,19 @@ const TopPagesTable = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-gray-400 w-5">{i + 1}.</span>
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-800 truncate" title={page.pageName}>
+                        <span className="font-medium text-gray-800 truncate" title={page.fullUrl}>
                           {page.pageName}
                         </span>
-                        <span className="text-[11px] text-gray-500 truncate flex items-center gap-1" title={page.pagePath}>
-                          <FiExternalLink className="w-3 h-3" />
-                          {page.pagePath}
-                        </span>
+                        <a
+                          href={page.fullUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-gray-500 hover:text-blue-600 hover:underline transition-colors truncate flex items-center gap-1" 
+                          title={page.fullUrl}
+                        >
+                          <FiExternalLink className="w-3 h-3 flex-shrink-0" />
+                          {page.fullUrl.replace('https://','')}
+                        </a>
                       </div>
                     </div>
                   </td>

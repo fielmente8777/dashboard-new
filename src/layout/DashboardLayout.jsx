@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }) {
         }}
         className={` ${isOpen ? "block md:hidden" : "hidden"} ${
           isSmooth ? "transition-all duration-300" : ""
-        } overflow-hidden bg-white sm:overflow-hidden w-full`}
+        } overflow-hidden bg-app-surface sm:overflow-hidden w-full`}
       >
         <div>
           <Sidebar
@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }) {
         </div>
       </div>
 
-      <div className="flex-1 h-full flex flex-col overflow-hidden scrollbar-hidden bg-[#f8f8fb]">
+      <div className="flex-1 h-full flex flex-col overflow-hidden scrollbar-hidden bg-app-bg transition-colors duration-200">
         <div>
           <Navbar />
         </div>

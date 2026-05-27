@@ -92,6 +92,7 @@ import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
 
+
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -192,7 +193,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
 
-    [`${BASE_PATH}/${hid}/insights-analytics/google-ads-insights`]: (
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: (
       <GoogleAdsInsights />
     ),
     [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
