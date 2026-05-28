@@ -150,7 +150,7 @@ export default function GoogleAdsInsights() {
 
     setLoadingSync(true);
 
-    // 🔥 PREMIUM LOADING POPUP
+    // 🔥 PREMIUM LOADING PO
     Swal.fire({
       title: '<span style="font-weight: 700; font-size: 22px;">Syncing Workspace 🚀</span>',
       html: `
