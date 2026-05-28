@@ -1235,26 +1235,28 @@ const ChatArea = () => {
         <div
           className={`${!is24HourComplete ? "" : "flex"} items-center space-y-1`}
         >
-          <div>
-            <select
-              value={selectedFlowId || ""}
-              onChange={(e) => {
-                setSelectedFlowId(e.target.value);
-                if (e.target.value) {
-                  setShowFlowModal(true);
-                }
-              }}
-              className="border bg-gray-100 outline-none text-sm py-1 rounded-md"
-            >
-              <option value="">Select Form</option>
+          {flows?.length > 0 && (
+            <div>
+              <select
+                value={selectedFlowId || ""}
+                onChange={(e) => {
+                  setSelectedFlowId(e.target.value);
+                  if (e.target.value) {
+                    setShowFlowModal(true);
+                  }
+                }}
+                className="border bg-gray-100 outline-none text-sm py-1 rounded-md"
+              >
+                <option value="">Select Form</option>
 
-              {flows.map((flow) => (
-                <option key={flow.flowId} value={flow.flowId}>
-                  {flow.flowName}
-                </option>
-              ))}
-            </select>
-          </div>
+                {flows.map((flow) => (
+                  <option key={flow.flowId} value={flow.flowId}>
+                    {flow.flowName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             {templateLoading ? (
               <p className="text-xs text-gray-500 animate-pulse">
