@@ -1,7 +1,7 @@
 import { Handle, Position, useReactFlow } from "reactflow";
 
 export default function ListNode({ data, id }) {
-  const { getNodes, setNodes } = useReactFlow();
+  const { getNodes, setNodes, getEdges, setEdges } = useReactFlow();
   const nodes = getNodes();
   const interactive = data?.interactive;
 
@@ -13,7 +13,12 @@ export default function ListNode({ data, id }) {
 
   const removeNode = () => {
     const updatedNodes = nodes.filter((node) => node.id !== id);
+    const updatedEdges = getEdges().filter(
+      (edge) => edge.source !== id && edge.target !== id,
+    );
+
     setNodes(updatedNodes);
+    setEdges(updatedEdges);
   };
 
   return (

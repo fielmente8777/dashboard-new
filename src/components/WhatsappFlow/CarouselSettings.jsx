@@ -236,12 +236,17 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
       </div>
 
       {/* Body */}
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        className="border rounded-lg w-full p-3 mb-6"
-        placeholder="Enter message..."
-      />
+      <div>
+        <textarea
+          value={body}
+          maxLength={1024}
+          onChange={(e) => setBody(e.target.value)}
+          className="border rounded-lg w-full p-3"
+          placeholder="Enter message..."
+        />
+
+        <span className="text-end block text-gray-500 text-xs">Max 1024</span>
+      </div>
 
       {/* Button Type  */}
       <div className="mb-4">
@@ -333,24 +338,37 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             )}
 
             {/* DESCRIPTION */}
-            <textarea
-              value={card.description}
-              onChange={(e) => updateCard(index, "description", e.target.value)}
-              className="border w-full p-2 mt-3 mb-3 rounded"
-              placeholder="Card description..."
-            />
+            <div className="mb-3">
+              <textarea
+                value={card.description}
+                onChange={(e) =>
+                  updateCard(index, "description", e.target.value)
+                }
+                className="border w-full p-2 mt-3 rounded"
+                placeholder="Card description..."
+              />
+              <span className="block text-end text-xs text-gray-500">
+                Max 160
+              </span>
+            </div>
 
             {/* CTA */}
             {globalType === "cta_url" && (
               <>
-                <input
-                  placeholder="Button Text"
-                  value={card.buttonText}
-                  onChange={(e) =>
-                    updateCard(index, "buttonText", e.target.value)
-                  }
-                  className="border w-full p-2 mb-2 rounded"
-                />
+                <div className="mb-2">
+                  <input
+                    placeholder="Button Text"
+                    value={card.buttonText}
+                    maxLength={20}
+                    onChange={(e) =>
+                      updateCard(index, "buttonText", e.target.value)
+                    }
+                    className="border w-full p-2 rounded"
+                  />
+                  <span className="block text-end text-xs text-gray-500">
+                    Max 20
+                  </span>
+                </div>
                 <input
                   placeholder="https://example.com"
                   value={card.buttonUrl}
@@ -366,15 +384,21 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             {globalType === "quick_reply" && (
               <>
                 {card.buttons.map((btn, btnIndex) => (
-                  <div key={btnIndex} className="flex gap-2 mb-2">
-                    <input
-                      value={btn}
-                      onChange={(e) =>
-                        updateButton(index, btnIndex, e.target.value)
-                      }
-                      className="border w-full p-2 rounded"
-                      placeholder={`Button ${btnIndex + 1}`}
-                    />
+                  <div key={btnIndex} className="flex gap-2 mb-2 items-center">
+                    <div className="flex-1">
+                      <input
+                        value={btn}
+                        onChange={(e) =>
+                          updateButton(index, btnIndex, e.target.value)
+                        }
+                        maxLength={20}
+                        className="border w-full p-2 rounded"
+                        placeholder={`Button ${btnIndex + 1}`}
+                      />
+                      <span className="block text-end text-xs text-gray-500">
+                        Max 20
+                      </span>
+                    </div>
 
                     {card.buttons.length > 1 && (
                       <button

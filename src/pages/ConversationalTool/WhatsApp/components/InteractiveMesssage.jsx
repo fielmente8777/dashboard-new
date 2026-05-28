@@ -64,14 +64,18 @@ const InteractiveMessage = ({ interactive }) => {
 
   // 🔹 COMMON BODY
   const renderBody = () =>
-    body?.text && <p className="text-sm text-gray-800 mb-2">{body.text}</p>;
+    body?.text && (
+      <pre className="text-sm text-gray-800 mb-2 whitespace-pre-wrap font-sans">
+        {body.text}
+      </pre>
+    );
 
   // =========================
   // 🔘 BUTTON TYPE
   // =========================
   if (type === "button") {
     return (
-      <div className="bg-gray-100 rounded-xl p-3 max-w-xs">
+      <div className="bg-gray-100 rounded-xl p-3 max-w-xs w-full">
         {renderHeader()}
         {renderBody()}
 

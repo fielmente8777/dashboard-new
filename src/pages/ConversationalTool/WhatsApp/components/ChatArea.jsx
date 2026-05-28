@@ -38,6 +38,7 @@ import {
   deleteWhatsAppMessage,
   getFlowSession,
   getWhatsappConversationMessages,
+  getWhatsAppFlowScreens,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
   updateFlowSession,
@@ -61,6 +62,7 @@ const ChatArea = () => {
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [flows, setFlows] = useState([]);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -96,6 +98,14 @@ const ChatArea = () => {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState();
   const [expandedMessages, setExpandedMessages] = useState({});
+  const [selectedFlowId, setSelectedFlowId] = useState("");
+  const [showFlowModal, setShowFlowModal] = useState(false);
+  const [flowConfig, setFlowConfig] = useState({
+    header: "",
+    body: "Please fill in your details below 👇",
+    footer: "Powered by Eazotel",
+    cta: "Fill Details",
+  });
 
   const getMessageTypeFromFile = (file) => {
     if (!file) return "text";
@@ -110,7 +120,7 @@ const ChatArea = () => {
     return "document";
   };
   const handleSendMessage = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
 
     if (file && file.size > MAX_FILE_SIZE) {
       showToast({
@@ -219,6 +229,66 @@ const ChatArea = () => {
             }),
           );
         }
+        return;
+      }
+
+      if (selectedFlowId) {
+        const selectedFlow = flows.find(
+          (flow) => flow.flowId === selectedFlowId,
+        );
+
+        const payload = {
+          phone: selectedConversation.phone,
+          interactive: {
+            type: "flow",
+
+            header: flowConfig.header
+              ? {
+                  type: "text",
+                  text: flowConfig.header,
+                }
+              : undefined,
+
+            body: {
+              text: flowConfig.body,
+            },
+
+            footer: flowConfig.footer
+              ? {
+                  text: flowConfig.footer,
+                }
+              : undefined,
+
+            action: {
+              name: "flow",
+              parameters: {
+                flow_message_version: "3",
+                flow_token: `flow_${Date.now()}`,
+                flow_id: selectedFlow.flowId,
+                flow_cta: flowConfig.cta || "Open Form",
+              },
+            },
+          },
+        };
+
+        const optimisticMessage = {
+          _id: `temp-${Date.now()}`,
+          conversationId: selectedConversation._id,
+          from: "me",
+          to: selectedConversation.phone,
+          sender: "me",
+          direction: "outbound",
+          messageType: "interactive",
+          body: flowConfig.body,
+          interactive: payload.interactive,
+          status: "sent",
+          timestamp: new Date(),
+          createdAt: new Date(),
+        };
+
+        setMessageList((prev) => [...prev, optimisticMessage]);
+        await sendWhatsAppMessage(payload);
+
         return;
       }
 
@@ -472,9 +542,24 @@ const ChatArea = () => {
     setAllUsers(usersData);
   };
 
+  const fetchFlows = async () => {
+    try {
+      const response = await getWhatsAppFlowScreens();
+
+      if (response?.success) {
+        setFlows(response?.result?.docs?.flows || []);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
+    fetchFlows();
   }, []);
 
   useEffect(() => {
@@ -531,6 +616,8 @@ const ChatArea = () => {
   useLayoutEffect(() => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
+
+  console.log(flows);
 
   const isImage = file?.type?.startsWith("image/");
   const isPDF = file?.type === "application/pdf";
@@ -760,7 +847,7 @@ const ChatArea = () => {
                                   {message.template?.template?.name}
                                 </p>
 
-                                <p className="text-sm">
+                                <pre className="text-sm whitespace-pre-wrap font-sans">
                                   {message.body ? (
                                     message.body
                                   ) : (
@@ -768,7 +855,7 @@ const ChatArea = () => {
                                       No text defined
                                     </span>
                                   )}
-                                </p>
+                                </pre>
                               </div>
                             )}
 
@@ -1145,7 +1232,31 @@ const ChatArea = () => {
           </div>
         )}
 
-        <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
+        <div
+          className={`${!is24HourComplete ? "" : "flex"} items-center space-y-1`}
+        >
+          {flows?.length > 0 && (
+            <div>
+              <select
+                value={selectedFlowId || ""}
+                onChange={(e) => {
+                  setSelectedFlowId(e.target.value);
+                  if (e.target.value) {
+                    setShowFlowModal(true);
+                  }
+                }}
+                className="border bg-gray-100 outline-none text-sm py-1 rounded-md"
+              >
+                <option value="">Select Form</option>
+
+                {flows.map((flow) => (
+                  <option key={flow.flowId} value={flow.flowId}>
+                    {flow.flowName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             {templateLoading ? (
               <p className="text-xs text-gray-500 animate-pulse">
@@ -1302,29 +1413,108 @@ const ChatArea = () => {
             </div>
           )}
         </div>
-
-        {/* <div className="w-full h-80">
-          <GoogleMap
-            zoom={10}
-            center={{ lat: 28.6139, lng: 77.209 }}
-            mapContainerStyle={{ width: "100%", height: "100%" }}
-            onClick={(e) => {
-              const lat = e.latLng.lat();
-              const lng = e.latLng.lng();
-              setMarker({ lat, lng });
-            }}
-          >
-            {marker && <Marker position={marker} />}
-          </GoogleMap>
-
-          <button
-            // onClick={() => onSelect(marker)}
-            className="mt-2 bg-teal-600 text-white px-4 py-2 rounded"
-          >
-            Send Location
-          </button>
-        </div> */}
       </form>
+
+      {showFlowModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999]">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Set Flow</h3>
+
+              <button onClick={() => setShowFlowModal(false)}>
+                <MdClose size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-1">Header</label>
+                <input
+                  type="text"
+                  value={flowConfig.header}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      header: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">
+                  Body <span className="text-red-500">*</span>
+                </label>
+
+                <textarea
+                  rows={4}
+                  value={flowConfig.body}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      body: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">Footer</label>
+
+                <input
+                  type="text"
+                  value={flowConfig.footer}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      footer: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">CTA Button Text</label>
+
+                <input
+                  type="text"
+                  value={flowConfig.cta}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      cta: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowFlowModal(false)}
+                className="border px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedFlowId(null);
+                  setShowFlowModal(false);
+                  handleSendMessage();
+                }}
+                className="bg-green-500 text-white px-4 py-2 rounded-md"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

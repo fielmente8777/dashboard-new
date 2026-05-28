@@ -12,8 +12,10 @@ import { fetchUserManagementData } from "../../../services/api";
 import DataContext from "../../../context/DataContext";
 import DatePickerModal from "../../../components/Modal/DatePickerModal";
 import CustomDropdown2 from "../../../components/ui/Dropdown2";
+import { formatDate, formatDateTime } from "../../../utils/formateDate";
 
 const CustomerInfoCard = ({ lead, onClick }) => {
+  console.log(lead);
   const { showToast } = useToast();
   const [allUsers, setAllUsers] = useState([]);
   const [agentNumber, setAgentNumber] = useState();
