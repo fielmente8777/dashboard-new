@@ -14,7 +14,13 @@ import DataContext from "../../context/DataContext";
 /* ============================================================================
  * DATE HELPERS & FORMATTERS
  * ========================================================================== */
-const fmt = (d) => d.toISOString().slice(0, 10);
+
+const fmt = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 const RANGE_PRESETS = [
   { key: "7d", label: "7D", days: 7 },
   { key: "30d", label: "30D", days: 30 },
@@ -69,16 +75,14 @@ const useTheme = () => useContext(ThemeContext);
 const accentHex = (C, accent) => ({ blue: C.blue, indigo: C.indigo, violet: C.violet, emerald: C.emerald, amber: C.amber, rose: C.rose, cyan: C.cyan }[accent] || C.blue);
 const deviceColors = (C) => [C.blue, C.violet, C.emerald, C.amber, C.rose];
 
-
 const DEVICE_MAP = { "2": "Mobile", "3": "Tablet", "4": "Desktop", "5": "Smart TV", "6": "Other" };
-
-const ALL = "all"; // sentinel for aggregated selections
+const ALL = "all"; 
 
 /* ============================================================================
  * MAIN COMPONENT
  * ========================================================================== */
 export default function GoogleAdsInsights() {
-  const { integrationStatus, checkIntegrationStatus, isLoadingIntegrationStatus, is24HoursCompleted } = useContext(DataContext);
+  const { integrationStatus, checkIntegrationStatus, isLoadingIntegrationStatus } = useContext(DataContext);
   const [theme, setTheme] = useState(() => { try { const saved = localStorage.getItem("gads_theme"); return saved === "dark" || saved === "light" ? saved : "dark"; } catch { return "dark"; } });
   const C = THEMES[theme] || DARK;
   const toggleTheme = () => { setTheme((t) => { const next = t === "dark" ? "light" : "dark"; try { localStorage.setItem("gads_theme", next); } catch { } return next; }); };
@@ -99,11 +103,9 @@ export default function GoogleAdsInsights() {
   const [totals, setTotals] = useState(null);
   const [derived, setDerived] = useState(null);
   const [prevTotals, setPrevTotals] = useState(null);
-  const [deviceRows, setDeviceRows] = useState([]); // dedicated device rollup
-
+  const [deviceRows, setDeviceRows] = useState([]); 
   const [campaignRows, setCampaignRows] = useState([]);
 
-  // Default everything to ALL → account-level aggregated view (Google-Ads style).
   const [selectedAccount, setSelectedAccount] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState(ALL);
   const [selectedAdGroup, setSelectedAdGroup] = useState(ALL);
@@ -111,77 +113,131 @@ export default function GoogleAdsInsights() {
 
   const accountIdRef = useRef("");
   const campaignIdRef = useRef("");
+  const autoSyncedAccounts = useRef(new Set()); // Tracks synced accounts
 
   const [activePreset, setActivePreset] = useState("30d");
   const [dateRange, setDateRange] = useState(rangeFromPreset(30));
   const authHeader = { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } };
 
-  const resolveTarget = () => {
-    if (selectedAd && selectedAd !== ALL) return { entityId: selectedAd, level: "ad" };
-    if (selectedCampaign && selectedCampaign !== ALL) return { entityId: selectedCampaign, level: "campaign" };
-    
-    return { entityId: accountIdRef.current, level: "account" };
+  // 🔥 Helper to consistently build target object
+  const resolveTarget = (accId, campId, adId) => {
+    if (adId && adId !== ALL) return { entityId: adId, level: "ad" };
+    if (campId && campId !== ALL) return { entityId: campId, level: "campaign" };
+    return { entityId: accId, level: "account" };
   };
 
-  const handleSyncAdsData = async () => {
+  // 🔄 THE MASTER SYNC LOGIC (API Call)
+  
+  // 🖱️ SYNC BUTTON CLICK HANDLER
+  // 🖱️ SYNC BUTTON CLICK HANDLER
+  // 🔄 THE MASTER SYNC LOGIC (API Call)
+  const runMasterSync = async (accId, campId) => {
+    const maxRange = rangeFromPreset(90); // HAMESHA 90 Days ka sync
+    
+    // Agar accId hai toh URL mein bhejo, nahi toh poora account sync hoga
+    let syncUrl = `${NEW_BASE_URL}/api/v1/google-ads/sync?startDate=${maxRange.startDate}&endDate=${maxRange.endDate}`;
+    if (accId) syncUrl += `&targetAccountId=${accId}`;
+    if (campId && campId !== ALL) syncUrl += `&targetCampaignId=${campId}`;
+    
+    console.log("⚡ Fetching Master 90 Days Data from Google:", syncUrl);
+    await axios.get(syncUrl, authHeader);
+  };
+
+  // 🖱️ SYNC BUTTON CLICK HANDLER
+  const handleSyncClick = async () => {
+    // 🚀 BINGO: If hata diya. Ab first time bhi chalega!
+    const currentAccountId = accountIdRef.current; 
+
     setLoadingSync(true);
+
+    // 🔥 PREMIUM LOADING PO
+    Swal.fire({
+      title: '<span style="font-weight: 700; font-size: 22px;">Syncing Workspace 🚀</span>',
+      html: `
+        <div style="margin-top: 8px; line-height: 1.6;">
+          <p style="color: ${C.textMut}; font-size: 15px;">
+            Connecting to Google Ads securely...<br/>
+            Fetching and analyzing your latest campaign performance.
+          </p>
+          <p style="color: ${C.blue}; font-size: 13px; font-weight: 600; margin-top: 12px; letter-spacing: 0.5px;">
+            THIS MIGHT TAKE A FEW SECONDS
+          </p>
+        </div>
+      `,
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      background: C.panel,
+      color: C.text,
+      backdrop: `rgba(0,0,0,0.7) backdrop-filter: blur(4px);`,
+      didOpen: () => { 
+        Swal.showLoading(); 
+      }
+    });
+
     try {
-      const currentHotelId = accountIdRef.current || "";
+      // 1. Fetch Master 90 days
+      await runMasterSync(currentAccountId, selectedCampaign);
+      if (currentAccountId) {
+        autoSyncedAccounts.current.add(currentAccountId);
+      }
 
-      
-      await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/sync?targetAccountId=${currentHotelId}`, authHeader);
-      
-      if (currentHotelId) {
-       
-        const campResponse = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/campaigns/${currentHotelId}`, authHeader);
-        const campData = campResponse?.data?.result?.campaigns || [];
-        setCampaigns(campData);
-
-        
-        const allFetchPromises = [];
-
-        
-        allFetchPromises.push(
-          syncAndSummarize({ entityId: currentHotelId, level: "account", range: dateRange })
-        );
-
-        if (campData.length > 0) {
-          const uniqueCampaigns = Array.from(new Map(campData.map(c => [c.campaignId, c])).values());
-          uniqueCampaigns.forEach(c => {
-            allFetchPromises.push(
-              syncAndSummarize({ entityId: c.campaignId, level: "campaign", range: dateRange })
-            );
-          });
-        }
-
-        
-        await Promise.allSettled(allFetchPromises);
-
-       
-        const target = resolveTarget();
-        await loadFor(target, dateRange);
-        buildCampaignComparison(campData, dateRange);
-
-      } else {
-        
+      // 2. Load selected tab data ya Naye Accounts load karo
+      if (!currentAccountId) {
+        // Agar pehli baar sync hua tha (blank account), toh sync ke baad DB se accounts uthao
         await getAccounts(); 
+      } else {
+        const target = resolveTarget(currentAccountId, selectedCampaign, selectedAd);
+        await loadFor(target, dateRange); 
+        if (campaigns.length > 0) {
+          await buildCampaignComparison(campaigns, dateRange);
+        }
       }
       
-      checkIntegrationStatus();
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Data Synced!',
-        text: 'Hotel and all its campaigns are now fully loaded in the database.',
-        timer: 2000,
-        showConfirmButton: false
+      // 🔥 PREMIUM SUCCESS POPUP
+      Swal.fire({ 
+        icon: "success", 
+        title: "Workspace Ready! ✨", 
+        text: "Your performance data is now up to date.",
+        timer: 2000, 
+        showConfirmButton: false,
+        background: C.panel,
+        color: C.text,
+        iconColor: C.emerald
       });
-    } catch (error) { 
-      Swal.fire("Error", error?.response?.data?.error || error.message, "error"); 
-    } finally { 
-      setLoadingSync(false); 
+
+    } catch (error) {
+      console.error("Sync Error:", error);
+      Swal.fire({ 
+        icon: "error", 
+        title: "Sync Interrupted", 
+        text: "We couldn't connect to Google Ads right now. Please try again.",
+        background: C.panel,
+        color: C.text,
+        confirmButtonColor: C.blue
+      });
+    } finally {
+      setLoadingSync(false);
     }
   };
+
+  // ⚡ TAB SWITCH (7D, 30D, 90D) -> STRICTLY DB QUERY ONLY (NO GOOGLE API)
+  const handleChangePreset = async (preset) => {
+    setActivePreset(preset.key); 
+    const newRange = rangeFromPreset(preset.days); 
+    setDateRange(newRange);
+    
+    setCampaignRows([]);
+    setLoadingMetrics(true);
+
+    // 🚀 BINGO: Sirf DB se load kar rahe hain. `handleSyncAdsData` HATA DIYA HAI.
+    const target = resolveTarget(accountIdRef.current, selectedCampaign, selectedAd);
+    await loadFor(target, newRange);
+
+    if (campaigns.length > 0) {
+      await buildCampaignComparison(campaigns, newRange);
+    }
+  };
+
   const handleChangeAccount = async (accountId) => {
     setSelectedAccount(accountId); 
     accountIdRef.current = accountId;
@@ -189,81 +245,72 @@ export default function GoogleAdsInsights() {
     setCampaigns([]); setAdGroups([]); setAds([]);
     setSelectedCampaign(ALL); setSelectedAdGroup(ALL); setSelectedAd(ALL);
     campaignIdRef.current = "";
-    
-    
     resetMetrics(); 
     setCampaignRows([]);
-   
     setLoadingMetrics(true);
 
-   
     await getCampaigns(accountId);
-    await loadFor({ entityId: accountId, level: "account" }, dateRange);
+    
+    // 1️⃣ PEHLE DB SE MANGO (Fast Load)
+    const target = resolveTarget(accountId, ALL, ALL);
+    const hasData = await loadFor(target, dateRange); 
+
+    // 2️⃣ AGAR DB KHALI HAI AUR ISKA AUTO-SYNC NAHI HUA HAI
+    if (hasData === false && !autoSyncedAccounts.current.has(accountId)) {
+      console.log(`⚡ DB khali hai! Triggering Auto-Sync for: ${accountId}`);
+      await handleSyncClick(); 
+    }
   };
 
+  // ⚡ CAMPAIGN SWITCH -> STRICTLY DB QUERY ONLY
   const handleChangeCampaign = async (campaignId) => {
     setSelectedAdGroup(ALL); setSelectedAd(ALL);
     setAdGroups([]); setAds([]);
+    
     if (!campaignId || campaignId === ALL) {
-      
       setSelectedCampaign(ALL); campaignIdRef.current = "";
-      await loadFor({ entityId: accountIdRef.current, level: "account" }, dateRange);
+      const target = resolveTarget(accountIdRef.current, ALL, ALL);
+      await loadFor(target, dateRange);
       return;
     }
+    
     setSelectedCampaign(campaignId); campaignIdRef.current = campaignId;
     await getAdGroups(campaignId);
-    await loadFor({ entityId: campaignId, level: "campaign" }, dateRange);
+    
+    const target = resolveTarget(accountIdRef.current, campaignId, ALL);
+    await loadFor(target, dateRange);
   };
 
   const handleChangeAdGroup = async (adGroupId) => {
     setSelectedAdGroup(adGroupId); setAds([]); setSelectedAd(ALL);
     if (adGroupId && adGroupId !== ALL) await getAds(adGroupId);
-   
-    if (campaignIdRef.current) await loadFor({ entityId: campaignIdRef.current, level: "campaign" }, dateRange);
+    const target = resolveTarget(accountIdRef.current, campaignIdRef.current, ALL);
+    await loadFor(target, dateRange);
   };
 
   const handleChangeAd = async (adId) => {
     setSelectedAd(adId);
-    if (adId === ALL) {
-      
-      const tgt = campaignIdRef.current
-        ? { entityId: campaignIdRef.current, level: "campaign" }
-        : { entityId: accountIdRef.current, level: "account" };
-      await loadFor(tgt, dateRange);
-    } else {
-      await loadFor({ entityId: adId, level: "ad" }, dateRange);
-    }
-  };
-
-  const handleChangePreset = async (preset) => {
-    setActivePreset(preset.key); const range = rangeFromPreset(preset.days); setDateRange(range);
-    await loadFor(resolveTarget(), range);
-    
-    if (campaigns.length) buildCampaignComparison(campaigns, range);
+    const target = resolveTarget(accountIdRef.current, campaignIdRef.current, adId);
+    await loadFor(target, dateRange);
   };
 
   const resetMetrics = () => { setSeries([]); setTotals(null); setDerived(null); setPrevTotals(null); setDeviceRows([]); };
 
   const getAccounts = async () => {
     if (!integrationStatus?.googleAdsInsight?.status) return;
-
     setLoadingAccounts(true);
     try {
       const response = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/accounts`, authHeader);
-      const data = response?.data?.result?.accounts || [];
-      setAccounts(data);
       
-      if (data.length > 0) {
-       
-        if (!accountIdRef.current) {
-          handleChangeAccount(data[0].clientCustomerId);
-        }
-      } else {
-        Swal.fire({
-          icon: 'info',
-          title: 'Almost There!',
-          text: 'No accounts found in database. Please click the "Sync Data" button on the top right.',
-        });
+      // 🚀 FRONTEND FIX: Backend ki nayi API ka data format yahan match karo
+      const data = response?.data?.data || response?.data?.result?.accounts || [];
+      
+      setAccounts(data);
+      if (data.length > 0 && !accountIdRef.current) {
+        // Automatically select the first account if none is selected
+        handleChangeAccount(data[0].clientCustomerId || data[0].googleAccountId); 
+      } else if (data.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Almost There!', text: 'No accounts found in database. Please click the "Sync Data" button on the top right.' });
       }
     } catch (error) {
       console.error("Failed to load accounts:", error);
@@ -276,39 +323,73 @@ export default function GoogleAdsInsights() {
     setLoadingCampaigns(true);
     try {
       const response = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/campaigns/${accountId}`, authHeader);
-      const data = response?.data?.result?.campaigns || [];
+      let data = response?.data?.data || response?.data?.result?.campaigns || [];
+      
+      // 🚀 1. STRICT FILTER: Sirf ENABLED
+      data = data.filter(c => {
+        if (!c.status) return false;
+        const s = String(c.status).toUpperCase();
+        return s === 'ENABLED' || s === '2';
+      });
+
+      // 🛡️ 2. DEDUPLICATION SHIELD: Ek Campaign ID sirf ek baar aayegi
+      data = Array.from(new Map(data.map(item => [item.campaignId, item])).values());
+      
       setCampaigns(data);
       buildCampaignComparison(data, dateRange);
-    } catch (error) { setCampaigns([]); } finally { setLoadingCampaigns(false); }
+    } catch (error) { 
+      setCampaigns([]); 
+    } finally { 
+      setLoadingCampaigns(false); 
+    }
   };
 
   const getAdGroups = async (campaignId) => {
     setLoadingAdGroups(true);
     try {
       const response = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/adgroups/${campaignId}`, authHeader);
-      setAdGroups(response?.data?.result?.adGroups || []);
-    } catch (error) { setAdGroups([]); } finally { setLoadingAdGroups(false); }
+      let data = response?.data?.data || response?.data?.result?.adGroups || [];
+      
+      // 🚀 1. STRICT FILTER
+      data = data.filter(g => {
+        if (!g.status) return false;
+        const s = String(g.status).toUpperCase();
+        return s === 'ENABLED' || s === '2';
+      });
+
+      // 🛡️ 2. DEDUPLICATION SHIELD: Ek AdGroup ID sirf ek baar aayegi
+      data = Array.from(new Map(data.map(item => [item.adGroupId, item])).values());
+      
+      setAdGroups(data);
+    } catch (error) { 
+      setAdGroups([]); 
+    } finally { 
+      setLoadingAdGroups(false); 
+    }
   };
 
   const getAds = async (adGroupId) => {
     setLoadingAds(true);
     try {
       const response = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/ads/${adGroupId}`, authHeader);
-      setAds(response?.data?.result?.ads || []);
-    } catch (error) { setAds([]); } finally { setLoadingAds(false); }
-  };
+      let data = response?.data?.data || response?.data?.result?.ads || [];
+      
+      // 🚀 1. STRICT FILTER
+      data = data.filter(a => {
+        if (!a.status) return false;
+        const s = String(a.status).toUpperCase();
+        return s === 'ENABLED' || s === '2';
+      });
 
-  /* -------------------------------------------------------------------------
-   * DATA FETCH — one place that drives every metric panel for a given target.
-   * ----------------------------------------------------------------------- */
-  const syncAndSummarize = async ({ entityId, level, range }) => {
-    const currentAccountId = accountIdRef.current;
-    if (!currentAccountId || !entityId) return null;
-    
-    await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/metrics`, { ...authHeader, params: { accountId: currentAccountId, entityId, level, startDate: range.startDate, endDate: range.endDate, granularity: "daily" } });
-   
-    const response = await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/metrics/summary/${entityId}`, { ...authHeader, params: { level, startDate: range.startDate, endDate: range.endDate } });
-    return response?.data?.result || {};
+      // 🛡️ 2. DEDUPLICATION SHIELD: Ek Ad ID sirf ek baar aayegi
+      data = Array.from(new Map(data.map(item => [item.adId, item])).values());
+      
+      setAds(data);
+    } catch (error) { 
+      setAds([]); 
+    } finally { 
+      setLoadingAds(false); 
+    }
   };
 
   const summaryOnly = async ({ entityId, level, range }) => {
@@ -323,103 +404,77 @@ export default function GoogleAdsInsights() {
     } catch { return []; }
   };
 
- 
- const loadFor = async (target, range) => {
-  const { entityId, level } = target;
-  if (!accountIdRef.current || !entityId) return;
-  setLoadingMetrics(true);
-  try {
+  const loadFor = async (target, range) => {
+    const { entityId, level } = target;
+    if (!accountIdRef.current || !entityId) return false;
     
-    const result = await summaryOnly({ entityId, level, range });
-    
-    if (!result || !result.totals) { resetMetrics(); return; }
-
-    const cleanSeries = (result.series || []).map((d) => ({
-      date: d.date, label: (d.date || "").slice(5),
-      impressions: d.impressions || 0, clicks: d.clicks || 0,
-      cost: Number((d.cost || 0).toFixed(2)), conversions: d.conversions || 0,
-      conversionsValue: Number((d.conversionsValue || 0).toFixed(2)),
-    }));
-    setSeries(cleanSeries);
-    setTotals(result.totals || null);
-    setDerived(result.derived || null);
-
-   
-    const devices = await fetchDeviceSummary({ entityId, level, range });
-    setDeviceRows(devices);
-
-    
+    setLoadingMetrics(true);
     try {
-      const prev = await summaryOnly({ entityId, level, range: previousRange(range) });
-      setPrevTotals(prev?.totals || null);
-    } catch { setPrevTotals(null); }
-  } catch (error) {
-    console.error("Failed to load metrics (Network or Auth Error):", error);
-    
-   
-    resetMetrics();
-    
-   
-    checkIntegrationStatus();
-  } finally {
-    setLoadingMetrics(false);
-  }
-};
+      const result = await summaryOnly({ entityId, level, range });
+      
+      // Agar DB khali hai
+      if (!result || !result.totals || (result.totals.clicks === 0 && result.totals.cost === 0 && result.totals.impressions === 0)) { 
+        resetMetrics(); 
+        setLoadingMetrics(false);
+        return false; 
+      }
+
+      const cleanSeries = (result.series || []).map((d) => ({
+        date: d.date, label: (d.date || "").slice(5),
+        impressions: d.impressions || 0, clicks: d.clicks || 0,
+        cost: Number((d.cost || 0).toFixed(2)), conversions: d.conversions || 0,
+        conversionsValue: Number((d.conversionsValue || 0).toFixed(2)),
+      }));
+      setSeries(cleanSeries);
+      setTotals(result.totals || null);
+      setDerived(result.derived || null);
+
+      const devices = await fetchDeviceSummary({ entityId, level, range });
+      setDeviceRows(devices);
+
+      try {
+        const prev = await summaryOnly({ entityId, level, range: previousRange(range) });
+        setPrevTotals(prev?.totals || null);
+      } catch { setPrevTotals(null); }
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to load metrics:", error);
+      resetMetrics();
+      checkIntegrationStatus();
+      return false;
+    } finally {
+      setLoadingMetrics(false);
+    }
+  };
+
   const buildCampaignComparison = async (campaignList, range) => {
     if (!campaignList?.length) { setCampaignRows([]); return; }
-    
-    const uniqueCampaigns = Array.from(
-      new Map(campaignList.map(c => [c.campaignId, c])).values()
-    );
+    const uniqueCampaigns = Array.from(new Map(campaignList.map(c => [c.campaignId, c])).values());
 
     const results = await Promise.allSettled(
       uniqueCampaigns.map(async (c) => {
         try {
-          
           const r = await summaryOnly({ entityId: c.campaignId, level: "campaign", range });
-          
           if (r && r.totals) {
             return {
-              campaignId: c.campaignId,
-              name: c.name || c.campaignId,
-              isRegistered: c.isRegistered, 
-              impressions: r.totals.impressions || 0,
-              clicks: r.totals.clicks || 0,
-              cost: r.totals.cost || 0,
-              conversions: r.totals.conversions || 0,
-              conversionsValue: r.totals.conversionsValue || 0,
-              ctr: r.derived?.ctr || 0,
-              roas: r.derived?.roas || 0,
+              campaignId: c.campaignId, name: c.name || c.campaignId, isRegistered: c.isRegistered, 
+              impressions: r.totals.impressions || 0, clicks: r.totals.clicks || 0,
+              cost: r.totals.cost || 0, conversions: r.totals.conversions || 0,
+              conversionsValue: r.totals.conversionsValue || 0, ctr: r.derived?.ctr || 0, roas: r.derived?.roas || 0,
             };
           }
           throw new Error("No data"); 
         } catch (error) {
-          return {
-            campaignId: c.campaignId,
-            name: c.name || c.campaignId,
-            isRegistered: c.isRegistered, 
-            impressions: 0,
-            clicks: 0,
-            cost: 0,
-            conversions: 0,
-            conversionsValue: 0,
-            ctr: 0,
-            roas: 0,
-          };
+          return { campaignId: c.campaignId, name: c.name || c.campaignId, impressions: 0, clicks: 0, cost: 0, conversions: 0, conversionsValue: 0, ctr: 0, roas: 0 };
         }
       })
     );
 
-    const rows = results
-      .map((x) => x.value)
-      .sort((a, b) => b.cost - a.cost);
-
+    const rows = results.map((x) => x.value).sort((a, b) => b.cost - a.cost);
     setCampaignRows(rows);
   };
 
-    
-
- 
   const deviceData = useMemo(() => {
     const palette = deviceColors(C);
     if (!deviceRows || deviceRows.length === 0) return [];
@@ -430,37 +485,20 @@ export default function GoogleAdsInsights() {
         map[name] = (map[name] || 0) + (d.clicks || 0);
     });
 
-    return Object.entries(map)
-      .filter(([name, value]) => value > 0)
-      .map(([name, value], i) => ({ 
-          name, 
-          value, 
-          fill: palette[i % palette.length] 
-      }));
+    return Object.entries(map).filter(([name, value]) => value > 0).map(([name, value], i) => ({ name, value, fill: palette[i % palette.length] }));
   }, [deviceRows, C]);
 
-  useEffect(() => { 
-    checkIntegrationStatus(); 
-  }, []);
-
-  useEffect(() => {
-    if (integrationStatus?.googleAdsInsight?.status) {
-      getAccounts();
-    }
-  }, [integrationStatus?.googleAdsInsight?.status]);
+  useEffect(() => { checkIntegrationStatus(); }, []);
+  useEffect(() => { if (integrationStatus?.googleAdsInsight?.status) { getAccounts(); } }, [integrationStatus?.googleAdsInsight?.status]);
 
   const funnelData = useMemo(() => {
     if (!totals) return [];
     return [{ stage: "Impressions", value: totals.impressions || 0, color: C.blue }, { stage: "Clicks", value: totals.clicks || 0, color: C.violet }, { stage: "Conversions", value: totals.conversions || 0, color: C.emerald }];
   }, [totals, C]);
 
-  // Device donut now reads the dedicated rollup, mapped through DEVICE_MAP.
-  
-
   const impressionShare = derived?.searchImpressionShare ?? null;
   const impressionShareApprox = derived?.searchImpressionShareApprox === true;
 
-  
   const targetLabel = useMemo(() => {
     if (selectedAd && selectedAd !== ALL) return "Single ad";
     if (selectedCampaign && selectedCampaign !== ALL) {
@@ -494,6 +532,20 @@ export default function GoogleAdsInsights() {
   return (
     <ThemeContext.Provider value={C}>
     <div style={{ background: C.bg, minHeight: "100vh", color: C.text }}>
+      {/* 🔥 NAYA: FULL-SCREEN GLASS OVERLAY (FREEZE SCREEN) 🔥 */}
+      {(loadingMetrics || loadingCampaigns || loadingAccounts) && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-300" style={{ background: 'rgba(0, 0, 0, 0.4)', backdropFilter: 'blur(6px)' }}>
+          <div className="flex flex-col items-center justify-center p-8 rounded-3xl shadow-2xl transition-transform transform scale-100" style={{ background: C.panel, border: `1px solid ${C.border}`, boxShadow: `0 24px 60px ${C.blue}30` }}>
+            <svg className="animate-spin mb-5 h-12 w-12" style={{ color: C.blue }} fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h3 className="text-xl font-bold tracking-wide" style={{ color: C.text }}>Loading Workspace...</h3>
+            <p className="text-sm mt-2 font-medium" style={{ color: C.textMut }}>Please wait, we are fetching your data.</p>
+          </div>
+        </div>
+      )}
+      {/* ==================================================== */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 420, background: `radial-gradient(900px 300px at 20% -10%, ${C.blue}${C.glowOpacity}, transparent 60%), radial-gradient(700px 280px at 85% -20%, ${C.violet}${C.glowOpacity}, transparent 60%)`, pointerEvents: "none" }} />
 
       <div style={{ borderBottom: `1px solid ${C.border}`, position: "relative" }}>
@@ -506,14 +558,8 @@ export default function GoogleAdsInsights() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            
-          
-            <button 
-              onClick={handleSyncAdsData} 
-              disabled={loadingSync}
-              className="inline-flex h-9 items-center justify-center rounded-xl px-4 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-              style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.indigo})`, boxShadow: `0 4px 12px ${C.blue}40` }}
-            >
+            {/* 🔥 UPDATED SYNC BUTTON */}
+            <button onClick={handleSyncClick} disabled={loadingSync} className="inline-flex h-9 items-center justify-center rounded-xl px-4 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50" style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.indigo})`, boxShadow: `0 4px 12px ${C.blue}40` }}>
               {loadingSync ? (
                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               ) : (
@@ -521,8 +567,6 @@ export default function GoogleAdsInsights() {
               )}
               {loadingSync ? "Syncing..." : "Sync Data"}
             </button>
-           
-
             <div className="inline-flex rounded-xl p-1" style={{ border: `1px solid ${C.border}`, background: C.panel }}>
               {RANGE_PRESETS.map((p) => <button key={p.key} onClick={() => handleChangePreset(p)} className="px-4 py-1.5 text-sm font-medium rounded-lg transition" style={ activePreset === p.key ? { background: C.panelHi, color: C.text, boxShadow: `0 0 0 1px ${C.borderHi}` } : { color: C.textMut, background: "transparent" } }>{p.label}</button>)}
             </div>
@@ -533,22 +577,10 @@ export default function GoogleAdsInsights() {
         </div>
 
         <div className="px-8 pb-5 flex flex-wrap gap-3">
-          <Select label="Account" value={selectedAccount} loading={loadingAccounts} disabled={loadingAccounts} onChange={handleChangeAccount}
-            options={accounts.map((a) => ({ value: a.clientCustomerId, label: a.accountName }))} />
-
-<Select 
-            label="Campaign" 
-            value={selectedCampaign} 
-            loading={loadingCampaigns} 
-            disabled={!selectedAccount || loadingCampaigns} 
-            onChange={handleChangeCampaign}
-            options={[{ value: ALL, label: "All Campaigns (Account)" }, ...campaigns.map((c) => ({ value: c.campaignId, label: c.name }))]}
-          />  
-          <Select label="Ad Group" value={selectedAdGroup} loading={loadingAdGroups} disabled={selectedCampaign === ALL || loadingAdGroups} onChange={handleChangeAdGroup}
-            options={[{ value: ALL, label: "All Ad Groups" }, ...adGroups.map((g) => ({ value: g.adGroupId, label: g.name }))]} />
-
-          <Select label="Ad" value={selectedAd} loading={loadingAds} disabled={selectedAdGroup === ALL || loadingAds} onChange={handleChangeAd}
-            options={[{ value: ALL, label: "All Ads (Aggregated)" }, ...ads.map((a) => ({ value: a.adId, label: a.finalUrls?.[0] || a.adId }))]} />
+          <Select label="Account" value={selectedAccount} loading={loadingAccounts} disabled={loadingAccounts} onChange={handleChangeAccount} options={accounts.map((a) => ({ value: a.clientCustomerId, label: a.accountName }))} />
+          <Select label="Campaign" value={selectedCampaign} loading={loadingCampaigns} disabled={!selectedAccount || loadingCampaigns} onChange={handleChangeCampaign} options={[{ value: ALL, label: "All Campaigns (Account)" }, ...campaigns.map((c) => ({ value: c.campaignId, label: c.name }))]} />  
+          <Select label="Ad Group" value={selectedAdGroup} loading={loadingAdGroups} disabled={selectedCampaign === ALL || loadingAdGroups} onChange={handleChangeAdGroup} options={[{ value: ALL, label: "All Ad Groups" }, ...adGroups.map((g) => ({ value: g.adGroupId, label: g.name }))]} />
+          <Select label="Ad" value={selectedAd} loading={loadingAds} disabled={selectedAdGroup === ALL || loadingAds} onChange={handleChangeAd} options={[{ value: ALL, label: "All Ads (Aggregated)" }, ...ads.map((a) => ({ value: a.adId, label: a.finalUrls?.[0] || a.adId }))]} />
         </div>
       </div>
 
@@ -569,11 +601,7 @@ export default function GoogleAdsInsights() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <MiniStat label="Conversion Rate" value={formatPercent(derived?.conversionRate)} />
               <MiniStat label="Cost / Conversion" value={formatCurrency(derived?.costPerConversion)} />
-              <MiniStat 
-                label="ROAS" 
-                value={(totals?.cost > 0 && totals?.conversionsValue > 0) ? `${formatDecimal(derived?.roas)}×` : "N/A"} 
-                accent={C.emerald} 
-              />
+              <MiniStat label="ROAS" value={(totals?.cost > 0 && totals?.conversionsValue > 0) ? `${formatDecimal(derived?.roas)}×` : "N/A"} accent={C.emerald} />
               <MiniStat label="Conv. Value" value={formatCurrency(totals?.conversionsValue)} />
             </div>
 
@@ -675,8 +703,6 @@ export default function GoogleAdsInsights() {
                           <Td right>{formatPercent(r.ctr)}</Td>
                           <Td right>{formatCurrencyCompact(r.cost)}</Td>
                           <Td right>{formatNumber(r.conversions)}</Td>
-                          
-                      
                           <Td right>
                             {r.roas > 0 ? (
                               <span className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: r.roas >= 1 ? `${C.emerald}1f` : `${C.rose}1f`, color: r.roas >= 1 ? C.emerald : C.rose }}>
@@ -686,7 +712,6 @@ export default function GoogleAdsInsights() {
                               <span className="text-xs font-medium" style={{ color: C.textMut }}>N/A</span>
                             )}
                           </Td>
-                          
                         </tr>
                       ))}
                     </tbody>
@@ -699,7 +724,6 @@ export default function GoogleAdsInsights() {
               <Panel title="Live Ad Previews" subtitle="How the client's ads appear on Google Search">
                 {ads && ads.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {/* Top 6 ads dikhayenge */}
                     {ads.slice(0, 6).map((ad, idx) => (
                       <AdPreviewCard key={ad.adId || idx} ad={ad} />
                     ))}
@@ -711,7 +735,6 @@ export default function GoogleAdsInsights() {
             </div>
           </>
         ) : (
-        
           <div className="flex flex-col items-center justify-center h-96 rounded-2xl transition-all" style={{ background: C.panel, border: `1px solid ${C.border}` }}>
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full" style={{ background: `${C.blue}1a`, color: C.blue }}>
               <svg className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -719,33 +742,22 @@ export default function GoogleAdsInsights() {
               </svg>
             </div>
             
-            <h3 className="text-2xl font-bold mb-3" style={{ color: C.text }}>First Time Setup</h3>
+            <h3 className="text-2xl font-bold mb-3" style={{ color: C.text }}>
+              No Data for Past {activePreset.replace('d', '')} Days
+            </h3>
+            
             <p className="text-sm mb-8 text-center max-w-md leading-relaxed" style={{ color: C.textMut }}>
-              We don't have performance data for this hotel in our database yet. 
-              Click the button below to fetch it directly from Google Ads.
-              <br /><br />
-              <span className="inline-block px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: C.panelHi, color: C.textFaint }}>
-                ⏳ Note: The first-time fetch may take 2-3 minutes.
-              </span>
+              We couldn't find any performance data for this specific time range. 
+              Click the button below to check for the latest updates from Google Ads.
             </p>
             
             <button 
-              onClick={handleSyncAdsData} 
+              onClick={handleSyncClick} 
               disabled={loadingSync}
               className="inline-flex h-12 items-center justify-center rounded-xl px-8 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
               style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.indigo})`, boxShadow: `0 8px 24px ${C.blue}40` }}
             >
-              {loadingSync ? (
-                 <>
-                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                   </svg>
-                   Fetching Data... Please wait
-                 </>
-              ) : (
-                "Fetch Data from Google"
-              )}
+              {loadingSync ? "Checking for updates..." : "Check for latest updates"}
             </button>
           </div>
         )}
@@ -765,61 +777,4 @@ function Th({ children, right }) { return <th className={`px-3 py-2.5 text-xs fo
 function Td({ children, right }) { const C = useTheme(); return <td className={`px-3 py-3 tabular-nums ${right ? "text-right" : "text-left"}`} style={{ color: C.textMut }}>{children}</td>; }
 function EmptyMini({ text }) { const C = useTheme(); return ( <div className="flex items-center justify-center h-40 rounded-xl" style={{ background: C.panelHi, border: `1px dashed ${C.border}` }}> <p className="text-sm px-6 text-center" style={{ color: C.textFaint }}>{text}</p> </div> ); }
 function DashboardSkeleton() { const C = useTheme(); const block = { background: C.panelHi }; return ( <div className="animate-pulse"> <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8"> {[1, 2, 3, 4, 5, 6].map((i) => (<div key={i} className="h-28 rounded-2xl" style={block} />))} </div> <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"> {[1, 2, 3, 4].map((i) => (<div key={i} className="h-20 rounded-xl" style={block} />))} </div> <div className="h-80 rounded-2xl mb-6" style={block} /> <div className="h-64 rounded-2xl mb-6" style={block} /> <div className="grid grid-cols-1 lg:grid-cols-3 gap-6"> {[1, 2, 3].map((i) => (<div key={i} className="h-64 rounded-2xl" style={block} />))} </div> </div> ); }
-function AdPreviewCard({ ad }) { 
-  const C = useTheme(); 
-  const isDark = C.name === "dark";
-  
-  
-  const linkColor = isDark ? "#8ab4f8" : "#1a0dab";
-  const urlColor = isDark ? "#bdc1c6" : "#202124";
-  const descColor = isDark ? "#9aa0a6" : "#4d5156";
-
-  
-  const extractText = (arr) => (arr || []).map(x => x?.text || x).filter(Boolean);
-  const headlines = extractText(ad.headlines);
-  const descriptions = extractText(ad.descriptions);
-  
-  let displayUrl = "www.website.com";
-  let rawUrl = "#"; 
-  
-  try { 
-    if (ad.finalUrls?.[0]) {
-      rawUrl = ad.finalUrls[0];
-      displayUrl = new URL(rawUrl).hostname; 
-    }
-  } catch(e){}
-
-  if (!headlines.length) {
-     return (
-       <div className="p-4 rounded-xl flex items-center justify-center h-full min-h-[120px]" style={{ border: `1px solid ${C.border}`, background: C.panel }}>
-         <p className="text-xs italic" style={{ color: C.textMut }}>Display/Image Ad preview not supported yet.</p>
-       </div>
-     );
-  }
-
-  const title = headlines.slice(0, 3).join(" | ");
-  const desc = descriptions.slice(0, 2).join(" - ");
-
-  return (
-    <div className="p-5 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left" style={{ border: `1px solid ${C.border}`, background: C.panel, boxShadow: C.name === "dark" ? "0 4px 12px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.05)" }}>
-       <div className="flex items-center gap-3 mb-1.5">
-         <span className="text-[11px] font-bold tracking-wide" style={{ color: C.text }}>Sponsored</span>
-         <span className="text-xs font-medium" style={{ color: urlColor }}>{displayUrl}</span>
-       </div>
-       
-       <a 
-         href={rawUrl !== "#" ? rawUrl : undefined} 
-         target="_blank" 
-         rel="noopener noreferrer"
-         className="text-[17px] font-medium cursor-pointer hover:underline line-clamp-2 mb-1.5 leading-snug block" 
-         style={{ color: linkColor, textDecorationColor: linkColor }}
-       >
-         {title}
-       </a>
-       
-       <div className="text-[13px] leading-relaxed line-clamp-2" style={{ color: descColor }}>
-         {desc}
-       </div>
-    </div>
-  ); 
-}
+function AdPreviewCard({ ad }) { const C = useTheme(); const isDark = C.name === "dark"; const linkColor = isDark ? "#8ab4f8" : "#1a0dab"; const urlColor = isDark ? "#bdc1c6" : "#202124"; const descColor = isDark ? "#9aa0a6" : "#4d5156"; const extractText = (arr) => (arr || []).map(x => x?.text || x).filter(Boolean); const headlines = extractText(ad.headlines); const descriptions = extractText(ad.descriptions); let displayUrl = "www.website.com"; let rawUrl = "#"; try { if (ad.finalUrls?.[0]) { rawUrl = ad.finalUrls[0]; displayUrl = new URL(rawUrl).hostname; } } catch(e){} if (!headlines.length) { return ( <div className="p-4 rounded-xl flex items-center justify-center h-full min-h-[120px]" style={{ border: `1px solid ${C.border}`, background: C.panel }}> <p className="text-xs italic" style={{ color: C.textMut }}>Display/Image Ad preview not supported yet.</p> </div> ); } const title = headlines.slice(0, 3).join(" | "); const desc = descriptions.slice(0, 2).join(" - "); return ( <div className="p-5 rounded-xl transition-all duration-200 hover:-translate-y-1 text-left" style={{ border: `1px solid ${C.border}`, background: C.panel, boxShadow: C.name === "dark" ? "0 4px 12px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.05)" }}> <div className="flex items-center gap-3 mb-1.5"> <span className="text-[11px] font-bold tracking-wide" style={{ color: C.text }}>Sponsored</span> <span className="text-xs font-medium" style={{ color: urlColor }}>{displayUrl}</span> </div> <a href={rawUrl !== "#" ? rawUrl : undefined} target="_blank" rel="noopener noreferrer" className="text-[17px] font-medium cursor-pointer hover:underline line-clamp-2 mb-1.5 leading-snug block" style={{ color: linkColor, textDecorationColor: linkColor }}> {title} </a> <div className="text-[13px] leading-relaxed line-clamp-2" style={{ color: descColor }}> {desc} </div> </div> ); }
