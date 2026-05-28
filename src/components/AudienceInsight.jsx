@@ -72,8 +72,8 @@ const AudienceInsights = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 w-full">
       
       {/* 1. Device Breakdown Card */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">Users by Device</h2>
+      <div className="bg-app-surface p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-6">Users by Device</h2>
         <div className="h-[250px] relative">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -105,21 +105,21 @@ const AudienceInsights = () => {
           {data.devices.map((device, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-              <span className="text-sm font-medium text-gray-700">{device.name}</span>
+              <span className="text-sm font-medium text-gray-400">{device.name}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* 2. Top Countries Card */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-800 mb-6">Users by Country</h2>
+      <div className="bg-app-surface p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-6">Users by Country</h2>
         <div className="flex flex-col gap-4">
           {data.countries.map((country, idx) => {
             const percentage = (country.users / maxCountryUsers) * 100;
             return (
               <div key={idx} className="flex flex-col gap-1.5">
-                <div className="flex justify-between items-center text-sm font-medium text-gray-700">
+                <div className="flex justify-between items-center text-sm font-medium text-gray-400">
                   <span>{country.name}</span>
                   <span>{country.users.toLocaleString()}</span>
                 </div>

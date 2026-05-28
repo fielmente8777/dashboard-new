@@ -154,7 +154,7 @@ const SearchConsoleQueries = () => {
       <div className="overflow-x-auto -mx-2">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+            <tr className="text-[11px] uppercase tracking-wider text-app-text dark:text-app-text-muted font-semibold">
               <th className="pb-3 pl-4">
                 <div className="flex items-center gap-1.5">
                   <FiSearch className="w-3.5 h-3.5" /> Keyword
@@ -185,7 +185,7 @@ const SearchConsoleQueries = () => {
               return (
                 <tr
                   key={i}
-                  className="group border-t border-slate-100 transition-colors hover:bg-slate-50/70"
+                  className="group border-t border-slate-100 transition-colors hover:bg-slate-50/20"
                 >
                   <td className="py-4 pl-4 max-w-[280px]">
                     <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ const SearchConsoleQueries = () => {
                         {i + 1}
                       </span>
                       <span
-                        className="font-semibold text-slate-800 truncate"
+                        className="font-semibold text-app-text dark:text-app-text truncate"
                         title={item.keyword}
                       >
                         {item.keyword}
@@ -214,12 +214,12 @@ const SearchConsoleQueries = () => {
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
-                      <span className="font-bold text-slate-900 min-w-[40px] tabular-nums">
+                      <span className="font-bold text-gray-400 min-w-[40px] tabular-nums">
                         {item.clicks.toLocaleString()}
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 text-right text-slate-600 font-medium tabular-nums">
+                  <td className="py-4 text-right text-gray-400 font-medium tabular-nums">
                     {item.impressions.toLocaleString()}
                   </td>
                   <td className="py-4 text-right">
@@ -228,7 +228,7 @@ const SearchConsoleQueries = () => {
                     </span>
                   </td>
                   <td className="py-4 text-right pr-4">
-                    <span className="text-sm font-bold text-slate-700 tabular-nums">
+                    <span className="text-sm font-bold text-gray-400 tabular-nums">
                       #{item.position.toFixed(1)}
                     </span>
                   </td>
@@ -244,17 +244,17 @@ const SearchConsoleQueries = () => {
   const showSummary = !loading && !statusCode && queries.length > 0;
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] border border-slate-200/80 mt-6 transition-all duration-300 hover:shadow-[0_1px_3px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.18)]">
+    <div className="bg-app-surface p-6 rounded-2xl shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] border border-slate-200/80 mt-6 transition-all duration-300 hover:shadow-[0_1px_3px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.18)]">
       <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-sm">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-app-text dark:text-app-text-muted to-blue-700 text-white shadow-sm">
             <FiSearch className="h-5 w-5" />
           </span>
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-slate-900">
+            <h2 className="text-lg font-bold tracking-tight text-app-text dark:text-app-text">
               Top Search Queries
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               Performance ranked by Google Search clicks
             </p>
           </div>
@@ -293,7 +293,7 @@ const SummaryChip = ({ label, value, icon: Icon }) => (
       <Icon className="h-3.5 w-3.5" />
     </span>
     <div className="leading-tight">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
         {label}
       </p>
       <p className="text-sm font-bold tabular-nums text-slate-900">{value}</p>

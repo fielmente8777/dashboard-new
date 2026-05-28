@@ -3,7 +3,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
+/* :root {
   --app-bg: #f8f8fb;
   --app-surface: #ffffff;
   --app-surface-secondary: #f3f4f6;
@@ -14,9 +14,50 @@
   --app-navbar: #152547;
   --app-navbar-mobile: #dbeafe;
   --app-shadow: rgba(0, 0, 0, 0.08);
+} */
+:root {
+  --app-bg: #f6f7fb;
+  --app-surface: #ffffff;
+  --app-surface-secondary: #f1f3f9;
+
+  --app-text: #0f1222;
+  --app-text-muted: #5c6175;
+  --app-text-faint: #9aa0b4;
+
+  --app-border: #e6e8f0;
+  --app-border-strong: #d4d7e3;
+
+  --app-navbar: #0f1222;
+
+  --color-primary: #3b6fe0;
+  --color-secondary: #6366f1;
+  --color-accent: #8b5cf6;
+  --color-cyan: #0891b2;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #f43f5e;
+
+  --gradient-primary: linear-gradient(
+    135deg,
+    #3b6fe0 0%,
+    #6366f1 50%,
+    #8b5cf6 100%
+  );
+
+  --gradient-hero: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1e293b 45%,
+    #6366f1 100% 
+    
+    --tooltip-bg: rgba(255, 255, 255, 0.95) ;
+      --tooltip-text: #0f172a; --tooltip-label: #475569;
+      --tooltip-border: rgba(0, 0, 0, 0.08) ;
+  );
 }
 
-.dark {
+/* .dark {
   --app-bg: #0f172a;
   --app-surface: #162033;
   --app-surface-secondary: #242b3d;
@@ -27,6 +68,50 @@
   --app-navbar: #0d1117;
   --app-navbar-mobile: #0d1117;
   --app-shadow: rgba(0, 0, 0, 0.35);
+} */
+
+.dark {
+  --app-bg: #0a0a0f;
+  --app-surface: #13131a;
+  --app-surface-secondary: #1a1a24;
+
+  --app-text: #f4f4f6;
+  --app-text-muted: #10a3c7;
+  --app-text-faint: #cbcbdf;
+
+  --app-border: #26262f;
+  --app-border-strong: #33333f;
+
+  --app-navbar: #0d1117;
+
+  --color-primary: #5b8def;
+  --color-secondary: #818cf8;
+  --color-accent: #a78bfa;
+  --color-cyan: #22d3ee;
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #fb7185;
+
+  --gradient-primary: linear-gradient(
+    135deg,
+    #5b8def 0%,
+    #818cf8 50%,
+    #a78bfa 100%
+  );
+
+  --gradient-hero: linear-gradient(
+    135deg,
+    #0a0a0f 0%,
+    #13131a 50%,
+    #1f2937 100%
+
+
+      --tooltip-bg: rgba(15,23,42,0.92);
+  --tooltip-text: #ffffff;
+  --tooltip-label: #cbd5e1;
+  --tooltip-border: rgba(255,255,255,0.08);
+  );
 }
 
 *,

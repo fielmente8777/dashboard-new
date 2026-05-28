@@ -77,7 +77,7 @@ const Dashboard = () => {
     if (!currentHid) return;
     try {
       setIsGaLoading(true); // Data aane se pehle Loading ON
-      
+
       const timestamp = new Date().getTime(); // Cache buster
       const response = await axios.get(
         `${BASE_URL}/google/analytics-conversions/${currentHid}?startDate=${currentDates.startDate}&endDate=${currentDates.endDate}&t=${timestamp}`
@@ -118,7 +118,10 @@ const Dashboard = () => {
 
     return () => {
       window.removeEventListener("dashboard_date_changed", handleDateChange);
-      window.removeEventListener("dashboard_property_changed", handlePropertyChange);
+      window.removeEventListener(
+        "dashboard_property_changed",
+        handlePropertyChange
+      );
     };
   }, [hid, dateRange]);
 
@@ -168,10 +171,9 @@ const Dashboard = () => {
 
   return (
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
-      
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
-        <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted mb-3">
+        <h2 className="text-xl font-bold text-app-text dark:text-app-text mb-3">
           CRM Data (Actual Leads)
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
@@ -186,17 +188,19 @@ const Dashboard = () => {
         </div>
       </div>
 
-     {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
-     <div className="mt-8 mb-4">
+      {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
+      <div className="mt-8 mb-4">
         {/* Header with Live Loading Indicator */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted tracking-tight">
-            Website Actions <span className="text-sm font-medium text-app-text-muted ml-2">(Google Analytics)</span>
+          <h2 className="text-xl font-bold text-app-text dark:text-app-text tracking-tight">
+            Website Actions{" "}
+            <span className="text-sm font-medium text-app-text ml-2">
+              (Google Analytics)
+            </span>
           </h2>
-          
+
           {/* Awesome loading indicator for UX */}
           {isGaLoading && (
-
             <span className="flex items-center gap-2 text-sm text-blue-600 font-medium animate-pulse">
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               Fetching live data...
@@ -205,23 +209,29 @@ const Dashboard = () => {
         </div>
 
         {/* Premium Grid with advanced fade/blur transition */}
-        <div 
+        <div
           className={`grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 transition-all duration-500 ease-out ${
-            isGaLoading ? "opacity-50 scale-[0.98] blur-[1px] pointer-events-none" : "opacity-100 scale-100 blur-0"
+            isGaLoading
+              ? "opacity-50 scale-[0.98] blur-[1px] pointer-events-none"
+              : "opacity-100 scale-100 blur-0"
           }`}
         >
           {/* Card 1: WhatsApp Clicks */}
           <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             {/* Background Glow Element */}
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-            
+
             <div className="flex items-center gap-5 relative z-10">
               <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-green-600 shadow-sm border border-green-100">
                 <FaWhatsapp className="w-7 h-7" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">WhatsApp</p>
-                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.whatsapp_clicks}</h3>
+                <p className="text-sm font-semibold text-green-600 uppercase tracking-wider mb-1">
+                  WhatsApp
+                </p>
+                <h3 className="text-3xl font-black text-gray-400">
+                  {gaMetrics.whatsapp_clicks}
+                </h3>
               </div>
             </div>
           </div>
@@ -229,14 +239,18 @@ const Dashboard = () => {
           {/* Card 2: Call Button Clicks */}
           <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-            
+
             <div className="flex items-center gap-5 relative z-10">
               <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-blue-600 shadow-sm border border-blue-100">
                 <FaPhoneAlt className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Call Clicks</p>
-                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.call_clicks}</h3>
+                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                  Call Clicks
+                </p>
+                <h3 className="text-3xl font-black text-gray-400">
+                  {gaMetrics.call_clicks}
+                </h3>
               </div>
             </div>
           </div>
@@ -244,28 +258,31 @@ const Dashboard = () => {
           {/* Card 3: Form Submissions */}
           <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-            
+
             <div className="flex items-center gap-5 relative z-10">
               <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-purple-600 shadow-sm border border-purple-100">
                 <FaWpforms className="w-7 h-7" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Form Fills</p>
-                <h3 className="text-3xl font-black text-gray-400">{gaMetrics.form_submissions}</h3>
+                <p className="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-1">
+                  Form Fills
+                </p>
+                <h3 className="text-3xl font-black text-gray-400">
+                  {gaMetrics.form_submissions}
+                </h3>
               </div>
             </div>
           </div>
-          
         </div>
       </div>
 
-     
-     
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Distribution */}
         <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text-muted mb-4">Source Distribution</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-4">
+            Source Distribution
+          </h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={cleanedSource}
@@ -283,7 +300,26 @@ const Dashboard = () => {
                   value.charAt(0).toUpperCase() + value.slice(1)
                 }
               />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--tooltip-bg)",
+                  border: "1px solid var(--tooltip-border)",
+                  borderRadius: "16px",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                  color: "var(--tooltip-text)",
+                }}
+                itemStyle={{
+                  color: "var(--tooltip-text)",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+                labelStyle={{
+                  color: "var(--tooltip-label)",
+                  fontWeight: 600,
+                }}
+              />
               <Bar dataKey="count" radius={[0, 8, 8, 0]}>
                 {cleanedSource.map((_, index) => (
                   <Cell key={index} fill={COLORS[index % COLORS.length]} />
@@ -296,13 +332,34 @@ const Dashboard = () => {
 
         {/* Status Breakdown */}
         <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text-muted mb-4">Stages Breakdown</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-4">
+            Stages Breakdown
+          </h2>
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={cleanedStatus} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" style={{ fontSize: "15px" }} />
               <YAxis width={50} />
-              <Tooltip />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--tooltip-bg)",
+                  border: "1px solid var(--tooltip-border)",
+                  borderRadius: "16px",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                  color: "var(--tooltip-text)",
+                }}
+                itemStyle={{
+                  color: "var(--tooltip-text)",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+                labelStyle={{
+                  color: "var(--tooltip-label)",
+                  fontWeight: 600,
+                }}
+              />
               <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
                 <LabelList dataKey="count" position="top" />
               </Bar>
@@ -310,7 +367,7 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
       </div>
-       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
+      {/* ===== GOOGLE ANALYTICS SECTION ===== */}
       <div className="w-full space-y-6">
         <GoogleAnalyticsChart />
         <TrafficSources />
@@ -322,7 +379,6 @@ const Dashboard = () => {
         <GeoAnalytics />
         <AudienceInsights />
       </div>
-
 
       {/* FUNNEL */}
       <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">

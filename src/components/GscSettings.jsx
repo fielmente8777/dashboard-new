@@ -120,14 +120,14 @@ const GscSettings = () => {
   // ---- COMPACT VIEW: domain configured, form hidden ----
   if (isConfigured && !isEditing) {
     return (
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
+      <div className="bg-app-surface p-5 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-green-50 text-green-600 border border-green-100">
               <FiCheckCircle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Search Console Connected</h2>
+              <h2 className="text-sm font-bold text-app-text dark:text-app-text-muted ">Search Console Connected</h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 {savedDomain || "Auto-detected"}
               </p>
@@ -135,7 +135,7 @@ const GscSettings = () => {
           </div>
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-300 rounded-md px-3 py-1.5 transition"
+            className="flex items-center gap-1.5 text-xs font-medium text-app-text dark:text-app-text-muted  hover:text-blue-700 border border-blue-200 hover:border-blue-300 rounded-md px-3 py-1.5 transition"
           >
             <FiEdit2 className="w-3.5 h-3.5" /> Edit Settings
           </button>
@@ -146,11 +146,11 @@ const GscSettings = () => {
 
   // ---- FORM VIEW: not configured, or user clicked Edit ----
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
+    <div className="bg-app-surface p-6 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <FiGlobe className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-bold text-slate-900">Search Console Settings</h2>
+          <FiGlobe className="w-5 h-5 text-app-text dark:text-app-text-muted " />
+          <h2 className="text-lg font-bold text-app-text dark:text-app-text">Search Console Settings</h2>
         </div>
         {/* Allow cancelling the edit only if a domain was already configured */}
         {isConfigured && (
@@ -163,7 +163,7 @@ const GscSettings = () => {
           </button>
         )}
       </div>
-      <p className="text-xs text-slate-500 mb-6">
+      <p className="text-xs text-app-text dark:text-app-text-muted mb-6">
         Configure the Google Search Console property for this hotel.
       </p>
 
@@ -172,7 +172,7 @@ const GscSettings = () => {
       ) : (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Property Type</label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">Property Type</label>
             <select
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
@@ -184,7 +184,7 @@ const GscSettings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Domain</label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">Domain</label>
             <input
               type="text"
               value={rawDomain}
@@ -198,7 +198,7 @@ const GscSettings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Connected Google Email (optional)</label>
+            <label className="block text-sm font-medium text-gray-400 mb-1">Connected Google Email (optional)</label>
             <input
               type="email"
               value={email}
