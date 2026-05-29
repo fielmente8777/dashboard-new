@@ -184,7 +184,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
 
   return (
     <div className="flex flex-col bg-white dark:bg-[#1a1f2e] rounded-lg md:shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] p-5 h-auto border border-gray-200 dark:border-[#2d3748]">
-      <div className="flex-1">
+      <div className="flex-">
         <h3 className="font-semibold text-gray-800 dark:text-[#e8eaed] mb-4">
           Customer Information
         </h3>

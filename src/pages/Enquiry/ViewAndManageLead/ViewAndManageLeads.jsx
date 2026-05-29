@@ -326,6 +326,62 @@ const ViewAndManageLeads = () => {
                 </div>
               )}
               <NotesCard lead={lead} setLead={setLead} />
+
+              {lead?.request_metadata && (
+                <div className="bg-white p-4 rounded-md space-y-3">
+                  <h3 className="font-semibold text-gray-800">
+                    Request Metadata
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    {Object.entries(lead.request_metadata).map(
+                      ([key, value]) => {
+                        // Skip IP field
+                        if (key === "ip") return null;
+
+                        // Handle geo object separately
+                        if (key === "geo" && typeof value === "object") {
+                          return Object.entries(value).map(
+                            ([geoKey, geoValue]) => {
+                              if (geoKey === "ip") return null;
+
+                              return (
+                                <div
+                                  key={geoKey}
+                                  className="border rounded-md p-2 bg-gray-50"
+                                >
+                                  <p className="text-gray-500 capitalize">
+                                    {geoKey.replace(/_/g, " ")}
+                                  </p>
+
+                                  <p className="font-medium break-all">
+                                    {String(geoValue || "-")}
+                                  </p>
+                                </div>
+                              );
+                            },
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={key}
+                            className="border rounded-md p-2 bg-gray-50"
+                          >
+                            <p className="text-gray-500 capitalize">
+                              {key.replace(/_/g, " ")}
+                            </p>
+
+                            <p className="font-medium break-all">
+                              {String(value || "-")}
+                            </p>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {lead?.chats?.length > 0 && (
