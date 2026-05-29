@@ -184,7 +184,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
                 {selectedContact?.name}
               </h3>
               <p className="text-sm text-gray-600 font-medium ">
-                +{selectedContact?.phone}
+                {selectedContact?.phone}
               </p>
             </div>
           </div>

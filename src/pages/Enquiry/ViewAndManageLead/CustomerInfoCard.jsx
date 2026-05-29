@@ -145,261 +145,257 @@ const CustomerInfoCard = ({ lead, onClick }) => {
   }, []);
 
   const getQueryParams = (url) => {
-  try {
-    const params = new URL(url).searchParams;
-    return Object.fromEntries(params.entries());
-  } catch {
-    return {};
-  }
-};
+    try {
+      const params = new URL(url).searchParams;
+      return Object.fromEntries(params.entries());
+    } catch {
+      return {};
+    }
+  };
 
-const friendlyLabels = {
-  utm_source: "Lead Source",
-  utm_medium: "Marketing Type",
-  utm_campaign: "Marketing Campaign",
-  utm_term: "Search Keyword",
-  utm_content: "Ad Version",
+  const friendlyLabels = {
+    utm_source: "Lead Source",
+    utm_medium: "Marketing Type",
+    utm_campaign: "Marketing Campaign",
+    utm_term: "Search Keyword",
+    utm_content: "Ad Version",
 
-  hsa_acc: "Advertising Account",
-  hsa_cam: "Campaign ID",
-  hsa_grp: "Ad Group",
-  hsa_ad: "Advertisement ID",
-  hsa_src: "Traffic Source",
-  hsa_tgt: "Target Audience",
-  hsa_kw: "Keyword Triggered",
-  hsa_mt: "Match Type",
-  hsa_net: "Advertising Network",
-  hsa_ver: "Tracking Version",
+    hsa_acc: "Advertising Account",
+    hsa_cam: "Campaign ID",
+    hsa_grp: "Ad Group",
+    hsa_ad: "Advertisement ID",
+    hsa_src: "Traffic Source",
+    hsa_tgt: "Target Audience",
+    hsa_kw: "Keyword Triggered",
+    hsa_mt: "Match Type",
+    hsa_net: "Advertising Network",
+    hsa_ver: "Tracking Version",
 
-  gad_source: "Google Ad Source",
-  gad_campaignid: "Google Campaign",
+    gad_source: "Google Ad Source",
+    gad_campaignid: "Google Campaign",
 
-  gbraid: "Mobile Ad Tracking",
-  gclid: "Google Click Reference",
-};
+    gbraid: "Mobile Ad Tracking",
+    gclid: "Google Click Reference",
+  };
 
   const queryParams = getQueryParams(lead?.source_url);
 
   if (!lead) return null;
 
   return (
-  <div className="flex flex-col bg-white dark:bg-[#1a1f2e] rounded-lg md:shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] p-5 h-auto border border-gray-200 dark:border-[#2d3748]">
-    <div className="flex-1">
-      <h3 className="font-semibold text-gray-800 dark:text-[#e8eaed] mb-4">
-        Customer Information
-      </h3>
+    <div className="flex flex-col bg-white dark:bg-[#1a1f2e] rounded-lg md:shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] p-5 h-auto border border-gray-200 dark:border-[#2d3748]">
+      <div className="flex-">
+        <h3 className="font-semibold text-gray-800 dark:text-[#e8eaed] mb-4">
+          Customer Information
+        </h3>
 
-      {lead?.Contact && (
-        <div className="cursor-pointer flex justify-between items-center py-2 border-b border-gray-200 dark:border-[#2d3748] last:border-0">
-          <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-[#e8eaed]">
-              Mobile Number
-            </p>
-            <p
-              onClick={() => handleCallPopup(lead.Contact)}
-              className="text-sm text-gray-600 dark:text-[#9ca3af]"
-            >
-              {lead.Contact}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div
-              onClick={onClick}
-              className="text-primary rounded bg-primary/10 dark:bg-primary/20 p-2"
-            >
-              <FaWhatsapp />
+        {lead?.Contact && (
+          <div className="cursor-pointer flex justify-between items-center py-2 border-b border-gray-200 dark:border-[#2d3748] last:border-0">
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-[#e8eaed]">
+                Mobile Number
+              </p>
+              <p
+                onClick={() => handleCallPopup(lead.Contact)}
+                className="text-sm text-gray-600 dark:text-[#9ca3af]"
+              >
+                {lead.Contact}
+              </p>
             </div>
 
-            {integrationStatus.exotel ? (
+            <div className="flex items-center gap-4">
               <div
-                onClick={() => handleCallPopup(lead.Contact)}
-                className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
+                onClick={onClick}
+                className="text-primary rounded bg-primary/10 dark:bg-primary/20 p-2"
               >
-                <FaPhone />
+                <FaWhatsapp />
               </div>
-            ) : (
-              <Link
-                to={`tel:${lead.Contact}`}
-                className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
-              >
-                <FaPhone />
-              </Link>
+
+              {integrationStatus.exotel ? (
+                <div
+                  onClick={() => handleCallPopup(lead.Contact)}
+                  className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
+                >
+                  <FaPhone />
+                </div>
+              ) : (
+                <Link
+                  to={`tel:${lead.Contact}`}
+                  className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
+                >
+                  <FaPhone />
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
+        {lead?.Email && (
+          <InfoRow label="Email Address" value={lead.Email} icon={<MdMail />} />
+        )}
+
+        {(lead?.check_in || lead?.check_out || lead?.number_of_guest) && (
+          <div className="mt-4 text-sm text-gray-700 dark:text-[#9ca3af] space-y-1">
+            {lead?.check_in && (
+              <p className="font-medium">
+                Check In: <span className="text-xs">{lead.check_in}</span>
+              </p>
+            )}
+
+            {lead?.check_out && (
+              <p className="font-medium">
+                Check Out: <span className="text-xs">{lead.check_out}</span>
+              </p>
+            )}
+
+            {lead?.number_of_guest && (
+              <p className="font-medium">
+                Guests: <span className="text-xs">{lead.number_of_guest}</span>
+              </p>
             )}
           </div>
-        </div>
-      )}
-
-      {lead?.Email && (
-        <InfoRow
-          label="Email Address"
-          value={lead.Email}
-          icon={<MdMail />}
-        />
-      )}
-
-      {(lead?.check_in || lead?.check_out || lead?.number_of_guest) && (
-        <div className="mt-4 text-sm text-gray-700 dark:text-[#9ca3af] space-y-1">
-          {lead?.check_in && (
-            <p className="font-medium">
-              Check In: <span className="text-xs">{lead.check_in}</span>
-            </p>
-          )}
-
-          {lead?.check_out && (
-            <p className="font-medium">
-              Check Out: <span className="text-xs">{lead.check_out}</span>
-            </p>
-          )}
-
-          {lead?.number_of_guest && (
-            <p className="font-medium">
-              Guests: <span className="text-xs">{lead.number_of_guest}</span>
-            </p>
-          )}
-        </div>
-      )}
-
-      {lead?.source_url && (
-        <Link
-          style={{ wordBreak: "break-all" }}
-          target="_blank"
-          to={lead.source_url}
-          className="text-sm mt-4 whitespace-pre-wrap text-blue-500 dark:text-blue-400"
-        >
-          <strong className="text-gray-500 dark:text-[#9ca3af]">
-            Source:
-          </strong>{" "}
-          {lead.source_url}
-        </Link>
-      )}
-
-      <div className="mt-4 text-sm text-gray-700 dark:text-[#e8eaed] border border-gray-200 dark:border-[#2d3748] bg-gray-50 dark:bg-[#242b3d] p-4 rounded-xl">
-        <h1 className="font-semibold mb-3">URL Parameters</h1>
-
-        {Object.keys(queryParams)?.length > 0 ? (
-          <div className="space-y-2">
-            {Object.entries(queryParams)?.map(([key, value]) => (
-              <div
-                key={key}
-                className="flex justify-between gap-4 border-b border-gray-200 dark:border-[#2d3748] pb-2 last:border-b-0"
-              >
-                <span className="font-medium text-gray-600 dark:text-[#9ca3af]">
-                  {friendlyLabels[key] || key.replace(/_/g, " ")}
-                </span>
-
-                <span className="text-gray-800 dark:text-[#e8eaed] break-all text-right">
-                  {decodeURIComponent(value)}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 dark:text-[#6b7280]">
-            No URL parameters found
-          </p>
         )}
-      </div>
-    </div>
 
-    <div className="flex flex-wrap items-center gap-2 mt-2">
-      <div className="flex w-auto flex-col gap-1">
-        <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
-          Attempted By
-        </label>
-        <CustomDropdown2
-          label={lead?.assignee || "Select User"}
-          options={
-            allUsers?.map((user) => ({
-              value: `${user?.phone},${user?.emailId}`,
-              label: user?.userName,
-            })) || []
-          }
-          onChange={(value) => handleUserAssign(value)}
-        />
+        {lead?.source_url && (
+          <Link
+            style={{ wordBreak: "break-all" }}
+            target="_blank"
+            to={lead.source_url}
+            className="text-sm mt-4 whitespace-pre-wrap text-blue-500 dark:text-blue-400"
+          >
+            <strong className="text-gray-500 dark:text-[#9ca3af]">
+              Source:
+            </strong>{" "}
+            {lead.source_url}
+          </Link>
+        )}
+
+        <div className="mt-4 text-sm text-gray-700 dark:text-[#e8eaed] border border-gray-200 dark:border-[#2d3748] bg-gray-50 dark:bg-[#242b3d] p-4 rounded-xl">
+          <h1 className="font-semibold mb-3">URL Parameters</h1>
+
+          {Object.keys(queryParams)?.length > 0 ? (
+            <div className="space-y-2">
+              {Object.entries(queryParams)?.map(([key, value]) => (
+                <div
+                  key={key}
+                  className="flex justify-between gap-4 border-b border-gray-200 dark:border-[#2d3748] pb-2 last:border-b-0"
+                >
+                  <span className="font-medium text-gray-600 dark:text-[#9ca3af]">
+                    {friendlyLabels[key] || key.replace(/_/g, " ")}
+                  </span>
+
+                  <span className="text-gray-800 dark:text-[#e8eaed] break-all text-right">
+                    {decodeURIComponent(value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-[#6b7280]">
+              No URL parameters found
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-1 w-auto">
-        <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
-          Stages
-        </label>
-        <CustomDropdown
-          label={lead?.status}
-          options={Stages}
-          onChange={(value) => {
-            if (value === "Follow Up") {
-              setShowDatePicker(true);
-            } else {
-              handleStageChange({ value });
+      <div className="flex flex-wrap items-center gap-2 mt-2">
+        <div className="flex w-auto flex-col gap-1">
+          <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
+            Attempted By
+          </label>
+          <CustomDropdown2
+            label={lead?.assignee || "Select User"}
+            options={
+              allUsers?.map((user) => ({
+                value: `${user?.phone},${user?.emailId}`,
+                label: user?.userName,
+              })) || []
             }
-          }}
-        />
-      </div>
+            onChange={(value) => handleUserAssign(value)}
+          />
+        </div>
 
-      <div className="flex flex-col gap-1 w-auto">
-        <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
-          Turn Away Code
-        </label>
-        <CustomDropdown
-          label={lead?.turnAwayCode || "Select Code"}
-          options={TurnAwayCode}
-          onChange={(value) => {
-            handleStageChange({
-              value: "Turn Away",
-              turnAwayCode: value,
-            });
-          }}
-        />
-      </div>
-    </div>
-
-    {callPopup && (
-      <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
-        <div className="w-[400px] h-50 max-w-md p-4 bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-[#2d3748] shadow-xl flex flex-col rounded-lg">
-          <div className="flex flex-col gap-2">
-            <h1 className="text-gray-900 dark:text-[#e8eaed]">
-              Enter Number to make a call!
-            </h1>
-
-            <CustomDropdown
-              label={lead?.assignee || "Select Agent"}
-              options={
-                allUsers?.map((user) => ({
-                  value: user?.phone,
-                  label: user?.userName,
-                })) || []
+        <div className="flex flex-col gap-1 w-auto">
+          <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
+            Stages
+          </label>
+          <CustomDropdown
+            label={lead?.status}
+            options={Stages}
+            onChange={(value) => {
+              if (value === "Follow Up") {
+                setShowDatePicker(true);
+              } else {
+                handleStageChange({ value });
               }
-              onChange={(value) => setAgentNumber(value)}
-            />
+            }}
+          />
+        </div>
 
-            <input
-              value={selectedGuestNumber}
-              onChange={(e) => setSelectedGuestNumber(e.target.value)}
-              placeholder="Guest number"
-              required
-              className="mt-1 w-full border border-gray-300 dark:border-[#2d3748] bg-white dark:bg-[#242b3d] text-gray-900 dark:text-[#e8eaed] rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <div className="flex flex-col gap-1 w-auto">
+          <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
+            Turn Away Code
+          </label>
+          <CustomDropdown
+            label={lead?.turnAwayCode || "Select Code"}
+            options={TurnAwayCode}
+            onChange={(value) => {
+              handleStageChange({
+                value: "Turn Away",
+                turnAwayCode: value,
+              });
+            }}
+          />
+        </div>
+      </div>
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setCallPopup(false)}
-                className="border py-1 px-5 bg-red-300 dark:bg-red-500/20 dark:text-red-300 rounded"
-              >
-                Cancel
-              </button>
+      {callPopup && (
+        <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
+          <div className="w-[400px] h-50 max-w-md p-4 bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-[#2d3748] shadow-xl flex flex-col rounded-lg">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-gray-900 dark:text-[#e8eaed]">
+                Enter Number to make a call!
+              </h1>
 
-              <button
-                onClick={handleCall}
-                className="border border-gray-300 dark:border-[#2d3748] py-1 px-5 rounded text-gray-900 dark:text-[#e8eaed] hover:bg-orange-400 dark:hover:bg-orange-500/20"
-              >
-                Call Now
-              </button>
+              <CustomDropdown
+                label={lead?.assignee || "Select Agent"}
+                options={
+                  allUsers?.map((user) => ({
+                    value: user?.phone,
+                    label: user?.userName,
+                  })) || []
+                }
+                onChange={(value) => setAgentNumber(value)}
+              />
+
+              <input
+                value={selectedGuestNumber}
+                onChange={(e) => setSelectedGuestNumber(e.target.value)}
+                placeholder="Guest number"
+                required
+                className="mt-1 w-full border border-gray-300 dark:border-[#2d3748] bg-white dark:bg-[#242b3d] text-gray-900 dark:text-[#e8eaed] rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setCallPopup(false)}
+                  className="border py-1 px-5 bg-red-300 dark:bg-red-500/20 dark:text-red-300 rounded"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleCall}
+                  className="border border-gray-300 dark:border-[#2d3748] py-1 px-5 rounded text-gray-900 dark:text-[#e8eaed] hover:bg-orange-400 dark:hover:bg-orange-500/20"
+                >
+                  Call Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
-     </div>
+      )}
+    </div>
   );
 };
 
