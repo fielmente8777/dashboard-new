@@ -157,7 +157,7 @@ const WhatsApp = () => {
   if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 
   return (
-    <div className="h-[calc(100vh-8vh)] flex bg-gray-50">
+    <div className="h-[calc(100vh-8vh)] flex bg-app-surface">
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full">
           <div className="hidden md:flex w-full">

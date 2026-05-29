@@ -96,7 +96,7 @@ const AudienceInsights = () => {
           </ResponsiveContainer>
           {/* Custom Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Devices</span>
+            <span className="text-app-text-faint text-xs font-bold uppercase tracking-wider">Devices</span>
           </div>
         </div>
 
@@ -105,7 +105,7 @@ const AudienceInsights = () => {
           {data.devices.map((device, idx) => (
             <div key={idx} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-              <span className="text-sm font-medium text-gray-400">{device.name}</span>
+              <span className="text-sm font-medium text-app-text-faint">{device.name}</span>
             </div>
           ))}
         </div>
@@ -119,7 +119,7 @@ const AudienceInsights = () => {
             const percentage = (country.users / maxCountryUsers) * 100;
             return (
               <div key={idx} className="flex flex-col gap-1.5">
-                <div className="flex justify-between items-center text-sm font-medium text-gray-400">
+                <div className="flex justify-between items-center text-sm font-medium text-app-text-faint">
                   <span>{country.name}</span>
                   <span>{country.users.toLocaleString()}</span>
                 </div>

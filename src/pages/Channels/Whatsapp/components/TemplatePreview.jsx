@@ -20,7 +20,7 @@ export default function TemplatePreview({
 
   return (
     <div className="bg-[#e5ddd5] p-4 rounded-lg max-w-85 w-full">
-      <div className="bg-white rounded-lg p-3 text-sm whitespace-pre-line shadow-sm space-y-2">
+      <div className="bg-primary rounded-lg p-3 text-sm whitespace-pre-line shadow-sm space-y-2">
         {headerText && (
           <div className="font-semibold text-base">{headerText}</div>
         )}
@@ -37,7 +37,7 @@ export default function TemplatePreview({
           {buttonComponent.buttons.map((btn, i) => (
             <button
               key={i}
-              className="w-full bg-white border border-gray-300 text-blue-600 text-sm py-2 rounded-md hover:bg-gray-50 transition"
+              className="w-full bg-app-surface border border-gray-300 text-blue-600 text-sm py-2 rounded-md hover:bg-gray-50 transition"
             >
               {btn.text}
             </button>

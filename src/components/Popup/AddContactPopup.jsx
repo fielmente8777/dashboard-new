@@ -59,11 +59,11 @@ const AddContactPopup = ({
           <div className="flex justify-center items-center h-screen">
             <form
               onSubmit={handleSubmit}
-              className="bg-white p-6 w-[500px] rounded-xl shadow-lg flex flex-col gap-6"
+              className="bg-app-surface/50 p-6 w-[500px] rounded-xl shadow-lg flex flex-col gap-6"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b pb-3">
-                <h1 className="text-xl font-semibold text-gray-700">
+                <h1 className="text-xl font-semibold text-gray-700 dark:text-app-text-muted">
                   {isEdit ? "Edit Contact Details" : "Add New Contact"}
                 </h1>
                 <button
@@ -79,7 +79,7 @@ const AddContactPopup = ({
 
               {/* Name */}
               <div className="flex flex-col w-full">
-                <label className="text-sm mb-1 font-medium text-gray-600">
+                <label className="text-sm mb-1 font-medium text-gray-600 dark:text-app-text-faint">
                   Name
                 </label>
                 <input
@@ -93,7 +93,7 @@ const AddContactPopup = ({
 
               {/* Email */}
               <div className="flex flex-col w-full">
-                <label className="text-sm mb-1 font-medium text-gray-600">
+                <label className="text-sm mb-1 font-medium text-gray-600 dark:text-app-text-faint">
                   Email
                 </label>
                 <input
@@ -107,7 +107,7 @@ const AddContactPopup = ({
 
               {/* Phone */}
               <div className="flex flex-col w-full">
-                <label className="text-sm mb-1 font-medium text-gray-600">
+                <label className="text-sm mb-1 font-medium text-gray-600 dark:text-app-text-faint">
                   Phone Number
                 </label>
                 <input
@@ -135,9 +135,9 @@ const AddContactPopup = ({
                 />
               </div> */}
               <div className="mb-4">
-              <label className="block text-sm mb-1 font-medium text-gray-600">Source</label>
+              <label className="block text-sm mb-1 font-medium text-gray-600 dark:text-app-text-faint">Source</label>
               <select
-                className="w-full border p-2 rounded-md"
+                className="w-full border p-2 rounded-md bg-app-surface-secondary"
                 value={data.added_from}
                 // onChange={(e) => setSource(e.target.value)}
                 onChange={(e) =>

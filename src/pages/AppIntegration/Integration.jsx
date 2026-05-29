@@ -519,20 +519,20 @@ function Integration() {
   }
 
   return (
-    <div className="bg-[#f7f7f7]">
-      <div className="bg-white border-b border-gray-200">
+    <div className="bg-app-surface">
+      <div className="bg-app-surface-secondary border-b border-gray-200">
         <div className="px-4 py-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-app-text mb-1">
             Integrations
           </h1>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-app-text-faint">
             Connect your favorite apps to bring all your data into one dashboard
           </p>
         </div>
       </div>
 
       <div className="px-4 py-8">
-        <div className="bg-white rounded-sm border border-gray-200 mb-6">
+        <div className="bg-app-surface-secondary rounded-sm border border-gray-200 mb-6">
           <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
@@ -553,8 +553,8 @@ function Integration() {
                 key={category}
                 onClick={() => setSelectedFilter(category)}
                 className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
-                  ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  ? "text-blue-700 border-b-2 border-blue-600 bg-blue-50"
+                  : "text-gray-600 hover:text-blue-900 hover:bg-gray-50"
                   }`}
               >
                 {category}
@@ -581,7 +581,7 @@ function Integration() {
               return (
                 <div
                   key={integration?.id}
-                  className={`${subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId] ? "opacity-50" : ""} relative bg-white rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm`}
+                  className={`${subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId] ? "opacity-50" : ""} relative bg-app-surface-secondary rounded-sm border border-gray-200 hover:border-gray-300 transition-all hover:shadow-sm`}
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
@@ -607,7 +607,7 @@ function Integration() {
                       )}
                     </div>
 
-                    <h3 className="text-base font-semibold text-gray-900 mb-2">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-app-text-faint mb-2">
                       {integration.name}
                     </h3>
                     <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">

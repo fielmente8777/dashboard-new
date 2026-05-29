@@ -55,7 +55,7 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-9999">
-      <div className="bg-white p-5 rounded-xl max-w-80 w-full space-y-4 shadow-lg">
+      <div className="bg-app-surface p-5 rounded-xl max-w-80 w-full space-y-4 shadow-lg">
         <h3 className="font-semibold text-lg">Export Leads</h3>
 
         {/* Custom Dropdown */}
@@ -82,7 +82,7 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
 
         {/* Buttons */}
         <div className="flex gap-2">
-          <button onClick={onClose} className="w-full bg-gray-200 py-2 rounded">
+          <button onClick={onClose} className="w-full bg-app-text-muted py-2 rounded">
             Close
           </button>
 

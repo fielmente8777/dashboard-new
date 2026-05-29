@@ -49,7 +49,7 @@ const TopPagesTable = () => {
   const maxViews = Math.max(...pages.map(p => p.views));
 
   return (
-    <div className="bg-white  dark:bg-app-surface p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
+    <div className="bg-app-surface dark:bg-app-surface p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-semibold text-app-text dark:text-app-text">Top Pages</h2>
@@ -75,9 +75,9 @@ const TopPagesTable = () => {
                 <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/20 transition-colors">
                   <td className="py-4 pr-4 max-w-[320px]">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-400 w-5">{i + 1}.</span>
+                      <span className="text-xs font-bold text-app-text-faint w-5">{i + 1}.</span>
                       <div className="flex flex-col">
-                        <span className="font-medium text-app-text dark:text-gray-400 truncate" title={page.fullUrl}>
+                        <span className="font-medium text-app-text dark:text-app-text-faint truncate" title={page.fullUrl}>
                           {page.pageName}
                         </span>
                         <a
@@ -98,11 +98,11 @@ const TopPagesTable = () => {
                       <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full" style={{ width: `${widthPct}%` }} />
                       </div>
-                      <span className="font-semibold text-app-text dark:text-gray-400 min-w-[50px]">{page.views.toLocaleString()}</span>
+                      <span className="font-semibold text-app-text dark:text-app-text-faint min-w-[50px]">{page.views.toLocaleString()}</span>
                     </div>
                   </td>
-                  <td className="py-4 text-right text-app-text dark:text-gray-400 font-medium">{page.users.toLocaleString()}</td>
-                  <td className="py-4 text-right text-app-text dark:text-gray-400">{formatDuration(page.avgDuration)}</td>
+                  <td className="py-4 text-right text-app-text dark:text-app-text-faint font-medium">{page.users.toLocaleString()}</td>
+                  <td className="py-4 text-right text-app-text dark:text-app-text-faint">{formatDuration(page.avgDuration)}</td>
                   <td className="py-4 text-right">
                     <span className={`text-xs font-medium px-2 py-1 rounded ${
                       page.bounceRate > 0.7 ? "bg-red-50 text-red-600" :

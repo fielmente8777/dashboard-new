@@ -113,7 +113,7 @@ const  TrafficSources = () => {
                     </div>
                     <div className="text-sm">
                       <span className="font-semibold text-gray-900">{ch.sessions.toLocaleString()}</span>
-                      <span className="text-gray-400 ml-2 text-xs">{pct.toFixed(1)}%</span>
+                      <span className="text-app-text-faint ml-2 text-xs">{pct.toFixed(1)}%</span>
                     </div>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -149,10 +149,10 @@ const  TrafficSources = () => {
               <tbody>
                 {data.sources.slice(0, 6).map((s, i) => (
                   <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/20">
-                    <td className="py-3 font-medium text-app-text dark:text-gray-400">{s.source}</td>
-                    <td className="py-3 text-app-text dark:text-gray-400">{s.medium}</td>
-                    <td className="py-3 text-right font-semibold text-app-text dark:text-gray-400">{s.sessions.toLocaleString()}</td>
-                    <td className="py-3 text-right text-app-text dark:text-gray-400">{s.users.toLocaleString()}</td>
+                    <td className="py-3 font-medium text-app-text dark:text-app-text-faint">{s.source}</td>
+                    <td className="py-3 text-app-text dark:text-app-text-faint">{s.medium}</td>
+                    <td className="py-3 text-right font-semibold text-app-text dark:text-app-text-faint">{s.sessions.toLocaleString()}</td>
+                    <td className="py-3 text-right text-app-text dark:text-app-text-faint">{s.users.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

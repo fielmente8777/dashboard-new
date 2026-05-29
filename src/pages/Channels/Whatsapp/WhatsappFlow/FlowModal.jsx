@@ -16,7 +16,7 @@ const FlowModal = ({ template, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white w-[400px] rounded-xl shadow-lg p-5 relative">
+      <div className="bg-app-surface w-[400px] rounded-xl shadow-lg p-5 relative">
         <FiX
           className="absolute right-4 top-4 cursor-pointer"
           onClick={onClose}

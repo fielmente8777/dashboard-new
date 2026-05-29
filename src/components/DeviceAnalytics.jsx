@@ -91,11 +91,11 @@ const DeviceAnalytics = () => {
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <Icon className="w-3.5 h-3.5" style={{ color: DEVICE_COLORS[d.name.toLowerCase()] }} />
-                    <span className="text-gray-400">{d.name}</span>
+                    <span className="text-app-text-faint">{d.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-semibold text-gray-400">{pct.toFixed(1)}%</span>
-                    <span className="text-gray-400 ml-2 text-xs">({d.value.toLocaleString()})</span>
+                    <span className="font-semibold text-app-text-faint">{pct.toFixed(1)}%</span>
+                    <span className="text-app-text-faint ml-2 text-xs">({d.value.toLocaleString()})</span>
                   </div>
                 </div>
               );
@@ -112,8 +112,8 @@ const DeviceAnalytics = () => {
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-gray-400">{b.name}</span>
-                    <span className="font-semibold text-gray-400">{b.value.toLocaleString()}</span>
+                    <span className="text-app-text-faint">{b.name}</span>
+                    <span className="font-semibold text-app-text-faint">{b.value.toLocaleString()}</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pct}%` }} />
@@ -134,8 +134,8 @@ const DeviceAnalytics = () => {
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-gray-400">{os.name}</span>
-                    <span className="font-semibold text-gray-400">{os.value.toLocaleString()}</span>
+                    <span className="text-app-text-faint">{os.name}</span>
+                    <span className="font-semibold text-app-text-faint">{os.value.toLocaleString()}</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-purple-500 rounded-full" style={{ width: `${pct}%` }} />

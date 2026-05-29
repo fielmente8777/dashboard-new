@@ -111,12 +111,12 @@ const Usermanagement = () => {
   }, []);
 
   return (
-    <div className="bg-white p-4 mb-10 cardShadow">
-      <div className="flex justify-end items-center bg-white">
+    <div className="bg-app-surface p-4 mb-10 cardShadow">
+      <div className="flex justify-end items-center bg-app-surface-secondary">
         {authUser?.isAdmin && (
           <button
             onClick={() => setIsPopupOpen(true)}
-            className="border transition-all duration-300 px-4 py-2 font-medium text-sm border-primary text-gray-800 hover:bg-primary/90 hover:text-white"
+            className="border transition-all duration-300 px-4 py-2 font-medium text-sm border-primary text-gray-800 dark:text-app-text-faint hover:bg-primary/90 hover:text-white"
           >
             Add New User
           </button>
@@ -129,10 +129,10 @@ const Usermanagement = () => {
             <table className="w-full text-left bg-primary text-white/90 rounded-sm shadow-md shadow-black/20">
               <thead>
                 <tr className="border-b whitespace-nowrap">
-                  <th className="py-3 px-4 text-[16px] font-medium capitalize">
+                  <th className="py-3 px-4 text-[16px] font-medium dark:text-app-text-muted capitalize">
                     Name
                   </th>
-                  <th className="py-2 px-4 text-[16px] font-medium  capitalize">
+                  <th className="py-2 px-4 text-[16px] font-medium dark:text-app-text-muted capitalize">
                     Email
                   </th>
                   {/* {accessRoles?.slice(0, 4)?.map((role) => (
@@ -144,16 +144,16 @@ const Usermanagement = () => {
                   </th>
                 ))} */}
 
-                  <th className="py-2 px-4 text-[16px] font-medium  capitalize">
+                  <th className="py-2 px-4 text-[16px] font-medium dark:text-app-text-muted capitalize">
                     Phone
                   </th>
-                  <th className="py-2 px-4 text-[16px] font-medium  capitalize">
+                  <th className="py-2 px-4 text-[16px] font-medium dark:text-app-text-muted  capitalize">
                     Admin
                   </th>
-                  <th className="py-2 px-4 text-[16px] font-medium  capitalize whitespace-nowrap">
+                  <th className="py-2 px-4 text-[16px] font-medium dark:text-app-text-muted capitalize whitespace-nowrap">
                     Date Added
                   </th>
-                  <th className="py-2 px-4 text-[16px] font-medium capitalize whitespace-nowrap">
+                  <th className="py-2 px-4 text-[16px] font-medium dark:text-app-text-muted capitalize whitespace-nowrap">
                     Action
                   </th>
                 </tr>
@@ -174,21 +174,21 @@ const Usermanagement = () => {
                     .map((user, index) => (
                       <tr
                         key={index}
-                        className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                        className="border-b odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors cursor-pointer"
                       >
-                        <td className="py-2 px-4 text-[16px] font-medium text-[#575757] capitalize">
+                        <td className="py-2 px-4 text-[16px] font-medium text-[#575757] dark:text-app-text-faint capitalize">
                           {user?.displayName}
                         </td>
-                        <td className="py-2 px-4 text-[16px] text-[#575757] lowercase">
+                        <td className="py-2 px-4 text-[16px] text-[#575757] dark:text-app-text-faint lowercase">
                           {user?.emailId}
                         </td>
-                        <td className="py-2 px-4 text-[16px] text-[#575757] lowercase">
+                        <td className="py-2 px-4 text-[16px] text-[#575757] dark:text-app-text-faint lowercase">
                           {user?.phone}
                         </td>
-                        <td className="py-3 px-4 text-[#575757] text-start">
+                        <td className="py-3 px-4 text-[#575757] dark:text-app-text-faint text-start">
                           {user?.role || "-"}
                         </td>
-                        <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757] lowercase">
+                        <td className="py-2 px-4 text-[16px] whitespace-nowrap  text-[#575757] dark:text-app-text-faint lowercase">
                           {new Date(user.createdAt).toLocaleString("en-GB", {
                             day: "2-digit",
                             month: "2-digit",

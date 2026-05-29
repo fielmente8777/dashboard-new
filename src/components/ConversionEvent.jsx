@@ -51,7 +51,7 @@ const ConversionEvents = () => {
           </div>
           <div>
             <h3 className="text-base font-semibold text-app-text dark:text-app-text">Top Events</h3>
-            <p className="text-xs text-gray-400">Most triggered events</p>
+            <p className="text-xs text-app-text-faint">Most triggered events</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ const ConversionEvents = () => {
                   <span className="font-medium text-app-text dark:text-app-text-muted truncate max-w-[200px]" title={ev.eventName}>
                     {ev.eventName}
                   </span>
-                  <span className="font-semibold text-gray-400">{ev.eventCount.toLocaleString()}</span>
+                  <span className="font-semibold text-app-text-faint">{ev.eventCount.toLocaleString()}</span>
                 </div>
                 <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-orange-400 rounded-full" style={{ width: `${pct}%` }} />
@@ -91,7 +91,7 @@ const ConversionEvents = () => {
         {data.conversions.length === 0 ? (
           <div className="text-center py-10 text-sm text-gray-200">
             <p>No conversion events configured.</p>
-            <p className="text-xs mt-1 text-gray-400">Mark events as "Key Events" in GA4 to track them here.</p>
+            <p className="text-xs mt-1 text-app-text-faint">Mark events as "Key Events" in GA4 to track them here.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -99,7 +99,7 @@ const ConversionEvents = () => {
               <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-green-50/20 border border-green-100">
                 <div>
                   <p className="font-medium text-app-text dark:text-app-text-muted text-sm">{c.eventName}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{c.users.toLocaleString()} users</p>
+                  <p className="text-xs text-app-text-faint mt-0.5">{c.users.toLocaleString()} users</p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-green-600">{c.conversions.toLocaleString()}</p>

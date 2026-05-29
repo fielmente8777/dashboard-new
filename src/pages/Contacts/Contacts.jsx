@@ -147,13 +147,13 @@ const Contacts = () => {
                 }
               />
             </th>
-            <th className="py-3 px-2 text-[14px] font-medium">#</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Created Time</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Name</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Contact</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Email</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Source</th>
-            <th className="py-3 px-2 text-[14px] font-medium">Action</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">#</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Created Time</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Name</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Contact</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Email</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Source</th>
+            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Action</th>
           </tr>
         </thead>
 
@@ -163,7 +163,7 @@ const Contacts = () => {
               <tr
                 key={row.id}
                 onClick={() => handlePopup(row)}
-                className="py-1 border-b odd:bg-gray-50 even:bg-gray-100 text-black"
+                className="py-1 border-b odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint   hover:bg-blue-50 transition-colors "
               >
                 <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
                   <input
@@ -220,7 +220,7 @@ const Contacts = () => {
         <button
           disabled={currentPage === 1}
           onClick={() => setCurrentPage((p) => p - 1)}
-          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50"
+          className="bg-app-text-muted px-3 py-1 rounded disabled:opacity-50"
         >
           Prev
         </button>
@@ -232,7 +232,7 @@ const Contacts = () => {
         <button
           disabled={currentPage === totalPages}
           onClick={() => setCurrentPage((p) => p + 1)}
-          className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50"
+          className="bg-app-text-muted px-3 py-1 rounded disabled:opacity-50"
         >
           Next
         </button>

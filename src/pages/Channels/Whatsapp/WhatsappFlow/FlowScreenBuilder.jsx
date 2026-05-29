@@ -245,7 +245,7 @@ const FlowScreenBuilder = ({ flowMeta }) => {
 
           {/* RIGHT: PREVIEW */}
           <div className="max-w-96 w-full border-l p-2 flex justify-center items-start">
-            <div className="bg-white border rounded-lg p-3 shadow w-full">
+            <div className="bg-app-surface border rounded-lg p-3 shadow w-full">
               <h3 className="text-center font-semibold mb-3">
                 {screens[activeScreen].title}
               </h3>

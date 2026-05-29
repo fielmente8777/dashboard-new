@@ -117,7 +117,7 @@ const ViewAndManageCalls = () => {
   if (!call) {
     return (
       <div className="flex flex-col h-full">
-        <div className="flex items-center gap-3 p-3 border-b bg-white">
+        <div className="flex items-center gap-3 p-3 border-b bg-app-surface">
           <button
             onClick={() => window.history.back()}
             className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100"
@@ -137,7 +137,7 @@ const ViewAndManageCalls = () => {
   return (
     <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-4">
       {/* HEADER */}
-      <div className="flex items-center gap-2.5 bg-white p-3 rounded-md">
+      <div className="flex items-center gap-2.5 bg-app-surface-secondary p-3 rounded-md">
         <button
           onClick={() => window.history.back()}
           className="flex size-8 justify-center bg-gray-100 rounded-full items-center"

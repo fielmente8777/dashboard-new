@@ -214,12 +214,12 @@ const SearchConsoleQueries = () => {
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
-                      <span className="font-bold text-gray-400 min-w-[40px] tabular-nums">
+                      <span className="font-bold text-app-text-faint min-w-[40px] tabular-nums">
                         {item.clicks.toLocaleString()}
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 text-right text-gray-400 font-medium tabular-nums">
+                  <td className="py-4 text-right text-app-text-faint font-medium tabular-nums">
                     {item.impressions.toLocaleString()}
                   </td>
                   <td className="py-4 text-right">
@@ -228,7 +228,7 @@ const SearchConsoleQueries = () => {
                     </span>
                   </td>
                   <td className="py-4 text-right pr-4">
-                    <span className="text-sm font-bold text-gray-400 tabular-nums">
+                    <span className="text-sm font-bold text-app-text-faint tabular-nums">
                       #{item.position.toFixed(1)}
                     </span>
                   </td>
@@ -254,7 +254,7 @@ const SearchConsoleQueries = () => {
             <h2 className="text-lg font-bold tracking-tight text-app-text dark:text-app-text">
               Top Search Queries
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-app-text-faint mt-0.5">
               Performance ranked by Google Search clicks
             </p>
           </div>
@@ -293,7 +293,7 @@ const SummaryChip = ({ label, value, icon: Icon }) => (
       <Icon className="h-3.5 w-3.5" />
     </span>
     <div className="leading-tight">
-      <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-app-text-faint">
         {label}
       </p>
       <p className="text-sm font-bold tabular-nums text-slate-900">{value}</p>

@@ -37,7 +37,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
 
   return (
     <div className="">
-      {open&&<div className="bg-white">
+      {open&&<div className="bg-app">
         {/* Header */}
         {/* <div className="flex justify-between items-center px-5 py-4 border-b">
           <h2 className="font-semibold text-lg">
@@ -56,7 +56,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
             </div>
 
             <select
-              className="flex-1 outline-none bg-transparent"
+              className="flex-1 outline-none bg-transparent text-app-text dark:text-app-text-faint"
               value={activitySource}
               onChange={(e) => setActivitySource(e.target.value)}
             >

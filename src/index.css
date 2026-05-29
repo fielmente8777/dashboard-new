@@ -29,14 +29,10 @@
 
   --app-navbar: #0f1222;
 
-  --color-primary: #3b6fe0;
-  --color-secondary: #6366f1;
-  --color-accent: #8b5cf6;
-  --color-cyan: #0891b2;
-
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #f43f5e;
+  --tooltip-bg: rgba(255,255,255,0.95);
+  --tooltip-text: #0f172a;
+  --tooltip-label: #475569;
+  --tooltip-border: rgba(0,0,0,0.08);
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -49,11 +45,7 @@
     135deg,
     #0f172a 0%,
     #1e293b 45%,
-    #6366f1 100% 
-    
-    --tooltip-bg: rgba(255, 255, 255, 0.95) ;
-      --tooltip-text: #0f172a; --tooltip-label: #475569;
-      --tooltip-border: rgba(0, 0, 0, 0.08) ;
+    #6366f1 100%
   );
 }
 
@@ -76,22 +68,18 @@
   --app-surface-secondary: #1a1a24;
 
   --app-text: #f4f4f6;
-  --app-text-muted: #10a3c7;
-  --app-text-faint: #cbcbdf;
+  --app-text-muted: #6a90c5;
+  --app-text-faint: #99a1af;
 
-  --app-border: #26262f;
+  --app-border: #010133;
   --app-border-strong: #33333f;
 
   --app-navbar: #0d1117;
 
-  --color-primary: #5b8def;
-  --color-secondary: #818cf8;
-  --color-accent: #a78bfa;
-  --color-cyan: #22d3ee;
-
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-danger: #fb7185;
+  --tooltip-bg: rgba(15,23,42,0.92);
+  --tooltip-text: #ffffff;
+  --tooltip-label: #cbd5e1;
+  --tooltip-border: rgba(255,255,255,0.08);
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -105,15 +93,8 @@
     #0a0a0f 0%,
     #13131a 50%,
     #1f2937 100%
-
-
-      --tooltip-bg: rgba(15,23,42,0.92);
-  --tooltip-text: #ffffff;
-  --tooltip-label: #cbd5e1;
-  --tooltip-border: rgba(255,255,255,0.08);
   );
 }
-
 *,
 :after,
 :before {
@@ -218,6 +199,7 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   --color-app-surface-secondary: var(--app-surface-secondary);
   --color-app-text: var(--app-text);
   --color-app-text-muted: var(--app-text-muted);
+  --color-app-text-faint: var(--app-text-faint);
   --color-app-border: var(--app-border);
   --color-app-navbar: var(--app-navbar);
   --gradient-hero: linear-gradient(

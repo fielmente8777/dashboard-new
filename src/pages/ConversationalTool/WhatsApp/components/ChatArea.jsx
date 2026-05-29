@@ -540,7 +540,7 @@ const ChatArea = () => {
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="flex z-5 max-md:bg-white justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
+      <div className="flex z-5 max-md:bg-app-surface justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
         <div className=" flex items-center">
           <div className="mr-2 md:hidden ">
             <IoArrowBack size={22} onClick={() => setMobileActive("sidebar")} />
@@ -607,7 +607,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6  max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden "
+        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden "
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -617,7 +617,7 @@ const ChatArea = () => {
         ) : (
           <div className="space-y-1">
             {selectedConversation?.adAttribution && (
-              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
+              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-app-surface-secondary border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
                 {selectedConversation?.adAttribution?.mediaType === "image" && (
                   <img
                     src={selectedConversation?.adAttribution?.imageUrl}
@@ -704,8 +704,8 @@ const ChatArea = () => {
                       <div
                         className={`relative max-w-xs  p-3 ${
                           isMe
-                            ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
-                            : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
+                            ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-app-surface-secondary"
+                            : "bg-app-surface-secondary border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700 dark:text-app-text-muted"
                         }`}
                       >
                         {/* all message types */}
@@ -721,7 +721,7 @@ const ChatArea = () => {
                                   {message?.context &&
                                     message?.context?.message && (
                                       <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
-                                        <p className="text-xs text-green-100 truncate">
+                                        <p className="text-xs text-green-100 dark:text-app-text-faint truncate">
                                           {message?.context?.message}
                                         </p>
                                       </div>
@@ -729,7 +729,7 @@ const ChatArea = () => {
 
                                   {/* Actual Message */}
 
-                                  <p className="text-sm whitespace-pre-wrap">
+                                  <p className="text-sm whitespace-pre-wrap text-blue-500">
                                     {expandedMessages[message._id]
                                       ? renderMessageWithLinks(message?.body)
                                       : renderMessageWithLinks(
@@ -756,7 +756,7 @@ const ChatArea = () => {
                           {message?.messageType === "template" &&
                             message?.template?.template?.name && (
                               <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
-                                <p className="text-xs text-gray-500 mb-1 capitalize">
+                                <p className="text-xs text-app-text-faint mb-1 capitalize">
                                   {message.template?.template?.name}
                                 </p>
 
@@ -764,7 +764,7 @@ const ChatArea = () => {
                                   {message.body ? (
                                     message.body
                                   ) : (
-                                    <span className="text-xs text-zinc-400">
+                                    <span className="text-xs text-zinc-400 dark:text-app-text-faint">
                                       No text defined
                                     </span>
                                   )}
@@ -899,7 +899,7 @@ const ChatArea = () => {
                                   {/* 📦 CARD */}
                                   <div
                                     onClick={() => window.open(url, "_blank")}
-                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-white flex flex-col justify-center items-center"
+                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-app-surface flex flex-col justify-center items-center"
                                   >
                                     {/* <iframe
                                       src={url}
@@ -1089,7 +1089,7 @@ const ChatArea = () => {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-white border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
+        className="bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
           <div className="mb-2 grid grid-cols-2 lg:grid-cols-4 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
@@ -1100,7 +1100,7 @@ const ChatArea = () => {
                   key={template?.id}
                   className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-300 opacity-60"} `}
                 >
-                  <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
+                  <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-primary">
                     {template?.name}
                   </p>
                   <p className="text-sm px-2 pb-2 ">
@@ -1129,13 +1129,13 @@ const ChatArea = () => {
               />
             ) : (
               // ✅ DOCUMENT UI
-              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-gray-50 max-w-60">
+              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-app-surface-secondary max-w-60">
                 {/* ICON */}
                 {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
                 {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
                 {isWord && <FaFileWord className="text-blue-500 text-xl" />}
                 {!isPDF && !isExcel && !isWord && (
-                  <FaFileAlt className="text-gray-500 text-xl" />
+                  <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
                 )}
 
                 {/* FILE NAME */}
@@ -1164,14 +1164,14 @@ const ChatArea = () => {
 
                       handleTemplate(true);
                     }}
-                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+                    className="cursor-pointer bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     <MdChat className="" /> Templates
                   </span>
                 ) : (
                   <span
                     onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     Close Templates <MdClose />
                   </span>
@@ -1214,7 +1214,7 @@ const ChatArea = () => {
           </div>
 
           {!isTakeOver && (
-            <div className="bg-white py-3 flex w-full items-center gap-3">
+            <div className="bg-primary py-3 flex w-full items-center gap-3">
               {/* Attachment */}
               {!is24HourComplete && (
                 <button

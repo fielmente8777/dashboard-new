@@ -491,14 +491,14 @@ export default function Calls() {
   return (
     <div className="">
       {/* Calls Table */}
-      <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+      <div className="bg-app-surface p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
         <div className=" flex items-center justify-between">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50">
+            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-primary/60! bg-app-surface-secondary">
               <input
                 type="text"
                 placeholder="Search calls..."
-                className="w-full bg-transparent outline-none text-sm"
+                className="w-full bg-transparent outline-none text-sm text-app-text dark:text-app-text-faint"
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
@@ -511,7 +511,7 @@ export default function Calls() {
 
             <button
               onClick={() => setCallPopup(true)}
-              className="border border-primary/60! py-1 px-5 rounded hover:bg-primary hover:text-white duration-300 flex items-center gap-1"
+              className=" bg-app-surface-secondary border border-primary/60! py-1 px-5 rounded hover:bg-primary hover:text-white duration-300 flex items-center gap-1"
             >
               <MdOutlineWifiCalling3 size={16} /> Call Now
             </button>
@@ -519,7 +519,7 @@ export default function Calls() {
             {isConnected && (
               <div
                 onClick={() => importCalls()}
-                className="flex items-center border font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
+                className="flex items-center border-primary/60! font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
               >
                 <div
                   className={`flex justify-end items-center cursor-pointer ${
@@ -536,15 +536,15 @@ export default function Calls() {
 
         <div className="flex flex-col flex-1 min-h-0">
           {/* 📊 TABLE */}
-          <div className="border rounded-lg overflow-x-auto">
+          <div className="border-primary/60! rounded-lg overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-primary sticky top-0 z-999">
                 <tr>
-                  <th className="px-3 py-2 text-white">#</th>
+                  <th className="px-3 py-2 text-white dark:text-app-text-muted">#</th>
                   {columns.map((col) => (
                     <th
                       key={col.value}
-                      className="px-3 py-3 text-left text-white whitespace-nowrap"
+                      className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
                     >
                       {col.label}
                     </th>
@@ -582,7 +582,7 @@ export default function Calls() {
                     return (
                       <tr
                         key={i}
-                        className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                        className="odd:bg-app-surface even:bg-app-surface border-app-border text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
                         onClick={() =>
                           handleRedirectToPage(call, i + limit * (page - 1) + 1)
                         }
@@ -715,7 +715,7 @@ export default function Calls() {
                                 sid: call.sid,
                               })
                             }
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -741,7 +741,7 @@ export default function Calls() {
                             //   leadStatus: value,
                             // })
 
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -759,7 +759,7 @@ export default function Calls() {
                                 guestType: value,
                               });
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -777,7 +777,7 @@ export default function Calls() {
                                 priority: value,
                               });
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -800,7 +800,7 @@ export default function Calls() {
                                 });
                               }
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
                       </tr>

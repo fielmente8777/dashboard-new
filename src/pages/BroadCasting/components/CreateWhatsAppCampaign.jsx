@@ -146,8 +146,8 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
   return (
     open && (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 h-screen">
-        <div className="bg-white max-w-xl w-full p-6 rounded-xl h-[95vh] overflow-y-auto hide-scrollbar">
-          <h2 className="text-lg font-semibold mb-4">
+        <div className="bg-app-surface/60 max-w-xl w-full p-6 rounded-xl h-[95vh] overflow-y-auto hide-scrollbar">
+          <h2 className="text-lg font-semibold mb-4 text-app-text dark:text-app-text">
             Create WhatsApp Campaign
           </h2>
 
@@ -165,7 +165,7 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
           <div className="mb-4">
             <label className="block mb-1">Template Type</label>
             <select
-              className="w-full border p-2 rounded-md"
+              className="w-full border p-2 rounded-md text-app-text dark:text-app-text-faint bg-app-surface-secondary"
               value={templateType}
               onChange={(e) => handleTemplateTypeChange(e.target.value)}
             >
@@ -180,7 +180,7 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
             <label className="block mb-1">Template</label>
 
             <select
-              className="w-full border p-2 rounded-md"
+              className="w-full border p-2 rounded-md text-app-text dark:text-app-text-faint bg-app-surface-secondary"
               value={selectedTemplate?.id || ""}
               onChange={(e) => {
                 const selected = filteredTemplates.find(
@@ -215,7 +215,7 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
           <div className="mb-4">
             <label className="block mb-1">Audience Based On</label>
             <select
-              className="w-full border p-2 rounded-md"
+              className="w-full border p-2 rounded-md text-app-text dark:text-app-text-faint bg-app-surface-secondary"
               value={audienceFilter}
               onChange={(e) => setAudienceFilter(e.target.value)}
             >
@@ -246,7 +246,7 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
           <div className="mb-4">
             <label className="block mb-1">Source</label>
             <select
-              className="w-full border p-2 rounded-md"
+              className="w-full border p-2 rounded-md text-app-text dark:text-app-text-faint bg-app-surface-secondary"
               value={source}
               onChange={(e) => handleSourceChange(e.target.value)}
             >

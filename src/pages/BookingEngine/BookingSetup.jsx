@@ -184,7 +184,7 @@ const BookingSetup = () => {
 
 
   return (
-    <div className="bg-white mb-10 cardShadow">
+    <div className="bg-app-surface-secondary mb-10 cardShadow">
       <div className="flex items-center divide-x divixe-gray-200 font-medium">
         {Tabs?.map((item, index) => (
           <button
@@ -217,19 +217,19 @@ const BookingSetup = () => {
             onSubmit={handleFormSubmit}
             className="mx-auto rounded-2xl space-y-6"
           >
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-app-text dark:text-app-text">
               Room Setup Form
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {/* Room Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted mb-1 ">
                   Room Type
                 </label>
                 <select
                   name="roomType"
-                  className="w-full border rounded-md p-2 outline-none border-primary/20 focus:border-primary/50"
+                  className="w-full border rounded-md p-2 bg-app-surface-secondary text-app-text dark:text-app-text-faint outline-none border-primary/20 focus:border-primary/50"
                   onChange={handleInputChange}
                 >
                   {roomTypes.map((type, idx) => (
@@ -242,7 +242,7 @@ const BookingSetup = () => {
 
               {/* Room Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted mb-1">
                   Room Name
                 </label>
                 <input
@@ -257,7 +257,7 @@ const BookingSetup = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {/* Room Subheading */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1">
                   Room Subheading
                 </label>
                 <input
@@ -270,7 +270,7 @@ const BookingSetup = () => {
 
               {/* price  */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1">
                   Price (per night)
                 </label>
                 <input
@@ -287,7 +287,7 @@ const BookingSetup = () => {
             {/* Numbers */}
             <div className="grid  grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1">
                   Children
                 </label>
                 <input
@@ -300,7 +300,7 @@ const BookingSetup = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 border-primary/40 focus:border-primary/50">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1 border-primary/40 focus:border-primary/50">
                   Adults
                 </label>
                 <input
@@ -313,7 +313,7 @@ const BookingSetup = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1">
                   Number of Rooms
                 </label>
                 <input
@@ -328,7 +328,7 @@ const BookingSetup = () => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-1">
                 Description
               </label>
               <textarea
@@ -342,7 +342,7 @@ const BookingSetup = () => {
 
             {/* Facilities */}
             <div className="rounded-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-text-faint mb-2">
                 Facilities
               </label>
               <div className="flex flex-wrap gap-3">
@@ -353,7 +353,7 @@ const BookingSetup = () => {
                     onClick={() => handleFacilityToggle(facility)}
                     className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
                       ? "bg-primary/90 text-white"
-                      : "bg-gray-100 text-gray-700"
+                      : "bg-app-text-muted text-gray-700"
                       }`}
                   >
                     {facility}
@@ -364,7 +364,7 @@ const BookingSetup = () => {
 
             {/* Upload Images */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-text dark:text-app-text-muted  mb-2">
                 Upload Images
               </label>
               <input
@@ -376,7 +376,7 @@ const BookingSetup = () => {
               />
               <div
                 className="flex items-center gap-2 w-fit text-sm hover:bg-primary hover:text-white py-2 px-4
-            rounded-sm border border-primary/20 text-primary font-medium cursor-pointer duration-300"
+            rounded-sm border border-primary/20 text-app-text-faint font-medium cursor-pointer duration-300"
                 onClick={() => inputFileRef?.current?.click()}
               >
                 <button>Upload</button>

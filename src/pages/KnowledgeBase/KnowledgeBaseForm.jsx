@@ -78,24 +78,24 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg mt-6">
+    <div className="p-6 bg-app-surface rounded-lg shadow-lg mt-6">
       <div className="flex items-center gap-2 mb-6">
         <span className="text-2xl text-blue-600">💾</span>
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-app-text-faint dark:text-app-text-faint">
           Hotel Knowledge Base Form
         </h2>
       </div>
 
       <div className="space-y-8">
         {/* Basic Information */}
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="bg-app-surface-secondary p-6 rounded-lg">
+          <h3 className="text-lg font-semibold text-app-text dark:text-app-text-muted  mb-4">
             Basic Information
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-text-app-text dark:text-app-text-faint mb-2">
                 Hotel Name *
               </label>
               <input
@@ -109,7 +109,7 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-text dark:text-app-text-faint mb-2">
                 About Us
               </label>
               <textarea
@@ -123,7 +123,7 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
           </div>
 
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-app-text dark:text-app-text-faint mb-2">
               Description
             </label>
             <textarea
@@ -137,9 +137,9 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
         </div>
 
         {/* Amenities */}
-        <div className="bg-gray-50 p-6 rounded-lg">
+        <div className="bg-app-surface-secondary p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Amenities</h3>
+            <h3 className="text-lg font-semibold text-app-text dark:text-app-text-muted">Amenities</h3>
             <button
               type="button"
               onClick={() => addArrayItem("amenities")}
@@ -175,9 +175,9 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
         </div>
 
         {/* Activities Nearby */}
-        <div className="bg-gray-50 p-6 rounded-lg">
+        <div className="bg-app-surface-secondary p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
+            <h3 className="text-lg font-semibold text-app-text dark:text-app-text-muted">
               Activities Nearby
             </h3>
             <button
@@ -215,12 +215,12 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
         </div>
 
         {/* Policies */}
-        <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4">Policies</h3>
+        <div className="bg-app-surface-secondary p-6 rounded-lg">
+          <h3 className="text-lg font-semibold text-app-text dark:text-app-text-muted mb-4">Policies</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-text dark:text-app-text-faint mb-2">
                 House Rules
               </label>
               <textarea
@@ -235,7 +235,7 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-app-text dark:text-app-text-faint mb-2">
                 Cancellation Policy
               </label>
               <textarea
@@ -252,9 +252,9 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
         </div>
 
         {/* Rooms */}
-        <div className="bg-gray-50 p-6 rounded-lg">
+        <div className="bg-app-surface-secondary p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Rooms</h3>
+            <h3 className="text-lg font-semibold text-app-text dark:text-app-text-muted">Rooms</h3>
             <button
               type="button"
               onClick={addRoom}
@@ -268,10 +268,10 @@ const KnowledgeBaseForm = ({ onSave, initialData = null }) => {
           {formData.rooms.map((room, index) => (
             <div
               key={index}
-              className="border border-gray-200 rounded-lg p-4 mb-4 bg-white"
+              className="border border-gray-200 rounded-lg p-4 mb-4 bg-app-surface-secondary"
             >
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium text-gray-700">Room {index + 1}</h4>
+                <h4 className="font-medium text-app-text dark:text-app-text-faint">Room {index + 1}</h4>
                 {formData.rooms.length > 1 && (
                   <button
                     type="button"

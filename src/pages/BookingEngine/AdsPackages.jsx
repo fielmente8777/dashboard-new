@@ -213,22 +213,22 @@ function PricePackage() {
 
 
   return (
-    <div className="bg-white p-4">
+    <div className="bg-app-surface p-4">
 
       <div className="flex">
         {tab.map((item, index) => (
-          <button key={index} onClick={() => setActiveTab(item)} className={`active:scale-90 px-3 py-2 ${activeTab === item ? "bg-primary  text-white border border-primary" : " text-gray-500 border border-gray-600"}`}>{item}</button>
+          <button key={index} onClick={() => setActiveTab(item)} className={`active:scale-90 px-3 py-2 ${activeTab === item ? "bg-primary  text-white border border-primary/60!" : " text-gray-500 border border-gray-600"}`}>{item}</button>
         ))}
       </div>
 
 
       {activeTab === "Add New Packages" && <div className="flex flex-col gap-2 mt-4">
         <div className="">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Name</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text mb-1">Package Name</label>
           <input
             type="text"
             value={package_name}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none"
+            className="w-full border rounded-md px-4 py-2 text-sm outline-none"
             onChange={(e) => {
               setpackage_name(e.target.value);
             }}
@@ -236,11 +236,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Description</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Description</label>
           <input
             type="text"
             value={package_description}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
 
             onChange={(e) => {
               setpackage_description(e.target.value);
@@ -249,11 +249,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Inclusion</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Inclusion</label>
           <input
             type="text"
             value={package_Inclusion}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setpackage_Inclusion(e.target.value);
             }}
@@ -261,12 +261,12 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Itinerary</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Itinerary</label>
           <div >
             <JoditEditor
               id="jodit1"
               ref={editor}
-              className="w-full border border-gray-300 rounded-md text-sm outline-none "
+              className="w-full border  rounded-md text-sm outline-none "
               value={package_Itinerary}
               onChange={(content) => {
                 setpackage_Itinerary(content);
@@ -277,11 +277,11 @@ function PricePackage() {
           </div>
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Guests</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Guests</label>
           <input
             type="text"
             value={package_guests}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setpackage_guests(e.target.value);
             }}
@@ -289,11 +289,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Days</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Days</label>
           <input
             type="text"
             value={package_days}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setpackage_days(e.target.value);
             }}
@@ -301,11 +301,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Night</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Night</label>
           <input
             type="text"
             value={package_night}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setpackage_night(e.target.value);
             }}
@@ -313,11 +313,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Price</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Price</label>
           <input
             type="text"
             value={package_price}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setpackage_price(e.target.value);
             }}
@@ -325,11 +325,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package Start</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package Start</label>
           <input
             type="date"
             value={plan_start}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border  rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setplan_start(e.target.value);
             }}
@@ -337,11 +337,11 @@ function PricePackage() {
           />
         </div>
         <div className="priceinput_div">
-          <label htmlFor="#" className="block text-sm font-medium text-gray-700 mb-1">Package End</label>
+          <label htmlFor="#" className="block text-sm font-medium text-app-text dark:text-app-text  mb-1">Package End</label>
           <input
             type="date"
             value={plan_end}
-            className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm outline-none "
+            className="w-full border rounded-md px-4 py-2 text-sm outline-none "
             onChange={(e) => {
               setplan_end(e.target.value);
             }}
@@ -371,7 +371,7 @@ function PricePackage() {
             </div>
           </div>
         </div>
-        <button className="pricSubmitBtn" onClick={AddMealPackage}>
+        <button className="pricSubmitBtn bg-app-text-muted" onClick={AddMealPackage}>
           Submit
         </button>
 
@@ -380,7 +380,7 @@ function PricePackage() {
 
       </div>}
 
-      {activeTab === "Current Packages" && <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-5">
+      {activeTab === "Current Packages" && <div className=" border-primary/60! grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-5">
         {Adspackages && Adspackages?.map((pack) => (
           <AdsPackage
             packageImage={pack.packageImage}

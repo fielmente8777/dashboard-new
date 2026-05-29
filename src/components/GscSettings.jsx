@@ -172,7 +172,7 @@ const GscSettings = () => {
       ) : (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Property Type</label>
+            <label className="block text-sm font-medium text-app-text-faint mb-1">Property Type</label>
             <select
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value)}
@@ -184,7 +184,7 @@ const GscSettings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Domain</label>
+            <label className="block text-sm font-medium text-app-text-faint mb-1">Domain</label>
             <input
               type="text"
               value={rawDomain}
@@ -198,7 +198,7 @@ const GscSettings = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-1">Connected Google Email (optional)</label>
+            <label className="block text-sm font-medium text-app-text-faint mb-1">Connected Google Email (optional)</label>
             <input
               type="email"
               value={email}

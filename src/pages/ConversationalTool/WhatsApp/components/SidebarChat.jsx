@@ -167,18 +167,18 @@ const SidebarChat = () => {
   }, [conversations]);
 
   return (
-    <div className="w-full md:w-90 border-b  md:border-r border-gray-200 flex flex-col bg-white">
+    <div className="w-full md:w-90 border-b  md:border-r border-primary/60! flex flex-col bg-app-surface-secondary">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
+          className="text-sm font-medium bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
         />
       </div>
 
-      <div className="flex border-b border-gray-200 bg-white overflow-hidden">
+      <div className="flex border-b border-primary/60! bg-app-surface-secondary overflow-hidden">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -189,8 +189,8 @@ const SidebarChat = () => {
               onClick={() => handleTabChnage(tab)}
               className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
                 isActive
-                  ? "bg-ternary text-white border-b-2 "
-                  : "text-slate-600 hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
+                  ? "bg-ternary text-white border-b-2  "
+                  : "text-slate-600 dark:text-app-text-muted hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
               }`}
             >
               <span>{tab}</span>
@@ -200,7 +200,7 @@ const SidebarChat = () => {
                   className={`min-w-5 h-5 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold
                     ${
                       isActive
-                        ? "bg-gray-100 text-primary"
+                        ? "bg-gray-100 text-primary "
                         : "bg-slate-200 text-slate-700"
                     }`}
                 >
@@ -241,10 +241,10 @@ const SidebarChat = () => {
                 setMobileActive("chatarea");
               }}
               // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${
+              className={`flex p-3 border-b border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
-                  ? "bg-teal-100/20"
-                  : "hover:bg-gray-50"
+                  ? "bg-app-surface-secondary"
+                  : "hover:bg-primary/50"
               }`}
             >
               {/* Avatar */}
@@ -273,7 +273,7 @@ const SidebarChat = () => {
               {/* Info */}
               <div className="ml-3 flex-1 min-w-0">
                 <div className="flex justify-between">
-                  <p className="text-sm font-medium text-gray-900 truncat flex flex-col">
+                  <p className="text-sm font-medium text-gray-900 dark:text-app-text-muted truncat flex flex-col">
                     {conv?.name}
 
                     <span className="text-[10px] mt-1">{conv?.phone}</span>
