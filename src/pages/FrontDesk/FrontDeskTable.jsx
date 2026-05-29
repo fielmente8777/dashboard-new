@@ -406,6 +406,8 @@ const Scheduler = () => {
     }
   }, []);
 
+
+  console.log("Booking Data:", bookingData);
   return (
     <div>
       <div className="toolbar my-4">

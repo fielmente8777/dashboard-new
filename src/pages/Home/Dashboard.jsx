@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
+import GscSettings from "../../components/GscSettings";
+import axios from "axios";
 import {
   PieChart,
   Pie,
@@ -28,7 +31,8 @@ import TopPagesTable from "../../components/TopPagesTable";
 import ConversionEvents from "../../components/ConversionEvent";
 import DeviceAnalytics from "../../components/DeviceAnalytics";
 import GeoAnalytics from "../../components/GeoAnalytics";
-
+import SearchConsoleQueries from "../../components/SearchConsoleQueries";
+import { BASE_URL } from "../../data/constant";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -43,21 +47,91 @@ const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
 
+  // 1. STATE FOR OUR CLEAN GA METRICS
+  const [gaMetrics, setGaMetrics] = useState({
+    whatsapp_clicks: 0,
+    call_clicks: 0,
+    form_submissions: 0,
+  });
+
+  // 2. NAYI STATE: Sirf GA (Website Actions) ki loading track karne ke liye
+  const [isGaLoading, setIsGaLoading] = useState(false);
+
+  const [dateRange, setDateRange] = useState({
+    startDate: "30daysAgo",
+    endDate: "today",
+  });
+
+  // CRM Fetcher (Isko humne bilkul touch nahi kiya)
   const getAnalytics = async () => {
     try {
       const response = await getAnalyticsService();
       setData(response?.result?.docs);
     } catch (error) {
-      console.log("Error fetching analytics:", error);
+      console.log("Error fetching CRM analytics:", error);
     }
   };
 
+  // Python GA API Fetcher (Isme loading ON/OFF lagaya hai)
+  const fetchGaTrackingData = async (currentHid, currentDates) => {
+    if (!currentHid) return;
+    try {
+      setIsGaLoading(true); // Data aane se pehle Loading ON
+      
+      const timestamp = new Date().getTime(); // Cache buster
+      const response = await axios.get(
+        `${BASE_URL}/google/analytics-conversions/${currentHid}?startDate=${currentDates.startDate}&endDate=${currentDates.endDate}&t=${timestamp}`
+      );
+
+      if (response.data && response.data.dashboardMetrics) {
+        setGaMetrics(response.data.dashboardMetrics);
+      }
+    } catch (error) {
+      console.log("Error fetching GA tracking data:", error);
+    } finally {
+      setIsGaLoading(false); // Data aane ke baad Loading OFF
+    }
+  };
+
+  // ==========================================
+  // MAGIC LISTENERS FOR DATE & PROPERTY CHANGE
+  // ==========================================
   useEffect(() => {
-    getAnalytics();
-  }, [hid]);
+    const handleDateChange = (e) => {
+      if (e.detail) {
+        setDateRange({
+          startDate: e.detail.start || "30daysAgo",
+          endDate: e.detail.end || "today",
+        });
+      }
+    };
+
+    const handlePropertyChange = () => {
+      // Jab dropdown se property change ho, toh sirf GA data update karo
+      if (hid) {
+        fetchGaTrackingData(hid, dateRange);
+      }
+    };
+
+    window.addEventListener("dashboard_date_changed", handleDateChange);
+    window.addEventListener("dashboard_property_changed", handlePropertyChange);
+
+    return () => {
+      window.removeEventListener("dashboard_date_changed", handleDateChange);
+      window.removeEventListener("dashboard_property_changed", handlePropertyChange);
+    };
+  }, [hid, dateRange]);
+
+  // Main Effect: Runs when Redux 'hid' or 'dateRange' state changes
+  useEffect(() => {
+    if (hid) {
+      getAnalytics();
+      fetchGaTrackingData(hid, dateRange);
+    }
+  }, [hid, dateRange]);
 
   // -----------------------
-  // Derived Values
+  // Derived Values (CRM)
   // -----------------------
   const total = data?.totalLeads?.[0]?.count || 0;
   const converted = data?.convertedLeads?.[0]?.count || 0;
@@ -93,27 +167,98 @@ const Dashboard = () => {
   if (!data) return <Loading />;
 
   return (
-    <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6">
-      {/* KPI CARDS */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-        <DashboardCard amount={total} label={"Total Leads"} />
-        <DashboardCard amount={converted} label={"Converted Leads"} />
-        <DashboardCard
-          amount={conversionRate}
-          label={"Conversion Rate"}
-          progress={conversionRate}
-        />
-        <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
+    <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
+      
+      {/* CRM KPI CARDS (Normal, no fade) */}
+      <div>
+        <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted mb-3">
+          CRM Data (Actual Leads)
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+          <DashboardCard amount={total} label={"Total Leads"} />
+          <DashboardCard amount={converted} label={"Converted Leads"} />
+          <DashboardCard
+            amount={conversionRate}
+            label={"Conversion Rate"}
+            progress={conversionRate}
+          />
+          <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
+        </div>
       </div>
+
+     {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
+     {/* <div className="mt-8 mb-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-app-text dark:text-app-text-muted tracking-tight">
+            Website Actions <span className="text-sm font-medium text-app-text-muted ml-2">(Google Analytics)</span>
+          </h2>
+          
+          {isGaLoading && (
+
+            <span className="flex items-center gap-2 text-sm text-blue-600 font-medium animate-pulse">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              Fetching live data...
+            </span>
+          )}
+        </div>
+
+        <div 
+          className={`grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 transition-all duration-500 ease-out ${
+            isGaLoading ? "opacity-50 scale-[0.98] blur-[1px] pointer-events-none" : "opacity-100 scale-100 blur-0"
+          }`}
+        >
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
+            
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-green-600 shadow-sm border border-green-100">
+                <FaWhatsapp className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">WhatsApp</p>
+                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.whatsapp_clicks}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
+            
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-blue-600 shadow-sm border border-blue-100">
+                <FaPhoneAlt className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Call Clicks</p>
+                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.call_clicks}</h3>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
+            
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-purple-600 shadow-sm border border-purple-100">
+                <FaWpforms className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Form Fills</p>
+                <h3 className="text-3xl font-black text-gray-800">{gaMetrics.form_submissions}</h3>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div> */}
 
      
      
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Source Distribution */}
-        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
+        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Source Distribution</h2>
-
           <ResponsiveContainer width="100%" height={320}>
             <BarChart
               data={cleanedSource}
@@ -143,9 +288,8 @@ const Dashboard = () => {
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white rounded md:rounded-lg p-3 md:p-5">
+        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
           <h2 className="text-lg font-semibold mb-4">Stages Breakdown</h2>
-
           <ResponsiveContainer width="100%" height={320}>
             <BarChart data={cleanedStatus} margin={{ top: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -164,6 +308,8 @@ const Dashboard = () => {
         <GoogleAnalyticsChart />
         <TrafficSources />
         <TopPagesTable />
+        <GscSettings />
+        <SearchConsoleQueries />
         <ConversionEvents />
         <DeviceAnalytics />
         <GeoAnalytics />
@@ -172,7 +318,7 @@ const Dashboard = () => {
 
 
       {/* FUNNEL */}
-      <div className="bg-white rounded md:rounded-lg p-5">
+      <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">
         <h2 className="text-lg font-semibold mb-4">Lead Funnel</h2>
 
         <FunnelBar label="Open" value={getStatusCount("open")} total={total} />
@@ -184,7 +330,7 @@ const Dashboard = () => {
 };
 
 const Card = ({ title, value }) => (
-  <div className="bg-white rounded p-5">
+  <div className="bg-app-surface dark:bg-app-surface rounded p-5">
     <p className="text-gray-500 text-sm">{title}</p>
     <h3 className="text-3xl font-bold mt-2">{value}</h3>
   </div>

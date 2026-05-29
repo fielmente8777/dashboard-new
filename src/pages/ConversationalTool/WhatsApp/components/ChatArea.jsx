@@ -643,7 +643,7 @@ const ChatArea = () => {
               {selectedConversation?.name}
             </h3>
             <p className="text-xs md:text-sm text-gray-600 ">
-              +{selectedConversation.phone}
+              {selectedConversation.phone}
             </p>
           </div>
         </div>

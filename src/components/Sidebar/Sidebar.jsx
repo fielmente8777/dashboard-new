@@ -373,7 +373,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
 
   return (
     <div
-      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
+      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-primary dark:bg-[#0a1020] md:relative fixed left-0 z-99999 transition-colors duration-200"
       style={{
         left: isMobile ? (isOpen ? "0px" : "0%") : null,
       }}
