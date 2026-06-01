@@ -485,7 +485,7 @@ const ReservationDesk = () => {
                   ))
                   .reverse()
               ) : (
-                <tr className="border text-center bg-white text-gray-500">
+                <tr className="border text-center bg-primary text-gray-500 dark:text-app-text-faint">
                   <td colSpan={10} className="py-2">
                     No data found!
                   </td>
@@ -497,7 +497,7 @@ const ReservationDesk = () => {
           <div className="space-y-2">
             {[1, 2, 3, 4, 5, 6, 7].map((index) => (
               <div key={index}>
-                <p className="py-5 animate-pulse bg-gray-100"></p>
+                <p className="py-5 animate-pulse bg-app-surface"></p>
               </div>
             ))}
           </div>

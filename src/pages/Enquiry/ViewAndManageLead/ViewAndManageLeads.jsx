@@ -162,10 +162,10 @@ const ViewAndManageLeads = () => {
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center gap-3 p-3 border-b bg-white">
+        <div className="flex items-center gap-3 p-3 border-b bg-app-surface">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-app-surface-secondary
                  hover:bg-gray-200 text-gray-700 transition-all duration-200"
           >
             <IoArrowBack size={18} />
@@ -176,7 +176,7 @@ const ViewAndManageLeads = () => {
 
         {/* Empty State */}
         <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
-          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 mb-4 text-2xl">
+          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-app-surface-secondary mb-4 text-2xl">
             📭
           </div>
 
@@ -193,11 +193,11 @@ const ViewAndManageLeads = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6 relative">
-      <div className="flex items-center  gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
+    <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-3 md:space-y-6 relative">
+      <div className="flex items-center  gap-2.5 bg-app-surface-secondary md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
-          className="flex size-8 justify-center bg-gray-100 rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
+          className="flex size-8 justify-center bg-app-surface-secondary rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
         >
           <IoArrowBack />
         </button>
@@ -206,7 +206,7 @@ const ViewAndManageLeads = () => {
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="hidden md:flex  gap-2 ">
             {lead?.Contact && (
-              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white font-medium">
+              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-app-text bg-app-surface-secondary font-medium">
                 <label htmlFor="" className="">
                   Follow Up
                 </label>
@@ -286,7 +286,7 @@ const ViewAndManageLeads = () => {
           {/* Prev Button */}
           <button
             onClick={handlePrevPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-shadow-app-text-muted
                hover:bg-gray-100 hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -296,7 +296,7 @@ const ViewAndManageLeads = () => {
           {/* Next Button */}
           <button
             onClick={handleNextPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-shadow-app-text-muted
                hover:bg-gray-100 hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -320,7 +320,7 @@ const ViewAndManageLeads = () => {
 
             <div className="space-y-2">
               {lead?.Message && (
-                <div className="bg-white p-4 rounded-md space-y-2">
+                <div className="bg-app-surface p-4 rounded-md space-y-2">
                   <h3 className="font-semibold text-gray-800">Message</h3>
                   <p className="text-sm"> {lead?.Message}</p>
                 </div>

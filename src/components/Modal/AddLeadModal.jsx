@@ -96,7 +96,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-99999 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-      <div className="bg-app rounded-5xl max-w-3xl w-full p-5 relative max-h-[90vh] rounded-md overflow-y-auto">
+      <div className="bg-app-surface rounded-5xl max-w-3xl w-full p-5 relative max-h-[90vh] rounded-md overflow-y-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Add Lead</h2>

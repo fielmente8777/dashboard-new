@@ -135,7 +135,7 @@ const ViewAndManageCalls = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-4">
+    <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-4">
       {/* HEADER */}
       <div className="flex items-center gap-2.5 bg-app-surface-secondary p-3 rounded-md">
         <button

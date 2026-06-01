@@ -352,8 +352,8 @@ const BookingSetup = () => {
                     key={i}
                     onClick={() => handleFacilityToggle(facility)}
                     className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
-                      ? "bg-primary/90 text-white"
-                      : "bg-app-text-muted text-gray-700"
+                      ? "bg-app-text-muted text-app-text-muted"
+                      : "bg-app-surface-secondary text-gray-700"
                       }`}
                   >
                     {facility}

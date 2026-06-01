@@ -185,7 +185,7 @@ export default function ImportLead({ open, setOpen }) {
 
   console.log("Leads", leads);
   return (
-    <div className="max-w-3xl mx-auto space-y-4 bg-gray">
+    <div className="max-w-3xl mx-auto space-y-4 bg-app-surface">
       <button
         className="text-sm font-medium bg-primary text-white p-2.5 rounded-sm ml-2"
         onClick={() => setOpen(!open)}
@@ -238,7 +238,7 @@ export default function ImportLead({ open, setOpen }) {
             </label>
 
             {fileName && (
-              <div className="mt-3 text-sm text-gray-600 bg-gray-100 px-3 py-2 rounded-lg flex items-center justify-between">
+              <div className="mt-3 text-sm text-gray-600 bg-app-surface-secondary px-3 py-2 rounded-lg flex items-center justify-between">
                 <span className="truncate">📄 {fileName}</span>
               </div>
             )}
@@ -261,7 +261,7 @@ export default function ImportLead({ open, setOpen }) {
                 </div>
 
                 {/* <p className={`${currentPage <= totalPages ? 'w-full bg-gray-300' : `w-[${(currentPage / totalPages) * 100}%] bg-green-600`} h-2 rounded-full `}/> */}
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-2 bg-app-surface-secondary rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-600 transition-all duration-500"
                     style={{

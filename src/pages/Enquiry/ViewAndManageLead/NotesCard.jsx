@@ -128,10 +128,10 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg md:shadow-sm p-5 ">
+    <div className="bg-app-surface rounded-lg md:shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex gap-2 items-center bg-gray-100 px-4 py-1.5 w-fit rounded-full">
-          <h3 className="text-sm font-medium text-[#37322F]">Notes</h3>
+        <div className="flex gap-2 items-center bg-app-surface-secondary px-4 py-1.5 w-fit rounded-full">
+          <h3 className="text-sm font-medium text-app-text dark:text-app-text">Notes</h3>
 
           {lead?.notes?.length > 0 && (
             <button
@@ -144,7 +144,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
         </div>
 
         {isEdit && lead?.notes?.length > 0 && (
-          <div className="flex justify-end">
+          <div className="flex justify-end  ">
             <button
               onClick={handleUpdateNote}
               className="bg-green-600 text-white px-4 py-1 rounded flex items-center gap-2"
@@ -156,7 +156,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
       </div>
 
       {lead?.notes?.length ? (
-        <div className="max-h-72 overflow-auto pr-2">
+        <div className="max-h-72 overflow-auto pr-2 ">
           <Timeline
             items={lead.notes}
             onEdit={(item, index) => {

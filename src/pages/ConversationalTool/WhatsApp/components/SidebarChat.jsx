@@ -167,18 +167,18 @@ const SidebarChat = () => {
   }, [conversations]);
 
   return (
-    <div className="w-full md:w-90 border-b  md:border-r border-primary/60! flex flex-col bg-app-surface-secondary">
+    <div className="w-full md:w-90 border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface-secondary">
       <div className="px-4 py-3 shadow-sm h-16 flex">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
+          className="text-sm text-app-text dark:text-app-text font-medium dark:bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
         />
       </div>
 
-      <div className="flex border-b border-primary/60! bg-app-surface-secondary overflow-hidden">
+      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-hidden">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -241,7 +241,7 @@ const SidebarChat = () => {
                 setMobileActive("chatarea");
               }}
               // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-primary/60! cursor-pointer transition-colors ${
+              className={`flex p-3 border-b dark:border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
                   ? "bg-app-surface-secondary"
                   : "hover:bg-primary/50"

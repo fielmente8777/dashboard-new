@@ -1,6 +1,6 @@
 const ChannelToggle = ({ label, value, onChange }) => (
   <div className="flex items-center justify-between">
-    <span className="text-sm text-gray-700">{label}</span>
+    <span className="text-sm text-gray-700 dark:text-app-text">{label}</span>
 
     <button
       onClick={onChange}

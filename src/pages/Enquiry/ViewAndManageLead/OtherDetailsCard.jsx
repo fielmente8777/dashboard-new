@@ -8,14 +8,14 @@ const formatLabel = (key) => {
 const OtherDetailsCard = ({ otherDetails }) => {
   if (!otherDetails || Object.keys(otherDetails).length === 0) {
     return (
-      <div className="bg-white rounded-md p-4 text-gray-400 text-sm">
+      <div className="bg-app-surface-secondary rounded-md p-4 text-gray-400 text-sm">
         No additional details available
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-md md:border md:shadow-xs border-primary/10 p-4">
+    <div className="bg-app-surface-secondary rounded-md md:border md:shadow-xs border-primary/10 p-4">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         Other Details
       </h3>

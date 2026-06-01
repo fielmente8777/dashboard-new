@@ -1008,7 +1008,7 @@ export default function Calls() {
 
       {callPopup && (
         <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-9999">
-          <div className="w-100 max-w-md p-5 bg-white rounded-xl shadow-xl flex flex-col gap-4">
+          <div className="w-100 max-w-md p-5 bg-app-surface-secondary rounded-xl shadow-xl flex flex-col gap-4">
             <h1 className="text-lg font-semibold">
               Enter Number to Make a Call
             </h1>
@@ -1072,7 +1072,7 @@ export default function Calls() {
 
       {showSidebar && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+          <div className="w-full max-w-md bg-app-surface-secondary h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -1092,7 +1092,7 @@ export default function Calls() {
               className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   API Key
                 </label>
                 <input
@@ -1107,7 +1107,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Auth Token
                 </label>
                 <input
@@ -1122,7 +1122,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Subdomain
                 </label>
                 <input
@@ -1137,7 +1137,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Account SID
                 </label>
                 <input
@@ -1167,7 +1167,7 @@ export default function Calls() {
       {/* Audio Modal */}
       {showAudioModal && (
         <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-[99999]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-app-surface-secondary rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Call Recording</h3>
               <button
@@ -1185,7 +1185,7 @@ export default function Calls() {
                   {/* Loader */}
                   <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
 
-                  <p className="mt-4 text-sm font-medium text-gray-700">
+                  <p className="mt-4 text-sm font-medium text-gray-700 dark:text-app-text">
                     Loading recording...
                   </p>
 
@@ -1204,7 +1204,7 @@ export default function Calls() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-app-text">
                     <div className="h-2 w-2 rounded-full bg-green-500" />
                     Recording ready to play
                   </div>
@@ -1230,19 +1230,19 @@ export default function Calls() {
 
       {incomingCallPopup && (
         <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-99999">
-          <div className="w-72 bg-white rounded-2xl shadow-xl p-4 border border-gray-200 animate-slideIn">
+          <div className="w-72 bg-app-surface-secondary rounded-2xl shadow-xl p-4 border border-gray-200 animate-slideIn">
             <div className="flex items-center gap-3">
               <div className="bg-green-100 text-green-600 p-2 rounded-full">
                 📞
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Incoming Call</h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-app-text-faint">
                   {incomingCallData?.from}
                 </p>
               </div>
             </div>
-            <p className="text-xs mt-2 text-center text-gray-500">
+            <p className="text-xs mt-2 text-center text-gray-500 dark:text-app-text-faint">
               Please check your phone
             </p>
 
@@ -1268,13 +1268,13 @@ export default function Calls() {
 // Reusable Stat Card
 function StatCard({ icon, title, value, color }) {
   return (
-    <div className="bg-white p-6 rounded-lg">
+    <div className="bg-app-surface-secondary p-6 rounded-lg">
       <div className="flex items-center">
         <div className={`p-3 bg-${color}-100 rounded-full`}>
           <i className={`fas ${icon} text-${color}-600`}></i>
         </div>
         <div className="ml-4">
-          <h3 className="text-md font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-app-text">{title}</h3>
           <p className={`text-2xl font-bold text-${color}-600`}>
             {title === "Avg Duration" ? `${value} sec` : value}
           </p>

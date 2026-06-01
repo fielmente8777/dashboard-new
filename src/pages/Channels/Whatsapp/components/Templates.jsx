@@ -202,7 +202,7 @@ export default function WhatsAppMessageTemplate() {
   if (!integrationStatus?.metaWhatsapp) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
+        <div className="max-w-md w-full rounded-2xl bg-app-surface p-8 border border-app-border text-center">
           {/* Icon */}
           <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
             <svg
@@ -254,9 +254,9 @@ export default function WhatsAppMessageTemplate() {
   }
 
   return (
-    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
+    <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
       <div className="flex justify-between">
-        <h1 className="text-lg text-gray-600  font-medium">
+        <h1 className="text-lg text-gray-600 dark:text-app-text font-medium">
           WhatsApp Templates
         </h1>
 
@@ -287,23 +287,23 @@ export default function WhatsAppMessageTemplate() {
         )}
 
         {!isFetching && templates?.length > 0 && (
-          <div className="overflow-x-auto bg-white shadow-sm mt-6 border">
+          <div className="overflow-x-auto bg-app-surface shadow-sm mt-6 border">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-app-surface-secondary border-b">
                 <tr>
-                  <th className="px-5 py-3 text-left font-bold text-gray-600">
+                  <th className="px-5 py-3 text-left font-bold text-gray-600 dark:text-app-text-muted">
                     Name
                   </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600">
+                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
                     Category
                   </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600">
+                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
                     Language
                   </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600">
+                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
                     Status
                   </th>
-                  <th className="px-5 py-3 text-right font-bold text-gray-600">
+                  <th className="px-5 py-3 text-right font-bold text-gray-600 dark:text-app-text-muted">
                     Actions
                   </th>
                 </tr>
@@ -311,19 +311,19 @@ export default function WhatsAppMessageTemplate() {
 
               <tbody className="">
                 {templates.map((t) => (
-                  <tr key={t.name} className="hover:bg-gray-50 transition">
+                  <tr key={t.name} className="hover:bg-app-surface-secondary/60 transition">
                     {/* NAME */}
-                    <td className="px-5 py-4 font-medium text-gray-800">
+                    <td className="px-5 py-4 font-medium text-gray-800 dark:text-app-text">
                       {t.name}
                     </td>
 
                     {/* CATEGORY */}
-                    <td className="px-5 py-4 text-center text-gray-600">
+                    <td className="px-5 py-4 text-center text-gray-600 dark:text-app-text-faint">
                       {t.category}
                     </td>
 
                     {/* LANGUAGE */}
-                    <td className="px-5 py-4 text-center text-gray-600">
+                    <td className="px-5 py-4 text-center text-gray-600 dark:text-app-text-faint">
                       {t.language}
                     </td>
 
@@ -385,7 +385,7 @@ export default function WhatsAppMessageTemplate() {
       {/* CREATE MODAL */}
       {open && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
-          <div className="bg-white w-full max-w-2xl rounded-lg p-6 space-y-5">
+          <div className="bg-app-surface w-full max-w-2xl rounded-lg p-6 space-y-5">
             <h2 className="text-xl font-semibold">Create Message Template</h2>
 
             <input
@@ -397,7 +397,7 @@ export default function WhatsAppMessageTemplate() {
 
             <div className="flex gap-3">
               <select
-                className="border p-2 w-full"
+                className="border p-2 w-full bg-app-surface"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -407,7 +407,7 @@ export default function WhatsAppMessageTemplate() {
               </select>
 
               <select
-                className="border p-2 w-full"
+                className="border p-2 w-full bg-app-surface"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
@@ -450,7 +450,7 @@ export default function WhatsAppMessageTemplate() {
             )}
 
             {/* Preview */}
-            <div className="border rounded p-4 bg-gray-50">
+            <div className="border rounded p-4 bg-app-surface-secondary">
               <p className="text-sm font-medium mb-1">Preview</p>
               <p className="text-sm">{preview || "Nothing to preview yet"}</p>
             </div>

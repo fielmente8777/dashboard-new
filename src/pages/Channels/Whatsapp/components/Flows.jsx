@@ -61,7 +61,7 @@ const Flows = () => {
               ? flows.map((flow, i) => (
                   <tr
                     key={flow._id}
-                    className="odd:bg-white even:bg-gray-50 border-b hover:bg-blue-50"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors  border-b "
                   >
                     <td className="px-3 py-2">
                       {(i + 1).toString().padStart(2, "0")}
@@ -103,7 +103,7 @@ const Flows = () => {
           onClick={() => setOpenPopup(false)}
         >
           <div
-            className="bg-white rounded-xl w-[95%] max-w-lg p-5"
+            className="bg-app-surface rounded-xl w-[95%] max-w-lg p-5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* HEADER */}
@@ -116,14 +116,14 @@ const Flows = () => {
             <div className="space-y-4 max-h-[400px] overflow-auto">
               {selectedFlow.screens?.map((screen) => (
                 <div key={screen.id}>
-                  <h3 className="text-sm font-medium mb-2 text-gray-600">
+                  <h3 className="text-sm font-medium mb-2 text-gray-600 dark:text-app-text">
                     {screen.title}
                   </h3>
 
                   <div className="space-y-3">
                     {screen.fields?.map((field, idx) => (
                       <div key={idx} className="flex flex-col gap-1">
-                        <label className="text-xs text-gray-500">
+                        <label className="text-xs text-gray-500 dark:text-app-text">
                           {field.label}
                         </label>
 
@@ -164,7 +164,7 @@ const Flows = () => {
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setOpenPopup(false)}
-                className="bg-gray-200 px-4 py-1 rounded"
+                className="bg-app-surface px-4 py-1 rounded"
               >
                 Close
               </button>

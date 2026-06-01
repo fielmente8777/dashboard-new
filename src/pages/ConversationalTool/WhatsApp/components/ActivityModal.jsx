@@ -37,7 +37,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
 
   return (
     <div className="">
-      {open&&<div className="bg-app">
+      {open&&<div className="bg-app-surface">
         {/* Header */}
         {/* <div className="flex justify-between items-center px-5 py-4 border-b">
           <h2 className="font-semibold text-lg">

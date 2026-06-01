@@ -607,7 +607,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden "
+        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden  "
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -1009,7 +1009,7 @@ const ChatArea = () => {
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                            <div className="absolute -right-6 mt-1 w-28 bg-app-surface border rounded shadow-md z-10">
                               {![
                                 "image",
                                 "video",
@@ -1164,14 +1164,14 @@ const ChatArea = () => {
 
                       handleTemplate(true);
                     }}
-                    className="cursor-pointer bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     <MdChat className="" /> Templates
                   </span>
                 ) : (
                   <span
                     onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     Close Templates <MdClose />
                   </span>
@@ -1214,7 +1214,7 @@ const ChatArea = () => {
           </div>
 
           {!isTakeOver && (
-            <div className="bg-primary py-3 flex w-full items-center gap-3">
+            <div className=" bg-gray-200 dark:bg-primary py-3 flex w-full items-center gap-3">
               {/* Attachment */}
               {!is24HourComplete && (
                 <button
@@ -1266,7 +1266,7 @@ const ChatArea = () => {
                       handleSendMessage(e); // OR trigger form submit
                     }
                   }}
-                  className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                  className="flex-1 bg-zinc-100 dark:bg-app-surface-secondary resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
                 />
               ) : (
                 <div className="flex-1"></div>

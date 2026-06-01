@@ -29,20 +29,20 @@ const TemplateContent = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border space-y-6">
+    <div className="bg-app-surface p-6 rounded-lg border-primary/60! space-y-6">
       <h2 className="text-lg font-semibold">Content</h2>
 
       {/* HEADER */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">
-            Header <span className="text-gray-400">(optional)</span>
+          <label className="text-sm font-medium text-gray-700 dark:text-app-text-faint">
+            Header <span className="text-gray-600">(optional)</span>
           </label>
 
           <button
             type="button"
             onClick={addHeaderVariable}
-            className="text-sm text-primary font-medium"
+            className="text-sm text-primary dark:text-app-text-muted font-medium"
           >
             + Add variable
           </button>
@@ -64,12 +64,12 @@ const TemplateContent = () => {
       {/* BODY */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <label className="text-sm font-medium text-gray-700">Body</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-app-text-faint">Body</label>
 
           <button
             type="button"
             onClick={addBodyVariable}
-            className="text-sm text-primary font-medium"
+            className="text-sm text-primary dark:text-app-text-muted font-medium"
           >
             + Add variable
           </button>
@@ -93,8 +93,8 @@ const TemplateContent = () => {
 
       {/* FOOTER */}
       <div>
-        <label className="text-sm font-medium text-gray-700">
-          Footer <span className="text-gray-400">(optional)</span>
+        <label className="text-sm font-medium text-gray-700 dark:text-app-text-faint">
+          Footer <span className="text-gray-600">(optional)</span>
         </label>
 
         <input
