@@ -46,7 +46,7 @@ const Settings = () => {
 
   return (
     <div>
-      <div className="flex flex-col p-4 bg-white cardShadow mb-10 text-[#575757] w-full">
+      <div className="flex flex-col p-4 bg-app-primary cardShadow mb-10 text-[#575757] w-full">
         {/* <h2 className="font-semibold text-[#575757] mb-2">
           Generate GRM for your Hotel
         </h2> */}
@@ -55,7 +55,7 @@ const Settings = () => {
           and feel free to share with the upcomming guests.
         </p> */}
 
-        <div className="bg-white p-6 rounded-lg w-full">
+        <div className="bg-app-surface-secondary p-6 rounded-lg w-full">
           <div className="flex flex-col md:flex-row justify-between gap-6">
             <div className="flex flex-col w-[400px]">
               <div className="flex flex-col gap-4">
@@ -64,7 +64,7 @@ const Settings = () => {
                     {" "}
                     <div className="w-full">
                       <input
-                        className="w-full outline-none border border-gray-300 rounded-md px-4 py-2"
+                        className="w-full outline-none border border-gray-300 text-app-text dark:text-app-text-faint rounded-md px-4 py-2"
                         type="text"
                         placeholder="Enter url to Generate QR code "
                         value={qrUrl}
@@ -95,7 +95,7 @@ const Settings = () => {
             </div>
 
             <div className="">
-              <h3 className="text-[14px] font-medium mb-2">
+              <h3 className="text-[14px] font-medium text-app-text dark:text-app-text-faint mb-2">
                 Scan the QR code on mobile
               </h3>
               {qrData ? (
@@ -108,13 +108,13 @@ const Settings = () => {
                 </div>
               ) : (
                 <div className="mt-6 flex flex-col justify-center px-5 items-center border h-[12.5rem]">
-                  <p className="mt-2 text-sm">Generate the QR Code</p>
+                  <p className="mt-2 text-sm text-shadow-app-text-faint dark:text-app-text-faint">Generate the QR Code</p>
                 </div>
               )}
             </div>
           </div>
 
-          <p className="mt-3 font-medium">
+          <p className="mt-3 font-medium text-shadow-app-text-faint dark:text-app-text-faint">
             Generated Url:{" "}
             {qrData ? (
               <a

@@ -164,7 +164,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   };
 
   return (
-    <div className="w-full md:w-80 h-full overflow-y-auto bg-white border-l border-gray-200 flex flex-col">
+    <div className="w-full md:w-80 h-full overflow-y-auto bg-app-surface-secondary border-l border-gray-200 flex flex-col">
       <div className="flex justify-end p-2"></div>
       {/* Profile Header */}
       <div className="px-3 md:px-6 md:py-0 border-b border-gray-200">
@@ -176,14 +176,14 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
                 onClick={() => setMobileActive("chatarea")}
               />
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 border text-gray-600 border-gray-900 bg-ternary/20 rounded-full flex items-center justify-center  font-bold text-md md:text-lg mr-2 md:mr-4">
+            <div className="w-10 h-10 md:w-12 md:h-12 border text-gray-600 dark:text-app-text border-gray-900 bg-ternary/20 rounded-full flex items-center justify-center  font-bold text-md md:text-lg mr-2 md:mr-4">
               {selectedContact?.name?.charAt(0)?.toUpperCase()}
             </div>
             <div>
-              <h3 className="text-md md:text-lg font-semibold text-gray-900">
+              <h3 className="text-md md:text-lg font-semibold text-gray-900 dark:text-app-text">
                 {selectedContact?.name}
               </h3>
-              <p className="text-sm text-gray-600 font-medium ">
+              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium">
                 {selectedContact?.phone}
               </p>
             </div>
@@ -200,8 +200,8 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
         {/* Status Information */}
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Status</span>
-            <span className="text-gray-600 bg-green-200 px-4 rounded-2xl font-medium text-sm">
+            <span className="text-gray-600 dark:text-app-text-faint">Status</span>
+            <span className="text-gray-600 dark:text-app-text-faint bg-green-200 px-4 rounded-2xl font-medium text-sm">
               {/* {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"} */}
 
               {selectedContact?.status}
@@ -209,8 +209,8 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Last Active</span>
-            <span className="text-gray-900">{`${formatDateByOnlyDay(
+            <span className="text-gray-600 dark:text-app-text-faint">Last Active</span>
+            <span className="text-gray-900 dark:text-app-text-faint">{`${formatDateByOnlyDay(
               selectedContact?.last_message?.created_at ||
                 lastMessage?.createdAt,
             )} ${formateDateInTimeIS(selectedContact?.last_message?.created_at || lastMessage?.createdAt)} `}</span>
@@ -250,7 +250,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
             <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Allowed":"Not Allowed"}</span>
           </div> */}
           <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600">Opted In</span>
+            <span className="text-gray-600 dark:text-app-text-faint">Opted In</span>
 
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" class="sr-only peer" checked={true} />
@@ -291,7 +291,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
           </div>
 
           <div className="">
-            <h3 className="text-sm font-medium text-[#37322F] mb-4">Notes</h3>
+            <h3 className="text-sm font-medium text-[#37322F] dark:text-app-text-faint mb-4">Notes</h3>
 
             {/* Add Activity */}
             <div

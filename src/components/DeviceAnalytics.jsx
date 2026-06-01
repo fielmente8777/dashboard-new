@@ -51,13 +51,13 @@ const DeviceAnalytics = () => {
   const maxBrowser = Math.max(...data.browsers.map(b => b.value), 1);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Device & Tech</h2>
+    <div className="bg-app-surface rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+      <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-6">Device & Tech</h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Device Breakdown */}
         <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-4">Device Category</h3>
+          <h3 className="text-sm font-medium text-app-text dark:text-app-text-muted mb-4">Device Category</h3>
           <div className="h-[180px] mb-4">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -91,11 +91,11 @@ const DeviceAnalytics = () => {
                 <div key={i} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <Icon className="w-3.5 h-3.5" style={{ color: DEVICE_COLORS[d.name.toLowerCase()] }} />
-                    <span className="text-gray-700">{d.name}</span>
+                    <span className="text-app-text-faint">{d.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="font-semibold text-gray-900">{pct.toFixed(1)}%</span>
-                    <span className="text-gray-400 ml-2 text-xs">({d.value.toLocaleString()})</span>
+                    <span className="font-semibold text-app-text-faint">{pct.toFixed(1)}%</span>
+                    <span className="text-app-text-faint ml-2 text-xs">({d.value.toLocaleString()})</span>
                   </div>
                 </div>
               );
@@ -105,15 +105,15 @@ const DeviceAnalytics = () => {
 
         {/* Browsers */}
         <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-4">Top Browsers</h3>
+          <h3 className="text-sm font-medium text-app-text dark:text-blue-500 mb-4">Top Browsers</h3>
           <div className="space-y-3">
             {data.browsers.map((b, i) => {
               const pct = (b.value / maxBrowser) * 100;
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-gray-700">{b.name}</span>
-                    <span className="font-semibold text-gray-900">{b.value.toLocaleString()}</span>
+                    <span className="text-app-text-faint">{b.name}</span>
+                    <span className="font-semibold text-app-text-faint">{b.value.toLocaleString()}</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pct}%` }} />
@@ -126,7 +126,7 @@ const DeviceAnalytics = () => {
 
         {/* OS */}
         <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-4">Operating Systems</h3>
+          <h3 className="text-sm font-medium text-app-text dark:text-purple-400 mb-4">Operating Systems</h3>
           <div className="space-y-3">
             {data.operatingSystems.map((os, i) => {
               const max = Math.max(...data.operatingSystems.map(o => o.value), 1);
@@ -134,8 +134,8 @@ const DeviceAnalytics = () => {
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-gray-700">{os.name}</span>
-                    <span className="font-semibold text-gray-900">{os.value.toLocaleString()}</span>
+                    <span className="text-app-text-faint">{os.name}</span>
+                    <span className="font-semibold text-app-text-faint">{os.value.toLocaleString()}</span>
                   </div>
                   <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div className="h-full bg-purple-500 rounded-full" style={{ width: `${pct}%` }} />

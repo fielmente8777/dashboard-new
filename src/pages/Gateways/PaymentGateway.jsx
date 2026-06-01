@@ -283,7 +283,7 @@ const PaymentGateway = () => {
                     ?.map((row, rowIndex) => (
                       <tr
                         key={rowIndex}
-                        className="py-1  border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                        className="py-1  border-bodd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint   hover:bg-blue-50 transition-colors cursor-pointer"
                       >
                         <td
                           className="py-3 px-4 text-[14px] text-purple-500 font-semibold"

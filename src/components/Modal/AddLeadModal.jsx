@@ -96,7 +96,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-99999 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-      <div className="bg-white rounded-5xl max-w-3xl w-full p-5 relative max-h-[90vh] rounded-md overflow-y-auto">
+      <div className="bg-app rounded-5xl max-w-3xl w-full p-5 relative max-h-[90vh] rounded-md overflow-y-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold">Add Lead</h2>
@@ -198,7 +198,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
             <div>
               <label className="text-sm font-medium block mb-1">Check In</label>
 
-              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50">
+              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300">
                 <DatePicker
                   selected={formData.checkIn}
                   minDate={new Date()}
@@ -222,7 +222,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 Check Out
               </label>
 
-              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50">
+              <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 ">
                 <DatePicker
                   selected={formData.checkOut}
                   minDate={formData.checkIn || new Date()}

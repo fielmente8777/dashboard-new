@@ -149,8 +149,8 @@ const AllLeads = () => {
 
     const cleanedLeads = leads.map((lead) =>
       Object.fromEntries(
-        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
-      ),
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key))
+      )
     );
     return cleanedLeads;
   };
@@ -306,7 +306,7 @@ const AllLeads = () => {
   const handleRowSelect = (id) => {
     if (rowSelected.length < 10) {
       setRowSelected((prev) =>
-        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
       );
     } else {
       if (rowSelected.includes(id)) {
@@ -372,10 +372,12 @@ const AllLeads = () => {
   // }, []);
 
   return (
-    <div className="bg-white p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+    <div className="bg-app-surface text-app-text dark:text-app-text p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
       <div className="space-y-3">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">All Leads</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            All Leads
+          </h2>
 
           <div className="flex items-center">
             {allLeads?.length > 0 && (
@@ -399,12 +401,12 @@ const AllLeads = () => {
           </div>
         </div>
 
-        <div className="bg-white">
+        <div className="bg-app-surface">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <IoSearch className="text-gray-400" size={18} />
+              <div className="flex items-center gap-2 h-10 px-3 rounded-xl border border-app-border bg-app-surface-secondary text-app-text focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-app-text-faint" size={18} />
                 <input
                   type="text"
                   placeholder="Search clients..."
@@ -415,7 +417,7 @@ const AllLeads = () => {
 
               {/* DATE RANGE */}
               <div className="relative">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <div className="h-10 px-3 flex items-center text-app-text rounded-xl border border-app-border bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
                     startDate={startDate}
@@ -440,7 +442,7 @@ const AllLeads = () => {
                         `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
                       );
                     }}
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-app-text-faint cursor-pointer"
                   >
                     <IoIosClose size={18} />
                   </span>
@@ -482,16 +484,20 @@ const AllLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="flex border rounded-lg overflow-auto hide-scrollbar">
+        <div className="flex border border-app-border bg-app-surface rounded-2xl overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
               <tr className="whitespace-nowrap">
-                <th className="px-3 py-3 text-white">Select</th>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className={`px-3 py-3 text-left text-white whitespace-nowrap`}
+                    className={`px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap`}
                   >
                     {h.label}
                   </th>
@@ -515,7 +521,7 @@ const AllLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
@@ -546,9 +552,7 @@ const AllLeads = () => {
                             className="px-3 py-2 whitespace-nowrap capitalize"
                           >
                             {formatDateTime(
-                              isLeadCreatedTime
-                                ? isLeadCreatedTime
-                                : row[h.key],
+                              isLeadCreatedTime ? isLeadCreatedTime : row[h.key]
                             )}
                           </td>
                         );
@@ -572,7 +576,7 @@ const AllLeads = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -614,7 +618,7 @@ const AllLeads = () => {
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -632,7 +636,7 @@ const AllLeads = () => {
                       if (h.key === "Name") {
                         const isName = row[h.key];
                         const followUpDate = new Date(
-                          row["followUpDate"] || row["followUp"] || null,
+                          row["followUpDate"] || row["followUp"] || null
                         );
                         const today = new Date();
 
@@ -684,10 +688,10 @@ const AllLeads = () => {
                                   row?._id,
                                   row?.hId,
                                   value,
-                                  row?.conversationId,
+                                  row?.conversationId
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                             />
                           </td>
                         );

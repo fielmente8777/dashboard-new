@@ -144,8 +144,8 @@ export default function CustomDropdown2({
       onClick={toggleDropdown}
       className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm transition-colors ${
         disabled
-          ? "bg-gray-100 dark:bg-[#242b3d] text-gray-400 dark:text-[#6b7280] cursor-not-allowed border-gray-200 dark:border-[#2d3748]"
-          : "bg-gray-50 dark:bg-[#242b3d] text-gray-700 dark:text-[#e8eaed] hover:bg-gray-100 dark:hover:bg-[#2f374c] border-gray-200 dark:border-[#2d3748]"
+          ? "bg-app-surface text-app-text dark:text-app-text-faint cursor-not-allowed border-gray-200 dark:border-[#2d3748]"
+          : "bg-app-surface text-app-text dark:text-app-text-faint hover:bg-gray-50/20 border-gray-200 dark:border-[#2d3748]"
       } ${props.className}`}
     >
       <div className="flex flex-wrap gap-1 flex-1">
@@ -165,7 +165,7 @@ export default function CustomDropdown2({
               </span>
             ))
           ) : (
-            <span className="text-gray-400 dark:text-[#6b7280]">
+            <span className="text-app-text dark:text-app-text-muted">
               Select
             </span>
           )
@@ -196,7 +196,7 @@ export default function CustomDropdown2({
             top: position.top,
             zIndex,
           }}
-          className="rounded-lg bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-[#2d3748] shadow-xl dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] max-h-64 overflow-y-auto"
+          className="rounded-lg bg-app-surface  border border-gray-600  shadow-xl dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] max-h-64 overflow-y-auto"
         >
           {options.map((opt) => {
             const isSelected = multiple

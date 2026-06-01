@@ -69,7 +69,7 @@ const CallInfoCard = ({ call }) => {
 
       {/* ================= RECORDING ================= */}
       {call.recordingUrl && (
-        <div className="bg-white p-4 rounded-md">
+        <div className="bg-app-surface p-4 rounded-md">
           <h3 className="font-semibold mb-3">Call Recording</h3>
 
           {!play ? (

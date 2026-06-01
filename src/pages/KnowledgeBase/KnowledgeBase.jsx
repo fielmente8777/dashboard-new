@@ -152,7 +152,7 @@ const KnowledgeBase = () => {
             <button
               type="submit"
               disabled={!url.trim() || loading}
-              className="px-6 py-2 rounded-md bg-blue-600 text-white disabled:bg-gray-400"
+              className="px-6 py-2 rounded-md bg-blue-600 text-white disabled:bg-app"
             >
               {loading ? "Fetching..." : "Fetch"}
             </button>
@@ -242,5 +242,5 @@ export default KnowledgeBase;
       );
     }
 
-    return <p className="text-gray-900">{String(data)}</p>;
+    return <p className="text-gray-900 dark:text-app-text-faint">{String(data)}</p>;
   };

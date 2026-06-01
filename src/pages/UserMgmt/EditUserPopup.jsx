@@ -137,8 +137,8 @@ const EditUserPopup = ({
         isEditPopupOpen ? "opacity-100 visible" : "opacity-0 invisible"
       }`}
     >
-      <div className="bg-white grid grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
-        <div className="col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
+      <div className="bg-app-surface/50 grid grid-cols-8 gap-6 rounded-2xl shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
+        <div className="col-span-3 bg-app-surface-secondary shadow-md p-3 rounded-xl">
           <div className="sticky top-0">
             <div className="max-h-96">
               <img src="/updateForm.svg" alt="form" className="w-full h-full" />
@@ -149,7 +149,7 @@ const EditUserPopup = ({
         <div className="col-span-5 space-y-8">
           {/* Header */}
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
-            <h2 className="text-xl text-primary font-bold">Edit User</h2>
+            <h2 className="text-xl text-primary dark:text-app-text font-bold">Edit User</h2>
             <button
               onClick={onClose}
               className="text-2xl font-bold text-gray-400 hover:bg-transparent size-10 rounded-full border border-slate-900 hover:text-red-700 bg-blue-900 flex items-center justify-center hover:rotate-180 duration-300"
@@ -167,14 +167,14 @@ const EditUserPopup = ({
               placeholder="Full Name"
               value={form.name}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
             <input
               name="phone"
               placeholder="Phone number"
               value={form.phone}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
             <input
               type="email"
@@ -183,7 +183,7 @@ const EditUserPopup = ({
               disabled
               value={form.email}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md text-gray-400 bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md text-gray-400 bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
           </div>
 
@@ -195,7 +195,7 @@ const EditUserPopup = ({
               placeholder="Password Optional!"
               value={form.password}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm w-full"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm w-full"
             />
 
             {/* <div className="py-2 pr-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm">
@@ -222,7 +222,7 @@ const EditUserPopup = ({
             </div> */}
           </div>
 
-          <div className="py-2 pr-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm">
+          <div className="py-2 pr-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm">
             <select
               value={currentLocation}
               onChange={handleLocationChange}
@@ -234,7 +234,7 @@ const EditUserPopup = ({
                 Object.entries(user.Profile.hotels).map(([key, value]) => (
                   <option
                     key={key}
-                    className="px-8 text-primary font-medium disabled:text-gray-400"
+                    className="px-8 text-primary dark:text-app-text-faint font-medium bg-app-surface-secondary disabled:text-gray-400"
                     value={`${key}-${value?.city}`}
                     disabled={selectedLocations?.some((loc) => loc.hid === key)}
                   >

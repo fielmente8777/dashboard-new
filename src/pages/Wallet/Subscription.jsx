@@ -151,7 +151,7 @@ const Subscription = () => {
                 return (
                   <div
                     key={app._id}
-                    className="flex gap-1 items-center justify-between text-sm bg-gray-100 rounded-lg p-3 px-4 border border-gray-200"
+                    className="flex gap-1 items-center justify-between text-sm bg-app-surface-secondary rounded-lg p-3 px-4 border border-gray-200"
                   >
                     <div className="flex flex-col gap-1">
                       <span className="capitalize font-medium">
@@ -300,11 +300,11 @@ function InfoCard({ icon, label, value, highlight, capitalize }) {
       >
         {icon}
       </div>
-      <p className="mt-3 text-sm font-medium tracking-wider text-gray-600">
+      <p className="mt-3 text-sm font-medium tracking-wider text-app-text dark:text-app-text">
         {label}
       </p>
       <p
-        className={`mt-1 text-md font-medium text-gray-900 ${
+        className={`mt-1 text-md font-medium text-gray-900 dark:text-app-text-faint ${
           capitalize ? "capitalize" : ""
         }`}
       >
@@ -340,28 +340,28 @@ const PaymentTable = ({ payments }) => {
         <table className="w-full border-collapse">
           <thead className="bg-primary text-white">
             <tr>
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Order Id
               </th>
               {/* <th className="px-5 py-3 text-left text-sm font-semibold">
                 Plan Id
               </th> */}
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Payment Id
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Amount
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Currency
               </th>
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Status
               </th>
               {/* <th className="px-5 py-3 text-left text-sm font-semibold">
                 Paid At
               </th> */}
-              <th className="px-5 py-3 text-left text-sm font-semibold">
+              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
                 Created At
               </th>
             </tr>
@@ -372,9 +372,9 @@ const PaymentTable = ({ payments }) => {
               <tr
                 key={payment._id}
                 className={`transition-all duration-200 hover:bg-primary/5
-                  ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                  ${index % 2 === 0 ? "bg-app-surface-secondary" : "bg-app-surface"}`}
               >
-                <td className="px-5 py-3 text-sm text-gray-700">
+                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint">
                   {payment.orderId}
                 </td>
 
@@ -382,15 +382,15 @@ const PaymentTable = ({ payments }) => {
                   {payment.planId}
                 </td> */}
 
-                <td className="px-5 py-3 text-sm text-gray-700">
+                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint">
                   {payment.paymentId}
                 </td>
 
-                <td className="px-5 py-3 font-semibold text-primary">
+                <td className="px-5 py-3 font-semibold text-app-text-muted">
                   ₹{payment.amount / 100}
                 </td>
 
-                <td className="px-5 py-3 text-sm text-gray-700 uppercase text-center">
+                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint uppercase text-center">
                   {payment.currency}
                 </td>
 
@@ -413,7 +413,7 @@ const PaymentTable = ({ payments }) => {
                   {formatDateTime(payment.paidAt)}
                 </td> */}
 
-                <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
+                <td className="px-5 py-3 text-sm text-gray-600 dark:text-app-text-faint whitespace-nowrap">
                   {formatDateTime(payment.createdAt)}
                 </td>
               </tr>

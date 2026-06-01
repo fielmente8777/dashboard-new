@@ -82,7 +82,7 @@ const NewContactModal = ({ templates = [], onClose }) => {
 
   return (
     <div className="fixed inset-0 z-999999999 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-5xl rounded-2xl bg-white p-6 grid grid-cols-2 gap-6">
+      <div className="w-full max-w-5xl rounded-2xl bg-app-surface-secondary p-6 grid grid-cols-2 gap-6">
         {/* LEFT PANEL */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">New Message</h3>
@@ -92,7 +92,7 @@ const NewContactModal = ({ templates = [], onClose }) => {
             <select
               value={countryCode}
               onChange={(e) => setCountryCode(e.target.value)}
-              className="w-32 rounded-lg border px-2 py-2"
+              className="w-32 rounded-lg border px-2 py-2 bg-app-surface"
             >
               {countriesCode.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -115,12 +115,12 @@ const NewContactModal = ({ templates = [], onClose }) => {
               <button
                 key={tpl.id}
                 onClick={() => handleTemplateSelect(tpl)}
-                className={`w-full text-left px-4 py-3 hover:bg-gray-50 ${
+                className={`w-full text-left px-4 py-3 hover:bg-primary/50 ${
                   selectedTemplate?.id === tpl.id ? "bg-gray-100" : ""
                 }`}
               >
                 <div className="font-medium">{tpl.name}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 dark:text-app-text-faint">
                   {tpl.category} • {tpl.language}
                 </div>
               </button>

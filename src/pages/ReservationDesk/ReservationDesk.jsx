@@ -146,9 +146,9 @@ const ReservationDesk = () => {
   };
 
   return (
-    <div className="bg-white p-4 mb-10 cardShadow">
+    <div className="bg-app-surface-secondary p-4 mb-10 cardShadow">
       <div className="flex items-center justify-between">
-        <h2 className="text-md font-semibold text-gray-600">Filter Bookings</h2>
+        <h2 className="text-md font-semibold text-app-text-faint dark:text-app-text-faint">Filter Bookings</h2>
         {/* Buttons */}
         {/* <div className="flex items-center gap-4">
           <button
@@ -176,7 +176,7 @@ const ReservationDesk = () => {
               checked={filters === filter?.value}
               onChange={handleFilterChange}
             />
-            <label htmlFor="" className="font-medium text-wide text-gray-600">
+            <label htmlFor="" className="font-medium text-wide text-app-text-faint dark:text-app-text-faint">
               {filter?.label}
             </label>
           </div>
@@ -321,7 +321,7 @@ const ReservationDesk = () => {
           </div>
         </div> */}
         {!isLoading ? (
-          <table className="w-full text-left bg-primary text-white/90 shadow-md rounded-sm shadow-black/20">
+          <table className="w-full text-left bg-primary text-white/90 dark:text-app-text-muted shadow-md rounded-sm shadow-black/20">
             <thead>
               <tr className="border-b">
                 <th className="py-3 px-4 text-[14px] font-medium capitalize">
@@ -371,7 +371,7 @@ const ReservationDesk = () => {
                     <tr
                       key={rowIndex}
                       onClick={() => handleInfoPopupIII(row)}
-                      className="py-1  border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                      className="py-1  odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-50 transition-colors cursor-pointer"
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
@@ -381,31 +381,31 @@ const ReservationDesk = () => {
                         <a>{row?.bookingId}</a>{" "}
                       </td>
                       <td
-                        className="py-3 px-4 text-[14px]  text-[#575757]"
+                        className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint"
                         // onClick={() => handleInfoPopupII(row)}
                       >
                         {row?.guestInfo?.guestName}
                       </td>
 
-                      <td className="py-3 px-4 text-[14px]  text-[#575757]">
+                      <td className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint">
                         {row?.guestInfo?.EmailId}{" "}
                       </td>
-                      <td className="py-3 px-4 text-[14px]  text-[#575757]">
+                      <td className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint">
                         {row?.guestInfo?.Phone}
                       </td>
 
-                      <td className="py-3 px-4 text-[14px] whitespace-nowrap  text-[#575757]">
+                      <td className="py-3 px-4 text-[14px] whitespace-nowrap  text-app-text dark:text-app-text-faint">
                         {formatDateTime(row?.checkIn)}
                       </td>
-                      <td className="py-3 px-4 text-[14px] whitespace-nowrap  text-[#575757]">
+                      <td className="py-3 px-4 text-[14px] whitespace-nowrap  text-app-text dark:text-app-text-faint">
                         {formatDateTime(row?.checkOut)}
                       </td>
 
-                      <td className="py-3 px-4 text-[14px]  text-[#575757] whitespace-nowrap">
+                      <td className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint whitespace-nowrap">
                         {row?.price?.Total}{" "}
                       </td>
 
-                      <td className="py-3 px-4 text-[14px]  text-[#575757] whitespace-nowrap">
+                      <td className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint whitespace-nowrap">
                         {row?.payment?.Status === "PENDING" ? (
                           <span className="badge bg-danger">
                             {row?.payment?.Status}
@@ -429,7 +429,7 @@ const ReservationDesk = () => {
                         )}
                       </td>
                       <td
-                        className="py-3 px-4 text-[14px]  text-[#575757]"
+                        className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint"
                         style={{ cursor: "pointer" }}
                       >
                         {row?.payment?.Status === "CANCELLED" ? (
@@ -458,7 +458,7 @@ const ReservationDesk = () => {
                           </button>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-[14px]  text-[#575757]">
+                      <td className="py-3 px-4 text-[14px]  text-app-text dark:text-app-text-faint">
                         {row.payment.Status === "CANCELLED" ? (
                           "-"
                         ) : row.isCheckedIn === true &&

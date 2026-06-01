@@ -144,8 +144,8 @@ export default function CustomDropdown({
         onClick={toggleDropdown}
         className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm ${
           disabled
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+            ? "bg-app-surface-secondary text-app-text dark:text-app-text-faint cursor-not-allowed"
+            : "bg-app-surface-secondary text-app-text dark:text-app-text-faint hover:bg-gray-50/20"
         } ${props.className}`}
       >
         <div className="flex flex-wrap gap-1 flex-1">
@@ -154,7 +154,7 @@ export default function CustomDropdown({
               selected.map((val) => (
                 <span
                   key={val}
-                  className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs"
+                  className="flex items-center gap-1 bg-primary/10 text-app-text-muted px-2 py-1 rounded-md text-xs"
                 >
                   {getLabel(val)}
                   <IoClose
@@ -165,7 +165,7 @@ export default function CustomDropdown({
                 </span>
               ))
             ) : (
-              <span className="text-gray-400">Select</span>
+              <span className="text-app-text dark:text-app-text-muted">Select</span>
             )
           ) : (
             <span>{getLabel(selected) || label || "Select"}</span>
@@ -193,7 +193,7 @@ export default function CustomDropdown({
               top: position.top,
               zIndex,
             }}
-            className="rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
+            className="rounded-lg bg-app-surface border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
           >
             {options.map((opt) => {
               const isSelected = multiple
@@ -205,7 +205,7 @@ export default function CustomDropdown({
                   key={opt.value}
                   onClick={() => handleSelect(opt)}
                   className={`px-3 py-2 text-sm cursor-pointer flex justify-between hover:bg-primary/10 ${
-                    isSelected ? "bg-primary/10 font-medium" : ""
+                    isSelected ? "bg-app-surface font-medium" : ""
                   }`}
                 >
                   <span>{opt.label}</span>

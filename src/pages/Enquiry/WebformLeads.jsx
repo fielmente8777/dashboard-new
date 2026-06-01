@@ -128,8 +128,8 @@ const WebformLeads = () => {
 
     const cleanedLeads = leads.map((lead) =>
       Object.fromEntries(
-        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
-      ),
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key))
+      )
     );
     return cleanedLeads;
   };
@@ -253,7 +253,7 @@ const WebformLeads = () => {
   const handleRowSelect = (id) => {
     if (rowSelected.length < 10) {
       setRowSelected((prev) =>
-        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
       );
     } else {
       if (rowSelected.includes(id)) {
@@ -328,10 +328,12 @@ const WebformLeads = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+    <div className="bg-app-surface-secondary p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Webform Leads</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            Webform Leads
+          </h2>
 
           {allLeads?.length > 0 && (
             <button
@@ -350,7 +352,7 @@ const WebformLeads = () => {
             {/* LEFT SIDE FILTERS */}
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-gray-400" size={18} />
                 <input
                   type="text"
@@ -375,7 +377,7 @@ const WebformLeads = () => {
 
               {/* DATE RANGE */}
               <div className="relative">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
                     startDate={startDate}
@@ -417,11 +419,16 @@ const WebformLeads = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99!">
               <tr>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className="px-3 py-3 text-left text-white min-w-40"
+                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
                   >
                     {h.label}
                   </th>
@@ -445,7 +452,7 @@ const WebformLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white  even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
@@ -476,9 +483,7 @@ const WebformLeads = () => {
                             className="px-3 py-2 whitespace-nowrap"
                           >
                             {formatDateTime(
-                              isLeadCreatedTime
-                                ? isLeadCreatedTime
-                                : row[h.key],
+                              isLeadCreatedTime ? isLeadCreatedTime : row[h.key]
                             )}
                           </td>
                         );
@@ -503,7 +508,7 @@ const WebformLeads = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -537,7 +542,7 @@ const WebformLeads = () => {
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -570,10 +575,10 @@ const WebformLeads = () => {
                                   row?._id,
                                   row?.hId,
                                   value,
-                                  row?.conversationId,
+                                  row?.conversationId
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                             />
                           </td>
                         );
@@ -581,7 +586,7 @@ const WebformLeads = () => {
                       if (h.key === "Name") {
                         const isName = row[h.key];
                         const followUpDate = new Date(
-                          row["followUpDate"] || row["followUp"] || "",
+                          row["followUpDate"] || row["followUp"] || ""
                         );
                         const today = new Date();
 

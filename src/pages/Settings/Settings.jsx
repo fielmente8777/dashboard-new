@@ -69,7 +69,7 @@ const Settings = () => {
               className={`flex shrink-0 cursor-pointer ${
                 activeTab?.toLowerCase() === tab.key?.toLowerCase()
                   ? "bg-primary text-white"
-                  : "bg-white"
+                  : "bg-app-surface"
               } hover:bg-gray-300 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
             >
               {tab.label}

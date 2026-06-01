@@ -41,7 +41,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
 
   return (
     <div className="w-full mx-auto p-4 space-y-6">
-      <h2 className="text-lg font-semibold text-gray-600">Build Your Chatbot</h2>
+      <h2 className="text-lg font-semibold text-gray-600 dark:text-app-text-faint">Build Your Chatbot</h2>
 
       <div>
         {/* Accordion Step: Intro */}
@@ -50,8 +50,8 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           isOpen={openStep === 0}
           onToggle={() => toggleStep(0)}
         >
-          <div className="bg-white py-3">
-            <h3 className="text-md font-semibold text-gray-600 mb-2">
+          <div className="bg-app-surface-secondary py-3">
+            <h3 className="bg-app-surface-secondary text-md font-semibold text-gray-600 mb-2">
               🤖 Welcome to Your Chatbot Builder
             </h3>
             <p className="text-gray-600 text-base leading-relaxed">
@@ -166,7 +166,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             {/* Chat Preview */}
             <div className="flex justify-end">
               <div className="relative">
-                <div className="bg-white border border-gray-200 rounded-lg p-4 w-80">
+                <div className="bg-app-surface-secondary border border-gray-200 rounded-lg p-4 w-80">
                   <div className="flex justify-between items-center mb-3">
                     <div className="flex items-center">
                       <div
@@ -241,12 +241,12 @@ const Accordion = ({ title, isOpen, onToggle, children }) => (
   <div className="border-b ">
     <button
       onClick={onToggle}
-      className="w-full flex justify-between items-center px-4 py-6 bg-gray-100 hover:bg-gray-200 font-semibold"
+      className="w-full flex justify-between items-center px-4 py-6 bg-gray-100 dark:bg-app-surface-secondary hover:bg-primary-50 font-semibold"
     >
       <span>{title}</span>
       <span>{isOpen ? "−" : "+"}</span>
     </button>
-    {isOpen && <div className="p-4 bg-white border-t">{children}</div>}
+    {isOpen && <div className="p-4 bg-app-surface-secondary border-t">{children}</div>}
   </div>
 );
 

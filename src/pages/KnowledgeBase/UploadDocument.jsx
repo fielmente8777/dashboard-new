@@ -61,11 +61,11 @@ const UploadDocument = () => {
   };
 
   return (
-    <div className="mx-auto bg-white border rounded-xl p-6 space-y-4">
+    <div className="mx-auto bg-app-surface-secondary border rounded-xl p-6 space-y-4">
       
       {/* Header */}
       <div>
-        <h2 className="text-md font-medium">Upload Document</h2>
+        <h2 className="text-md font-medium text-app-text dark:text-app-text-muted">Upload Document</h2>
         <p className="text-xs text-gray-500">
           Upload your PDF to generate knowledge base
         </p>
@@ -109,7 +109,7 @@ const UploadDocument = () => {
       <button
         onClick={handleUpload}
         disabled={!file || loading}
-        className=" bg-blue-600 w-fit text-white py-1 px-4 rounded-md disabled:bg-gray-400"
+        className=" bg-blue-600 w-fit text-white py-1 px-4 rounded-md disabled:bg-app"
       >
         {loading ? "Uploading..." : "Upload PDF"}
       </button>
