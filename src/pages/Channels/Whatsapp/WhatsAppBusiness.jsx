@@ -37,6 +37,7 @@ import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
 import { useToast } from "../../../context/ToastContext";
 import Flows from "./components/Flows";
 import ChannelToggle from "./components/ChannelToggle";
+import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -355,7 +356,8 @@ const WhatsAppBusiness = ({ template = false }) => {
                   flows={flows || []}
                   notification={accountDetails?.notification}
                 />
-                <WhatsAppMessageTemplate />
+                <WhatsappWidgetCard phoneNumber={accountDetails?.phoneNumber} />
+                {/* <WhatsAppMessageTemplate /> */}
               </div>
             )}
 
