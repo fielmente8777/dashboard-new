@@ -4,7 +4,7 @@ import { BASE_URL } from "../../../data/constant";
 import { addReservation } from "../../../services/api/bookingEngine";
 
 const ROOM_TYPES = [
-  { id: "deluxe", name: "Deluxe Room", price: 0 },
+  { id: "deluxe", name: "Deluxe Room", price: 298 },
   { id: "superior", name: "Superior Room", price: 0 },
   { id: "suite", name: "Suite", price: 0 },
   { id: "presidential", name: "Presidential Suite", price: 0 },
@@ -12,9 +12,9 @@ const ROOM_TYPES = [
 
 const MEAL_PLANS = [
   { id: "none", name: "No Meal", price: 0 },
-  { id: "cp", name: "CP – Breakfast", price: 400 },
-  { id: "map", name: "MAP – Breakfast + Dinner", price: 900 },
-  { id: "ap", name: "AP – All Meals", price: 1400 },
+  // { id: "cp", name: "CP – Breakfast", price: 400 },
+  // { id: "map", name: "MAP – Breakfast + Dinner", price: 900 },
+  // { id: "ap", name: "AP – All Meals", price: 1400 },
 ];
 
 export default function ReservationForm({ openReservationForm, setOpenReservationForm, lead }) {
@@ -29,7 +29,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
     checkOut: lead?.check_out||"",
     guests: 1,
     rooms: 1,
-    roomType: "deluxe",
+    roomType: "",
     mealPlan: "none",
     specialRequests: "",
     payTo: lead?.Phone || "",
@@ -40,7 +40,8 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const selectedRoom = ROOM_TYPES.find((r) => r.id === form.roomType);
+  const selectedRoom = rooms.find((r) => r.roomType === form.roomType);
+  // console.log("selectedRoom", selectedRoom, form?.roomType, rooms)
   const selectedMeal = MEAL_PLANS.find((m) => m.id === form.mealPlan);
 
   const nights = (() => {
@@ -49,11 +50,12 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
     return n > 0 ? n : 0;
   })();
 
-  const roomCharge = selectedRoom.price * form.rooms * nights;
-  const mealCharge = selectedMeal.price * form.guests * nights;
+  const roomCharge = selectedRoom ? selectedRoom.price * form.rooms * nights : 0;
+  // console.log("roomCharge", roomCharge, selectedRoom, form.rooms, nights)
+  const mealCharge = selectedMeal ? selectedMeal.price * form.guests * nights : 0;
   const subtotal = roomCharge + mealCharge;
   const cgst = Math.round(subtotal * 0.06);
-  const sgst = Math.round(subtotal * 0.06);
+  const sgst = Math.round(subtotal * 0.06); 
   const totalGst = cgst + sgst;
   const grandTotal = subtotal + totalGst;
   const amountDue = form.paymentMode === "half" ? Math.round(grandTotal / 2) : grandTotal;
@@ -114,10 +116,10 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
 
 
   const fetchRoom=async()=>{
-    console.log("jahjvg")
+    // console.log("jahjvg")
     try {
       const response= await axios.get(`${BASE_URL}/room/${localStorage.getItem("token")}/${localStorage.getItem("hid")}`)
-      console.log("Response", response.data)
+      // console.log("Response", response.data)
       setRooms(response.data?.data)
     } catch (error) {
       console.log("Error",error)
@@ -128,8 +130,8 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
     fetchRoom()
   },[])
 
-  console.log("sdfns", grandTotal,rooms)
-  console.log("sdfns", lead)
+  // console.log("sdfns", grandTotal,rooms)
+  // console.log("form", form)
   if (!openReservationForm) return null;
 
   const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
@@ -178,11 +180,11 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
             <div className="grid grid-cols-4 gap-3">
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Check-in</label>
-                <input type="date" className={inp} value={form.checkIn} min={new Date().toISOString().split("T")[0]} onChange={(e) => set("checkIn", e.target.value)} />
+                <input type="date" className={inp} value={form.checkIn}  onChange={(e) => set("checkIn", e.target.value)} />
               </div>
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Check-out</label>
-                <input type="date" className={inp} value={form.checkOut} min={form.checkIn || new Date().toISOString().split("T")[0]} onChange={(e) => set("checkOut", e.target.value)} />
+                <input type="date" className={inp} value={form.checkOut}  onChange={(e) => set("checkOut", e.target.value)} />
               </div>
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Adults</label>
@@ -210,18 +212,18 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
                 <label className="text-xs text-gray-500 mb-1 block">Room Type</label>
                 <select className={inp} value={form.roomType} onChange={(e) => set("roomType", e.target.value)}>
                   {rooms?.map((r) => (
-                    <option key={r._id} value={r._id}>{r.roomName} — ₹{r.price.toLocaleString()}/night</option>
+                    <option key={r.roomType} value={r.roomType}>{r.roomName} — ₹{r.price.toLocaleString()}/night</option>
                   ))}
                 </select>
               </div>
-              <div>
+              {/* <div>
                 <label className="text-xs text-gray-500 mb-1 block">Meal Plan</label>
                 <select className={inp} value={form.mealPlan} onChange={(e) => set("mealPlan", e.target.value)}>
                   {MEAL_PLANS?.map((m) => (
                     <option key={m.id} value={m.id}>{m.name}{m.price > 0 ? ` — ₹${m.price}/guest/night` : ""}</option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               <div className="col-span-2">
                 <label className="text-xs text-gray-500 mb-1 block">Special Requests</label>
                 <textarea rows={2} className={inp + " resize-none"} placeholder="Early check-in, high floor, extra pillows…" value={form.specialRequests} onChange={(e) => set("specialRequests", e.target.value)} />
@@ -237,12 +239,12 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
               </div>
               <div className="divide-y divide-gray-50">
                 <div className="flex justify-between px-4 py-2.5 text-sm text-gray-600">
-                  <span>{selectedRoom.name} × {form.rooms} × {nights} night{nights > 1 ? "s" : ""}</span>
+                  <span>{selectedRoom?.roomName} × {form.rooms} × {nights} night{nights > 1 ? "s" : ""}</span>
                   <span>₹{roomCharge.toLocaleString("en-IN")}</span>
                 </div>
                 {mealCharge > 0 && (
                   <div className="flex justify-between px-4 py-2.5 text-sm text-gray-600">
-                    <span>{selectedMeal.name} × {form.guests} guest{form.guests > 1 ? "s" : ""} × {nights} night{nights > 1 ? "s" : ""}</span>
+                    <span>{selectedMeal?.name} × {form.guests} guest{form.guests > 1 ? "s" : ""} × {nights} night{nights > 1 ? "s" : ""}</span>
                     <span>₹{mealCharge.toLocaleString("en-IN")}</span>
                   </div>
                 )}
