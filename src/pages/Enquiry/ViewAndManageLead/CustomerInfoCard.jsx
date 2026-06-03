@@ -13,6 +13,7 @@ import DataContext from "../../../context/DataContext";
 import DatePickerModal from "../../../components/Modal/DatePickerModal";
 import CustomDropdown2 from "../../../components/ui/Dropdown2";
 import { formatDate, formatDateTime } from "../../../utils/formateDate";
+import { normalizePhoneNumber } from "../../../utils/normalizePhoneNumber";
 
 const CustomerInfoCard = ({ lead, onClick }) => {
   console.log(lead);
@@ -199,7 +200,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
                 onClick={() => handleCallPopup(lead.Contact)}
                 className="text-sm text-gray-600 dark:text-[#9ca3af]"
               >
-                {lead.Contact}
+                {normalizePhoneNumber(lead?.Contact)}
               </p>
             </div>
 

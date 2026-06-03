@@ -1,18 +1,23 @@
 import { useState } from "react";
 import ReservationForm from "./ReservationForm";
+import { formatDateTime } from "../../../utils/formateDate";
 
 const LeadHeader = ({ lead }) => {
   const [openReservationForm, setOpenReservationForm] = useState();
 
   return (
-    <div className="bg-app-surface border border-app-border rounded-lg p-5 flex justify-between shadow-app-shadow">
-      <h1 className="text-2xl font-semibold text-app-text dark:text-app-text-muted capitalize">
-        {lead?.Name || "Lead"}
-      </h1>
+    <div className="bg-app-surface border border-app-border rounded-lg p-4 flex justify-between items-center shadow-app-shadow">
+      <div>
+        <h1 className="text-xl font-semibold text-app-text dark:text-app-text-muted capitalize">
+          {lead?.Name || "Lead"}
+        </h1>
+
+        <span className="text-xs">{formatDateTime(lead?.Created_at)}</span>
+      </div>
 
       <button
         onClick={() => setOpenReservationForm(!openReservationForm)}
-        className="bg-orange-600 px-3 py-1 rounded-md text-sm font-medium text-white "
+        className="bg-orange-600 px-3 py-2 rounded-md text-sm font-medium text-white "
       >
         Convert
       </button>
