@@ -118,7 +118,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             fromNumber: agentNumber,
             toNumber: selectedGuestNumber,
           }),
-        },
+        }
       );
 
       const data = await response.json();
@@ -184,7 +184,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
   if (!lead) return null;
 
   return (
-    <div className="flex flex-col bg-white dark:bg-[#1a1f2e] rounded-lg md:shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] p-5 h-auto border border-gray-200 dark:border-[#2d3748]">
+    <div className="flex flex-col bg-app-surface-secondary rounded-lg md:shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] p-5 h-auto border border-gray-200 dark:border-[#2d3748]">
       <div className="flex-">
         <h3 className="font-semibold text-gray-800 dark:text-[#e8eaed] mb-4">
           Customer Information
@@ -207,7 +207,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             <div className="flex items-center gap-4">
               <div
                 onClick={onClick}
-                className="text-primary rounded bg-primary/10 dark:bg-primary/20 p-2"
+                className="text-primary rounded bg-primary/10 dark:bg-white p-2"
               >
                 <FaWhatsapp />
               </div>
@@ -215,14 +215,14 @@ const CustomerInfoCard = ({ lead, onClick }) => {
               {integrationStatus.exotel ? (
                 <div
                   onClick={() => handleCallPopup(lead.Contact)}
-                  className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
+                  className="rounded text-primary bg-primary/10 dark:bg-white p-2"
                 >
                   <FaPhone />
                 </div>
               ) : (
                 <Link
                   to={`tel:${lead.Contact}`}
-                  className="rounded text-primary bg-primary/10 dark:bg-primary/20 p-2"
+                  className="rounded text-primary bg-primary/10 dark:bg-white p-2"
                 >
                   <FaPhone />
                 </Link>
@@ -232,7 +232,13 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         )}
 
         {lead?.Email && (
-          <InfoRow label="Email Address" value={lead.Email} icon={<MdMail />} />
+        
+            <InfoRow
+              label="Email Address"
+              value={lead.Email}
+              icon={<MdMail />}
+            />
+      
         )}
 
         {(lead?.check_in || lead?.check_out || lead?.number_of_guest) && (
@@ -271,7 +277,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
           </Link>
         )}
 
-        <div className="mt-4 text-sm text-gray-700 dark:text-[#e8eaed] border border-gray-200 dark:border-[#2d3748] bg-gray-50 dark:bg-[#242b3d] p-4 rounded-xl">
+        <div className="mt-4 text-sm text-gray-700 dark:text-[#e8eaed] border border-gray-200 dark:border-[#2d3748] p-4 rounded-xl">
           <h1 className="font-semibold mb-3">URL Parameters</h1>
 
           {Object.keys(queryParams)?.length > 0 ? (
@@ -301,7 +307,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
 
       <div className="flex flex-wrap items-center gap-2 mt-2">
         <div className="flex w-auto flex-col gap-1">
-          <label className="text-sm text-gray-500 dark:text-[#9ca3af] ml-1">
+          <label className="text-sm bg-app-surface-secondary ml-1">
             Attempted By
           </label>
           <CustomDropdown2

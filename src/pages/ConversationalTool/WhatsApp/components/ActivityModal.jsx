@@ -56,7 +56,7 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
             </div>
 
             <select
-              className="flex-1 outline-none bg-transparent text-app-text dark:text-app-text-faint"
+              className="flex-1 outline-none text-app-text dark:text-app-text-faint bg-app-surface"
               value={activitySource}
               onChange={(e) => setActivitySource(e.target.value)}
             >

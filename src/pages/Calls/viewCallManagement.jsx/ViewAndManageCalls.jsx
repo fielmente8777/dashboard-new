@@ -140,7 +140,7 @@ const ViewAndManageCalls = () => {
       <div className="flex items-center gap-2.5 bg-app-surface-secondary p-3 rounded-md">
         <button
           onClick={() => window.history.back()}
-          className="flex size-8 justify-center bg-gray-100 rounded-full items-center"
+          className="flex size-8 justify-center bg-gray-100 dark:bg-primary/20 rounded-full items-center"
         >
           <IoArrowBack />
         </button>
@@ -150,7 +150,7 @@ const ViewAndManageCalls = () => {
           <h2>Call Details</h2>
 
           <div className="flex items-center gap-2">
-            <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white font-medium">
+            <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white dark:bg-app-surface dark:text-app-text font-medium">
               <label htmlFor="" className="">
                 Follow Up
               </label>
@@ -201,7 +201,7 @@ const ViewAndManageCalls = () => {
             <div className="flex gap-3">
               <button
                 onClick={handlePrevPage}
-                className="px-4 py-2 border rounded bg-white disabled:opacity-80"
+                className="px-4 py-2 border rounded bg-white dark:bg-app-surface disabled:opacity-80"
                 disabled={Number(page) === 1}
               >
                 ← Prev
@@ -209,7 +209,7 @@ const ViewAndManageCalls = () => {
 
               <button
                 onClick={handleNextPage}
-                className="px-4 py-2 border rounded bg-white"
+                className="px-4 py-2 border rounded bg-white dark:bg-app-surface"
               >
                 Next →
               </button>

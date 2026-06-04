@@ -197,7 +197,7 @@ const ViewAndManageLeads = () => {
       <div className="flex items-center  gap-2.5 bg-app-surface-secondary md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
-          className="flex size-8 justify-center bg-app-surface-secondary rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
+          className="flex size-8 justify-center bg-app-surface-secondary rounded-full items-center gap-2 text-primary dark:text-app-text hover:bg-gray-200 dark:hover:text-primary transition-all duration-200"
         >
           <IoArrowBack />
         </button>
@@ -286,8 +286,8 @@ const ViewAndManageLeads = () => {
           {/* Prev Button */}
           <button
             onClick={handlePrevPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-shadow-app-text-muted
-               hover:bg-gray-100 hover:shadow-sm transition-all duration-200
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
+               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ← Prev
@@ -296,8 +296,8 @@ const ViewAndManageLeads = () => {
           {/* Next Button */}
           <button
             onClick={handleNextPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-shadow-app-text-muted
-               hover:bg-gray-100 hover:shadow-sm transition-all duration-200
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
+               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next →
@@ -320,7 +320,7 @@ const ViewAndManageLeads = () => {
 
             <div className="space-y-2">
               {lead?.Message && (
-                <div className="bg-app-surface p-4 rounded-md space-y-2">
+                <div className="bg-app-surface-secondary p-4 rounded-md space-y-2">
                   <h3 className="font-semibold text-gray-800">Message</h3>
                   <p className="text-sm"> {lead?.Message}</p>
                 </div>
@@ -341,16 +341,10 @@ const ViewAndManageLeads = () => {
 
                         // Handle geo object separately
                         if (key === "geo" && typeof value === "object") {
-
-
                           return Object.entries(value).map(
                             ([geoKey, geoValue]) => {
-                              if (
-                                geoKey === "ip"||
-                                geoKey==="readme"
-                              ) return null;
-
-                            
+                              if (geoKey === "ip" || geoKey === "readme")
+                                return null;
 
                               return (
                                 <div
@@ -366,7 +360,7 @@ const ViewAndManageLeads = () => {
                                   </p>
                                 </div>
                               );
-                            },
+                            }
                           );
                         }
 
@@ -384,7 +378,7 @@ const ViewAndManageLeads = () => {
                             </p>
                           </div>
                         );
-                      },
+                      }
                     )}
                   </div>
                 </div>

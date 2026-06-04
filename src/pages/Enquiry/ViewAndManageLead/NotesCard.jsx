@@ -101,7 +101,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
 
   const handleRemoveNote = async (index) => {
     const isConfirmed = await confirm(
-      "Are you sure you want to delete this lead?",
+      "Are you sure you want to delete this lead?"
     );
 
     if (!isConfirmed) return;
@@ -128,10 +128,12 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
   };
 
   return (
-    <div className="bg-app-surface rounded-lg md:shadow-sm p-5 ">
+    <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-5 ">
       <div className="flex items-center justify-between mb-5">
         <div className="flex gap-2 items-center bg-app-surface-secondary px-4 py-1.5 w-fit rounded-full">
-          <h3 className="text-sm font-medium text-app-text dark:text-app-text">Notes</h3>
+          <h3 className="text-sm font-medium text-app-text dark:text-app-text">
+            Notes
+          </h3>
 
           {lead?.notes?.length > 0 && (
             <button

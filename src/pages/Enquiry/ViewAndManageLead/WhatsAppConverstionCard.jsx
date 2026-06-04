@@ -23,7 +23,7 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
     <>
       {/* SLIDING CHAT PANEL */}
       <div
-        className={`fixed max-w-96 w-full bg-app-surface border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
+        className={`fixed max-w-96 w-full bg-app-surface-secondary border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
         ${expanded ? "bottom-20 h-[60vh] right-6" : "bottom-0 right-0 h-0 overflow-hidden"}`}
       >
         <div

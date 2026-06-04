@@ -17,6 +17,8 @@ import {
 } from "recharts";
 import { getAnalyticsService } from "../../services/api/analytics.api";
 import DashboardCard from "../../components/Card/DashboardCard";
+import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
+import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
@@ -371,7 +373,14 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
+        <SeoIntelligenceDashboard />
       </div>
+
+      <div className="w-full space-y-6 mt-6">
+        <LocalSeoModule />
+      </div>
+
+
 
       {/* FUNNEL */}
       <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">

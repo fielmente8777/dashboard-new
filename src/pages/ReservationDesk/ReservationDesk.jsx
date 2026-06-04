@@ -371,7 +371,7 @@ const ReservationDesk = () => {
                     <tr
                       key={rowIndex}
                       onClick={() => handleInfoPopupIII(row)}
-                      className="py-1  odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-50 transition-colors cursor-pointer"
+                      className="py-1  odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-50 dark:hover:bg-primary/10  transition-colors cursor-pointer"
                     >
                       <td
                         className="py-3 px-4 text-[14px] text-purple-500 font-semibold"
