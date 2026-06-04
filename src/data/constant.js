@@ -15,6 +15,7 @@ export const BASE_PATH = "/dashboard/client";
 export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
 // export const WS_BASE_URL = "ws://localhost:8000";
 export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
+export const NODE_BASE_URL = "http://localhost:8000/api/v1";
 
 export const room_type_name = {
   1: "DELUXE",
