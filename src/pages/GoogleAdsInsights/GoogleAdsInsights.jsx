@@ -70,7 +70,7 @@ const LIGHT = {
   amber: "#f59e0b", rose: "#f43f5e", cyan: "#0891b2",
 };
 const THEMES = { dark: DARK, light: LIGHT };
-const ThemeContext = createContext(DARK);
+const ThemeContext = createContext(LIGHT);
 const useTheme = () => useContext(ThemeContext);
 const accentHex = (C, accent) => ({ blue: C.blue, indigo: C.indigo, violet: C.violet, emerald: C.emerald, amber: C.amber, rose: C.rose, cyan: C.cyan }[accent] || C.blue);
 const deviceColors = (C) => [C.blue, C.violet, C.emerald, C.amber, C.rose];

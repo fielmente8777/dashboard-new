@@ -183,8 +183,8 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
               <h3 className="text-md md:text-lg font-semibold text-gray-900 dark:text-app-text">
                 {selectedContact?.name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium ">
-                +{selectedContact?.phone}
+              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium">
+                {selectedContact?.phone}
               </p>
             </div>
           </div>

@@ -2,6 +2,13 @@ import { useState } from "react";
 import { FiX, FiTrash2, FiPlus } from "react-icons/fi";
 import { v4 as uuidv4 } from "uuid";
 
+const MAX_MESSAGE_BODY_TEXT = 4096;
+const MAX_MESSAGE_FOOTER_TEXT = 60;
+const MAX_MESSAGE_HEADER_TEXT = 60;
+const MAX_SECTION_TITLE_TEXT = 24;
+const MAX_ROW_TITLE_TEXT = 24;
+const MAX_BUTTON_TEXT = 20;
+
 export default function ListSetting({ data, onSave, onCancel }) {
   const [header, setHeader] = useState(data?.interactive?.header?.text || "");
   const [body, setBody] = useState(
@@ -115,11 +122,15 @@ export default function ListSetting({ data, onSave, onCancel }) {
         <label className="text-sm text-gray-600">Header Text</label>
         <input
           value={header}
-          maxLength={60}
+          maxLength={MAX_MESSAGE_HEADER_TEXT}
           onChange={(e) => setHeader(e.target.value)}
           className="border rounded-lg w-full p-2 mt-1"
           placeholder="Optional header"
         />
+
+        <span className="text-end text-xs text-gray-400 block mt-1">
+          Max {MAX_MESSAGE_HEADER_TEXT}
+        </span>
       </div>
 
       {/* Body */}
@@ -127,11 +138,14 @@ export default function ListSetting({ data, onSave, onCancel }) {
         <label className="text-sm text-gray-600">Body Text</label>
         <textarea
           value={body}
-          maxLength={1024}
+          maxLength={MAX_MESSAGE_BODY_TEXT}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
           className="border rounded-lg w-full p-2 mt-1"
         />
+        <span className="text-end text-xs text-gray-400 block mt-1">
+          Max {MAX_MESSAGE_BODY_TEXT}
+        </span>
       </div>
 
       {/* Footer */}
@@ -139,11 +153,15 @@ export default function ListSetting({ data, onSave, onCancel }) {
         <label className="text-sm text-gray-600">Footer Text</label>
         <input
           value={footer}
-          maxLength={60}
+          maxLength={MAX_MESSAGE_FOOTER_TEXT}
           onChange={(e) => setFooter(e.target.value)}
           className="border rounded-lg w-full p-2 mt-1"
           placeholder="Optional footer"
         />
+
+        <span className="text-end text-xs text-gray-400 block mt-1">
+          Max {MAX_MESSAGE_FOOTER_TEXT}
+        </span>
       </div>
 
       {/* Button Text */}
@@ -151,10 +169,13 @@ export default function ListSetting({ data, onSave, onCancel }) {
         <label className="text-sm text-gray-600">List Button Text</label>
         <input
           value={buttonText}
-          maxLength={20}
+          maxLength={MAX_BUTTON_TEXT}
           onChange={(e) => setButtonText(e.target.value)}
           className="border rounded-lg w-full p-2 mt-1"
         />
+        <span className="text-end text-xs text-gray-400 block mt-1">
+          Max {MAX_BUTTON_TEXT}
+        </span>
       </div>
 
       {/* Sections */}
@@ -178,7 +199,12 @@ export default function ListSetting({ data, onSave, onCancel }) {
               onChange={(e) => updateSectionTitle(sIndex, e.target.value)}
               className="border rounded-md w-full p-2 mb-3"
               placeholder="Section title"
+              maxLength={MAX_SECTION_TITLE_TEXT}
             />
+
+            <span className="text-end text-xs text-gray-400 block mb-3">
+              Max {MAX_SECTION_TITLE_TEXT}
+            </span>
 
             {/* Rows */}
             <div className="space-y-2">

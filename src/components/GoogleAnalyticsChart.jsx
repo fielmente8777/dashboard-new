@@ -21,6 +21,7 @@ import {
 } from "react-icons/fi";
 import Loader from "./Loader";
 import { BASE_URL } from "../data/constant";
+import { useSelector } from "react-redux";
 
 const dateOptions = [
   { label: "Today", start: "today", end: "today" },
@@ -45,6 +46,9 @@ const TAB_CONFIG = {
 };
 
 const GoogleAnalyticsChart = () => {
+   // profile info
+    const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+    const profile = hotel?.Profile;
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -207,7 +211,7 @@ const GoogleAnalyticsChart = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {properties.length > 0 && (
+         {properties.length > 0 && authUser?.emailId==="abhijeet@eazotel.com"&& authUser?.emailId==="sachin@fielmente.com" &&(
             <select
               value={activePropertyId}
               onChange={handlePropertyChange}
@@ -221,6 +225,7 @@ const GoogleAnalyticsChart = () => {
               ))}
             </select>
           )}
+           
 
           {/* Date Picker */}
           <div className="relative" ref={dropdownRef}>

@@ -457,13 +457,21 @@ export default function Calls() {
     ) {
       return "Client Unanswered";
     } else if (
-      (status === "no-answer" || status === "incomplete") &&
+      (status === "no-answer" ||
+        status === "incomplete" ||
+        status === "" ||
+        status === "failed") &&
       (direction === "inbound" || direction === "incoming")
     ) {
       return "No user answered";
     } else if (
       status === "call-attempt" &&
       (direction === "incoming" || direction === "inbound")
+    ) {
+      return "Client hung-up before connecting to any user";
+    } else if (
+      status === "" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
     ) {
       return "Client hung-up before connecting to any user";
     } else if (
@@ -475,7 +483,7 @@ export default function Calls() {
     ) {
       return "Call was successfull";
     } else if (
-      status === "client-hangup" &&
+      (status === "client-hangup" || status === "canceled") &&
       (direction === "inbound" || direction === "incoming")
     ) {
       return "Client hangup during call";
