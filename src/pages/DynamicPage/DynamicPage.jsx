@@ -92,6 +92,7 @@ import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
 
+import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -100,6 +101,7 @@ const DynamicPage = () => {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
     [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
+    [`${BASE_PATH}/${hid}/local-seo`]: <SeoIntelligenceDashboard />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,
