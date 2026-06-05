@@ -166,7 +166,7 @@ const ViewAndManageLeads = () => {
           <button
             onClick={() => window.history.back()}
             className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 
-                 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+          hover:bg-gray-200 text-gray-700 transition-all duration-200"
           >
             <IoArrowBack size={18} />
           </button>
