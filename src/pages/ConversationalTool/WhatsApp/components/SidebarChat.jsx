@@ -338,13 +338,13 @@ const SidebarChat = () => {
               }}
               onMouseEnter={() => setHoveredConversation(conv._id)}
               onMouseLeave={() => setHoveredConversation(null)}
-              className={`flex p-3 border-b border-primary/60! cursor-pointer transition-colors ${
+              className={`relative flex p-3 pl-6 border-b border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
                   ? "bg-app-surface-secondary"
                   : "hover:bg-green-200/30 dark:hover:bg-primary/30"
               }`}
             >
-              <div className="flex items-center mr-2">
+              <div className="flex items-center absolute left-1 top-5">
                 {(hoveredConversation === conv._id ||
                   selectedConversations.length > 0) && (
                   <input
