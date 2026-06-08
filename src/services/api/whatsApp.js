@@ -104,6 +104,23 @@ export const deleteConversation = async ({ conversationId, phone }) => {
   return data;
 };
 
+export const deleteMultipleConversation = async ({ conversationIds }) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ conversationIds }),
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
 export const getWhatsappAccountDetails = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/account/connection/details?hid=${localStorage.getItem("hid")}`,
