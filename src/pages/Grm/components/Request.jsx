@@ -106,7 +106,7 @@ const Request = () => {
                         />
                     </div>
 
-                    <button className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between">
+                    <button className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-app-primary rounded-md flex items-center justify-between">
                         <span className="flex items-center gap-2"><Filter className="w-2 h-2" /> Filter</span>
                         <span className="text-[#575757] text-[14px] font-semibold rotate-180"><Arrow /></span>
                     </button>

@@ -41,7 +41,7 @@ const FlowModal = ({ template, onClose, onSave }) => {
           <input
             value={template?.title}
             disabled
-            className="border rounded w-full p-2 mt-1 bg-gray-100 cursor-not-allowed"
+            className="border rounded w-full p-2 mt-1 bg-app-surface-secondary cursor-not-allowed"
           />
         </div>
 

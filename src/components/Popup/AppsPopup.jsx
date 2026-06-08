@@ -271,11 +271,11 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
               setOpen(false);
             }
           }}
-          className="fixed top-0 left-0 !z-[99999]  bg-black/50 w-full h-[100dvh] flex justify-end "
+          className="fixed top-0 left-0 !z-[99999]  bg-black/50 dark:bg-white/10 w-full h-[100dvh] flex justify-end "
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="text-[#575757] bg-white w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
+            className="text-[#575757] bg-app-surface w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
           >
             <div className="relative flex items-center">
               <input
@@ -285,7 +285,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                 value={search}
                 name="search"
                 placeholder="Search Services"
-                className="bg-white py-4 w-full px-5 outline-none border  "
+                className="bg-app-surface py-4 w-full px-5 outline-none border  "
               />
               <MdClose
                 onClick={() => setOpen(false)}
@@ -293,7 +293,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
               />
             </div>
 
-            <div className=" p-4 pb-20 bg-gray-100 scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
+            <div className=" p-4 pb-20 bg-app-surface scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
               {filteredPremium.length > 0 && (
                 <div>
                   <h2 className="font-semibold mb-2">Premium Services</h2>
@@ -301,7 +301,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                     {filteredPremium.map((service) => (
                       <div
                         key={service.name}
-                        className="relative group cursor-pointer  shadow bg-white hover:bg-white duration-75 rounded-md"
+                        className="relative group cursor-pointer  shadow bg-app-surface-secondary hover:bg-white duration-75 rounded-md"
                         onClick={() => {
                           handleOpenService(service);
                         }}
@@ -323,7 +323,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
               {filteredOther.length > 0 && (
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-gray-800 font-semibold">
+                    <h2 className="text-gray-800  dark:text-app-text-faint font-semibold">
                       Other Services
                     </h2>
                     {/* <span className="text-blue-600 text-sm cursor-pointer">Preference</span> */}
@@ -332,7 +332,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                     {filteredOther.map((service) => (
                       <div
                         key={service.name}
-                        className=" relative group cursor-pointer shadow  bg-white hover:bg-white duration-300 rounded-md"
+                        className=" relative group cursor-pointer shadow  bg-app-surface-secondary hover:bg-white duration-300 rounded-md"
                         onClick={() => {
                           handleOpenService(service);
                         }}
@@ -341,7 +341,7 @@ const AppsPopup = ({ open, setOpen, authUser }) => {
                           <div className="text-2xl mb-2">{service.icon}</div>
                           <span className="text-center">{service.name}</span>
                         </div>
-                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
+                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-app-surface-secondary rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
                           {service.name}
                         </div>
                       </div>

@@ -313,12 +313,12 @@ const handleFilter = () => {
   },[search])
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-app-surface min-h-screen">
       <div className="flex items-center gap-2">
         <div>
           <input type="search"
           placeholder="Search template by name, header and body"
-          className="bg-gray-50 border py-2 w-md text-sm px-3 outline-none rounded-lg"
+          className="bg-app-surface-secondary border py-2 w-md text-sm px-3 outline-none rounded-lg"
           onChange={(e)=>setSearch(e.target.value)}
           />
         </div>
@@ -336,22 +336,22 @@ const handleFilter = () => {
             <div
               key={template.id}
               onClick={() => onSelectTemplate(template)}
-              className="bg-white rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-45 hover:border-ternary/40 transition-all duration-300 cursor-pointer"
+              className="bg-app-surface-secondary rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-45 hover:border-ternary/40 transition-all duration-300 cursor-pointer"
             >
               {/* Header */}
               <div>
-                <h3 className="font-semibold text-lg text-primary mb-2 hover:text-ternary transition-colors">
+                <h3 className="font-semibold text-lg text-primary dark:text-app-text-muted mb-2 hover:text-ternary transition-colors">
                   {template.header}
                 </h3>
 
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
+                <p className="text-sm text-gray-600 dark:text-app-text-faint leading-relaxed line-clamp-3">
                   {template.body}
                 </p>
               </div>
 
               {/* Footer */}
               <div className="mt-6 flex justify-between items-center">
-                <span className="text-xs px-3 py-1 bg-gray-100 text-primary border border-gray-200 rounded-md font-medium uppercase tracking-wide">
+                <span className="text-xs px-3 py-1 bg-app-surface text-primary dark:text-app-text-muted border border-gray-200 rounded-md font-medium uppercase tracking-wide">
                   {template.category}
                 </span>
 

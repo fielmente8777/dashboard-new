@@ -4,14 +4,10 @@ const InfoRow = ({ label, value, icon }) => (
       <p className="text-sm font-medium text-gray-700 dark:text-app-text">
         {label}
       </p>
-      <p className="text-sm text-gray-600 dark:text-app-text-muted">
-        {value}
-      </p>
+      <p className="text-sm text-gray-600 dark:text-app-text-faint">{value}</p>
     </div>
 
-    <div className="text-primary dark:text-primary">
-      {icon}
-    </div>
+    <div className="text-primary dark:text-white">{icon}</div>
   </div>
 );
 

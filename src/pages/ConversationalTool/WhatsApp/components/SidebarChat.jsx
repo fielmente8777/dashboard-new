@@ -90,7 +90,7 @@ const SidebarChat = () => {
       (conv) =>
         conv.name?.toLowerCase().includes(lowerSearch) ||
         conv.phone?.includes(lowerSearch) ||
-        conv.lastMessage?.toLowerCase().includes(lowerSearch),
+        conv.lastMessage?.toLowerCase().includes(lowerSearch)
     );
 
     setFilteredConversations(filtered);
@@ -101,13 +101,13 @@ const SidebarChat = () => {
       .filter(
         (conv) =>
           !is24HoursCompletedFnc(
-            conv.last_message?.updated_at || conv.createdAt,
-          ),
+            conv.last_message?.updated_at || conv.createdAt
+          )
       )
       .sort(
         (a, b) =>
           new Date(b.last_message?.updated_at || b.createdAt) -
-          new Date(a.last_message?.updated_at || a.createdAt),
+          new Date(a.last_message?.updated_at || a.createdAt)
       );
 
     console.log(conver);
@@ -118,12 +118,12 @@ const SidebarChat = () => {
   const historyConversations = () => {
     return conversations
       .filter((conv) =>
-        is24HoursCompletedFnc(conv.last_message?.updated_at || conv.createdAt),
+        is24HoursCompletedFnc(conv.last_message?.updated_at || conv.createdAt)
       )
       .sort(
         (a, b) =>
           new Date(b.last_message?.updated_at || b.createdAt) -
-          new Date(a.last_message?.updated_at || a.createdAt),
+          new Date(a.last_message?.updated_at || a.createdAt)
       );
   };
 
@@ -167,18 +167,18 @@ const SidebarChat = () => {
   }, [conversations]);
 
   return (
-    <div className="w-full md:w-90 border-b  md:border-r border-primary/60! flex flex-col bg-app-surface-secondary">
-      <div className="px-4 py-3 shadow-sm h-16 flex">
+    <div className="w-full md:w-90 border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface">
+      <div className="px-4 py-3 shadow-sm h-16 flex ">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
+          className="border border-ternary! text-sm text-app-text dark:text-app-text font-medium dark:bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-1 focus:ring-ternary"
         />
       </div>
 
-      <div className="flex border-b border-primary/60! bg-app-surface-secondary overflow-hidden">
+      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-hidden">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -241,10 +241,10 @@ const SidebarChat = () => {
                 setMobileActive("chatarea");
               }}
               // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-primary/60! cursor-pointer transition-colors ${
+              className={`flex p-3 border-b dark:border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
                   ? "bg-app-surface-secondary"
-                  : "hover:bg-primary/50"
+                  : "hover:bg-green-200/30 dark:hover:bg-primary/30"
               }`}
             >
               {/* Avatar */}
@@ -252,7 +252,7 @@ const SidebarChat = () => {
                 {conv.name ? (
                   <div
                     className={`size-10 rounded-full flex items-center justify-center text-white font-medium ${getAvatarColor(
-                      conv?.name,
+                      conv?.name
                     )}`}
                   >
                     {conv?.name?.charAt(0).toUpperCase()}
@@ -291,7 +291,7 @@ const SidebarChat = () => {
                 </div>
 
                 <div className="flex justify-between mt-2">
-                  <div className="flex justify-end text-xs text-green-00 bg-green-200 w-fit px-2 rounded-full">
+                  <div className="flex justify-end text-xs text-white bg-green-500 w-fit px-2 rounded-full">
                     {conv?.status?.toLowerCase() === "active"
                       ? "Open"
                       : conv?.status}
@@ -305,15 +305,15 @@ const SidebarChat = () => {
 
                       {conv?.adAttribution?.sourceUrl ? (
                         conv?.adAttribution?.sourceUrl.match(
-                          /^https:\/\/www.instagram.com/,
+                          /^https:\/\/www.instagram.com/
                         ) ? (
                           <InstaICon />
                         ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/www.facebook.com/,
+                            /^https:\/\/www.facebook.com/
                           ) ? (
                           <FacebookIcon />
                         ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/wa.me/,
+                            /^https:\/\/wa.me/
                           ) ? (
                           <WhatsappIcon />
                         ) : (

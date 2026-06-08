@@ -14,7 +14,7 @@ const BookingDetailsPopup = ({
 
   return (
     <div className="bg-black/50 fixed inset-0 flex justify-center items-center z-50 overflow-auto px-4">
-      <div className="bg-white w-full max-w-3xl rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-app-surface-secondary w-full max-w-3xl rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
         <header className="bg-primary text-white flex justify-between items-center px-4 py-3">
           <h2 className="text-lg font-semibold">
@@ -96,7 +96,7 @@ const BookingDetailsPopup = ({
               {infoData?.Bookings?.map((room, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-lg p-3 text-sm text-gray-700 bg-gray-50"
+                  className="border rounded-lg p-3 text-sm text-gray-700 dark:text-app-text bg-gray-50 dark:bg-app-text-muted"
                 >
                   <p>
                     <span className="font-medium">Room Type:</span>{" "}

@@ -230,9 +230,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-99999">
-      <div className="bg-white rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
+      <div className="bg-app-surface rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
         {/* Left Panel */}
-        <div className="md:w-64 w-full bg-gray-100 p-4 space-y-6">
+        <div className="md:w-64 w-full bg-app-surface-secondary p-4 space-y-6">
           <div className="border-b border-gray-200! py-1">
             <h2 className="text-lg font-semibold">Send Response To</h2>
             <p className="text-primary font-medium">{lead?.Name}</p>
@@ -261,7 +261,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
             {tabs?.map((tab) => (
               <button
                 key={tab.value}
-                className={`${selectedTab === tab.value && " text-primary border-b-2 border-gray-400!"} px-2 py-1.5 font-medium`}
+                className={`${selectedTab === tab.value && " text-app-text dark:text-app-text border-b-2 border-gray-400!"} px-2 py-1.5 font-medium`}
                 onClick={() => setSelectedTab(tab.value)}
               >
                 {tab.label}
@@ -273,7 +273,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
             <div className="w-full">
               <textarea
                 rows={8}
-                className={`w-full outline-none border border-gray-200! rounded-sm p-3 bg-gray-50 resize-none focus:border-gray-300! transition duration-300`}
+                className={`w-full outline-none border border-gray-200! rounded-sm p-3 bg-app-surface-secondary resize-none focus:border-gray-300! transition duration-300`}
                 placeholder="Type your message here..."
                 onChange={(e) => setText(e.target.value)}
               />
@@ -303,7 +303,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
                 <div>
                   <div className="flex items-center gap-2">
                     <button
-                      className="size-6 bg-gray-200 rounded-full flex justify-center items-center"
+                      className="size-6 bg-app-surface rounded-full flex justify-center items-center"
                       onClick={() => {
                         setSelectedTemplate(null);
                         setValues({});

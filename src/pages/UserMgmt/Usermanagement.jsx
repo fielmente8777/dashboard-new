@@ -219,7 +219,7 @@ const Usermanagement = () => {
                                 onClick={() => {
                                   handleEditUserData(user);
                                 }}
-                                className="text-black"
+                                className="text-black dark:text-gray-500"
                               />
                             </span>
                           ) : (

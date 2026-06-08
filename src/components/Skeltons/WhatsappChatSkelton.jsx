@@ -1,5 +1,5 @@
 const Skeleton = ({ className = "" }) => (
-  <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+  <div className={`animate-pulse bg-app-surface-secondary rounded ${className}`} />
 );
 
 export const MessageSkeleton = ({ align = "left" }) => (

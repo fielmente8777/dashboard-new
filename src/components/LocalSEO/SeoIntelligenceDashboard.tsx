@@ -168,18 +168,18 @@ const GeoGrid = ({ grid, size = 3 }: { grid?: (number | null)[][]; size?: number
   return (
     <div className="relative overflow-hidden rounded-3xl border border-zinc-800/80 bg-zinc-950 p-6 sm:p-8 shadow-2xl">
       {/* Sleek Radar / Map Background Pattern */}
-      <div 
-        className="pointer-events-none absolute inset-0 opacity-[0.08]" 
-        style={{ 
-          backgroundImage: "linear-gradient(#3f3f46 1px, transparent 1px), linear-gradient(90deg, #3f3f46 1px, transparent 1px)", 
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.08]"
+        style={{
+          backgroundImage: "linear-gradient(#3f3f46 1px, transparent 1px), linear-gradient(90deg, #3f3f46 1px, transparent 1px)",
           backgroundSize: "40px 40px",
           backgroundPosition: "center center"
-        }} 
+        }}
       />
-      
+
       <div className="relative mx-auto flex justify-center">
-        <div 
-          className="relative grid gap-5 sm:gap-6" 
+        <div
+          className="relative grid gap-5 sm:gap-6"
           style={{ gridTemplateColumns: `repeat(${actualSize}, minmax(0,1fr))` }}
         >
           {grid.flatMap((rowArr, ri) =>
@@ -193,21 +193,21 @@ const GeoGrid = ({ grid, size = 3 }: { grid?: (number | null)[][]; size?: number
               // Premium styling classes
               let baseClass = "bg-zinc-900 border-zinc-800 text-zinc-600";
               let glowClass = "";
-              
-              if (isTop) { 
-                baseClass = "bg-emerald-500 border-emerald-400 text-emerald-950"; 
-                glowClass = "shadow-[0_0_15px_rgba(16,185,129,0.4)] z-10"; 
-              } else if (isGood) { 
-                baseClass = "bg-teal-500 border-teal-400 text-teal-950 shadow-md"; 
-              } else if (isAvg) { 
-                baseClass = "bg-amber-400 border-amber-300 text-amber-950 shadow-md"; 
-              } else if (isPoor) { 
-                baseClass = "bg-rose-500 border-rose-400 text-rose-50 shadow-md"; 
+
+              if (isTop) {
+                baseClass = "bg-emerald-500 border-emerald-400 text-emerald-950";
+                glowClass = "shadow-[0_0_15px_rgba(16,185,129,0.4)] z-10";
+              } else if (isGood) {
+                baseClass = "bg-teal-500 border-teal-400 text-teal-950 shadow-md";
+              } else if (isAvg) {
+                baseClass = "bg-amber-400 border-amber-300 text-amber-950 shadow-md";
+              } else if (isPoor) {
+                baseClass = "bg-rose-500 border-rose-400 text-rose-50 shadow-md";
               }
 
               return (
                 <div key={`${ri}-${ci}`} className="relative flex items-center justify-center">
-                  
+
                   {/* Connectors (Horizontal & Vertical Lines Behind Nodes) */}
                   {ci < actualSize - 1 && <div className="absolute top-1/2 left-1/2 h-[2px] w-[200%] -translate-y-1/2 bg-zinc-800/60 -z-10" />}
                   {ri < actualSize - 1 && <div className="absolute top-1/2 left-1/2 w-[2px] h-[200%] -translate-x-1/2 bg-zinc-800/60 -z-10" />}
@@ -241,7 +241,7 @@ const GeoGrid = ({ grid, size = 3 }: { grid?: (number | null)[][]; size?: number
           ["bg-zinc-800 ring-zinc-700", "Not Ranked"],
         ].map(([c, l]) => (
           <span key={l} className="flex items-center gap-2">
-            <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-offset-1 ring-offset-zinc-950 ${c}`} /> 
+            <span className={`h-2.5 w-2.5 rounded-full ring-2 ring-offset-1 ring-offset-zinc-950 ${c}`} />
             {l}
           </span>
         ))}
@@ -489,7 +489,7 @@ const LocalSeoIntelligenceDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
-  
+
   const [gridKeyword, setGridKeyword] = useState<string>("");
   const [isScanningGrid, setIsScanningGrid] = useState(false);
   const [gridLat, setGridLat] = useState("30.713199");
@@ -614,13 +614,13 @@ const LocalSeoIntelligenceDashboard = () => {
   const handleRunGridScan = async () => {
     const propertyId = localStorage.getItem("activePropertyId");
     const targetKeyword = gridKeyword || gridRow?.keyword;
-    
+
     if (!propertyId || !targetKeyword) return alert("Select a property and keyword first.");
     if (!gridLat || !gridLng || !gridHotelName) return alert("Latitude, Longitude and Target Hotel are required.");
 
     try {
       setIsScanningGrid(true);
-      
+
       // Request bhej rahe hain
       await axios.post(
         `${NODE_BASE_URL}/seo/seo-intelligence/grid-scan`,
@@ -629,37 +629,37 @@ const LocalSeoIntelligenceDashboard = () => {
           keyword: targetKeyword,
           lat: Number(gridLat),
           lng: Number(gridLng),
-          size: 3, 
+          size: 3,
           stepKm: Number(gridRadius),
-          hotelName: gridHotelName 
+          hotelName: gridHotelName
         },
-        { 
+        {
           ...getAuthConfig(),
           // 🚀 FIX: Timeout badhakar 5 minutes (300000 ms) kar diya
           // Ab frontend wait karega jab tak backend "Saved to DB" nahi kar deta!
-          timeout: 300000 
+          timeout: 300000
         }
       );
-      
+
       // Jaise hi backend success dega, yeh auto-refresh chal jayega!
       await fetchData(propertyId);
-      
+
     } catch (err: any) {
       console.error("Grid scan error:", err);
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-         alert("DataForSEO is taking extra time. Check back in a minute and hit Refresh!");
+        alert("DataForSEO is taking extra time. Check back in a minute and hit Refresh!");
       } else {
-         alert("Failed to run grid scan. Backend error.");
+        alert("Failed to run grid scan. Backend error.");
       }
     } finally {
       setIsScanningGrid(false);
       // Failsafe: Agar galti se connection toot bhi jaye, toh UI loading hatne ke baad naya data pull kar le.
-      await fetchData(propertyId); 
+      await fetchData(propertyId);
     }
   };
 
   return (
-    <div className="min-h-screen rounded-3xl bg-gradient-to-b from-zinc-950 via-zinc-950 to-black p-6 sm:p-8">
+    <div className="min-h-screen p-6 sm:p-6">
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.025]" style={{ backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
 
       <div className="relative flex flex-wrap items-start justify-between gap-4">
@@ -671,7 +671,7 @@ const LocalSeoIntelligenceDashboard = () => {
             <h1 className="text-xl font-bold tracking-tight text-white">Local SEO Intelligence</h1>
             <p className="mt-0.5 flex items-center gap-2 text-sm text-zinc-400">
               Maps &amp; organic command center
-              <span className="inline-flex items-center gap-1 rounded-md bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-300 ring-1 ring-zinc-800"><Sparkles className="h-3 w-3" /> {provider}</span>
+              {/* <span className="inline-flex items-center gap-1 rounded-md bg-zinc-900 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-300 ring-1 ring-zinc-800"><Sparkles className="h-3 w-3" /> {provider}</span> */}
             </p>
           </div>
         </div>
@@ -709,7 +709,7 @@ const LocalSeoIntelligenceDashboard = () => {
                 <p className="text-xs text-zinc-500">How your rank shifts around the property</p>
               </div>
             </div>
-            
+
             {keywords.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
@@ -739,7 +739,7 @@ const LocalSeoIntelligenceDashboard = () => {
                   placeholder="Longitude"
                   className="w-20 sm:w-24 appearance-none rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-zinc-200 outline-none focus:border-emerald-500 transition"
                 />
-                
+
                 <div className="relative">
                   <select
                     value={gridRadius}
@@ -767,7 +767,7 @@ const LocalSeoIntelligenceDashboard = () => {
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
                 </div>
-                
+
                 <button
                   onClick={handleRunGridScan}
                   disabled={isScanningGrid}

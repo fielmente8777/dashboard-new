@@ -164,7 +164,7 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-white px-6">
+    <div className="w-full min-h-[100dvh] flex flex-col items-center justify-center bg-app-surface px-6">
       <div className="max-w-[1500px] w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-4">
         <div className="md:aspect-[4/4] max-sm:hidden">
           <img
@@ -174,7 +174,7 @@ const Login = () => {
           />
         </div>
 
-        <div className="border p-6 rounded-2xl max-w-xl w-full mx-auto">
+        <div className="border p-6 rounded-2xl max-w-xl w-full mx-auto bg-app-surface-secondary">
           <div>
             <div className="max-w-30  mx-auto aspect-[3/1]">
               <img
@@ -185,8 +185,8 @@ const Login = () => {
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-text-black">Sign In</h2>
-              <p className="text-text-gray">
+              <h2 className="text-xl font-bold text-app-text">Sign In</h2>
+              <p className="text-app-text">
                 Provide Your Details to Access Your Account.
               </p>
             </div>
@@ -197,7 +197,7 @@ const Login = () => {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor=""
-                  className="font-medium text-text-black text-md"
+                  className="font-medium text-app-text   text-md"
                 >
                   Email
                 </label>
@@ -215,7 +215,7 @@ const Login = () => {
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor=""
-                  className="font-medium text-text-black text-md"
+                  className="font-medium text-app-text   text-md"
                 >
                   Password
                 </label>
@@ -252,7 +252,7 @@ const Login = () => {
                     <input type="checkbox" id="remember" className="mt-1" />
                     <label
                       htmlFor="remember"
-                      className="text-sm text-text-black font-medium"
+                      className="text-sm text-app-text   font-medium"
                     >
                       Remember Me
                     </label>
@@ -260,7 +260,7 @@ const Login = () => {
 
                   <p
                     onClick={() => setForget(true)}
-                    className="cursor-pointer text-sm text-secondary  inline-block font-medium"
+                    className="cursor-pointer text-sm text-app-text  inline-block font-medium"
                   >
                     Forgot Password
                   </p>
@@ -299,12 +299,12 @@ const Login = () => {
               </div>
 
               <div>
-                <p className="text-sm max-sm:text-center font-medium text-text-gray -mt-4">
+                <p className="text-sm max-sm:text-center font-medium text-app-text-faint -mt-4">
                   Don&apos;t have an account?{" "}
                   <Link
                     // to="http://localhost:3001/sign-in"
                     to="https://onboarding.eazotel.com/sign-in"
-                    className="text-secondary font-medium inline-block"
+                    className="text-app-text font-medium inline-block"
                   >
                     Sign Up
                   </Link>
@@ -380,7 +380,7 @@ const Login = () => {
 
                   <p
                     onClick={() => setForget(true)}
-                    className="cursor-pointer text-sm text-secondary  inline-block font-medium"
+                    className="cursor-pointer text-sm text-app-text-faint  inline-block font-medium"
                   >
                     Forgot Password
                   </p>

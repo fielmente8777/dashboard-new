@@ -116,7 +116,7 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
     <FormProvider {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex gap-6 p-2 bg-white "
+        className="flex gap-6 p-2 bg-app-surface "
       >
         {/* LEFT FORM */}
 
@@ -128,7 +128,7 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="outline-none border border-slate-500! text-gray-600 px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
+              className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
             >
               + Create Template {loading && <Loader color="#378863" />}
             </button>

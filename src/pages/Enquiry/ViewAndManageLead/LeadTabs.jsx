@@ -1,7 +1,7 @@
 const TABS = ["All Details"];
 
 const LeadTabs = ({ activeTab, setActiveTab }) => (
-  <div className="flex items-center gap-3">
+  <div className="flex items-center gap-3 ">
     {TABS.map((tab, i) => (
       <button
         key={i}

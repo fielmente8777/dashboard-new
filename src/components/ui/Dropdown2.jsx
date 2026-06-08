@@ -144,8 +144,8 @@ export default function CustomDropdown2({
       onClick={toggleDropdown}
       className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm transition-colors ${
         disabled
-          ? "bg-app-surface text-app-text dark:text-app-text-faint cursor-not-allowed border-gray-200 dark:border-[#2d3748]"
-          : "bg-app-surface text-app-text dark:text-app-text-faint hover:bg-gray-50/20 border-gray-200 dark:border-[#2d3748]"
+          ? "bg-app-surface-secondary text-app-text dark:text-app-text-faint cursor-not-allowed border-gray-200 dark:border-[#2d3748]"
+          : "bg-app-surface-secondary text-app-text dark:text-app-text-faint hover:bg-gray-50/20 border-gray-200 dark:border-[#2d3748]"
       } ${props.className}`}
     >
       <div className="flex flex-wrap gap-1 flex-1">

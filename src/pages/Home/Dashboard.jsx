@@ -175,8 +175,8 @@ const Dashboard = () => {
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
-        <h2 className="text-xl font-bold text-app-text dark:text-app-text mb-3">
-          CRM Data (Actual Leads)
+        <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
+          CRM Data
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6  text-app-text dark:text-app-text-muted">
           <DashboardCard amount={total} label={"Total Leads"} />

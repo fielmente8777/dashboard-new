@@ -28,7 +28,7 @@ await fetch(
   };
 
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <div className="bg-app-surface p-6 shadow-sm">
       <h2 className="text-xl font-semibold">WhatsApp Widget Integration</h2>
 
       <p className="mt-2 text-sm text-gray-600">
@@ -69,12 +69,12 @@ await fetch(
           </button>
         </div>
 
-        <pre className="overflow-auto rounded-lg bg-black p-4 text-sm text-green-400">
+        <pre className="overflow-auto rounded-lg bg-black  p-4 text-sm text-green-400">
           <code>{codeSnippet}</code>
         </pre>
       </div>
 
-      <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <div className="mt-5 rounded-lg border border-blue-200 bg-app-surface  p-4">
         <h4 className="font-medium text-blue-900">Fields You Can Customize</h4>
 
         <ul className="mt-2 text-sm text-blue-800 list-disc pl-5">

@@ -76,7 +76,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
   };
 
   return (
-    <div className="bg-white w-full rounded-lg shadow-lg p-5">
+    <div className="bg-app-surface-secondary w-full rounded-lg shadow-lg p-5">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-semibold text-lg">Set Buttons</h2>

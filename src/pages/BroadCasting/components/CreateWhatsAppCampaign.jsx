@@ -145,7 +145,7 @@ const CreateWhatsAppCampaign = ({ open, onClose, templates = [] }) => {
 
   return (
     open && (
-      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 h-screen">
+      <div className="fixed inset-0 bg-app-surface/80 flex items-center justify-center z-50 h-screen">
         <div className="bg-app-surface/60 max-w-xl w-full p-6 rounded-xl h-[95vh] overflow-y-auto hide-scrollbar">
           <h2 className="text-lg font-semibold mb-4 text-app-text dark:text-app-text">
             Create WhatsApp Campaign
