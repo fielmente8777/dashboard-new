@@ -45,7 +45,7 @@ const TAB_CONFIG = {
   },
 };
 
-const GoogleAnalyticsChart = () => {
+const     GoogleAnalyticsChart = () => {
    // profile info
     const { user: hotel, authUser } = useSelector((state) => state.userProfile);
     const profile = hotel?.Profile;
@@ -63,7 +63,6 @@ const GoogleAnalyticsChart = () => {
   const dropdownRef = useRef(null);
 
 
-  console.log(authUser.emailId)
   const fetchAnalytics = async () => {
     const hid = localStorage.getItem("hid");
     if (!hid) {
