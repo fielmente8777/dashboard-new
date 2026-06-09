@@ -91,7 +91,7 @@ import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
-
+import MetaPageInsights from "../Meta/MetaPageInsights";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -193,11 +193,11 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
 
-    [`${BASE_PATH}/${hid}/google-ads-insights`]: (
-      <GoogleAdsInsights />
-    ),
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
     [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
-    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <GoogleAnalytics />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: (
+      <GoogleAnalytics />
+    ),
     [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (
@@ -279,6 +279,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazmail`]: <EmailMarketingManagement />,
 
     [`${BASE_PATH}/${hid}/meta/leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/meta-insights`]: <MetaPageInsights />,
     [`${BASE_PATH}/${hid}/meta/messages`]: <MetaMessages />,
     [`${BASE_PATH}/${hid}/meta/connections`]: <MetaConnections />,
     [`${BASE_PATH}/${hid}/meta/settings`]: <MetaSettings />,

@@ -12,6 +12,7 @@ import {
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
+  FaMeta,
   FaRankingStar,
   FaUser,
 } from "react-icons/fa6";
@@ -266,7 +267,6 @@ export const SidebarData = [
   //   ],
   // },
 
- 
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -281,16 +281,23 @@ export const SidebarData = [
     icon: <MdPhone />,
   },
 
-   {
+  {
     name: "Google Ads Insights",
     key: "Google Ads Insights",
     link: `google-ads-insights`,
     icon: <SiGoogleadsense />,
   },
-   {
+  {
     name: "Google Analytics",
     link: `insights-analytics/google-analytics`,
     icon: <SiGoogleanalytics size={18} />,
+  },
+
+  {
+    name: "Meta Insights",
+    // key: "Google Ads Insights",
+    link: `meta-insights`,
+    icon: <FaMeta />,
   },
   // {
   //   name: "Meta",
