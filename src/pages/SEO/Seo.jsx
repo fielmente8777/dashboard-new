@@ -1,8 +1,14 @@
 import React from 'react'
+import LocalSeoIntelligenceDashboard from '../../components/LocalSEO/SeoIntelligenceDashboard'
+import LocalSeoModule from '../../components/LocalSEO/LocalSeoModule'
 
 const Seo = () => {
     return (
-        <div>Seo</div>
+        <div>
+            <LocalSeoIntelligenceDashboard/>
+            <LocalSeoModule/>
+        </div>
+
     )
 }
 

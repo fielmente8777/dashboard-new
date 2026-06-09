@@ -101,7 +101,7 @@ const DynamicPage = () => {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
     [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
-    [`${BASE_PATH}/${hid}/local-seo`]: <SeoIntelligenceDashboard />,
+    [`${BASE_PATH}/${hid}/local-seo`]: <Seo />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,

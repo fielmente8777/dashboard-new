@@ -180,6 +180,7 @@ const Dashboard = () => {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6  text-app-text dark:text-app-text-muted">
           <DashboardCard amount={total} label={"Total Leads"} />
+          <DashboardCard amount={total} label={"Today Leads"} />
           <DashboardCard amount={converted} label={"Converted Leads"} />
           <DashboardCard
             amount={conversionRate}
@@ -373,12 +374,12 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
-        <SeoIntelligenceDashboard />
+        {/* <SeoIntelligenceDashboard /> */}
       </div>
 
-      <div className="w-full space-y-6 mt-6">
+      {/* <div className="w-full space-y-6 mt-6">
         <LocalSeoModule />
-      </div>
+      </div> */}
 
 
 
