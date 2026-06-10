@@ -1,3 +1,31 @@
+
+/* Required for Leaflet to render correctly inside flex/grid layouts */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #f8f8f5 !important;
+}
+.geogrid-popup .leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.geogrid-popup .leaflet-popup-tip {
+  display: none; /* Tip ko hide karne se popup aur bhi modern lagta hai */
+}
+/* Dark popup styling to match the dark theme */
+.geogrid-popup .leaflet-popup-content-wrapper {
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 12px;
+  color: #18181b;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+.geogrid-popup .leaflet-popup-tip {
+  background: #ffffff;
+}
+.geogrid-popup .leaflet-popup-content {
+  margin: 12px 14px;
+}
 .nav-profile-dropdown {
   position: absolute;
   top: 100%;
