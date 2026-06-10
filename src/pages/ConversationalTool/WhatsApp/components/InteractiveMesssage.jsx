@@ -100,7 +100,7 @@ const InteractiveMessage = ({ interactive }) => {
   // =========================
   if (type === "list") {
     return (
-      <div className="bg-gray-100 rounded-xl p-3 w-72">
+      <div className="bg-app-surface rounded-xl p-3 w-72">
         {renderHeader()}
         {renderBody()}
 

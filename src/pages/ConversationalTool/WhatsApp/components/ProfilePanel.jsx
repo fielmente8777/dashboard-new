@@ -164,7 +164,7 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   };
 
   return (
-    <div className="w-full md:w-80 h-full overflow-y-auto bg-app-surface-secondary border-l border-gray-200 flex flex-col">
+    <div className="w-full md:w-80 h-full overflow-y-auto bg-app-surface border-l border-gray-200 flex flex-col">
       <div className="flex justify-end p-2"></div>
       {/* Profile Header */}
       <div className="px-3 md:px-6 md:py-0 border-b border-gray-200">

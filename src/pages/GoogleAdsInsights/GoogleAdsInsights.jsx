@@ -143,6 +143,7 @@ export default function GoogleAdsInsights() {
     await axios.get(syncUrl, authHeader);
   };
 
+  console.log(accountIdRef)
   // 🖱️ SYNC BUTTON CLICK HANDLER
   const handleSyncClick = async () => {
     // 🚀 BINGO: If hata diya. Ab first time bhi chalega!
@@ -175,11 +176,14 @@ export default function GoogleAdsInsights() {
     });
 
     try {
+      console.log("this is working fine",currentAccountId)
       // 1. Fetch Master 90 days
       await runMasterSync(currentAccountId, selectedCampaign);
       if (currentAccountId) {
         autoSyncedAccounts.current.add(currentAccountId);
       }
+
+      console.log(currentAccountId);
 
       // 2. Load selected tab data ya Naye Accounts load karo
       if (!currentAccountId) {

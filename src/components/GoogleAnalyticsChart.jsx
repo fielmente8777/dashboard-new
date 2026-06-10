@@ -45,7 +45,7 @@ const TAB_CONFIG = {
   },
 };
 
-const GoogleAnalyticsChart = () => {
+const     GoogleAnalyticsChart = () => {
    // profile info
     const { user: hotel, authUser } = useSelector((state) => state.userProfile);
     const profile = hotel?.Profile;
@@ -61,6 +61,7 @@ const GoogleAnalyticsChart = () => {
   const [activeTab, setActiveTab] = useState("users");
 
   const dropdownRef = useRef(null);
+
 
   const fetchAnalytics = async () => {
     const hid = localStorage.getItem("hid");
@@ -211,7 +212,7 @@ const GoogleAnalyticsChart = () => {
         </div>
 
         <div className="flex items-center gap-3">
-         {properties.length > 0 && authUser?.emailId==="abhijeet@eazotel.com"&& authUser?.emailId==="sachin@fielmente.com" &&(
+        {properties.length > 0 && authUser?.emailId==="abhijeet@eazotel.com" && authUser?.emailId==="sachin@fielmente.com" &&(
             <select
               value={activePropertyId}
               onChange={handlePropertyChange}
@@ -225,7 +226,7 @@ const GoogleAnalyticsChart = () => {
               ))}
             </select>
           )}
-           
+          
 
           {/* Date Picker */}
           <div className="relative" ref={dropdownRef}>
@@ -323,7 +324,7 @@ const GoogleAnalyticsChart = () => {
 
       {/* Chart */}
       <div className="p-6">
-        <div className="w-full h-[340px] relative">
+        <div className="w-full h-85 relative">
           {isSwitching && (
             <div className="absolute inset-0 flex justify-center items-center bg-app-surface dark:bg-app-surface/60 backdrop-blur-sm z-10">
               <Loader color="#132e69" />

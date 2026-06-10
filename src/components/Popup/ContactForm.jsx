@@ -15,7 +15,7 @@ const ContactForm = ({ open, setOpen }) => {
                     className="fixed flex justify-center items-center top-0 left-0 z-[999999999999999999999999]  bg-black/50 w-full h-[100dvh]   "
                 >
                     <div
-                        onClick={(e) => e.stopPropagation()} className="text-[#575757]  bg-white  w-[40%] absolute  z-[999999999999999999999999999999999]">
+                        onClick={(e) => e.stopPropagation()} className="text-[#575757]  bg-app-surface  w-[40%] absolute  z-[999999999999999999999999999999999]">
                         <MdClose onClick={() => setOpen(false)} className="mr-5 cursor-pointer text-3xl flex justify-end" />
                         <div className='grid grid-cols-1 md:grid-cols-2 py-10 px-10'>
 

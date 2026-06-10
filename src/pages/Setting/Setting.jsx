@@ -217,14 +217,14 @@ const Setting = () => {
                   key={hid}
                   className="p-2 rounded-md bg-primary transition relative"
                 >
-                  <p className="font-medium text-gray-800 dark:text-app-text-muted">{h.local}</p>
+                  <p className="font-medium text-white dark:text-app-text-muted">{h.local}</p>
                   <p className="text-sm text-gray-500 dark:text-app-text-faint">
                     {h.city}, {h.state}, {h.country}
                   </p>
                   <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
                   {/* delete & update */}
                   <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
-                    <button className="text-gray-950 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
+                    <button className="text-gray-500 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
                       <BsPencil className="text-sm" />
                     </button>
                     <button className="">

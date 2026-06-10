@@ -210,6 +210,7 @@ function Integration() {
       status: "connected",
       category: "Communication",
       color: "",
+     onClick: () => window.location.href = `/api/local-seo/oauth/start?ndid=${ndid}`
     },
     {
       id: "googleadsinsights",

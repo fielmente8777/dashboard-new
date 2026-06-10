@@ -2,7 +2,7 @@ const ConversationsCard = ({ chats }) => {
   if (!chats || chats.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-[#1a1f2e] rounded-lg border border-gray-200 dark:border-[#2d3748] max-h-80 overflow-auto shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+    <div className="bg-app-surface rounded-lg border border-gray-200 dark:border-[#2d3748] max-h-80 overflow-auto shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
       <div className="border-b border-gray-200 dark:border-[#2d3748] p-3">
         <h2 className="text-md font-semibold text-gray-900 dark:text-[#e8eaed] flex items-center gap-2">
           <i className="fas fa-comments text-blue-600 dark:text-blue-400"></i>

@@ -20,7 +20,7 @@ export default function CarouselNode({ id, data }) {
   };
 
   return (
-    <div className="w-72 bg-white rounded-lg shadow border overflow-hidden">
+    <div className="w-72 bg-app-surface rounded-lg shadow border overflow-hidden">
       {/* Header */}
       <div className="bg-blue-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
         <div className="flex items-center gap-2">

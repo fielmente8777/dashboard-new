@@ -19,8 +19,8 @@ export default function TemplatePreview({
   const footerText = footerComponent?.text;
 
   return (
-    <div className="bg-[#e5ddd5] p-4 rounded-lg max-w-85 w-full">
-      <div className="bg-primary rounded-lg p-3 text-sm whitespace-pre-line shadow-sm space-y-2">
+    <div className="bg-app-surface py-4 rounded-lg max-w-85 w-full">
+      <div className="bg-app-surface-secondary rounded-lg p-3 text-sm whitespace-pre-line shadow-sm space-y-2">
         {headerText && (
           <div className="font-semibold text-base">{headerText}</div>
         )}
@@ -28,7 +28,7 @@ export default function TemplatePreview({
         {bodyText && <div>{bodyText}</div>}
 
         {footerText && (
-          <div className="text-xs text-gray-500 mt-2">{footerText}</div>
+          <div className="text-xs text-gray-900 mt-2">{footerText}</div>
         )}
       </div>
 

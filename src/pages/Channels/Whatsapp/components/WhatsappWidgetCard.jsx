@@ -50,7 +50,7 @@ window.eazbotConfig = {
   };
 
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <div className="bg-app-surface p-6 shadow-sm">
       <h2 className="text-xl font-semibold">WhatsApp Widget Integration</h2>
 
       <p className="mt-2 text-sm text-gray-600">

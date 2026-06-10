@@ -260,7 +260,7 @@ const WhatsAppBusiness = ({ template = false }) => {
       {accountDetails && (
         <div className="flex h-full">
           <div
-            className={` bg-gray-100/60 shadow! h-full transition-all duration-300
+            className={` bg-app-surface shadow! h-full transition-all duration-300
                         ${collapsed ? "w-10" : "w-56"} p-2`}
           >
             {/* Hamburger */}
@@ -316,8 +316,8 @@ const WhatsAppBusiness = ({ template = false }) => {
                             }}
                             className={`text-left px-3 py-2 rounded-md text-sm ${
                               activeSubTab === sub.id
-                                ? "bg-gray-300 text-black"
-                                : "text-gray-600 hover:bg-gray-200"
+                                ? "bg-primary text-white"
+                                : "text-gray-400 hover:bg-primary/90"
                             }`}
                           >
                             {sub.label}
@@ -331,7 +331,7 @@ const WhatsAppBusiness = ({ template = false }) => {
             </div>
           </div>
 
-          <div className="flex-1 h-full overflow-y-auto scrollbar-hidden">
+          <div className="flex-1 h-full overflow-y-auto scrollbar-hidden px-4">
             {activeTab === "overview" && (
               <div className="w-full gap-4 grid md:grid-cols-2">
                 <div className="flex gap-4 flex-col">
@@ -404,7 +404,7 @@ const BusinessInfoCard = ({ business }) => {
   if (!business) return null;
 
   return (
-    <div className="w-full border border-gray-200 rounded-lg bg-white px-6 py-5">
+    <div className="w-full border border-gray-200 rounded-lg bg-app-surface px-6 py-5">
       {/* Top */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -453,15 +453,15 @@ const PhoneNumberCard = ({ phoneNumber }) => {
     : "bg-gray-100 text-gray-600";
 
   return (
-    <div className="w-full border border-gray-200  bg-white px-6 py-5">
+    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-6 py-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <FaWhatsapp className="w-4 h-4 text-green-600" />
-          <h3 className="text-sm font-medium text-gray-600">Phone Number</h3>
+          <h3 className="text-sm font-medium text-gray-600 dark:text-app-text-muted">Phone Number</h3>
         </div>
 
-        <span className="text-sm font-medium text-gray-600">
+        <span className="text-sm font-medium text-gray-600 dark:text-app-text-faint">
           Quality Rating:{" "}
           <span className="bg-green-500 text-white px-3 font-medium text-sm py-1 rounded-2xl">
             {phoneNumber.qualityRating === "GREEN"
@@ -479,7 +479,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
 
       {/* Number */}
       <div className="mb-5">
-        <p className="text-xl font-medium text-gray-600">
+        <p className="text-xl font-medium text-gray-600 dark:text-app-text">
           {phoneNumber.displayPhoneNumber}
         </p>
         <p className="text-sm text-gray-500">{phoneNumber.verifiedName}</p>
@@ -554,7 +554,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
           <span
             className={`font-medium ${
               phoneNumber.accountMode === "LIVE"
-                ? "text-primary"
+                ? "text-app-text-muted"
                 : "text-gray-500"
             }`}
           >
@@ -601,27 +601,27 @@ const WabaDetailsCard = ({ waba, business }) => {
   // const status = MARKETING_STATUS_UI[statusKey];
 
   return (
-    <div className="w-full border border-gray-200 bg-white px-6 py-5">
+    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-6 py-5">
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FaWhatsapp className="w-4 h-4 text-green-600" />
-          <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-app-text">
             WhatsApp Business Account
           </span>
         </div>
 
-        <h2 className="text-xl font-medium text-gray-600">
+        <h2 className="text-xl font-medium text-gray-600 dark:text-app-text-muted">
           {waba.name || "Unnamed WABA"}
         </h2>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-app-text-faint">
           WABA ID:
-          <span className="ml-2 font-medium text-gray-800">{waba.id}</span>
+          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">{waba.id}</span>
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-app-text-faint">
           Business ID:
-          <span className="ml-2 font-medium text-gray-800">{business.id}</span>
+          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">{business.id}</span>
         </p>
       </div>
 
@@ -663,10 +663,10 @@ const WabaDetailsCard = ({ waba, business }) => {
 const CreditInfoCard = () => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-gray-200 bg-white px-6 py-5 space-y-5">
+    <div className="border border-gray-200 dark:border-primary/60! bg-app-surface-secondary px-6 py-5 space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium  text-gray-600">
+        <h3 className="text-lg font-medium  text-gray-600 dark:text-app-text-muted">
           WhatsApp Credit Report
         </h3>
 

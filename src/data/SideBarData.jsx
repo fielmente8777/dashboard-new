@@ -288,6 +288,12 @@ export const SidebarData = [
     icon: <SiGoogleadsense />,
   },
   {
+    name: "LOCAL SEO",
+    // key: "",
+    link: `local-seo`,
+    icon: <SiGoogleadsense />,
+  },
+  {
     name: "Google Analytics",
     link: `insights-analytics/google-analytics`,
     icon: <SiGoogleanalytics size={18} />,

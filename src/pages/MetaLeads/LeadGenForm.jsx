@@ -342,7 +342,7 @@ const LeadGenForm = () => {
   // console.log(isNewFormOpen);
 
   return (
-    <div className="flex flex-col gap-4 p-4 overflow-hidden bg-white mb-10 cardShadow">
+    <div className="flex flex-col gap-4 p-4 overflow-hidden bg-app-surface mb-10 cardShadow">
       {/* heading content  */}
       <div className="grid grid-cols-8 gap-6">
         <div className="space-y-1 md:col-span-5 col-span-3">
@@ -400,7 +400,7 @@ const LeadGenForm = () => {
                 LeadGenFormData?.map((formDetails, index) => (
                   <tr
                     key={index}
-                    className="border-b odd:bg-gray-50 even:bg-gray-100 rounded-lg border-gray-200 hover:bg-[#f8f8fb] transition duration-300 cursor-pointer"
+                    className="border-b odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors  cursor-pointer"
                   >
                     {/* <td>
                   <input type="checkbox" className="ml-4 text-md" />
@@ -489,7 +489,7 @@ const LeadGenForm = () => {
 
       {formData && (
         <div className="fixed inset-0 bg-gray-600/20 flex items-center z-[60] ov">
-          <div className="relative space-y-4 w-[90%] mx-auto h-[90vh] bg-white p-6 rounded-md overflow-auto">
+          <div className="relative space-y-4 w-[90%] mx-auto h-[90vh] bg-app-surface-secondary p-6 rounded-md overflow-auto">
             <div className="flex items-center justify-between mt-5">
               <h2 className="relative px-4 py-1 w-fit rounded-full bg-gradient-to-r from-gray-100 to-gray-200 text-primary font-semibold text-sm shadow-md hover:shadow-lg transition-shadow duration-300">
                 Form Preview
@@ -667,7 +667,7 @@ const LeadGenForm = () => {
                             fileInputRefCoverImage?.current?.click();
                           }}
                         >
-                          <button className="flex font-medium rounded-md text-primary bg-gray-200 text-xs px-2 py-1">
+                          <button className="flex font-medium rounded-md text-primary bg-app-surface-secondary text-xs px-2 py-1">
                             Edit Cover
                           </button>
 
@@ -684,7 +684,7 @@ const LeadGenForm = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/10 rounded-md" />
                   </div>
 
-                  <form className="space-y-4 border border-primary/25 rounded-sm p-3 bg-white/80">
+                  <form className="space-y-4 border border-primary/25 rounded-sm p-3 bg-app-surface">
                     {formData?.form_fields?.map((field, idx) => (
                       <FormField
                         key={idx}

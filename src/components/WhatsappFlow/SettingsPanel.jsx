@@ -33,7 +33,7 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
     );
 
   return (
-    <div className="fixed w-110 h-[95vh] bg-white top-16 border-l p-4 right-0 overflow-y-auto z-50">
+    <div className="fixed w-110 h-[95vh] bg-app-surface top-16 border-l p-4 right-0 overflow-y-auto z-50">
       <div className="flex justify-between items-center">
         <div>
           <h3 className="font-bold mb-2">Node Settings</h3>
@@ -42,7 +42,7 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
 
         <FiX
           size={20}
-          className="cursor-pointer text-gray-500 hover:text-black"
+          className="cursor-pointer text-gray-500 hover:text-black dark:hover:text-white"
           onClick={handleButtonCancel}
         />
       </div>

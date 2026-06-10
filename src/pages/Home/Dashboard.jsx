@@ -17,6 +17,8 @@ import {
 } from "recharts";
 import { getAnalyticsService } from "../../services/api/analytics.api";
 import DashboardCard from "../../components/Card/DashboardCard";
+import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
+import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
@@ -173,11 +175,12 @@ const Dashboard = () => {
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
-        <h2 className="text-xl font-bold text-app-text dark:text-app-text mb-3">
-          CRM Data (Actual Leads)
+        <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
+          CRM Data
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6  text-app-text dark:text-app-text-muted">
           <DashboardCard amount={total} label={"Total Leads"} />
+          {/* <DashboardCard amount={total} label={"Today Leads"} /> */}
           <DashboardCard amount={converted} label={"Converted Leads"} />
           <DashboardCard
             amount={conversionRate}
@@ -371,7 +374,14 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
+        {/* <SeoIntelligenceDashboard /> */}
       </div>
+
+      {/* <div className="w-full space-y-6 mt-6">
+        <LocalSeoModule />
+      </div> */}
+
+
 
       {/* FUNNEL */}
       <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">

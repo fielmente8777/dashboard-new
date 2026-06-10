@@ -78,7 +78,7 @@ const ChatArea = () => {
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
-    selectedConversation?.last_message?.created_at,
+    selectedConversation?.last_message?.created_at
   );
 
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
@@ -206,7 +206,7 @@ const ChatArea = () => {
               };
             }
             return conv;
-          }),
+          })
         );
 
         const response = await sendWhatsAppMessage(templatePayload);
@@ -226,7 +226,7 @@ const ChatArea = () => {
                 };
               }
               return m;
-            }),
+            })
           );
         }
         return;
@@ -234,7 +234,7 @@ const ChatArea = () => {
 
       if (selectedFlowId) {
         const selectedFlow = flows.find(
-          (flow) => flow.flowId === selectedFlowId,
+          (flow) => flow.flowId === selectedFlowId
         );
 
         const payload = {
@@ -340,7 +340,7 @@ const ChatArea = () => {
             };
           }
           return conv;
-        }),
+        })
       );
       setMessageValue("");
       setFile(null);
@@ -360,7 +360,7 @@ const ChatArea = () => {
               };
             }
             return m;
-          }),
+          })
         );
       }
     } catch (error) {
@@ -478,13 +478,13 @@ const ChatArea = () => {
 
   const handleBulkDelete = async () => {
     const isConfirmed = await confirm(
-      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`,
+      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`
     );
 
     if (!isConfirmed) return;
     try {
       setMessageList((prev) =>
-        prev.filter((m) => !selectedMessages.includes(m.messageId)),
+        prev.filter((m) => !selectedMessages.includes(m.messageId))
       );
 
       const response = await deleteWhatsAppMessage({
@@ -591,7 +591,7 @@ const ChatArea = () => {
               };
             }
             return m;
-          }),
+          })
         );
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
@@ -694,7 +694,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden "
+        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden  "
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -747,7 +747,7 @@ const ChatArea = () => {
                   </p>
                   <p className="text-[10px] opacity-70">
                     {new Date(
-                      selectedConversation?.adAttribution?.receivedAt,
+                      selectedConversation?.adAttribution?.receivedAt
                     ).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -778,7 +778,7 @@ const ChatArea = () => {
                         checked={selectedMessages.includes(message?.messageId)}
                         onChange={() =>
                           toggleSelectMessage(
-                            message?.messageId || message?._id,
+                            message?.messageId || message?._id
                           )
                         }
                       />
@@ -790,10 +790,7 @@ const ChatArea = () => {
                     >
                       <div
                         className={`relative max-w-xs  p-3 ${
-                          isMe
-                            ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-app-surface-secondary"
-                            : "bg-app-surface-secondary border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700 dark:text-app-text-muted"
-                        }`}
+                          isMe? "rounded-tl-xl border shadow-md !border-ternary dark:border-primary/60 rounded-br-xl rounded-bl-lg bg-white dark:bg-app-surface":"rounded-br-xl border shadow-md !border-ternary dark:border-primary/60 rounded-tr-xl rounded-bl-lg bg-white dark:bg-app-surface"}`}
                       >
                         {/* all message types */}
                         <div className="mt-4">
@@ -820,7 +817,7 @@ const ChatArea = () => {
                                     {expandedMessages[message._id]
                                       ? renderMessageWithLinks(message?.body)
                                       : renderMessageWithLinks(
-                                          message?.body?.slice(0, MAX_LENGTH),
+                                          message?.body?.slice(0, MAX_LENGTH)
                                         )}
 
                                     {message?.body?.length > MAX_LENGTH && (
@@ -842,8 +839,8 @@ const ChatArea = () => {
 
                           {message?.messageType === "template" &&
                             message?.template?.template?.name && (
-                              <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
-                                <p className="text-xs text-app-text-faint mb-1 capitalize">
+                              <div className=" px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
                                   {message.template?.template?.name}
                                 </p>
 
@@ -866,7 +863,7 @@ const ChatArea = () => {
                               onClick={() =>
                                 setImagePreview(
                                   message?.media?.url ||
-                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`,
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
                                 )
                               }
                               src={
@@ -1055,7 +1052,7 @@ const ChatArea = () => {
                                 {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                },
+                                }
                               )}
                             </div>
 
@@ -1087,7 +1084,7 @@ const ChatArea = () => {
                             onClick={() => {
                               // e.preventDefault();
                               setOpenMenuIndex(
-                                openMenuIndex === index ? null : index,
+                                openMenuIndex === index ? null : index
                               );
                             }}
                             className="text-gray-600 hover:text-black p-1"
@@ -1096,7 +1093,7 @@ const ChatArea = () => {
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                            <div className="absolute -right-6 mt-1 w-28 bg-app-surface border rounded shadow-md z-10">
                               {![
                                 "image",
                                 "video",
@@ -1179,20 +1176,52 @@ const ChatArea = () => {
         className="bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
-          <div className="mb-2 grid grid-cols-2 lg:grid-cols-4 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
+          <div className="mb-2 grid grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
             {templates?.length > 0 &&
               templates?.map((template) => (
+                // <div
+                //   onClick={() => setSelectedTemplate(template)}
+                //   key={template?.id}
+                //   className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-600 opacity-60"} h-30 `}
+                // >
+                //   <p className=" break-words text-xs capitalize font-medium border-b px-2 py-2 bg-teal-100">
+                //     {template?.name}
+                //   </p>
+                //   <p className="text-sm px-2 pb-2 bg-gray-100">
+                //     {template?.components[0]?.text}
+                //   </p>
+                // </div>
                 <div
                   onClick={() => setSelectedTemplate(template)}
                   key={template?.id}
-                  className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-300 opacity-60"} `}
+                  className={`
+    cursor-pointer rounded-xl overflow-hidden transition-all h-30
+    ${
+      selectedTemplate?.id === template?.id
+        ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
+        : "border border-gray-200 bg-white hover:border-orange-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-orange-700"
+    }
+  `}
                 >
-                  <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-primary">
-                    {template?.name}
-                  </p>
-                  <p className="text-sm px-2 pb-2 ">
-                    {template?.components[0]?.text}
-                  </p>
+                  <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+                    <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+                      {template?.name}
+                    </p>
+
+                    {selectedTemplate?.id === template?.id && (
+                      <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                        Selected
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3">
+                    <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+                      <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+                        {template?.components?.[0]?.text}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
           </div>
@@ -1245,7 +1274,7 @@ const ChatArea = () => {
                     setShowFlowModal(true);
                   }
                 }}
-                className="border bg-gray-100 outline-none text-sm py-1 rounded-md"
+                className="border bg-gray-100 dark:bg-primary outline-none text-sm py-1 rounded-md"
               >
                 <option value="">Select Form</option>
 
@@ -1269,20 +1298,20 @@ const ChatArea = () => {
                     onClick={() => {
                       if (!templates?.length) {
                         navigate(
-                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`
                         );
                       }
 
                       handleTemplate(true);
                     }}
-                    className="cursor-pointer bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     <MdChat className="" /> Templates
                   </span>
                 ) : (
                   <span
                     onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     Close Templates <MdClose />
                   </span>
@@ -1325,7 +1354,7 @@ const ChatArea = () => {
           </div>
 
           {!isTakeOver && (
-            <div className="bg-primary py-3 flex w-full items-center gap-3">
+            <div className="py-3 flex w-full items-center gap-3">
               {/* Attachment */}
               {!is24HourComplete && (
                 <button
@@ -1377,7 +1406,7 @@ const ChatArea = () => {
                       handleSendMessage(e); // OR trigger form submit
                     }
                   }}
-                  className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                  className="flex-1 bg-zinc-100 dark:bg-app-surface-secondary resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
                 />
               ) : (
                 <div className="flex-1"></div>

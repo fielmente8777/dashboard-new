@@ -331,7 +331,7 @@ const PaymentGateway = () => {
                     ))
                     .reverse()
                 ) : (
-                  <tr className="border text-center bg-white text-gray-500">
+                  <tr className="border text-center bg-app-surface-secondary text-gray-500">
                     <td colSpan={10} className="py-2">
                       No data found!
                     </td>

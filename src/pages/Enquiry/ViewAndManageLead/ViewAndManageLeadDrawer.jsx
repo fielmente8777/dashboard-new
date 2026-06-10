@@ -24,12 +24,12 @@ const ViewAndManageLeadDrawer = ({ leadId, hid, isOpen, onClose }) => {
 
       {/* 🔥 Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full max-w-2xl w-full bg-white z-999! shadow-xl
+        className={`fixed top-0 right-0 h-full max-w-2xl w-full bg-app-surface z-999! shadow-xl
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b bg-app-surface-secondary">
           <h2 className="text-lg font-semibold">Lead Details</h2>
           <button
             onClick={onClose}

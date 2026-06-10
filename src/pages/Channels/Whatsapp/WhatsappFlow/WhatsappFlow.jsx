@@ -43,9 +43,9 @@ const WhatsappFlow = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">WhatsApp Flows</h1>
+      <h1 className="text-xl font-semibold mb-4 dark:text-app-text-muted">WhatsApp Flows</h1>
 
-      <p className="text-sm text-gray-500 mb-4">TEMPLATES</p>
+      <p className="text-sm text-gray-500 dark:text-app-text-faint mb-4">TEMPLATES</p>
 
       <div className="flex flex-col gap-3">
         {TEMPLATES.map((item) => (

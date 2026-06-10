@@ -272,7 +272,7 @@ const LeadPopup = ({
       }`}
       // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
     >
-      <div className="bg-[#f8f8fb] max-md:overflow-y-auto  px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
+      <div className="bg-app-surface max-md:overflow-y-auto  px-4 pb-4 pt-2 rounded-sm lg:w-[60%] md:w-[50%] w-full md:h-auto h-full">
         <div className="flex justify-between py-3">
           <div className="text-black space-x-3">
             {Tabs?.map((tab, index) => (
@@ -323,7 +323,7 @@ const LeadPopup = ({
             <div className="grid grid-cols-1 lg:grid-cols-2  gap-4">
               <div>
                 <h1 className="font-medium text-[#575757]">Customer Info</h1>
-                <div className=" grid gap-4 shadow-sm p-4 rounded-sm mt-2 text-base bg-white divide-y">
+                <div className=" grid gap-4 shadow-sm p-4 rounded-sm mt-2 text-base bg-app-surface divide-y">
                   <div className="flex items-center gap-2 justify-between">
                     <div>
                       <p className=" font-medium text-[#575757]">

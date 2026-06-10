@@ -20,7 +20,7 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
   } = useFormContext();
 
   return (
-    <div className="bg-white p-4 rounded-lg border">
+    <div className="bg-app-surface p-4 rounded-lg border-primary/60!">
       <div className="flex justify-between items-start">
         <h2 className="text-lg font-semibold mb-4">
           Template name and language
@@ -38,10 +38,10 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
         )}
       </div>
 
-      <div className="flex items-start gap-2 w-full">
+      <div className="flex items-start gap-2 w-full bg-app-surface-secondary p-4 rounded-lg">
         {/* TEMPLATE NAME */}
         <div className="flex-1">
-          <label className="text-sm text-gray-600 mb-2 inline-block">
+          <label className="text-sm text-gray-600 dark:text-app-text-faint mb-2 inline-block">
             Template Name
           </label>
 

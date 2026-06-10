@@ -10,7 +10,6 @@ import RoomsCard from "../../components/Card/RoomCard";
 import Swal from "sweetalert2";
 import Loader from "../../components/Loader";
 
-
 const Tabs = ["All Rooms", "Add Rooms"];
 
 const BookingSetup = () => {
@@ -88,10 +87,8 @@ const BookingSetup = () => {
     //   }
     // }
 
-
     const roomTypeValue = getRoomType(formData?.roomType);
     const newRoomData = {
-
       roomType: roomTypeValue?.toString(),
       hId: String(handleLocalStorage("hid")),
       roomName: formData?.roomName,
@@ -114,7 +111,6 @@ const BookingSetup = () => {
       const response = await addRoom(newRoomData);
 
       if (response.status === true) {
-
         const Toast = Swal.mixin({
           toast: true,
           position: "top-end",
@@ -124,12 +120,12 @@ const BookingSetup = () => {
           didOpen: (toast) => {
             toast.onmouseenter = Swal.stopTimer;
             toast.onmouseleave = Swal.resumeTimer;
-          }
+          },
         });
         Toast.fire({
           icon: "success",
           titleText: "Success",
-          title: "Room added in successfully"
+          title: "Room added in successfully",
         });
         // Reset form data
         setFormData({
@@ -144,44 +140,38 @@ const BookingSetup = () => {
         });
         setSelectedFacilities([]);
         setImages([]);
-        dispatch(fetchAllRooms(handleLocalStorage("token"), handleLocalStorage("hid")));
-        setActiveTab(Tabs[0])
-      }
-      else {
-
+        dispatch(
+          fetchAllRooms(handleLocalStorage("token"), handleLocalStorage("hid"))
+        );
+        setActiveTab(Tabs[0]);
+      } else {
         Swal.fire({
           icon: "warning",
           title: "Warning",
           text: response.message || "Room already exist with this name!",
           confirmButtonText: "OK",
-        })
+        });
 
         return;
       }
-
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text: "Failed to add room. Please try again.",
-      })
+      });
       console.error("Error uploading images:", error);
       return;
-    }
-    finally {
+    } finally {
       setAddLoading(false);
     }
-
   };
-
-
 
   useEffect(() => {
     const token = handleLocalStorage("token");
     const hid = handleLocalStorage("hid");
     dispatch(fetchAllRooms(token, hid));
   }, []);
-
 
   return (
     <div className="bg-app-surface-secondary mb-10 cardShadow">
@@ -190,10 +180,11 @@ const BookingSetup = () => {
           <button
             onClick={() => setActiveTab(item)}
             key={index}
-            className={`px-4 py-4 text-primary rounded-sm ${activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
-              ? "bg-primary text-white duration-500"
-              : "bg-white"
-              }`}
+            className={`px-4 py-4 text-primary rounded-sm ${
+              activeTab.toLocaleLowerCase() === item.toLocaleLowerCase()
+                ? "bg-primary text-white duration-500"
+                : "bg-white"
+            }`}
           >
             {item}
           </button>
@@ -201,7 +192,6 @@ const BookingSetup = () => {
       </div>
 
       <div className="p-4">
-
         {activeTab.toLocaleLowerCase() === "all rooms" && (
           <div className="">
             <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -342,7 +332,7 @@ const BookingSetup = () => {
 
             {/* Facilities */}
             <div className="rounded-sm">
-              <label className="block text-sm font-medium text-app-text-faint mb-2">
+              <label className="block text-sm font-medium text-app-text-muted mb-2">
                 Facilities
               </label>
               <div className="flex flex-wrap gap-3">
@@ -351,10 +341,11 @@ const BookingSetup = () => {
                     type="button"
                     key={i}
                     onClick={() => handleFacilityToggle(facility)}
-                    className={`px-3 py-1 rounded-full text-sm border ${selectedFacilities.includes(facility)
-                      ? "bg-primary/90 text-white"
-                      : "bg-app-text-muted text-gray-700"
-                      }`}
+                    className={`px-3 py-1 rounded-full text-sm border ${
+                      selectedFacilities.includes(facility)
+                        ? "bg-app-text-muted text-app-text-muted"
+                        : "bg-app-surface-secondary text-app-text dark:text-white"
+                    }`}
                   >
                     {facility}
                   </button>
@@ -414,7 +405,6 @@ const BookingSetup = () => {
         )}
       </div>
     </div>
-
   );
 };
 

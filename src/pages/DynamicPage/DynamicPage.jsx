@@ -93,6 +93,8 @@ import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
 import MetaPageInsights from "../Meta/MetaPageInsights";
 
+import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
+
 const DynamicPage = () => {
   const location = useLocation();
   const hid = handleLocalStorage("hid");
@@ -100,6 +102,7 @@ const DynamicPage = () => {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
     [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
+    [`${BASE_PATH}/${hid}/local-seo`]: <Seo />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,

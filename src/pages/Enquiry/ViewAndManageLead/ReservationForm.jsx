@@ -134,17 +134,17 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
   // console.log("form", form)
   if (!openReservationForm) return null;
 
-  const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+  const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-app-surface";
 
   return (
     <div className="fixed inset-0 z-99999 bg-black/60 flex items-start justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl my-6">
+      <div className="bg-app-surface-secondary rounded-2xl w-full max-w-2xl shadow-2xl my-6">
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-0.5">Lead → Booking</p>
-            <h2 className="text-lg font-semibold text-gray-800">New Reservation</h2>
+            <p className="text-xs text-app-text dark: text-app-text uppercase tracking-widest mb-0.5">Lead → Booking</p>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-app-text-faint">New Reservation</h2>
           </div>
           <button onClick={() => setOpenReservationForm(false)} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
         </div>
@@ -156,19 +156,19 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Guest Details</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Full Name *</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Full Name *</label>
                 <input className={inp} placeholder="Rahul Sharma" value={form.name} onChange={(e) => set("name", e.target.value)} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Phone *</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Phone *</label>
                 <input className={inp} placeholder="9876543210" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Email</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Email</label>
                 <input className={inp} placeholder="rahul@email.com" value={form.email} onChange={(e) => set("email", e.target.value)} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Address / City</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Address / City</label>
                 <input className={inp} placeholder="Delhi" value={form.address} onChange={(e) => set("address", e.target.value)} />
               </div>
             </div>
@@ -187,11 +187,11 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
                 <input type="date" className={inp} value={form.checkOut}  onChange={(e) => set("checkOut", e.target.value)} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Adults</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Adults</label>
                 <input type="number" min="1" className={inp} value={form.guests} onChange={(e) => set("guests", parseInt(e.target.value) || 1)} />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Rooms</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Rooms</label>
                 <input type="number" min="1" className={inp} value={form.rooms} onChange={(e) => set("rooms", parseInt(e.target.value) || 1)} />
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Room & Meal Plan</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Room Type</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Room Type</label>
                 <select className={inp} value={form.roomType} onChange={(e) => set("roomType", e.target.value)}>
                   {rooms?.map((r) => (
                     <option key={r.roomType} value={r.roomType}>{r.roomName} — ₹{r.price.toLocaleString()}/night</option>
@@ -225,7 +225,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
                 </select>
               </div> */}
               <div className="col-span-2">
-                <label className="text-xs text-gray-500 mb-1 block">Special Requests</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Special Requests</label>
                 <textarea rows={2} className={inp + " resize-none"} placeholder="Early check-in, high floor, extra pillows…" value={form.specialRequests} onChange={(e) => set("specialRequests", e.target.value)} />
               </div>
             </div>
