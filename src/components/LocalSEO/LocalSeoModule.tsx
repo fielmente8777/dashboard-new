@@ -86,7 +86,7 @@ const MOCK_POSTS = [
 // HELPERS
 // ─────────────────────────────────────────────────────────────
 
-const STAR_VALUE : Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
+const STAR_VALUE: Record<string, number> = { ONE: 1, TWO: 2, THREE: 3, FOUR: 4, FIVE: 5 };
 
 const StarDisplay = ({ rating, size = 14 }: { rating: string; size?: number }) => {
   const val = STAR_VALUE[rating] || 0;
@@ -181,10 +181,10 @@ const ConnectState = ({ onConnect }: { onConnect: () => void }) => (
       className="flex items-center gap-3 bg-slate-900 text-white px-8 py-3.5 rounded-2xl font-semibold text-sm hover:bg-slate-700 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5"
     >
       <svg width="18" height="18" viewBox="0 0 48 48">
-        <path fill="#4285F4" d="M43.6 20H24v8h11.3C33.9 32.6 29.4 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.4 1.1 7.4 2.8l6-6C33.9 6.5 29.2 4.5 24 4.5 13.3 4.5 4.5 13.3 4.5 24S13.3 43.5 24 43.5c10.9 0 19.5-8.6 19.5-19.5 0-1.2-.1-2.4-.4-4z"/>
-        <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c2.8 0 5.4 1.1 7.4 2.8l6-6C33.9 6.5 29.2 4.5 24 4.5c-7.6 0-14.1 4.4-17.7 10.2z"/>
-        <path fill="#FBBC05" d="M24 43.5c5.2 0 9.9-1.9 13.5-5l-6.3-5.2C29.4 35 26.8 36 24 36c-5.4 0-9.9-3.4-11.3-8H5.6c3.5 6.8 10.6 11.5 18.4 11.5z"/>
-        <path fill="#EA4335" d="M43.6 20H24v8h11.3c-.7 2-2 3.8-3.8 5.1l6.3 5.2C41.4 35 43.5 30 43.5 24c0-1.2-.1-2.4-.4-4z"/>
+        <path fill="#4285F4" d="M43.6 20H24v8h11.3C33.9 32.6 29.4 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.4 1.1 7.4 2.8l6-6C33.9 6.5 29.2 4.5 24 4.5 13.3 4.5 4.5 13.3 4.5 24S13.3 43.5 24 43.5c10.9 0 19.5-8.6 19.5-19.5 0-1.2-.1-2.4-.4-4z" />
+        <path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c2.8 0 5.4 1.1 7.4 2.8l6-6C33.9 6.5 29.2 4.5 24 4.5c-7.6 0-14.1 4.4-17.7 10.2z" />
+        <path fill="#FBBC05" d="M24 43.5c5.2 0 9.9-1.9 13.5-5l-6.3-5.2C29.4 35 26.8 36 24 36c-5.4 0-9.9-3.4-11.3-8H5.6c3.5 6.8 10.6 11.5 18.4 11.5z" />
+        <path fill="#EA4335" d="M43.6 20H24v8h11.3c-.7 2-2 3.8-3.8 5.1l6.3 5.2C41.4 35 43.5 30 43.5 24c0-1.2-.1-2.4-.4-4z" />
       </svg>
       Connect Google Business Profile
     </button>
@@ -234,9 +234,8 @@ const ReviewCard = ({ review, onGenerateReply, onApprove, onRegenerate }: {
   const starVal = STAR_VALUE[review.starRating] || 3;
 
   return (
-    <div className={`bg-white rounded-2xl border transition-all duration-200 hover:shadow-md ${
-      review.hasReply ? "border-slate-100 shadow-sm" : "border-slate-200 shadow-sm"
-    }`}>
+    <div className={`bg-white rounded-2xl border transition-all duration-200 hover:shadow-md ${review.hasReply ? "border-slate-100 shadow-sm" : "border-slate-200 shadow-sm"
+      }`}>
       <div className="p-5">
         <div className="flex items-start gap-3.5">
           <Avatar name={review.reviewerDisplayName} size={42} />
@@ -425,11 +424,10 @@ const ReviewsTab = ({ location }: { location: any }) => {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                filter === f.key
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === f.key
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+                }`}
             >
               {f.label}
               {f.key === "unreplied" && unrepliedCount > 0 && (
@@ -536,11 +534,10 @@ const AutomationsTab = ({ location }: { location: any }) => {
                   <button
                     key={s}
                     onClick={() => setConfig(prev => ({ ...prev, autoReplyMinStars: s }))}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                      config.autoReplyMinStars === s
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
-                    }`}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${config.autoReplyMinStars === s
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
+                      }`}
                   >
                     {s}+ <Star size={11} className="fill-current" />
                   </button>
@@ -556,11 +553,10 @@ const AutomationsTab = ({ location }: { location: any }) => {
                   <button
                     key={tone}
                     onClick={() => setConfig(prev => ({ ...prev, autoReplyTone: tone }))}
-                    className={`px-4 py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${
-                      config.autoReplyTone === tone
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${config.autoReplyTone === tone
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
+                      }`}
                   >
                     {tone}
                   </button>
@@ -604,11 +600,10 @@ const AutomationsTab = ({ location }: { location: any }) => {
                 <button
                   key={s}
                   onClick={() => setConfig(prev => ({ ...prev, reviewAlertMinStars: s }))}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                    config.reviewAlertMinStars === s
-                      ? "bg-orange-500 text-white border-orange-500 shadow-md"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-orange-300"
-                  }`}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${config.reviewAlertMinStars === s
+                    ? "bg-orange-500 text-white border-orange-500 shadow-md"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-orange-300"
+                    }`}
                 >
                   ≤ {s} <Star size={11} className="fill-current" />
                 </button>
@@ -637,11 +632,10 @@ const AutomationsTab = ({ location }: { location: any }) => {
       <button
         onClick={handleSave}
         disabled={saving}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 ${
-          saved
-            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-            : "bg-slate-900 text-white hover:bg-slate-700 shadow-lg shadow-slate-900/20"
-        }`}
+        className={`w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 ${saved
+          ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+          : "bg-slate-900 text-white hover:bg-slate-700 shadow-lg shadow-slate-900/20"
+          }`}
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : saved ? <Check size={16} /> : null}
         {saving ? "Saving…" : saved ? "Settings Saved!" : "Save Automation Settings"}
@@ -731,11 +725,10 @@ const GooglePostsTab = ({ location }: { location: any }) => {
                   <button
                     key={type}
                     onClick={() => setForm(prev => ({ ...prev, topicType: type }))}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${
-                      form.topicType === type
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
-                    }`}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold border capitalize transition-all ${form.topicType === type
+                      ? "bg-slate-900 text-white border-slate-900"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                      }`}
                   >
                     {type === "STANDARD" ? "Update" : type.charAt(0) + type.slice(1).toLowerCase()}
                   </button>
@@ -941,11 +934,10 @@ export default function LocalSeoModule() {
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 ${
-              activeTab === key
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 ${activeTab === key
+              ? "bg-white text-slate-800 shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
+              }`}
           >
             <Icon size={14} className={activeTab === key ? "text-indigo-500" : ""} />
             {label}
