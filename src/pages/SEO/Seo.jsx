@@ -6,7 +6,7 @@ const Seo = () => {
     return (
         <div>
             <LocalSeoIntelligenceDashboard/>
-            <LocalSeoModule/>
+            {/* <LocalSeoModule/> */}
         </div>
 
     )
