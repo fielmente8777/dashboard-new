@@ -40,11 +40,11 @@ const HeaderSection = ({
               onChange={(e) => setDateRange(e.target.value)}
               className="h-10 rounded-lg border border-gray-300 bg-white px-3 pr-10 text-sm outline-none focus:border-blue-500"
             >
-              <option value="today">Today</option>
-              <option value="last_7_days">Last 7 Days</option>
-              <option value="last_28_days">Last 28 Days</option>
-              <option value="last_90_days">Last 90 Days</option>
-              <option value="custom">Custom Range</option>
+              <option value="day">Today</option>
+              <option value="week">Last 7 Days</option>
+              <option value="28_days">Last 28 Days</option>
+              <option value="90_days">Last 90 Days</option>
+              {/* <option value="custom">Custom Range</option> */}
             </select>
           </div>
 
