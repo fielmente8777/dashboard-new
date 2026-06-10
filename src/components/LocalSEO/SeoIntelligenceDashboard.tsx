@@ -300,6 +300,7 @@ const GeoGrid = ({
     () => points?.map((p) => `${p.lat},${p.lng},${p.rank}`).join("|") || "",
     [points],
   );
+  
 
   useEffect(() => {
     const map   = mapInstanceRef.current;
@@ -362,7 +363,11 @@ const GeoGrid = ({
       map.invalidateSize();
     };
 
-    if (map && layer) draw();
+    if (map && layer) {
+      // Small delay taaki DB write settle ho jaaye
+      const t = setTimeout(draw, 100);
+      return () => clearTimeout(t);
+    }
     else { const t = setTimeout(draw, 400); return () => clearTimeout(t); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsKey, centerLat, centerLng, offset, businessName, district, city]);
@@ -1085,7 +1090,10 @@ const SeoIntelligenceDashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.gridMeta?.status]);
 
-  const onScanDone = useCallback(() => fetchData(false), [fetchData]);
+  const onScanDone = useCallback(() => {
+    // 1 second wait — DB write fully commit ho jaaye
+    setTimeout(() => fetchData(false), 1000);
+  }, [fetchData]);
   const { progress: scanProgress, isActive: scanToastActive, dismiss: dismissScan } = useSeoProgress(onScanDone);
 
   const { summary, trend, keywords, provider, geoGrid, gridMeta, localConfig } = data;
