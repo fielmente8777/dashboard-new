@@ -110,7 +110,7 @@ function useSeoProgress(onDone?: () => void) {
     const url   = `${NODE_BASE_URL}/seo/seo-intelligence/progress?token=${encodeURIComponent(token || "")}`;
     const es    = new EventSource(url);
 
-    es.onopen = () => { console.log("[SSE] Connected ✅"); };
+    es.onopen = () => { console.log("[SSE] Connected ✅"); } ;
     es.onmessage = (e) => {
       try {
         const data: ScanProgress = JSON.parse(e.data);
