@@ -78,7 +78,7 @@ const ChatArea = () => {
 
   const [isTakeOver, setIsTakeOver] = useState(false);
   const is24HourComplete = is24HoursCompletedFnc(
-    selectedConversation?.last_message?.created_at
+    selectedConversation?.last_message?.created_at,
   );
 
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
@@ -206,7 +206,7 @@ const ChatArea = () => {
               };
             }
             return conv;
-          })
+          }),
         );
 
         const response = await sendWhatsAppMessage(templatePayload);
@@ -226,7 +226,7 @@ const ChatArea = () => {
                 };
               }
               return m;
-            })
+            }),
           );
         }
         return;
@@ -234,7 +234,7 @@ const ChatArea = () => {
 
       if (selectedFlowId) {
         const selectedFlow = flows.find(
-          (flow) => flow.flowId === selectedFlowId
+          (flow) => flow.flowId === selectedFlowId,
         );
 
         const payload = {
@@ -340,7 +340,7 @@ const ChatArea = () => {
             };
           }
           return conv;
-        })
+        }),
       );
       setMessageValue("");
       setFile(null);
@@ -360,7 +360,7 @@ const ChatArea = () => {
               };
             }
             return m;
-          })
+          }),
         );
       }
     } catch (error) {
@@ -478,13 +478,13 @@ const ChatArea = () => {
 
   const handleBulkDelete = async () => {
     const isConfirmed = await confirm(
-      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`
+      `Are you sure you want to delete ${selectedMessages.length} ${selectedMessages?.length > 1 ? "messages" : "message"}?`,
     );
 
     if (!isConfirmed) return;
     try {
       setMessageList((prev) =>
-        prev.filter((m) => !selectedMessages.includes(m.messageId))
+        prev.filter((m) => !selectedMessages.includes(m.messageId)),
       );
 
       const response = await deleteWhatsAppMessage({
@@ -566,6 +566,7 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
+      console.log(serverResponse);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
         serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
@@ -591,7 +592,7 @@ const ChatArea = () => {
               };
             }
             return m;
-          })
+          }),
         );
       } else if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_AUTO_NEW_MESSAGE &&
@@ -747,7 +748,7 @@ const ChatArea = () => {
                   </p>
                   <p className="text-[10px] opacity-70">
                     {new Date(
-                      selectedConversation?.adAttribution?.receivedAt
+                      selectedConversation?.adAttribution?.receivedAt,
                     ).toLocaleTimeString([], {
                       hour: "2-digit",
                       minute: "2-digit",
@@ -778,7 +779,7 @@ const ChatArea = () => {
                         checked={selectedMessages.includes(message?.messageId)}
                         onChange={() =>
                           toggleSelectMessage(
-                            message?.messageId || message?._id
+                            message?.messageId || message?._id,
                           )
                         }
                       />
@@ -790,7 +791,10 @@ const ChatArea = () => {
                     >
                       <div
                         className={`relative max-w-xs  p-3 ${
-                          isMe? "rounded-tl-xl border shadow-md !border-ternary dark:border-primary/60 rounded-br-xl rounded-bl-lg bg-white dark:bg-app-surface":"rounded-br-xl border shadow-md !border-ternary dark:border-primary/60 rounded-tr-xl rounded-bl-lg bg-white dark:bg-app-surface"}`}
+                          isMe
+                            ? "rounded-tl-xl border shadow-md !border-ternary dark:border-primary/60 rounded-br-xl rounded-bl-lg bg-white dark:bg-app-surface"
+                            : "rounded-br-xl border shadow-md !border-ternary dark:border-primary/60 rounded-tr-xl rounded-bl-lg bg-white dark:bg-app-surface"
+                        }`}
                       >
                         {/* all message types */}
                         <div className="mt-4">
@@ -817,7 +821,7 @@ const ChatArea = () => {
                                     {expandedMessages[message._id]
                                       ? renderMessageWithLinks(message?.body)
                                       : renderMessageWithLinks(
-                                          message?.body?.slice(0, MAX_LENGTH)
+                                          message?.body?.slice(0, MAX_LENGTH),
                                         )}
 
                                     {message?.body?.length > MAX_LENGTH && (
@@ -863,7 +867,7 @@ const ChatArea = () => {
                               onClick={() =>
                                 setImagePreview(
                                   message?.media?.url ||
-                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`,
                                 )
                               }
                               src={
@@ -1052,7 +1056,7 @@ const ChatArea = () => {
                                 {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                }
+                                },
                               )}
                             </div>
 
@@ -1084,7 +1088,7 @@ const ChatArea = () => {
                             onClick={() => {
                               // e.preventDefault();
                               setOpenMenuIndex(
-                                openMenuIndex === index ? null : index
+                                openMenuIndex === index ? null : index,
                               );
                             }}
                             className="text-gray-600 hover:text-black p-1"
@@ -1298,7 +1302,7 @@ const ChatArea = () => {
                     onClick={() => {
                       if (!templates?.length) {
                         navigate(
-                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`
+                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
                         );
                       }
 

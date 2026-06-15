@@ -357,7 +357,10 @@ const WhatsAppBusiness = ({ template = false }) => {
                   notification={accountDetails?.notification}
                 />
                 <WhatsappWidgetCard phoneNumber={accountDetails?.phoneNumber} />
-                {/* <WhatsAppMessageTemplate /> */}
+
+                <div className="col-span-2">
+                  <WhatsAppMessageTemplate />
+                </div>
               </div>
             )}
 
@@ -458,7 +461,9 @@ const PhoneNumberCard = ({ phoneNumber }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <FaWhatsapp className="w-4 h-4 text-green-600" />
-          <h3 className="text-sm font-medium text-gray-600 dark:text-app-text-muted">Phone Number</h3>
+          <h3 className="text-sm font-medium text-gray-600 dark:text-app-text-muted">
+            Phone Number
+          </h3>
         </div>
 
         <span className="text-sm font-medium text-gray-600 dark:text-app-text-faint">
@@ -617,11 +622,15 @@ const WabaDetailsCard = ({ waba, business }) => {
 
         <p className="text-sm text-gray-500 dark:text-app-text-faint">
           WABA ID:
-          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">{waba.id}</span>
+          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">
+            {waba.id}
+          </span>
         </p>
         <p className="text-sm text-gray-500 dark:text-app-text-faint">
           Business ID:
-          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">{business.id}</span>
+          <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">
+            {business.id}
+          </span>
         </p>
       </div>
 
