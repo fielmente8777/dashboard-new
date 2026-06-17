@@ -209,6 +209,7 @@ const ScanProgressToast = ({
   );
 };
 
+
 // ─── GeoGrid Scanning Overlay ─────────────────────────────────────────────────
 
 const GeoGridScanningOverlay = ({ onRescan, triggeringScan }: { onRescan: () => void; triggeringScan: boolean }) => (
@@ -1156,6 +1157,7 @@ const SeoIntelligenceDashboard = () => {
   const localKeywords = keywords.filter((k: any) => !k.targetUrl);
   
   const insights = useMemo(() => buildInsights(keywords), [keywords]);
+
 
   const local = useMemo(() => {
     const list       = keywords || [];

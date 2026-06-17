@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { NODE_BASE_URL } from "../data/constant";
 import {
-  Globe, Plus, X, RefreshCw, Loader2, IndianRupee, BarChart3, Trash2, Search, Link as LinkIcon
+  Globe, Plus, X, RefreshCw, Loader2, IndianRupee, BarChart3, Trash2, Search, Link as LinkIcon, Lock
 } from "lucide-react";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -30,9 +30,8 @@ const DifficultyMeter = ({ value }: { value: number | null }) => {
   );
 };
 
-// ─── Track Link Modal ────────────────────────────────────────────────────────
+// ─── Track Link Modal ───────────────────────────────────────────
 const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
-  const [url, setUrl] = useState("");
   const [text, setText] = useState("");
 
   if (!open) return null;
@@ -45,11 +44,11 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
         <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
-              <LinkIcon className="h-4 w-4" />
+              <Plus className="h-4 w-4" />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-white">Track Website URL</h3>
-              <p className="text-xs text-zinc-500">Add a specific page URL to track organic ranking</p>
+              <h3 className="text-sm font-bold text-white">Add Keywords</h3>
+              <p className="text-xs text-zinc-500">Track organic ranking for your locked website</p>
             </div>
           </div>
           <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-300"><X className="h-5 w-5" /></button>
@@ -57,14 +56,8 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
         
         <div className="p-6 space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-zinc-300">Target URL</label>
-            <input value={url} onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://yourwebsite.com/best-hotel-in-city"
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-zinc-300">Keywords to Check</label>
-            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4}
+            <label className="mb-1.5 block text-xs font-medium text-zinc-300">Keywords to check</label>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5}
               placeholder="best hotel in city&#10;luxury resort near me"
               className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
             <p className="text-[11px] text-zinc-500 mt-1">One keyword per line. {parsed.length} keyword(s) detected.</p>
@@ -73,10 +66,10 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
 
         <div className="flex items-center justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800">Cancel</button>
-          <button onClick={() => onAdd(parsed, url)} disabled={saving || !parsed.length || !url.trim()}
+          <button onClick={() => onAdd(parsed)} disabled={saving || !parsed.length}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            Track URL
+            Track Keywords
           </button>
         </div>
       </div>
@@ -87,6 +80,9 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
 // ─── Main Website SEO Dashboard ──────────────────────────────────────────────
 const WebsiteSeoDashboard = () => {
   const [linkKeywords, setLinkKeywords] = useState<any[]>([]);
+  const [lockedUrl, setLockedUrl] = useState<string | null>(null);
+  const [setupUrl, setSetupUrl] = useState("");
+  const [isSettingUrl, setIsSettingUrl] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -99,13 +95,17 @@ const WebsiteSeoDashboard = () => {
   const fetchData = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
-      // Using existing endpoint, filtering only those with targetUrl
       const { data: res } = await axios.get(
         `${NODE_BASE_URL}/seo/seo-intelligence`,
         { params: { t: Date.now() }, ...getAuthConfig() }
       );
+      
+      const config = res.result?.localConfig || res.localConfig;
+      if (config?.websiteUrl) {
+        setLockedUrl(config.websiteUrl);
+      }
+
       const allKeywords = res.result?.keywords || res.keywords || [];
-      // Filter out Local SEO keywords, keep ONLY Website links
       const websiteLinksOnly = allKeywords.filter((k: any) => k.targetUrl != null && k.targetUrl !== "");
       setLinkKeywords(websiteLinksOnly);
     } catch (err) {
@@ -117,16 +117,29 @@ const WebsiteSeoDashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleAddLinkTracking = async (kws: string[], targetUrl: string) => {
+  // Handle Permanent Website Setup
+  const handleSetWebsite = async () => {
+    if (!setupUrl.trim()) return;
+    try {
+      setIsSettingUrl(true);
+      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/set-website`, { websiteUrl: setupUrl }, getAuthConfig());
+      await fetchData(); 
+    } catch (err: any) { 
+      alert(err?.response?.data?.error || "Setup failed"); 
+    } finally { 
+      setIsSettingUrl(false); 
+    }
+  };
+
+  const handleAddLinkTracking = async (kws: string[]) => {
     try {
       setSaving(true);
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/track-link`, {
         keywords: kws,
-        targetUrl: targetUrl 
       }, getAuthConfig());
       setModalOpen(false);
       await fetchData();
-    } catch { alert("Couldn't add link tracking. Please try again."); }
+    } catch { alert("Couldn't add keywords. Please try again."); }
     finally { setSaving(false); }
   };
 
@@ -146,21 +159,60 @@ const WebsiteSeoDashboard = () => {
     finally { setRefreshing(false); }
   };
 
+  // SETUP SCREEN 
+  if (!loading && !lockedUrl) {
+    return (
+      <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-10 flex flex-col items-center justify-center text-center shadow-xl">
+        <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
+          <Lock className="h-7 w-7" />
+        </span>
+        <h2 className="text-xl font-bold text-white mb-2">Set Your Primary Website URL</h2>
+        <p className="text-sm text-zinc-400 max-w-md mb-6">
+          Enter the main website link you want to track organic rankings for. <strong className="text-rose-400">This action is permanent and cannot be changed later.</strong>
+        </p>
+        <div className="flex w-full max-w-md gap-3">
+          <input 
+            value={setupUrl} 
+            onChange={(e) => setSetupUrl(e.target.value)} 
+            placeholder="fielmente.com"
+            className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition"
+          />
+          <button 
+            onClick={handleSetWebsite} 
+            disabled={isSettingUrl || !setupUrl.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50"
+          >
+            {isSettingUrl ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Lock URL
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // DASHBOARD SCREEN 
   return (
-    <div className="min-h-screen rounded-3xl bg-gradient-to-b from-zinc-950 via-zinc-950 to-black p-6 sm:p-8">
+    <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-6 sm:p-8 shadow-xl overflow-hidden">
+      
       {/* Background Pattern */}
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.02]"
         style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
 
       {/* ── Header ── */}
-      <div className="relative flex flex-wrap items-start justify-between gap-4 border-b border-zinc-800 pb-6 mb-6">
+      <div className="relative flex flex-wrap items-start justify-between gap-4 border-b border-zinc-800/60 pb-6 mb-6">
         <div className="flex items-center gap-3.5">
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/30">
             <Globe className="h-6 w-6" />
           </span>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">Website SEO Tracker</h1>
-            <p className="mt-0.5 text-sm text-zinc-400">Track organic search rankings for specific URLs</p>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              Website SEO Tracker
+              <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 font-semibold uppercase tracking-wider">
+                <Lock className="h-2.5 w-2.5" /> Locked
+              </span>
+            </h1>
+            <p className="mt-0.5 text-sm text-zinc-400 flex gap-1">
+              Tracking rankings for: <a href={lockedUrl?.includes('http') ? lockedUrl : `https://${lockedUrl}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 transition hover:underline font-medium">{lockedUrl}</a>
+            </p>
           </div>
         </div>
         
@@ -172,14 +224,14 @@ const WebsiteSeoDashboard = () => {
           </button>
           <button onClick={() => setModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500">
-            <Plus className="h-4 w-4" /> Add URL
+            <Plus className="h-4 w-4" /> Add Keywords
           </button>
         </div>
       </div>
 
       {/* ── Table Area ── */}
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4 bg-zinc-900/40">
+      <div className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/40 backdrop-blur-sm">
+        <div className="flex items-center justify-between border-b border-zinc-800/80 px-5 py-4 bg-zinc-900/60">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-800 text-zinc-300">
               <Search className="h-4 w-4" />
@@ -194,13 +246,13 @@ const WebsiteSeoDashboard = () => {
           ) : !linkKeywords.length ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/30 py-20 text-center">
               <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
-                <LinkIcon className="h-7 w-7" />
+                <Search className="h-7 w-7" />
               </span>
-              <h3 className="text-base font-bold text-white">No URLs tracked yet</h3>
-              <p className="mt-1.5 max-w-sm text-sm text-zinc-500">Monitor where your website pages rank on Google.</p>
+              <h3 className="text-base font-bold text-white">No keywords tracked yet</h3>
+              <p className="mt-1.5 max-w-sm text-sm text-zinc-500">Monitor where your website ranks on Google for specific searches.</p>
               <button onClick={() => setModalOpen(true)}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500">
-                <Plus className="h-4 w-4" /> Track First URL
+                <Plus className="h-4 w-4" /> Track First Keyword
               </button>
             </div>
           ) : (
@@ -208,7 +260,7 @@ const WebsiteSeoDashboard = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60">
-                    <th className="pb-3 pl-2 font-semibold w-1/3">Target URL & Keyword</th>
+                    <th className="pb-3 pl-2 font-semibold">Target Keyword</th>
                     <th className="pb-3 text-right font-semibold">
                       <span className="inline-flex items-center justify-end gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Search Volume</span>
                     </th>
@@ -226,10 +278,7 @@ const WebsiteSeoDashboard = () => {
                     return (
                       <tr key={row._id || row.keyword} className="hover:bg-zinc-800/30 transition-colors group">
                         <td className="py-4 pl-2">
-                          <a href={row.targetUrl} target="_blank" rel="noreferrer" className="block text-xs font-semibold text-blue-400 hover:underline truncate max-w-[300px]" title={row.targetUrl}>
-                            {row.targetUrl.replace(/^https?:\/\//, '')}
-                          </a>
-                          <span className="block text-sm font-bold text-zinc-100 mt-1">{row.keyword}</span>
+                          <span className="block text-sm font-bold text-zinc-100">{row.keyword}</span>
                         </td>
                         <td className="py-4 text-right font-semibold tabular-nums text-zinc-200">{fmt(row.searchVolume)}</td>
                         <td className="py-4 text-right tabular-nums text-zinc-400">{fmtCurrency(row.cpc)}</td>
