@@ -102,6 +102,8 @@ function useSeoProgress(onDone?: () => void) {
     const doneCalledRef = useRef(false);
     const onDoneRef = useRef(onDone);
 
+
+
     useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
 
     const connectSSE = useCallback(() => {
@@ -207,6 +209,7 @@ const ScanProgressToast = ({
     );
 };
 
+
 // ─── GeoGrid Scanning Overlay ─────────────────────────────────────────────────
 
 const GeoGridScanningOverlay = ({ onRescan, triggeringScan }: { onRescan: () => void; triggeringScan: boolean }) => (
@@ -301,6 +304,7 @@ const GeoGrid = ({
         [points],
     );
 
+
     useEffect(() => {
         const map = mapInstanceRef.current;
         const layer = markersLayerRef.current;
@@ -362,7 +366,11 @@ const GeoGrid = ({
             map.invalidateSize();
         };
 
-        if (map && layer) draw();
+        if (map && layer) {
+            // Small delay taaki DB write settle ho jaaye
+            const t = setTimeout(draw, 100);
+            return () => clearTimeout(t);
+        }
         else { const t = setTimeout(draw, 400); return () => clearTimeout(t); }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pointsKey, centerLat, centerLng, offset, businessName, district, city]);
@@ -412,6 +420,7 @@ const OnboardingWizard = ({ onComplete, authConfig }: { onComplete: () => void; 
     const mapPickerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<L.Map | null>(null);
     const markerRef = useRef<L.Marker | null>(null);
+
 
     const [form, setForm] = useState({
         businessName: "", businessType: "hotel", selfDomain: "",
@@ -994,6 +1003,58 @@ const AddKeywordModal = ({ open, onClose, onAdd, saving, localConfig }: any) => 
         </div>
     );
 };
+const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
+    const [url, setUrl] = useState("");
+    const [text, setText] = useState("");
+
+    if (!open) return null;
+    const parsed = [...new Set(text.split(/[\n,]/).map((k: string) => k.trim().toLowerCase()).filter(Boolean))];
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+                    <div className="flex items-center gap-2.5">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-teal-400/10 text-teal-300 ring-1 ring-teal-400/20">
+                            <Globe className="h-4 w-4" />
+                        </span>
+                        <div>
+                            <h3 className="text-sm font-bold text-white">Track specific Link</h3>
+                            <p className="text-xs text-zinc-500">Track organic ranking for an exact URL</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-300"><X className="h-5 w-5" /></button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="mb-1.5 block text-xs font-medium text-zinc-300">Website Link (URL)</label>
+                        <input value={url} onChange={(e) => setUrl(e.target.value)}
+                            placeholder="e.g. https://yourwebsite.com/specific-page"
+                            className="w-full rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30" />
+                    </div>
+                    <div>
+                        <label className="mb-1.5 block text-xs font-medium text-zinc-300">Keywords to check</label>
+                        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4}
+                            placeholder="hotel near me&#10;best resort in city"
+                            className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/30" />
+                        <p className="text-[11px] text-zinc-500 mt-1">One per line. {parsed.length} keyword(s) detected.</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 border-t border-zinc-800 px-6 py-4">
+                    <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800">Cancel</button>
+                    <button onClick={() => onAdd(parsed, url)} disabled={saving || !parsed.length || !url.trim()}
+                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 px-5 py-2 text-sm font-semibold text-zinc-950 shadow-lg shadow-teal-500/20 transition hover:from-teal-400 hover:to-emerald-500 disabled:opacity-50">
+                        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                        Track Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const EmptyState = ({ onAdd }: any) => (
     <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/30 py-20 text-center">
@@ -1029,6 +1090,7 @@ const SeoIntelligenceDashboard = () => {
     const [expanded, setExpanded] = useState<string | null>(null);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [triggeringScan, setTriggeringScan] = useState(false);
+
 
     const getAuthConfig = useCallback(() => ({
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -1085,11 +1147,17 @@ const SeoIntelligenceDashboard = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data.gridMeta?.status]);
 
-    const onScanDone = useCallback(() => fetchData(false), [fetchData]);
+    const onScanDone = useCallback(() => {
+        // 1 second wait — DB write fully commit ho jaaye
+        setTimeout(() => fetchData(false), 1000);
+    }, [fetchData]);
     const { progress: scanProgress, isActive: scanToastActive, dismiss: dismissScan } = useSeoProgress(onScanDone);
 
     const { summary, trend, keywords, provider, geoGrid, gridMeta, localConfig } = data;
+    const localKeywords = keywords.filter((k: any) => !k.targetUrl);
+
     const insights = useMemo(() => buildInsights(keywords), [keywords]);
+
 
     const local = useMemo(() => {
         const list = keywords || [];
@@ -1120,10 +1188,13 @@ const SeoIntelligenceDashboard = () => {
         finally { setSaving(false); }
     };
 
+
+
     const handleRefresh = async () => {
         try {
             setRefreshing(true);
-            await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, {}, getAuthConfig());
+            // Yahan { type: 'local' } add karna hai payload mein
+            await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'local' }, getAuthConfig());
             await fetchData();
         } catch { console.error("Refresh failed"); }
         finally { setRefreshing(false); }
@@ -1265,6 +1336,7 @@ const SeoIntelligenceDashboard = () => {
                         <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                         {refreshing ? "Refreshing…" : "Refresh"}
                     </button>
+
                     <button onClick={() => setModalOpen(true)}
                         className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-teal-500">
                         <Plus className="h-4 w-4" /> Add keywords
@@ -1436,7 +1508,7 @@ const SeoIntelligenceDashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {keywords.map((row: any, i: number) => {
+                                    {localKeywords.map((row: any, i: number) => {
                                         const key = row._id || row.keyword || String(i);
                                         const isOpen = expanded === key;
                                         return (
@@ -1489,6 +1561,7 @@ const SeoIntelligenceDashboard = () => {
                 saving={saving}
                 localConfig={localConfig}
             />
+
 
             {/* ── SSE Scan Toast ── */}
             {scanToastActive && scanProgress && scanProgress.status !== "queued" && (

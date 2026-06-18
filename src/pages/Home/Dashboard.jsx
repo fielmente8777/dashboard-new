@@ -19,6 +19,8 @@ import { getAnalyticsService } from "../../services/api/analytics.api";
 import DashboardCard from "../../components/Card/DashboardCard";
 import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
+import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
+
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
@@ -381,7 +383,9 @@ const Dashboard = () => {
         <LocalSeoModule />
       </div> */}
 
-
+      <div className="w-full space-y-6 mt-6">
+        <WebsiteSeoDashboard />
+      </div>
 
       {/* FUNNEL */}
       <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">

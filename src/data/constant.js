@@ -2,8 +2,8 @@ export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
 //  export const BASE_URL = "http://127.0.0.1:5000";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
+// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
+export const NEW_BASE_URL = "http://localhost:8000";
 // export const NEW_BASE_URL ="https://9979-2409-40d2-10e3-a381-8543-29db-31b1-4dde.ngrok-free.app";
 
 // export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
@@ -15,8 +15,8 @@ export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
 // export const WS_BASE_URL = "ws://localhost:8000";
 export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
-// export const NODE_BASE_URL = "http://localhost:8000/api/v1";
-export const NODE_BASE_URL = "https://gian-1eve.onrender.com/api/v1";
+export const NODE_BASE_URL = "http://localhost:8000/api/v1";
+// export const NODE_BASE_URL = "https://gian-1eve.onrender.com/api/v1";
 
 export const room_type_name = {
   1: "DELUXE",
