@@ -1576,4 +1576,4 @@ const SeoIntelligenceDashboard = () => {
   );
 };
 
-export default SeoIntelligenceDashboard;
+export default SeoIntelligenceDashboard ;
