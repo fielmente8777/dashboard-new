@@ -30,6 +30,16 @@ const DifficultyMeter = ({ value }: { value: number | null }) => {
   );
 };
 
+const COUNTRIES = [
+  { code: "IN", name: "India" },
+  { code: "US", name: "United States" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "AE", name: "UAE" },
+  { code: "AU", name: "Australia" },
+  { code: "CA", name: "Canada" },
+  { code: "WORLD", name: "Worldwide (Global)" },
+];
+
 // ─── Track Link Modal ───────────────────────────────────────────
 const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
   const [text, setText] = useState("");
@@ -81,6 +91,8 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
 const WebsiteSeoDashboard = () => {
   const [linkKeywords, setLinkKeywords] = useState<any[]>([]);
   const [lockedUrl, setLockedUrl] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState("IN");
+  
   const [setupUrl, setSetupUrl] = useState("");
   const [isSettingUrl, setIsSettingUrl] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -101,9 +113,8 @@ const WebsiteSeoDashboard = () => {
       );
       
       const config = res.result?.localConfig || res.localConfig;
-      if (config?.websiteUrl) {
-        setLockedUrl(config.websiteUrl);
-      }
+      if (config?.websiteUrl) setLockedUrl(config.websiteUrl);
+      if (config?.websiteCountry) setSelectedCountry(config.websiteCountry);
 
       const allKeywords = res.result?.keywords || res.keywords || [];
       const websiteLinksOnly = allKeywords.filter((k: any) => k.targetUrl != null && k.targetUrl !== "");
@@ -116,6 +127,32 @@ const WebsiteSeoDashboard = () => {
   }, [getAuthConfig]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Handle Country Dropdown Change
+  // Handle Country Dropdown Change
+  // Handle Country Dropdown Change
+  const handleCountryChange = async (e: any) => {
+    const newCountry = e.target.value;
+    setSelectedCountry(newCountry);
+    try {
+      setLoading(true); 
+      
+      // 1. Backend mein country update karo
+      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/update-website-country`, { country: newCountry }, getAuthConfig());
+      
+      // 2. Nayi country ke hisaab se ranking/volume fetch karo
+      // 🔥 YAHAN BHI { type: 'website' } DAALNA ZAROORI HAI 🔥
+      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'website' }, getAuthConfig());
+      
+      // 3. Data UI pe laao
+      await fetchData(false); 
+      
+    } catch { 
+      alert("Failed to update country volume."); 
+    } finally {
+      setLoading(false); 
+    }
+  };
 
   // Handle Permanent Website Setup
   const handleSetWebsite = async () => {
@@ -153,7 +190,8 @@ const WebsiteSeoDashboard = () => {
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, {}, getAuthConfig());
+      // Yahan { type: 'website' } add karna hai payload mein
+      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'website' }, getAuthConfig());
       await fetchData();
     } catch { console.error("Refresh failed"); }
     finally { setRefreshing(false); }
@@ -192,8 +230,6 @@ const WebsiteSeoDashboard = () => {
   // DASHBOARD SCREEN 
   return (
     <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-6 sm:p-8 shadow-xl overflow-hidden">
-      
-      {/* Background Pattern */}
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.02]"
         style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
 
@@ -216,12 +252,26 @@ const WebsiteSeoDashboard = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
+          
+          {/* Country/World Dropdown */}
+          <div className="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2">
+            <Globe className="h-4 w-4 text-blue-400" />
+            <select
+              value={selectedCountry}
+              onChange={handleCountryChange}
+              className="bg-transparent text-zinc-200 text-sm font-semibold outline-none focus:ring-0 cursor-pointer"
+            >
+              {COUNTRIES.map(c => <option key={c.code} value={c.code} className="bg-zinc-900">{c.name}</option>)}
+            </select>
+          </div>
+
           <button onClick={handleRefresh} disabled={refreshing || !linkKeywords.length}
             className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-700 hover:bg-zinc-800 disabled:opacity-50">
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Refreshing…" : "Refresh"}
+            <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
           </button>
+          
           <button onClick={() => setModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500">
             <Plus className="h-4 w-4" /> Add Keywords
@@ -260,7 +310,7 @@ const WebsiteSeoDashboard = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wider text-zinc-500 border-b border-zinc-800/60">
-                    <th className="pb-3 pl-2 font-semibold">Target Keyword</th>
+                    <th className="pb-3 pl-2 font-semibold w-1/3">Target Keyword</th>
                     <th className="pb-3 text-right font-semibold">
                       <span className="inline-flex items-center justify-end gap-1.5"><BarChart3 className="h-3.5 w-3.5" />Search Volume</span>
                     </th>

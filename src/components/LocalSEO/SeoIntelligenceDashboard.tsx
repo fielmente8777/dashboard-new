@@ -1193,7 +1193,8 @@ const SeoIntelligenceDashboard = () => {
   const handleRefresh = async () => {
     try {
       setRefreshing(true);
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, {}, getAuthConfig());
+      // Yahan { type: 'local' } add karna hai payload mein
+      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'local' }, getAuthConfig());
       await fetchData();
     } catch { console.error("Refresh failed"); }
     finally { setRefreshing(false); }
