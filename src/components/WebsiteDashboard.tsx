@@ -11,10 +11,10 @@ const fmtCurrency = (n: any) => (n == null ? "—" : `₹${Number(n).toFixed(2)}
 
 const getOrganicRankStyle = (rank: number | null) => {
   if (rank == null) return { text: "text-zinc-500", bg: "bg-zinc-800/70" };
-  if (rank <= 3)    return { text: "text-emerald-300", bg: "bg-emerald-500/20" };
-  if (rank <= 10)   return { text: "text-teal-300", bg: "bg-teal-500/20" };
-  if (rank <= 20)   return { text: "text-amber-300", bg: "bg-amber-500/20" };
-  return            { text: "text-rose-300", bg: "bg-rose-500/20" };
+  if (rank <= 3) return { text: "text-emerald-300", bg: "bg-emerald-500/20" };
+  if (rank <= 10) return { text: "text-teal-300", bg: "bg-teal-500/20" };
+  if (rank <= 20) return { text: "text-amber-300", bg: "bg-amber-500/20" };
+  return { text: "text-rose-300", bg: "bg-rose-500/20" };
 };
 
 const DifficultyMeter = ({ value }: { value: number | null }) => {
@@ -63,7 +63,7 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
           </div>
           <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-300"><X className="h-5 w-5" /></button>
         </div>
-        
+
         <div className="p-6 space-y-4">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-zinc-300">Keywords to check</label>
@@ -92,7 +92,7 @@ const WebsiteSeoDashboard = () => {
   const [linkKeywords, setLinkKeywords] = useState<any[]>([]);
   const [lockedUrl, setLockedUrl] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("IN");
-  
+
   const [setupUrl, setSetupUrl] = useState("");
   const [isSettingUrl, setIsSettingUrl] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -111,7 +111,7 @@ const WebsiteSeoDashboard = () => {
         `${NODE_BASE_URL}/seo/seo-intelligence`,
         { params: { t: Date.now() }, ...getAuthConfig() }
       );
-      
+
       const config = res.result?.localConfig || res.localConfig;
       if (config?.websiteUrl) setLockedUrl(config.websiteUrl);
       if (config?.websiteCountry) setSelectedCountry(config.websiteCountry);
@@ -135,22 +135,22 @@ const WebsiteSeoDashboard = () => {
     const newCountry = e.target.value;
     setSelectedCountry(newCountry);
     try {
-      setLoading(true); 
-      
+      setLoading(true);
+
       // 1. Backend mein country update karo
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/update-website-country`, { country: newCountry }, getAuthConfig());
-      
+
       // 2. Nayi country ke hisaab se ranking/volume fetch karo
       // 🔥 YAHAN BHI { type: 'website' } DAALNA ZAROORI HAI 🔥
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'website' }, getAuthConfig());
-      
+
       // 3. Data UI pe laao
-      await fetchData(false); 
-      
-    } catch { 
-      alert("Failed to update country volume."); 
+      await fetchData(false);
+
+    } catch {
+      alert("Failed to update country volume.");
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -160,11 +160,11 @@ const WebsiteSeoDashboard = () => {
     try {
       setIsSettingUrl(true);
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/set-website`, { websiteUrl: setupUrl }, getAuthConfig());
-      await fetchData(); 
-    } catch (err: any) { 
-      alert(err?.response?.data?.error || "Setup failed"); 
-    } finally { 
-      setIsSettingUrl(false); 
+      await fetchData();
+    } catch (err: any) {
+      alert(err?.response?.data?.error || "Setup failed");
+    } finally {
+      setIsSettingUrl(false);
     }
   };
 
@@ -200,7 +200,7 @@ const WebsiteSeoDashboard = () => {
   // SETUP SCREEN 
   if (!loading && !lockedUrl) {
     return (
-      <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-10 flex flex-col items-center justify-center text-center shadow-xl">
+      <div className="relative w-full bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-10 flex flex-col items-center justify-center text-center shadow-xl">
         <span className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20">
           <Lock className="h-7 w-7" />
         </span>
@@ -209,14 +209,14 @@ const WebsiteSeoDashboard = () => {
           Enter the main website link you want to track organic rankings for. <strong className="text-rose-400">This action is permanent and cannot be changed later.</strong>
         </p>
         <div className="flex w-full max-w-md gap-3">
-          <input 
-            value={setupUrl} 
-            onChange={(e) => setSetupUrl(e.target.value)} 
+          <input
+            value={setupUrl}
+            onChange={(e) => setSetupUrl(e.target.value)}
             placeholder="fielmente.com"
             className="flex-1 rounded-xl border border-zinc-700 bg-zinc-800/60 px-4 py-3 text-sm text-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition"
           />
-          <button 
-            onClick={handleSetWebsite} 
+          <button
+            onClick={handleSetWebsite}
             disabled={isSettingUrl || !setupUrl.trim()}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50"
           >
@@ -229,7 +229,7 @@ const WebsiteSeoDashboard = () => {
 
   // DASHBOARD SCREEN 
   return (
-    <div className="relative w-full rounded-3xl bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-6 sm:p-8 shadow-xl overflow-hidden">
+    <div className="relative w-full min-h-screen bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-6 sm:p-8 shadow-xl overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.02]"
         style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
 
@@ -251,9 +251,9 @@ const WebsiteSeoDashboard = () => {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          
+
           {/* Country/World Dropdown */}
           <div className="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800 rounded-xl px-3 py-2">
             <Globe className="h-4 w-4 text-blue-400" />
@@ -271,7 +271,7 @@ const WebsiteSeoDashboard = () => {
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
           </button>
-          
+
           <button onClick={() => setModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500">
             <Plus className="h-4 w-4" /> Add Keywords
@@ -333,13 +333,13 @@ const WebsiteSeoDashboard = () => {
                         <td className="py-4 text-right font-semibold tabular-nums text-zinc-200">{fmt(row.searchVolume)}</td>
                         <td className="py-4 text-right tabular-nums text-zinc-400">{fmtCurrency(row.cpc)}</td>
                         <td className="py-4 text-center">
-                           <span className={`inline-flex items-center justify-center h-8 px-3 rounded-lg text-sm font-bold tabular-nums ring-1 ring-inset ring-current/10 ${rankTheme.bg} ${rankTheme.text}`}>
-                             {row.liveOrganicRank == null ? "—" : `#${row.liveOrganicRank}`}
-                           </span>
+                          <span className={`inline-flex items-center justify-center h-8 px-3 rounded-lg text-sm font-bold tabular-nums ring-1 ring-inset ring-current/10 ${rankTheme.bg} ${rankTheme.text}`}>
+                            {row.liveOrganicRank == null ? "—" : `#${row.liveOrganicRank}`}
+                          </span>
                         </td>
                         <td className="py-4 pl-8"><DifficultyMeter value={row.keywordDifficulty} /></td>
                         <td className="py-4 pr-2 text-right">
-                          <button onClick={() => handleUntrack(row.keyword)} 
+                          <button onClick={() => handleUntrack(row.keyword)}
                             className="rounded-lg p-2 text-zinc-600 opacity-0 group-hover:opacity-100 transition hover:bg-rose-500/10 hover:text-rose-400" title="Delete">
                             <Trash2 className="h-4 w-4" />
                           </button>

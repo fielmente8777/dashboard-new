@@ -193,8 +193,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
-      {/* <div className="mt-8 mb-4">
+     {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
+     {/* <div className="mt-8 mb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-app-text dark:text-app-text tracking-tight">
             Website Actions{" "}
@@ -218,7 +218,7 @@ const Dashboard = () => {
               : "opacity-100 scale-100 blur-0"
           }`}
         >
-          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
 
             <div className="flex items-center gap-5 relative z-10">
@@ -236,7 +236,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
 
             <div className="flex items-center gap-5 relative z-10">
@@ -254,7 +254,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="relative overflow-hidden bg-app-surface dark:bg-app-surface rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
 
             <div className="flex items-center gap-5 relative z-10">
@@ -383,9 +383,9 @@ const Dashboard = () => {
         <LocalSeoModule />
       </div> */}
 
-      <div className="w-full space-y-6 mt-6">
+      {/* <div className="w-full space-y-6 mt-6">
         <WebsiteSeoDashboard />
-      </div>
+      </div> */}
 
       {/* FUNNEL */}
       <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">

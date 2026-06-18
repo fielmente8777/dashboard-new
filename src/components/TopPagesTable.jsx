@@ -77,7 +77,7 @@ const TopPagesTable = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-app-text-faint w-5">{i + 1}.</span>
                       <div className="flex flex-col">
-                        <span className="font-medium text-app-text dark:text-app-text-faint truncate" title={page.fullUrl}>
+                        <span className="font-medium text-gray-800 whitespace-wrap max-w-4xl" title={page.fullUrl}>
                           {page.pageName}
                         </span>
                         <a

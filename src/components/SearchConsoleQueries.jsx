@@ -199,7 +199,7 @@ const SearchConsoleQueries = () => {
                         {i + 1}
                       </span>
                       <span
-                        className="font-semibold text-app-text dark:text-app-text truncate"
+                        className="font-semibold text-slate-800 truncate "
                         title={item.keyword}
                       >
                         {item.keyword}
