@@ -50,11 +50,7 @@ const     GoogleAnalyticsChart = () => {
     const { user: hotel, authUser } = useSelector((state) => state.userProfile);
     const profile = hotel?.Profile;
   const [chartData, setChartData] = useState([]);
-    const {
-    user: hotel,
-    hid,
-    authUser,
-  } = useSelector((state) => state.userProfile);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [properties, setProperties] = useState([]);
@@ -188,7 +184,6 @@ const     GoogleAnalyticsChart = () => {
   };
 
 
-  console.log("Dashboard hotel ",hotel.Profile.hotelEmail)
 
   if (loading && !isSwitching) {
     return (

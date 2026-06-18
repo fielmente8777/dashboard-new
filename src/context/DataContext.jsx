@@ -72,7 +72,7 @@ export const DataProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -92,7 +92,7 @@ export const DataProvider = ({ children }) => {
         // setBeforeCursor(cursors?.before || null);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     }
     // setLoadingLeads(false);
   };
@@ -123,7 +123,7 @@ export const DataProvider = ({ children }) => {
         setRoomsData(responseData.data);
       }
     } catch (error) {
-      console.log("Error:", error);
+      // console.log("Error:", error);
     }
   };
 
@@ -144,7 +144,7 @@ export const DataProvider = ({ children }) => {
 
       const result=await bookingDataResponse.json();
 
-      console.log("Booking Data Response:", result);
+      // console.log("Booking Data Response:", result);
       if (result.Status) {
         setBookingData(result.Details);
       } else {
@@ -179,7 +179,7 @@ export const DataProvider = ({ children }) => {
         howManyCancelledRequest(response.data?.data);
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setLoading(false);
     }
@@ -248,7 +248,7 @@ export const DataProvider = ({ children }) => {
       setIs24HoursCompleted(isCompleted);
       setIntegrationStauts(data?.result?.docs);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
     } finally {
       setIsLoadingIntegrationStatus(false);
     }

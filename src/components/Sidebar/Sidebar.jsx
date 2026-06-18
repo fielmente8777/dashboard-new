@@ -67,10 +67,10 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     hid,
     loading,
   } = useSelector((state) => state.userProfile);
-  console.log(authUser);
+  // console.log(authUser);
 
   const { subscription } = useSelector((state) => state?.subscription);
-  console.log(subscription);
+  // console.log(subscription);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
   const [allClients, setAllClients] = useState([]);

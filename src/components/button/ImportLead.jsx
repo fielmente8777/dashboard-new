@@ -158,11 +158,11 @@ export default function ImportLead({ open, setOpen }) {
     try {
       const leadChunks = chunkArray(leads, chunkSize);
       for (const chunk of leadChunks) {
-        console.log("Chunk ", chunk);
+        // console.log("Chunk ", chunk);
         setCurrentPage((prev) => prev + 1);
         const res = await importLead(chunk);
         const data = res.data;
-        console.log("Data response", data, chunk);
+        // console.log("Data response", data, chunk);
       }
       // alert(`Imported: ${data.success}, Failed: ${data.failed}`);
       setOpen(false);
@@ -183,7 +183,7 @@ export default function ImportLead({ open, setOpen }) {
     setLoading(false);
   };
 
-  console.log("Leads", leads);
+  // console.log("Leads", leads);
   return (
     <div className="max-w-3xl mx-auto space-y-4 bg-app-surface">
       <button
