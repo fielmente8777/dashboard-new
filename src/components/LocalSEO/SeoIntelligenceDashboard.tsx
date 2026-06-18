@@ -1279,8 +1279,8 @@ const SeoIntelligenceDashboard = () => {
                                 {RADIUS_OPTIONS.map((r) => (
                                     <button key={r} onClick={() => handleRadiusChange(r)}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${localConfig?.radiusKm === r
-                                                ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40"
-                                                : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
+                                            ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40"
+                                            : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
                                             }`}>
                                         {r}km
                                     </button>
