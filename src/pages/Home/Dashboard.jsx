@@ -191,14 +191,12 @@ const Dashboard = () => {
       </div>
 
      {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
-     <div className="mt-8 mb-4">
-        {/* Header with Live Loading Indicator */}
+     {/* <div className="mt-8 mb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-800 tracking-tight">
             Website Actions <span className="text-sm font-medium text-gray-400 ml-2">(Google Analytics)</span>
           </h2>
           
-          {/* Awesome loading indicator for UX */}
           {isGaLoading && (
             <span className="flex items-center gap-2 text-sm text-blue-600 font-medium animate-pulse">
               <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -207,15 +205,12 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Premium Grid with advanced fade/blur transition */}
         <div 
           className={`grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 transition-all duration-500 ease-out ${
             isGaLoading ? "opacity-50 scale-[0.98] blur-[1px] pointer-events-none" : "opacity-100 scale-100 blur-0"
           }`}
         >
-          {/* Card 1: WhatsApp Clicks */}
           <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-            {/* Background Glow Element */}
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
             <div className="flex items-center gap-5 relative z-10">
@@ -229,7 +224,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Card 2: Call Button Clicks */}
           <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
@@ -244,7 +238,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Card 3: Form Submissions */}
           <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
             <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
             
@@ -260,7 +253,7 @@ const Dashboard = () => {
           </div>
           
         </div>
-      </div>
+      </div> */}
 
      
      
@@ -324,16 +317,16 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
-        <SeoIntelligenceDashboard />
+        {/* <SeoIntelligenceDashboard /> */}
       </div>
 
-      <div className="w-full space-y-6 mt-6">
+      {/* <div className="w-full space-y-6 mt-6">
         <LocalSeoModule />
       </div>
 
       <div className="w-full space-y-6 mt-6">
         <WebsiteSeoDashboard />
-      </div>
+      </div> */}
 
       {/* FUNNEL */}
       <div className="bg-white rounded md:rounded-lg p-5">

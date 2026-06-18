@@ -18,101 +18,101 @@ import L from "leaflet";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface GeoGridPoint {
-  lat:  number;
-  lng:  number;
+  lat: number;
+  lng: number;
   rank: number | null;
-  row:  number;
-  col:  number;
+  row: number;
+  col: number;
 }
 
 interface LocalConfig {
-  businessName:       string;
-  city:               string;
-  district:           string;
-  state?:             string;
-  radiusKm:           number;
-  lat:                number;
-  lng:                number;
+  businessName: string;
+  city: string;
+  district: string;
+  state?: string;
+  radiusKm: number;
+  lat: number;
+  lng: number;
   onboardingComplete: boolean;
 }
 
 interface GridMeta {
   lastScanned: string | null;
-  status:      "pending" | "scanning" | "done" | "failed";
-  keyword:     string | null;
-  gridSize:    number;
-  centerLat:   number | null;
-  centerLng:   number | null;
+  status: "pending" | "scanning" | "done" | "failed";
+  keyword: string | null;
+  gridSize: number;
+  centerLat: number | null;
+  centerLng: number | null;
 }
 
 type ScanStatus = "idle" | "queued" | "scanning" | "done" | "failed";
 
 interface ScanProgress {
-  step:    string;
+  step: string;
   percent: number;
-  status:  ScanStatus;
+  status: ScanStatus;
   detail?: string;
-  ts?:     number;
+  ts?: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const BADGE_CONFIG: Record<string, {
   label: string;
-  cls:   string;
-  Icon:  React.ComponentType<{ className?: string }>;
+  cls: string;
+  Icon: React.ComponentType<{ className?: string }>;
 }> = {
-  TARGET:   { label: "Target",   cls: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/25", Icon: Target },
-  OPTIMIZE: { label: "Optimize", cls: "bg-amber-400/10 text-amber-300 ring-amber-400/25",       Icon: Lightbulb },
-  DEFEND:   { label: "Defend",   cls: "bg-teal-400/10 text-teal-300 ring-teal-400/25",          Icon: Crown },
-  RESEARCH: { label: "Research", cls: "bg-zinc-400/10 text-zinc-300 ring-zinc-400/20",          Icon: Sparkles },
+  TARGET: { label: "Target", cls: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/25", Icon: Target },
+  OPTIMIZE: { label: "Optimize", cls: "bg-amber-400/10 text-amber-300 ring-amber-400/25", Icon: Lightbulb },
+  DEFEND: { label: "Defend", cls: "bg-teal-400/10 text-teal-300 ring-teal-400/25", Icon: Crown },
+  RESEARCH: { label: "Research", cls: "bg-zinc-400/10 text-zinc-300 ring-zinc-400/20", Icon: Sparkles },
 };
 
 const BUSINESS_TYPES = ["hotel", "resort", "hostel", "homestay", "villa", "retreat", "glamping"];
 const RADIUS_OPTIONS = [2, 5, 10] as const;
 
-const fmt         = (n: any) => (n == null ? "—" : Number(n).toLocaleString());
+const fmt = (n: any) => (n == null ? "—" : Number(n).toLocaleString());
 const fmtCurrency = (n: any) => (n == null ? "—" : `₹${Number(n).toFixed(2)}`);
-const fmtRank     = (n: any) => (n == null ? "—" : `#${Number(n).toFixed(1)}`);
+const fmtRank = (n: any) => (n == null ? "—" : `#${Number(n).toFixed(1)}`);
 
 const rankTone = (rank: number | null | undefined) => {
-  if (rank == null) return { text: "text-zinc-500",    dot: "bg-zinc-600",    cell: "bg-zinc-800 text-zinc-500",       label: "Not ranked" };
-  if (rank <= 3)    return { text: "text-emerald-300", dot: "bg-emerald-400", cell: "bg-emerald-500 text-emerald-950",  label: "Top 3"      };
-  if (rank <= 7)    return { text: "text-teal-300",    dot: "bg-teal-400",    cell: "bg-teal-500 text-teal-950",        label: "Top 7"      };
-  if (rank <= 15)   return { text: "text-amber-300",   dot: "bg-amber-400",   cell: "bg-amber-500 text-amber-950",      label: "Page 1–2"   };
-  return                   { text: "text-rose-300",    dot: "bg-rose-400",    cell: "bg-rose-500/80 text-rose-50",      label: "Low"        };
+  if (rank == null) return { text: "text-zinc-500", dot: "bg-zinc-600", cell: "bg-zinc-800 text-zinc-500", label: "Not ranked" };
+  if (rank <= 3) return { text: "text-emerald-300", dot: "bg-emerald-400", cell: "bg-emerald-500 text-emerald-950", label: "Top 3" };
+  if (rank <= 7) return { text: "text-teal-300", dot: "bg-teal-400", cell: "bg-teal-500 text-teal-950", label: "Top 7" };
+  if (rank <= 15) return { text: "text-amber-300", dot: "bg-amber-400", cell: "bg-amber-500 text-amber-950", label: "Page 1–2" };
+  return { text: "text-rose-300", dot: "bg-rose-400", cell: "bg-rose-500/80 text-rose-50", label: "Low" };
 };
 
 function getRankStyle(rank: number | null) {
   if (rank == null) return { fillColor: "#71717a", radius: 14 };
-  if (rank <= 3)    return { fillColor: "#22c55e", radius: 38 };
-  if (rank <= 6)    return { fillColor: "#84cc16", radius: 34 };
-  if (rank <= 10)   return { fillColor: "#facc15", radius: 30 };
-  if (rank <= 15)   return { fillColor: "#f97316", radius: 28 };
-  return                   { fillColor: "#ef4444", radius: 26 };
+  if (rank <= 3) return { fillColor: "#22c55e", radius: 38 };
+  if (rank <= 6) return { fillColor: "#84cc16", radius: 34 };
+  if (rank <= 10) return { fillColor: "#facc15", radius: 30 };
+  if (rank <= 15) return { fillColor: "#f97316", radius: 28 };
+  return { fillColor: "#ef4444", radius: 26 };
 }
 
 // ─── useSeoProgress hook ──────────────────────────────────────────────────────
 
 function useSeoProgress(onDone?: () => void) {
-  const [progress,  setProgress]  = useState<ScanProgress | null>(null);
-  const [isActive,  setIsActive]  = useState(false);
+  const [progress, setProgress] = useState<ScanProgress | null>(null);
+  const [isActive, setIsActive] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const esRef         = useRef<EventSource | null>(null);
+  const esRef = useRef<EventSource | null>(null);
   const doneCalledRef = useRef(false);
-  const onDoneRef     = useRef(onDone);
- 
-  
+  const onDoneRef = useRef(onDone);
+
+
 
   useEffect(() => { onDoneRef.current = onDone; }, [onDone]);
 
   const connectSSE = useCallback(() => {
     if (esRef.current?.readyState === EventSource.OPEN) return;
     const token = localStorage.getItem("token");
-    const url   = `${NODE_BASE_URL}/seo/seo-intelligence/progress?token=${encodeURIComponent(token || "")}`;
-    const es    = new EventSource(url);
+    const url = `${NODE_BASE_URL}/seo/seo-intelligence/progress?token=${encodeURIComponent(token || "")}`;
+    const es = new EventSource(url);
 
-    es.onopen = () => { console.log("[SSE] Connected ✅"); } ;
+    es.onopen = () => { console.log("[SSE] Connected ✅"); };
     es.onmessage = (e) => {
       try {
         const data: ScanProgress = JSON.parse(e.data);
@@ -127,7 +127,7 @@ function useSeoProgress(onDone?: () => void) {
           doneCalledRef.current = true;
           if (data.status === "done") { onDoneRef.current?.(); setIsActive(false); }
         }
-      } catch {}
+      } catch { }
     };
     es.onerror = () => {
       es.close();
@@ -145,7 +145,7 @@ function useSeoProgress(onDone?: () => void) {
   return {
     progress,
     isActive: isActive && !dismissed,
-    dismiss:  () => { setDismissed(true); setIsActive(false); },
+    dismiss: () => { setDismissed(true); setIsActive(false); },
   };
 }
 
@@ -154,16 +154,16 @@ function useSeoProgress(onDone?: () => void) {
 const ScanProgressToast = ({
   progress, onDismiss, onRefresh,
 }: {
-  progress:  ScanProgress;
+  progress: ScanProgress;
   onDismiss: () => void;
   onRefresh: () => void;
 }) => {
-  const isDone   = progress.status === "done";
+  const isDone = progress.status === "done";
   const isFailed = progress.status === "failed";
   const isQueued = progress.status === "queued";
 
   const borderColor = isDone ? "border-emerald-500/30" : isFailed ? "border-rose-500/30" : isQueued ? "border-zinc-700" : "border-teal-500/30";
-  const iconBg      = isDone ? "bg-emerald-500/15 text-emerald-400" : isFailed ? "bg-rose-500/15 text-rose-400" : isQueued ? "bg-zinc-800 text-zinc-400" : "bg-teal-500/15 text-teal-400";
+  const iconBg = isDone ? "bg-emerald-500/15 text-emerald-400" : isFailed ? "bg-rose-500/15 text-rose-400" : isQueued ? "bg-zinc-800 text-zinc-400" : "bg-teal-500/15 text-teal-400";
 
   return (
     <div className={`fixed bottom-6 right-6 z-50 w-80 rounded-2xl border ${borderColor} bg-zinc-900/95 p-4 shadow-2xl backdrop-blur-sm`}
@@ -258,29 +258,29 @@ const GeoGrid = ({
   businessName, district, city, lastScanned, gridStatus,
   keyword, onRescan, triggeringScan,
 }: {
-  points:         GeoGridPoint[];
-  centerLat:      number;
-  centerLng:      number;
-  size?:          number;
-  businessName?:  string;
-  district?:      string;
-  city?:          string;
-  lastScanned?:   string | null;
-  gridStatus?:    string;
-  keyword?:       string | null;
-  onRescan:       () => void;
+  points: GeoGridPoint[];
+  centerLat: number;
+  centerLng: number;
+  size?: number;
+  businessName?: string;
+  district?: string;
+  city?: string;
+  lastScanned?: string | null;
+  gridStatus?: string;
+  keyword?: string | null;
+  onRescan: () => void;
   triggeringScan: boolean;
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef  = useRef<L.Map | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
-  const offset          = Math.floor(size / 2);
+  const offset = Math.floor(size / 2);
 
   useEffect(() => {
     if (!mapContainerRef.current || !centerLat || !centerLng) return;
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
-      mapInstanceRef.current  = null;
+      mapInstanceRef.current = null;
       markersLayerRef.current = null;
     }
     const map = L.map(mapContainerRef.current, { center: [centerLat, centerLng], zoom: 13, zoomControl: true });
@@ -288,13 +288,13 @@ const GeoGrid = ({
       attribution: "&copy; OSM &copy; CARTO", subdomains: "abcd", maxZoom: 20,
     }).addTo(map);
     markersLayerRef.current = L.layerGroup().addTo(map);
-    mapInstanceRef.current  = map;
+    mapInstanceRef.current = map;
     requestAnimationFrame(() => map.invalidateSize());
     const t = setTimeout(() => map.invalidateSize(), 300);
     return () => {
       clearTimeout(t);
       map.remove();
-      mapInstanceRef.current  = null;
+      mapInstanceRef.current = null;
       markersLayerRef.current = null;
     };
   }, [centerLat, centerLng]);
@@ -303,10 +303,10 @@ const GeoGrid = ({
     () => points?.map((p) => `${p.lat},${p.lng},${p.rank}`).join("|") || "",
     [points],
   );
-  
+
 
   useEffect(() => {
-    const map   = mapInstanceRef.current;
+    const map = mapInstanceRef.current;
     const layer = markersLayerRef.current;
     if (!map || !layer || !points?.length || points[0]?.lat == null) return;
 
@@ -325,14 +325,14 @@ const GeoGrid = ({
           const p = Number(point.rank);
           if (!isNaN(p)) rank = p;
         }
-        const isCenter  = row === offset && col === offset;
-        const style     = getRankStyle(rank);
-        const label     = rank === null ? "—" : rank >= 20 ? "20+" : `#${rank}`;
+        const isCenter = row === offset && col === offset;
+        const style = getRankStyle(rank);
+        const label = rank === null ? "—" : rank >= 20 ? "20+" : `#${rank}`;
         const rankColor = style.fillColor;
 
         if (rank !== null || isCenter) {
           L.circleMarker([lat, lng], { radius: isCenter ? 52 : style.radius + 14, color: rankColor, fillColor: rankColor, weight: 0, fillOpacity: isCenter ? 0.18 : 0.12, interactive: false }).addTo(layer);
-          L.circleMarker([lat, lng], { radius: isCenter ? 34 : style.radius + 4,  color: rankColor, fillColor: rankColor, weight: 0, fillOpacity: isCenter ? 0.28 : 0.2,  interactive: false }).addTo(layer);
+          L.circleMarker([lat, lng], { radius: isCenter ? 34 : style.radius + 4, color: rankColor, fillColor: rankColor, weight: 0, fillOpacity: isCenter ? 0.28 : 0.2, interactive: false }).addTo(layer);
         }
         const marker = L.circleMarker([lat, lng], {
           radius: isCenter ? 22 : style.radius,
@@ -344,7 +344,7 @@ const GeoGrid = ({
 
         if (rank !== null || isCenter) {
           const isTop = rank !== null && rank <= 3;
-          const html  = isCenter
+          const html = isCenter
             ? `<div style="display:flex;flex-direction:column;align-items:center;pointer-events:none;"><span style="font-size:14px;">📍</span><span style="font-family:system-ui;font-size:10px;font-weight:900;color:#fff;text-shadow:0 0 4px #000;">${label}</span></div>`
             : `<div style="font-family:system-ui;font-size:${isTop ? "12px" : "10px"};font-weight:900;color:#fff;text-shadow:0 0 3px #000;text-align:center;pointer-events:none;">${label}</div>`;
           L.marker([lat, lng], { icon: L.divIcon({ html, className: "", iconSize: [40, 20], iconAnchor: [20, 10] }), interactive: false }).addTo(layer);
@@ -372,10 +372,10 @@ const GeoGrid = ({
       return () => clearTimeout(t);
     }
     else { const t = setTimeout(draw, 400); return () => clearTimeout(t); }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsKey, centerLat, centerLng, offset, businessName, district, city]);
 
-  const hasPoints  = points?.length > 0 && points[0]?.lat != null;
+  const hasPoints = points?.length > 0 && points[0]?.lat != null;
   const isScanning = gridStatus === "scanning" || gridStatus === "pending";
 
   if (!hasPoints && !isScanning) {
@@ -410,16 +410,16 @@ const GeoGrid = ({
 // ─── Onboarding Wizard ────────────────────────────────────────────────────────
 
 const OnboardingWizard = ({ onComplete, authConfig }: { onComplete: () => void; authConfig: any }) => {
-  const [step,          setStep]          = useState(1);
-  const [saving,        setSaving]        = useState(false);
-  const [suggestions,   setSuggestions]   = useState<string[]>([]);
-  const [selectedKws,   setSelectedKws]   = useState<Set<string>>(new Set());
-  const [customKw,      setCustomKw]      = useState("");
-  const [loadingKws,    setLoadingKws]    = useState(false);
+  const [step, setStep] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [selectedKws, setSelectedKws] = useState<Set<string>>(new Set());
+  const [customKw, setCustomKw] = useState("");
+  const [loadingKws, setLoadingKws] = useState(false);
   const [locationError, setLocationError] = useState("");
-  const mapPickerRef                      = useRef<HTMLDivElement>(null);
-  const mapRef                            = useRef<L.Map | null>(null);
-  const markerRef                         = useRef<L.Marker | null>(null);
+  const mapPickerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
 
   const [form, setForm] = useState({
@@ -450,23 +450,23 @@ const OnboardingWizard = ({ onComplete, authConfig }: { onComplete: () => void; 
       set("lat", lat.toFixed(6));
       set("lng", lng.toFixed(6));
       try {
-        const r    = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`);
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`);
         const data = await r.json();
         const addr = data.address || {};
-        if (addr.city || addr.town || addr.county)                   set("city",     addr.city || addr.town || addr.county);
+        if (addr.city || addr.town || addr.county) set("city", addr.city || addr.town || addr.county);
         if (addr.suburb || addr.neighbourhood || addr.city_district) set("district", addr.suburb || addr.neighbourhood || addr.city_district);
-        if (addr.state)    set("state",   addr.state);
+        if (addr.state) set("state", addr.state);
         if (addr.postcode) set("pincode", addr.postcode);
-      } catch {}
+      } catch { }
     });
     mapRef.current = map;
     setTimeout(() => map.invalidateSize(), 100);
     return () => {
       map.remove();
-      mapRef.current    = null;
+      mapRef.current = null;
       markerRef.current = null;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   const detectLocation = () => {
@@ -485,11 +485,11 @@ const OnboardingWizard = ({ onComplete, authConfig }: { onComplete: () => void; 
           .then((r) => r.json())
           .then((data) => {
             const addr = data.address || {};
-            set("city",     addr.city || addr.town || addr.county || "");
+            set("city", addr.city || addr.town || addr.county || "");
             set("district", addr.suburb || addr.neighbourhood || addr.city_district || addr.county || "");
-            set("state",    addr.state    || "");
-            set("pincode",  addr.postcode || "");
-          }).catch(() => {});
+            set("state", addr.state || "");
+            set("pincode", addr.postcode || "");
+          }).catch(() => { });
       },
       () => setLocationError("Could not get location. Please click on the map or enter manually."),
     );
@@ -521,16 +521,16 @@ const OnboardingWizard = ({ onComplete, authConfig }: { onComplete: () => void; 
     setSaving(true);
     try {
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/onboarding`, {
-        businessName:   form.businessName,
-        lat:            Number(form.lat),
-        lng:            Number(form.lng),
-        radiusKm:       Number(form.radiusKm),
-        city:           form.city,
-        district:       form.district,
-        state:          form.state,
-        pincode:        form.pincode,
-        selfDomain:     form.selfDomain,
-        selfHotelName:  form.businessName,
+        businessName: form.businessName,
+        lat: Number(form.lat),
+        lng: Number(form.lng),
+        radiusKm: Number(form.radiusKm),
+        city: form.city,
+        district: form.district,
+        state: form.state,
+        pincode: form.pincode,
+        selfDomain: form.selfDomain,
+        selfHotelName: form.businessName,
         primaryKeyword: [...selectedKws][0] || form.primaryKeyword || `${form.businessType} in ${form.district}`,
       }, authConfig);
 
@@ -769,7 +769,7 @@ const ActionBadge = ({ type }: { type: string }) => {
 };
 
 const RankChip = ({ rank, kind }: { rank: number | null; kind: "maps" | "organic" }) => {
-  const t    = rankTone(rank);
+  const t = rankTone(rank);
   const Icon = kind === "maps" ? MapPin : Globe;
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-2 py-1 text-xs font-bold tabular-nums ring-1 ring-zinc-700/60 ${t.text}`}>
@@ -795,9 +795,9 @@ const StatCard = ({ icon: Icon, label, value, sub, accent, glow }: any) => (
 );
 
 const LocalVisibilityGauge = ({ score }: { score: number }) => {
-  const r    = 52;
-  const c    = 2 * Math.PI * r;
-  const pct  = Math.max(0, Math.min(100, score));
+  const r = 52;
+  const c = 2 * Math.PI * r;
+  const pct = Math.max(0, Math.min(100, score));
   const dash = (pct / 100) * c;
   const tone = pct >= 70 ? "#34d399" : pct >= 40 ? "#fbbf24" : "#fb7185";
   return (
@@ -849,7 +849,7 @@ const SmartInsightCard = ({ insights }: any) => {
   const [idx, setIdx] = useState(0);
   useEffect(() => setIdx(0), [insights.length]);
   if (!insights.length) return null;
-  const ins      = insights[Math.min(idx, insights.length - 1)];
+  const ins = insights[Math.min(idx, insights.length - 1)];
   const { Icon } = ins;
   return (
     <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 p-[1px] backdrop-blur-sm">
@@ -889,7 +889,7 @@ const SmartInsightCard = ({ insights }: any) => {
 };
 
 const RankStat = ({ label, rank, kind }: any) => {
-  const t    = rankTone(rank);
+  const t = rankTone(rank);
   const Icon = kind === "maps" ? MapPin : Globe;
   return (
     <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3">
@@ -911,16 +911,16 @@ const KeywordDetailPanel = ({ row }: { row: any }) => {
     : [];
 
   const tip =
-    row.actionBadge === "DEFEND"   ? "Hold position: keep GBP fresh — new photos, posts and review replies weekly."
-    : row.actionBadge === "OPTIMIZE" ? "Tighten on-page targeting and earn 2–3 local citations to climb into the pack."
-    : row.actionBadge === "TARGET"   ? "Strong opportunity: build a dedicated page + GBP service entry for this term."
-    :                                   "Validate intent and volume before investing — low priority for now.";
+    row.actionBadge === "DEFEND" ? "Hold position: keep GBP fresh — new photos, posts and review replies weekly."
+      : row.actionBadge === "OPTIMIZE" ? "Tighten on-page targeting and earn 2–3 local citations to climb into the pack."
+        : row.actionBadge === "TARGET" ? "Strong opportunity: build a dedicated page + GBP service entry for this term."
+          : "Validate intent and volume before investing — low priority for now.";
 
   return (
     <div className="space-y-4 bg-zinc-950/60 p-4 sm:p-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <RankStat label="Maps / GMB rank" rank={row.liveGmbRank}     kind="maps"    />
-        <RankStat label="Organic rank"    rank={row.liveOrganicRank} kind="organic" />
+        <RankStat label="Maps / GMB rank" rank={row.liveGmbRank} kind="maps" />
+        <RankStat label="Organic rank" rank={row.liveOrganicRank} kind="organic" />
       </div>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 lg:col-span-2">
@@ -933,8 +933,8 @@ const KeywordDetailPanel = ({ row }: { row: any }) => {
                 <AreaChart data={history} margin={{ top: 6, right: 6, left: -22, bottom: 0 }}>
                   <defs>
                     <linearGradient id={`spk-${row.keyword}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%"   stopColor="#2dd4bf" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#2dd4bf" stopOpacity={0}   />
+                      <stop offset="0%" stopColor="#2dd4bf" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#2dd4bf" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="date" tick={{ fill: "#71717a", fontSize: 10 }} tickLine={false} axisLine={false} />
@@ -1026,7 +1026,7 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
           </div>
           <button onClick={onClose} className="text-zinc-500 transition hover:text-zinc-300"><X className="h-5 w-5" /></button>
         </div>
-        
+
         <div className="p-6 space-y-4">
           <div>
             <label className="mb-1.5 block text-xs font-medium text-zinc-300">Website Link (URL)</label>
@@ -1083,14 +1083,14 @@ const SeoIntelligenceDashboard = () => {
     summary: null, trend: [], keywords: [], provider: "dataforseo",
     geoGrid: [], gridMeta: null, localConfig: null,
   });
-  const [loading,        setLoading]        = useState(true);
-  const [refreshing,     setRefreshing]     = useState(false);
-  const [saving,         setSaving]         = useState(false);
-  const [modalOpen,      setModalOpen]      = useState(false);
-  const [expanded,       setExpanded]       = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [triggeringScan, setTriggeringScan] = useState(false);
-  
+
 
   const getAuthConfig = useCallback(() => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -1105,12 +1105,12 @@ const SeoIntelligenceDashboard = () => {
       );
       const d = res.result || res;
       setData({
-        summary:     d.summary     || null,
-        trend:       d.trend       || [],
-        keywords:    d.keywords    || [],
-        provider:    d.provider    || "dataforseo",
-        geoGrid:     d.geoGrid     || [],
-        gridMeta:    d.gridMeta    || null,
+        summary: d.summary || null,
+        trend: d.trend || [],
+        keywords: d.keywords || [],
+        provider: d.provider || "dataforseo",
+        geoGrid: d.geoGrid || [],
+        gridMeta: d.gridMeta || null,
         localConfig: d.localConfig || null,
       });
       if (!d.localConfig?.onboardingComplete) setShowOnboarding(true);
@@ -1131,7 +1131,7 @@ const SeoIntelligenceDashboard = () => {
           `${NODE_BASE_URL}/seo/seo-intelligence`,
           { params: { t: Date.now() }, headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } },
         );
-        const d         = res.result || res;
+        const d = res.result || res;
         const newStatus = d.gridMeta?.status;
         setData((prev: any) => ({ ...prev, geoGrid: d.geoGrid || [], gridMeta: d.gridMeta || null }));
         if (newStatus === "done" || newStatus === "failed") {
@@ -1139,12 +1139,12 @@ const SeoIntelligenceDashboard = () => {
           clearInterval(interval);
           fetchData(true);
         }
-      } catch {}
+      } catch { }
     };
     poll();
     const interval = setInterval(poll, 5_000);
     return () => { stopped = true; clearInterval(interval); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.gridMeta?.status]);
 
   const onScanDone = useCallback(() => {
@@ -1155,20 +1155,20 @@ const SeoIntelligenceDashboard = () => {
 
   const { summary, trend, keywords, provider, geoGrid, gridMeta, localConfig } = data;
   const localKeywords = keywords.filter((k: any) => !k.targetUrl);
-  
+
   const insights = useMemo(() => buildInsights(keywords), [keywords]);
 
 
   const local = useMemo(() => {
-    const list       = keywords || [];
-    const inPack     = list.filter((k: any) => k.liveGmbRank != null && k.liveGmbRank <= 3).length;
+    const list = keywords || [];
+    const inPack = list.filter((k: any) => k.liveGmbRank != null && k.liveGmbRank <= 3).length;
     const mapsRanked = list.filter((k: any) => k.liveGmbRank != null);
-    const orgRanked  = list.filter((k: any) => k.liveOrganicRank != null);
-    const avgMaps    = mapsRanked.length ? +(mapsRanked.reduce((s: number, k: any) => s + k.liveGmbRank, 0) / mapsRanked.length).toFixed(1) : null;
-    const avgOrg     = orgRanked.length  ? +(orgRanked.reduce((s: number, k: any) => s + k.liveOrganicRank, 0) / orgRanked.length).toFixed(1) : null;
-    const total      = list.length || 1;
-    const packScore  = (inPack / total) * 100;
-    const orgScore   = (orgRanked.filter((k: any) => k.liveOrganicRank <= 10).length / total) * 100;
+    const orgRanked = list.filter((k: any) => k.liveOrganicRank != null);
+    const avgMaps = mapsRanked.length ? +(mapsRanked.reduce((s: number, k: any) => s + k.liveGmbRank, 0) / mapsRanked.length).toFixed(1) : null;
+    const avgOrg = orgRanked.length ? +(orgRanked.reduce((s: number, k: any) => s + k.liveOrganicRank, 0) / orgRanked.length).toFixed(1) : null;
+    const total = list.length || 1;
+    const packScore = (inPack / total) * 100;
+    const orgScore = (orgRanked.filter((k: any) => k.liveOrganicRank <= 10).length / total) * 100;
     const visibility = list.length ? 0.65 * packScore + 0.35 * orgScore : 0;
     return { inPack, avgMaps, avgOrg, visibility };
   }, [keywords]);
@@ -1178,8 +1178,8 @@ const SeoIntelligenceDashboard = () => {
     try {
       setSaving(true);
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/track`, {
-        keywords:      kws,
-        selfDomain:    localConfig?.selfDomain   || "",
+        keywords: kws,
+        selfDomain: localConfig?.selfDomain || "",
         selfHotelName: localConfig?.businessName || "",
       }, getAuthConfig());
       setModalOpen(false);
@@ -1188,7 +1188,7 @@ const SeoIntelligenceDashboard = () => {
     finally { setSaving(false); }
   };
 
-  
+
 
   const handleRefresh = async () => {
     try {
@@ -1230,8 +1230,8 @@ const SeoIntelligenceDashboard = () => {
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/trigger-grid-scan`, {}, getAuthConfig());
       setData((prev: any) => ({
         ...prev,
-        geoGrid:     [],
-        gridMeta:    { ...(prev.gridMeta || {}), status: "pending" },
+        geoGrid: [],
+        gridMeta: { ...(prev.gridMeta || {}), status: "pending" },
         localConfig: { ...prev.localConfig, radiusKm: r },
       }));
       fetchData(true);
@@ -1248,7 +1248,7 @@ const SeoIntelligenceDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen rounded-3xl bg-gradient-to-b from-zinc-950 via-zinc-950 to-black p-6 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-950 to-black p-6 sm:p-8">
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.025]"
         style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
 
@@ -1278,11 +1278,10 @@ const SeoIntelligenceDashboard = () => {
                 <span className="text-[11px] text-zinc-500">Radius:</span>
                 {RADIUS_OPTIONS.map((r) => (
                   <button key={r} onClick={() => handleRadiusChange(r)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                      localConfig?.radiusKm === r
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${localConfig?.radiusKm === r
                         ? "bg-emerald-500/20 text-emerald-300 ring-1 ring-emerald-500/40"
                         : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
-                    }`}>
+                      }`}>
                     {r}km
                   </button>
                 ))}
@@ -1337,7 +1336,7 @@ const SeoIntelligenceDashboard = () => {
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             {refreshing ? "Refreshing…" : "Refresh"}
           </button>
-         
+
           <button onClick={() => setModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-teal-500">
             <Plus className="h-4 w-4" /> Add keywords
@@ -1381,9 +1380,9 @@ const SeoIntelligenceDashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {gridMeta?.status === "done"     && <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20"><CheckCircle className="h-3.5 w-3.5" /> Updated</span>}
+              {gridMeta?.status === "done" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20"><CheckCircle className="h-3.5 w-3.5" /> Updated</span>}
               {gridMeta?.status === "scanning" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-400 ring-1 ring-amber-500/20"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Scanning…</span>}
-              {gridMeta?.status === "failed"   && <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-400 ring-1 ring-rose-500/20"><AlertCircle className="h-3.5 w-3.5" /> Failed</span>}
+              {gridMeta?.status === "failed" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-400 ring-1 ring-rose-500/20"><AlertCircle className="h-3.5 w-3.5" /> Failed</span>}
               <button onClick={handleTriggerGridScan}
                 disabled={gridMeta?.status === "scanning" || gridMeta?.status === "pending" || triggeringScan}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 transition hover:text-zinc-200 disabled:opacity-40">
@@ -1423,10 +1422,10 @@ const SeoIntelligenceDashboard = () => {
 
       {/* ── Stat Cards ── */}
       <div className="relative mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Hash}   label="Keywords tracked" value={summary ? fmt(summary.totalKeywords) : "—"} sub={`in ${localConfig?.city || "your area"}`}  accent="bg-emerald-400" glow="bg-emerald-400" />
-        <StatCard icon={MapPin} label="In Map 3-Pack"    value={fmt(local.inPack)}                          sub="top-3 on Maps"                               accent="bg-teal-400"   glow="bg-teal-400"   />
-        <StatCard icon={Globe}  label="Avg organic rank" value={local.avgOrg != null ? fmtRank(local.avgOrg) : "—"} sub="organic search"                      accent="bg-amber-300"  glow="bg-amber-300"  />
-        <StatCard icon={Target} label="Opportunities"    value={summary ? fmt(summary.opportunities) : "—"} sub="gap terms to win"                            accent="bg-emerald-300" glow="bg-emerald-300" />
+        <StatCard icon={Hash} label="Keywords tracked" value={summary ? fmt(summary.totalKeywords) : "—"} sub={`in ${localConfig?.city || "your area"}`} accent="bg-emerald-400" glow="bg-emerald-400" />
+        <StatCard icon={MapPin} label="In Map 3-Pack" value={fmt(local.inPack)} sub="top-3 on Maps" accent="bg-teal-400" glow="bg-teal-400" />
+        <StatCard icon={Globe} label="Avg organic rank" value={local.avgOrg != null ? fmtRank(local.avgOrg) : "—"} sub="organic search" accent="bg-amber-300" glow="bg-amber-300" />
+        <StatCard icon={Target} label="Opportunities" value={summary ? fmt(summary.opportunities) : "—"} sub="gap terms to win" accent="bg-emerald-300" glow="bg-emerald-300" />
       </div>
 
       {/* ── Rank Trend Chart ── */}
@@ -1446,8 +1445,8 @@ const SeoIntelligenceDashboard = () => {
               <AreaChart data={trend} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="rankFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#10b981" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0}    />
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
@@ -1509,8 +1508,8 @@ const SeoIntelligenceDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                {localKeywords.map((row: any, i: number) => {
-                    const key    = row._id || row.keyword || String(i);
+                  {localKeywords.map((row: any, i: number) => {
+                    const key = row._id || row.keyword || String(i);
                     const isOpen = expanded === key;
                     return (
                       <React.Fragment key={key}>
@@ -1524,7 +1523,7 @@ const SeoIntelligenceDashboard = () => {
                           </td>
                           <td className="py-3.5 text-right font-semibold tabular-nums text-zinc-200">{fmt(row.searchVolume)}</td>
                           <td className="py-3.5 text-right tabular-nums text-zinc-300">{fmtCurrency(row.cpc)}</td>
-                          <td className="py-3.5 text-center"><RankChip rank={row.liveGmbRank}     kind="maps"    /></td>
+                          <td className="py-3.5 text-center"><RankChip rank={row.liveGmbRank} kind="maps" /></td>
                           <td className="py-3.5 text-center"><RankChip rank={row.liveOrganicRank} kind="organic" /></td>
                           <td className="py-3.5 pl-6"><DifficultyMeter value={row.keywordDifficulty} /></td>
                           <td className="py-3.5"><ActionBadge type={row.actionBadge} /></td>
@@ -1562,7 +1561,7 @@ const SeoIntelligenceDashboard = () => {
         saving={saving}
         localConfig={localConfig}
       />
-      
+
 
       {/* ── SSE Scan Toast ── */}
       {scanToastActive && scanProgress && scanProgress.status !== "queued" && (
@@ -1576,4 +1575,4 @@ const SeoIntelligenceDashboard = () => {
   );
 };
 
-export default SeoIntelligenceDashboard ;
+export default SeoIntelligenceDashboard;

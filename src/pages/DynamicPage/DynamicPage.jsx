@@ -50,7 +50,6 @@ import Linktree from "../Linktree/Linktree";
 import GoogleMapItiration from "../GoogleListing/GoogleMapItiration";
 import GMBProfile from "../GoogleListing/GMBProfile";
 import InfluencerMarketing from "../Social/InfluencerMarketing";
-import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
@@ -91,6 +90,7 @@ import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
+import WebsiteSeo from "../SEO/WebsiteSeo";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -99,7 +99,9 @@ const DynamicPage = () => {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
     [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
-    [`${BASE_PATH}/${hid}/local-seo`]: <SeoIntelligenceDashboard />,
+    [`${BASE_PATH}/${hid}/seo`]: <SeoIntelligenceDashboard />,
+    [`${BASE_PATH}/${hid}/seo/local-seo`]: <SeoIntelligenceDashboard />,
+    [`${BASE_PATH}/${hid}/seo/website-seo`]: <WebsiteSeo />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,

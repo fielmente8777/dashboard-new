@@ -7,6 +7,7 @@ import {
 import { FiCalendar, FiTrendingUp, FiUsers, FiEye, FiActivity, FiClock } from "react-icons/fi";
 import Loader from "./Loader";
 import { BASE_URL } from "../data/constant";
+import { useSelector } from "react-redux";
 
 const dateOptions = [
   { label: "Today", start: "today", end: "today" },
@@ -28,6 +29,11 @@ const TAB_CONFIG = {
 
 const GoogleAnalyticsChart = () => {
   const [chartData, setChartData] = useState([]);
+    const {
+    user: hotel,
+    hid,
+    authUser,
+  } = useSelector((state) => state.userProfile);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [properties, setProperties] = useState([]);
@@ -155,6 +161,9 @@ const GoogleAnalyticsChart = () => {
     return formatNumber(value);
   };
 
+
+  console.log("Dashboard hotel ",hotel.Profile.hotelEmail)
+
   if (loading && !isSwitching) {
     return (
       <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -183,7 +192,7 @@ const GoogleAnalyticsChart = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {properties.length > 0 && (
+          {hotel?.Profile?.hotelEmail==="abhijeet@eazotel.com"&&properties.length > 0 && (
             <select
               value={activePropertyId}
               onChange={handlePropertyChange}
