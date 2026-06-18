@@ -12,6 +12,7 @@ import {
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
+  FaMapLocationDot,
   FaMeta,
   FaRankingStar,
   FaUser,
@@ -52,6 +53,7 @@ import { TbMessageChatbotFilled, TbSeo } from "react-icons/tb";
 import { TiSocialSkype } from "react-icons/ti";
 import {
   RiMetaFill,
+  RiSeoLine,
   RiWechatChannelsLine,
   RiWhatsappFill,
 } from "react-icons/ri";
@@ -296,12 +298,12 @@ export const SidebarData = [
       {
         name: "Local Seo",
         link: `seo/local-seo`,
-        icon: <FaFacebook size={18} />,
+        icon: <FaMapLocationDot size={18} />,
       },
       {
         name: "Website Seo",
         link: `seo/website-seo`,
-        icon: <FaFacebook size={18} />,
+        icon: <RiSeoLine size={18} />,
       },
     ]
   },
