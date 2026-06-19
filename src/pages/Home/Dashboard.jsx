@@ -143,6 +143,7 @@ const Dashboard = () => {
   const total = data?.totalLeads?.[0]?.count || 0;
   const converted = data?.convertedLeads?.[0]?.count || 0;
   const whatsapp = data?.totalWhatsappConversations || 0;
+  const today=data?.todayLeads||0;
 
   const conversionRate = total ? ((converted / total) * 100).toFixed(1) : 0;
 
@@ -177,12 +178,12 @@ const Dashboard = () => {
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
-        <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
+        {/* <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
           CRM Data
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6  text-app-text dark:text-app-text-muted">
+        </h2> */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4  text-app-text dark:text-app-text-muted">
           <DashboardCard amount={total} label={"Total Leads"} />
-          {/* <DashboardCard amount={total} label={"Today Leads"} /> */}
+          <DashboardCard amount={today} label={"Today Leads"} />
           <DashboardCard amount={converted} label={"Converted Leads"} />
           <DashboardCard
             amount={conversionRate}
@@ -193,8 +194,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-     {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
-     {/* <div className="mt-8 mb-4">
+      {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
+      {/* <div className="mt-8 mb-4">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-app-text dark:text-app-text tracking-tight">
             Website Actions{" "}
@@ -275,102 +276,177 @@ const Dashboard = () => {
       </div> */}
 
       {/* CHARTS SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Source Distribution */}
-        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-4">
-            Source Distribution
-          </h2>
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart
-              data={cleanedSource}
-              layout="vertical"
-              margin={{ right: 30 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis
-                type="category"
-                dataKey="name"
-                width={100}
-                style={{ fontSize: "15px" }}
-                tickFormatter={(value) =>
-                  value.charAt(0).toUpperCase() + value.slice(1)
-                }
-              />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--tooltip-bg)",
-                  border: "1px solid var(--tooltip-border)",
-                  borderRadius: "16px",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                  color: "var(--tooltip-text)",
-                }}
-                itemStyle={{
-                  color: "var(--tooltip-text)",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                }}
-                labelStyle={{
-                  color: "var(--tooltip-label)",
-                  fontWeight: 600,
-                }}
-              />
-              <Bar dataKey="count" radius={[0, 8, 8, 0]}>
-                {cleanedSource.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                ))}
-                <LabelList dataKey="count" position="right" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Source Distribution — bold ranked leaderboard */}
+        <div className="bg-app-surface dark:bg-app-surface drop-shadow-xl p-4 md:p-6">
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold tracking-wider uppercase text-app-text/50 dark:text-app-text/50 mb-1">
+              Overview
+            </p>
+            <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+              Source distribution
+            </h2>
+          </div>
+
+          {(() => {
+            const sorted = [...cleanedSource].sort((a, b) => b.count - a.count);
+            const max = Math.max(...sorted.map((d) => d.count));
+            const total = sorted.reduce((sum, d) => sum + d.count, 0);
+
+            return (
+              <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto pr-1">
+                {sorted.map((item, index) => {
+                  const color = COLORS[index % COLORS.length];
+                  const pct = total ? Math.round((item.count / total) * 100) : 0;
+                  const widthPct = max ? (item.count / max) * 100 : 0;
+                  return (
+                    <div key={item.name} className="flex items-center gap-3">
+                      <span
+                        className="flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold shrink-0"
+                        style={{
+                          backgroundColor: `${color}26`,
+                          color: color,
+                        }}
+                      >
+                        {index + 1}
+                      </span>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[13px] font-semibold text-app-text dark:text-app-text truncate capitalize">
+                            {item.name}
+                          </span>
+                          <span className="text-[13px] font-bold text-app-text dark:text-app-text shrink-0 ml-2">
+                            {item.count}
+                            <span className="text-[11px] font-medium text-app-text/40 dark:text-app-text/40 ml-1">
+                              {pct}%
+                            </span>
+                          </span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-app-text/[0.06] dark:bg-white/[0.08] overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                              width: `${widthPct}%`,
+                              backgroundColor: color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
 
-        {/* Status Breakdown */}
-        <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-3 md:p-5">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-4">
-            Stages Breakdown
-          </h2>
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={cleanedStatus} margin={{ top: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" style={{ fontSize: "15px" }} />
-              <YAxis width={50} />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--tooltip-bg)",
-                  border: "1px solid var(--tooltip-border)",
-                  borderRadius: "16px",
-                  backdropFilter: "blur(16px)",
-                  WebkitBackdropFilter: "blur(16px)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                  color: "var(--tooltip-text)",
-                }}
-                itemStyle={{
-                  color: "var(--tooltip-text)",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                }}
-                labelStyle={{
-                  color: "var(--tooltip-label)",
-                  fontWeight: 600,
-                }}
-              />
-              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]}>
-                <LabelList dataKey="count" position="top" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Status Breakdown — bold donut with center total */}
+        <div className="bg-app-surface dark:bg-app-surface drop-shadow-xl p-4 md:p-6">
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold tracking-wider uppercase text-app-text/50 dark:text-app-text/50 mb-1">
+              Pipeline
+            </p>
+            <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+              Stages breakdown
+            </h2>
+          </div>
+
+          {(() => {
+            const total = cleanedStatus.reduce((sum, d) => sum + d.count, 0);
+            return (
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="relative shrink-0" style={{ width: 200, height: 200 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip
+                        contentStyle={{
+                          background: "var(--tooltip-bg)",
+                          border: "1px solid var(--tooltip-border)",
+                          // borderRadius: "16px",
+                          backdropFilter: "blur(16px)",
+                          WebkitBackdropFilter: "blur(16px)",
+                          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                          color: "var(--tooltip-text)",
+                          padding: "10px 14px",
+                        }}
+                        itemStyle={{
+                          color: "var(--tooltip-text)",
+                          fontSize: "14px",
+                          fontWeight: 500,
+                        }}
+                        labelStyle={{
+                          color: "var(--tooltip-label)",
+                          fontWeight: 600,
+                        }}
+                      />
+                      <Pie
+                        data={cleanedStatus}
+                        dataKey="count"
+                        nameKey="name"
+                        innerRadius={62}
+                        outerRadius={92}
+                        paddingAngle={3}
+                        cornerRadius={6}
+                        animationDuration={700}
+                        animationEasing="ease-out"
+                      >
+                        {cleanedStatus.map((_, index) => (
+                          <Cell
+                            key={index}
+                            fill={COLORS[index % COLORS.length]}
+                            stroke="none"
+                          />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-bold text-app-text dark:text-app-text">
+                      {total}
+                    </span>
+                    <span className="text-[11px] font-medium text-app-text/50 dark:text-app-text/50 uppercase tracking-wide">
+                      Total
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2.5 w-full">
+                  {cleanedStatus.map((item, index) => {
+                    const color = COLORS[index % COLORS.length];
+                    const pct = total ? Math.round((item.count / total) * 100) : 0;
+                    return (
+                      <div key={item.name} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span
+                            className="w-3 h-3 rounded-[4px] shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-[13px] font-medium text-app-text dark:text-app-text truncate capitalize">
+                            {item.name}
+                          </span>
+                        </div>
+                        <span className="text-[13px] font-bold text-app-text dark:text-app-text shrink-0">
+                          {item.count}
+                          <span className="text-[11px] font-medium text-app-text/40 dark:text-app-text/40 ml-1">
+                            {pct}%
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-4">
         <GoogleAnalyticsChart />
         <TrafficSources />
         <TopPagesTable />
-        <GscSettings />
+        {/* <GscSettings /> */}
         <SearchConsoleQueries />
         <ConversionEvents />
         <DeviceAnalytics />
@@ -386,15 +462,6 @@ const Dashboard = () => {
       {/* <div className="w-full space-y-6 mt-6">
         <WebsiteSeoDashboard />
       </div> */}
-
-      {/* FUNNEL */}
-      <div className="bg-app-surface dark:bg-app-surface rounded md:rounded-lg p-5">
-        <h2 className="text-lg font-semibold mb-4">Lead Funnel</h2>
-
-        <FunnelBar label="Open" value={getStatusCount("open")} total={total} />
-        <FunnelBar label="Hot" value={getStatusCount("hot")} total={total} />
-        <FunnelBar label="Converted" value={converted} total={total} />
-      </div>
     </div>
   );
 };

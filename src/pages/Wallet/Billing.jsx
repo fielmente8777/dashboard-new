@@ -155,7 +155,7 @@ const AppCard = ({ app, isSelected, onToggle, locked, isPurchased }) => {
         {IconMap[app.name] || "🔌"}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-semibold text-gray-800 truncate">
+        <div className="text-[13px] font-semibold text-surface truncate">
           {app.name}
         </div>
         <div className="text-xs text-gray-400 mt-0.5">
@@ -764,7 +764,7 @@ const Billing = () => {
                 </span>
                 <div className="flex-1 h-px bg-gray-200"></div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {plans?.map((plan) => {
                   if (!plan.price) return null;
                   return (

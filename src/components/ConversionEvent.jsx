@@ -42,9 +42,9 @@ const ConversionEvents = () => {
   const maxEventCount = Math.max(...data.events.map(e => e.eventCount));
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
       {/* Top Events */}
-      <div className="bg-app-surface rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-app-surface drop-shadow-xl p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center">
             <FiZap className="w-4 h-4 text-orange-500" />
@@ -77,7 +77,7 @@ const ConversionEvents = () => {
 
 
       {/* Conversions */}
-      <div className="bg-app-surface rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-app-surface drop-shadow-xl p-6">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center">
             <FiTarget className="w-4 h-4 text-green-600" />
