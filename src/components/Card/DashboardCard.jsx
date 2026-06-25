@@ -14,11 +14,11 @@ const DashboardCard = ({ amount = 0, label = "Label", progress = 0 }) => {
   };
 
   return (
-    <div className="h-[100px] md:h-auto p-4 rounded md:rounded-lg md:cardShadow overflow-hidden bg-app-surface border border-app-border dark:border-app-border  flex flex-col justify-between transition-colors duration-200">
+    <div className="h-[100px] md:h-auto p-4 drop-shadow-xl  overflow-hidden bg-app-surface  flex flex-col justify-between transition-colors duration-200">
       <div className="flex justify-between items-start">
         <div>
           {/* <p className="text-2xl font-bold text-primary/90">₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p> */}
-          <p className="text-2xl md:text-4xl font-bold text-primary/90 dark:text-app-text-muted">{amount}</p>
+          <p className="text-2xl md:text-4xl font-bold dark:text-app-text-muted">{amount}</p>
           <p className="text-sm md:text-lg font-medium text-app-text-muted mt-0 md:mt-5">{label}</p>
         </div>
         <div className="md:p-2 block md:hidden font-bold rounded-md">

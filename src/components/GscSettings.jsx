@@ -146,11 +146,11 @@ const GscSettings = () => {
 
   // ---- FORM VIEW: not configured, or user clicked Edit ----
   return (
-    <div className="bg-app-surface p-6 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
+    <div className="bg-app-surface p-6 ">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <FiGlobe className="w-5 h-5 text-app-text dark:text-app-text-muted " />
-          <h2 className="text-lg font-bold text-app-text dark:text-app-text">Search Console Settings</h2>
+          <h2 className="text-md font-semibold">Search Console</h2>
         </div>
         {/* Allow cancelling the edit only if a domain was already configured */}
         {isConfigured && (
@@ -211,7 +211,7 @@ const GscSettings = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-md text-sm font-medium transition disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-md text-sm font-medium transition disabled:opacity-60"
           >
             {savedFlash ? (
               <><FiCheckCircle className="w-4 h-4" /> Saved!</>

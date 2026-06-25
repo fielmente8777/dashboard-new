@@ -492,38 +492,18 @@ const PhoneNumberCard = ({ phoneNumber }) => {
 
       {/* Status Summary Row */}
       <div className="flex justify-between items-center gap-3 mb-4 text-sm">
-        <div>
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-medium ${
-              isConnected
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-600"
-            }`}
-          >
-            {isConnected ? (
-              <MdLink className="w-4 h-4" />
-            ) : (
-              <MdLinkOff className="w-4 h-4" />
-            )}
-            {isConnected ? "Connected" : "Not Connected"}
-          </span>
-          {!isCloudApi && (
-            <span className="text-xs text-gray-500">
-              Requires Cloud API to send messages
-            </span>
-          )}
-        </div>
+        
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <label className="inline-block">Enable Cloud API</label>
           <ChannelToggle />
-        </div>
+        </div> */}
       </div>
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
         {/* Verification */}
-        <div className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2">
+        {/* <div className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2">
           <span className="text-gray-600 font-medium">Verification</span>
           <span
             className={`inline-flex items-center gap-1 font-medium ${
@@ -539,6 +519,26 @@ const PhoneNumberCard = ({ phoneNumber }) => {
             )}
             {phoneNumber.codeVerificationStatus}
           </span>
+        </div> */}
+        <div>
+          <span
+            className={`inline-flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md font-medium
+            
+                `}
+          >
+            
+            <span className="text-gray-600 font-medium">Cloud API:</span> {isConnected ? (
+              <MdLink className="w-4 h-4" />
+            ) : (
+              <MdLinkOff className="w-4 h-4" />
+            )}
+            {isConnected ? "Connected" : "Not Connected"}
+          </span>
+          {!isCloudApi && (
+            <span className="text-xs text-gray-500">
+              Requires Cloud API to send messages
+            </span>
+          )}
         </div>
 
         {/* Platform */}

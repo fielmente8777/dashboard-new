@@ -199,7 +199,7 @@ const SearchConsoleQueries = () => {
                         {i + 1}
                       </span>
                       <span
-                        className="font-semibold text-app-text dark:text-app-text truncate"
+                        className="font-semibold text-slate-800 truncate "
                         title={item.keyword}
                       >
                         {item.keyword}
@@ -244,7 +244,7 @@ const SearchConsoleQueries = () => {
   const showSummary = !loading && !statusCode && queries.length > 0;
 
   return (
-    <div className="bg-app-surface p-6 rounded-2xl shadow-[0_1px_3px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] border border-slate-200/80 mt-6 transition-all duration-300 hover:shadow-[0_1px_3px_rgba(15,23,42,0.06),0_12px_32px_-12px_rgba(15,23,42,0.18)]">
+    <div className="bg-app-surface p-6 drop-shadow-xl mt-6 ">
       <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br text-app-text dark:text-app-text-muted to-blue-700 text-white shadow-sm">

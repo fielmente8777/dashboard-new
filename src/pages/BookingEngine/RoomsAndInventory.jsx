@@ -194,7 +194,7 @@ const RoomsAndInventory = () => {
 
     setPriceBulkupdate(updatedBulkPriceUpdate);
     setPriceData(updatePriceData);
-    // console.log(updatedBulkPriceUpdate)
+    console.log(updatedBulkPriceUpdate)
   };
 
   const InventoryUpdate = (value, roomtype, date) => {

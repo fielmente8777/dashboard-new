@@ -49,7 +49,7 @@ const TopPagesTable = () => {
   const maxViews = Math.max(...pages.map(p => p.views));
 
   return (
-    <div className="bg-app-surface dark:bg-app-surface p-6 rounded-xl shadow-sm border border-gray-200 mt-6">
+    <div className="bg-app-surface dark:bg-app-surface p-6 drop-shadow-xl mt-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-semibold text-app-text dark:text-app-text">Top Pages</h2>
@@ -72,19 +72,19 @@ const TopPagesTable = () => {
             {pages.map((page, i) => {
               const widthPct = maxViews ? (page.views / maxViews) * 100 : 0;
               return (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/20 transition-colors">
+                <tr key={i} className=" hover:bg-gray-50/20 transition-colors">
                   <td className="py-4 pr-4 max-w-[320px]">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-app-text-faint w-5">{i + 1}.</span>
                       <div className="flex flex-col">
-                        <span className="font-medium text-app-text dark:text-app-text-faint truncate" title={page.fullUrl}>
+                        <span className="font-medium whitespace-wrap max-w-4xl" title={page.fullUrl}>
                           {page.pageName}
                         </span>
                         <a
                           href={page.fullUrl} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-[11px] text-gray-500 hover:text-blue-600 hover:underline transition-colors truncate flex items-center gap-1" 
+                          className="text-[11px] text-gray-400 hover:text-blue-600 hover:underline transition-colors truncate flex items-center gap-1" 
                           title={page.fullUrl}
                         >
                           <FiExternalLink className="w-3 h-3 flex-shrink-0" />

@@ -50,6 +50,7 @@ const     GoogleAnalyticsChart = () => {
     const { user: hotel, authUser } = useSelector((state) => state.userProfile);
     const profile = hotel?.Profile;
   const [chartData, setChartData] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [properties, setProperties] = useState([]);
@@ -182,6 +183,8 @@ const     GoogleAnalyticsChart = () => {
     return formatNumber(value);
   };
 
+
+
   if (loading && !isSwitching) {
     return (
       <div className="flex justify-center items-center h-64 bg-app-surface dark:bg-app-surface rounded-lg shadow-sm border border-gray-200">
@@ -201,18 +204,18 @@ const     GoogleAnalyticsChart = () => {
   const tabKeys = Object.keys(TAB_CONFIG);
 
   return (
-    <div className="bg-app-surface dark:bg-app-surface rounded-xl shadow-sm border border-gray-200 w-full overflow-hidden">
+    <div className="bg-app-surface dark:bg-app-surface  drop-shadow-xl w-full overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-app-surface dark:bg-app-surface">
         <div>
-          <h2 className="text-xl font-semibold text-app-text dark:text-app-text">
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
             Eaz Analytics
           </h2>
           {/* <p className="text-xs text-gray-500 mt-0.5">{email}</p> */}
         </div>
 
         <div className="flex items-center gap-3">
-        {properties.length > 0 && authUser?.emailId==="abhijeet@eazotel.com" && authUser?.emailId==="sachin@fielmente.com" &&(
+          {hotel?.Profile?.hotelEmail==="abhijeet@eazotel.com"&&properties.length > 0 && (
             <select
               value={activePropertyId}
               onChange={handlePropertyChange}
@@ -259,7 +262,7 @@ const     GoogleAnalyticsChart = () => {
                       setDateRange(opt);
                       setIsDateDropdownOpen(false);
                     }}
-                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 ${
+                    className={`px-4 py-1 text-sm cursor-pointer hover:bg-gray-50 ${
                       dateRange.label === opt.label
                         ? "bg-blue-50 text-blue-600 font-medium"
                         : "text-app-text dark:text-app-text-muted"

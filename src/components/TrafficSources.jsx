@@ -55,12 +55,12 @@ const  TrafficSources = () => {
   const totalSessions = data.channels.reduce((s, c) => s + c.sessions, 0);
 
   return (
-    <div className="bg-white dark:bg-app-surface rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
-      <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-6">Traffic Sources</h2>
+    <div className="">
+      <h2 className="text-lg font-semibold text-app-text dark:text-app-text mb-4">Traffic Sources</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Donut Chart */}
-        <div>
+        <div className="bg-app-surface p-4 drop-shadow-xl">
           <h3 className="text-sm font-medium text-app-text dark:text-app-text-muted mb-4">By Channel</h3>
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -96,7 +96,7 @@ const  TrafficSources = () => {
         </div>
 
         {/* Channel List with bars */}
-        <div>
+        <div className="p-4 bg-app-surface  drop-shadow-xl"> 
           <h3 className="text-sm font-medium text-app-text dark:text-app-text-muted mb-4">Channel Performance</h3>
           <div className="space-y-3">
             {data.channels.slice(0, 6).map((ch, i) => {
@@ -130,11 +130,9 @@ const  TrafficSources = () => {
             })}
           </div>
         </div>
-      </div>
-
-      {/* Source/Medium table */}
+          {/* Source/Medium table */}
       {data.sources.length > 0 && (
-        <div className="mt-8 pt-6 border-t border-gray-100">
+        <div className="p-4 bg-app-surface  drop-shadow-xl">
           <h3 className="text-sm font-medium text-app-text dark:text-app-text mb-4">Top Source / Medium</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
@@ -148,7 +146,7 @@ const  TrafficSources = () => {
               </thead>
               <tbody>
                 {data.sources.slice(0, 6).map((s, i) => (
-                  <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/20">
+                  <tr key={i} className=" hover:bg-gray-50/20">
                     <td className="py-3 font-medium text-app-text dark:text-app-text-faint">{s.source}</td>
                     <td className="py-3 text-app-text dark:text-app-text-faint">{s.medium}</td>
                     <td className="py-3 text-right font-semibold text-app-text dark:text-app-text-faint">{s.sessions.toLocaleString()}</td>
@@ -160,6 +158,9 @@ const  TrafficSources = () => {
           </div>
         </div>
       )}
+      </div>
+
+    
     </div>
   );
 };
