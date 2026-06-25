@@ -118,7 +118,7 @@ const SidebarChat = () => {
       (conv) =>
         conv.name?.toLowerCase().includes(lowerSearch) ||
         conv.phone?.includes(lowerSearch) ||
-        conv.lastMessage?.toLowerCase().includes(lowerSearch)
+        conv.lastMessage?.toLowerCase().includes(lowerSearch),
     );
 
     setFilteredConversations(filtered);
@@ -129,13 +129,13 @@ const SidebarChat = () => {
       .filter(
         (conv) =>
           !is24HoursCompletedFnc(
-            conv.last_message?.updated_at || conv.createdAt
-          )
+            conv.last_message?.updated_at || conv.createdAt,
+          ),
       )
       .sort(
         (a, b) =>
           new Date(b.last_message?.updated_at || b.createdAt) -
-          new Date(a.last_message?.updated_at || a.createdAt)
+          new Date(a.last_message?.updated_at || a.createdAt),
       );
 
     console.log(conver);
@@ -146,12 +146,12 @@ const SidebarChat = () => {
   const historyConversations = () => {
     return conversations
       .filter((conv) =>
-        is24HoursCompletedFnc(conv.last_message?.updated_at || conv.createdAt)
+        is24HoursCompletedFnc(conv.last_message?.updated_at || conv.createdAt),
       )
       .sort(
         (a, b) =>
           new Date(b.last_message?.updated_at || b.createdAt) -
-          new Date(a.last_message?.updated_at || a.createdAt)
+          new Date(a.last_message?.updated_at || a.createdAt),
       );
   };
 
@@ -241,7 +241,7 @@ const SidebarChat = () => {
   }, [conversations]);
 
   return (
-    <div className="w-full md:w-90 border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface">
+    <div className="w-full xl:w-90! lg:w-60! border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface">
       <div className="px-4 py-3 shadow-sm h-16 flex ">
         <input
           type="search"
@@ -252,7 +252,7 @@ const SidebarChat = () => {
         />
       </div>
 
-      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-hidden">
+      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -364,7 +364,7 @@ const SidebarChat = () => {
                 {conv.name ? (
                   <div
                     className={`size-10 rounded-full flex items-center justify-center text-white font-medium ${getAvatarColor(
-                      conv?.name
+                      conv?.name,
                     )}`}
                   >
                     {conv?.name?.charAt(0).toUpperCase()}
@@ -417,15 +417,15 @@ const SidebarChat = () => {
 
                       {conv?.adAttribution?.sourceUrl ? (
                         conv?.adAttribution?.sourceUrl.match(
-                          /^https:\/\/www.instagram.com/
+                          /^https:\/\/www.instagram.com/,
                         ) ? (
                           <InstaICon />
                         ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/www.facebook.com/
+                            /^https:\/\/www.facebook.com/,
                           ) ? (
                           <FacebookIcon />
                         ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/wa.me/
+                            /^https:\/\/wa.me/,
                           ) ? (
                           <WhatsappIcon />
                         ) : (

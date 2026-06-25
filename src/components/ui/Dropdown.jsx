@@ -136,13 +136,13 @@ export default function CustomDropdown({
   }, [open]);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       {/* BUTTON */}
       <button
         ref={buttonRef}
         type="button"
         onClick={toggleDropdown}
-        className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm ${
+        className={`py-2 w-full flex items-center justify-between px-2 rounded-lg border text-sm ${
           disabled
             ? "bg-app-surface-secondary text-app-text dark:text-app-text-faint cursor-not-allowed"
             : "bg-app-surface-secondary text-app-text dark:text-app-text-faint hover:bg-gray-50/20"
@@ -165,7 +165,9 @@ export default function CustomDropdown({
                 </span>
               ))
             ) : (
-              <span className="text-app-text dark:text-app-text-muted">Select</span>
+              <span className="text-app-text dark:text-app-text-muted">
+                Select
+              </span>
             )
           ) : (
             <span>{getLabel(selected) || label || "Select"}</span>
@@ -193,7 +195,7 @@ export default function CustomDropdown({
               top: position.top,
               zIndex,
             }}
-            className="rounded-lg bg-app-surface border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
+            className="rounded-lg bg-app-surface border border-gray-200 shadow-xl min-w-40 max-h-64 overflow-y-auto"
           >
             {options.map((opt) => {
               const isSelected = multiple

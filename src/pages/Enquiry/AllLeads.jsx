@@ -149,8 +149,8 @@ const AllLeads = () => {
 
     const cleanedLeads = leads.map((lead) =>
       Object.fromEntries(
-        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key))
-      )
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
+      ),
     );
     return cleanedLeads;
   };
@@ -306,7 +306,7 @@ const AllLeads = () => {
   const handleRowSelect = (id) => {
     if (rowSelected.length < 10) {
       setRowSelected((prev) =>
-        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
       );
     } else {
       if (rowSelected.includes(id)) {
@@ -374,38 +374,39 @@ const AllLeads = () => {
   return (
     <div className="bg-app-surface text-app-text dark:text-app-text p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
+        <div className="flex md:flex-row flex-col justify-between md:items-center space-y-2">
           <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
             All Leads
           </h2>
 
-          <div className="flex items-center">
+          <div className="flex gap-2 md:flex-row flex-wrap items-center">
             {allLeads?.length > 0 && (
               <button
                 disabled={isExporting}
                 onClick={() => setShowExportModal(true)}
-                className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+                className="bg-ternary flex-1 text-white px-4 py-2 rounded flex items-center gap-1.5 whitespace-nowrap"
               >
                 Export to Excel{" "}
                 {isExporting && <Loader color="#fefefe" size={12} />}
               </button>
             )}
+
             <ImportLead open={open} setOpen={setOpen} />
 
             <button
               onClick={() => setShowAddLeadModal(true)}
-              className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2 ml-2"
+              className="bg-primary flex-1 text-center text-white px-4 py-2 rounded flex items-center gap-2 whitespace-nowrap"
             >
               Add Lead
             </button>
           </div>
         </div>
 
-        <div className="bg-app-surface">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+        <div className="bg-app-surface md:mt-0 mt-5">
+          <div className="flex flex-wrap items-center justify-between ">
+            <div className="flex flex-wrap  items-center md:gap-5 gap-2">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 px-3 rounded-xl border border-app-border bg-app-surface-secondary text-app-text focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex flex-1 items-center gap-2 h-10 px-3 rounded-xl border border-app-border bg-app-surface-secondary text-app-text focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-app-text-faint" size={18} />
                 <input
                   type="text"
@@ -416,7 +417,7 @@ const AllLeads = () => {
               </div>
 
               {/* DATE RANGE */}
-              <div className="relative">
+              <div className="relative flex-1">
                 <div className="h-10 px-3 flex items-center text-app-text rounded-xl border border-app-border bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
@@ -449,7 +450,7 @@ const AllLeads = () => {
                 )}
               </div>
 
-              <div>
+              <div className="flex-1 min-w-40">
                 <CustomDropdown
                   label={"Source"}
                   options={Sources}
@@ -457,7 +458,7 @@ const AllLeads = () => {
                 />
               </div>
 
-              <div>
+              <div className="min-w-40 flex-1">
                 <CustomDropdown
                   label={"Stage"}
                   options={[
@@ -484,7 +485,7 @@ const AllLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="flex border border-app-border bg-app-surface rounded-2xl overflow-auto hide-scrollbar">
+        <div className="flex border border-app-border bg-app-surface md:rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
               <tr className="whitespace-nowrap">
@@ -552,7 +553,9 @@ const AllLeads = () => {
                             className="px-3 py-2 whitespace-nowrap capitalize"
                           >
                             {formatDateTime(
-                              isLeadCreatedTime ? isLeadCreatedTime : row[h.key]
+                              isLeadCreatedTime
+                                ? isLeadCreatedTime
+                                : row[h.key],
                             )}
                           </td>
                         );
@@ -636,7 +639,7 @@ const AllLeads = () => {
                       if (h.key === "Name") {
                         const isName = row[h.key];
                         const followUpDate = new Date(
-                          row["followUpDate"] || row["followUp"] || null
+                          row["followUpDate"] || row["followUp"] || null,
                         );
                         const today = new Date();
 
@@ -688,7 +691,7 @@ const AllLeads = () => {
                                   row?._id,
                                   row?.hId,
                                   value,
-                                  row?.conversationId
+                                  row?.conversationId,
                                 )
                               }
                               className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"

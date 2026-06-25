@@ -1,6 +1,6 @@
 export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
-//  export const BASE_URL = "http://127.0.0.1:5000";
+// export const BASE_URL = "http://127.0.0.1:5000";
 
 export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
 // export const NEW_BASE_URL = "http://localhost:8000";

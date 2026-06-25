@@ -95,8 +95,6 @@ const WhatsApp = () => {
     wsRef.current.connect((serverResponse) => {
       const { data } = serverResponse;
 
-      console.log(data);
-
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
@@ -160,10 +158,11 @@ const WhatsApp = () => {
     <div className="h-[calc(100vh-8vh)] flex bg-app-surface">
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full">
-          <div className="hidden md:flex w-full">
+          <div className="hidden lg:flex w-full">
             <SidebarChat />
 
             {selectedConversation ? <ChatArea /> : <Fallback />}
+
             {selectedConversation && (
               <ProfilePanel
                 selectedContact={selectedConversation}
@@ -171,17 +170,20 @@ const WhatsApp = () => {
               />
             )}
           </div>
-          <div className="flex w-full md:hidden  flex-col ">
+
+          <div className="flex w-full lg:hidden flex-col">
             {mobileActive === "sidebar" && <SidebarChat />}
 
             {mobileActive === "chatarea" && selectedConversation && (
               <ChatArea />
             )}
             {mobileActive === "profile" && selectedConversation && (
-              <ProfilePanel
-                selectedContact={selectedConversation}
-                fetchConversations={getWhatsappConversations}
-              />
+              <div>
+                <ProfilePanel
+                  selectedContact={selectedConversation}
+                  fetchConversations={getWhatsappConversations}
+                />
+              </div>
             )}
           </div>
         </div>

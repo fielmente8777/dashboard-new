@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { BsCheckAll, BsCheckLg } from "react-icons/bs";
+import { BsCheckAll, BsCheckLg, BsMenuApp } from "react-icons/bs";
 import { IoArrowBack } from "react-icons/io5";
 import { MdCall, MdChat, MdClose, MdOutlineDelete } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
@@ -566,7 +566,6 @@ const ChatArea = () => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
-      console.log(serverResponse);
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE &&
         serverResponse?.data?.ndid === localStorage.getItem("ndid") &&
@@ -630,26 +629,33 @@ const ChatArea = () => {
       {/* Header */}
       <div className="flex z-5 max-md:bg-app-surface justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
         <div className=" flex items-center">
-          <div className="mr-2 md:hidden ">
-            <IoArrowBack size={22} onClick={() => setMobileActive("sidebar")} />
+          <div className="mr-2 lg:hidden ">
+            <IoArrowBack size={20} onClick={() => setMobileActive("sidebar")} />
           </div>
-          <div
-            onClick={() => setMobileActive("profile")}
-            className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
-          >
-            {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+
+          <div>
+            <div
+              onClick={() => setMobileActive("profile")}
+              className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
+            >
+              {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            {/* <p className="text-xs md:text-sm text-gray-600 ">
+              {selectedConversation.phone}
+            </p> */}
           </div>
+
           <div onClick={() => setMobileActive("profile")}>
-            <h3 className="text-md md:text-md text-gray-600 font-medium  capitalize">
+            <h3 className="text-md md:text-md text-gray-600 font-medium capitalize">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm text-gray-600 ">
+            <p className="text-xs md:text-sm  text-gray-600 ">
               {selectedConversation.phone}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center md:gap-6 gap-2">
           {selectionMode && (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-3">
