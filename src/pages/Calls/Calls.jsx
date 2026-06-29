@@ -40,6 +40,7 @@ import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
 import { useSelector } from "react-redux";
+import CallsAnalytics from "./CallsAnalytics";
 
 export default function Calls() {
   const { user: hotel } = useSelector((state) => state.userProfile);
@@ -498,6 +499,7 @@ export default function Calls() {
 
   return (
     <div className="">
+      {/* <CallsAnalytics /> */}
       {/* Calls Table */}
       <div className="bg-app-surface p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
         <div className=" flex items-center justify-between">
@@ -548,7 +550,9 @@ export default function Calls() {
             <table className="min-w-full text-sm">
               <thead className="bg-primary sticky top-0 z-999">
                 <tr>
-                  <th className="px-3 py-2 text-white dark:text-app-text-muted">#</th>
+                  <th className="px-3 py-2 text-white dark:text-app-text-muted">
+                    #
+                  </th>
                   {columns.map((col) => (
                     <th
                       key={col.value}
@@ -1282,7 +1286,9 @@ function StatCard({ icon, title, value, color }) {
           <i className={`fas ${icon} text-${color}-600`}></i>
         </div>
         <div className="ml-4">
-          <h3 className="text-md font-semibold text-gray-900 dark:text-app-text">{title}</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-app-text">
+            {title}
+          </h3>
           <p className={`text-2xl font-bold text-${color}-600`}>
             {title === "Avg Duration" ? `${value} sec` : value}
           </p>

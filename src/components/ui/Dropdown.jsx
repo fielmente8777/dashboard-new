@@ -6,7 +6,7 @@ export default function CustomDropdown({
   label,
   options,
   onChange,
-  width = "w-48",
+  // width = "w-48",
   zIndex = 99999,
   multiple = false,
   disabled = false,
