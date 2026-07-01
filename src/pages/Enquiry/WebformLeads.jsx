@@ -74,6 +74,7 @@ const WebformLeads = () => {
 
   const [allUsers, setAllUsers] = useState([]);
   const [rowSelected, setRowSelected] = useState([]);
+  const [notesFilter, setNotesFilter] = useState("");
 
   const {
     page,
@@ -103,6 +104,7 @@ const WebformLeads = () => {
         search: debouncedSearch,
         limit: limit,
         created_from: CREATED_FROM,
+        notes: notesFilter,
         stage: stage,
       };
 
@@ -128,8 +130,8 @@ const WebformLeads = () => {
 
     const cleanedLeads = leads.map((lead) =>
       Object.fromEntries(
-        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key))
-      )
+        Object.entries(lead).filter(([key]) => !ignoredHeaders.includes(key)),
+      ),
     );
     return cleanedLeads;
   };
@@ -253,7 +255,7 @@ const WebformLeads = () => {
   const handleRowSelect = (id) => {
     if (rowSelected.length < 10) {
       setRowSelected((prev) =>
-        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
       );
     } else {
       if (rowSelected.includes(id)) {
@@ -300,7 +302,16 @@ const WebformLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     fetchUsersData();
@@ -401,6 +412,41 @@ const WebformLeads = () => {
                   </span>
                 )}
               </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -483,7 +529,9 @@ const WebformLeads = () => {
                             className="px-3 py-2 whitespace-nowrap"
                           >
                             {formatDateTime(
-                              isLeadCreatedTime ? isLeadCreatedTime : row[h.key]
+                              isLeadCreatedTime
+                                ? isLeadCreatedTime
+                                : row[h.key],
                             )}
                           </td>
                         );
@@ -575,7 +623,7 @@ const WebformLeads = () => {
                                   row?._id,
                                   row?.hId,
                                   value,
-                                  row?.conversationId
+                                  row?.conversationId,
                                 )
                               }
                               className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
@@ -586,7 +634,7 @@ const WebformLeads = () => {
                       if (h.key === "Name") {
                         const isName = row[h.key];
                         const followUpDate = new Date(
-                          row["followUpDate"] || row["followUp"] || ""
+                          row["followUpDate"] || row["followUp"] || "",
                         );
                         const today = new Date();
 

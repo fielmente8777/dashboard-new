@@ -52,6 +52,7 @@ const MetaLeads = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [stage, setStage] = useState("");
+  const [notesFilter, setNotesFilter] = useState("");
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -116,6 +117,7 @@ const MetaLeads = () => {
         limit: limit,
         created_from: CREATED_FROM,
         stage: stage,
+        notes: notesFilter,
         // stage: Stages.META_LEAD,
       };
 
@@ -356,7 +358,16 @@ const MetaLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     const savedPage = localStorage.getItem(LOCAL_STORAGE.MetaLeadsPage);
@@ -504,6 +515,41 @@ const MetaLeads = () => {
                     <IoIosClose size={18} />
                   </span>
                 )}
+              </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
               </div>
 
               {allCampaigns?.length > 0 && (

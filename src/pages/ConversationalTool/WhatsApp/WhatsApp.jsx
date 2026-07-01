@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import WebSocketClient from "../../../config/websocketClient";
 import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
 
+import { useSearchParams } from "react-router-dom";
 import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
 import DataContext from "../../../context/DataContext";
 import useNotificationSound from "../../../hooks/useNotificationSound";
@@ -12,6 +13,9 @@ import ProfilePanel from "./components/ProfilePanel";
 import SidebarChat from "./components/SidebarChat";
 
 const WhatsApp = () => {
+  const [searchParams] = useSearchParams();
+  const number = searchParams.get("number");
+  console.log(number);
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -19,6 +23,7 @@ const WhatsApp = () => {
     setConversations,
     conversations,
     selectedConversation,
+    setSelectedConversation,
     isLoadingIntegrationStatus,
     mobileActive,
   } = useContext(DataContext);
@@ -151,6 +156,20 @@ const WhatsApp = () => {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (!number || conversations.length === 0) return;
+
+    const normalizePhone = (phone) => String(phone || "").replace(/\D/g, "");
+
+    const conversation = conversations.find(
+      (conv) => normalizePhone(conv.phone) === normalizePhone(number),
+    );
+
+    if (conversation) {
+      setSelectedConversation(conversation);
+    }
+  }, [number, conversations, setSelectedConversation]);
 
   if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 

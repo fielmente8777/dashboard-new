@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import StatusPill from "./StatusPill";
 import { timeAgo } from "../../../../utils/formateDate";
 import Pagination from "../../../../components/Pagination";
+import { useNavigate } from "react-router-dom";
+import { BASE_PATH } from "../../../../data/constant";
 
 const TABS = ["all", "sent", "delivered", "read", "failed"];
 const LIMIT = 20;
@@ -83,62 +85,75 @@ const Toolbar = ({
 };
 
 // ── Table row ────────────────────────────────────────────────────────────────
-const RecipientRow = ({ item, index }) => (
-  <tr className="hover:bg-indigo-50/30 transition-colors">
-    <td className="px-5 py-4 text-gray-300 tabular-nums text-xs">
-      {index + 1}
-    </td>
+const RecipientRow = ({ item, index }) => {
+  const navigate = useNavigate();
+  const handleRowClick = () => {
+    navigate(
+      `${BASE_PATH}/${localStorage?.getItem("hid")}/channel/wa/chat?number=${item.phone}`,
+    );
+  };
+  return (
+    <tr
+      className="hover:bg-indigo-50/30 transition-colors cursor-pointer"
+      onClick={handleRowClick}
+    >
+      <td className="px-5 py-4 text-gray-300 tabular-nums text-xs">
+        {index + 1}
+      </td>
 
-    <td className="px-5 py-4">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-          {item.name ? item.name[0].toUpperCase() : "?"}
-        </div>
-        <span className="font-medium text-gray-800">
-          {item.name || <span className="text-gray-300 italic">Unknown</span>}
-        </span>
-      </div>
-    </td>
-
-    <td className="px-5 py-4 text-gray-500 font-mono text-xs">{item.phone}</td>
-
-    <td className="px-5 py-4">
-      <StatusPill status={item.status} />
-    </td>
-
-    <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
-      {item.sentAt ? timeAgo(item.sentAt) : "-"}
-    </td>
-
-    <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
-      {item.deliveredAt ? timeAgo(item.deliveredAt) : "-"}
-    </td>
-
-    <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
-      {item.readAt ? timeAgo(item.readAt) : "-"}
-    </td>
-
-    <td className="px-5 py-4">
-      {item.status === "failed" ? (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-red-500 font-medium whitespace-nowrap">
-            {item.failedAt ? timeAgo(item.failedAt) : "-"}
+      <td className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            {item.name ? item.name[0].toUpperCase() : "?"}
+          </div>
+          <span className="font-medium text-gray-800">
+            {item.name || <span className="text-gray-300 italic">Unknown</span>}
           </span>
-          {item.error && (
-            <span
-              className="text-xs text-red-400 leading-tight max-w-xs"
-              title={item.error}
-            >
-              {item.error}
-            </span>
-          )}
         </div>
-      ) : (
-        <span className="text-gray-300 text-xs">—</span>
-      )}
-    </td>
-  </tr>
-);
+      </td>
+
+      <td className="px-5 py-4 text-gray-500 font-mono text-xs">
+        {item.phone}
+      </td>
+
+      <td className="px-5 py-4">
+        <StatusPill status={item.status} />
+      </td>
+
+      <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
+        {item.sentAt ? timeAgo(item.sentAt) : "-"}
+      </td>
+
+      <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
+        {item.deliveredAt ? timeAgo(item.deliveredAt) : "-"}
+      </td>
+
+      <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-500">
+        {item.readAt ? timeAgo(item.readAt) : "-"}
+      </td>
+
+      <td className="px-5 py-4">
+        {item.status === "failed" ? (
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-red-500 font-medium whitespace-nowrap">
+              {item.failedAt ? timeAgo(item.failedAt) : "-"}
+            </span>
+            {item.error && (
+              <span
+                className="text-xs text-red-400 leading-tight max-w-xs"
+                title={item.error}
+              >
+                {item.error}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-gray-300 text-xs">—</span>
+        )}
+      </td>
+    </tr>
+  );
+};
 
 const RecipientsTable = ({
   recipients,

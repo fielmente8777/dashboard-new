@@ -47,6 +47,8 @@ const AllLeads = () => {
   const [exportEndDate, setExportEndDate] = useState(null);
   const [exportRange, setExportRange] = useState("");
 
+  const [notesFilter, setNotesFilter] = useState("");
+
   const { showToast } = useToast();
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
@@ -124,6 +126,7 @@ const AllLeads = () => {
         limit: limit,
         stage: stage,
         source: source,
+        notes: notesFilter,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -337,6 +340,7 @@ const AllLeads = () => {
     limit,
     stage,
     source,
+    notesFilter,
   ]);
 
   useEffect(() => {
@@ -470,6 +474,41 @@ const AllLeads = () => {
                   ]}
                   onChange={(value) => setStage(value)}
                 />
+              </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
               </div>
             </div>
           </div>
