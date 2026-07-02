@@ -67,7 +67,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
     hid,
     loading,
   } = useSelector((state) => state.userProfile);
-  // console.log(authUser);
+  console.log(authUser);
 
   const { subscription } = useSelector((state) => state?.subscription);
   // console.log(subscription);
@@ -619,7 +619,10 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               if (authUser?.isAdmin) {
                 const key = item.key;
 
+                // console.log(authUser?.accessScope);
+
                 // if (key && !authUser?.accessScope[accessScopeMap[key]])
+
                 if (
                   key &&
                   subscription?.appAccess &&
@@ -769,17 +772,23 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                   )[0];
 
                 const key = item?.key;
+
+                if (
+                  key &&
+                  currentLocationAccessScope &&
+                  !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+                )
+                  return null;
+                // console.log(subscription);
+
                 // if (
                 //   key &&
+                //   subscription?.appAccess &&
+                //   !subscription?.appAccess[accessScopeMap[key]] &&
                 //   currentLocationAccessScope &&
                 //   !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
                 // )
-                if (
-                  key &&
-                  subscription?.appAccess &&
-                  !subscription?.appAccess[accessScopeMap[key]]
-                )
-                  return null;
+                //   return null;
 
                 return (
                   <div key={index} className="flex flex-col gap-1">

@@ -291,7 +291,7 @@ export const SidebarData = [
   },
   {
     name: "SEO",
-   // key: "",
+    // key: "",
     link: `seo`,
     icon: <SiGoogleadsense />,
     subLinks: [
@@ -305,7 +305,7 @@ export const SidebarData = [
         link: `seo/website-seo`,
         icon: <RiSeoLine size={18} />,
       },
-    ]
+    ],
   },
   {
     name: "Google Analytics",

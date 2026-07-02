@@ -62,9 +62,10 @@ export const accessScopeMap = {
   "User Management": "usermanagement",
   "WhatsApp Marketing": "whatsapp",
   WhatsApp: "whatsapp",
+  // whatsapp: "whatsapp",
   Exotel: "exotel",
   "Leads Management": "lead_management",
-  "Google Ads Insights":"googleadsinsights"
+  "Google Ads Insights": "googleadsinsights",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
@@ -260,7 +261,9 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
         <div className="md:col-span-5 space-y-8">
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
-            <h2 className="text-xl text-primary dark:text-app-text font-bold">Create New User</h2>
+            <h2 className="text-xl text-primary dark:text-app-text font-bold">
+              Create New User
+            </h2>
             <button
               onClick={onClose}
               className="text-2xl font-bold hover:bg-transparent size-10 rounded-full border border-slate-900 bg-primary flex items-center justify-center hover:rotate-180 duration-300 hover:text-primary text-white"
