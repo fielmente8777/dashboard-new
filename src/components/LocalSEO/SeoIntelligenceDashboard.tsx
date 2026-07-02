@@ -14,6 +14,13 @@ import {
   Map,
 } from "lucide-react";
 import L from "leaflet";
+import {
+  estimateLocalTokens,
+  estimateGeoGridTokens,
+  DEFAULT_SEO_PRICING,
+  type SeoTokenPricing,
+} from "../../utils/seoTokenPricing";
+import { notifySeoTokensChanged } from "../../utils/seoTokenEvents";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,11 +45,11 @@ interface LocalConfig {
 
 interface GridMeta {
   lastScanned: string | null;
-  status: "pending" | "scanning" | "done" | "failed";
-  keyword: string | null;
-  gridSize: number;
-  centerLat: number | null;
-  centerLng: number | null;
+  status:      "idle" | "pending" | "scanning" | "done" | "failed";
+  keyword:     string | null;
+  gridSize:    number;
+  centerLat:   number | null;
+  centerLng:   number | null;
 }
 
 type ScanStatus = "idle" | "queued" | "scanning" | "done" | "failed";
@@ -256,20 +263,20 @@ const GeoGridScanningOverlay = ({ onRescan, triggeringScan }: { onRescan: () => 
 const GeoGrid = ({
   points, centerLat, centerLng, size = 5,
   businessName, district, city, lastScanned, gridStatus,
-  keyword, onRescan, triggeringScan,
+  keyword, onRescan, watchingGridScan,
 }: {
-  points: GeoGridPoint[];
-  centerLat: number;
-  centerLng: number;
-  size?: number;
-  businessName?: string;
-  district?: string;
-  city?: string;
-  lastScanned?: string | null;
-  gridStatus?: string;
-  keyword?: string | null;
-  onRescan: () => void;
-  triggeringScan: boolean;
+  points:         GeoGridPoint[];
+  centerLat:      number;
+  centerLng:      number;
+  size?:          number;
+  businessName?:  string;
+  district?:      string;
+  city?:          string;
+  lastScanned?:   string | null;
+  gridStatus?:    string;
+  keyword?:       string | null;
+  onRescan:       () => void;
+  watchingGridScan: boolean;
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -375,8 +382,8 @@ const GeoGrid = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsKey, centerLat, centerLng, offset, businessName, district, city]);
 
-  const hasPoints = points?.length > 0 && points[0]?.lat != null;
-  const isScanning = gridStatus === "scanning" || gridStatus === "pending";
+  const hasPoints  = points?.length > 0 && points[0]?.lat != null;
+  const isScanning = gridStatus === "scanning" || (gridStatus === "pending" && watchingGridScan);
 
   if (!hasPoints && !isScanning) {
     return (
@@ -385,7 +392,7 @@ const GeoGrid = ({
           <Crosshair className="h-6 w-6" />
         </span>
         <p className="text-sm font-semibold text-zinc-200">Geo-grid not scanned yet</p>
-        <p className="mt-1.5 max-w-xs text-xs text-zinc-500">Your first scan runs tonight automatically. Come back tomorrow morning!</p>
+        <p className="mt-1.5 max-w-xs text-xs text-zinc-500">Click Re-scan above to run your first geo-grid scan.</p>
         {lastScanned && <p className="mt-3 text-[11px] text-zinc-600">Last scan: {new Date(lastScanned).toLocaleDateString("en-IN")}</p>}
       </div>
     );
@@ -395,7 +402,7 @@ const GeoGrid = ({
     <div style={{ position: "relative", width: "100%", height: "480px", borderRadius: "24px", overflow: "hidden" }}
       className="mt-4 border border-zinc-800/80 shadow-2xl">
       <div ref={mapContainerRef} style={{ width: "100%", height: "100%" }} />
-      {isScanning && <GeoGridScanningOverlay onRescan={onRescan} triggeringScan={triggeringScan} />}
+      {isScanning && <GeoGridScanningOverlay onRescan={onRescan} triggeringScan={watchingGridScan} />}
       {lastScanned && !isScanning && (
         <div style={{ position: "absolute", bottom: 12, left: 12, zIndex: 1000 }}
           className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-950/80 px-2.5 py-1 text-[11px] font-medium text-zinc-400 backdrop-blur-sm ring-1 ring-zinc-800">
@@ -920,7 +927,6 @@ const KeywordDetailPanel = ({ row }: { row: any }) => {
     <div className="space-y-4 bg-zinc-950/60 p-4 sm:p-5">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <RankStat label="Maps / GMB rank" rank={row.liveGmbRank} kind="maps" />
-        <RankStat label="Organic rank" rank={row.liveOrganicRank} kind="organic" />
       </div>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 lg:col-span-2">
@@ -965,10 +971,13 @@ const KeywordDetailPanel = ({ row }: { row: any }) => {
   );
 };
 
-const AddKeywordModal = ({ open, onClose, onAdd, saving, localConfig }: any) => {
+const AddKeywordModal = ({ open, onClose, onAdd, saving, localConfig, tokenBalance, pricing, addError }: any) => {
   const [text, setText] = useState("");
   if (!open) return null;
   const parsed = [...new Set(text.split(/[\n,]/).map((k: string) => k.trim().toLowerCase()).filter(Boolean))];
+  const cost   = estimateLocalTokens(parsed.length);
+  const perKw  = pricing?.localPerKeyword ?? DEFAULT_SEO_PRICING.localPerKeyword;
+  const canAfford = tokenBalance >= cost;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm" onClick={onClose} />
@@ -990,10 +999,17 @@ const AddKeywordModal = ({ open, onClose, onAdd, saving, localConfig }: any) => 
             placeholder={`hotel in ${localConfig?.district || "your area"}\nbest hotel ${localConfig?.city || "your city"}\nbudget hotel near me`}
             className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/30" />
           <p className="text-[11px] text-zinc-500">One per line or comma-separated. {parsed.length} keyword(s) detected.</p>
+          {parsed.length > 0 && (
+            <p className="text-xs text-zinc-400">
+              Will cost: <span className="font-semibold text-emerald-300">{cost} tokens</span>
+              {parsed.length === 1 && ` (${perKw} per keyword)`}
+            </p>
+          )}
+          {addError && <p className="text-xs text-rose-400">{addError}</p>}
         </div>
         <div className="flex items-center justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800">Cancel</button>
-          <button onClick={() => onAdd(parsed)} disabled={saving || !parsed.length}
+          <button onClick={() => onAdd(parsed)} disabled={saving || !parsed.length || !canAfford}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             {saving ? "Analyzing…" : `Track ${parsed.length || ""}`.trim()}
@@ -1081,20 +1097,39 @@ const RowSkeleton = () => (
 const SeoIntelligenceDashboard = () => {
   const [data, setData] = useState<any>({
     summary: null, trend: [], keywords: [], provider: "dataforseo",
-    geoGrid: [], gridMeta: null, localConfig: null,
+    geoGrid: [], gridMeta: null, localConfig: null, staleKeywords: 0,
   });
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [loading,        setLoading]        = useState(true);
+  const [saving,         setSaving]         = useState(false);
+  const [modalOpen,      setModalOpen]      = useState(false);
+  const [expanded,       setExpanded]       = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [triggeringScan, setTriggeringScan] = useState(false);
-
+  const [watchingGridScan, setWatchingGridScan] = useState(false);
+  const [tokenBalance,   setTokenBalance]   = useState(100);
+  const [tokenPricing,   setTokenPricing]   = useState<SeoTokenPricing>(DEFAULT_SEO_PRICING);
+  const [addError,       setAddError]       = useState("");
+  const [gridScanError,  setGridScanError]  = useState("");
+  const [refreshingKw,   setRefreshingKw]   = useState<string | null>(null);
+  const [kwErrors,       setKwErrors]       = useState<Record<string, string>>({});
 
   const getAuthConfig = useCallback(() => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   }), []);
+
+  const fetchTokens = useCallback(async () => {
+    try {
+      const { data: res } = await axios.get(
+        `${NODE_BASE_URL}/seo/seo-intelligence/tokens`,
+        getAuthConfig(),
+      );
+      const d = res.result || res;
+      if (d.balance != null) setTokenBalance(d.balance);
+      if (d.pricing) setTokenPricing(d.pricing);
+    } catch (err) {
+      console.error("Token fetch failed:", err);
+    }
+  }, [getAuthConfig]);
 
   const fetchData = useCallback(async (silent = false) => {
     try {
@@ -1105,24 +1140,34 @@ const SeoIntelligenceDashboard = () => {
       );
       const d = res.result || res;
       setData({
-        summary: d.summary || null,
-        trend: d.trend || [],
-        keywords: d.keywords || [],
-        provider: d.provider || "dataforseo",
-        geoGrid: d.geoGrid || [],
-        gridMeta: d.gridMeta || null,
-        localConfig: d.localConfig || null,
+        summary:       d.summary       || null,
+        trend:         d.trend         || [],
+        keywords:      d.keywords      || [],
+        provider:      d.provider      || "dataforseo",
+        geoGrid:       d.geoGrid       || [],
+        gridMeta:      d.gridMeta      || null,
+        localConfig:   d.localConfig   || null,
+        staleKeywords: d.staleKeywords ?? 0,
       });
-      if (!d.localConfig?.onboardingComplete) setShowOnboarding(true);
+      if (d.localConfig?.onboardingComplete === false) {
+        setShowOnboarding(true);
+      } else if (d.localConfig?.onboardingComplete) {
+        setShowOnboarding(false);
+      }
     } catch (err) { console.error("SEO fetch failed:", err); }
     finally { if (!silent) setLoading(false); }
   }, [getAuthConfig]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); fetchTokens(); }, [fetchData, fetchTokens]);
+
+  useEffect(() => {
+    if (data.gridMeta?.status === "scanning") setWatchingGridScan(true);
+  }, [data.gridMeta?.status]);
 
   useEffect(() => {
     const status = data.gridMeta?.status;
-    if (status !== "scanning" && status !== "pending") return;
+    const shouldPoll = status === "scanning" || (status === "pending" && watchingGridScan);
+    if (!shouldPoll) return;
     let stopped = false;
     const poll = async () => {
       if (stopped) return;
@@ -1133,10 +1178,20 @@ const SeoIntelligenceDashboard = () => {
         );
         const d = res.result || res;
         const newStatus = d.gridMeta?.status;
-        setData((prev: any) => ({ ...prev, geoGrid: d.geoGrid || [], gridMeta: d.gridMeta || null }));
+        setData((prev: any) => ({
+          ...prev,
+          geoGrid:       d.geoGrid       || prev.geoGrid       || [],
+          gridMeta:      d.gridMeta      || prev.gridMeta      || null,
+          keywords:      d.keywords      ?? prev.keywords      ?? [],
+          summary:       d.summary       ?? prev.summary       ?? null,
+          trend:         d.trend         ?? prev.trend         ?? [],
+          localConfig:   d.localConfig   ?? prev.localConfig   ?? null,
+          staleKeywords: d.staleKeywords ?? prev.staleKeywords ?? 0,
+        }));
         if (newStatus === "done" || newStatus === "failed") {
           stopped = true;
           clearInterval(interval);
+          setWatchingGridScan(false);
           fetchData(true);
         }
       } catch { }
@@ -1144,16 +1199,17 @@ const SeoIntelligenceDashboard = () => {
     poll();
     const interval = setInterval(poll, 5_000);
     return () => { stopped = true; clearInterval(interval); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.gridMeta?.status]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.gridMeta?.status, watchingGridScan]);
 
   const onScanDone = useCallback(() => {
-    // 1 second wait — DB write fully commit ho jaaye
-    setTimeout(() => fetchData(false), 1000);
+    setTimeout(() => fetchData(true), 1000);
   }, [fetchData]);
   const { progress: scanProgress, isActive: scanToastActive, dismiss: dismissScan } = useSeoProgress(onScanDone);
 
   const { summary, trend, keywords, provider, geoGrid, gridMeta, localConfig } = data;
+  const isGridActivelyScanning =
+    gridMeta?.status === "scanning" || (gridMeta?.status === "pending" && watchingGridScan);
   const localKeywords = keywords.filter((k: any) => !k.targetUrl);
 
   const insights = useMemo(() => buildInsights(keywords), [keywords]);
@@ -1163,18 +1219,16 @@ const SeoIntelligenceDashboard = () => {
     const list = keywords || [];
     const inPack = list.filter((k: any) => k.liveGmbRank != null && k.liveGmbRank <= 3).length;
     const mapsRanked = list.filter((k: any) => k.liveGmbRank != null);
-    const orgRanked = list.filter((k: any) => k.liveOrganicRank != null);
-    const avgMaps = mapsRanked.length ? +(mapsRanked.reduce((s: number, k: any) => s + k.liveGmbRank, 0) / mapsRanked.length).toFixed(1) : null;
-    const avgOrg = orgRanked.length ? +(orgRanked.reduce((s: number, k: any) => s + k.liveOrganicRank, 0) / orgRanked.length).toFixed(1) : null;
-    const total = list.length || 1;
-    const packScore = (inPack / total) * 100;
-    const orgScore = (orgRanked.filter((k: any) => k.liveOrganicRank <= 10).length / total) * 100;
-    const visibility = list.length ? 0.65 * packScore + 0.35 * orgScore : 0;
-    return { inPack, avgMaps, avgOrg, visibility };
+    const avgMaps    = mapsRanked.length ? +(mapsRanked.reduce((s: number, k: any) => s + k.liveGmbRank, 0) / mapsRanked.length).toFixed(1) : null;
+    const total      = list.length || 1;
+    const packScore  = (inPack / total) * 100;
+    const visibility = list.length ? packScore : 0;
+    return { inPack, avgMaps, visibility };
   }, [keywords]);
 
   const handleAdd = async (kws: string[]) => {
     if (!kws.length) return;
+    setAddError("");
     try {
       setSaving(true);
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/track`, {
@@ -1183,21 +1237,50 @@ const SeoIntelligenceDashboard = () => {
         selfHotelName: localConfig?.businessName || "",
       }, getAuthConfig());
       setModalOpen(false);
+      await fetchTokens();
+      notifySeoTokensChanged();
       await fetchData();
-    } catch { alert("Couldn't add keywords. Please try again."); }
-    finally { setSaving(false); }
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        const { required, available } = err.response.data;
+        setAddError(`Not enough tokens. Need ${required}, have ${available}.`);
+        await fetchTokens();
+        notifySeoTokensChanged();
+      } else {
+        setAddError("Couldn't add keywords. Please try again.");
+      }
+    } finally { setSaving(false); }
   };
 
-
-
-  const handleRefresh = async () => {
+  const handleRefreshKeyword = async (keyword: string) => {
+    setKwErrors((prev) => {
+      const next = { ...prev };
+      delete next[keyword];
+      return next;
+    });
+    setRefreshingKw(keyword);
     try {
-      setRefreshing(true);
-      // Yahan { type: 'local' } add karna hai payload mein
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'local' }, getAuthConfig());
-      await fetchData();
-    } catch { console.error("Refresh failed"); }
-    finally { setRefreshing(false); }
+      await axios.post(
+        `${NODE_BASE_URL}/seo/seo-intelligence/refresh-keyword`,
+        { keyword },
+        getAuthConfig(),
+      );
+      await fetchTokens();
+      notifySeoTokensChanged();
+      await fetchData(true);
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        const { required, available } = err.response.data;
+        setKwErrors((prev) => ({
+          ...prev,
+          [keyword]: `Need ${required} tokens (have ${available})`,
+        }));
+        await fetchTokens();
+        notifySeoTokensChanged();
+      }
+    } finally {
+      setRefreshingKw(null);
+    }
   };
 
   const handleUntrack = async (keyword: string) => {
@@ -1209,33 +1292,43 @@ const SeoIntelligenceDashboard = () => {
 
   const handleTriggerGridScan = async () => {
     if (triggeringScan) return;
+    setGridScanError("");
     setTriggeringScan(true);
+    setWatchingGridScan(true);
     setData((prev: any) => ({
       ...prev,
       gridMeta: { ...(prev.gridMeta || {}), status: "pending" },
     }));
     try {
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/trigger-grid-scan`, {}, getAuthConfig());
+      await fetchTokens();
+      notifySeoTokensChanged();
       await fetchData(true);
     } catch (err: any) {
-      const msg = err?.response?.data?.error || "Scan trigger failed.";
+      const status = err?.response?.status;
+      if (status === 402) {
+        const { required, available } = err.response.data;
+        setGridScanError(`Not enough tokens. Need ${required}, have ${available}.`);
+        await fetchTokens();
+        notifySeoTokensChanged();
+      } else {
+        setGridScanError(err?.response?.data?.error || "Scan trigger failed.");
+      }
       setData((prev: any) => ({ ...prev, gridMeta: { ...(prev.gridMeta || {}), status: "failed" } }));
-      alert(msg);
+      setWatchingGridScan(false);
     } finally { setTriggeringScan(false); }
   };
 
   const handleRadiusChange = async (r: number) => {
     try {
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/update-radius`, { radiusKm: r }, getAuthConfig());
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/trigger-grid-scan`, {}, getAuthConfig());
       setData((prev: any) => ({
         ...prev,
-        geoGrid: [],
-        gridMeta: { ...(prev.gridMeta || {}), status: "pending" },
         localConfig: { ...prev.localConfig, radiusKm: r },
       }));
-      fetchData(true);
-    } catch { alert("Could not update radius."); }
+    } catch {
+      console.error("Could not update radius.");
+    }
   };
 
   if (showOnboarding && !loading) {
@@ -1298,7 +1391,10 @@ const SeoIntelligenceDashboard = () => {
                     const newKw = e.target.value;
                     if (!newKw) return;
                     await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/update-grid-keyword`, { keyword: newKw }, getAuthConfig());
-                    await fetchData();
+                    setData((prev: any) => ({
+                      ...prev,
+                      gridMeta: { ...(prev.gridMeta || {}), keyword: newKw },
+                    }));
                   }}
                   className="text-[11px] font-semibold text-emerald-400 bg-zinc-800 border border-zinc-700 rounded-lg px-2 py-0.5 outline-none focus:border-emerald-500 cursor-pointer max-w-[180px]"
                 >
@@ -1331,18 +1427,18 @@ const SeoIntelligenceDashboard = () => {
           </div>
         </div>
         <div className="flex items-center gap-2.5">
-          <button onClick={handleRefresh} disabled={refreshing || !keywords.length}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-700 hover:bg-zinc-800 disabled:opacity-50">
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            {refreshing ? "Refreshing…" : "Refresh"}
-          </button>
-
-          <button onClick={() => setModalOpen(true)}
+          <button onClick={() => { setAddError(""); setModalOpen(true); }}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 text-sm font-semibold text-zinc-950 shadow-lg shadow-emerald-500/20 transition hover:from-emerald-400 hover:to-teal-500">
             <Plus className="h-4 w-4" /> Add keywords
           </button>
         </div>
       </div>
+
+      {data.staleKeywords > 0 && (
+        <div className="relative mb-4 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-amber-200">
+          Data may be slightly stale — use the refresh button on each keyword row to update rankings ({data.staleKeywords} keyword{data.staleKeywords !== 1 ? "s" : ""} outdated).
+        </div>
+      )}
 
       {/* ── Visibility + GeoGrid ── */}
       <div className="relative mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -1359,9 +1455,6 @@ const SeoIntelligenceDashboard = () => {
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-2.5 py-1 font-semibold text-emerald-300 ring-1 ring-zinc-700">
                 <MapPin className="h-3.5 w-3.5" /> Avg Maps {fmtRank(local.avgMaps)}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-800/70 px-2.5 py-1 font-semibold text-teal-300 ring-1 ring-zinc-700">
-                <Globe className="h-3.5 w-3.5" /> Avg Organic {fmtRank(local.avgOrg)}
-              </span>
             </div>
           </div>
         </div>
@@ -1375,22 +1468,26 @@ const SeoIntelligenceDashboard = () => {
               <div>
                 <h2 className="text-sm font-bold text-white">Map Coverage — {localConfig?.district || "Your Area"}</h2>
                 <p className="text-xs text-zinc-500">
-                  {gridMeta?.keyword ? `"${gridMeta.keyword}"` : "Primary keyword"} · {localConfig?.radiusKm || 5}km · Auto-updated nightly
+                  {gridMeta?.keyword ? `"${gridMeta.keyword}"` : "Primary keyword"} · {localConfig?.radiusKm || 5}km
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {gridMeta?.status === "done" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20"><CheckCircle className="h-3.5 w-3.5" /> Updated</span>}
-              {gridMeta?.status === "scanning" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-400 ring-1 ring-amber-500/20"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Scanning…</span>}
-              {gridMeta?.status === "failed" && <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-400 ring-1 ring-rose-500/20"><AlertCircle className="h-3.5 w-3.5" /> Failed</span>}
+              {gridMeta?.status === "done"     && <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-400 ring-1 ring-emerald-500/20"><CheckCircle className="h-3.5 w-3.5" /> Updated</span>}
+              {(gridMeta?.status === "scanning" || (gridMeta?.status === "pending" && watchingGridScan)) && <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-400 ring-1 ring-amber-500/20"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Scanning…</span>}
+              {gridMeta?.status === "failed"   && <span className="inline-flex items-center gap-1.5 rounded-lg bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-400 ring-1 ring-rose-500/20"><AlertCircle className="h-3.5 w-3.5" /> Failed</span>}
               <button onClick={handleTriggerGridScan}
-                disabled={gridMeta?.status === "scanning" || gridMeta?.status === "pending" || triggeringScan}
+                disabled={isGridActivelyScanning || triggeringScan}
+                title={`Re-scan map coverage (${tokenPricing.geoGridScan} tokens)`}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-[11px] font-medium text-zinc-400 transition hover:text-zinc-200 disabled:opacity-40">
                 <RefreshCw className={`h-3 w-3 ${triggeringScan ? "animate-spin" : ""}`} />
-                {triggeringScan ? "Starting..." : "Re-scan"}
+                {triggeringScan ? "Starting..." : `Re-scan (${tokenPricing.geoGridScan} tokens)`}
               </button>
             </div>
           </div>
+          {gridScanError && (
+            <p className="mb-3 text-xs text-rose-400">{gridScanError}</p>
+          )}
 
           {localConfig?.lat && localConfig?.lng ? (
             <GeoGrid
@@ -1405,7 +1502,7 @@ const SeoIntelligenceDashboard = () => {
               gridStatus={gridMeta?.status}
               keyword={gridMeta?.keyword}
               onRescan={handleTriggerGridScan}
-              triggeringScan={triggeringScan}
+              watchingGridScan={watchingGridScan}
             />
           ) : (
             <div className="h-[480px] flex items-center justify-center text-zinc-500 text-sm">
@@ -1422,10 +1519,9 @@ const SeoIntelligenceDashboard = () => {
 
       {/* ── Stat Cards ── */}
       <div className="relative mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={Hash} label="Keywords tracked" value={summary ? fmt(summary.totalKeywords) : "—"} sub={`in ${localConfig?.city || "your area"}`} accent="bg-emerald-400" glow="bg-emerald-400" />
-        <StatCard icon={MapPin} label="In Map 3-Pack" value={fmt(local.inPack)} sub="top-3 on Maps" accent="bg-teal-400" glow="bg-teal-400" />
-        <StatCard icon={Globe} label="Avg organic rank" value={local.avgOrg != null ? fmtRank(local.avgOrg) : "—"} sub="organic search" accent="bg-amber-300" glow="bg-amber-300" />
-        <StatCard icon={Target} label="Opportunities" value={summary ? fmt(summary.opportunities) : "—"} sub="gap terms to win" accent="bg-emerald-300" glow="bg-emerald-300" />
+        <StatCard icon={Hash}   label="Keywords tracked" value={summary ? fmt(summary.totalKeywords) : "—"} sub={`in ${localConfig?.city || "your area"}`}  accent="bg-emerald-400" glow="bg-emerald-400" />
+        <StatCard icon={MapPin} label="In Map 3-Pack"    value={fmt(local.inPack)}                          sub="top-3 on Maps"                               accent="bg-teal-400"   glow="bg-teal-400"   />
+        <StatCard icon={Target} label="Opportunities"    value={summary ? fmt(summary.opportunities) : "—"} sub="gap terms to win"                            accent="bg-emerald-300" glow="bg-emerald-300" />
       </div>
 
       {/* ── Rank Trend Chart ── */}
@@ -1499,9 +1595,6 @@ const SeoIntelligenceDashboard = () => {
                     <th className="pb-3 text-center font-semibold">
                       <span className="inline-flex items-center justify-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-emerald-400" />Maps</span>
                     </th>
-                    <th className="pb-3 text-center font-semibold">
-                      <span className="inline-flex items-center justify-center gap-1.5"><Globe className="h-3.5 w-3.5 text-teal-400" />Organic</span>
-                    </th>
                     <th className="pb-3 pl-6 text-left font-semibold">Difficulty</th>
                     <th className="pb-3 text-left font-semibold">Action</th>
                     <th className="pb-3 pr-2" />
@@ -1524,14 +1617,26 @@ const SeoIntelligenceDashboard = () => {
                           <td className="py-3.5 text-right font-semibold tabular-nums text-zinc-200">{fmt(row.searchVolume)}</td>
                           <td className="py-3.5 text-right tabular-nums text-zinc-300">{fmtCurrency(row.cpc)}</td>
                           <td className="py-3.5 text-center"><RankChip rank={row.liveGmbRank} kind="maps" /></td>
-                          <td className="py-3.5 text-center"><RankChip rank={row.liveOrganicRank} kind="organic" /></td>
                           <td className="py-3.5 pl-6"><DifficultyMeter value={row.keywordDifficulty} /></td>
                           <td className="py-3.5"><ActionBadge type={row.actionBadge} /></td>
                           <td className="py-3.5 pr-2 text-right">
-                            <button onClick={(e) => { e.stopPropagation(); handleUntrack(row.keyword); }}
-                              className="rounded-lg p-1.5 text-zinc-700 opacity-0 transition hover:bg-rose-500/10 hover:text-rose-400 group-hover:opacity-100" title="Stop tracking">
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleRefreshKeyword(row.keyword); }}
+                                disabled={refreshingKw === row.keyword}
+                                title={`Refresh (${tokenPricing.localPerKeyword} tokens)`}
+                                className="rounded-lg p-1.5 text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300 disabled:opacity-50"
+                              >
+                                <RefreshCw className={`h-4 w-4 ${refreshingKw === row.keyword ? "animate-spin" : ""}`} />
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); handleUntrack(row.keyword); }}
+                                className="rounded-lg p-1.5 text-zinc-700 opacity-0 transition hover:bg-rose-500/10 hover:text-rose-400 group-hover:opacity-100" title="Stop tracking">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                            {kwErrors[row.keyword] && (
+                              <p className="mt-1 text-[10px] text-rose-400">{kwErrors[row.keyword]}</p>
+                            )}
                           </td>
                         </tr>
                         {isOpen && (
@@ -1556,10 +1661,13 @@ const SeoIntelligenceDashboard = () => {
       {/* ── Modals ── */}
       <AddKeywordModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setAddError(""); setModalOpen(false); }}
         onAdd={handleAdd}
         saving={saving}
         localConfig={localConfig}
+        tokenBalance={tokenBalance}
+        pricing={tokenPricing}
+        addError={addError}
       />
 
 
