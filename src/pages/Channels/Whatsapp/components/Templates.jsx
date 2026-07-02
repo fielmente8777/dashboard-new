@@ -253,6 +253,8 @@ export default function WhatsAppMessageTemplate() {
     );
   }
 
+
+  console.log("template",templates)
   return (
     <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
       <div className="flex justify-between">

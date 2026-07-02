@@ -273,6 +273,21 @@ const templates = [
   body: "Hi {{1}}, confirm your email using this code: {{2}}.",
   footer: "This helps us keep your account safe",
   buttons: [],
+},
+{
+  id: 31,
+  name: "reservation_payment_link",
+  category: "MARKETING",
+  header: "Reservation Payment",
+  body: "Hi, thank you for your reservation. Please complete your payment using the secure payment link below:\n\n{{1}}\n\nOnce the payment is successful, your reservation will be confirmed.",
+  footer: "Thank you for choosing us",
+  buttons: [
+    {
+      type: "URL",
+      text: "Pay Now",
+      url: "{{1}}"
+    }
+  ]
 }
 ];
 

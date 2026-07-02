@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { BASE_URL } from "../../../data/constant";
-import { addReservation } from "../../../services/api/bookingEngine";
+import { BASE_URL, NEW_BASE_URL } from "../../../data/constant";
+import { addReservation, addReservationWithPaymentLink } from "../../../services/api/bookingEngine";
 
 const ROOM_TYPES = [
   { id: "deluxe", name: "Deluxe Room", price: 298 },
@@ -64,8 +64,8 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
     if (!form.name || !form.phone) return alert("Name and phone are required.");
 
     try {
-      const response = await addReservation(
-        {
+      console.log("Data")
+      const payload=  {
           guestName:form.name, 
           emailId:form.email,
           phone:form?.phone,
@@ -97,18 +97,19 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
           special_request:form.specialRequests,
           checked_in: false,
           checked_out: false,
-        });
+        }
+        // const response = await addReservation(payload);
+        const response = await addReservationWithPaymentLink(payload);
 
+        console.log("response",response)
 
-      setOpenReservationForm(false)
+      // setOpenReservationForm(false)
 
 
       console.log("response",response.data)
     } catch (error) {
       console.error("Error creating reservation", error)
     }
-
-
     // setLoading(true);
     // setTimeout(() => { setLoading(false); setSent(true); }, 1500);
   };
@@ -299,7 +300,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
               </div>
             )}
 
-            {/* <div className="flex gap-2">
+            <div className="flex gap-2">
               <input
                 className={inp + " flex-1"}
                 placeholder="Phone or email for payment link"
@@ -318,7 +319,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
               <p className="text-xs text-green-600 mt-2 font-medium">
                 ✓ Payment link of ₹{amountDue.toLocaleString("en-IN")} sent to {form.payTo}
               </p>
-            )} */}
+            )}
           </div>
 
         </div>

@@ -46,6 +46,8 @@ export default function CustomDropdown({
     }
   };
 
+  console.log(options)
+
   // const toggleDropdown = () => {
   //   if (disabled) return;
 
@@ -196,6 +198,7 @@ export default function CustomDropdown({
             className="rounded-lg bg-app-surface border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
           >
             {options.map((opt) => {
+              console.log(opt)
               const isSelected = multiple
                 ? selected.includes(opt.value)
                 : selected === opt.value;
