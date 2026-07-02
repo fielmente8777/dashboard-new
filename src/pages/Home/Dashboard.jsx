@@ -20,6 +20,7 @@ import DashboardCard from "../../components/Card/DashboardCard";
 import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
+import SeoTokenBalanceCard from "../../components/SeoToken/SeoTokenBalanceCard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
