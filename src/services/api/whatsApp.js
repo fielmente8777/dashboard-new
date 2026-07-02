@@ -361,6 +361,28 @@ export const getCampaign = async () => {
   return data;
 };
 
+export const getCampaignDetails = async (id, params) => {
+  const searchParams = new URLSearchParams();
+
+  if (params?.status) searchParams.append("status", params?.status);
+  if (params?.search) searchParams.append("search", params?.search);
+  if (params?.page) searchParams.append("page", params?.page);
+  if (params?.limit) searchParams.append("limit", params?.limit);
+
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/broadcast/${id}?${searchParams.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
 export const createCampaign = async (payload) => {
   const params = new URLSearchParams();
   params.append("hid", localStorage.getItem("hid"));

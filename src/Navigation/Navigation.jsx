@@ -35,6 +35,7 @@ import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageL
 import AllLeads from "../pages/Enquiry/AllLeads";
 import ViewAndManageCalls from "../pages/Calls/viewCallManagement.jsx/ViewAndManageCalls";
 import Plan from "../pages/Plans/Plan";
+import BroadcastDetails from "../pages/BroadCasting/BroadcastDetails";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -98,6 +99,11 @@ const Navigation = () => {
         <Route
           path="leads-management/:slug/:leadId/view"
           element={<ViewAndMangeLeads />}
+        />
+
+        <Route
+          path="marketing/whatsapp-marketing/broadcast/:id"
+          element={<BroadcastDetails />}
         />
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {

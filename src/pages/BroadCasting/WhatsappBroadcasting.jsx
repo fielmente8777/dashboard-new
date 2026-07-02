@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
+import { IoMdRefresh } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import {
   getCampaign,
   getWhatsAppMessageTemplates,
 } from "../../services/api/whatsApp";
-import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
-import { getStatusStyle } from "../../utils/getStatusStyle";
 import { formatDateTime } from "../../utils/formateDate";
-import { IoMdRefresh } from "react-icons/io";
-import { FiInbox } from "react-icons/fi";
+import { getStatusStyle } from "../../utils/getStatusStyle";
+import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
 
 const campaignHeaders = [
   { key: "name", label: "Campaign Name" },
@@ -22,6 +22,7 @@ const campaignHeaders = [
 ];
 
 const WhatsappBroadcasting = () => {
+  const navigate = useNavigate();
   const [campaignsData, setCampaignsData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -72,7 +73,9 @@ const WhatsappBroadcasting = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-app-text dark:text-app-text">Campaign Management</h1>
+        <h1 className="text-xl font-semibold text-app-text dark:text-app-text">
+          Campaign Management
+        </h1>
 
         <button
           onClick={() => setIsOpen(true)}
@@ -123,7 +126,9 @@ const WhatsappBroadcasting = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-10">
               <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
 
                 {campaignHeaders.map((h) => (
                   <th
@@ -158,7 +163,12 @@ const WhatsappBroadcasting = () => {
                   return (
                     <tr
                       key={campaign._id}
-                      className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors"
+                      className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/client/${localStorage.getItem("hid")}/marketing/whatsapp-marketing/broadcast/${campaign._id}`,
+                        )
+                      }
                     >
                       {/* Index */}
                       <td className="px-3 py-2">

@@ -59,6 +59,8 @@ const WhatsAppLeads = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  const [notesFilter, setNotesFilter] = useState("");
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,6 +112,7 @@ const WhatsAppLeads = () => {
         limit: limit,
         stage: stage,
         created_from: CREATED_FROM,
+        notes: notesFilter,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -314,7 +317,16 @@ const WhatsAppLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     fetchUsersData();
@@ -342,16 +354,16 @@ const WhatsAppLeads = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-app-surface md:p-2 md:space-y-2 h-[90vh] flex flex-col">
+    <div className="bg-app-surface p-2 md:space-y-2 h-[90vh] flex flex-col">
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center p-2 ">
           <h2 className="text-lg font-semibold">Whatsapp Leads</h2>
 
           {allLeads?.length > 0 && (
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5 whitespace-nowrap"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -364,7 +376,7 @@ const WhatsAppLeads = () => {
             {/* LEFT SIDE FILTERS */}
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-app-surface focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex flex-1 items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-app-surface focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-app-text-faint" size={18} />
                 <input
                   type="text"
@@ -374,7 +386,7 @@ const WhatsAppLeads = () => {
                 />
               </div>
 
-              <div>
+              <div className="min-w-48 flex-1">
                 <CustomDropdown
                   options={[
                     {
@@ -388,7 +400,7 @@ const WhatsAppLeads = () => {
               </div>
 
               {/* DATE RANGE */}
-              <div className="relative">
+              <div className="relative flex-1">
                 <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
@@ -414,12 +426,47 @@ const WhatsAppLeads = () => {
                   </span>
                 )}
               </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 md:mt-0 mt-4">
         {rowSelected?.length > 0 && (
           <button
             className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
@@ -428,12 +475,16 @@ const WhatsAppLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="border rounded-lg overflow-x-auto hide-scrollbar">
+        <div className="border md:rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">Select</th>
-                <th className="px-3 py-3  text-white dark:text-app-text-muted">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3  text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}

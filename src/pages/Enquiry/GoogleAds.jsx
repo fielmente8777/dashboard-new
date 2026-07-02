@@ -57,6 +57,7 @@ const GoogleAds = () => {
   const [allUsers, setAllUsers] = useState([]);
 
   const [rowSelected, setRowSelected] = useState([]);
+  const [notesFilter, setNotesFilter] = useState("");
 
   const {
     page,
@@ -87,6 +88,7 @@ const GoogleAds = () => {
         limit: limit,
         stage: stage,
         created_from: CREATED_FROM,
+        notes: notesFilter,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -285,7 +287,16 @@ const GoogleAds = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     fetchUsersData();
@@ -316,7 +327,9 @@ const GoogleAds = () => {
     <div className="bg-app-surface p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">Google Ads Leads</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            Google Ads Leads
+          </h2>
 
           {allLeads?.length > 0 && (
             <button
@@ -385,6 +398,41 @@ const GoogleAds = () => {
                   </span>
                 )}
               </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -403,8 +451,12 @@ const GoogleAds = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99!">
               <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">Select</th>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}

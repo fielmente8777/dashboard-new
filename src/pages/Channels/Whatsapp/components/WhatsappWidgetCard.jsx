@@ -3,18 +3,20 @@ import { FiCheck, FiCopy } from "react-icons/fi";
 
 const WhatsappWidgetCard = ({ phoneNumber }) => {
   const [copied, setCopied] = useState("");
-  const apiCodeSnippet = `const payload = {
+  const apiCodeSnippet = `
+try{
+  const payload = {
   widget: "whatsapp",
   ndid: "${localStorage?.getItem("ndid") || "YOUR_NDID"}",
   hid: "${localStorage?.getItem("hid") || "YOUR_HID"}",
   pageUrl: window.location.href,
   websiteName: window.location.hostname,
-  phoneNumber: "${phoneNumber?.displayPhoneNumber || "919999999999"}",
+  phoneNumber: "${phoneNumber?.displayPhoneNumber.replace(/ /g, "") || "919999999999"}",
   message: "Hello, I'm interested in your offer."
 };
 
-await fetch(
-  "https://your-domain.com/api/v1/widget/click",
+const response = await fetch(
+  "https://gian-1eve.onrender.com/api/v1/widget/click",
   {
     method: "POST",
     headers: {
@@ -22,13 +24,25 @@ await fetch(
     },
     body: JSON.stringify(payload),
   }
-);`;
+); 
+
+const data = await response.json();
+const whatsappUrl = data?.result?.doc?.whatsappUrl;
+
+if (whatsappUrl) {
+  window.open(whatsappUrl, "_blank");
+}
+}
+catch (error) {
+  console.error("WhatsApp Click Error:", error);
+}  
+`;
 
   const widgetCodeSnippet = `<script>
 window.eazbotConfig = {
   ndid: "${localStorage?.getItem("ndid") || "YOUR_NDID"}",
   hid: "${localStorage?.getItem("hid") || "YOUR_HID"}",
-  phoneNumber: "${phoneNumber?.displayPhoneNumber || "919999999999"}",
+  phoneNumber: "${phoneNumber?.displayPhoneNumber?.replace(/ /g, "") || "919999999999"}",
   message: "Hello"
 };
 </script>
@@ -91,15 +105,15 @@ window.eazbotConfig = {
           <h3 className="font-medium">Option 2: Manual API Integration</h3>
 
           <button
-            onClick={() => copyCode(widgetCodeSnippet, "widget")}
+            onClick={() => copyCode(apiCodeSnippet, "api")}
             className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-all ${
-              copied === "widget"
+              copied === "api"
                 ? "border-green-200 bg-green-50 text-green-700"
                 : "hover:bg-gray-50"
             }`}
           >
-            {copied === "widget" ? <FiCheck /> : <FiCopy />}
-            {copied === "widget" ? "Copied!" : "Copy Code"}
+            {copied === "api" ? <FiCheck /> : <FiCopy />}
+            {copied === "api" ? "Copied!" : "Copy Code"}
           </button>
         </div>
 

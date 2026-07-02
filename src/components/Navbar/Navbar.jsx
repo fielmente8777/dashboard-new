@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoIosNotifications, IoMdHome } from "react-icons/io";
 import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
@@ -17,6 +17,8 @@ import { toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { FaAlignRight } from "react-icons/fa";
 import NotificationPopup from "../Popup/NotificationPopup";
 import ThemeToggle from "./ThemeToggle";
+import { WS_BASE_URL } from "../../data/constant";
+import WebSocketClient from "../../config/websocketClient";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -48,10 +50,12 @@ const letterColorMap = {
 };
 
 const Navbar = () => {
+  const wsRef = useRef(null);
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
   const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (token) {
@@ -114,6 +118,23 @@ const Navbar = () => {
 
   const firstLetter =
     hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
+
+  useEffect(() => {
+    wsRef.current = new WebSocketClient(WS_BASE_URL);
+
+    wsRef.current.connect((serverResponse) => {
+      const { data, event } = serverResponse;
+      console.log(serverResponse);
+      if (
+        event === "NOTIFICATION" &&
+        data?.ndid === localStorage.getItem("ndid")
+      ) {
+        setNotifications((prevNotifications) => [...prevNotifications, data]);
+      }
+    });
+
+    return () => wsRef.current?.close();
+  }, []);
 
   return (
     <div className="left-0 top-0">
@@ -261,6 +282,7 @@ const Navbar = () => {
         <NotificationPopup
           isOpen={isNotificationPopupOpen}
           onClose={onNotificationPopupClose}
+          data={notifications}
         />
       </div>
     </div>

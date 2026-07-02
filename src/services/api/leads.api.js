@@ -14,6 +14,7 @@ export const getLeads = async ({
   is_export,
   stage,
   source,
+  notes,
 }) => {
   const token = localStorage.getItem("token");
   const params = new URLSearchParams();
@@ -32,6 +33,7 @@ export const getLeads = async ({
     params.append("from", startDate);
     params.append("to", endDate);
   }
+  if (notes) params.append("notes", notes);
 
   const { data } = await axios.get(
     `${NEW_BASE_URL}/api/v1/leads/get?${params.toString()}`,

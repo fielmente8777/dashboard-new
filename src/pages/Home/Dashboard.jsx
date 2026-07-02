@@ -21,7 +21,6 @@ import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
 
-
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
@@ -37,6 +36,7 @@ import DeviceAnalytics from "../../components/DeviceAnalytics";
 import GeoAnalytics from "../../components/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
+import CallsAnalytics from "../Calls/CallsAnalytics";
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -50,6 +50,7 @@ const COLORS = [
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const [data, setData] = useState(null);
+  const [currentAnalytics, setCurrentAnalytics] = useState("overview");
 
   // 1. STATE FOR OUR CLEAN GA METRICS
   const [gaMetrics, setGaMetrics] = useState({
@@ -84,7 +85,7 @@ const Dashboard = () => {
 
       const timestamp = new Date().getTime(); // Cache buster
       const response = await axios.get(
-        `${BASE_URL}/google/analytics-conversions/${currentHid}?startDate=${currentDates.startDate}&endDate=${currentDates.endDate}&t=${timestamp}`
+        `${BASE_URL}/google/analytics-conversions/${currentHid}?startDate=${currentDates.startDate}&endDate=${currentDates.endDate}&t=${timestamp}`,
       );
 
       if (response.data && response.data.dashboardMetrics) {
@@ -124,7 +125,7 @@ const Dashboard = () => {
       window.removeEventListener("dashboard_date_changed", handleDateChange);
       window.removeEventListener(
         "dashboard_property_changed",
-        handlePropertyChange
+        handlePropertyChange,
       );
     };
   }, [hid, dateRange]);
@@ -143,7 +144,7 @@ const Dashboard = () => {
   const total = data?.totalLeads?.[0]?.count || 0;
   const converted = data?.convertedLeads?.[0]?.count || 0;
   const whatsapp = data?.totalWhatsappConversations || 0;
-  const today=data?.todayLeads||0;
+  const today = data?.todayLeads || 0;
 
   const conversionRate = total ? ((converted / total) * 100).toFixed(1) : 0;
 
@@ -174,8 +175,24 @@ const Dashboard = () => {
 
   if (!data) return <Loading />;
 
+  if (currentAnalytics === "call-analytics") {
+    return <CallsAnalytics />;
+  }
+
   return (
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
+      <div className="flex justify-end items-center">
+        <select
+          name=""
+          id=""
+          onChange={(e) => setCurrentAnalytics(e.target.value)}
+          className="border! border-primary/10! outline-none px-3 py-1 rounded-md cursor-pointer"
+        >
+          <option value="overview">Overview</option>
+          <option value="call-analytics">Call Analytics</option>
+        </select>
+      </div>
+      {/* <CallsAnalytics /> */}
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
         {/* <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
@@ -297,7 +314,9 @@ const Dashboard = () => {
               <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto pr-1">
                 {sorted.map((item, index) => {
                   const color = COLORS[index % COLORS.length];
-                  const pct = total ? Math.round((item.count / total) * 100) : 0;
+                  const pct = total
+                    ? Math.round((item.count / total) * 100)
+                    : 0;
                   const widthPct = max ? (item.count / max) * 100 : 0;
                   return (
                     <div key={item.name} className="flex items-center gap-3">
@@ -356,7 +375,10 @@ const Dashboard = () => {
             const total = cleanedStatus.reduce((sum, d) => sum + d.count, 0);
             return (
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="relative shrink-0" style={{ width: 200, height: 200 }}>
+                <div
+                  className="relative shrink-0"
+                  style={{ width: 200, height: 200 }}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Tooltip
@@ -414,9 +436,14 @@ const Dashboard = () => {
                 <div className="flex flex-col gap-2.5 w-full">
                   {cleanedStatus.map((item, index) => {
                     const color = COLORS[index % COLORS.length];
-                    const pct = total ? Math.round((item.count / total) * 100) : 0;
+                    const pct = total
+                      ? Math.round((item.count / total) * 100)
+                      : 0;
                     return (
-                      <div key={item.name} className="flex items-center justify-between gap-3">
+                      <div
+                        key={item.name}
+                        className="flex items-center justify-between gap-3"
+                      >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span
                             className="w-3 h-3 rounded-[4px] shrink-0"

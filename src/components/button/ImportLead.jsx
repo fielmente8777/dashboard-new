@@ -69,9 +69,6 @@ export default function ImportLead({ open, setOpen }) {
     return "";
   };
 
-
-  
-
   const normalizeRow = (row) => {
     const normalized = {};
 
@@ -185,9 +182,9 @@ export default function ImportLead({ open, setOpen }) {
 
   // console.log("Leads", leads);
   return (
-    <div className="max-w-3xl mx-auto space-y-4 bg-app-surface">
+    <div className="md:max-w-3xl w-full flex-1 mx-auto space-y-4 bg-app-surface">
       <button
-        className="text-sm font-medium bg-primary text-white p-2.5 rounded-sm ml-2"
+        className="text-sm font-medium bg-primary text-white p-2.5 rounded-sm whitespace-nowrap w-full"
         onClick={() => setOpen(!open)}
       >
         Import Leads (CSV)

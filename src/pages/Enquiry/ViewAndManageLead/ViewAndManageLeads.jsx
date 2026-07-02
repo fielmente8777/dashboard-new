@@ -321,15 +321,17 @@ const ViewAndManageLeads = () => {
             <div className="space-y-2">
               {lead?.Message && (
                 <div className="bg-app-surface-secondary p-4 rounded-md space-y-2">
-                  <h3 className="font-semibold text-gray-800">Message</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
+                    Message
+                  </h3>
                   <p className="text-sm"> {lead?.Message}</p>
                 </div>
               )}
               <NotesCard lead={lead} setLead={setLead} />
 
               {lead?.request_metadata && (
-                <div className="bg-white p-4 rounded-md space-y-3">
-                  <h3 className="font-semibold text-gray-800">
+                <div className="bg-app-surface-secondary p-4 rounded-md space-y-3">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
                     Request Metadata
                   </h3>
 
@@ -349,7 +351,7 @@ const ViewAndManageLeads = () => {
                               return (
                                 <div
                                   key={geoKey}
-                                  className="border rounded-md p-2 bg-gray-50"
+                                  className="border rounded-md p-2 bg-app-surface-secondary"
                                 >
                                   <p className="text-gray-500 capitalize">
                                     {geoKey.replace(/_/g, " ")}
@@ -360,14 +362,14 @@ const ViewAndManageLeads = () => {
                                   </p>
                                 </div>
                               );
-                            }
+                            },
                           );
                         }
 
                         return (
                           <div
                             key={key}
-                            className="border rounded-md p-2 bg-gray-50"
+                            className="border rounded-md p-2 bg-app-surface-secondary"
                           >
                             <p className="text-gray-500 capitalize">
                               {key.replace(/_/g, " ")}
@@ -378,7 +380,7 @@ const ViewAndManageLeads = () => {
                             </p>
                           </div>
                         );
-                      }
+                      },
                     )}
                   </div>
                 </div>

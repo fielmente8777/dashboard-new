@@ -52,6 +52,7 @@ const MetaLeads = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [stage, setStage] = useState("");
+  const [notesFilter, setNotesFilter] = useState("");
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -116,6 +117,7 @@ const MetaLeads = () => {
         limit: limit,
         created_from: CREATED_FROM,
         stage: stage,
+        notes: notesFilter,
         // stage: Stages.META_LEAD,
       };
 
@@ -356,7 +358,16 @@ const MetaLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     const savedPage = localStorage.getItem(LOCAL_STORAGE.MetaLeadsPage);
@@ -401,7 +412,7 @@ const MetaLeads = () => {
   }, [allLeads]);
 
   return (
-    <div className="bg-app-surface p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+    <div className="bg-app-surface p-2 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold ">Meta Leads</h2>
@@ -419,11 +430,11 @@ const MetaLeads = () => {
         </div>
 
         <div className="">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="md:flex-row flex-col flex md:items-center justify-between gap-4">
             {/* LEFT SIDE FILTERS */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-1 flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex flex-1 items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-gray-400" size={18} />
                 <input
                   type="text"
@@ -433,7 +444,7 @@ const MetaLeads = () => {
                 />
               </div>
 
-              <div>
+              <div className="min-w-48 flex-1">
                 <CustomDropdown
                   options={[
                     {
@@ -479,7 +490,7 @@ const MetaLeads = () => {
             )} */}
 
               {/* DATE RANGE */}
-              <div className="relative">
+              <div className="relative flex-1">
                 <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
@@ -506,8 +517,43 @@ const MetaLeads = () => {
                 )}
               </div>
 
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
+
               {allCampaigns?.length > 0 && (
-                <div>
+                <div className="min-w-48 flex-1">
                   <CustomDropdown
                     label="All Campaigns"
                     options={[
@@ -525,11 +571,10 @@ const MetaLeads = () => {
             </div>
 
             {/* RIGHT ACTION */}
-
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
-              className="h-10 px-5 rounded-lg bg-primary text-white text-sm font-medium flex items-center gap-2 hover:bg-primary/90 disabled:opacity-60"
+              className="h-10 px-5 rounded-lg bg-primary text-white text-sm font-medium flex items-center gap-2 hover:bg-primary/90 disabled:opacity-60 flex justify-center"
             >
               Refresh
               <span className={isSyncing ? "animate-spin" : ""}>
@@ -549,12 +594,16 @@ const MetaLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="border rounded-lg overflow-auto hide-scrollbar">
+        <div className="border md:rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">Select</th>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
