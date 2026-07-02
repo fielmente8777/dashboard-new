@@ -181,7 +181,14 @@ const Dashboard = () => {
 
   return (
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
-      <div className="flex justify-end items-center">
+      <div className="flex justify-between items-center">
+         <div>
+        <h1 className="text-xl font-bold">Analytics Overview</h1>
+
+        <p className="mt-1 text-sm text-slate-500">
+          Monitor leads, performance and trends.
+        </p>
+      </div>
         <select
           name=""
           id=""
