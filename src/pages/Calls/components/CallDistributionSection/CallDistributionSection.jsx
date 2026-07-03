@@ -6,7 +6,7 @@ const CallDistributionSection = ({
   directionDistribution,
 }) => {
   return (
-    <section className="grid grid-cols-2 gap-6">
+    <section className="grid grid-cols-2 gap-5">
       <StatusChart data={statusDistribution} />
       <DirectionChart data={directionDistribution} />
     </section>

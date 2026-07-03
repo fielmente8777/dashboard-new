@@ -27,14 +27,14 @@ const Header = ({ selectedRange, onRangeChange }) => {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Call Analytics</h1>
+        <h1 className="text-xl font-bold text">Call Analytics</h1>
 
         <p className="mt-1 text-sm text-slate-500">
           Monitor call performance and trends.
         </p>
       </div>
 
-      <div className="relative flex items-center bg-white">
+      <div className="relative flex items-center">
         {/* <Calendar
           size={18}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"

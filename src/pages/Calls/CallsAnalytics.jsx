@@ -50,7 +50,7 @@ const CallsAnalytics = () => {
   }
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-5 p-4">
       <Header selectedRange={dateRange.type} onRangeChange={setDateRange} />
       <SummarySection summary={analytics?.summary} />
       <CallTrendSection trend={analytics.trend} />

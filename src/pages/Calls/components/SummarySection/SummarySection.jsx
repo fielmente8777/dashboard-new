@@ -83,7 +83,7 @@ const SummarySection = ({ summary }) => {
 
   return (
     <section>
-      <div className="flex flex-wrap gap-2 items-stretch">
+      <div className="flex flex-wrap gap-4 items-stretch">
         {cards.map((card) => (
           <div className="flex-1">
             <SummaryCard key={card.title} {...card} />

@@ -34,7 +34,7 @@ const SummaryCard = ({
         : ArrowDownRight;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md h-full">
+    <div className="drop-shadow-xl bg-white p-5 transition-all h-full">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-slate-500">{title}</p>
