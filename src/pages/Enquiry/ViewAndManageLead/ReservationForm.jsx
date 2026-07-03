@@ -1,7 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { BASE_URL, NEW_BASE_URL } from "../../../data/constant";
-import { addReservation, addReservationWithPaymentLink } from "../../../services/api/bookingEngine";
+import {
+  addReservation,
+  addReservationWithPaymentLink,
+} from "../../../services/api/bookingEngine";
 
 const ROOM_TYPES = [
   { id: "deluxe", name: "Deluxe Room", price: 298 },
@@ -17,16 +20,19 @@ const MEAL_PLANS = [
   // { id: "ap", name: "AP – All Meals", price: 1400 },
 ];
 
-export default function ReservationForm({ openReservationForm, setOpenReservationForm, lead }) {
-
-  const [rooms,setRooms]=useState([]);
+export default function ReservationForm({
+  openReservationForm,
+  setOpenReservationForm,
+  lead,
+}) {
+  const [rooms, setRooms] = useState([]);
   const [form, setForm] = useState({
     name: lead?.Name || "",
     phone: lead?.Contact || "",
     email: lead?.Email || "",
     address: lead?.Address || "",
-    checkIn: lead?.check_in||"",
-    checkOut: lead?.check_out||"",
+    checkIn: lead?.check_in || "",
+    checkOut: lead?.check_out || "",
     guests: 1,
     rooms: 1,
     roomType: "",
@@ -46,154 +52,230 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
 
   const nights = (() => {
     if (!form.checkIn || !form.checkOut) return 0;
-    const n = Math.round((new Date(form.checkOut) - new Date(form.checkIn)) / 86400000);
+    const n = Math.round(
+      (new Date(form.checkOut) - new Date(form.checkIn)) / 86400000,
+    );
     return n > 0 ? n : 0;
   })();
 
-  const roomCharge = selectedRoom ? selectedRoom.price * form.rooms * nights : 0;
+  const roomCharge = selectedRoom
+    ? selectedRoom.price * form.rooms * nights
+    : 0;
   // console.log("roomCharge", roomCharge, selectedRoom, form.rooms, nights)
-  const mealCharge = selectedMeal ? selectedMeal.price * form.guests * nights : 0;
+  const mealCharge = selectedMeal
+    ? selectedMeal.price * form.guests * nights
+    : 0;
   const subtotal = roomCharge + mealCharge;
   const cgst = Math.round(subtotal * 0.06);
-  const sgst = Math.round(subtotal * 0.06); 
+  const sgst = Math.round(subtotal * 0.06);
   const totalGst = cgst + sgst;
   const grandTotal = subtotal + totalGst;
-  const amountDue = form.paymentMode === "half" ? Math.round(grandTotal / 2) : grandTotal;
+  const amountDue =
+    form.paymentMode === "half" ? Math.round(grandTotal / 2) : grandTotal;
 
-  const handleSend = async() => {
+  const handleSend = async () => {
     if (!form.name || !form.phone) return alert("Name and phone are required.");
 
     try {
-      console.log("Data")
-      const payload=  {
-          guestName:form.name, 
-          emailId:form.email,
-          phone:form?.phone,
-          city: "",
-          address: form.address,
-          label: "",
-          value: "",
-          checkIn: form.checkIn,
-          checkOut: form.checkOut,
-          adults:form.guests,
-          room_type:form.roomType,
-          quantity:form.rooms,
-          // Package & promo
-          package_id: "",
-          package_name: form.mealPlan,
-          package_price: 0,
-          package_type: "",
-          code: "",
-          promo_id: "",
-          discount: 0,
-          ref_no: "",
-          payment_provider: "Stripe",
-          mode: "Credit Card",
-          status: "Pending",
-          pay_id: "",
-          total:subtotal,
-          tax:totalGst,
-          amountPay:grandTotal,
-          special_request:form.specialRequests,
-          checked_in: false,
-          checked_out: false,
-        }
-        // const response = await addReservation(payload);
-        const response = await addReservationWithPaymentLink(payload);
+      console.log("Data");
+      const payload = {
+        guestName: form.name,
+        emailId: form.email,
+        phone: form?.phone,
+        city: "",
+        address: form.address,
+        label: "",
+        value: "",
+        checkIn: form.checkIn,
+        checkOut: form.checkOut,
+        adults: form.guests,
+        room_type: form.roomType,
+        quantity: form.rooms,
+        // Package & promo
+        package_id: "",
+        package_name: form.mealPlan,
+        package_price: 0,
+        package_type: "",
+        code: "",
+        promo_id: "",
+        discount: 0,
+        ref_no: "",
+        payment_provider: "Stripe",
+        mode: "Credit Card",
+        status: "Pending",
+        pay_id: "",
+        total: subtotal,
+        tax: totalGst,
+        amountPay: grandTotal,
+        special_request: form.specialRequests,
+        checked_in: false,
+        checked_out: false,
+      };
+      const response = await addReservation(payload);
+      // const response = await addReservationWithPaymentLink(payload);
 
-        console.log("response",response)
+      console.log("response", response);
 
       // setOpenReservationForm(false)
 
-
-      console.log("response",response.data)
+      console.log("response", response.data);
     } catch (error) {
-      console.error("Error creating reservation", error)
+      console.error("Error creating reservation", error);
     }
     // setLoading(true);
     // setTimeout(() => { setLoading(false); setSent(true); }, 1500);
   };
 
-
-
-  const fetchRoom=async()=>{
+  const fetchRoom = async () => {
     // console.log("jahjvg")
     try {
-      const response= await axios.get(`${BASE_URL}/room/${localStorage.getItem("token")}/${localStorage.getItem("hid")}`)
+      const response = await axios.get(
+        `${BASE_URL}/room/${localStorage.getItem("token")}/${localStorage.getItem("hid")}`,
+      );
       // console.log("Response", response.data)
-      setRooms(response.data?.data)
+      setRooms(response.data?.data);
     } catch (error) {
-      console.log("Error",error)
+      console.log("Error", error);
     }
-  }
+  };
 
-  useEffect(()=>{
-    fetchRoom()
-  },[])
+  useEffect(() => {
+    fetchRoom();
+  }, []);
 
   // console.log("sdfns", grandTotal,rooms)
   // console.log("form", form)
   if (!openReservationForm) return null;
 
-  const inp = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-app-surface";
+  const inp =
+    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-app-surface";
 
   return (
     <div className="fixed inset-0 z-99999 bg-black/60 flex items-start justify-center p-4 overflow-y-auto">
       <div className="bg-app-surface-secondary rounded-2xl w-full max-w-2xl shadow-2xl my-6">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <p className="text-xs text-app-text dark: text-app-text uppercase tracking-widest mb-0.5">Lead → Booking</p>
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-app-text-faint">New Reservation</h2>
+            <p className="text-xs text-app-text dark: text-app-text uppercase tracking-widest mb-0.5">
+              Lead → Booking
+            </p>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-app-text-faint">
+              New Reservation
+            </h2>
           </div>
-          <button onClick={() => setOpenReservationForm(false)} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+          <button
+            onClick={() => setOpenReservationForm(false)}
+            className="text-gray-400 hover:text-gray-700 text-2xl leading-none"
+          >
+            ×
+          </button>
         </div>
 
         <div className="px-6 py-5 space-y-6">
-
           {/* Guest Details */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Guest Details</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              Guest Details
+            </p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Full Name *</label>
-                <input className={inp} placeholder="Rahul Sharma" value={form.name} onChange={(e) => set("name", e.target.value)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Full Name *
+                </label>
+                <input
+                  className={inp}
+                  placeholder="Rahul Sharma"
+                  value={form.name}
+                  onChange={(e) => set("name", e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Phone *</label>
-                <input className={inp} placeholder="9876543210" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Phone *
+                </label>
+                <input
+                  className={inp}
+                  placeholder="9876543210"
+                  value={form.phone}
+                  onChange={(e) => set("phone", e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Email</label>
-                <input className={inp} placeholder="rahul@email.com" value={form.email} onChange={(e) => set("email", e.target.value)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Email
+                </label>
+                <input
+                  className={inp}
+                  placeholder="rahul@email.com"
+                  value={form.email}
+                  onChange={(e) => set("email", e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Address / City</label>
-                <input className={inp} placeholder="Delhi" value={form.address} onChange={(e) => set("address", e.target.value)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Address / City
+                </label>
+                <input
+                  className={inp}
+                  placeholder="Delhi"
+                  value={form.address}
+                  onChange={(e) => set("address", e.target.value)}
+                />
               </div>
             </div>
           </div>
 
           {/* Stay Details */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Stay Details</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              Stay Details
+            </p>
             <div className="grid grid-cols-4 gap-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Check-in</label>
-                <input type="date" className={inp} value={form.checkIn}  onChange={(e) => set("checkIn", e.target.value)} />
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Check-in
+                </label>
+                <input
+                  type="date"
+                  className={inp}
+                  value={form.checkIn}
+                  onChange={(e) => set("checkIn", e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Check-out</label>
-                <input type="date" className={inp} value={form.checkOut}  onChange={(e) => set("checkOut", e.target.value)} />
+                <label className="text-xs text-gray-500 mb-1 block">
+                  Check-out
+                </label>
+                <input
+                  type="date"
+                  className={inp}
+                  value={form.checkOut}
+                  onChange={(e) => set("checkOut", e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Adults</label>
-                <input type="number" min="1" className={inp} value={form.guests} onChange={(e) => set("guests", parseInt(e.target.value) || 1)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Adults
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className={inp}
+                  value={form.guests}
+                  onChange={(e) => set("guests", parseInt(e.target.value) || 1)}
+                />
               </div>
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Rooms</label>
-                <input type="number" min="1" className={inp} value={form.rooms} onChange={(e) => set("rooms", parseInt(e.target.value) || 1)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Rooms
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  className={inp}
+                  value={form.rooms}
+                  onChange={(e) => set("rooms", parseInt(e.target.value) || 1)}
+                />
               </div>
             </div>
 
@@ -207,13 +289,23 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
 
           {/* Room & Meal */}
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Room & Meal Plan</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+              Room & Meal Plan
+            </p>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Room Type</label>
-                <select className={inp} value={form.roomType} onChange={(e) => set("roomType", e.target.value)}>
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Room Type
+                </label>
+                <select
+                  className={inp}
+                  value={form.roomType}
+                  onChange={(e) => set("roomType", e.target.value)}
+                >
                   {rooms?.map((r) => (
-                    <option key={r.roomType} value={r.roomType}>{r.roomName} — ₹{r.price.toLocaleString()}/night</option>
+                    <option key={r.roomType} value={r.roomType}>
+                      {r.roomName} — ₹{r.price.toLocaleString()}/night
+                    </option>
                   ))}
                 </select>
               </div>
@@ -226,8 +318,16 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
                 </select>
               </div> */}
               <div className="col-span-2">
-                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">Special Requests</label>
-                <textarea rows={2} className={inp + " resize-none"} placeholder="Early check-in, high floor, extra pillows…" value={form.specialRequests} onChange={(e) => set("specialRequests", e.target.value)} />
+                <label className="text-xs text-gray-500 dark:text-app-text-muted mb-1 block">
+                  Special Requests
+                </label>
+                <textarea
+                  rows={2}
+                  className={inp + " resize-none"}
+                  placeholder="Early check-in, high floor, extra pillows…"
+                  value={form.specialRequests}
+                  onChange={(e) => set("specialRequests", e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -236,16 +336,25 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
           {nights > 0 && (
             <div className="border border-gray-100 rounded-xl overflow-hidden">
               <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-100">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Price Breakdown</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                  Price Breakdown
+                </p>
               </div>
               <div className="divide-y divide-gray-50">
                 <div className="flex justify-between px-4 py-2.5 text-sm text-gray-600">
-                  <span>{selectedRoom?.roomName} × {form.rooms} × {nights} night{nights > 1 ? "s" : ""}</span>
+                  <span>
+                    {selectedRoom?.roomName} × {form.rooms} × {nights} night
+                    {nights > 1 ? "s" : ""}
+                  </span>
                   <span>₹{roomCharge.toLocaleString("en-IN")}</span>
                 </div>
                 {mealCharge > 0 && (
                   <div className="flex justify-between px-4 py-2.5 text-sm text-gray-600">
-                    <span>{selectedMeal?.name} × {form.guests} guest{form.guests > 1 ? "s" : ""} × {nights} night{nights > 1 ? "s" : ""}</span>
+                    <span>
+                      {selectedMeal?.name} × {form.guests} guest
+                      {form.guests > 1 ? "s" : ""} × {nights} night
+                      {nights > 1 ? "s" : ""}
+                    </span>
                     <span>₹{mealCharge.toLocaleString("en-IN")}</span>
                   </div>
                 )}
@@ -274,7 +383,7 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
           )}
 
           {/* Payment */}
-          <div>
+          {/* <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Payment</p>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <button
@@ -320,13 +429,15 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
                 ✓ Payment link of ₹{amountDue.toLocaleString("en-IN")} sent to {form.payTo}
               </p>
             )}
-          </div>
-
+          </div> */}
         </div>
 
         {/* Footer */}
         <div className="flex justify-between items-center px-6 py-4 border-t border-gray-100">
-          <button onClick={() => setOpenReservationForm(false)} className="text-sm text-gray-400 hover:text-gray-600">
+          <button
+            onClick={() => setOpenReservationForm(false)}
+            className="text-sm text-gray-400 hover:text-gray-600"
+          >
             Cancel
           </button>
           <button
@@ -337,7 +448,6 @@ export default function ReservationForm({ openReservationForm, setOpenReservatio
             {sent ? "✓ Booking Confirmed" : "Create Booking"}
           </button>
         </div>
-
       </div>
     </div>
   );
