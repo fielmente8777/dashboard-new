@@ -40,7 +40,7 @@ export const accessRoles = [
 
 export const accessScopeMap = {
   CMS: "cms",
-  "Booking Engine": "booking_engine",
+  "Booking Engine": "bookingEngine",
   "Front Desk": "frontDesk",
   "Social Media": "social_media",
   "Enquiries Management": "enquiriesManagement",
@@ -66,6 +66,8 @@ export const accessScopeMap = {
   Exotel: "exotel",
   "Leads Management": "lead_management",
   "Google Ads Insights": "googleadsinsights",
+  "Google Analytics": "analyticsandreporting",
+  "Meta Insights": "analyticsandreporting",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
