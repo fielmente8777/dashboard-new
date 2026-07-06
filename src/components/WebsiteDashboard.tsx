@@ -158,7 +158,12 @@ const WebsiteSeoDashboard = () => {
     }
   }, [getAuthConfig]);
 
-  useEffect(() => { fetchData(); fetchTokens(); }, [fetchData, fetchTokens]);
+  useEffect(() => {
+    fetchData();
+    fetchTokens();
+    window.addEventListener("focus", fetchTokens);
+    return () => window.removeEventListener("focus", fetchTokens);
+  }, [fetchData, fetchTokens]);
 
   const handleCountryChange = async (e: any) => {
     const newCountry = e.target.value;

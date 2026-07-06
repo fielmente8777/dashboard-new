@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Coins } from "lucide-react";
 import { NODE_BASE_URL } from "../../data/constant";
@@ -6,11 +6,18 @@ import { DEFAULT_SEO_PRICING, type SeoTokenPricing } from "../../utils/seoTokenP
 import { SEO_TOKENS_CHANGED } from "../../utils/seoTokenEvents";
 import SeoTokenUsagePanel from "./SeoTokenUsagePanel";
 
+const CACHE_KEY = "seo_token_balance_cache";
+
 const SeoTokenBalanceCard = () => {
-  const [balance, setBalance] = useState<number | null>(null);
+  const [balance, setBalance] = useState<number | null>(() => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached != null ? Number(cached) : null;
+  });
   const [pricing, setPricing] = useState<SeoTokenPricing>(DEFAULT_SEO_PRICING);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(balance === null);
   const [panelOpen, setPanelOpen] = useState(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mounted = useRef(true);
 
   const fetchTokens = useCallback(async () => {
     try {
@@ -21,25 +28,44 @@ const SeoTokenBalanceCard = () => {
         { headers: { Authorization: `Bearer ${token}` } },
       );
       const d = res.result || res;
-      if (d.balance != null) setBalance(d.balance);
+      if (d.balance != null) {
+        setBalance(d.balance);
+        localStorage.setItem(CACHE_KEY, String(d.balance));
+      }
       if (d.pricing) setPricing(d.pricing);
-    } catch (err) {
-      console.error("SEO token fetch failed:", err);
+    } catch {
+      // Retry once after 8s so balance recovers after a server restart
+      if (mounted.current) {
+        retryTimer.current = setTimeout(() => {
+          if (mounted.current) fetchTokens();
+        }, 8_000);
+      }
     } finally {
-      setLoading(false);
+      if (mounted.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    mounted.current = true;
     fetchTokens();
-    const onUpdate = () => { fetchTokens(); };
+
+    const onUpdate = () => fetchTokens();
+    const onFocus  = () => fetchTokens();
+
     window.addEventListener(SEO_TOKENS_CHANGED, onUpdate);
-    return () => window.removeEventListener(SEO_TOKENS_CHANGED, onUpdate);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      mounted.current = false;
+      if (retryTimer.current) clearTimeout(retryTimer.current);
+      window.removeEventListener(SEO_TOKENS_CHANGED, onUpdate);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [fetchTokens]);
 
   const isLow   = balance != null && balance > 0 && balance < pricing.localPerKeyword;
   const isEmpty = balance === 0;
-  const display = loading ? "…" : (balance ?? 0).toLocaleString();
+  const display = loading && balance === null ? "…" : (balance ?? 0).toLocaleString();
 
   let ringCls = "ring-indigo-200/50 shadow-indigo-500/10";
   if (isEmpty) ringCls = "ring-rose-400/40 shadow-rose-500/20";

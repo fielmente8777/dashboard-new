@@ -21,6 +21,7 @@ import {
   type SeoTokenPricing,
 } from "../../utils/seoTokenPricing";
 import { notifySeoTokensChanged } from "../../utils/seoTokenEvents";
+import SeoTokenBalanceCard from "../SeoToken/SeoTokenBalanceCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1158,7 +1159,12 @@ const SeoIntelligenceDashboard = () => {
     finally { if (!silent) setLoading(false); }
   }, [getAuthConfig]);
 
-  useEffect(() => { fetchData(); fetchTokens(); }, [fetchData, fetchTokens]);
+  useEffect(() => {
+    fetchData();
+    fetchTokens();
+    window.addEventListener("focus", fetchTokens);
+    return () => window.removeEventListener("focus", fetchTokens);
+  }, [fetchData, fetchTokens]);
 
   useEffect(() => {
     if (data.gridMeta?.status === "scanning") setWatchingGridScan(true);
@@ -1342,6 +1348,7 @@ const SeoIntelligenceDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-950 to-black p-6 sm:p-8">
+      <SeoTokenBalanceCard />
       <div className="pointer-events-none absolute inset-0 -z-0 opacity-[0.025]"
         style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
 
