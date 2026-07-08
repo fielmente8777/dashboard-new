@@ -64,7 +64,7 @@ export const accessScopeMap = {
   WhatsApp: "whatsapp",
   // whatsapp: "whatsapp",
   Exotel: "exotel",
-  "Leads Management": "lead_management",
+  "Leads Management": "enquiriesManagement",
   "Google Ads Insights": "googleadsinsights",
   "Google Analytics": "analyticsandreporting",
   "Meta Insights": "analyticsandreporting",
