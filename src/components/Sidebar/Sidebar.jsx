@@ -11,7 +11,10 @@ import DataContext from "../../context/DataContext";
 import { BASE_PATH, BASE_URL } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
-import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
+import {
+  accessScopeMap,
+  appAccessScopeMap,
+} from "../../pages/UserMgmt/UserMgmtPopup";
 import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
 import {
   fetchAuthUserProfile,
@@ -623,12 +626,13 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
 
                 // if (key && !authUser?.accessScope[accessScopeMap[key]])
 
-                if (
-                  key &&
-                  subscription?.appAccess &&
-                  !subscription?.appAccess[accessScopeMap[key]]
-                )
-                  return null;
+                // if (
+                //   (key &&
+                //     subscription?.appAccess &&
+                //     !subscription?.appAccess[accessScopeMap[key]]) ||
+                //   !subscription.appAccess[appAccessScopeMap[key]]
+                // )
+                //   return null;
                 return (
                   <div key={index} className="flex flex-col">
                     {item?.subLinks ? (

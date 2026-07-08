@@ -70,6 +70,10 @@ export const accessScopeMap = {
   "Meta Insights": "analyticsandreporting",
 };
 
+export const appAccessScopeMap = {
+  "Leads Management": "leadsManagement",
+};
+
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
   const { showToast } = useToast();
 
