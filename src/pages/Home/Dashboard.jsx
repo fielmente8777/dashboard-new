@@ -20,6 +20,7 @@ import DashboardCard from "../../components/Card/DashboardCard";
 import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
+import SeoTokenBalanceCard from "../../components/SeoToken/SeoTokenBalanceCard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
@@ -200,6 +201,10 @@ const Dashboard = () => {
         </select>
       </div>
       {/* <CallsAnalytics /> */}
+    {/* <div className="p-3 md:p-6 bg-gray-100 min-h-screen space-y-3 md:space-y-6"> */}
+
+      {/* <SeoTokenBalanceCard /> */}
+
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
         {/* <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">

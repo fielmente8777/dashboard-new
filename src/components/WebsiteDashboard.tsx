@@ -4,6 +4,12 @@ import { NODE_BASE_URL } from "../data/constant";
 import {
   Globe, Plus, X, RefreshCw, Loader2, IndianRupee, BarChart3, Trash2, Search, Link as LinkIcon, Lock
 } from "lucide-react";
+import {
+  estimateWebsiteTokens,
+  DEFAULT_SEO_PRICING,
+  type SeoTokenPricing,
+} from "../utils/seoTokenPricing";
+import { notifySeoTokensChanged } from "../utils/seoTokenEvents";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n: any) => (n == null ? "—" : Number(n).toLocaleString());
@@ -41,11 +47,13 @@ const COUNTRIES = [
 ];
 
 // ─── Track Link Modal ───────────────────────────────────────────
-const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
+const TrackLinkModal = ({ open, onClose, onAdd, saving, tokenBalance, pricing, addError, websiteCountry }: any) => {
   const [text, setText] = useState("");
 
   if (!open) return null;
   const parsed = [...new Set(text.split(/[\n,]/).map((k: string) => k.trim().toLowerCase()).filter(Boolean))];
+  const cost   = estimateWebsiteTokens(parsed.length, websiteCountry);
+  const canAfford = tokenBalance >= cost;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -71,12 +79,18 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving }: any) => {
               placeholder="best hotel in city&#10;luxury resort near me"
               className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/60 px-3.5 py-3 text-sm text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
             <p className="text-[11px] text-zinc-500 mt-1">One keyword per line. {parsed.length} keyword(s) detected.</p>
+            {parsed.length > 0 && (
+              <p className="text-xs text-zinc-400 mt-2">
+                Will cost: <span className="font-semibold text-blue-300">{cost} tokens</span>
+              </p>
+            )}
+            {addError && <p className="text-xs text-rose-400 mt-2">{addError}</p>}
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 border-t border-zinc-800 px-6 py-4">
           <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800">Cancel</button>
-          <button onClick={() => onAdd(parsed)} disabled={saving || !parsed.length}
+          <button onClick={() => onAdd(parsed)} disabled={saving || !parsed.length || !canAfford}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500 disabled:opacity-50">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
             Track Keywords
@@ -96,13 +110,31 @@ const WebsiteSeoDashboard = () => {
   const [setupUrl, setSetupUrl] = useState("");
   const [isSettingUrl, setIsSettingUrl] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [tokenBalance, setTokenBalance] = useState(100);
+  const [tokenPricing, setTokenPricing] = useState<SeoTokenPricing>(DEFAULT_SEO_PRICING);
+  const [addError, setAddError] = useState("");
+  const [refreshingKw, setRefreshingKw] = useState<string | null>(null);
+  const [kwErrors, setKwErrors] = useState<Record<string, string>>({});
 
   const getAuthConfig = useCallback(() => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
   }), []);
+
+  const fetchTokens = useCallback(async () => {
+    try {
+      const { data: res } = await axios.get(
+        `${NODE_BASE_URL}/seo/seo-intelligence/tokens`,
+        getAuthConfig(),
+      );
+      const d = res.result || res;
+      if (d.balance != null) setTokenBalance(d.balance);
+      if (d.pricing) setTokenPricing(d.pricing);
+    } catch (err) {
+      console.error("Token fetch failed:", err);
+    }
+  }, [getAuthConfig]);
 
   const fetchData = useCallback(async (silent = false) => {
     try {
@@ -126,31 +158,27 @@ const WebsiteSeoDashboard = () => {
     }
   }, [getAuthConfig]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    fetchTokens();
+    window.addEventListener("focus", fetchTokens);
+    return () => window.removeEventListener("focus", fetchTokens);
+  }, [fetchData, fetchTokens]);
 
-  // Handle Country Dropdown Change
-  // Handle Country Dropdown Change
-  // Handle Country Dropdown Change
   const handleCountryChange = async (e: any) => {
     const newCountry = e.target.value;
     setSelectedCountry(newCountry);
     try {
-      setLoading(true);
-
-      // 1. Backend mein country update karo
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/update-website-country`, { country: newCountry }, getAuthConfig());
-
-      // 2. Nayi country ke hisaab se ranking/volume fetch karo
-      // 🔥 YAHAN BHI { type: 'website' } DAALNA ZAROORI HAI 🔥
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'website' }, getAuthConfig());
-
-      // 3. Data UI pe laao
+      await axios.post(
+        `${NODE_BASE_URL}/seo/seo-intelligence/update-website-country`,
+        { country: newCountry },
+        getAuthConfig(),
+      );
       await fetchData(false);
-
+      await fetchTokens();
+      notifySeoTokensChanged();
     } catch {
-      alert("Failed to update country volume.");
-    } finally {
-      setLoading(false);
+      console.error("Failed to update country.");
     }
   };
 
@@ -169,15 +197,57 @@ const WebsiteSeoDashboard = () => {
   };
 
   const handleAddLinkTracking = async (kws: string[]) => {
+    setAddError("");
     try {
       setSaving(true);
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/track-link`, {
         keywords: kws,
       }, getAuthConfig());
       setModalOpen(false);
+      await fetchTokens();
+      notifySeoTokensChanged();
       await fetchData();
-    } catch { alert("Couldn't add keywords. Please try again."); }
-    finally { setSaving(false); }
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        const { required, available } = err.response.data;
+        setAddError(`Not enough tokens. Need ${required}, have ${available}.`);
+        await fetchTokens();
+        notifySeoTokensChanged();
+      } else {
+        setAddError("Couldn't add keywords. Please try again.");
+      }
+    } finally { setSaving(false); }
+  };
+
+  const handleRefreshKeyword = async (keyword: string) => {
+    setKwErrors((prev) => {
+      const next = { ...prev };
+      delete next[keyword];
+      return next;
+    });
+    setRefreshingKw(keyword);
+    try {
+      await axios.post(
+        `${NODE_BASE_URL}/seo/seo-intelligence/refresh-keyword`,
+        { keyword },
+        getAuthConfig(),
+      );
+      await fetchTokens();
+      notifySeoTokensChanged();
+      await fetchData(true);
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        const { required, available } = err.response.data;
+        setKwErrors((prev) => ({
+          ...prev,
+          [keyword]: `Need ${required} tokens (have ${available})`,
+        }));
+        await fetchTokens();
+        notifySeoTokensChanged();
+      }
+    } finally {
+      setRefreshingKw(null);
+    }
   };
 
   const handleUntrack = async (keyword: string) => {
@@ -187,17 +257,7 @@ const WebsiteSeoDashboard = () => {
     } catch { console.error("Untrack failed"); }
   };
 
-  const handleRefresh = async () => {
-    try {
-      setRefreshing(true);
-      // Yahan { type: 'website' } add karna hai payload mein
-      await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/refresh`, { type: 'website' }, getAuthConfig());
-      await fetchData();
-    } catch { console.error("Refresh failed"); }
-    finally { setRefreshing(false); }
-  };
-
-  // SETUP SCREEN 
+  // SETUP SCREEN
   if (!loading && !lockedUrl) {
     return (
       <div className="relative w-full bg-gradient-to-b from-slate-950 to-zinc-950 border border-zinc-800/60 p-10 flex flex-col items-center justify-center text-center shadow-xl">
@@ -266,13 +326,7 @@ const WebsiteSeoDashboard = () => {
             </select>
           </div>
 
-          <button onClick={handleRefresh} disabled={refreshing || !linkKeywords.length}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-700 hover:bg-zinc-800 disabled:opacity-50">
-            <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">{refreshing ? "Refreshing…" : "Refresh"}</span>
-          </button>
-
-          <button onClick={() => setModalOpen(true)}
+          <button onClick={() => { setAddError(""); setModalOpen(true); }}
             className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-500 hover:to-indigo-500">
             <Plus className="h-4 w-4" /> Add Keywords
           </button>
@@ -339,10 +393,26 @@ const WebsiteSeoDashboard = () => {
                         </td>
                         <td className="py-4 pl-8"><DifficultyMeter value={row.keywordDifficulty} /></td>
                         <td className="py-4 pr-2 text-right">
-                          <button onClick={() => handleUntrack(row.keyword)}
-                            className="rounded-lg p-2 text-zinc-600 opacity-0 group-hover:opacity-100 transition hover:bg-rose-500/10 hover:text-rose-400" title="Delete">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleRefreshKeyword(row.keyword)}
+                              disabled={refreshingKw === row.keyword}
+                              title={`Refresh (${tokenPricing.websitePerKeyword} tokens)`}
+                              className="rounded-lg p-2 text-blue-400 transition hover:bg-blue-500/10 hover:text-blue-300 disabled:opacity-50"
+                            >
+                              <RefreshCw className={`h-4 w-4 ${refreshingKw === row.keyword ? "animate-spin" : ""}`} />
+                            </button>
+                            <button
+                              onClick={() => handleUntrack(row.keyword)}
+                              className="rounded-lg p-2 text-zinc-600 opacity-0 group-hover:opacity-100 transition hover:bg-rose-500/10 hover:text-rose-400"
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                          {kwErrors[row.keyword] && (
+                            <p className="mt-1 text-[10px] text-rose-400">{kwErrors[row.keyword]}</p>
+                          )}
                         </td>
                       </tr>
                     );
@@ -356,9 +426,13 @@ const WebsiteSeoDashboard = () => {
 
       <TrackLinkModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setAddError(""); setModalOpen(false); }}
         onAdd={handleAddLinkTracking}
         saving={saving}
+        tokenBalance={tokenBalance}
+        pricing={tokenPricing}
+        addError={addError}
+        websiteCountry={selectedCountry}
       />
     </div>
   );

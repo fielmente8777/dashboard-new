@@ -19,6 +19,7 @@ import NotificationPopup from "../Popup/NotificationPopup";
 import ThemeToggle from "./ThemeToggle";
 import { WS_BASE_URL } from "../../data/constant";
 import WebSocketClient from "../../config/websocketClient";
+import SeoTokenBalanceCard from "../SeoToken/SeoTokenBalanceCard";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -175,7 +176,7 @@ const Navbar = () => {
                 ))}
             </div> */}
 
-        <div className="flex gap-5 max-md:hidden">
+        <div className="flex gap-5 max-md:hidden items-center">
           {/* <button onClick={handleLogout}>Logout</button> */}
           {/* <div className="flex items-center">
           <Link
@@ -227,6 +228,7 @@ const Navbar = () => {
             </div> */}
 
             {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
+             <SeoTokenBalanceCard />
           </div>
           <button
             style={{
