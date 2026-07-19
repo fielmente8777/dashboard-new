@@ -10,6 +10,7 @@ import Billing from "../Wallet/Billing";
 import { useSearchParams } from "react-router-dom";
 import Subscription from "../Wallet/Subscription";
 import { useSelector } from "react-redux";
+import Credit from "../Wallet/components/Credit";
 
 const Settings = () => {
   const { subscription } = useSelector((state) => state?.subscription);
@@ -32,7 +33,8 @@ const Settings = () => {
       component: <Usermanagement />,
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
-    // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
+    { key: "Credit", label: "Credit", component: <Credit /> },
     // { key: "Billing", label: "Billing", component: <Billing /> },
     { key: "Subscription", label: "Subscription", component: <Subscription /> },
   ];
