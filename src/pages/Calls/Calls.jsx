@@ -43,7 +43,8 @@ import { useSelector } from "react-redux";
 import CallsAnalytics from "./CallsAnalytics";
 
 export default function Calls() {
-  const { user: hotel } = useSelector((state) => state.userProfile);
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+
   console.log(hotel);
   const wsRef = useRef(null);
   const { showToast } = useToast();
@@ -291,7 +292,7 @@ export default function Calls() {
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
   const [fromNumber, setFromNumber] = useState(
-    hotel?.Profile?.hotelPhone || "",
+    authUser?.phone || hotel?.Profile?.hotelPhone || "",
   );
 
   const [toNumber, setToNumber] = useState("");
@@ -404,9 +405,12 @@ export default function Calls() {
     }
   };
 
+  console.log(hotel);
+  console.log(authUser);
+
   useEffect(() => {
     if (hotel?.Profile?.hotelPhone) {
-      setFromNumber(hotel?.Profile?.hotelPhone);
+      setFromNumber(authUser?.phone);
     }
   }, [hotel]);
 
@@ -553,14 +557,29 @@ export default function Calls() {
                   <th className="px-3 py-2 text-white dark:text-app-text-muted">
                     #
                   </th>
-                  {columns.map((col) => (
-                    <th
-                      key={col.value}
-                      className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
-                    >
-                      {col.label}
-                    </th>
-                  ))}
+                  {columns.map((col) => {
+                    if (col.value === "property") {
+                      if (hotel?.Profile?.domain === "stayxp") {
+                        return (
+                          <th
+                            key={col.value}
+                            className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
+                          >
+                            {col.label}
+                          </th>
+                        );
+                      }
+                      return null;
+                    }
+                    return (
+                      <th
+                        key={col.value}
+                        className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
+                      >
+                        {col.label}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
 
@@ -714,22 +733,24 @@ export default function Calls() {
                       </td> */}
 
                         {/* Property  */}
-                        <td
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1"
-                        >
-                          <CustomDropdown
-                            label={call?.property || "Select"}
-                            options={Property}
-                            onChange={(value) =>
-                              handleUpdateCall({
-                                property: value,
-                                sid: call.sid,
-                              })
-                            }
-                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
-                          />
-                        </td>
+                        {hotel?.Profile?.domain === "stayxp" && (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1"
+                          >
+                            <CustomDropdown
+                              label={call?.property || "Select"}
+                              options={Property}
+                              onChange={(value) =>
+                                handleUpdateCall({
+                                  property: value,
+                                  sid: call.sid,
+                                })
+                              }
+                              className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                            />
+                          </td>
+                        )}
 
                         {/* Segregation */}
                         <td
@@ -1027,7 +1048,7 @@ export default function Calls() {
 
             {/* 🔥 From Number (Dropdown + Input) */}
             <div className="flex flex-col gap-2">
-              {/* <label className="text-sm font-medium">From</label> */}
+              <label className="text-sm font-medium">From</label>
 
               {/* <CustomDropdown2
                 options={
@@ -1041,14 +1062,15 @@ export default function Calls() {
                   setFromNumber(item?.value);
                 }}
                 className="border p-1 rounded-md bg-gray-100 w-full"
-              />
+              /> */}
 
               <input
                 value={fromNumber}
+                readOnly
                 onChange={(e) => setFromNumber(e.target.value)}
                 placeholder="Or type number"
                 className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              /> */}
+              />
             </div>
 
             {/* 🔥 To Number */}

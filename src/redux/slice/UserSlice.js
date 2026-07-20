@@ -79,7 +79,6 @@ export const fetchAuthUserProfile = (token) => async (dispatch) => {
       if (token) {
         const data = await getAuthUserProfile(token);
         dispatch(setAuthUserProfile(data));
-        // console.log(data);
         return { success: true, response: data };
       }
     } catch (error) {
