@@ -45,7 +45,6 @@ import CallsAnalytics from "./CallsAnalytics";
 export default function Calls() {
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
 
-  console.log(hotel);
   const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -404,9 +403,6 @@ export default function Calls() {
       setTemplates(response?.result?.docs?.data || []);
     }
   };
-
-  console.log(hotel);
-  console.log(authUser);
 
   useEffect(() => {
     if (hotel?.Profile?.hotelPhone) {
