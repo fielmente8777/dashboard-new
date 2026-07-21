@@ -199,6 +199,7 @@ export const SidebarData = [
     key: "WhatsApp",
     link: `marketing`,
     icon: <GrAnnounce size={16} />,
+
     subLinks: [
       {
         name: "Whatsapp Marketing",
@@ -291,7 +292,7 @@ export const SidebarData = [
   },
   {
     name: "SEO",
-   // key: "",
+    key: "SEO",
     link: `seo`,
     icon: <SiGoogleadsense />,
     subLinks: [
@@ -305,17 +306,18 @@ export const SidebarData = [
         link: `seo/website-seo`,
         icon: <RiSeoLine size={18} />,
       },
-    ]
+    ],
   },
   {
     name: "Google Analytics",
+    key: "Google Analytics",
     link: `insights-analytics/google-analytics`,
     icon: <SiGoogleanalytics size={18} />,
   },
 
   {
     name: "Meta Insights",
-    // key: "Google Ads Insights",
+    key: "Meta Insights",
     link: `meta-insights`,
     icon: <FaMeta />,
   },
@@ -569,7 +571,7 @@ export const SidebarData = [
 
   {
     name: "Front Desk",
-    // key: "Front Desk",
+    key: "Front Desk",
     link: `front-desk`,
     icon: <HiOutlineUserGroup />,
   },

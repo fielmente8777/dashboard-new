@@ -44,7 +44,7 @@ import CallsAnalytics from "./CallsAnalytics";
 
 export default function Calls() {
   const { user: hotel } = useSelector((state) => state.userProfile);
-  console.log(hotel);
+  console.log("hotel hai bhaiya",hotel);
   const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -497,6 +497,8 @@ export default function Calls() {
     return status;
   };
 
+
+    console.log("hotel hai bhaiya",hotel);
   return (
     <div className="">
       {/* <CallsAnalytics /> */}
@@ -553,14 +555,25 @@ export default function Calls() {
                   <th className="px-3 py-2 text-white dark:text-app-text-muted">
                     #
                   </th>
-                  {columns.map((col) => (
+                  {columns.map((col) => {
+                    if(col.value==="property"){
+                      if(hotel?.Profile?.domain==="stayxp"){
+                        return <th
+                      key={col.value}
+                      className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
+                    >
+                      {col.label}
+                    </th>
+                      }
+                    }
+                    return (
                     <th
                       key={col.value}
                       className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
                     >
                       {col.label}
                     </th>
-                  ))}
+                  )})}
                 </tr>
               </thead>
 
@@ -714,7 +727,7 @@ export default function Calls() {
                       </td> */}
 
                         {/* Property  */}
-                        <td
+                        {hotel?.Profile?.domain&&hotel?.Profile?.domain==="stayxp"&&<td
                           onClick={(e) => e.stopPropagation()}
                           className="p-1"
                         >
@@ -729,7 +742,7 @@ export default function Calls() {
                             }
                             className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
-                        </td>
+                        </td>}
 
                         {/* Segregation */}
                         <td
