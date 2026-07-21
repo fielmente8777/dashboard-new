@@ -140,6 +140,8 @@ const ChatArea = () => {
       return;
     }
 
+    console.log("selectedTemplate", selectedTemplate);
+
     try {
       if (selectedTemplate) {
         const templateParams =
@@ -168,6 +170,8 @@ const ChatArea = () => {
           templateParams: templateParams,
           templateParamsHeader: templateParamsHeader,
         };
+
+        console.log("templatePayload", templatePayload);
 
         const optimisticMessage = {
           _id: `temp-${Date.now()}`, // temporary id

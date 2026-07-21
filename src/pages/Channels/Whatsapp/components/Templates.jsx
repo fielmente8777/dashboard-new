@@ -253,8 +253,7 @@ export default function WhatsAppMessageTemplate() {
     );
   }
 
-
-  console.log("template",templates)
+  console.log("template", templates);
   return (
     <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
       <div className="flex justify-between">
@@ -313,7 +312,10 @@ export default function WhatsAppMessageTemplate() {
 
               <tbody className="">
                 {templates.map((t) => (
-                  <tr key={t.name} className="hover:bg-app-surface-secondary/60 transition">
+                  <tr
+                    key={t.name}
+                    className="hover:bg-app-surface-secondary/60 transition"
+                  >
                     {/* NAME */}
                     <td className="px-5 py-4 font-medium text-gray-800 dark:text-app-text">
                       {t.name}

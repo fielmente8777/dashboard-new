@@ -31,6 +31,10 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
       language: initialData?.language || "en_US",
       category: initialData?.category || "UTILITY",
       header: initialData?.header || "",
+      headerType: "NONE",
+      headerImage: null,
+      headerVideo: null,
+      headerDocument: null,
       body: initialData?.body || "",
       footer: initialData?.footer || "",
       headerVariables: initialData?.headerVariables || [],
@@ -46,11 +50,40 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
   const footer = watch("footer");
   const buttons = watch("buttons");
 
+  const headerType = watch("headerType");
+  const headerImage = watch("headerImage");
+  const headerVideo = watch("headerVideo");
+  const headerDocument = watch("headerDocument");
+
+  const headerComponent =
+    headerType === "TEXT"
+      ? {
+          type: "HEADER",
+          format: "TEXT",
+          text: header,
+        }
+      : headerType === "IMAGE"
+        ? {
+            type: "HEADER",
+            format: "IMAGE",
+            file: headerImage,
+          }
+        : headerType === "VIDEO"
+          ? {
+              type: "HEADER",
+              format: "VIDEO",
+              file: headerVideo,
+            }
+          : headerType === "DOCUMENT"
+            ? {
+                type: "HEADER",
+                format: "DOCUMENT",
+                file: headerDocument,
+              }
+            : null;
+
   const components = [
-    {
-      type: "HEADER",
-      text: header,
-    },
+    ...(headerComponent ? [headerComponent] : []),
     {
       type: "BODY",
       text: body,
@@ -67,15 +100,55 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
 
   const onSubmit = async (data) => {
     setLoading(true);
+    console.log("data", data);
+    console.log("data", data.headerType);
+    console.log("data", data?.headerImage);
+
     try {
-      const response = await createWhatsAppMessageTemplate(data);
+      const formData = new FormData();
+
+      formData.append("name", data.name);
+      formData.append("language", data.language);
+      formData.append("category", data.category || "UTILITY");
+
+      formData.append("headerType", data.headerType);
+      formData.append("header", data.header || "");
+
+      formData.append("body", data.body);
+      formData.append("footer", data.footer || "");
+
+      formData.append(
+        "headerVariables",
+        JSON.stringify(data.headerVariables || []),
+      );
+
+      formData.append(
+        "bodyVariables",
+        JSON.stringify(data.bodyVariables || []),
+      );
+
+      formData.append("buttons", JSON.stringify(data.buttons || []));
+
+      if (data.headerType === "IMAGE" && data.headerImage) {
+        console.log("data.headerImage  ke andar aag agay");
+        formData.append("file", data.headerImage);
+      }
+
+      if (data.headerType === "VIDEO" && data.headerVideo) {
+        formData.append("file", data.headerVideo);
+      }
+
+      if (data.headerType === "DOCUMENT" && data.headerDocument) {
+        formData.append("file", data.headerDocument);
+      }
+
+      const response = await createWhatsAppMessageTemplate(formData);
 
       if (response?.success && response?.responseStatusCode === 200) {
         showToast({
           message: "Template created successfully",
           type: "success",
         });
-
         return;
       }
 
@@ -86,14 +159,41 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
       });
     } catch (error) {
       console.error(error);
-      showToast({
-        message: error?.message || "Failed to create template",
-        type: "error",
-      });
     } finally {
       setLoading(false);
     }
   };
+
+  // const onSubmit = async (data) => {
+  //   setLoading(true);
+  //   console.log(data);
+  //   try {
+  //     const response = await createWhatsAppMessageTemplate(data);
+
+  //     if (response?.success && response?.responseStatusCode === 200) {
+  //       showToast({
+  //         message: "Template created successfully",
+  //         type: "success",
+  //       });
+
+  //       return;
+  //     }
+
+  //     showToast({
+  //       message:
+  //         response?.error?.error?.error_user_msg || "Failed to create template",
+  //       type: "error",
+  //     });
+  //   } catch (error) {
+  //     console.error(error);
+  //     showToast({
+  //       message: error?.message || "Failed to create template",
+  //       type: "error",
+  //     });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     const headerVars = extractVariables(header);
