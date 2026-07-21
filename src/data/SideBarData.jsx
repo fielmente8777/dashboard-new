@@ -166,11 +166,11 @@ export const SidebarData = [
         icon: <MdOutlineChatBubbleOutline />,
       },
 
-      {
-        name: "Google Ads",
-        link: `leads-management/google-ads-leads`,
-        icon: <SiGoogleads size={14} />,
-      },
+      // {
+      //   name: "Google Ads",
+      //   link: `leads-management/google-ads-leads`,
+      //   icon: <SiGoogleads size={14} />,
+      // },
       {
         name: "Webform",
         link: `leads-management/webform-leads`,
