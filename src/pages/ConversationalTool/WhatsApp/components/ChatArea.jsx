@@ -855,6 +855,23 @@ const ChatArea = () => {
                             message?.template?.template?.name && (
                               <div className=" px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
                                 <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
+                                  {message.template?.template?.components[0].parameters[0].type}
+                                </p>
+                                <img
+                              onClick={() =>
+                                setImagePreview(
+                                  message?.media?.url ||
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`,
+                                )
+                              }
+                              src={
+                                message.media?.url ||
+                                ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`
+                              }
+                              alt="WhatsApp"
+                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                            />
+                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
                                   {message.template?.template?.name}
                                 </p>
 
