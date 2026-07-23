@@ -107,7 +107,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
       }
 
       const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/call/auth/make-call`,
+        `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
         {
           method: "POST",
           headers: {
