@@ -20,7 +20,7 @@ const CallsAnalytics = () => {
       setLoading(true);
 
       const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/call/analytics?hid=52531627&from=${dateRange.from}&to=${dateRange.to}`,
+        `${NEW_BASE_URL}/api/v1/call/analytics?hid=${localStorage.getItem("hid")}&from=${dateRange.from}&to=${dateRange.to}`,
         {
           method: "GET",
           headers: {
