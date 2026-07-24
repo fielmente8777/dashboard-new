@@ -410,7 +410,7 @@ const SidebarChat = () => {
                   </div>
 
                   <div className="flex justify-between">
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
                         {conv?.adAttribution?.sourceType || "Ad"}
                       </span>
@@ -434,22 +434,7 @@ const SidebarChat = () => {
                       ) : (
                         <GoogleAdsIcon />
                       )}
-
-                      {/* {conv?.adAttribution?.sourceUrl &&
-                    conv?.adAttribution?.sourceUrl.startsWith(
-                      "https://www.instagram.com",
-                    ) ? (
-                      <InstaICon />
-                    ) : conv?.adAttribution?.sourceUrl.includes("facebook") ? (
-                      <FacebookIcon />
-                    ) : conv?.adAttribution?.sourceUrl.startsWith(
-                        "https://wa.me",
-                      ) ? (
-                      <WhatsappIcon />
-                    ) : (
-                      <GoogleAdsIcon />
-                    )} */}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

@@ -190,7 +190,7 @@ const Dashboard = () => {
           Monitor leads, performance and trends.
         </p>
       </div>
-        <select
+        {/* <select
           name=""
           id=""
           onChange={(e) => setCurrentAnalytics(e.target.value)}
@@ -198,9 +198,8 @@ const Dashboard = () => {
         >
           <option value="overview">Overview</option>
           <option value="call-analytics">Call Analytics</option>
-        </select>
+        </select> */}
       </div>
-      {/* <CallsAnalytics /> */}
       {/* CRM KPI CARDS (Normal, no fade) */}
       <div>
         {/* <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
@@ -211,13 +210,14 @@ const Dashboard = () => {
           <DashboardCard amount={today} label={"Today Leads"} />
           <DashboardCard amount={converted} label={"Converted Leads"} />
           <DashboardCard
-            amount={conversionRate}
+            amount={`${conversionRate}%`}
             label={"Conversion Rate"}
             progress={conversionRate}
           />
           <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
         </div>
       </div>
+
 
       {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
       {/* <div className="mt-8 mb-4">
@@ -476,6 +476,8 @@ const Dashboard = () => {
           })()}
         </div>
       </div>
+      <CallsAnalytics />
+
       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
       <div className="w-full space-y-4">
         <GoogleAnalyticsChart />
