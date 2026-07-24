@@ -547,7 +547,7 @@ export default function Calls() {
                 >
                   <MdRefresh size={18} />
                 </div>
-                Import Calls
+                Refresh
               </div>
             )}
           </div>
