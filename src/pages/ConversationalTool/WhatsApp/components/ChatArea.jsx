@@ -376,6 +376,92 @@ const ChatArea = () => {
     }
   };
 
+  const handleResend = async (message) => {
+    try {
+      let payload;
+
+      switch (message.messageType) {
+        case "text":
+          payload = {
+            phone: message.to,
+            text: message.body,
+          };
+          break;
+
+        case "image":
+        case "video":
+        case "document":
+        case "audio":
+          payload = {
+            phone: message.to,
+            file: {
+              mediaId: message.media.id,
+              mimetype: message.media.mimeType,
+            },
+          };
+          break;
+
+        case "template": {
+          const template = message.template.template;
+
+          const bodyComponent = template.components?.find(
+            (c) => c.type.toLowerCase() === "body",
+          );
+
+          const headerComponent = template.components?.find(
+            (c) => c.type.toLowerCase() === "header",
+          );
+
+          payload = {
+            phone: message.to,
+            templateName: template.name,
+            templateLanguage: template.language.code,
+            templateParams: bodyComponent?.parameters?.map((p) => p.text) || [],
+            templateParamsHeader: headerComponent?.parameters?.[0] || null,
+          };
+
+          break;
+        }
+
+        case "interactive":
+          payload = {
+            phone: message.to,
+            interactive: message.interactive,
+          };
+          break;
+
+        default:
+          return;
+      }
+
+      const response = await sendWhatsAppMessage(payload);
+
+      if (response.success) {
+        setMessageList((prev) =>
+          prev.map((m) =>
+            m._id === message._id
+              ? {
+                  ...m,
+                  status: "sent",
+                  messageId: response.result.docs.messageId,
+                }
+              : m,
+          ),
+        );
+
+        showToast({
+          type: "success",
+          message: "Message resent successfully.",
+        });
+      }
+    } catch (err) {
+      showToast({
+        type: "error",
+        message: "Failed to resend message.",
+      });
+    }
+  };
+
   const loadMessages = async (conversationId) => {
     setLoadingMessages(true);
     try {
@@ -628,6 +714,8 @@ const ChatArea = () => {
   const isExcel = file?.type?.includes("sheet");
   const isWord = file?.type?.includes("word");
 
+  console.log(templates);
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
@@ -852,8 +940,106 @@ const ChatArea = () => {
                             )}
 
                           {message?.messageType === "template" &&
+                            message?.template?.template?.name &&
+                            (() => {
+                              const header =
+                                message.template.template.components?.find(
+                                  (c) => c.type?.toLowerCase() === "header",
+                                );
+
+                              const headerParam = header?.parameters?.[0];
+
+                              const imageUrl =
+                                message?.media?.url ||
+                                `${NEW_BASE_URL}/api/v1/whatsapp/media/${headerParam?.image?.id}?ndid=${localStorage.getItem(
+                                  "ndid",
+                                )}`;
+
+                              return (
+                                <div className="px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                  {/* HEADER */}
+                                  {header && (
+                                    <>
+                                      {headerParam?.type === "image" && (
+                                        <img
+                                          src={imageUrl}
+                                          onClick={() =>
+                                            setImagePreview(imageUrl)
+                                          }
+                                          alt="Template Header"
+                                          className="mb-2 rounded-lg w-full h-44 object-cover cursor-pointer"
+                                        />
+                                      )}
+
+                                      {headerParam?.type === "video" && (
+                                        <video
+                                          controls
+                                          className="mb-2 rounded-lg w-full h-44"
+                                        >
+                                          <source src={imageUrl} />
+                                        </video>
+                                      )}
+
+                                      {headerParam?.type === "document" && (
+                                        <a
+                                          href={imageUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="mb-2 flex items-center gap-2 p-3 rounded bg-gray-100 dark:bg-gray-700"
+                                        >
+                                          📄 View Document
+                                        </a>
+                                      )}
+
+                                      {headerParam?.type === "text" && (
+                                        <p className="font-medium mb-2">
+                                          {headerParam.text}
+                                        </p>
+                                      )}
+                                    </>
+                                  )}
+
+                                  {/* Template Name */}
+                                  <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
+                                    {message.template.template.name}
+                                  </p>
+
+                                  {/* Body */}
+                                  <pre className="text-sm whitespace-pre-wrap font-sans">
+                                    {message.body || (
+                                      <span className="text-xs text-zinc-400 dark:text-app-text-faint">
+                                        No text defined
+                                      </span>
+                                    )}
+                                  </pre>
+                                </div>
+                              );
+                            })()}
+                          {/* {message?.messageType === "template" &&
                             message?.template?.template?.name && (
                               <div className=" px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                <img
+                                  onClick={() =>
+                                    setImagePreview(
+                                      message?.media?.url ||
+                                        `${NEW_BASE_URL}/api/v1/whatsapp/media/${
+                                          message?.template?.template
+                                            ?.components?.[0]?.parameters?.[0]
+                                            ?._id
+                                        }?ndid=${localStorage.getItem("ndid")}`,
+                                    )
+                                  }
+                                  src={
+                                    message?.media?.url ||
+                                    `${NEW_BASE_URL}/api/v1/whatsapp/media/${
+                                      message?.template?.template
+                                        ?.components?.[0]?.parameters?.[0]?._id
+                                    }?ndid=${localStorage.getItem("ndid")}`
+                                  }
+                                  alt="WhatsApp"
+                                  className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                                />
+
                                 <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
                                   {message.template?.template?.components[0].parameters[0].type}
                                 </p>
@@ -885,7 +1071,7 @@ const ChatArea = () => {
                                   )}
                                 </pre>
                               </div>
-                            )}
+                            )} */}
 
                           {/* IMAGE */}
                           {(message.messageType === "image" ||
@@ -1108,6 +1294,16 @@ const ChatArea = () => {
                           </div>
                         </div>
 
+                        {/* resend if failed  */}
+                        {message?.status === "failed" && (
+                          <button
+                            onClick={() => handleResend(message)}
+                            className="text-xs flex justify-end w-full underline text-blue-500"
+                          >
+                            Resend
+                          </button>
+                        )}
+
                         {/* menu */}
                         <div className="absolute -top-1 right-1">
                           <button
@@ -1249,7 +1445,8 @@ const ChatArea = () => {
                   <div className="p-3">
                     <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
                       <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
-                        {template?.components?.[0]?.text}
+                        {template?.components?.[0]?.text ||
+                          template?.components?.[1]?.text}
                       </p>
                     </div>
                   </div>
