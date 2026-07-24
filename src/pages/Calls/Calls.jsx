@@ -271,6 +271,7 @@ export default function Calls() {
     { label: "To", value: "to" },
     { label: "Phone Number", value: "phoneNumberSid" },
     { label: "WhatsApp", value: "whatsapp" },
+    { label: "Call", value: "call" },
     { label: "Direction", value: "direction" },
     { label: "Status", value: "status" },
     { label: "Time", value: "startTime" },
@@ -294,14 +295,28 @@ export default function Calls() {
   const [fromNumber, setFromNumber] = useState(authUser?.phone);
 
   const [toNumber, setToNumber] = useState("");
-  const handleMakeCall = async () => {
+  const handleMakeCall = async (from, to) => {
+    console.log("from", from);
+    console.log("to", to);
+    let fromCallNumber;
+    let toCallNumber;
     try {
-      if (!fromNumber || !toNumber) {
+      if (from && to) {
+        fromCallNumber = from;
+        toCallNumber = to;
+      } else if (fromNumber && toNumber) {
+        fromCallNumber = fromNumber;
+        toCallNumber = toNumber;
+      }
+
+      console.log(fromCallNumber, toCallNumber);
+
+      if (!fromCallNumber || !toCallNumber) {
         alert("Both numbers are required");
         return;
       }
 
-      const response = await makeCall({ fromNumber, toNumber });
+      // const response = await makeCall({ fromCallNumber, toCallNumber });
 
       // const response = await fetch(
       //   `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
@@ -319,20 +334,34 @@ export default function Calls() {
       // );
 
       // const data = await response.json();
-      if (response?.success) {
-        showToast({
-          message: response?.responseMessage || "Call initiated successfully",
-          type: "success",
-        });
-      }
+      // if (response?.success) {
+      //   showToast({
+      //     message: response?.responseMessage || "Call initiated successfully",
+      //     type: "success",
+      //   });
+      // }
 
-      alert("✅ Call initiated successfully");
+      // alert("✅ Call initiated successfully");
       setCallPopup(false);
       // setFromNumber("");
       setToNumber("");
     } catch (error) {
       console.error("Call error:", error);
       alert("Something went wrong while making the call");
+    }
+  };
+
+  const handleCall = async (call) => {
+    if (call?.direction === "incoming" || call?.direction === "inbound") {
+      console.log(call?.to, call?.from);
+      // setFromNumber(call?.to);
+      // setToNumber(call?.from);
+
+      handleMakeCall(call?.to, call?.from);
+    } else {
+      // setFromNumber(call?.from);
+      // setToNumber(call?.to);
+      handleMakeCall(call?.from, call?.to);
     }
   };
 
@@ -395,8 +424,6 @@ export default function Calls() {
     const usersData = await fetchUserManagementData(token);
     setAllUsers(usersData);
   };
-
-  console.log("allUsers", allUsers);
 
   const fetchTemplates = async () => {
     const response = await getWhatsAppMessageTemplates();
@@ -664,6 +691,7 @@ export default function Calls() {
                           {call.phoneNumberSid || "-"}
                         </td>
 
+                        {/* Whatsapp */}
                         <td
                           onClick={(e) => {
                             e.stopPropagation();
@@ -678,6 +706,23 @@ export default function Calls() {
                           className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
                         >
                           <FaWhatsapp size={20} />
+                        </td>
+
+                        {/* call  */}
+
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCall(call);
+                            // setLead({
+                            //   Contact:
+                            //     call?.direction === "inbound"
+                            //       ? call?.from
+                            //       : call?.to,
+                            // });
+                          }}
+                        >
+                          <FaPhone />
                         </td>
 
                         {/* Direction */}
