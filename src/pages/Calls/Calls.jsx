@@ -41,6 +41,7 @@ import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
 import { useSelector } from "react-redux";
 import CallsAnalytics from "./CallsAnalytics";
+import { normalizePhoneWithSameFormat } from "../../utils/normalizePhoneNumber";
 
 export default function Calls() {
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
@@ -290,9 +291,7 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState(
-    authUser?.phone || hotel?.Profile?.hotelPhone || "",
-  );
+  const [fromNumber, setFromNumber] = useState(authUser?.phone);
 
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
@@ -397,6 +396,8 @@ export default function Calls() {
     setAllUsers(usersData);
   };
 
+  console.log("allUsers", allUsers);
+
   const fetchTemplates = async () => {
     const response = await getWhatsAppMessageTemplates();
     if (response.success) {
@@ -405,10 +406,10 @@ export default function Calls() {
   };
 
   useEffect(() => {
-    if (hotel?.Profile?.hotelPhone) {
+    if (authUser?.phone) {
       setFromNumber(authUser?.phone);
     }
-  }, [hotel]);
+  }, [authUser]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -495,6 +496,14 @@ export default function Calls() {
       return "Client Busy";
     }
     return status;
+  };
+
+  const getUserByPhone = (phone) => {
+    return allUsers?.find(
+      (user) =>
+        normalizePhoneWithSameFormat(user.phone) ===
+        normalizePhoneWithSameFormat(phone),
+    );
   };
 
   return (
@@ -623,13 +632,32 @@ export default function Calls() {
 
                         {/* From */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.from || "-"}
+                          {getUserByPhone(call?.from)?.userName ||
+                            call?.from ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.from) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.from || "-"}
+                        </td> */}
 
                         {/* To */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.to || "-"}
+                          {getUserByPhone(call?.to)?.userName ||
+                            call?.to ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.to) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.to || "-"}
+                        </td> */}
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {call.to || "-"}
+                        </td> */}
 
                         {/* Phone */}
                         <td className="px-3 py-1 whitespace-nowrap">
@@ -1059,6 +1087,8 @@ export default function Calls() {
                 }}
                 className="border p-1 rounded-md bg-gray-100 w-full"
               /> */}
+
+              <label htmlFor="">{authUser?.userName}</label>
 
               <input
                 value={fromNumber}
