@@ -211,7 +211,7 @@ const Dashboard = () => {
           <DashboardCard amount={today} label={"Today Leads"} />
           <DashboardCard amount={converted} label={"Converted Leads"} />
           <DashboardCard
-            amount={conversionRate}
+            amount={`${conversionRate}%`}
             label={"Conversion Rate"}
             progress={conversionRate}
           />
