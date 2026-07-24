@@ -51,10 +51,13 @@ const ViewAndManageLeads = () => {
   const [messageLoading, setMessageLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState();
 
+  console.log(whatsAppConversation);
+
   const fetchConversation = async (conversationId) => {
     setMessageLoading(true);
     try {
       const response = await getWhatsappConversationMessages(conversationId);
+      console.log(response);
 
       if (response?.success && response?.responseStatusCode === 200) {
         setWhatsAppConversation(response?.result?.messages);
@@ -81,6 +84,7 @@ const ViewAndManageLeads = () => {
 
     try {
       const response = await getLeads(params);
+      console.log(response);
       // const response = await getLeadById(leadId, hid);
       if (response?.success) {
         setLead(response?.result?.docs?.leads[0]);
@@ -90,7 +94,7 @@ const ViewAndManageLeads = () => {
 
         setSelectedDate(followDate ? new Date(followDate) : null);
 
-        const conversationId = response?.result?.docs?.conversationId;
+        const conversationId = response?.result?.docs?.leads[0].conversationId;
 
         if (conversationId) {
           fetchConversation(conversationId);
