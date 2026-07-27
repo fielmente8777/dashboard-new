@@ -55,6 +55,7 @@ import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
+import { MessageSquareReply } from "lucide-react";
 
 const ChatArea = () => {
   const navigate = useNavigate();
@@ -63,6 +64,11 @@ const ChatArea = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [flows, setFlows] = useState([]);
+
+  const [quickReplies, setQuickReplies] = useState([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  // const [setSelectedQuickReply, setSelectedQuickReply] = useState(null);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -626,6 +632,93 @@ const ChatArea = () => {
     setSelectedConversation({ ...selectedConversation, assignee: item.label });
   };
 
+  const handleSendQuickReply = async (reply) => {
+    try {
+      const sortedItems = [...reply.items].sort((a, b) => a.order - b.order);
+
+      for (const item of sortedItems) {
+        // TEXT
+        if (item.type === "text") {
+          const formData = new FormData();
+
+          formData.append("phone", selectedConversation.phone);
+          formData.append("text", item.text);
+
+          // Optimistic UI
+          const optimisticMessage = {
+            _id: `temp-${Date.now()}-${Math.random()}`,
+            conversationId: selectedConversation._id,
+            from: "me",
+            to: selectedConversation.phone,
+            sender: "me",
+            direction: "outbound",
+            messageType: "text",
+            body: item.text,
+            status: "sent",
+            timestamp: new Date(),
+            createdAt: new Date(),
+          };
+
+          setMessageList((prev) => [...prev, optimisticMessage]);
+
+          await sendWhatsAppMessage(formData);
+
+          continue;
+        }
+
+        // IMAGE / VIDEO / DOCUMENT
+        if (item.media?.length) {
+          for (const media of item.media) {
+            const payload = {
+              phone: selectedConversation.phone,
+              file: {
+                mediaUrl: media.url,
+                mimeType: media.mimeType,
+                filename: media.fileName,
+              },
+            };
+
+            // Optimistic UI
+            const optimisticMessage = {
+              _id: `temp-${Date.now()}-${Math.random()}`,
+              conversationId: selectedConversation._id,
+              from: "me",
+              to: selectedConversation.phone,
+              sender: "me",
+              direction: "outbound",
+              messageType: item.type,
+              body: null,
+              media: {
+                url: media.url,
+                mimeType: media.mimeType,
+                filename: media.fileName,
+              },
+              status: "sent",
+              timestamp: new Date(),
+              createdAt: new Date(),
+            };
+
+            setMessageList((prev) => [...prev, optimisticMessage]);
+
+            await sendWhatsAppMessage(payload);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+
+      showToast({
+        type: "error",
+        message: error?.responseMessage || "Failed to send quick reply",
+      });
+    }
+  };
+
+  const handleSelectQuickReply = (reply) => {
+    handleSendQuickReply(reply);
+    setShowQuickReplies(false);
+  };
+
   const fetchUsersData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
@@ -646,10 +739,34 @@ const ChatArea = () => {
     }
   };
 
+  const fetchReplies = async () => {
+    try {
+      setLoadingReplies(true);
+
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setQuickReplies(data.result.docs);
+      }
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
     fetchFlows();
+    fetchReplies();
   }, []);
 
   useEffect(() => {
@@ -1400,7 +1517,7 @@ const ChatArea = () => {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
+        className=" bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
           <div className="mb-2 grid grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
@@ -1452,6 +1569,36 @@ const ChatArea = () => {
                   </div>
                 </div>
               ))}
+          </div>
+        )}
+
+        {showQuickReplies && (
+          <div className="grid grid-cols-3 gap-2 bg-white w-96 border rounded-lg shadow-lg max-h-96 overflow-auto">
+            {quickReplies.map((reply) => {
+              const textItem = reply.items.find((i) => i.type === "text");
+              const mediaItem = reply.items.find((i) => i.type !== "text");
+
+              return (
+                <button
+                  type="button"
+                  key={reply._id}
+                  onClick={() => handleSelectQuickReply(reply)}
+                  className="w-full text-left p-3 hover:bg-gray-50 border-b"
+                >
+                  <div className="font-medium">{reply.title}</div>
+
+                  <div className="text-sm text-gray-500 truncate">
+                    {textItem?.text}
+                  </div>
+
+                  {mediaItem && (
+                    <div className="text-xs mt-1">
+                      {mediaItem.media.length} {mediaItem.type}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -1546,6 +1693,14 @@ const ChatArea = () => {
                 )}
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={() => setShowQuickReplies(!showQuickReplies)}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <MessageSquareReply size={20} />
+            </button>
             {/* {!templateClick ? (
               <>
                 {!isTakeOver ? (
