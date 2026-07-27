@@ -38,6 +38,7 @@ import { useToast } from "../../../context/ToastContext";
 import Flows from "./components/Flows";
 import ChannelToggle from "./components/ChannelToggle";
 import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
+import QuickReplies from "./components/QuickReplies";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -60,6 +61,7 @@ const sidebarTabs = [
     ],
   },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
+  { id: "quick-replies", label: "Quick Replies" },
 ];
 
 const WhatsAppBusiness = ({ template = false }) => {
@@ -394,6 +396,7 @@ const WhatsAppBusiness = ({ template = false }) => {
             {activeSubTab === "whatsapp-flows" && <WhatsappFlow />}
 
             {activeSubTab === "flows" && <Flows />}
+            {activeTab === "quick-replies" && <QuickReplies />}
           </div>
         </div>
       )}
