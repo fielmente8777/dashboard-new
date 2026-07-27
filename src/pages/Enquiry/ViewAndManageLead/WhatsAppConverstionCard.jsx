@@ -23,7 +23,7 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
     <>
       {/* SLIDING CHAT PANEL */}
       <div
-        className={`fixed border md:max-w-96 w-full bg-app-surface-secondary border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
+        className={`fixed border w-fit md:max-w-96 w-full bg-app-surface-secondary border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
         ${expanded ? "bottom-0 md:bottom-20 h-screen md:h-[60vh] right-0 md:right-6" : "bottom-0 right-0 h-0 overflow-hidden"}`}
       >
         <div
@@ -128,7 +128,7 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
 
  {/* bg-app-surface */}
       {/* BOTTOM HEADER BAR (ALWAYS VISIBLE) */}
-      <div className="fixed! max-md:flex max-md:justify-end bottom-5 md:right-0  md:right-6 z-50 md:bg-app-surface md:border-t md:shadow-sm px-4 py-3 flex items-center justify-between md:max-w-96 w-full">
+      <div className="fixed! max-md:w-fit max-md:flex max-md:justify-end bottom-5 right-3  md:right-6 z-50 md:bg-app-surface md:border-t md:shadow-sm md:px-4 md:py-3 flex items-center justify-between w-fit border md:max-w-96 w-full">
         <p className="text-sm font-medium text-gray-700 hidden md:block">
           WhatsApp Conversation
         </p>
