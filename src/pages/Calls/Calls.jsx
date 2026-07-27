@@ -316,7 +316,7 @@ export default function Calls() {
         return;
       }
 
-      // const response = await makeCall({ fromCallNumber, toCallNumber });
+      const response = await makeCall({ fromCallNumber, toCallNumber });
 
       // const response = await fetch(
       //   `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
@@ -334,12 +334,12 @@ export default function Calls() {
       // );
 
       // const data = await response.json();
-      // if (response?.success) {
-      //   showToast({
-      //     message: response?.responseMessage || "Call initiated successfully",
-      //     type: "success",
-      //   });
-      // }
+      if (response?.success) {
+        showToast({
+          message: response?.responseMessage || "Call initiated successfully",
+          type: "success",
+        });
+      }
 
       // alert("✅ Call initiated successfully");
       setCallPopup(false);
@@ -352,6 +352,8 @@ export default function Calls() {
   };
 
   const handleCall = async (call) => {
+    console.log(call);
+
     if (call?.direction === "incoming" || call?.direction === "inbound") {
       console.log(call?.to, call?.from);
       // setFromNumber(call?.to);
