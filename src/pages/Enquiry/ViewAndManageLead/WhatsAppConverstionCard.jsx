@@ -23,8 +23,8 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
     <>
       {/* SLIDING CHAT PANEL */}
       <div
-        className={`fixed max-w-96 w-full bg-app-surface-secondary border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
-        ${expanded ? "bottom-20 h-[60vh] right-6" : "bottom-0 right-0 h-0 overflow-hidden"}`}
+        className={`fixed border md:max-w-96 w-full bg-app-surface-secondary border border-black rounded-sm md:shadow z-40 transition-all duration-300 ease-in-out
+        ${expanded ? "bottom-0 md:bottom-20 h-screen md:h-[60vh] right-0 md:right-6" : "bottom-0 right-0 h-0 overflow-hidden"}`}
       >
         <div
           style={{
@@ -126,17 +126,19 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
         </div>
       </div>
 
+ {/* bg-app-surface */}
       {/* BOTTOM HEADER BAR (ALWAYS VISIBLE) */}
-      <div className="fixed! bottom-5 right-0  md:right-6 z-50 bg-app-surface border-t shadow-sm px-4 py-3 flex items-center justify-between max-w-96 w-full">
-        <p className="text-sm font-medium text-gray-700">
+      <div className="fixed! max-md:flex max-md:justify-end bottom-5 md:right-0  md:right-6 z-50 md:bg-app-surface md:border-t md:shadow-sm px-4 py-3 flex items-center justify-between md:max-w-96 w-full">
+        <p className="text-sm font-medium text-gray-700 hidden md:block">
           WhatsApp Conversation
         </p>
 
         <button
           onClick={() => setExpanded((prev) => !prev)}
-          className="size-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
+          className=" max-md:bg-green-600 size-15 max-md:text-white md:size-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition"
         >
-          {expanded ? <IoChevronDown /> : <IoChevronUp />}
+          {expanded ? <IoChevronDown size={18}/>
+           : <IoChevronUp size={18}/>}
         </button>
       </div>
     </>
