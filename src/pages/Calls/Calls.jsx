@@ -41,6 +41,7 @@ import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
 import { useSelector } from "react-redux";
 import CallsAnalytics from "./CallsAnalytics";
+import { normalizePhoneWithSameFormat } from "../../utils/normalizePhoneNumber";
 
 export default function Calls() {
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
@@ -270,6 +271,7 @@ export default function Calls() {
     { label: "To", value: "to" },
     { label: "Phone Number", value: "phoneNumberSid" },
     { label: "WhatsApp", value: "whatsapp" },
+    { label: "Call", value: "call" },
     { label: "Direction", value: "direction" },
     { label: "Status", value: "status" },
     { label: "Time", value: "startTime" },
@@ -290,19 +292,34 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState(
-    authUser?.phone || hotel?.Profile?.hotelPhone || "",
-  );
+  const [fromNumber, setFromNumber] = useState(authUser?.phone);
 
   const [toNumber, setToNumber] = useState("");
-  const handleMakeCall = async () => {
+  const handleMakeCall = async (from, to) => {
+    console.log("from", from);
+    console.log("to", to);
+    let fromCallNumber;
+    let toCallNumber;
     try {
-      if (!fromNumber || !toNumber) {
+      if (from && to) {
+        fromCallNumber = from;
+        toCallNumber = to;
+      } else if (fromNumber && toNumber) {
+        fromCallNumber = fromNumber;
+        toCallNumber = toNumber;
+      }
+
+      console.log(fromCallNumber, toCallNumber);
+
+      if (!fromCallNumber || !toCallNumber) {
         alert("Both numbers are required");
         return;
       }
 
-      const response = await makeCall({ fromNumber, toNumber });
+      const response = await makeCall({
+        fromNumber: fromCallNumber,
+        toNumber: toCallNumber,
+      });
 
       // const response = await fetch(
       //   `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
@@ -327,13 +344,29 @@ export default function Calls() {
         });
       }
 
-      alert("✅ Call initiated successfully");
+      // alert("✅ Call initiated successfully");
       setCallPopup(false);
       // setFromNumber("");
       setToNumber("");
     } catch (error) {
       console.error("Call error:", error);
       alert("Something went wrong while making the call");
+    }
+  };
+
+  const handleCall = async (call) => {
+    console.log(call);
+
+    if (call?.direction === "incoming" || call?.direction === "inbound") {
+      console.log(call?.to, call?.from);
+      // setFromNumber(call?.to);
+      // setToNumber(call?.from);
+
+      handleMakeCall(call?.to, call?.from);
+    } else {
+      // setFromNumber(call?.from);
+      // setToNumber(call?.to);
+      handleMakeCall(call?.from, call?.to);
     }
   };
 
@@ -405,10 +438,10 @@ export default function Calls() {
   };
 
   useEffect(() => {
-    if (hotel?.Profile?.hotelPhone) {
+    if (authUser?.phone) {
       setFromNumber(authUser?.phone);
     }
-  }, [hotel]);
+  }, [authUser]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -495,6 +528,14 @@ export default function Calls() {
       return "Client Busy";
     }
     return status;
+  };
+
+  const getUserByPhone = (phone) => {
+    return allUsers?.find(
+      (user) =>
+        normalizePhoneWithSameFormat(user.phone) ===
+        normalizePhoneWithSameFormat(phone),
+    );
   };
 
   return (
@@ -623,19 +664,39 @@ export default function Calls() {
 
                         {/* From */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.from || "-"}
+                          {getUserByPhone(call?.from)?.userName ||
+                            call?.from ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.from) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.from || "-"}
+                        </td> */}
 
                         {/* To */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.to || "-"}
+                          {getUserByPhone(call?.to)?.userName ||
+                            call?.to ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.to) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.to || "-"}
+                        </td> */}
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {call.to || "-"}
+                        </td> */}
 
                         {/* Phone */}
                         <td className="px-3 py-1 whitespace-nowrap">
                           {call.phoneNumberSid || "-"}
                         </td>
 
+                        {/* Whatsapp */}
                         <td
                           onClick={(e) => {
                             e.stopPropagation();
@@ -650,6 +711,23 @@ export default function Calls() {
                           className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
                         >
                           <FaWhatsapp size={20} />
+                        </td>
+
+                        {/* call  */}
+
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCall(call);
+                            // setLead({
+                            //   Contact:
+                            //     call?.direction === "inbound"
+                            //       ? call?.from
+                            //       : call?.to,
+                            // });
+                          }}
+                        >
+                          <FaPhone />
                         </td>
 
                         {/* Direction */}
@@ -1059,6 +1137,8 @@ export default function Calls() {
                 }}
                 className="border p-1 rounded-md bg-gray-100 w-full"
               /> */}
+
+              <label htmlFor="">{authUser?.userName}</label>
 
               <input
                 value={fromNumber}
