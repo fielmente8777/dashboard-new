@@ -128,7 +128,7 @@ const WhatsAppConverstionCard = ({ messageList, messageLoading }) => {
 
  {/* bg-app-surface */}
       {/* BOTTOM HEADER BAR (ALWAYS VISIBLE) */}
-      <div className="fixed! max-md:w-fit max-md:flex max-md:justify-end bottom-5 right-3  md:right-6 z-50 md:bg-app-surface md:border-t md:shadow-sm md:px-4 md:py-3 flex items-center justify-between w-fit border md:max-w-96 w-full">
+      <div className="fixed! max-md:w-fit max-md:flex max-md:justify-end bottom-5 right-3  md:right-6 z-50 md:bg-app-surface md:border-t md:shadow-sm md:px-4 md:py-3 flex items-center justify-between w-fit md:max-w-96 w-full">
         <p className="text-sm font-medium text-gray-700 hidden md:block">
           WhatsApp Conversation
         </p>
