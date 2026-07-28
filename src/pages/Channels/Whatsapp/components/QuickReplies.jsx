@@ -15,6 +15,7 @@ import {
 import { NEW_BASE_URL } from "../../../../data/constant";
 import { useToast } from "../../../../context/ToastContext";
 import Loader from "../../../../components/Loader";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 /**
  * WhatsApp limits (used for client-side validation before upload):
@@ -26,12 +27,12 @@ import Loader from "../../../../components/Loader";
 const LIMITS = {
   image: {
     max: 5 * 1024 * 1024,
-    accept: "image/jpeg,image/png,image/jpg",
+    accept: "image/jpeg,image/png,image/PNG, image/jpg",
     label: "5MB per image",
   },
-  video: { max: 16 * 1024 * 1024, accept: "video/*", label: "16MB per video" },
+  video: { max: 10 * 1024 * 1024, accept: "video/*", label: "8MB per video" },
   document: {
-    max: 100 * 1024 * 1024,
+    max: 5 * 1024 * 1024,
     accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx",
     label: "100MB per document",
   },
@@ -150,6 +151,7 @@ const UploadZone = ({ kind, onFiles }) => {
 };
 
 const QuickReplies = () => {
+  const { confirm } = useConfirm();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState("list");
   const [replies, setReplies] = useState([]);
@@ -174,8 +176,46 @@ const QuickReplies = () => {
     setActiveTab("create");
   };
 
-  const removeReply = (id) => {
-    setReplies((prev) => prev.filter((r) => r.id !== id));
+  const removeReply = async (id) => {
+    const isConfirmed = await confirm(
+      `Are you sure you want to delete this quick reply`,
+    );
+
+    if (!isConfirmed) return;
+
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/quick-reply/${id}?hid=${localStorage.getItem("hid")}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (data?.success) {
+        showToast({
+          message: data?.responseMessage || "Quick reply deleted successfully",
+          type: "success",
+        });
+
+        // setReplies((prev) => prev.filter((r) => r._id !== id));
+        return;
+      }
+
+      showToast({
+        message: data?.responseMessage || "Failed to delete quick reply",
+        type: "error",
+      });
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to delete quick reply",
+        type: "error",
+      });
+    }
   };
 
   const addFiles = (kind, incoming) => {
@@ -232,35 +272,34 @@ const QuickReplies = () => {
       payload.append("title", form.title);
       payload.append("text", form.text);
 
-      let type = "";
+      [...form.images, ...form.videos, ...form.documents].forEach((item) => {
+        payload.append("file", item.file);
+      });
 
-      if (form.images.length > 0) {
-        type = "image";
+      // let type = "";
 
-        form.images.forEach((img) => {
-          payload.append("file", img.file);
-        });
-      } else if (form.videos.length > 0) {
-        type = "video";
+      // if (form.images.length > 0) {
+      //   type = "image";
 
-        form.videos.forEach((video) => {
-          payload.append("file", video.file);
-        });
-      } else if (form.documents.length > 0) {
-        type = "document";
+      //   form.images.forEach((img) => {
+      //     payload.append("file", img.file);
+      //   });
+      // } else if (form.videos.length > 0) {
+      //   type = "video";
 
-        form.documents.forEach((doc) => {
-          payload.append("file", doc.file);
-        });
-      }
+      //   form.videos.forEach((video) => {
+      //     payload.append("file", video.file);
+      //   });
+      // } else if (form.documents.length > 0) {
+      //   type = "document";
 
-      payload.append("type", type);
+      //   form.documents.forEach((doc) => {
+      //     payload.append("file", doc.file);
+      //   });
+      // }
+
+      // payload.append("type", type);
       payload.append("shortcut", form.shortcut || "");
-
-      // Debug
-      for (const [key, value] of payload.entries()) {
-        console.log(key, value);
-      }
 
       const response = await fetch(
         `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
@@ -274,12 +313,20 @@ const QuickReplies = () => {
       );
 
       const data = await response.json();
+      console.log(data);
       if (data?.success) {
         showToast({
           message: data?.message || "Reply created successfully",
           type: "success",
         });
+
+        return;
       }
+
+      showToast({
+        message: data?.responseMessage || "Failed to create reply",
+        type: "error",
+      });
     } catch (error) {
       console.log(error);
       showToast("error", error?.message || "Failed to create reply");
@@ -376,7 +423,7 @@ const QuickReplies = () => {
 
           <button
             onClick={startCreate}
-            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg hover:bg-primary/90 transition"
           >
             <Plus size={18} />
             New Reply
@@ -482,13 +529,13 @@ const QuickReplies = () => {
                           </div>
 
                           <div className="flex gap-2 shrink-0">
-                            <button
+                            {/* <button
                               onClick={() => startEdit(item)}
                               className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
                               title="Edit"
                             >
                               <Edit size={16} />
-                            </button>
+                            </button> */}
 
                             <button
                               onClick={() => removeReply(item._id)}

@@ -1573,7 +1573,7 @@ const ChatArea = () => {
         )}
 
         {showQuickReplies && (
-          <div className="grid grid-cols-3 gap-2 bg-white w-96 border rounded-lg shadow-lg max-h-96 overflow-auto">
+          <div className="grid grid-cols-3 gap-2 mb-2 bg-white w-full border rounded-lg shadow-lg max-h-96 overflow-auto p-2">
             {quickReplies.map((reply) => {
               const textItem = reply.items.find((i) => i.type === "text");
               const mediaItem = reply.items.find((i) => i.type !== "text");
@@ -1583,7 +1583,7 @@ const ChatArea = () => {
                   type="button"
                   key={reply._id}
                   onClick={() => handleSelectQuickReply(reply)}
-                  className="w-full text-left p-3 hover:bg-gray-50 border-b"
+                  className="w-full text-left p-3 hover:bg-gray-50 bg-gray-100 rounded-lg border border-primary/30!"
                 >
                   <div className="font-medium">{reply.title}</div>
 
