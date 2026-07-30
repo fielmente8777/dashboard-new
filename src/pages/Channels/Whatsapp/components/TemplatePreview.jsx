@@ -25,7 +25,7 @@ export default function TemplatePreview({
           <div className="font-semibold text-base">{headerText}</div>
         )}
 
-        {bodyText && <div>{bodyText}</div>}
+        {bodyText && <div className="break-all">{bodyText}</div>}
 
         {footerText && (
           <div className="text-xs text-gray-900 mt-2">{footerText}</div>

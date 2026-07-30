@@ -210,22 +210,23 @@ const UploadCard = ({ icon, accept, file, onChange }) => {
 
       {file && (
         <div className="mt-4">
-          {file.type.startsWith("image") && (
+          {file?.type?.startsWith("image") && (
             <img
               src={URL.createObjectURL(file)}
               className="h-44 rounded-lg object-cover border"
             />
           )}
 
-          {file.type.startsWith("video") && (
+          {file?.type?.startsWith("video") && (
             <video controls className="h-44 rounded-lg">
               <source src={URL.createObjectURL(file)} />
             </video>
           )}
 
-          {!file.type.startsWith("image") && !file.type.startsWith("video") && (
-            <div className="rounded-lg border p-4">{file.name}</div>
-          )}
+          {!file?.type?.startsWith("image") &&
+            !file?.type?.startsWith("video") && (
+              <div className="rounded-lg border p-4">{file.name}</div>
+            )}
         </div>
       )}
     </div>

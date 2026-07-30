@@ -12,9 +12,10 @@ const categories = [
   { value: "AUTHENTICATION", label: "AUTHENTICATION" },
 ];
 
-const TemplateHeader = ({ onCancel, showCancelButton }) => {
+const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
   const {
     register,
+    getValues,
     control,
     formState: { errors },
   } = useFormContext();
@@ -46,10 +47,11 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
           </label>
 
           <input
+            disabled={mode === "edit"}
             {...register("name")}
             className="w-full border border-gray-400! bordgr rounded-md px-3 py-2 text-sm 
              focus:outline-none focus:ring-1 focus:ring-primary
-             transition"
+             transition disabled:opacity-60"
           />
 
           {errors.name && (
@@ -67,10 +69,15 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
           </label>
 
           <Controller
-            name="language"
+            name="category"
             control={control}
             render={({ field }) => (
-              <CustomDropdown {...field} options={categories} className="" />
+              <CustomDropdown
+                {...field}
+                options={categories}
+                label={getValues("category") || ""}
+                disabled={mode === "edit"}
+              />
             )}
           />
 
@@ -88,7 +95,12 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
             name="language"
             control={control}
             render={({ field }) => (
-              <CustomDropdown {...field} options={languages} className="" />
+              <CustomDropdown
+                {...field}
+                options={languages}
+                label={getValues("language") || ""}
+                disabled={mode === "edit"}
+              />
             )}
           />
 

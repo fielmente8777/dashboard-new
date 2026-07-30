@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import Swal from "sweetalert2";
 
-import { AiOutlineDelete, AiOutlineEye } from "react-icons/ai";
+import { AiOutlineDelete, AiOutlineEdit, AiOutlineEye } from "react-icons/ai";
 
 import { FaWhatsapp } from "react-icons/fa";
 import { MdAdd } from "react-icons/md";
@@ -18,6 +18,7 @@ import { useToast } from "../../../../context/ToastContext";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { connectWhatsapp } from "../../../../services/api/Integration";
 import WhatsappMessageTemplateSkelton from "../../../../components/Skeltons/WhatsappMessageTemplateSkelton";
+import CreateTemplate from "./CreateTemplate";
 
 export default function WhatsAppMessageTemplate() {
   const { confirm } = useConfirm();
@@ -34,6 +35,7 @@ export default function WhatsAppMessageTemplate() {
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("UTILITY");
@@ -41,6 +43,7 @@ export default function WhatsAppMessageTemplate() {
   const [body, setBody] = useState("");
 
   const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   const [variables, setVariables] = useState({});
   const [preview, setPreview] = useState("");
@@ -253,7 +256,6 @@ export default function WhatsAppMessageTemplate() {
     );
   }
 
-  console.log("template", templates);
   return (
     <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
       <div className="flex justify-between">
@@ -345,7 +347,7 @@ export default function WhatsAppMessageTemplate() {
                     </td>
 
                     {/* ACTIONS */}
-                    <td className="px-5 py-4 flex gap-1.5 text-right">
+                    <td className="px-5 py-4 flex justify-end gap-1.5 text-right">
                       <button
                         onClick={() => handleDelete(t)}
                         // disabled={t.status === "APPROVED"}
@@ -361,6 +363,16 @@ export default function WhatsAppMessageTemplate() {
                         }
                       >
                         <AiOutlineDelete size={16} color="#ad3c3c" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setSelectedTemplate(t);
+                          setOpenEditModal(true);
+                        }}
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-200/60 hover:bg-green-200 transition`}
+                      >
+                        <AiOutlineEdit size={16} color="#2e7d32" />
                       </button>
 
                       <button
@@ -475,6 +487,23 @@ export default function WhatsAppMessageTemplate() {
                 {isCreating ? "Creating..." : "Create Template"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* UPDATE TEMPLATE MODAL  */}
+
+      {openEditModal && (
+        <div className="z-99999 absolute inset-0 bg-black/20 left-0 top-0 p-1.5 overflow-hidden">
+          <div className="w-full max-w-7xl mx-auto overflow-y-scroll h-full backdrop-blur-2xl bg-red-400 rounded-lg hide-scrollbar">
+            <CreateTemplate
+              mode="edit"
+              initialData={selectedTemplate}
+              onClose={() => {
+                setOpenEditModal(false);
+                setSelectedTemplate(null);
+              }}
+            />
           </div>
         </div>
       )}

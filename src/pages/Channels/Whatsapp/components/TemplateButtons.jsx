@@ -50,10 +50,11 @@ const TemplateButtons = () => {
 
                     <select
                       {...register(`buttons.${index}.type`)}
+                      value={"URL"}
                       className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
                     >
-                      <option value="visit">Visit website</option>
-                      <option value="quick">Quick reply</option>
+                      <option value="URL">Visit website</option>
+                      {/* <option value="quick">Quick reply</option> */}
                     </select>
                   </div>
 

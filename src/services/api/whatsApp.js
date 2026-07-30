@@ -187,6 +187,21 @@ export const createWhatsAppMessageTemplate = async (payload) => {
   return data;
 };
 
+export const updateWhatsAppMessageTemplate = async (payload, id) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/${id}?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: payload,
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
 export const getWhatsAppMessageTemplates = async () => {
   const hid = localStorage.getItem("hid");
   const response = await fetch(

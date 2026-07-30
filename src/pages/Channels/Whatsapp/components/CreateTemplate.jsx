@@ -8,7 +8,10 @@ import TemplateContent from "./TemplateContent";
 import TemplateButtons from "./TemplateButtons";
 import VariableSamples from "./VariableSample";
 import TemplatePreview from "./TemplatePreview";
-import { createWhatsAppMessageTemplate } from "../../../../services/api/whatsApp";
+import {
+  createWhatsAppMessageTemplate,
+  updateWhatsAppMessageTemplate,
+} from "../../../../services/api/whatsApp";
 import { useToast } from "../../../../context/ToastContext";
 import Loader from "../../../../components/Loader";
 
@@ -21,29 +24,111 @@ const extractVariables = (text = "") => {
   }));
 };
 
-const CreateTemplate = ({ initialData = null, onClose }) => {
+const normalizeTemplate = (template) => {
+  if (!template) return null;
+
+  const header = template.components?.find((c) => c.type === "HEADER");
+  const body = template.components?.find((c) => c.type === "BODY");
+  const footer = template.components?.find((c) => c.type === "FOOTER");
+  const buttons = template.components?.find((c) => c.type === "BUTTONS");
+
+  console.log("header", header);
+
+  return {
+    id: template.id,
+    name: template.name,
+    language: template.language,
+    category: template.category,
+
+    headerType: header?.format || "NONE",
+
+    // TEXT header only
+    header: header?.text || "",
+
+    // Existing media (for preview only)
+    headerImage:
+      header?.format === "IMAGE"
+        ? header?.example?.header_handle?.[0] || null
+        : null,
+
+    headerVideo:
+      header?.format === "VIDEO"
+        ? header?.example?.header_handle?.[0] || null
+        : null,
+
+    headerDocument:
+      header?.format === "DOCUMENT"
+        ? header?.example?.header_handle?.[0] || null
+        : null,
+
+    body: body?.text || "",
+    footer: footer?.text || "",
+    buttons: buttons?.buttons || [],
+
+    headerVariables: header?.example?.header_text || [],
+    bodyVariables: body?.example?.body_text[0] || [],
+  };
+};
+
+const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
   const [loading, setLoading] = React.useState(false);
   const { showToast } = useToast();
+
+  const formData = React.useMemo(
+    () => normalizeTemplate(initialData),
+    [initialData],
+  );
+
   const methods = useForm({
     resolver: zodResolver(templateSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      language: initialData?.language || "en_US",
-      category: initialData?.category || "UTILITY",
-      header: initialData?.header || "",
-      headerType: "NONE",
-      headerImage: null,
-      headerVideo: null,
-      headerDocument: null,
-      body: initialData?.body || "",
-      footer: initialData?.footer || "",
-      headerVariables: initialData?.headerVariables || [],
-      bodyVariables: initialData?.bodyVariables || [],
-      buttons: initialData?.buttons || [],
+      name: formData?.name || "",
+      language: formData?.language || "en_US",
+      category: formData?.category || "UTILITY",
+
+      header: formData?.header || "",
+      headerType: formData?.headerType || "NONE",
+
+      headerImage: formData?.headerImage,
+      headerVideo: formData?.headerVideo,
+      headerDocument: formData?.headerDocument,
+
+      body: formData?.body || "",
+      footer: formData?.footer || "",
+
+      headerVariables: formData?.headerVariables || [],
+      bodyVariables: formData?.bodyVariables || [],
+      buttons: formData?.buttons || [],
     },
   });
 
-  const { handleSubmit, watch, setValue } = methods;
+  // const methods = useForm({
+  //   resolver: zodResolver(templateSchema),
+  //   defaultValues: {
+  //     name: initialData?.name || "",
+  //     language: initialData?.language || "en_US",
+  //     category: initialData?.category || "UTILITY",
+  //     header: initialData?.header || "",
+  //     headerType: "NONE",
+  //     headerImage: null,
+  //     headerVideo: null,
+  //     headerDocument: null,
+  //     body: initialData?.body || "",
+  //     footer: initialData?.footer || "",
+  //     headerVariables: initialData?.headerVariables || [],
+  //     bodyVariables: initialData?.bodyVariables || [],
+  //     buttons: initialData?.buttons || [],
+  //   },
+  // });
+
+  const {
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = methods;
+
+  console.log("errors", errors);
 
   const header = watch("header");
   const body = watch("body");
@@ -99,10 +184,9 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
   ];
 
   const onSubmit = async (data) => {
-    setLoading(true);
     console.log("data", data);
-    console.log("data", data.headerType);
-    console.log("data", data?.headerImage);
+
+    setLoading(true);
 
     try {
       const formData = new FormData();
@@ -142,11 +226,16 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
         formData.append("file", data.headerDocument);
       }
 
-      const response = await createWhatsAppMessageTemplate(formData);
+      const response =
+        mode === "create"
+          ? await createWhatsAppMessageTemplate(formData)
+          : await updateWhatsAppMessageTemplate(formData, initialData?.id);
+
+      console.log("response", response);
 
       if (response?.success && response?.responseStatusCode === 200) {
         showToast({
-          message: "Template created successfully",
+          message: response?.responseMessage || "Template created successfully",
           type: "success",
         });
         return;
@@ -216,22 +305,41 @@ const CreateTemplate = ({ initialData = null, onClose }) => {
     <FormProvider {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex gap-6 p-2 bg-app-surface "
+        className="flex md:flex-row flex-col gap-6 p-2 bg-app-surface "
       >
         {/* LEFT FORM */}
 
         <div className="flex-1 space-y-6">
-          <TemplateHeader onCancel={onClose} showCancelButton={initialData} />
+          <TemplateHeader
+            onCancel={onClose}
+            showCancelButton={initialData}
+            mode={mode}
+          />
           <TemplateContent />
           <TemplateButtons />
 
           <div className="flex justify-end">
-            <button
+            {mode === "edit" ? (
+              <button
+                type="submit"
+                className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
+              >
+                Pulish Chnages {loading && <Loader color="#378863" />}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
+              >
+                + Create Template {loading && <Loader color="#378863" />}
+              </button>
+            )}
+            {/* <button
               type="submit"
               className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
             >
               + Create Template {loading && <Loader color="#378863" />}
-            </button>
+            </button> */}
           </div>
         </div>
 
