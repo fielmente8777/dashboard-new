@@ -13,6 +13,7 @@ import {
 } from "../../services/api/whatsApp";
 import { useToast } from "../../context/ToastContext";
 import TemplatePreview from "../Channels/Whatsapp/components/TemplatePreview";
+import { useSelector } from "react-redux";
 
 const callStatuses = [
   { key: "notAnswered", label: "Not Answered" },
@@ -37,6 +38,7 @@ const ToggleSwitch = ({ enabled, onChange }) => (
 );
 
 const Notification = () => {
+  const { subscription } = useSelector((state) => state?.subscription);
   const { showToast } = useToast();
 
   const initialData = {
@@ -257,55 +259,59 @@ const Notification = () => {
       )}
 
       {/* ================= WHATSAPP ================= */}
-      <div className="bg-white border rounded-xl p-5 shadow-sm">
-        <h2 className="font-semibold mb-4">💬 WhatsApp Notifications</h2>
+      {subscription?.appAccess && subscription?.appAccess?.whatsapp && (
+        <div className="bg-white border rounded-xl p-5 shadow-sm">
+          <h2 className="font-semibold mb-4">💬 WhatsApp Notifications</h2>
 
-        <ChannelToggle
-          label="Enable WhatsApp"
-          value={accountDetails?.notification?.enable}
-          onChange={() =>
-            handleUpdateWhatsAppNotification(
-              !accountDetails?.notification?.enable,
-            )
-          }
-        />
-
-        {/* CALL CONFIG */}
-        <div className="border rounded-lg p-4 bg-gray-50 mt-4 space-y-3">
           <ChannelToggle
-            label="Call Notification"
-            value={callConfig.enabled}
+            label="Enable WhatsApp"
+            value={accountDetails?.notification?.enable}
             onChange={() =>
-              setCallConfig((prev) => ({
-                ...prev,
-                enabled: !prev.enabled,
-              }))
+              handleUpdateWhatsAppNotification(
+                !accountDetails?.notification?.enable,
+              )
             }
           />
 
-          {accountDetails?.notification?.enable && callConfig.enabled && (
-            <div className="space-y-4 grid grid-cols-3 gap-4">
-              {callStatuses?.map((status) => {
-                const config = callConfig?.configs[status?.key] || {};
+          {/* CALL CONFIG */}
+          <div className="border rounded-lg p-4 bg-gray-50 mt-4 space-y-3">
+            <ChannelToggle
+              label="Call Notification"
+              value={callConfig.enabled}
+              onChange={() =>
+                setCallConfig((prev) => ({
+                  ...prev,
+                  enabled: !prev.enabled,
+                }))
+              }
+            />
 
-                return (
-                  <div key={status.key} className="border p-3 rounded bg-white">
-                    <h4 className="font-medium mb-2">{status.label}</h4>
+            {accountDetails?.notification?.enable && callConfig.enabled && (
+              <div className="space-y-4 grid grid-cols-3 gap-4">
+                {callStatuses?.map((status) => {
+                  const config = callConfig?.configs[status?.key] || {};
 
-                    {/* TYPE */}
-                    <select
-                      value={config.type}
-                      onChange={(e) =>
-                        updateCallConfig(status.key, "type", e.target.value)
-                      }
-                      className="w-full border px-3 py-2 rounded mb-2"
+                  return (
+                    <div
+                      key={status.key}
+                      className="border p-3 rounded bg-white"
                     >
-                      {/* <option value="text">Text</option> */}
-                      <option value="template">Template</option>
-                    </select>
+                      <h4 className="font-medium mb-2">{status.label}</h4>
 
-                    {/* TEXT */}
-                    {/* {config.type === "text" && (
+                      {/* TYPE */}
+                      <select
+                        value={config.type}
+                        onChange={(e) =>
+                          updateCallConfig(status.key, "type", e.target.value)
+                        }
+                        className="w-full border px-3 py-2 rounded mb-2"
+                      >
+                        {/* <option value="text">Text</option> */}
+                        <option value="template">Template</option>
+                      </select>
+
+                      {/* TEXT */}
+                      {/* {config.type === "text" && (
                       <textarea
                         value={config.message}
                         onChange={(e) =>
@@ -319,75 +325,85 @@ const Notification = () => {
                       />
                     )} */}
 
-                    {/* TEMPLATE */}
-                    {config.type === "template" && (
-                      <>
-                        <select
-                          value={config.templateName}
-                          onChange={(e) => {
-                            const selectedName = e.target.value;
-                            const selectedTemplate = templates.find(
-                              (t) => t.name === selectedName,
-                            );
-                            if (!selectedTemplate) return;
+                      {/* TEMPLATE */}
+                      {config.type === "template" && (
+                        <>
+                          <select
+                            value={config.templateName}
+                            onChange={(e) => {
+                              const selectedName = e.target.value;
+                              const selectedTemplate = templates.find(
+                                (t) => t.name === selectedName,
+                              );
+                              if (!selectedTemplate) return;
 
-                            const bodyText =
-                              selectedTemplate.components?.find(
-                                (c) => c.type === "BODY",
-                              )?.text || "";
+                              const bodyText =
+                                selectedTemplate.components?.find(
+                                  (c) => c.type === "BODY",
+                                )?.text || "";
 
-                            const buttons =
-                              selectedTemplate.components?.find(
-                                (c) => c.type === "BUTTONS",
-                              )?.buttons || [];
+                              const bodyVariables =
+                                selectedTemplate.components?.find(
+                                  (c) => c.type === "BODY",
+                                )?.example?.body_text[0] || [];
 
-                            updateCallConfig(
-                              status.key,
-                              "templateName",
-                              selectedName,
-                            );
-
-                            updateCallConfig(status.key, "templateMeta", {
-                              name: selectedTemplate.name,
-                              language: selectedTemplate.language,
-                              bodyText,
-                              variables: (bodyText.match(/{{\d+}}/g) || [])
-                                .length,
-                              headerType:
+                              const headerVariables =
                                 selectedTemplate.components?.find(
                                   (c) => c.type === "HEADER",
-                                )?.format || null,
-                              buttons,
-                            });
-                          }}
-                          className="w-full border px-3 py-2 rounded mb-2"
-                        >
-                          <option value="">Select template</option>
-                          {templates.map((t) => (
-                            <option key={t.name}>{t.name}</option>
-                          ))}
-                        </select>
+                                )?.example?.header_text || [];
 
-                        {config.templateName && (
-                          <div className="w-full">
-                            <TemplatePreview
-                              components={
-                                templates.find(
-                                  (t) => t.name === config.templateName,
-                                )?.components || []
-                              }
-                            />
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                              const buttons =
+                                selectedTemplate.components?.find(
+                                  (c) => c.type === "BUTTONS",
+                                )?.buttons || [];
 
-          {/* {accountDetails?.notification?.enable && callConfig.enabled && (
+                              updateCallConfig(
+                                status.key,
+                                "templateName",
+                                selectedName,
+                              );
+
+                              updateCallConfig(status.key, "templateMeta", {
+                                name: selectedTemplate.name,
+                                language: selectedTemplate.language,
+                                bodyText,
+                                variables: bodyVariables,
+                                headerVariables,
+                                headerType:
+                                  selectedTemplate.components?.find(
+                                    (c) => c.type === "HEADER",
+                                  )?.format || null,
+                                buttons,
+                              });
+                            }}
+                            className="w-full border px-3 py-2 rounded mb-2"
+                          >
+                            <option value="">Select template</option>
+                            {templates.map((t) => (
+                              <option key={t.name}>{t.name}</option>
+                            ))}
+                          </select>
+
+                          {config.templateName && (
+                            <div className="w-full">
+                              <TemplatePreview
+                                components={
+                                  templates.find(
+                                    (t) => t.name === config.templateName,
+                                  )?.components || []
+                                }
+                              />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* {accountDetails?.notification?.enable && callConfig.enabled && (
               <>
                 <select
                   value={callConfig.type}
@@ -467,38 +483,40 @@ const Notification = () => {
                 )}
               </>
             )} */}
-        </div>
+          </div>
 
-        {/* USERS */}
-        {tab.map((item) => {
-          const enabled =
-            data[item]?.isPhoneAllowed && accountDetails?.notification?.enable;
+          {/* USERS */}
+          {tab.map((item) => {
+            const enabled =
+              data[item]?.isPhoneAllowed &&
+              accountDetails?.notification?.enable;
 
-          return (
-            <div key={item} className="flex justify-between py-3 border-b">
-              <span className="capitalize">{item}</span>
+            return (
+              <div key={item} className="flex justify-between py-3 border-b">
+                <span className="capitalize">{item}</span>
 
-              <div className="flex gap-3">
-                <CustomDropdown
-                  multiple
-                  disabled={!enabled}
-                  label={data[item]?.phone}
-                  options={allUsers.map((u) => ({
-                    value: u.phone,
-                    label: u.userName,
-                  }))}
-                  onChange={(val) => handleUserAssign(item, "phone", val)}
-                />
+                <div className="flex gap-3">
+                  <CustomDropdown
+                    multiple
+                    disabled={!enabled}
+                    label={data[item]?.phone}
+                    options={allUsers.map((u) => ({
+                      value: u.phone,
+                      label: u.userName,
+                    }))}
+                    onChange={(val) => handleUserAssign(item, "phone", val)}
+                  />
 
-                <ToggleSwitch
-                  enabled={data[item]?.isPhoneAllowed}
-                  onChange={() => toggleActive(item, "phone")}
-                />
+                  <ToggleSwitch
+                    enabled={data[item]?.isPhoneAllowed}
+                    onChange={() => toggleActive(item, "phone")}
+                  />
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ================= EMAIL ================= */}
       <div className="bg-white border rounded-xl p-5 shadow-sm">

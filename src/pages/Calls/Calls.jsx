@@ -10,6 +10,7 @@ import {
   MasterSegregation,
   NEW_BASE_URL,
   Priority,
+  Property,
   ROUTES_PATH,
   Stages,
   WEBSOCKET_EVENTS,
@@ -38,8 +39,11 @@ import WebSocketClient from "../../config/websocketClient";
 import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
+import { useSelector } from "react-redux";
 
 export default function Calls() {
+  const { user: hotel } = useSelector((state) => state.userProfile);
+  console.log(hotel);
   const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -73,6 +77,7 @@ export default function Calls() {
   const [templates, setTemplates] = useState([]);
   const [quickResponseOpen, setQuickResponseOpen] = useState(false);
   const [lead, setLead] = useState(null);
+  const [audioLoading, setAudioLoading] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -187,26 +192,76 @@ export default function Calls() {
     }
   };
 
-  const playRecording = async (callUrl) => {
-    // console.log(recordingUrl);
-    // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
-    setCurrentRecordingUrl(callUrl);
+  // const playRecording = async ({ callUrl, callSid }) => {
+  //   // console.log(recordingUrl);
+  //   // setCurrentRecordingUrl(`${NEW_BASE_URL}/api/v1/call/recording/${callSid}`);
+  //   setCurrentRecordingUrl(callUrl);
 
+  //   // try {
+  //   //   const { data } = await axios.get(
+  //   //     `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+  //   //     {
+  //   //       headers: {
+  //   //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //   //       },
+  //   //     },
+  //   //   );
+  //   //   console.log(data);
+  //   //   setCurrentRecordingUrl(data?.result?.docs);
+  //   // } catch (error) {
+  //   //   // console.log(error);
+  //   // }
+  //   setShowAudioModal(true);
+  // };
+
+  // const playRecording = async ({ callSid }) => {
+  //   try {
+  //     const response = await fetch(
+  //       `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       },
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (data?.success && data?.responseStatusCode === 200) {
+  //       setCurrentRecordingUrl(data?.result?.doc?.recordingUrl);
+  //       setShowAudioModal(true);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+
+  const playRecording = async ({ callSid }) => {
     try {
-      // const { data } = await axios.get(
-      //   `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
-      //   {
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   }
-      // );
-      // console.log(data);
-      // setCurrentRecordingUrl(data?.result?.docs);
+      setAudioLoading(true);
+      setShowAudioModal(true);
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/call/recording/${callSid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to fetch recording");
+      }
+      // AUDIO BLOB
+      const blob = await response.blob();
+      // LOCAL AUDIO URL
+      const audioUrl = URL.createObjectURL(blob);
+      setCurrentRecordingUrl(audioUrl);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
+    } finally {
+      setAudioLoading(false);
     }
-    setShowAudioModal(true);
   };
 
   const columns = [
@@ -219,21 +274,25 @@ export default function Calls() {
     { label: "Time", value: "startTime" },
     { label: "Duration", value: "duration" },
     { label: "Recording", value: "recordingUrl" },
-    { label: "Attempted By", value: "assignedTo" },
-    { label: "Stage", value: "stage" },
+    // { label: "Attempted By", value: "assignedTo" },
+    { label: "Property", value: "property" },
     { label: "Segregation", value: "segregation" },
     { label: "Guest Type", value: "guestType" },
     { label: "Priority", value: "priority" },
+    { label: "Stage", value: "stage" },
   ];
 
   const newStages = Stages?.filter((stage) => {
-    return stage?.value !== "Turn Away";
+    return stage?.value === "Closure" || stage?.value === "Follow Up";
   });
 
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState("");
+  const [fromNumber, setFromNumber] = useState(
+    hotel?.Profile?.hotelPhone || "",
+  );
+
   const [toNumber, setToNumber] = useState("");
   const handleMakeCall = async () => {
     try {
@@ -269,7 +328,7 @@ export default function Calls() {
 
       alert("✅ Call initiated successfully");
       setCallPopup(false);
-      setFromNumber("");
+      // setFromNumber("");
       setToNumber("");
     } catch (error) {
       console.error("Call error:", error);
@@ -345,6 +404,12 @@ export default function Calls() {
   };
 
   useEffect(() => {
+    if (hotel?.Profile?.hotelPhone) {
+      setFromNumber(hotel?.Profile?.hotelPhone);
+    }
+  }, [hotel]);
+
+  useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
 
     wsRef.current.connect((serverResponse) => {
@@ -385,7 +450,43 @@ export default function Calls() {
     }
   }, [page, limit, searchTerm, isConnected]);
 
-  console.log(allCalls);
+  const getCallStatus = (status, direction) => {
+    if (
+      status === "no-answer" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
+    ) {
+      return "Client Unanswered";
+    } else if (
+      (status === "no-answer" || status === "incomplete") &&
+      (direction === "inbound" || direction === "incoming")
+    ) {
+      return "No user answered";
+    } else if (
+      status === "call-attempt" &&
+      (direction === "incoming" || direction === "inbound")
+    ) {
+      return "Client hung-up before connecting to any user";
+    } else if (
+      status === "completed" &&
+      (direction === "inbound" ||
+        direction === "incoming" ||
+        direction === "outbound-dial" ||
+        direction === "outbound-api")
+    ) {
+      return "Call was successfull";
+    } else if (
+      status === "client-hangup" &&
+      (direction === "inbound" || direction === "incoming")
+    ) {
+      return "Client hangup during call";
+    } else if (
+      status === "busy" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
+    ) {
+      return "Client Busy";
+    }
+    return status;
+  };
 
   return (
     <div className="">
@@ -460,103 +561,128 @@ export default function Calls() {
                 {/* ✅ DATA */}
                 {!isTableDataLoading &&
                   allCalls?.length > 0 &&
-                  allCalls.map((call, i) => (
-                    <tr
-                      key={i}
-                      className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
-                      onClick={() =>
-                        handleRedirectToPage(call, i + limit * (page - 1) + 1)
-                      }
-                    >
-                      {/* Index */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {(i + limit * (page - 1) + 1)
-                          .toString()
-                          .padStart(2, "0")}
-                      </td>
+                  allCalls.map((call, i) => {
+                    const startTime = call?.startTime;
 
-                      {/* From */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.from || "-"}
-                      </td>
+                    // const startTime = new Intl.DateTimeFormat("sv-SE", {
+                    //   timeZone: "Asia/Kolkata",
+                    //   year: "numeric",
+                    //   month: "2-digit",
+                    //   day: "2-digit",
+                    //   hour: "2-digit",
+                    //   minute: "2-digit",
+                    //   second: "2-digit",
+                    //   hour12: false,
+                    // })
+                    //   .format(new Date(call?.startTime))
+                    //   .replace(" ", "T");
 
-                      {/* To */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.to || "-"}
-                      </td>
+                    // console.log("start", startTime);
 
-                      {/* Phone */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.phoneNumberSid || "-"}
-                      </td>
-
-                      <td
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setQuickResponseOpen(true);
-                          setLead({
-                            Contact:
-                              call?.direction === "inbound"
-                                ? call?.from
-                                : call?.to,
-                          });
-                        }}
-                        className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
+                    return (
+                      <tr
+                        key={i}
+                        className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                        onClick={() =>
+                          handleRedirectToPage(call, i + limit * (page - 1) + 1)
+                        }
                       >
-                        <FaWhatsapp size={20} />
-                      </td>
+                        {/* Index */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {(i + limit * (page - 1) + 1)
+                            .toString()
+                            .padStart(2, "0")}
+                        </td>
 
-                      {/* Direction */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.direction === "outbound-dial" ? (
-                          <span className="text-green-700">Outgoing</span>
-                        ) : (
-                          <span className="text-orange-700">Incoming</span>
-                        )}
-                      </td>
+                        {/* From */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.from || "-"}
+                        </td>
 
-                      {/* Status */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        <span className="text-xs font-medium">
-                          {call.status || "-"}
-                        </span>
-                      </td>
+                        {/* To */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.to || "-"}
+                        </td>
 
-                      {/* Time */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {/* {call.startTime
+                        {/* Phone */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.phoneNumberSid || "-"}
+                        </td>
+
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickResponseOpen(true);
+                            setLead({
+                              Contact:
+                                call?.direction === "inbound"
+                                  ? call?.from
+                                  : call?.to,
+                            });
+                          }}
+                          className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
+                        >
+                          <FaWhatsapp size={20} />
+                        </td>
+
+                        {/* Direction */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.direction === "outbound-dial" ||
+                          call.direction === "outbound-api" ? (
+                            <span className="text-green-700">Outgoing</span>
+                          ) : (
+                            <span className="text-orange-700">Incoming</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          <span className="text-xs font-medium">
+                            {getCallStatus(call.status, call.direction)}
+                          </span>
+                        </td>
+
+                        {/* Time */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {/* {call.startTime
                           ? new Date(call.startTime).toLocaleString()
                           : "-"} */}
-                        {timeAgo(new Date(call.startTime))}
-                      </td>
+                          {timeAgo(startTime)}
+                        </td>
 
-                      {/* Duration */}
-                      <td className="px-3 py-1 whitespace-nowrap">
-                        {call.duration
-                          ? `${Math.floor(call.duration / 60)}m ${
-                              call.duration % 60
-                            }s`
-                          : "-"}
-                      </td>
+                        {/* Duration */}
+                        <td className="px-3 py-1 whitespace-nowrap">
+                          {call.duration
+                            ? `${Math.floor(call.duration / 60)}m ${
+                                call.duration % 60
+                              }s`
+                            : "-"}
+                        </td>
 
-                      {/* Recording */}
-                      <td
-                        className="px-3 py-1 whitespace-nowrap"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {call.recordingUrl ? (
-                          <span
-                            onClick={() => playRecording(call.recordingUrl)}
-                            className="cursor-pointer text-blue-600"
-                          >
-                            Play
-                          </span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
+                        {/* Recording */}
+                        <td
+                          className="px-3 py-1 whitespace-nowrap"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {call.recordingUrl ? (
+                            <span
+                              onClick={() =>
+                                playRecording({
+                                  callUrl: call.recordingUrl,
+                                  callSid: call.sid,
+                                })
+                              }
+                              className="cursor-pointer text-blue-600"
+                            >
+                              Play
+                            </span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
 
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
+                        {/* Attempted By  */}
+                        {/* <td onClick={(e) => e.stopPropagation()} className="p-1">
                         <CustomDropdown2
                           label={call["assignedTo"] || "Attempted By"}
                           options={
@@ -573,82 +699,113 @@ export default function Calls() {
                           }
                           className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
                         />
-                      </td>
+                      </td> */}
 
-                      {/* Stage */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.stage}
-                          options={newStages}
-                          onChange={(value) => {
-                            if (value === "Follow Up") {
-                              setSelectedRow(call);
-                              setShowDatePicker(true);
-                            } else {
+                        {/* Property  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call?.property || "Select"}
+                            options={Property}
+                            onChange={(value) =>
+                              handleUpdateCall({
+                                property: value,
+                                sid: call.sid,
+                              })
+                            }
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+
+                        {/* Segregation */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call?.segregation?.value}
+                            options={MasterSegregation}
+                            onChange={(value) =>
                               handleUpdateCall({
                                 sid: call.sid,
-                                stage: value,
-                              });
+                                segregation: {
+                                  label: value,
+                                  value: value,
+                                },
+                              })
                             }
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
+                            // handleUpdateCall({
+                            //   sid: call.sid,
+                            //   leadStatus: value,
+                            // })
 
-                      {/* Segregation */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomSubDropdown
-                          label={call?.segregation?.value}
-                          options={MasterSegregation}
-                          onChange={(value) =>
-                            handleUpdateCall({
-                              sid: call.sid,
-                              segregation: {
-                                label: value.parentValue,
-                                value: value.value,
-                              },
-                            })
-                          }
-                          // handleUpdateCall({
-                          //   sid: call.sid,
-                          //   leadStatus: value,
-                          // })
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
 
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
+                        {/* Guest Type  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.guestType}
+                            options={GuestType}
+                            onChange={(value) => {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                guestType: value,
+                              });
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
 
-                      {/* Guest Type  */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.guestType}
-                          options={GuestType}
-                          onChange={(value) => {
-                            handleUpdateCall({
-                              sid: call.sid,
-                              guestType: value,
-                            });
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
+                        {/* Priority  */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.priority}
+                            options={Priority}
+                            onChange={(value) => {
+                              handleUpdateCall({
+                                sid: call.sid,
+                                priority: value,
+                              });
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
 
-                      {/* Priority  */}
-                      <td onClick={(e) => e.stopPropagation()} className="p-1">
-                        <CustomDropdown
-                          label={call.priority}
-                          options={Priority}
-                          onChange={(value) => {
-                            handleUpdateCall({
-                              sid: call.sid,
-                              priority: value,
-                            });
-                          }}
-                          className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        {/* Stage */}
+                        <td
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1"
+                        >
+                          <CustomDropdown
+                            label={call.stage}
+                            options={newStages}
+                            onChange={(value) => {
+                              if (value === "Follow Up") {
+                                setSelectedRow(call);
+                                setShowDatePicker(true);
+                              } else {
+                                handleUpdateCall({
+                                  sid: call.sid,
+                                  stage: value,
+                                });
+                              }
+                            }}
+                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
 
                 {!isTableDataLoading && allCalls?.length === 0 && (
                   <tr>
@@ -858,9 +1015,9 @@ export default function Calls() {
 
             {/* 🔥 From Number (Dropdown + Input) */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">From</label>
+              {/* <label className="text-sm font-medium">From</label> */}
 
-              <CustomDropdown2
+              {/* <CustomDropdown2
                 options={
                   allUsers?.map((user) => ({
                     value: user?.phone,
@@ -879,7 +1036,7 @@ export default function Calls() {
                 onChange={(e) => setFromNumber(e.target.value)}
                 placeholder="Or type number"
                 className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              /> */}
             </div>
 
             {/* 🔥 To Number */}
@@ -1021,24 +1178,38 @@ export default function Calls() {
                 <span className="font-bold text-black">X</span>
               </button>
             </div>
-            <div className="space-y-4">
-              {/* <audio controls className="w-full" ref={audioPlayerRef}>
-                <source src={currentRecordingUrl} type="audio/mpeg" />
-                Your browser does not support the audio element.
-              </audio> */}
 
-              <audio controls>
-                <source src={currentRecordingUrl} type="audio/mp3" />
-              </audio>
+            <div className="p-5">
+              {audioLoading ? (
+                <div className="flex flex-col items-center justify-center py-10">
+                  {/* Loader */}
+                  <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
 
-              {/* <div className="flex justify-end">
-                <button
-                  // onClick={downloadRecording}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <i className="fas fa-download mr-2"></i>Download
-                </button>
-              </div> */}
+                  <p className="mt-4 text-sm font-medium text-gray-700">
+                    Loading recording...
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Please wait while audio buffer is preparing
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                    <audio
+                      controls
+                      autoPlay
+                      src={currentRecordingUrl}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    Recording ready to play
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -168,7 +168,7 @@ export default function CustomDropdown({
               <span className="text-gray-400">Select</span>
             )
           ) : (
-            <span>{getLabel(selected) || "Selct"}</span>
+            <span>{getLabel(selected) || label || "Select"}</span>
             // <span>{label?label:""}</span>
           )}
         </div>

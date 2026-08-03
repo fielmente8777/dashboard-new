@@ -1,5 +1,6 @@
 export const BASE_PATH = "/dashboard/client";
 export const BASE_URL = "https://nexon.eazotel.com";
+// export const BASE_URL = "http://127.0.0.1:8001";
 // export const BASE_URL = "http://127.0.0.1:5000";
 
 export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
@@ -329,6 +330,17 @@ export const Stages = [
   { label: "Hot", value: "Hot" },
 ];
 
+export const Property = [
+  {
+    label: "HOTEL AMAITI",
+    value: "Hotel Amaiti",
+  },
+  {
+    label: "CHARME DE PONDICHERRY",
+    value: "Charme De Pondicherry",
+  },
+];
+
 export const TurnAwayCode = [
   { label: "GD", value: "GD" },
   { label: "JE", value: "JE" },
@@ -352,6 +364,11 @@ export const Sources = [
   { label: "Facebook", value: "facebook" },
   { label: "Google", value: "google" },
   { label: "Vistors", value: "visitors" },
+  { label: "Exotel", value: "exotel" },
+  { label: "Insta - Ad & DM", value: "insta_ad_dm" },
+  { label: "Front desk", value: "front_desk" },
+  { label: "Booking Engine", value: "booking_engine" },
+  { label: "Email", value: "email" },
 ];
 
 // PRE BOOKING
@@ -398,37 +415,65 @@ export const LeadStatus = [
   },
 ];
 
+// PRE BOOKING
+// PAYMENT
+// POST BOOKING
+// IN STAY
+// POST STAY
+// PARTERSHIP
+// NON RELEVANT
+
 // MASTER SEGREGATION
+
+// MASTER SEGREGATION
+// PRE BOOKING
+// PAYMENT
+// POST BOOKING
+// IN STAY
+// POST STAY
+// PARTERSHIP
+// NON RELEVANT
+
+// export const MasterSegregation = [
+//   {
+//     label: "PRE BOOKING",
+//     value: "Pre Booking",
+//     children: [{ label: "Payment", value: "Payment" }],
+//   },
+//   {
+//     label: "POST BOOKING",
+//     value: "Post Booking",
+//     children: [
+//       { label: "Pre Arrival", value: "Pre Arrival" },
+//       { label: "Property Rules", value: "Property Rules" },
+//     ],
+//   },
+//   {
+//     label: "IN STAY SUPPORT",
+//     value: "In Stay Support",
+//     children: [
+//       { label: "Food Order", value: "Food Order" },
+//       { label: "Late Checkout", value: "Late Checkout" },
+//     ],
+//   },
+//   {
+//     label: "POST STAY",
+//     value: "Post Stay",
+//     children: [
+//       { label: "Partnership", value: "Partnership" },
+//       { label: "Non Relevant", value: "Non Relevant" },
+//     ],
+//   },
+// ];
 export const MasterSegregation = [
-  {
-    label: "PRE BOOKING",
-    value: "Pre Booking",
-    children: [{ label: "Payment", value: "Payment" }],
-  },
-  {
-    label: "POST BOOKING",
-    value: "Post Booking",
-    children: [
-      { label: "Pre Arrival", value: "Pre Arrival" },
-      { label: "Property Rules", value: "Property Rules" },
-    ],
-  },
-  {
-    label: "IN STAY SUPPORT",
-    value: "In Stay Support",
-    children: [
-      { label: "Food Order", value: "Food Order" },
-      { label: "Late Checkout", value: "Late Checkout" },
-    ],
-  },
-  {
-    label: "POST STAY",
-    value: "Post Stay",
-    children: [
-      { label: "Partnership", value: "Partnership" },
-      { label: "Non Relevant", value: "Non Relevant" },
-    ],
-  },
+  // { value: "Master Segregation", label: "MASTER SEGREGATION" },
+  { value: "Payment", label: "PAYMENT" },
+  { value: "Post Booking", label: "POST BOOKING" },
+  { value: "Pre Booking", label: "PRE BOOKING" },
+  { value: "In Stay", label: "IN STAY" },
+  { value: "Post Stay", label: "POST STAY" },
+  { value: "Partnership", label: "PARTNERSHIP" },
+  { value: "Non Relevant", label: "NON RELEVANT" },
 ];
 
 // GUEST TYPE

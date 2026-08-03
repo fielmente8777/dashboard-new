@@ -90,6 +90,7 @@ import MetaLeads from "../Enquiry/MetaLeads";
 import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
+import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -195,7 +196,7 @@ const DynamicPage = () => {
       <GoogleAdsInsights />
     ),
     [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
-    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <Feedback />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <GoogleAnalytics />,
     [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (

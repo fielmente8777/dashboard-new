@@ -36,6 +36,7 @@ import { FaTrashAlt } from "react-icons/fa";
 import { deleteLMultipleeadGenForm } from "../../services/api/MetaLeads.api";
 import CustomDropdown2 from "../../components/ui/Dropdown2";
 import ExportLeadsModal from "../../components/Modal/ExportLeadsModal";
+import AddLeadModal from "../../components/Modal/AddLeadModal";
 
 const AllLeads = () => {
   const wsRef = useRef(null);
@@ -67,6 +68,7 @@ const AllLeads = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [rowSelected, setRowSelected] = useState([]);
 
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
   const [open, setOpen] = useState(false);
 
   const {
@@ -366,6 +368,13 @@ const AllLeads = () => {
               </button>
             )}
             <ImportLead open={open} setOpen={setOpen} />
+
+            <button
+              onClick={() => setShowAddLeadModal(true)}
+              className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2 ml-2"
+            >
+              Add Lead
+            </button>
           </div>
         </div>
 
@@ -656,6 +665,16 @@ const AllLeads = () => {
                           </td>
                         );
                       }
+
+                      if (h.key === "created_from") {
+                        return (
+                          <td className=" whitespace-nowrap">
+                            {row["created_from"] === "facebook"
+                              ? "meta"
+                              : row["created_from"] || "-"}
+                          </td>
+                        );
+                      }
                       return (
                         <td key={h.key} className="px-3 py-2 whitespace-nowrap">
                           {row[h.key]
@@ -726,6 +745,12 @@ const AllLeads = () => {
             end,
           })
         }
+      />
+
+      <AddLeadModal
+        isOpen={showAddLeadModal}
+        onClose={() => setShowAddLeadModal(false)}
+        onSuccess={() => fetchLeads(false)}
       />
     </div>
   );

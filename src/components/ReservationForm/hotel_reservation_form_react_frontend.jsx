@@ -92,7 +92,7 @@ export default function ReservationForm({ data, setReserveData }) {
 
   const subtotal = useMemo(
     () => form.ratePerNight * form.rooms * nights,
-    [form.ratePerNight, form.rooms, nights]
+    [form.ratePerNight, form.rooms, nights],
   );
   const taxes = Math.round(subtotal * 0.12);
   const total = subtotal + taxes;

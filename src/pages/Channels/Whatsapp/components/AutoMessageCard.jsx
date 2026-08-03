@@ -208,7 +208,7 @@ const AutoMessageCard = ({
               className="w-full border px-3 py-2 rounded-md text-sm"
             >
               <option value="template">Template</option>
-              {/* <option value="text">Text</option> */}
+              <option value="text">Text</option>
               {label.toLowerCase() === "whatsapp" && (
                 <option value="flow">Flow</option>
               )}
