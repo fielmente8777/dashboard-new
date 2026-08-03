@@ -74,6 +74,7 @@ const WebformLeads = () => {
 
   const [allUsers, setAllUsers] = useState([]);
   const [rowSelected, setRowSelected] = useState([]);
+  const [notesFilter, setNotesFilter] = useState("");
 
   const {
     page,
@@ -103,6 +104,7 @@ const WebformLeads = () => {
         search: debouncedSearch,
         limit: limit,
         created_from: CREATED_FROM,
+        notes: notesFilter,
         stage: stage,
       };
 
@@ -300,7 +302,16 @@ const WebformLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     fetchUsersData();
@@ -328,10 +339,12 @@ const WebformLeads = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+    <div className="bg-app-surface-secondary p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Webform Leads</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            Webform Leads
+          </h2>
 
           {allLeads?.length > 0 && (
             <button
@@ -350,7 +363,7 @@ const WebformLeads = () => {
             {/* LEFT SIDE FILTERS */}
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                 <IoSearch className="text-gray-400" size={18} />
                 <input
                   type="text"
@@ -375,7 +388,7 @@ const WebformLeads = () => {
 
               {/* DATE RANGE */}
               <div className="relative">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
                     startDate={startDate}
@@ -399,6 +412,41 @@ const WebformLeads = () => {
                   </span>
                 )}
               </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -417,11 +465,16 @@ const WebformLeads = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99!">
               <tr>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className="px-3 py-3 text-left text-white min-w-40"
+                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
                   >
                     {h.label}
                   </th>
@@ -445,7 +498,7 @@ const WebformLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white  even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
@@ -503,7 +556,7 @@ const WebformLeads = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -537,7 +590,7 @@ const WebformLeads = () => {
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -573,7 +626,7 @@ const WebformLeads = () => {
                                   row?.conversationId,
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                             />
                           </td>
                         );

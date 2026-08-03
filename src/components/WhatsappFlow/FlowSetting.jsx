@@ -29,7 +29,7 @@ export default function FlowSettings({ onSave, onCancel, data }) {
     interactive?.action?.parameters?.flow_action_payload?.screen,
   );
 
-  console.log(screen);
+  // console.log(screen);
 
   const handleFlowChange = (e) => {
     const selectedFlowId = e.target.value;

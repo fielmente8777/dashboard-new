@@ -304,7 +304,7 @@ export default function FlowBuilder() {
     formData.append("nodes", JSON.stringify(nodes));
     formData.append("edges", JSON.stringify(edges));
 
-    console.log(filesMap);
+    // console.log(filesMap);
 
     Object.entries(filesMap).forEach(([blockId, file]) => {
       formData.append(`file_${blockId}`, file);
@@ -336,6 +336,9 @@ export default function FlowBuilder() {
       setEdges(response?.result?.docs?.flow?.edges || []);
     }
   };
+
+  // console.log(nodes);
+  // console.log(edges);
 
   useEffect(() => {
     fetchFlows();

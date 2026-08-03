@@ -1,12 +1,27 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, AreaChart, Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
 } from "recharts";
-import { FiCalendar, FiTrendingUp, FiUsers, FiEye, FiActivity, FiClock } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiTrendingUp,
+  FiUsers,
+  FiEye,
+  FiActivity,
+  FiClock,
+} from "react-icons/fi";
 import Loader from "./Loader";
 import { BASE_URL } from "../data/constant";
+import { useSelector } from "react-redux";
 
 const dateOptions = [
   { label: "Today", start: "today", end: "today" },
@@ -18,16 +33,24 @@ const dateOptions = [
 ];
 
 const TAB_CONFIG = {
-  users:        { label: "Active Users",  color: "#1a73e8", icon: FiUsers },
-  newUsers:     { label: "New Users",     color: "#8b5cf6", icon: FiTrendingUp },
-  sessions:     { label: "Sessions",      color: "#00A94B", icon: FiActivity },
-  pageViews:    { label: "Page Views",    color: "#f97316", icon: FiEye },
-  eventCount:   { label: "Events",        color: "#f9ab00", icon: FiActivity },
-  avgSessionDuration: { label: "Avg Duration", color: "#06b6d4", icon: FiClock },
+  users: { label: "Active Users", color: "#1a73e8", icon: FiUsers },
+  newUsers: { label: "New Users", color: "#8b5cf6", icon: FiTrendingUp },
+  sessions: { label: "Sessions", color: "#00A94B", icon: FiActivity },
+  pageViews: { label: "Page Views", color: "#f97316", icon: FiEye },
+  eventCount: { label: "Events", color: "#f9ab00", icon: FiActivity },
+  avgSessionDuration: {
+    label: "Avg Duration",
+    color: "#06b6d4",
+    icon: FiClock,
+  },
 };
 
-const GoogleAnalyticsChart = () => {
+const     GoogleAnalyticsChart = () => {
+   // profile info
+    const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+    const profile = hotel?.Profile;
   const [chartData, setChartData] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [properties, setProperties] = useState([]);
@@ -39,6 +62,7 @@ const GoogleAnalyticsChart = () => {
   const [activeTab, setActiveTab] = useState("users");
 
   const dropdownRef = useRef(null);
+
 
   const fetchAnalytics = async () => {
     const hid = localStorage.getItem("hid");
@@ -59,6 +83,8 @@ const GoogleAnalyticsChart = () => {
       } else {
         setChartData(data.chartData);
         setActivePropertyId(data.activePropertyId);
+        // Save active property so GSC widget can read it on load/refresh
+        localStorage.setItem("activePropertyId", data.activePropertyId);
         setEmail(data.email);
         if (data.email && properties.length === 0) {
           fetchPropertiesList(data.email);
@@ -73,7 +99,9 @@ const GoogleAnalyticsChart = () => {
 
   const fetchPropertiesList = async (userEmail) => {
     try {
-      const { data } = await axios.get(`${BASE_URL}/google/properties?email=${userEmail}`);
+      const { data } = await axios.get(
+        `${BASE_URL}/google/properties?email=${userEmail}`
+      );
       if (data.properties) setProperties(data.properties);
     } catch (err) {
       console.error(err);
@@ -82,7 +110,9 @@ const GoogleAnalyticsChart = () => {
 
   useEffect(() => {
     fetchAnalytics();
-    window.dispatchEvent(new CustomEvent("dashboard_date_changed", { detail: dateRange }));
+    window.dispatchEvent(
+      new CustomEvent("dashboard_date_changed", { detail: dateRange })
+    );
   }, [dateRange]);
 
   useEffect(() => {
@@ -101,18 +131,29 @@ const GoogleAnalyticsChart = () => {
     setIsSwitching(true);
     try {
       const hid = localStorage.getItem("hid");
+
       await axios.post(`${BASE_URL}/google/save-property`, {
-        hid, email, property_id: newPropertyId,
+        hid,
+        email,
+        property_id: newPropertyId,
       });
+
+      localStorage.setItem("activePropertyId", newPropertyId);
+
+      window.dispatchEvent(
+        new CustomEvent("dashboard_property_changed", {
+          detail: { property_id: newPropertyId },
+        })
+      );
+
+      // 4. Apne charts load hone do
       await fetchAnalytics();
-      window.dispatchEvent(new Event("dashboard_property_changed"));
     } catch (err) {
       alert("Failed to switch property.");
     } finally {
       setIsSwitching(false);
     }
   };
-
   const totals = {
     users: chartData.reduce((s, i) => s + i.users, 0),
     newUsers: chartData.reduce((s, i) => s + (i.newUsers || 0), 0),
@@ -120,7 +161,8 @@ const GoogleAnalyticsChart = () => {
     pageViews: chartData.reduce((s, i) => s + i.pageViews, 0),
     eventCount: chartData.reduce((s, i) => s + (i.eventCount || 0), 0),
     avgSessionDuration: chartData.length
-      ? (chartData.reduce((s, i) => s + (i.avgSessionDuration || 0), 0) / chartData.length)
+      ? chartData.reduce((s, i) => s + (i.avgSessionDuration || 0), 0) /
+        chartData.length
       : 0,
   };
 
@@ -141,9 +183,11 @@ const GoogleAnalyticsChart = () => {
     return formatNumber(value);
   };
 
+
+
   if (loading && !isSwitching) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className="flex justify-center items-center h-64 bg-app-surface dark:bg-app-surface rounded-lg shadow-sm border border-gray-200">
         <Loader color="#132e69" />
       </div>
     );
@@ -151,7 +195,7 @@ const GoogleAnalyticsChart = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64 bg-white rounded-lg shadow-sm border border-red-100">
+      <div className="flex justify-center items-center h-64 bg-app-surface dark:bg-app-surface rounded-lg shadow-sm border border-red-100">
         <p className="text-red-500 font-medium">{error}</p>
       </div>
     );
@@ -160,21 +204,23 @@ const GoogleAnalyticsChart = () => {
   const tabKeys = Object.keys(TAB_CONFIG);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 w-full overflow-hidden">
+    <div className="bg-app-surface dark:bg-app-surface  drop-shadow-xl w-full overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+      <div className="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-app-surface dark:bg-app-surface">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Eaz Analytics</h2>
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            Eaz Analytics
+          </h2>
           {/* <p className="text-xs text-gray-500 mt-0.5">{email}</p> */}
         </div>
 
         <div className="flex items-center gap-3">
-          {properties.length > 0 && (
+          {hotel?.Profile?.hotelEmail==="abhijeet@eazotel.com"&&properties.length > 0 && (
             <select
               value={activePropertyId}
               onChange={handlePropertyChange}
               disabled={isSwitching}
-              className="border border-gray-200 text-gray-700 bg-white text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
+              className="border border-gray-200 text-app-text dark:text-app-text-muted bg-app-surface dark:bg-app-surface  text-sm rounded-md px-3 py-1.5 outline-none cursor-pointer hover:border-gray-300 shadow-sm"
             >
               {properties.map((prop) => (
                 <option key={prop.property_id} value={prop.property_id}>
@@ -183,27 +229,43 @@ const GoogleAnalyticsChart = () => {
               ))}
             </select>
           )}
+          
 
           {/* Date Picker */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-md hover:border-gray-300 text-sm text-gray-700 font-medium shadow-sm"
+              className="flex items-center gap-2 px-3 py-1.5 bg-app-surface dark:bg-app-surface border border-gray-200 rounded-md hover:border-gray-300 text-sm  font-medium text-app-text dark:text-app-text-muted shadow-sm"
             >
-              <FiCalendar className="w-4 h-4 text-gray-500" />
+              <FiCalendar className="w-4 h-4 text-app-text dark:text-app-text-muted" />
               {dateRange.label}
-              <svg className="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              <svg
+                className="w-3.5 h-3.5 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </button>
             {isDateDropdownOpen && (
-              <div className="absolute right-0 top-10 w-56 bg-white border border-gray-200 shadow-xl rounded-lg py-2 z-50">
+              <div className="absolute right-0 top-10 w-56 bg-app-surface dark:bg-app-surface border border-gray-200  shadow-xl rounded-lg py-2 z-50">
                 {dateOptions.map((opt, i) => (
                   <div
                     key={i}
-                    onClick={() => { setDateRange(opt); setIsDateDropdownOpen(false); }}
-                    className={`px-4 py-2 text-sm cursor-pointer hover:bg-gray-50 ${
-                      dateRange.label === opt.label ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                    onClick={() => {
+                      setDateRange(opt);
+                      setIsDateDropdownOpen(false);
+                    }}
+                    className={`px-4 py-1 text-sm cursor-pointer hover:bg-gray-50 ${
+                      dateRange.label === opt.label
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "text-app-text dark:text-app-text-muted"
                     }`}
                   >
                     {opt.label}
@@ -229,22 +291,33 @@ const GoogleAnalyticsChart = () => {
                 idx > 0 ? "border-l border-l-gray-100" : ""
               } ${
                 isActive
-                  ? "bg-white"
+                  ? "bg-app-surface dark:bg-app-surface"
                   : "bg-gray-50/40 hover:bg-gray-50 border-t-transparent"
               }`}
               style={isActive ? { borderTopColor: conf.color } : {}}
             >
               <div className="flex items-center gap-2 mb-1.5">
-                <Icon className="w-3.5 h-3.5" style={{ color: isActive ? conf.color : "#9ca3af" }} />
-                <span className={`text-[11px] font-semibold uppercase tracking-wider ${
-                  isActive ? "text-gray-700" : "text-gray-500"
-                }`}>
+                <Icon
+                  className="w-3.5 h-3.5"
+                  style={{ color: isActive ? conf.color : "#9ca3af" }}
+                />
+                <span
+                  className={`text-[11px] font-semibold uppercase tracking-wider ${
+                    isActive
+                      ? "text-app-text dark:text-app-text-muted"
+                      : "text-app-text dark:text-app-text-muted"
+                  }`}
+                >
                   {conf.label}
                 </span>
               </div>
-              <div className={`text-2xl font-bold tracking-tight ${
-                isActive ? "text-gray-900" : "text-gray-600"
-              }`}>
+              <div
+                className={`text-2xl font-bold tracking-tight ${
+                  isActive
+                    ? "text-app-text dark:text-app-text-muted"
+                    : "text-app-text dark:text-app-text-muted"
+                }`}
+              >
                 {formatValue(key, totals[key])}
               </div>
             </div>
@@ -254,41 +327,88 @@ const GoogleAnalyticsChart = () => {
 
       {/* Chart */}
       <div className="p-6">
-        <div className="w-full h-[340px] relative">
+        <div className="w-full h-85 relative">
           {isSwitching && (
-            <div className="absolute inset-0 flex justify-center items-center bg-white/60 backdrop-blur-sm z-10">
+            <div className="absolute inset-0 flex justify-center items-center bg-app-surface dark:bg-app-surface/60 backdrop-blur-sm z-10">
               <Loader color="#132e69" />
             </div>
           )}
           {chartData.length === 0 ? (
-            <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+            <div className="flex justify-center items-center h-full text-app-text dark:text-app-text-faint text-sm">
               No traffic data available.
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
+              <AreaChart
+                data={chartData}
+                margin={{ top: 10, right: 20, left: -10, bottom: 5 }}
+              >
                 <defs>
                   <linearGradient id="colorMetric" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={TAB_CONFIG[activeTab].color} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={TAB_CONFIG[activeTab].color} stopOpacity={0} />
+                    <stop
+                      offset="0%"
+                      stopColor={TAB_CONFIG[activeTab].color}
+                      stopOpacity={0.25}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={TAB_CONFIG[activeTab].color}
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="#f3f4f6"
+                />
                 <XAxis
                   dataKey="date"
                   tick={{ fontSize: 11, fill: "#9ca3af" }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  tickFormatter={(t) =>
+                    new Date(t).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  }
                 />
-                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <Tooltip
                   contentStyle={{
-                    borderRadius: "10px",
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
+                    background: "var(--tooltip-bg)",
+                    border: "1px solid var(--tooltip-border)",
+                    borderRadius: "16px",
+                    backdropFilter: "blur(16px)",
+                    WebkitBackdropFilter: "blur(16px)",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+
+                    color: "var(--tooltip-text)",
                   }}
-                  labelFormatter={(l) => new Date(l).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                  itemStyle={{
+                    color: "var(--tooltip-text)",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                  }}
+                  labelStyle={{
+                    color: "var(--tooltip-label)",
+                    fontWeight: 600,
+                  }}
+                  cursor={{
+                    fill: "rgba(255,255,255,0.04)",
+                  }}
+                  labelFormatter={(l) =>
+                    new Date(l).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  }
                 />
                 <Area
                   type="monotone"
@@ -297,7 +417,12 @@ const GoogleAnalyticsChart = () => {
                   stroke={TAB_CONFIG[activeTab].color}
                   strokeWidth={2.5}
                   fill="url(#colorMetric)"
-                  activeDot={{ r: 5, fill: TAB_CONFIG[activeTab].color, stroke: "#fff", strokeWidth: 2 }}
+                  activeDot={{
+                    r: 5,
+                    fill: TAB_CONFIG[activeTab].color,
+                    stroke: "#fff",
+                    strokeWidth: 2,
+                  }}
                 />
               </AreaChart>
             </ResponsiveContainer>

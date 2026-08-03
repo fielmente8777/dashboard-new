@@ -261,7 +261,7 @@ function PricePackage() {
   const Tab = ["All Packages", "Add New Packages", "Current Packages", "Expired Packages"]
   return (
 
-    <div className="bg-white mb-10 p-4 cardShadow">
+    <div className="bg-app-surface mb-10 p-4 cardShadow">
 
       <div className="flex mb-4">
         {Tab.map((item, index) => (
@@ -275,7 +275,7 @@ function PricePackage() {
             {/* Left Form Section */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Package Name</label>
+                <label className="block text-sm font-medium text-app-text dark:text-app-text">Package Name</label>
                 <input
                   type="text"
                   value={package_name}
@@ -286,7 +286,7 @@ function PricePackage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Package Description</label>
+                <label className="block text-sm font-medium text-app-text dark:text-app-text">Package Description</label>
                 <input
                   type="text"
                   value={package_description}
@@ -297,7 +297,7 @@ function PricePackage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Package Price</label>
+                <label className="block text-sm font-medium text-app-text dark:text-app-text">Package Price</label>
                 <input
                   type="number"
                   value={plan_price}
@@ -308,7 +308,7 @@ function PricePackage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Plan Start Date</label>
+                <label className="block text-sm font-medium text-app-text dark:text-app-text">Plan Start Date</label>
                 <input
                   type="date"
                   value={plan_start}
@@ -318,7 +318,7 @@ function PricePackage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Plan End Date</label>
+                <label className="block text-sm font-medium text-app-text dark:text-app-text">Plan End Date</label>
                 <input
                   type="date"
                   value={plan_end}
@@ -330,7 +330,7 @@ function PricePackage() {
 
             {/* Right Image Upload Section */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Upload Images</label>
+              <label className="block text-sm font-medium text-app-text dark:text-app-text">Upload Images</label>
               <p className=" mb-2 text-sm text-gray-300">Please select any 5 images*</p>
               <div className="relative border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-blue-400 transition-all duration-200">
                 <input

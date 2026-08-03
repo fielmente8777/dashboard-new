@@ -93,16 +93,16 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
   if (!profile) return null;
 
   return (
-    <div className="bg-white  shadow-sm p-4 space-y-4 relative">
+    <div className="bg-app-surface shadow-sm p-4 space-y-4 relative">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="font-semibold text-gray-800 text-base">
+        <h3 className="font-semibold text-gray-800 dark:text-app-text-muted text-base">
           WhatsApp Business Profile
         </h3>
 
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="flex items-center gap-1 text-sm border border-primary/60! text-primary hover:bg-primary hover:text-white  px-4 py-1 rounded-sm duration-300 shadow-md"
+          className="flex items-center gap-1 text-sm border border-primary/60! text-primary dark:text-app-text-faint hover:bg-primary hover:text-white  px-4 py-1 rounded-sm duration-300 shadow-md"
         >
           <FiEdit2 />
           <span>Edit</span>
@@ -116,24 +116,24 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
             <div className="space-y-2">
               <div>
                 <p className="text-xs text-gray-500">About</p>
-                <p className="text-sm text-gray-700">{profile.about || "—"}</p>
+                <p className="text-sm text-gray-700 dark:text-app-text-faint">{profile.about || "—"}</p>
               </div>
 
               <div>
                 <p className="text-xs text-gray-500">Email</p>
-                <p className="text-sm text-gray-700">{profile.email || "—"}</p>
+                <p className="text-sm text-gray-700 dark:text-app-text-faint">{profile.email || "—"}</p>
               </div>
 
               <div>
                 <p className="text-xs text-gray-500">Address</p>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-app-text-faint">
                   {profile.address || "—"}
                 </p>
               </div>
 
               <div>
                 <p className="text-xs text-gray-500">Industry</p>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-app-text-faint">
                   {profile.vertical || "—"}
                 </p>
               </div>
@@ -154,13 +154,13 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
                     </a>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-700">—</p>
+                  <p className="text-sm text-gray-700 dark:text-app-text-faint">—</p>
                 )}
               </div>
 
               <div>
                 <p className="text-xs text-gray-500">Platform</p>
-                <p className="text-sm text-gray-700 capitalize">
+                <p className="text-sm text-gray-700 dark:text-app-text-faint capitalize">
                   {profile.messaging_product || "—"}
                 </p>
               </div>
@@ -171,7 +171,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
           {isEditing && (
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-gray-500">About</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">About</label>
                 <textarea
                   name="about"
                   value={form.about}
@@ -182,7 +182,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
               </div>
 
               <div>
-                <label className="text-xs text-gray-500">Email</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">Email</label>
                 <input
                   name="email"
                   type="email"
@@ -193,7 +193,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
               </div>
 
               <div>
-                <label className="text-xs text-gray-500">Address</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">Address</label>
                 <input
                   name="address"
                   type="text"
@@ -204,7 +204,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
               </div>
 
               <div>
-                <label className="text-xs text-gray-500">Industry</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">Industry</label>
                 <input
                   name="vertical"
                   value={form.vertical}
@@ -215,7 +215,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
 
               {/* ✅ Websites Edit */}
               <div>
-                <label className="text-xs text-gray-500">Websites</label>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">Websites</label>
 
                 <div className="space-y-2">
                   {form.websites.map((site, index) => (
@@ -241,7 +241,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
 
                 <button
                   onClick={handleAddWebsite}
-                  className="text-primary text-xs px-1 hover:underline mt-2 duration-300"
+                  className="text-primary dark:text-app-text-faint text-xs px-1 hover:underline mt-2 duration-300"
                 >
                   + Add Website
                 </button>
@@ -258,7 +258,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
 
                 <button
                   onClick={() => setIsEditing(false)}
-                  className="bg-gray-200 px-3 py-1 rounded-md text-sm"
+                  className="bg-gray-200 px-3 py-1 rounded-md text-sm dark:bg-app-text-faint dark:text-app-surface-secondary duration-300 hover:bg-gray-300"
                 >
                   Cancel
                 </button>

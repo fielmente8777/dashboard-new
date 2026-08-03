@@ -83,14 +83,14 @@ const Request = () => {
 
 
     return (
-        <div className='bg-white cardShadow mb-10'>
+        <div className='bg-primary cardShadow mb-10'>
             <div className="flex">
                 {header.map((item, index) => (
-                    <button onClick={() => handleTabClick(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-white font-medium text-[#575757]`}>{item}</button>
+                    <button onClick={() => handleTabClick(index)} key={index} className={`text-[14px] ${active === index ? "border-b-2 border-[#575757]" : "border-b-2 border-transparent"} px-4 py-3 bg-primary font-medium text-white dark:text-app-text`}>{item}</button>
                 ))}
                 <div onClick={getAllRequest} className={`flex justify-end items-center text-[#575757] px-3 cursor-pointer ${loading ? "animate-spin" : ""} `}><MdRefresh size={25} /></div>
             </div>
-            <div className='flex flex-col gap-5 p-4 bg-white'>
+            <div className='flex flex-col gap-5 p-4 bg-app-surface-secondary'>
                 <div className="flex justify-between items-center gap-2">
                     <div className='w-3/4 relative'>
                         <span className='absolute top-3.5 left-2'>
@@ -106,7 +106,7 @@ const Request = () => {
                         />
                     </div>
 
-                    <button className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-gray-200 rounded-md flex items-center justify-between">
+                    <button className="w-1/3 px-4 py-2 text-[#575757] text-[14px] font-medium bg-app-primary rounded-md flex items-center justify-between">
                         <span className="flex items-center gap-2"><Filter className="w-2 h-2" /> Filter</span>
                         <span className="text-[#575757] text-[14px] font-semibold rotate-180"><Arrow /></span>
                     </button>
@@ -173,7 +173,7 @@ const Request = () => {
                 <div className="overflow-x-auto">
                     {
                         !loading ?
-                            <table className="min-w-full border-collapse text-[#575757]">
+                            <table className="min-w-full border-collapse text-app-text-faint dark:text-app-text-muted">
                                 <thead className="whitespace-nowrap">
                                     <tr className='border-b'>
                                         <th className=" py-2 font-medium text-[14px] text-left">Guest Name</th>

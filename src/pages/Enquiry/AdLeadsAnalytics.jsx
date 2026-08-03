@@ -295,10 +295,10 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
       <div className=" mx-auto">
         {/* Header */}
         {showTitle && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="bg-app-surface rounded-lg shadow-sm p-6 mb-6">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
               <div className="mb-4 md:mb-0">
-                <h1 className="text-2xl md:text-lg font-semibold text-gray-900">
+                <h1 className="text-2xl md:text-lg font-semibold text-app-text dark:text-app-text">
                   Lead Analytics Dashboard
                 </h1>
                 <p className="text-gray-600 mt-2">
@@ -347,7 +347,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
           />
 
           {/* Qualified Leads Card */}
-          <div className="bg-white rounded-xl p-5 ">
+          <div className="bg-app-surface-secondary rounded-xl p-5 ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-4xl font-bold text-primary/90">

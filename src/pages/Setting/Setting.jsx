@@ -119,8 +119,8 @@ const Setting = () => {
   if (!hotel?.Profile) return null;
   return (
     <div>
-      <div className="bg-gray-100 p-5 space-y-5">
-        <div className="max-w-full mx-auto bg-white p-8 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
+      <div className="bg-app-surface p-5 space-y-5">
+        <div className="max-w-full mx-auto bg-app-surface-secondary p-8 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
           {/* Profile info */}
 
           {/* user type and email */}
@@ -134,35 +134,35 @@ const Setting = () => {
               <div className="font-semibold text-lg capitalize">
                 {authUser?.userName}
               </div>
-              <div className="text-sm text-gray-500 capitalize">
+              <div className="text-sm text-gray-500 dark:text-app-text-faint capitalize">
                 Role: {authUser?.role}
               </div>
-              <div className="text-sm text-gray-600">{authUser?.emailId}</div>
+              <div className="text-sm text-gray-600 dark:text-app-text-faint">{authUser?.emailId}</div>
             </div>
           </div>
           {/* Organization */}
           <div className="space-y-1 flex gap-4">
-            <h3 className="font-semibold text-gray-700">Organization:</h3>
+            <h3 className="font-semibold text-gray-700 dark:text-app-text-muted">Organization:</h3>
 
             <div className="">
-              <p className="text-gray-800 font-medium">{profile.hotelName}</p>
-              <p className="text-sm text-gray-600 wrap-break-word">
+              <p className="text-gray-800 dark:text-app-text-faint font-medium">{profile.hotelName}</p>
+              <p className="text-sm text-gray-600 dark:text-app-text-faint wrap-break-word">
                 {profile.hotelDescription}{" "}
               </p>
             </div>
           </div>
           {/* Contact */}
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">
-              <span className="font-semibold text-gray-700 ">Domain:</span>{" "}
+            <p className="text-sm text-gray-500 dark:text-app-text-faint">
+              <span className="font-semibold text-gray-700 dark:text-app-text-muted ">Domain:</span>{" "}
               {profile.domain}
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-semibold text-gray-700">Email:</span>{" "}
+            <p className="text-sm text-gray-500 dark:text-app-text-faint">
+              <span className="font-semibold text-gray-700 dark:text-app-text-muted">Email:</span>{" "}
               {profile.hotelEmail}
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-semibold text-gray-700">Phone:</span>{" "}
+            <p className="text-sm text-gray-500 dark:text-app-text-faint">
+              <span className="font-semibold text-gray-700 dark:text-app-text-muted">Phone:</span>{" "}
               {profile.hotelPhone}
             </p>
           </div>
@@ -193,10 +193,10 @@ const Setting = () => {
             </div> */}
         </div>
         {/* Hotels */}
-        <div className="bg-white p-8 ">
+        <div className="bg-app-surface-secondary p-8 ">
           <div className="flex items-center  cursor-pointer">
             <div>
-              <h3 className="font-bold text-lg text-gray-800 flex items-center gap-4">
+              <h3 className="font-bold text-lg text-gray-800 dark:text-app-text flex items-center gap-4">
                 <FaHotel color="orange" className="text-2xl" />
                 Hotels
               </h3>
@@ -215,16 +215,16 @@ const Setting = () => {
               Object.entries(profile.hotels).map(([hid, h]) => (
                 <div
                   key={hid}
-                  className="p-2 rounded-md bg-blue-50 transition relative"
+                  className="p-2 rounded-md bg-primary transition relative"
                 >
-                  <p className="font-medium text-gray-800">{h.local}</p>
-                  <p className="text-sm text-gray-500">
+                  <p className="font-medium text-white dark:text-app-text-muted">{h.local}</p>
+                  <p className="text-sm text-gray-500 dark:text-app-text-faint">
                     {h.city}, {h.state}, {h.country}
                   </p>
                   <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
                   {/* delete & update */}
                   <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
-                    <button className="text-gray-950 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
+                    <button className="text-gray-500 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
                       <BsPencil className="text-sm" />
                     </button>
                     <button className="">
@@ -237,7 +237,7 @@ const Setting = () => {
           </div>
         </div>
 
-        <div className="max-w-full mx-auto bg-white p-8">
+        <div className="max-w-full mx-auto bg-app-surface p-8">
           {/* password change section */}
           <div className="">
             <form className={`space-y-10`} onSubmit={handleConfirmSubmit}>
@@ -290,7 +290,7 @@ const Setting = () => {
 
               {/* Change Password */}
               <section>
-                <h2 className="text-xl font-semibold text-gray-700 mb-4">
+                <h2 className="text-xl font-semibold text-gray-700 dark:text-app-text mb-4">
                   🔑 Change Password
                 </h2>
 
@@ -298,7 +298,7 @@ const Setting = () => {
                 // onClick={onClose}
                 // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
                 >
-                  <div className="bg-white rounded-lg overflow-hidden w-full ">
+                  <div className="bg-app-surface-secondary rounded-lg overflow-hidden w-full ">
                     <div className="flex relative flex-col justify-between mb-4">
                       {/* <button
                     // onClick={onClose}
@@ -315,7 +315,7 @@ const Setting = () => {
                   </div> */}
                       {/* <h1 className="text-3xl font-semibold">Reset Password</h1> */}
                       <div>
-                        <p className="text-sm text-[#575757]/70">
+                        <p className="text-sm text-[#575757]/70 dark:text-app-text-faint">
                           Please kindly set your new password
                         </p>
                       </div>

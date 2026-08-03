@@ -17,7 +17,7 @@ const VariableSamples = () => {
   if (!headerVars.length && !bodyVars.length) return null;
 
   return (
-    <div className="bg-white p-6 rounded-lg border">
+    <div className="bg-app-surface p-6 rounded-lg border">
       <h2 className="text-lg font-semibold mb-4">Variable Samples</h2>
 
       <p className="text-sm text-gray-500 mb-6">

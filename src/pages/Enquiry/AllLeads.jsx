@@ -47,6 +47,8 @@ const AllLeads = () => {
   const [exportEndDate, setExportEndDate] = useState(null);
   const [exportRange, setExportRange] = useState("");
 
+  const [notesFilter, setNotesFilter] = useState("");
+
   const { showToast } = useToast();
   const [allLeads, setAllLeads] = useState([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
@@ -101,6 +103,17 @@ const AllLeads = () => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
+
+    if (start && end) {
+      localStorage.setItem(
+        `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+        start.toISOString(),
+      );
+      localStorage.setItem(
+        `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+        end.toISOString(),
+      );
+    }
   };
 
   const fetchLeads = async (withDateFilter = false, lastPage) => {
@@ -113,6 +126,7 @@ const AllLeads = () => {
         limit: limit,
         stage: stage,
         source: source,
+        notes: notesFilter,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -326,16 +340,27 @@ const AllLeads = () => {
     limit,
     stage,
     source,
+    notesFilter,
   ]);
 
   useEffect(() => {
     fetchUsersData();
     const savedPage = localStorage.getItem(LOCAL_STORAGE.AllLeads);
+    const startDate = localStorage.getItem(
+      `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+    );
+    const endDate = localStorage.getItem(
+      `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+    );
 
     if (savedPage) {
       setPage(Number(savedPage));
     }
 
+    if (startDate && endDate) {
+      setStartDate(startDate);
+      setEndDate(endDate);
+    }
     setIsPageRestored(true);
   }, []);
 
@@ -351,39 +376,42 @@ const AllLeads = () => {
   // }, []);
 
   return (
-    <div className="bg-white p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+    <div className="bg-app-surface text-app-text dark:text-app-text p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold">All Leads</h2>
+        <div className="flex md:flex-row flex-col justify-between md:items-center space-y-2">
+          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
+            All Leads
+          </h2>
 
-          <div className="flex items-center">
+          <div className="flex gap-2 md:flex-row flex-wrap items-center">
             {allLeads?.length > 0 && (
               <button
                 disabled={isExporting}
                 onClick={() => setShowExportModal(true)}
-                className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+                className="bg-ternary flex-1 text-white px-4 py-2 rounded flex items-center gap-1.5 whitespace-nowrap"
               >
                 Export to Excel{" "}
                 {isExporting && <Loader color="#fefefe" size={12} />}
               </button>
             )}
+
             <ImportLead open={open} setOpen={setOpen} />
 
             <button
               onClick={() => setShowAddLeadModal(true)}
-              className="bg-primary text-white px-4 py-2 rounded flex items-center gap-2 ml-2"
+              className="bg-primary flex-1 text-center text-white px-4 py-2 rounded flex items-center gap-2 whitespace-nowrap"
             >
               Add Lead
             </button>
           </div>
         </div>
 
-        <div className="bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3">
+        <div className="bg-app-surface md:mt-0 mt-5">
+          <div className="flex flex-wrap items-center justify-between ">
+            <div className="flex flex-wrap  items-center md:gap-5 gap-2">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <IoSearch className="text-gray-400" size={18} />
+              <div className="flex flex-1 items-center gap-2 h-10 px-3 rounded-xl border border-app-border bg-app-surface-secondary text-app-text focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-app-text-faint" size={18} />
                 <input
                   type="text"
                   placeholder="Search clients..."
@@ -393,8 +421,8 @@ const AllLeads = () => {
               </div>
 
               {/* DATE RANGE */}
-              <div className="relative">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+              <div className="relative flex-1">
+                <div className="h-10 px-3 flex items-center text-app-text rounded-xl border border-app-border bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
                     startDate={startDate}
@@ -412,15 +440,21 @@ const AllLeads = () => {
                     onClick={() => {
                       setStartDate(null);
                       setEndDate(null);
+                      localStorage.removeItem(
+                        `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+                      );
+                      localStorage.removeItem(
+                        `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+                      );
                     }}
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-app-text-faint cursor-pointer"
                   >
                     <IoIosClose size={18} />
                   </span>
                 )}
               </div>
 
-              <div>
+              <div className="flex-1 min-w-40">
                 <CustomDropdown
                   label={"Source"}
                   options={Sources}
@@ -428,7 +462,7 @@ const AllLeads = () => {
                 />
               </div>
 
-              <div>
+              <div className="min-w-40 flex-1">
                 <CustomDropdown
                   label={"Stage"}
                   options={[
@@ -440,6 +474,41 @@ const AllLeads = () => {
                   ]}
                   onChange={(value) => setStage(value)}
                 />
+              </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
               </div>
             </div>
           </div>
@@ -455,16 +524,20 @@ const AllLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="flex border rounded-lg overflow-auto hide-scrollbar">
+        <div className="flex border border-app-border bg-app-surface md:rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm ">
             <thead className="bg-primary sticky top-0 z-99">
               <tr className="whitespace-nowrap">
-                <th className="px-3 py-3 text-white">Select</th>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className={`px-3 py-3 text-left text-white whitespace-nowrap`}
+                    className={`px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap`}
                   >
                     {h.label}
                   </th>
@@ -488,7 +561,7 @@ const AllLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
@@ -545,7 +618,7 @@ const AllLeads = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -587,7 +660,7 @@ const AllLeads = () => {
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -660,7 +733,7 @@ const AllLeads = () => {
                                   row?.conversationId,
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                             />
                           </td>
                         );

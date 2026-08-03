@@ -1,7 +1,7 @@
 import { Handle, Position, useReactFlow } from "reactflow";
 
 export default function CarouselNode({ id, data }) {
-  const { getNodes, setNodes } = useReactFlow();
+  const { getNodes, setNodes, getEdges, setEdges } = useReactFlow();
   const nodes = getNodes();
 
   const interactive = data?.interactive;
@@ -11,11 +11,16 @@ export default function CarouselNode({ id, data }) {
 
   const removeNode = () => {
     const updatedNodes = nodes.filter((node) => node.id !== id);
+    const updatedEdges = getEdges().filter(
+      (edge) => edge.source !== id && edge.target !== id,
+    );
+
     setNodes(updatedNodes);
+    setEdges(updatedEdges);
   };
 
   return (
-    <div className="w-72 bg-white rounded-lg shadow border overflow-hidden">
+    <div className="w-72 bg-app-surface rounded-lg shadow border overflow-hidden">
       {/* Header */}
       <div className="bg-blue-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
         <div className="flex items-center gap-2">

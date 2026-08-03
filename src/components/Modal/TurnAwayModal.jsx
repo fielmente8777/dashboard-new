@@ -10,7 +10,7 @@ const TurnAwayModal = ({ isOpen, onClose, onSelect }) => {
 
   return (
     <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-99999">
-      <div className="bg-white p-4 rounded-md w-80">
+      <div className="bg-app-surface-secondary p-4 rounded-md w-80">
         <h3 className="text-lg font-semibold mb-3">Select Turn Away Code</h3>
 
         {turnAwayCodes.map((code) => (

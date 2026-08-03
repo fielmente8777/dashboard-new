@@ -5,7 +5,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { BsCheckAll, BsCheckLg } from "react-icons/bs";
+import { BsCheckAll, BsCheckLg, BsMenuApp } from "react-icons/bs";
 import { IoArrowBack } from "react-icons/io5";
 import { MdCall, MdChat, MdClose, MdOutlineDelete } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,6 +38,7 @@ import {
   deleteWhatsAppMessage,
   getFlowSession,
   getWhatsappConversationMessages,
+  getWhatsAppFlowScreens,
   getWhatsAppMessageTemplates,
   sendWhatsAppMessage,
   updateFlowSession,
@@ -54,6 +55,7 @@ import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
+import { MessageSquareReply } from "lucide-react";
 
 const ChatArea = () => {
   const navigate = useNavigate();
@@ -61,6 +63,12 @@ const ChatArea = () => {
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [flows, setFlows] = useState([]);
+
+  const [quickReplies, setQuickReplies] = useState([]);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  // const [setSelectedQuickReply, setSelectedQuickReply] = useState(null);
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -96,6 +104,14 @@ const ChatArea = () => {
   const [templateLoading, setTemplateLoading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState();
   const [expandedMessages, setExpandedMessages] = useState({});
+  const [selectedFlowId, setSelectedFlowId] = useState("");
+  const [showFlowModal, setShowFlowModal] = useState(false);
+  const [flowConfig, setFlowConfig] = useState({
+    header: "",
+    body: "Please fill in your details below 👇",
+    footer: "Powered by Eazotel",
+    cta: "Fill Details",
+  });
 
   const getMessageTypeFromFile = (file) => {
     if (!file) return "text";
@@ -110,7 +126,7 @@ const ChatArea = () => {
     return "document";
   };
   const handleSendMessage = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
 
     if (file && file.size > MAX_FILE_SIZE) {
       showToast({
@@ -129,6 +145,8 @@ const ChatArea = () => {
       // alert("24 hour window expired. Please send a template message.");
       return;
     }
+
+    console.log("selectedTemplate", selectedTemplate);
 
     try {
       if (selectedTemplate) {
@@ -158,6 +176,8 @@ const ChatArea = () => {
           templateParams: templateParams,
           templateParamsHeader: templateParamsHeader,
         };
+
+        console.log("templatePayload", templatePayload);
 
         const optimisticMessage = {
           _id: `temp-${Date.now()}`, // temporary id
@@ -219,6 +239,66 @@ const ChatArea = () => {
             }),
           );
         }
+        return;
+      }
+
+      if (selectedFlowId) {
+        const selectedFlow = flows.find(
+          (flow) => flow.flowId === selectedFlowId,
+        );
+
+        const payload = {
+          phone: selectedConversation.phone,
+          interactive: {
+            type: "flow",
+
+            header: flowConfig.header
+              ? {
+                  type: "text",
+                  text: flowConfig.header,
+                }
+              : undefined,
+
+            body: {
+              text: flowConfig.body,
+            },
+
+            footer: flowConfig.footer
+              ? {
+                  text: flowConfig.footer,
+                }
+              : undefined,
+
+            action: {
+              name: "flow",
+              parameters: {
+                flow_message_version: "3",
+                flow_token: `flow_${Date.now()}`,
+                flow_id: selectedFlow.flowId,
+                flow_cta: flowConfig.cta || "Open Form",
+              },
+            },
+          },
+        };
+
+        const optimisticMessage = {
+          _id: `temp-${Date.now()}`,
+          conversationId: selectedConversation._id,
+          from: "me",
+          to: selectedConversation.phone,
+          sender: "me",
+          direction: "outbound",
+          messageType: "interactive",
+          body: flowConfig.body,
+          interactive: payload.interactive,
+          status: "sent",
+          timestamp: new Date(),
+          createdAt: new Date(),
+        };
+
+        setMessageList((prev) => [...prev, optimisticMessage]);
+        await sendWhatsAppMessage(payload);
+
         return;
       }
 
@@ -299,6 +379,92 @@ const ChatArea = () => {
         type: "error",
       });
       console.error(error);
+    }
+  };
+
+  const handleResend = async (message) => {
+    try {
+      let payload;
+
+      switch (message.messageType) {
+        case "text":
+          payload = {
+            phone: message.to,
+            text: message.body,
+          };
+          break;
+
+        case "image":
+        case "video":
+        case "document":
+        case "audio":
+          payload = {
+            phone: message.to,
+            file: {
+              mediaId: message.media.id,
+              mimetype: message.media.mimeType,
+            },
+          };
+          break;
+
+        case "template": {
+          const template = message.template.template;
+
+          const bodyComponent = template.components?.find(
+            (c) => c.type.toLowerCase() === "body",
+          );
+
+          const headerComponent = template.components?.find(
+            (c) => c.type.toLowerCase() === "header",
+          );
+
+          payload = {
+            phone: message.to,
+            templateName: template.name,
+            templateLanguage: template.language.code,
+            templateParams: bodyComponent?.parameters?.map((p) => p.text) || [],
+            templateParamsHeader: headerComponent?.parameters?.[0] || null,
+          };
+
+          break;
+        }
+
+        case "interactive":
+          payload = {
+            phone: message.to,
+            interactive: message.interactive,
+          };
+          break;
+
+        default:
+          return;
+      }
+
+      const response = await sendWhatsAppMessage(payload);
+
+      if (response.success) {
+        setMessageList((prev) =>
+          prev.map((m) =>
+            m._id === message._id
+              ? {
+                  ...m,
+                  status: "sent",
+                  messageId: response.result.docs.messageId,
+                }
+              : m,
+          ),
+        );
+
+        showToast({
+          type: "success",
+          message: "Message resent successfully.",
+        });
+      }
+    } catch (err) {
+      showToast({
+        type: "error",
+        message: "Failed to resend message.",
+      });
     }
   };
 
@@ -466,15 +632,141 @@ const ChatArea = () => {
     setSelectedConversation({ ...selectedConversation, assignee: item.label });
   };
 
+  const handleSendQuickReply = async (reply) => {
+    try {
+      const sortedItems = [...reply.items].sort((a, b) => a.order - b.order);
+
+      for (const item of sortedItems) {
+        // TEXT
+        if (item.type === "text") {
+          const formData = new FormData();
+
+          formData.append("phone", selectedConversation.phone);
+          formData.append("text", item.text);
+
+          // Optimistic UI
+          const optimisticMessage = {
+            _id: `temp-${Date.now()}-${Math.random()}`,
+            conversationId: selectedConversation._id,
+            from: "me",
+            to: selectedConversation.phone,
+            sender: "me",
+            direction: "outbound",
+            messageType: "text",
+            body: item.text,
+            status: "sent",
+            timestamp: new Date(),
+            createdAt: new Date(),
+          };
+
+          setMessageList((prev) => [...prev, optimisticMessage]);
+
+          await sendWhatsAppMessage(formData);
+
+          continue;
+        }
+
+        // IMAGE / VIDEO / DOCUMENT
+        if (item.media?.length) {
+          for (const media of item.media) {
+            const payload = {
+              phone: selectedConversation.phone,
+              file: {
+                mediaUrl: media.url,
+                mimeType: media.mimeType,
+                filename: media.fileName,
+              },
+            };
+
+            // Optimistic UI
+            const optimisticMessage = {
+              _id: `temp-${Date.now()}-${Math.random()}`,
+              conversationId: selectedConversation._id,
+              from: "me",
+              to: selectedConversation.phone,
+              sender: "me",
+              direction: "outbound",
+              messageType: item.type,
+              body: null,
+              media: {
+                url: media.url,
+                mimeType: media.mimeType,
+                filename: media.fileName,
+              },
+              status: "sent",
+              timestamp: new Date(),
+              createdAt: new Date(),
+            };
+
+            setMessageList((prev) => [...prev, optimisticMessage]);
+
+            await sendWhatsAppMessage(payload);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(error);
+
+      showToast({
+        type: "error",
+        message: error?.responseMessage || "Failed to send quick reply",
+      });
+    }
+  };
+
+  const handleSelectQuickReply = (reply) => {
+    handleSendQuickReply(reply);
+    setShowQuickReplies(false);
+  };
+
   const fetchUsersData = async () => {
     const token = localStorage.getItem("token");
     const usersData = await fetchUserManagementData(token);
     setAllUsers(usersData);
   };
 
+  const fetchFlows = async () => {
+    try {
+      const response = await getWhatsAppFlowScreens();
+
+      if (response?.success) {
+        setFlows(response?.result?.docs?.flows || []);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      // setLoading(false);
+    }
+  };
+
+  const fetchReplies = async () => {
+    try {
+      setLoadingReplies(true);
+
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setQuickReplies(data.result.docs);
+      }
+    } finally {
+      setLoadingReplies(false);
+    }
+  };
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
+    fetchFlows();
+    fetchReplies();
   }, []);
 
   useEffect(() => {
@@ -532,36 +824,47 @@ const ChatArea = () => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
 
+  console.log(flows);
+
   const isImage = file?.type?.startsWith("image/");
   const isPDF = file?.type === "application/pdf";
   const isExcel = file?.type?.includes("sheet");
   const isWord = file?.type?.includes("word");
 
+  console.log(templates);
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Header */}
-      <div className="flex z-5 max-md:bg-white justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
+      <div className="flex z-5 max-md:bg-app-surface justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
         <div className=" flex items-center">
-          <div className="mr-2 md:hidden ">
-            <IoArrowBack size={22} onClick={() => setMobileActive("sidebar")} />
+          <div className="mr-2 lg:hidden ">
+            <IoArrowBack size={20} onClick={() => setMobileActive("sidebar")} />
           </div>
-          <div
-            onClick={() => setMobileActive("profile")}
-            className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
-          >
-            {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+
+          <div>
+            <div
+              onClick={() => setMobileActive("profile")}
+              className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
+            >
+              {selectedConversation?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            {/* <p className="text-xs md:text-sm text-gray-600 ">
+              {selectedConversation.phone}
+            </p> */}
           </div>
+
           <div onClick={() => setMobileActive("profile")}>
-            <h3 className="text-md md:text-md text-gray-600 font-medium  capitalize">
+            <h3 className="text-md md:text-md text-gray-600 font-medium capitalize">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm text-gray-600 ">
-              +{selectedConversation.phone}
+            <p className="text-xs md:text-sm  text-gray-600 ">
+              {selectedConversation.phone}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center md:gap-6 gap-2">
           {selectionMode && (
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-3">
@@ -607,7 +910,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6  max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden "
+        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden  "
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -617,7 +920,7 @@ const ChatArea = () => {
         ) : (
           <div className="space-y-1">
             {selectedConversation?.adAttribution && (
-              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
+              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-app-surface-secondary border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
                 {selectedConversation?.adAttribution?.mediaType === "image" && (
                   <img
                     src={selectedConversation?.adAttribution?.imageUrl}
@@ -704,8 +1007,8 @@ const ChatArea = () => {
                       <div
                         className={`relative max-w-xs  p-3 ${
                           isMe
-                            ? "rounded-tl-xl border rounded-br-xl rounded-bl-lg bg-white"
-                            : "bg-white border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700"
+                            ? "rounded-tl-xl border shadow-md !border-ternary dark:border-primary/60 rounded-br-xl rounded-bl-lg bg-white dark:bg-app-surface"
+                            : "rounded-br-xl border shadow-md !border-ternary dark:border-primary/60 rounded-tr-xl rounded-bl-lg bg-white dark:bg-app-surface"
                         }`}
                       >
                         {/* all message types */}
@@ -721,7 +1024,7 @@ const ChatArea = () => {
                                   {message?.context &&
                                     message?.context?.message && (
                                       <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
-                                        <p className="text-xs text-green-100 truncate">
+                                        <p className="text-xs text-green-100 dark:text-app-text-faint truncate">
                                           {message?.context?.message}
                                         </p>
                                       </div>
@@ -729,7 +1032,7 @@ const ChatArea = () => {
 
                                   {/* Actual Message */}
 
-                                  <p className="text-sm whitespace-pre-wrap">
+                                  <p className="text-sm whitespace-pre-wrap text-blue-500">
                                     {expandedMessages[message._id]
                                       ? renderMessageWithLinks(message?.body)
                                       : renderMessageWithLinks(
@@ -754,23 +1057,138 @@ const ChatArea = () => {
                             )}
 
                           {message?.messageType === "template" &&
+                            message?.template?.template?.name &&
+                            (() => {
+                              const header =
+                                message.template.template.components?.find(
+                                  (c) => c.type?.toLowerCase() === "header",
+                                );
+
+                              const headerParam = header?.parameters?.[0];
+
+                              const imageUrl =
+                                message?.media?.url ||
+                                `${NEW_BASE_URL}/api/v1/whatsapp/media/${headerParam?.image?.id}?ndid=${localStorage.getItem(
+                                  "ndid",
+                                )}`;
+
+                              return (
+                                <div className="px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                  {/* HEADER */}
+                                  {header && (
+                                    <>
+                                      {headerParam?.type === "image" && (
+                                        <img
+                                          src={imageUrl}
+                                          onClick={() =>
+                                            setImagePreview(imageUrl)
+                                          }
+                                          alt="Template Header"
+                                          className="mb-2 rounded-lg w-full h-44 object-cover cursor-pointer"
+                                        />
+                                      )}
+
+                                      {headerParam?.type === "video" && (
+                                        <video
+                                          controls
+                                          className="mb-2 rounded-lg w-full h-44"
+                                        >
+                                          <source src={imageUrl} />
+                                        </video>
+                                      )}
+
+                                      {headerParam?.type === "document" && (
+                                        <a
+                                          href={imageUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="mb-2 flex items-center gap-2 p-3 rounded bg-gray-100 dark:bg-gray-700"
+                                        >
+                                          📄 View Document
+                                        </a>
+                                      )}
+
+                                      {headerParam?.type === "text" && (
+                                        <p className="font-medium mb-2">
+                                          {headerParam.text}
+                                        </p>
+                                      )}
+                                    </>
+                                  )}
+
+                                  {/* Template Name */}
+                                  <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
+                                    {message.template.template.name}
+                                  </p>
+
+                                  {/* Body */}
+                                  <pre className="text-sm whitespace-pre-wrap font-sans">
+                                    {message.body || (
+                                      <span className="text-xs text-zinc-400 dark:text-app-text-faint">
+                                        No text defined
+                                      </span>
+                                    )}
+                                  </pre>
+                                </div>
+                              );
+                            })()}
+                          {/* {message?.messageType === "template" &&
                             message?.template?.template?.name && (
-                              <div className="bg-green-100 px-4 py-2 rounded-lg max-w-xs">
-                                <p className="text-xs text-gray-500 mb-1 capitalize">
+                              <div className=" px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                <img
+                                  onClick={() =>
+                                    setImagePreview(
+                                      message?.media?.url ||
+                                        `${NEW_BASE_URL}/api/v1/whatsapp/media/${
+                                          message?.template?.template
+                                            ?.components?.[0]?.parameters?.[0]
+                                            ?._id
+                                        }?ndid=${localStorage.getItem("ndid")}`,
+                                    )
+                                  }
+                                  src={
+                                    message?.media?.url ||
+                                    `${NEW_BASE_URL}/api/v1/whatsapp/media/${
+                                      message?.template?.template
+                                        ?.components?.[0]?.parameters?.[0]?._id
+                                    }?ndid=${localStorage.getItem("ndid")}`
+                                  }
+                                  alt="WhatsApp"
+                                  className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                                />
+
+                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
+                                  {message.template?.template?.components[0].parameters[0].type}
+                                </p>
+                                <img
+                              onClick={() =>
+                                setImagePreview(
+                                  message?.media?.url ||
+                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`,
+                                )
+                              }
+                              src={
+                                message.media?.url ||
+                                ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`
+                              }
+                              alt="WhatsApp"
+                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                            />
+                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
                                   {message.template?.template?.name}
                                 </p>
 
-                                <p className="text-sm">
+                                <pre className="text-sm whitespace-pre-wrap font-sans">
                                   {message.body ? (
                                     message.body
                                   ) : (
-                                    <span className="text-xs text-zinc-400">
+                                    <span className="text-xs text-zinc-400 dark:text-app-text-faint">
                                       No text defined
                                     </span>
                                   )}
-                                </p>
+                                </pre>
                               </div>
-                            )}
+                            )} */}
 
                           {/* IMAGE */}
                           {(message.messageType === "image" ||
@@ -899,7 +1317,7 @@ const ChatArea = () => {
                                   {/* 📦 CARD */}
                                   <div
                                     onClick={() => window.open(url, "_blank")}
-                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-white flex flex-col justify-center items-center"
+                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-app-surface flex flex-col justify-center items-center"
                                   >
                                     {/* <iframe
                                       src={url}
@@ -993,6 +1411,16 @@ const ChatArea = () => {
                           </div>
                         </div>
 
+                        {/* resend if failed  */}
+                        {message?.status === "failed" && (
+                          <button
+                            onClick={() => handleResend(message)}
+                            className="text-xs flex justify-end w-full underline text-blue-500"
+                          >
+                            Resend
+                          </button>
+                        )}
+
                         {/* menu */}
                         <div className="absolute -top-1 right-1">
                           <button
@@ -1009,7 +1437,7 @@ const ChatArea = () => {
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute -right-6 mt-1 w-28 bg-white border rounded shadow-md z-10">
+                            <div className="absolute -right-6 mt-1 w-28 bg-app-surface border rounded shadow-md z-10">
                               {![
                                 "image",
                                 "video",
@@ -1089,25 +1517,88 @@ const ChatArea = () => {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className="bg-white border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
+        className=" bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
       >
         {templateClick && (
-          <div className="mb-2 grid grid-cols-2 lg:grid-cols-4 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
+          <div className="mb-2 grid grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
             {templates?.length > 0 &&
               templates?.map((template) => (
+                // <div
+                //   onClick={() => setSelectedTemplate(template)}
+                //   key={template?.id}
+                //   className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-600 opacity-60"} h-30 `}
+                // >
+                //   <p className=" break-words text-xs capitalize font-medium border-b px-2 py-2 bg-teal-100">
+                //     {template?.name}
+                //   </p>
+                //   <p className="text-sm px-2 pb-2 bg-gray-100">
+                //     {template?.components[0]?.text}
+                //   </p>
+                // </div>
                 <div
                   onClick={() => setSelectedTemplate(template)}
                   key={template?.id}
-                  className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-300 opacity-60"} `}
+                  className={`
+    cursor-pointer rounded-xl overflow-hidden transition-all h-30
+    ${
+      selectedTemplate?.id === template?.id
+        ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
+        : "border border-gray-200 bg-white hover:border-orange-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-orange-700"
+    }
+  `}
                 >
-                  <p className="text-sm capitalize font-medium border-b px-2 py-2 bg-teal-50">
-                    {template?.name}
-                  </p>
-                  <p className="text-sm px-2 pb-2 ">
-                    {template?.components[0]?.text}
-                  </p>
+                  <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+                    <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+                      {template?.name}
+                    </p>
+
+                    {selectedTemplate?.id === template?.id && (
+                      <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                        Selected
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-3">
+                    <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+                      <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+                        {template?.components?.[0]?.text ||
+                          template?.components?.[1]?.text}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ))}
+          </div>
+        )}
+
+        {showQuickReplies && (
+          <div className="grid grid-cols-3 gap-2 mb-2 bg-white w-full border rounded-lg shadow-lg max-h-96 overflow-auto p-2">
+            {quickReplies.map((reply) => {
+              const textItem = reply.items.find((i) => i.type === "text");
+              const mediaItem = reply.items.find((i) => i.type !== "text");
+
+              return (
+                <button
+                  type="button"
+                  key={reply._id}
+                  onClick={() => handleSelectQuickReply(reply)}
+                  className="w-full text-left p-3 hover:bg-gray-50 bg-gray-100 rounded-lg border border-primary/30!"
+                >
+                  <div className="font-medium">{reply.title}</div>
+
+                  <div className="text-sm text-gray-500 truncate">
+                    {textItem?.text}
+                  </div>
+
+                  {mediaItem && (
+                    <div className="text-xs mt-1">
+                      {mediaItem.media.length} {mediaItem.type}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -1129,13 +1620,13 @@ const ChatArea = () => {
               />
             ) : (
               // ✅ DOCUMENT UI
-              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-gray-50 max-w-60">
+              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-app-surface-secondary max-w-60">
                 {/* ICON */}
                 {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
                 {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
                 {isWord && <FaFileWord className="text-blue-500 text-xl" />}
                 {!isPDF && !isExcel && !isWord && (
-                  <FaFileAlt className="text-gray-500 text-xl" />
+                  <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
                 )}
 
                 {/* FILE NAME */}
@@ -1145,7 +1636,31 @@ const ChatArea = () => {
           </div>
         )}
 
-        <div className={`${!is24HourComplete ? "" : "flex"} items-center`}>
+        <div
+          className={`${!is24HourComplete ? "" : "flex"} items-center space-y-1`}
+        >
+          {flows?.length > 0 && (
+            <div>
+              <select
+                value={selectedFlowId || ""}
+                onChange={(e) => {
+                  setSelectedFlowId(e.target.value);
+                  if (e.target.value) {
+                    setShowFlowModal(true);
+                  }
+                }}
+                className="border bg-gray-100 dark:bg-primary outline-none text-sm py-1 rounded-md"
+              >
+                <option value="">Select Form</option>
+
+                {flows.map((flow) => (
+                  <option key={flow.flowId} value={flow.flowId}>
+                    {flow.flowName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex gap-2 items-center">
             {templateLoading ? (
               <p className="text-xs text-gray-500 animate-pulse">
@@ -1164,20 +1679,28 @@ const ChatArea = () => {
 
                       handleTemplate(true);
                     }}
-                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
+                    className="cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     <MdChat className="" /> Templates
                   </span>
                 ) : (
                   <span
                     onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
                   >
                     Close Templates <MdClose />
                   </span>
                 )}
               </div>
             )}
+
+            <button
+              type="button"
+              onClick={() => setShowQuickReplies(!showQuickReplies)}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <MessageSquareReply size={20} />
+            </button>
             {/* {!templateClick ? (
               <>
                 {!isTakeOver ? (
@@ -1214,7 +1737,7 @@ const ChatArea = () => {
           </div>
 
           {!isTakeOver && (
-            <div className="bg-white py-3 flex w-full items-center gap-3">
+            <div className="py-3 flex w-full items-center gap-3">
               {/* Attachment */}
               {!is24HourComplete && (
                 <button
@@ -1266,7 +1789,7 @@ const ChatArea = () => {
                       handleSendMessage(e); // OR trigger form submit
                     }
                   }}
-                  className="flex-1 bg-zinc-100 resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                  className="flex-1 bg-zinc-100 dark:bg-app-surface-secondary resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
                 />
               ) : (
                 <div className="flex-1"></div>
@@ -1302,29 +1825,108 @@ const ChatArea = () => {
             </div>
           )}
         </div>
-
-        {/* <div className="w-full h-80">
-          <GoogleMap
-            zoom={10}
-            center={{ lat: 28.6139, lng: 77.209 }}
-            mapContainerStyle={{ width: "100%", height: "100%" }}
-            onClick={(e) => {
-              const lat = e.latLng.lat();
-              const lng = e.latLng.lng();
-              setMarker({ lat, lng });
-            }}
-          >
-            {marker && <Marker position={marker} />}
-          </GoogleMap>
-
-          <button
-            // onClick={() => onSelect(marker)}
-            className="mt-2 bg-teal-600 text-white px-4 py-2 rounded"
-          >
-            Send Location
-          </button>
-        </div> */}
       </form>
+
+      {showFlowModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999]">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Set Flow</h3>
+
+              <button onClick={() => setShowFlowModal(false)}>
+                <MdClose size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm mb-1">Header</label>
+                <input
+                  type="text"
+                  value={flowConfig.header}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      header: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">
+                  Body <span className="text-red-500">*</span>
+                </label>
+
+                <textarea
+                  rows={4}
+                  value={flowConfig.body}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      body: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">Footer</label>
+
+                <input
+                  type="text"
+                  value={flowConfig.footer}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      footer: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm mb-1">CTA Button Text</label>
+
+                <input
+                  type="text"
+                  value={flowConfig.cta}
+                  onChange={(e) =>
+                    setFlowConfig((p) => ({
+                      ...p,
+                      cta: e.target.value,
+                    }))
+                  }
+                  className="w-full border rounded-md px-3 py-2"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowFlowModal(false)}
+                className="border px-4 py-2 rounded-md"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={() => {
+                  setSelectedFlowId(null);
+                  setShowFlowModal(false);
+                  handleSendMessage();
+                }}
+                className="bg-green-500 text-white px-4 py-2 rounded-md"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

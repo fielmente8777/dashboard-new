@@ -8,6 +8,7 @@ import {
   clearSubscriptionApps,
 } from "../../redux/slice/subscriptionDataSlice";
 import { Link } from "react-router-dom";
+import Navbar from "../../components/Navbar/Navbar";
 
 // Plan data
 const PLANS = [
@@ -49,7 +50,7 @@ const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
 
   return (
     <div
-      className={`${isPurchased && "opacity-60 cursor-not-allowed"}  relative bg-white border! rounded-xl p-5 cursor-pointer transition-all duration-200  hover:border-primary! hover:-translate-y-1 ${isSelected === plan._id ? "border-navy bg-navy shadow-lg -translate-y-1" : "border-gray-200"} ${plan.planName === "PRO" && isSelected !== plan._id ? "border-ternary!" : ""}`}
+      className={`${isPurchased && "opacity-60 cursor-not-allowed"}  relative bg-app-surface-secondary border! rounded-xl p-5 cursor-pointer transition-all duration-200  hover:border-primary! hover:-translate-y-1 ${isSelected === plan._id ? "border-navy bg-navy shadow-lg -translate-y-1" : "border-gray-200"} ${plan.planName === "PRO" && isSelected !== plan._id ? "border-ternary!" : ""}`}
       onClick={!isPurchased && onSelect}
     >
       {plan.planName === "PRO" && isSelected !== plan._id && (
@@ -68,7 +69,7 @@ const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
         </span>
         <span className={`text-xs font-medium text-gray-400`}>/mo</span>
       </div>
-      <div className={`text-[12.5px] leading-snug mt-2 mb-4 text-gray-600`}>
+      <div className={`text-[12.5px] leading-snug mt-2 mb-4 text-app-text-faint`}>
         {plan.planName === "BASIC" &&
           "Perfect for small hotels starting their journey toward direct bookings and digital growth."}
         {plan.planName === "PRO" &&
@@ -102,7 +103,7 @@ const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
         ) : isPurchased ? (
           "Purchased"
         ) : (
-          <span>{isSelected === plan._id ? "Selected" : "Select plan"}</span>
+          <span className="text-app-text-faint">{isSelected === plan._id ? "Selected" : "Select plan"}</span>
         )}
       </button>
       <div>
@@ -112,7 +113,7 @@ const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
               Includes
             </div>
 
-            <ul className="text-sm text-gray-600 space-y-1">
+            <ul className="text-sm text-app-text-faint space-y-1">
               {Object.entries(plan.modules)
                 .filter(([_, value]) => value)
                 .map(([key]) => (
@@ -145,16 +146,16 @@ const AppCard = ({ app, isSelected, onToggle, locked, isPurchased }) => {
   };
   return (
     <div
-      className={`bg-white border rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-200 ${locked ? "opacity-50 pointer-events-none border-gray-200" : isSelected ? "border-ternary bg-ternary-pale " : "border-gray-200 hover:border-navy-muted hover:-translate-y-0.5"}`}
+      className={`bg-app-surface-secondary border rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-200 ${locked ? "opacity-50 pointer-events-none border-gray-200" : isSelected ? "border-ternary bg-app-surface " : "border-gray-200 hover:border-navy-muted hover:-translate-y-0.5"}`}
     >
       <div
-        className={`w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base shrink-0 ${isSelected ? "bg-ternary/10" : ""}`}
+        className={`w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base shrink-0 ${isSelected ? "bg-ternary/10 dark:bg-ternary/50" : ""}`}
       >
         {/* {app.icon} */}
         {IconMap[app.name] || "🔌"}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-semibold text-gray-800 truncate">
+        <div className="text-[13px] font-semibold text-surface truncate">
           {app.name}
         </div>
         <div className="text-xs text-gray-400 mt-0.5">
@@ -355,10 +356,10 @@ const BillingSummary = ({
 
   if (!selectedPlan) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
+      <div className="bg-app-surface border border-gray-200 rounded-xl p-6 sticky top-6">
         <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
           <div className="text-base font-bold text-navy">Billing summary</div>
-          <div className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+          <div className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full text-gray-600">
             Monthly
           </div>
         </div>
@@ -391,7 +392,7 @@ const BillingSummary = ({
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
+    <div className="bg-app-surface border border-gray-200 rounded-xl p-6 sticky top-6">
       <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
         <div className="text-base font-bold text-navy">Billing summary</div>
       </div>
@@ -727,8 +728,10 @@ const Billing = () => {
   }, []);
 
   return (
-    <div className="bg-[#f8f9fc]">
+    <div className="bg-app-surface">
       <div className="max-w-280 mx-auto px-4 sm:px-6 py-8 md:py-12 ">
+        <Navbar/>
+
         {/* Header */}
         <header className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 bg-ternary-pale text-ternary text-[11px] font-semibold tracking-wide uppercase px-3.5 py-1 rounded-full border border-ternary-border mb-4">
@@ -761,7 +764,7 @@ const Billing = () => {
                 </span>
                 <div className="flex-1 h-px bg-gray-200"></div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {plans?.map((plan) => {
                   if (!plan.price) return null;
                   return (
@@ -820,9 +823,9 @@ const Billing = () => {
                 </span>
                 <div className="flex-1 h-px bg-gray-200"></div>
               </div>
-              <div className="bg-white border border-gray-200 rounded-md p-4 flex items-center justify-between gap-4">
+              <div className="bg-app-surface border border-gray-200 rounded-md p-4 flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm font-semibold text-gray-800">
+                  <div className="text-sm font-semibold text-app-text-faint">
                     Additional seats
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
@@ -832,16 +835,16 @@ const Billing = () => {
                 <div className="flex items-center bg-gray-100 border-2 border-gray-200 rounded-sm overflow-hidden">
                   <button
                     onClick={() => handleTeamChange(-1)}
-                    className="w-9 h-9 flex items-center justify-center text-lg text-gray-800 hover:bg-navy hover:text-white transition-all"
+                    className="w-9 h-9 flex items-center justify-center text-lg text-app-text-faint transition-all"
                   >
                     −
                   </button>
-                  <div className="w-12 text-center text-sm font-bold text-navy border-l border-r border-gray-200">
+                  <div className="w-12 text-center text-sm font-bold text-app-text-faint border-l border-r border-gray-200">
                     {teamCount}
                   </div>
                   <button
                     onClick={() => handleTeamChange(1)}
-                    className="w-9 h-9 flex items-center justify-center text-lg text-gray-800 hover:bg-navy hover:text-white transition-all"
+                    className="w-9 h-9 flex items-center justify-center text-lg text-app-text-faint transition-all"
                   >
                     +
                   </button>

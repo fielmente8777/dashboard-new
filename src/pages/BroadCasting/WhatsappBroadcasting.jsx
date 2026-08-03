@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
+import { IoMdRefresh } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import {
   getCampaign,
   getWhatsAppMessageTemplates,
 } from "../../services/api/whatsApp";
-import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
-import { getStatusStyle } from "../../utils/getStatusStyle";
 import { formatDateTime } from "../../utils/formateDate";
-import { IoMdRefresh } from "react-icons/io";
-import { FiInbox } from "react-icons/fi";
+import { getStatusStyle } from "../../utils/getStatusStyle";
+import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
 
 const campaignHeaders = [
   { key: "name", label: "Campaign Name" },
@@ -22,6 +22,7 @@ const campaignHeaders = [
 ];
 
 const WhatsappBroadcasting = () => {
+  const navigate = useNavigate();
   const [campaignsData, setCampaignsData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -72,7 +73,9 @@ const WhatsappBroadcasting = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Campaign Management</h1>
+        <h1 className="text-xl font-semibold text-app-text dark:text-app-text">
+          Campaign Management
+        </h1>
 
         <button
           onClick={() => setIsOpen(true)}
@@ -84,7 +87,7 @@ const WhatsappBroadcasting = () => {
 
       <hr className="mt-4" />
 
-      <div className="py-4 bg-gray-50 min-h-screen">
+      <div className="py-4 bg-app-surface min-h-screen">
         {/* Filters */}
         <div className="flex justify-between items-center">
           <div className="flex mb-2">
@@ -95,7 +98,7 @@ const WhatsappBroadcasting = () => {
                 className={`px-4 py-2 font-medium text-sm capitalize ${
                   filter === item
                     ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
-                    : "bg-white border !border-white text-gray-600"
+                    : "bg-app-surface-secondary text-app-text-faint"
                 }`}
               >
                 {item}
@@ -123,12 +126,14 @@ const WhatsappBroadcasting = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-10">
               <tr>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  #
+                </th>
 
                 {campaignHeaders.map((h) => (
                   <th
                     key={h.key}
-                    className="px-3 py-3 text-left text-white min-w-40"
+                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
                   >
                     {h.label}
                   </th>
@@ -158,7 +163,12 @@ const WhatsappBroadcasting = () => {
                   return (
                     <tr
                       key={campaign._id}
-                      className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50"
+                      className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
+                      onClick={() =>
+                        navigate(
+                          `/dashboard/client/${localStorage.getItem("hid")}/marketing/whatsapp-marketing/broadcast/${campaign._id}`,
+                        )
+                      }
                     >
                       {/* Index */}
                       <td className="px-3 py-2">
@@ -166,7 +176,7 @@ const WhatsappBroadcasting = () => {
                       </td>
 
                       {/* Campaign Name */}
-                      <td className="px-3 py-2 font-medium text-gray-800">
+                      <td className="px-3 py-2 font-medium text-blue-900">
                         {campaign.name}
                       </td>
 

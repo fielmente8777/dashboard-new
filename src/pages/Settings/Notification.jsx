@@ -260,7 +260,7 @@ const Notification = () => {
 
       {/* ================= WHATSAPP ================= */}
       {subscription?.appAccess && subscription?.appAccess?.whatsapp && (
-        <div className="bg-white border rounded-xl p-5 shadow-sm">
+        <div className="bg-app-surface border rounded-xl p-5 shadow-sm text-app-text dark:text-app-text ">
           <h2 className="font-semibold mb-4">💬 WhatsApp Notifications</h2>
 
           <ChannelToggle
@@ -268,13 +268,13 @@ const Notification = () => {
             value={accountDetails?.notification?.enable}
             onChange={() =>
               handleUpdateWhatsAppNotification(
-                !accountDetails?.notification?.enable,
+                !accountDetails?.notification?.enable
               )
             }
           />
 
           {/* CALL CONFIG */}
-          <div className="border rounded-lg p-4 bg-gray-50 mt-4 space-y-3">
+          <div className="border rounded-lg p-4 bg-app-surface-secondary text-app-text dark:text-app-text mt-4 space-y-3">
             <ChannelToggle
               label="Call Notification"
               value={callConfig.enabled}
@@ -287,14 +287,14 @@ const Notification = () => {
             />
 
             {accountDetails?.notification?.enable && callConfig.enabled && (
-              <div className="space-y-4 grid grid-cols-3 gap-4">
+              <div className="space-y-4 grid grid-cols-3 gap-4 bg-app-surface-secondary">
                 {callStatuses?.map((status) => {
                   const config = callConfig?.configs[status?.key] || {};
 
                   return (
                     <div
                       key={status.key}
-                      className="border p-3 rounded bg-white"
+                      className="border p-3 rounded bg-app-surface-secondary"
                     >
                       <h4 className="font-medium mb-2">{status.label}</h4>
 
@@ -333,34 +333,34 @@ const Notification = () => {
                             onChange={(e) => {
                               const selectedName = e.target.value;
                               const selectedTemplate = templates.find(
-                                (t) => t.name === selectedName,
+                                (t) => t.name === selectedName
                               );
                               if (!selectedTemplate) return;
 
                               const bodyText =
                                 selectedTemplate.components?.find(
-                                  (c) => c.type === "BODY",
+                                  (c) => c.type === "BODY"
                                 )?.text || "";
 
                               const bodyVariables =
                                 selectedTemplate.components?.find(
-                                  (c) => c.type === "BODY",
+                                  (c) => c.type === "BODY"
                                 )?.example?.body_text[0] || [];
 
                               const headerVariables =
                                 selectedTemplate.components?.find(
-                                  (c) => c.type === "HEADER",
+                                  (c) => c.type === "HEADER"
                                 )?.example?.header_text || [];
 
                               const buttons =
                                 selectedTemplate.components?.find(
-                                  (c) => c.type === "BUTTONS",
+                                  (c) => c.type === "BUTTONS"
                                 )?.buttons || [];
 
                               updateCallConfig(
                                 status.key,
                                 "templateName",
-                                selectedName,
+                                selectedName
                               );
 
                               updateCallConfig(status.key, "templateMeta", {
@@ -371,12 +371,12 @@ const Notification = () => {
                                 headerVariables,
                                 headerType:
                                   selectedTemplate.components?.find(
-                                    (c) => c.type === "HEADER",
+                                    (c) => c.type === "HEADER"
                                   )?.format || null,
                                 buttons,
                               });
                             }}
-                            className="w-full border px-3 py-2 rounded mb-2"
+                            className="w-full border px-3 py-2 rounded mb-2 bg-app-surface-secondary"
                           >
                             <option value="">Select template</option>
                             {templates.map((t) => (
@@ -389,7 +389,7 @@ const Notification = () => {
                               <TemplatePreview
                                 components={
                                   templates.find(
-                                    (t) => t.name === config.templateName,
+                                    (t) => t.name === config.templateName
                                   )?.components || []
                                 }
                               />
@@ -519,7 +519,7 @@ const Notification = () => {
       )}
 
       {/* ================= EMAIL ================= */}
-      <div className="bg-white border rounded-xl p-5 shadow-sm">
+      <div className="bg-app-surface-secondary border rounded-xl p-5 shadow-sm">
         <h2 className="font-semibold mb-4">📧 Email Notifications</h2>
 
         {tab.map((item) => {

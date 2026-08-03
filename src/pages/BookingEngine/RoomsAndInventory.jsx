@@ -194,7 +194,7 @@ const RoomsAndInventory = () => {
 
     setPriceBulkupdate(updatedBulkPriceUpdate);
     setPriceData(updatePriceData);
-    // console.log(updatedBulkPriceUpdate)
+    console.log(updatedBulkPriceUpdate)
   };
 
   const InventoryUpdate = (value, roomtype, date) => {
@@ -390,7 +390,7 @@ const RoomsAndInventory = () => {
   }, []);
 
   return (
-    <div className="maxwidth mx-auto mt-4 bg-white p-4 cardShadow mb-10">
+    <div className="maxwidth mx-auto mt-4 bg-app-surface p-4 cardShadow mb-10">
       <div className="flex justify-between max-md:px-2">
         <div className="inline-flex rounded-lg shadow-sm" role="group">
           {/* <button onClick={handleAllClick} type="button" className={`px-4 py-2 text-sm font-medium  rounded-s-lg   ${showAll === true ? "border border-orange-600 bg-orange-600 text-white" : "text-gray-900 bg-white border border-gray-200 hover:text-orange-600 hover:bg-neutral-100"} `}>
@@ -402,7 +402,7 @@ const RoomsAndInventory = () => {
             className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
               showInventory === true
                 ? "border-t border-b border-primary bg-primary  text-white"
-                : "text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-neutral-100 hover:"
+                : "text-app-text dark:text-app-text bg-app-surface-secondary border-t border-b border-primary/60! hover:bg-neutral-100 hover:text-orange-600"
             }`}
           >
             Inventory
@@ -414,7 +414,7 @@ const RoomsAndInventory = () => {
             className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
               showPrice
                 ? "border bg-primary border-primary text-white"
-                : "text-gray-900 bg-white border border-gray-200 hover:bg-neutral-100 hover:text-orange-600 "
+                : "text-app-text dark:text-app-text bg-app-surface-secondary border border-primary/90! hover:bg-neutral-100 hover:text-orange-600 "
             } `}
           >
             Price
@@ -426,18 +426,18 @@ const RoomsAndInventory = () => {
       </div>
 
       <div className="relative overflow-x-auto mt-4">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 border border-gray-300">
+        <table className="w-full text-sm text-left rtl:text-right text-gray-500 border border-primary/90!">
           <thead className="text-xs text-gray-700 uppercase">
             <tr>
               <th
                 scope="col"
-                className="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-gray-200"
+                className="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-app-surface-secondary"
               >
-                <button className="px-4 text-sm font-medium  rounded-lg text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 text-sm font-medium  rounded-lg text-app-text dark:text-primary bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
                   <IoSync size={20} />
                   Sync
                 </button>
-                <button className="px-4 text-sm font-medium  rounded-lg  text-gray-900 bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 text-sm font-medium  rounded-lg  text-app-text dark:text-primary bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
                   <GiBackwardTime size={20} />
                   Logs
                 </button>
@@ -445,7 +445,7 @@ const RoomsAndInventory = () => {
 
               <th
                 scope="col"
-                className="px-4  py-3 bg-gray-100 w-full mx-auto text-center border-t border-r border-b border-gray-300"
+                className="px-4  py-3 bg-app-surface-secondary w-full mx-auto text-center border-t border-r border-b border-primary/90!"
               >
                 <div className="flex justify-between">
                   <div className="w-[33.33%] max-md:hidden"></div>
@@ -470,7 +470,7 @@ const RoomsAndInventory = () => {
                       onChange={(e) => {
                         GetDataForDate(e.target.value, "next");
                       }}
-                      className="border py-2 px-4 bg-white  rounded-md"
+                      className="border py-2 px-4 bg-white text-app-text dark:text-primary rounded-md"
                     />
 
                     <button
@@ -487,7 +487,7 @@ const RoomsAndInventory = () => {
                       onClick={() => {
                         bulkupdateFunction();
                       }}
-                      className="px-4 py-2 text-sm font-medium  rounded-lg  text-gray-900 bg-white border hover:bg-orange-600 duration-300 hover:text-white flex items-center gap-1"
+                      className="px-4 py-2 text-sm font-medium  rounded-lg  text-app-text dark:text-primary bg-white border hover:bg-orange-600 duration-300 hover:text-white flex items-center gap-1"
                     >
                       Bulk Update{" "}
                       {isBulkUpdateLoading && <Loader color="#262524" />}
@@ -499,19 +499,19 @@ const RoomsAndInventory = () => {
           </thead>
 
           <tbody>
-            <tr className="bg-white border-b border-gray-300 flex-grow">
+            <tr className="bg-app-surface-secondary border-b border-primary/90! flex-grow">
               <th
                 scope="row"
-                className="px-4 py-4 font-medium text-gray-600 bg-gray-200 whitespace-nowrap w-[16rem]"
+                className="px-4 py-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary whitespace-nowrap w-[16rem]"
               >
-                <span className="text-2xl font-bold">Rooms</span>
+                <span className="text-2xl font-bold text-app-text dark:text-app-text-muted">Rooms</span>
               </th>
 
               <td className="w-full flex justify-between">
                 {dates?.map((date, index) => (
                   <div
                     key={index}
-                    className="flex flex-col  w-full text-center border-r border-gray-300"
+                    className="flex flex-col  w-full text-center text-app-text dark:text-app-text-muted border-r border-primary/90!"
                   >
                     <span>{getMonthInWords(date)}</span>
                     <span>{getYearFromDate(date)}</span>
@@ -531,9 +531,9 @@ const RoomsAndInventory = () => {
                   Object?.keys(inventoryData)?.map((item, itemIndex) => (
                     <tr
                       key={itemIndex}
-                      className="bg-white border-t border-gray-300"
+                      className="bg-app-surface-secondary border-t border-primary/90!"
                     >
-                      <th className="px-4 font-medium text-gray-600 bg-gray-200 w-[16rem] py-2">
+                      <th className="px-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary w-[16rem] py-2">
                         <div className="gap-4 flex flex-col">
                           <span className="font-bold text-md uppercase">
                             {room_type_name[item]}
@@ -544,7 +544,7 @@ const RoomsAndInventory = () => {
                               <span className="text-bold">Inventory</span>
                             </div>
                             <div className="ms-7">
-                              <span className="font-light border-b-2 border-gray-400">
+                              <span className="font-light border-b-2 border-primary/90!">
                                 Multi Update
                               </span>
                             </div>
@@ -556,10 +556,10 @@ const RoomsAndInventory = () => {
                         {dates?.map((date) => (
                           <div
                             key={date}
-                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
+                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90!"
                           >
                             <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                            <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
+                            <span className="border-2  rounded-md text-center overflow-hidden">
                               <input
                                 type="text"
                                 value={inventoryData[item][date]}
@@ -582,9 +582,9 @@ const RoomsAndInventory = () => {
                 {Object?.keys(priceData)?.map((item, itemIndex) => (
                   <tr
                     key={itemIndex}
-                    className="bg-white border-t border-gray-300"
+                    className="bg-app-surface-secondary border-t border-primary/90!"
                   >
-                    <th className="px-4 font-medium text-zinc-700 bg-gray-200 w-[16rem] py-2">
+                    <th className="px-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary w-[16rem] py-2">
                       <div className="gap-4 flex flex-col">
                         <span className="font-extrabold text-1xl uppercase">
                           {room_type_name[item]}
@@ -595,7 +595,7 @@ const RoomsAndInventory = () => {
                             <span className="text-bold">Price</span>
                           </div>
                           <div className="ms-7">
-                            <span className="font-light border-b-2 border-gray-400">
+                            <span className="font-light border-b-2 border-primary/90!">
                               Multi Update
                             </span>
                           </div>
@@ -607,7 +607,7 @@ const RoomsAndInventory = () => {
                       {dates?.map((date) => (
                         <div
                           key={date}
-                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-white"
+                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90!"
                         >
                           <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
                           <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">

@@ -13,6 +13,10 @@ export const templateSchema = z.object({
   language: z.string().min(1, "Language required"),
 
   header: z.string().max(60).optional(),
+  headerType: z.enum(["TEXT", "IMAGE", "VIDEO", "DOCUMENT", "NONE"]).optional(),
+  headerImage: z.any().nullable().optional(),
+  headerVideo: z.any().nullable().optional(),
+  headerDocument: z.any().nullable().optional(),
 
   body: z.string().min(10, "Body must be at least 10 characters").max(1024),
 

@@ -135,86 +135,95 @@ export default function CustomDropdown2({
     };
   }, [open]);
 
-  return (
-    <div className="relative">
-      {/* BUTTON */}
-      <button
-        ref={buttonRef}
-        type="button"
-        onClick={toggleDropdown}
-        className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm ${
-          disabled
-            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-        } ${props.className}`}
-      >
-        <div className="flex flex-wrap gap-1 flex-1">
-          {multiple ? (
-            selected.length > 0 ? (
-              selected.map((val) => (
-                <span
-                  key={val}
-                  className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs"
-                >
-                  {getLabel(val)}
-                  <IoClose
-                    size={12}
-                    className="cursor-pointer hover:text-red-500"
-                    onClick={(e) => removeItem(val, e)}
-                  />
-                </span>
-              ))
-            ) : (
-              <span className="text-gray-400">Select</span>
-            )
+ return (
+  <div className="relative">
+    {/* BUTTON */}
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={toggleDropdown}
+      className={`py-2 ${width} flex items-center justify-between px-2 rounded-lg border text-sm transition-colors ${
+        disabled
+          ? "bg-app-surface-secondary text-app-text dark:text-app-text-faint cursor-not-allowed border-gray-200 dark:border-[#2d3748]"
+          : "bg-app-surface-secondary text-app-text dark:text-app-text-faint hover:bg-gray-50/20 border-gray-200 dark:border-[#2d3748]"
+      } ${props.className}`}
+    >
+      <div className="flex flex-wrap gap-1 flex-1">
+        {multiple ? (
+          selected.length > 0 ? (
+            selected.map((val) => (
+              <span
+                key={val}
+                className="flex items-center gap-1 bg-primary/10 dark:bg-primary/20 text-primary px-2 py-1 rounded-md text-xs"
+              >
+                {getLabel(val)}
+                <IoClose
+                  size={12}
+                  className="cursor-pointer hover:text-red-500 dark:hover:text-red-400"
+                  onClick={(e) => removeItem(val, e)}
+                />
+              </span>
+            ))
           ) : (
-            <span>{selected || "Select"}</span>
-          )}
-        </div>
-
-        <IoChevronDown
-          size={16}
-          className={`ml-2 transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {/* DROPDOWN */}
-      {open &&
-        position &&
-        !disabled &&
-        createPortal(
-          <div
-            ref={dropdownRef}
-            style={{
-              position: "fixed", // 🔥 IMPORTANT
-              width: position.width,
-              left: position.left,
-              top: position.top,
-              zIndex,
-            }}
-            className="rounded-lg bg-white border border-gray-200 shadow-xl max-h-64 overflow-y-auto"
-          >
-            {options.map((opt) => {
-              const isSelected = multiple
-                ? selected.includes(opt.value)
-                : selected === opt.value;
-
-              return (
-                <div
-                  key={opt.value}
-                  onClick={() => handleSelect(opt)}
-                  className={`px-3 py-2 text-sm cursor-pointer flex justify-between hover:bg-primary/10 ${
-                    isSelected ? "bg-primary/10 font-medium" : ""
-                  }`}
-                >
-                  <span>{opt.label}</span>
-                  {multiple && isSelected && <span>✔</span>}
-                </div>
-              );
-            })}
-          </div>,
-          document.body,
+            <span className="text-app-text dark:text-app-text-muted">
+              Select
+            </span>
+          )
+        ) : (
+          <span>{selected || "Select"}</span>
         )}
-    </div>
-  );
+      </div>
+
+      <IoChevronDown
+        size={16}
+        className={`ml-2 transition-transform text-gray-600 dark:text-[#9ca3af] ${
+          open ? "rotate-180" : ""
+        }`}
+      />
+    </button>
+
+    {/* DROPDOWN */}
+    {open &&
+      position &&
+      !disabled &&
+      createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: "fixed",
+            width: position.width,
+            left: position.left,
+            top: position.top,
+            zIndex,
+          }}
+          className="rounded-lg bg-app-surface  border border-gray-600  shadow-xl dark:shadow-[0_4px_12px_rgba(0,0,0,0.35)] max-h-64 overflow-y-auto"
+        >
+          {options.map((opt) => {
+            const isSelected = multiple
+              ? selected.includes(opt.value)
+              : selected === opt.value;
+
+            return (
+              <div
+                key={opt.value}
+                onClick={() => handleSelect(opt)}
+                className={`px-3 py-2 text-sm cursor-pointer flex justify-between transition-colors
+                  ${
+                    isSelected
+                      ? "bg-primary/10 dark:bg-primary/20 font-medium text-primary"
+                      : "text-gray-700 dark:text-[#e8eaed] hover:bg-primary/10 dark:hover:bg-primary/10"
+                  }`}
+              >
+                <span>{opt.label}</span>
+                {multiple && isSelected && (
+                  <span className="text-primary">✔</span>
+                )}
+              </div>
+            );
+          })}
+        </div>,
+        document.body,
+      )}
+  </div>
+);
 }

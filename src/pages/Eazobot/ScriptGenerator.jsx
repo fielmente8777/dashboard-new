@@ -42,7 +42,7 @@ const ScriptGenerator = () => {
         <textarea
           value={nextjsScript}
           readOnly
-          className="w-full px-4 py-6 bg-white border rounded resize-none outline-none font-mono text-sm"
+          className="w-full px-4 py-6 bg-app-surface-secondary border rounded resize-none outline-none font-mono text-sm"
           rows={10}
         />
         <button
@@ -67,7 +67,7 @@ const ScriptGenerator = () => {
         <textarea
           value={rawScript}
           readOnly
-          className="w-full px-4 py-6 bg-white border rounded resize-none outline-none font-mono text-sm"
+          className="w-full px-4 py-6 bg-app-surface-secondary border rounded resize-none outline-none font-mono text-sm"
           rows={10}
         />
         <button

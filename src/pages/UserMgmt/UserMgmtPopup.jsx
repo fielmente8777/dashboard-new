@@ -40,7 +40,7 @@ export const accessRoles = [
 
 export const accessScopeMap = {
   CMS: "cms",
-  "Booking Engine": "booking_engine",
+  "Booking Engine": "bookingEngine",
   "Front Desk": "frontDesk",
   "Social Media": "social_media",
   "Enquiries Management": "enquiriesManagement",
@@ -62,9 +62,17 @@ export const accessScopeMap = {
   "User Management": "usermanagement",
   "WhatsApp Marketing": "whatsapp",
   WhatsApp: "whatsapp",
-  Exotel: "exotel",
-  "Leads Management": "lead_management",
-  "Google Ads Insights":"googleadsinsights"
+  // whatsapp: "whatsapp",
+  // Exotel: "exotel",
+  Exotel: "humanResourceManagement",
+  "Leads Management": "enquiriesManagement",
+  "Google Ads Insights": "googleadsinsights",
+  "Google Analytics": "analyticsandreporting",
+  "Meta Insights": "analyticsandreporting",
+};
+
+export const appAccessScopeMap = {
+  "Leads Management": "leadsManagement",
 };
 
 const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
@@ -245,7 +253,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
         isOpen ? "opacity-100 visible" : "opacity-0 invisible"
       }`}
     >
-      <div className="bg-white grid md:grid-cols-8 gap-6 rounded-md shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
+      <div className="bg-app-surface/50 grid md:grid-cols-8 gap-6 rounded-md shadow-xl p-8 w-full md:max-w-6xl max-h-[90vh] overflow-y-auto space-y-8 relative">
         <div className="md:col-span-3 bg-gray-100 shadow-md p-3 rounded-xl">
           <div className="sticky top-0">
             <div className="max-h-96">
@@ -260,7 +268,9 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
 
         <div className="md:col-span-5 space-y-8">
           <div className="flex justify-between items-center border-b-2 border-dashed pb-3">
-            <h2 className="text-xl text-primary font-bold">Create New User</h2>
+            <h2 className="text-xl text-primary dark:text-app-text font-bold">
+              Create New User
+            </h2>
             <button
               onClick={onClose}
               className="text-2xl font-bold hover:bg-transparent size-10 rounded-full border border-slate-900 bg-primary flex items-center justify-center hover:rotate-180 duration-300 hover:text-primary text-white"
@@ -277,14 +287,14 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
               placeholder="Full name"
               value={form.name}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
             <input
               name="phone"
               placeholder="Phone number"
               value={form.phone}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
             <input
               type="email"
@@ -292,7 +302,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
               placeholder="Email"
               value={form.email}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-app-surface-secondary border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
           </div>
 
@@ -303,10 +313,10 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
               placeholder="Password"
               value={form.password}
               onChange={handleChange}
-              className="px-4 py-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
+              className="px-4 py-2 rounded-md bg-dark:text-app-text-faint border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm"
             />
 
-            <div className="py-2 pr-2 rounded-md bg-gray-100 border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm">
+            <div className="py-2 pr-2 rounded-md bg-dark:text-app-text-faint border border-gray-300 focus:border-primary/50 outline-none duration-300 shadow-sm">
               <select
                 value={currentLocation}
                 onChange={handleLocationChange}
@@ -317,7 +327,7 @@ const UserMgmtPopup = ({ isOpen, onClose, accessScope, fetchData }) => {
                   Object.entries(user.Profile.hotels).map(([key, value]) => (
                     <option
                       key={key}
-                      className="px-8 text-primary font-medium disabled:text-gray-400"
+                      className="px-8 text-primary dark:text-app-text-faint bg-app-surface-secondary font-medium disabled:text-gray-400"
                       value={`${key}-${value?.city}`}
                       disabled={selectedLocations.some(
                         (loc) => loc.hid === key,

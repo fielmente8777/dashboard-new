@@ -11,7 +11,10 @@ import DataContext from "../../context/DataContext";
 import { BASE_PATH, BASE_URL } from "../../data/constant";
 import { SidebarData } from "../../data/SideBarData";
 import { Arrow } from "../../icons/icon";
-import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
+import {
+  accessScopeMap,
+  appAccessScopeMap,
+} from "../../pages/UserMgmt/UserMgmtPopup";
 import { close, open, toggleSideBar } from "../../redux/slice/SidebarToggle";
 import {
   fetchAuthUserProfile,
@@ -70,7 +73,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
   console.log(authUser);
 
   const { subscription } = useSelector((state) => state?.subscription);
-  console.log(subscription);
+  // console.log(subscription);
 
   const [sidebarActiveIndex, setSidebarActiveIndex] = useState(null);
   const [allClients, setAllClients] = useState([]);
@@ -373,7 +376,7 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
 
   return (
     <div
-      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-[#152547] md:relative fixed left-0 z-99999"
+      className="p-3 w-full text-white! flex flex-col h-screen overflow-hidden shadow-md bg-primary dark:bg-[#0a1020] md:relative fixed left-0 z-99999 transition-colors duration-200"
       style={{
         left: isMobile ? (isOpen ? "0px" : "0%") : null,
       }}
@@ -619,13 +622,17 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
               if (authUser?.isAdmin) {
                 const key = item.key;
 
+                // console.log(authUser?.accessScope);
+
                 // if (key && !authUser?.accessScope[accessScopeMap[key]])
-                if (
-                  key &&
-                  subscription?.appAccess &&
-                  !subscription?.appAccess[accessScopeMap[key]]
-                )
-                  return null;
+
+                // if (
+                //   (key &&
+                //     subscription?.appAccess &&
+                //     !subscription?.appAccess[accessScopeMap[key]]) ||
+                //   !subscription.appAccess[appAccessScopeMap[key]]
+                // )
+                //   return null;
                 return (
                   <div key={index} className="flex flex-col">
                     {item?.subLinks ? (
@@ -769,17 +776,23 @@ const Sidebar = ({ sideBarWidth, setSidebarWidth, setIsSmooth, isMobile }) => {
                   )[0];
 
                 const key = item?.key;
+
+                if (
+                  key &&
+                  currentLocationAccessScope &&
+                  !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
+                )
+                  return null;
+                // console.log(subscription);
+
                 // if (
                 //   key &&
+                //   subscription?.appAccess &&
+                //   !subscription?.appAccess[accessScopeMap[key]] &&
                 //   currentLocationAccessScope &&
                 //   !currentLocationAccessScope?.accessScope[accessScopeMap[key]]
                 // )
-                if (
-                  key &&
-                  subscription?.appAccess &&
-                  !subscription?.appAccess[accessScopeMap[key]]
-                )
-                  return null;
+                //   return null;
 
                 return (
                   <div key={index} className="flex flex-col gap-1">

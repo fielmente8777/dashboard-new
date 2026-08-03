@@ -12,6 +12,8 @@ import {
   FaCircleQuestion,
   FaCodePullRequest,
   FaCommentSms,
+  FaMapLocationDot,
+  FaMeta,
   FaRankingStar,
   FaUser,
 } from "react-icons/fa6";
@@ -51,6 +53,7 @@ import { TbMessageChatbotFilled, TbSeo } from "react-icons/tb";
 import { TiSocialSkype } from "react-icons/ti";
 import {
   RiMetaFill,
+  RiSeoLine,
   RiWechatChannelsLine,
   RiWhatsappFill,
 } from "react-icons/ri";
@@ -163,11 +166,11 @@ export const SidebarData = [
         icon: <MdOutlineChatBubbleOutline />,
       },
 
-      {
-        name: "Google Ads",
-        link: `leads-management/google-ads-leads`,
-        icon: <SiGoogleads size={14} />,
-      },
+      // {
+      //   name: "Google Ads",
+      //   link: `leads-management/google-ads-leads`,
+      //   icon: <SiGoogleads size={14} />,
+      // },
       {
         name: "Webform",
         link: `leads-management/webform-leads`,
@@ -196,6 +199,7 @@ export const SidebarData = [
     key: "WhatsApp",
     link: `marketing`,
     icon: <GrAnnounce size={16} />,
+
     subLinks: [
       {
         name: "Whatsapp Marketing",
@@ -266,7 +270,6 @@ export const SidebarData = [
   //   ],
   // },
 
- 
   // {
   //   name: "AI Sales Agent",
   //   // key: "",
@@ -281,16 +284,42 @@ export const SidebarData = [
     icon: <MdPhone />,
   },
 
-   {
+  {
     name: "Google Ads Insights",
     key: "Google Ads Insights",
     link: `google-ads-insights`,
     icon: <SiGoogleadsense />,
   },
-   {
+  {
+    name: "SEO",
+    key: "SEO",
+    link: `seo`,
+    icon: <SiGoogleadsense />,
+    subLinks: [
+      {
+        name: "Local Seo",
+        link: `seo/local-seo`,
+        icon: <FaMapLocationDot size={18} />,
+      },
+      {
+        name: "Website Seo",
+        link: `seo/website-seo`,
+        icon: <RiSeoLine size={18} />,
+      },
+    ],
+  },
+  {
     name: "Google Analytics",
+    key: "Google Analytics",
     link: `insights-analytics/google-analytics`,
     icon: <SiGoogleanalytics size={18} />,
+  },
+
+  {
+    name: "Meta Insights",
+    key: "Meta Insights",
+    link: `meta-insights`,
+    icon: <FaMeta />,
   },
   // {
   //   name: "Meta",
@@ -540,12 +569,12 @@ export const SidebarData = [
     icon: <HiOutlineUserGroup />,
   },
 
-  // {
-  //   name: "Front Desk",
-  //   key: "Front Desk",
-  //   link: `front-desk`,
-  //   icon: <HiOutlineUserGroup />,
-  // },
+  {
+    name: "Front Desk",
+    key: "Front Desk",
+    link: `front-desk`,
+    icon: <HiOutlineUserGroup />,
+  },
 
   {
     name: "Newsletter",

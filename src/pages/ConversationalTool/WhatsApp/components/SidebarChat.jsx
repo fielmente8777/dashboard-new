@@ -8,21 +8,29 @@ import {
   WhatsappIcon,
 } from "../../../../icons/icon";
 import {
+  deleteConversation,
+  deleteMultipleConversation,
   getWhatsAppMessageTemplates,
   markMessageAsRead,
 } from "../../../../services/api/whatsApp";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import NewContactModal from "./NewContactModal";
 import { FaUser } from "react-icons/fa";
+import { useToast } from "../../../../context/ToastContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 const tabs = ["Active", "Inactive", "Add"];
 
 const SidebarChat = () => {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
+  const [selectedConversations, setSelectedConversations] = useState([]);
+  const [hoveredConversation, setHoveredConversation] = useState(null);
   const getAvatarColor = (name) => {
     const colors = [
       "bg-teal-500",
@@ -50,6 +58,26 @@ const SidebarChat = () => {
     active: "",
     inactive: "",
   });
+
+  const isAllSelected =
+    filteredConversations.length > 0 &&
+    selectedConversations.length === filteredConversations.length;
+
+  const handleCheckboxChange = (conversationId) => {
+    setSelectedConversations((prev) =>
+      prev.includes(conversationId)
+        ? prev.filter((id) => id !== conversationId)
+        : [...prev, conversationId],
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedConversations([]);
+    } else {
+      setSelectedConversations(filteredConversations.map((conv) => conv._id));
+    }
+  };
 
   const handleSelectConversation = async (conv) => {
     try {
@@ -145,6 +173,52 @@ const SidebarChat = () => {
     }
   };
 
+  const handleDeleteConversations = async () => {
+    // setIsDeleteLoading(true);
+    try {
+      const isConfirmed = await confirm(
+        "Are you sure you want to delete conversations?",
+      );
+
+      if (!isConfirmed) return;
+
+      const response = await deleteMultipleConversation({
+        conversationIds: selectedConversations,
+      });
+
+      setConversations((prevConversations) =>
+        prevConversations.filter(
+          (conv) => !selectedConversations.includes(conv._id),
+        ),
+      );
+
+      // setConversations((prevConversations) =>
+      //   prevConversations.filter(
+      //     (conv) => conv._id !== selectedConversation._id,
+      //   ),
+      // );
+
+      setSelectedConversations([]);
+
+      if (response?.success) {
+        showToast({
+          message:
+            response?.responseMessage || "Conversation deleted successfully",
+          type: "success",
+          position: "bottom-right",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to delete conversation",
+        type: "error",
+        position: "bottom-right",
+      });
+    } finally {
+      // setIsDeleteLoading(false);
+    }
+  };
+
   useEffect(() => {
     handleSearch();
   }, [debouncedSearch, conversations]);
@@ -167,18 +241,18 @@ const SidebarChat = () => {
   }, [conversations]);
 
   return (
-    <div className="w-full md:w-90 border-b  md:border-r border-gray-200 flex flex-col bg-white">
-      <div className="px-4 py-3 shadow-sm h-16 flex">
+    <div className="w-full xl:w-90! lg:w-60! border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface">
+      <div className="px-4 py-3 shadow-sm h-16 flex ">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="text-sm font-medium bg-gray-100 px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-ternary"
+          className="border border-ternary! text-sm text-app-text dark:text-app-text font-medium dark:bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-1 focus:ring-ternary"
         />
       </div>
 
-      <div className="flex border-b border-gray-200 bg-white overflow-hidden">
+      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
         {tabs?.map((tab) => {
           const isActive = tab.toLowerCase() === activeTab.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
@@ -189,8 +263,8 @@ const SidebarChat = () => {
               onClick={() => handleTabChnage(tab)}
               className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
                 isActive
-                  ? "bg-ternary text-white border-b-2 "
-                  : "text-slate-600 hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
+                  ? "bg-ternary text-white border-b-2  "
+                  : "text-slate-600 dark:text-app-text-muted hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
               }`}
             >
               <span>{tab}</span>
@@ -200,7 +274,7 @@ const SidebarChat = () => {
                   className={`min-w-5 h-5 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold
                     ${
                       isActive
-                        ? "bg-gray-100 text-primary"
+                        ? "bg-gray-100 text-primary "
                         : "bg-slate-200 text-slate-700"
                     }`}
                 >
@@ -231,6 +305,28 @@ const SidebarChat = () => {
         ))}
       </div> */}
 
+      {selectedConversations.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-primary/10">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={handleSelectAll}
+            />
+            <span>Select All ({selectedConversations.length})</span>
+          </label>
+
+          <button
+            onClick={() => {
+              handleDeleteConversations();
+            }}
+            className="px-3 py-1 bg-red-500 text-white rounded text-xs"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto scrollbar-hidden">
         {filteredConversations && filteredConversations?.length > 0 ? (
           filteredConversations?.map((conv) => (
@@ -240,13 +336,29 @@ const SidebarChat = () => {
                 handleSelectConversation(conv);
                 setMobileActive("chatarea");
               }}
-              // onClick={() => setSelectedConversationId(conv._id)}
-              className={`flex p-3 border-b border-gray-100 cursor-pointer transition-colors ${
+              onMouseEnter={() => setHoveredConversation(conv._id)}
+              onMouseLeave={() => setHoveredConversation(null)}
+              className={`relative flex p-3 pl-6 border-b border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
-                  ? "bg-teal-100/20"
-                  : "hover:bg-gray-50"
+                  ? "bg-app-surface-secondary"
+                  : "hover:bg-green-200/30 dark:hover:bg-primary/30"
               }`}
             >
+              <div className="flex items-center absolute left-1 top-5">
+                {(hoveredConversation === conv._id ||
+                  selectedConversations.length > 0) && (
+                  <input
+                    type="checkbox"
+                    checked={selectedConversations.includes(conv._id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleCheckboxChange(conv._id);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                )}
+              </div>
+
               {/* Avatar */}
               <div className="relative">
                 {conv.name ? (
@@ -273,7 +385,7 @@ const SidebarChat = () => {
               {/* Info */}
               <div className="ml-3 flex-1 min-w-0">
                 <div className="flex justify-between">
-                  <p className="text-sm font-medium text-gray-900 truncat flex flex-col">
+                  <p className="text-sm font-medium text-gray-900 dark:text-app-text-muted truncat flex flex-col">
                     {conv?.name}
 
                     <span className="text-[10px] mt-1">{conv?.phone}</span>
@@ -291,14 +403,14 @@ const SidebarChat = () => {
                 </div>
 
                 <div className="flex justify-between mt-2">
-                  <div className="flex justify-end text-xs text-green-00 bg-green-200 w-fit px-2 rounded-full">
+                  <div className="flex justify-end text-xs text-white bg-green-500 w-fit px-2 rounded-full">
                     {conv?.status?.toLowerCase() === "active"
                       ? "Open"
                       : conv?.status}
                   </div>
 
                   <div className="flex justify-between">
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
                         {conv?.adAttribution?.sourceType || "Ad"}
                       </span>
@@ -322,22 +434,7 @@ const SidebarChat = () => {
                       ) : (
                         <GoogleAdsIcon />
                       )}
-
-                      {/* {conv?.adAttribution?.sourceUrl &&
-                    conv?.adAttribution?.sourceUrl.startsWith(
-                      "https://www.instagram.com",
-                    ) ? (
-                      <InstaICon />
-                    ) : conv?.adAttribution?.sourceUrl.includes("facebook") ? (
-                      <FacebookIcon />
-                    ) : conv?.adAttribution?.sourceUrl.startsWith(
-                        "https://wa.me",
-                      ) ? (
-                      <WhatsappIcon />
-                    ) : (
-                      <GoogleAdsIcon />
-                    )} */}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

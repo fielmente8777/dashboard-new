@@ -40,10 +40,12 @@ import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import { getWhatsAppMessageTemplates } from "../../services/api/whatsApp";
 import { timeAgo } from "../../utils/formateDate";
 import { useSelector } from "react-redux";
+import CallsAnalytics from "./CallsAnalytics";
+import { normalizePhoneWithSameFormat } from "../../utils/normalizePhoneNumber";
 
 export default function Calls() {
-  const { user: hotel } = useSelector((state) => state.userProfile);
-  console.log(hotel);
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+
   const wsRef = useRef(null);
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -269,6 +271,7 @@ export default function Calls() {
     { label: "To", value: "to" },
     { label: "Phone Number", value: "phoneNumberSid" },
     { label: "WhatsApp", value: "whatsapp" },
+    { label: "Call", value: "call" },
     { label: "Direction", value: "direction" },
     { label: "Status", value: "status" },
     { label: "Time", value: "startTime" },
@@ -289,19 +292,34 @@ export default function Calls() {
   const [callPopup, setCallPopup] = useState(false);
   const [incomingCallPopup, setIcomingCallPopup] = useState(false);
   const [incomingCallData, setIncomingCallData] = useState({});
-  const [fromNumber, setFromNumber] = useState(
-    hotel?.Profile?.hotelPhone || "",
-  );
+  const [fromNumber, setFromNumber] = useState(authUser?.phone);
 
   const [toNumber, setToNumber] = useState("");
-  const handleMakeCall = async () => {
+  const handleMakeCall = async (from, to) => {
+    console.log("from", from);
+    console.log("to", to);
+    let fromCallNumber;
+    let toCallNumber;
     try {
-      if (!fromNumber || !toNumber) {
+      if (from && to) {
+        fromCallNumber = from;
+        toCallNumber = to;
+      } else if (fromNumber && toNumber) {
+        fromCallNumber = fromNumber;
+        toCallNumber = toNumber;
+      }
+
+      console.log(fromCallNumber, toCallNumber);
+
+      if (!fromCallNumber || !toCallNumber) {
         alert("Both numbers are required");
         return;
       }
 
-      const response = await makeCall({ fromNumber, toNumber });
+      const response = await makeCall({
+        fromNumber: fromCallNumber,
+        toNumber: toCallNumber,
+      });
 
       // const response = await fetch(
       //   `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
@@ -326,13 +344,29 @@ export default function Calls() {
         });
       }
 
-      alert("✅ Call initiated successfully");
+      // alert("✅ Call initiated successfully");
       setCallPopup(false);
       // setFromNumber("");
       setToNumber("");
     } catch (error) {
       console.error("Call error:", error);
       alert("Something went wrong while making the call");
+    }
+  };
+
+  const handleCall = async (call) => {
+    console.log(call);
+
+    if (call?.direction === "incoming" || call?.direction === "inbound") {
+      console.log(call?.to, call?.from);
+      // setFromNumber(call?.to);
+      // setToNumber(call?.from);
+
+      handleMakeCall(call?.to, call?.from);
+    } else {
+      // setFromNumber(call?.from);
+      // setToNumber(call?.to);
+      handleMakeCall(call?.from, call?.to);
     }
   };
 
@@ -404,10 +438,10 @@ export default function Calls() {
   };
 
   useEffect(() => {
-    if (hotel?.Profile?.hotelPhone) {
-      setFromNumber(hotel?.Profile?.hotelPhone);
+    if (authUser?.phone) {
+      setFromNumber(authUser?.phone);
     }
-  }, [hotel]);
+  }, [authUser]);
 
   useEffect(() => {
     wsRef.current = new WebSocketClient(WS_BASE_URL);
@@ -457,13 +491,21 @@ export default function Calls() {
     ) {
       return "Client Unanswered";
     } else if (
-      (status === "no-answer" || status === "incomplete") &&
+      (status === "no-answer" ||
+        status === "incomplete" ||
+        status === "" ||
+        status === "failed") &&
       (direction === "inbound" || direction === "incoming")
     ) {
       return "No user answered";
     } else if (
       status === "call-attempt" &&
       (direction === "incoming" || direction === "inbound")
+    ) {
+      return "Client hung-up before connecting to any user";
+    } else if (
+      status === "" &&
+      (direction === "outbound-dial" || direction === "outbound-api")
     ) {
       return "Client hung-up before connecting to any user";
     } else if (
@@ -475,7 +517,7 @@ export default function Calls() {
     ) {
       return "Call was successfull";
     } else if (
-      status === "client-hangup" &&
+      (status === "client-hangup" || status === "canceled") &&
       (direction === "inbound" || direction === "incoming")
     ) {
       return "Client hangup during call";
@@ -488,17 +530,26 @@ export default function Calls() {
     return status;
   };
 
+  const getUserByPhone = (phone) => {
+    return allUsers?.find(
+      (user) =>
+        normalizePhoneWithSameFormat(user.phone) ===
+        normalizePhoneWithSameFormat(phone),
+    );
+  };
+
   return (
     <div className="">
+      {/* <CallsAnalytics /> */}
       {/* Calls Table */}
-      <div className="bg-white p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
+      <div className="bg-app-surface p-3 md:p-4 space-y-3 md:space-y-6 h-[90vh] flex flex-col">
         <div className=" flex items-center justify-between">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50">
+            <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-primary/60! bg-app-surface-secondary">
               <input
                 type="text"
                 placeholder="Search calls..."
-                className="w-full bg-transparent outline-none text-sm"
+                className="w-full bg-transparent outline-none text-sm text-app-text dark:text-app-text-faint"
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
@@ -511,7 +562,7 @@ export default function Calls() {
 
             <button
               onClick={() => setCallPopup(true)}
-              className="border border-primary/60! py-1 px-5 rounded hover:bg-primary hover:text-white duration-300 flex items-center gap-1"
+              className=" bg-app-surface-secondary border border-primary/60! py-1 px-5 rounded hover:bg-primary hover:text-white duration-300 flex items-center gap-1"
             >
               <MdOutlineWifiCalling3 size={16} /> Call Now
             </button>
@@ -519,7 +570,7 @@ export default function Calls() {
             {isConnected && (
               <div
                 onClick={() => importCalls()}
-                className="flex items-center border font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
+                className="flex items-center border-primary/60! font-medium rounded-md gap-1 py-1  px-3 bg-primary text-white cursor-pointer"
               >
                 <div
                   className={`flex justify-end items-center cursor-pointer ${
@@ -528,7 +579,7 @@ export default function Calls() {
                 >
                   <MdRefresh size={18} />
                 </div>
-                Import Calls
+                Refresh
               </div>
             )}
           </div>
@@ -536,19 +587,36 @@ export default function Calls() {
 
         <div className="flex flex-col flex-1 min-h-0">
           {/* 📊 TABLE */}
-          <div className="border rounded-lg overflow-x-auto">
+          <div className="border-primary/60! rounded-lg overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-primary sticky top-0 z-999">
                 <tr>
-                  <th className="px-3 py-2 text-white">#</th>
-                  {columns.map((col) => (
-                    <th
-                      key={col.value}
-                      className="px-3 py-3 text-left text-white whitespace-nowrap"
-                    >
-                      {col.label}
-                    </th>
-                  ))}
+                  <th className="px-3 py-2 text-white dark:text-app-text-muted">
+                    #
+                  </th>
+                  {columns.map((col) => {
+                    if (col.value === "property") {
+                      if (hotel?.Profile?.domain === "stayxp") {
+                        return (
+                          <th
+                            key={col.value}
+                            className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
+                          >
+                            {col.label}
+                          </th>
+                        );
+                      }
+                      return null;
+                    }
+                    return (
+                      <th
+                        key={col.value}
+                        className="px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap"
+                      >
+                        {col.label}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
 
@@ -582,7 +650,7 @@ export default function Calls() {
                     return (
                       <tr
                         key={i}
-                        className="odd:bg-white even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                        className="odd:bg-app-surface even:bg-app-surface border-app-border text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
                         onClick={() =>
                           handleRedirectToPage(call, i + limit * (page - 1) + 1)
                         }
@@ -596,19 +664,39 @@ export default function Calls() {
 
                         {/* From */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.from || "-"}
+                          {getUserByPhone(call?.from)?.userName ||
+                            call?.from ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.from) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.from || "-"}
+                        </td> */}
 
                         {/* To */}
                         <td className="px-3 py-1 whitespace-nowrap">
-                          {call.to || "-"}
+                          {getUserByPhone(call?.to)?.userName ||
+                            call?.to ||
+                            "-"}
                         </td>
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {normalizePhoneWithSameFormat(call?.to) ===
+                          normalizePhoneWithSameFormat(authUser?.phone)
+                            ? authUser?.userName
+                            : call?.to || "-"}
+                        </td> */}
+                        {/* <td className="px-3 py-1 whitespace-nowrap">
+                          {call.to || "-"}
+                        </td> */}
 
                         {/* Phone */}
                         <td className="px-3 py-1 whitespace-nowrap">
                           {call.phoneNumberSid || "-"}
                         </td>
 
+                        {/* Whatsapp */}
                         <td
                           onClick={(e) => {
                             e.stopPropagation();
@@ -623,6 +711,23 @@ export default function Calls() {
                           className="px-3 py-1 whitespace-nowrap text-center flex justify-center text-green-500"
                         >
                           <FaWhatsapp size={20} />
+                        </td>
+
+                        {/* call  */}
+
+                        <td
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCall(call);
+                            // setLead({
+                            //   Contact:
+                            //     call?.direction === "inbound"
+                            //       ? call?.from
+                            //       : call?.to,
+                            // });
+                          }}
+                        >
+                          <FaPhone />
                         </td>
 
                         {/* Direction */}
@@ -702,22 +807,24 @@ export default function Calls() {
                       </td> */}
 
                         {/* Property  */}
-                        <td
-                          onClick={(e) => e.stopPropagation()}
-                          className="p-1"
-                        >
-                          <CustomDropdown
-                            label={call?.property || "Select"}
-                            options={Property}
-                            onChange={(value) =>
-                              handleUpdateCall({
-                                property: value,
-                                sid: call.sid,
-                              })
-                            }
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
-                          />
-                        </td>
+                        {hotel?.Profile?.domain === "stayxp" && (
+                          <td
+                            onClick={(e) => e.stopPropagation()}
+                            className="p-1"
+                          >
+                            <CustomDropdown
+                              label={call?.property || "Select"}
+                              options={Property}
+                              onChange={(value) =>
+                                handleUpdateCall({
+                                  property: value,
+                                  sid: call.sid,
+                                })
+                              }
+                              className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                            />
+                          </td>
+                        )}
 
                         {/* Segregation */}
                         <td
@@ -741,7 +848,7 @@ export default function Calls() {
                             //   leadStatus: value,
                             // })
 
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -759,7 +866,7 @@ export default function Calls() {
                                 guestType: value,
                               });
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -777,7 +884,7 @@ export default function Calls() {
                                 priority: value,
                               });
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
 
@@ -800,7 +907,7 @@ export default function Calls() {
                                 });
                               }
                             }}
-                            className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                            className="border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                           />
                         </td>
                       </tr>
@@ -1008,14 +1115,14 @@ export default function Calls() {
 
       {callPopup && (
         <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-9999">
-          <div className="w-100 max-w-md p-5 bg-white rounded-xl shadow-xl flex flex-col gap-4">
+          <div className="w-100 max-w-md p-5 bg-app-surface-secondary rounded-xl shadow-xl flex flex-col gap-4">
             <h1 className="text-lg font-semibold">
               Enter Number to Make a Call
             </h1>
 
             {/* 🔥 From Number (Dropdown + Input) */}
             <div className="flex flex-col gap-2">
-              {/* <label className="text-sm font-medium">From</label> */}
+              <label className="text-sm font-medium">From</label>
 
               {/* <CustomDropdown2
                 options={
@@ -1029,14 +1136,17 @@ export default function Calls() {
                   setFromNumber(item?.value);
                 }}
                 className="border p-1 rounded-md bg-gray-100 w-full"
-              />
+              /> */}
+
+              <label htmlFor="">{authUser?.userName}</label>
 
               <input
                 value={fromNumber}
+                readOnly
                 onChange={(e) => setFromNumber(e.target.value)}
                 placeholder="Or type number"
                 className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              /> */}
+              />
             </div>
 
             {/* 🔥 To Number */}
@@ -1072,7 +1182,7 @@ export default function Calls() {
 
       {showSidebar && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+          <div className="w-full max-w-md bg-app-surface-secondary h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800">
@@ -1092,7 +1202,7 @@ export default function Calls() {
               className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   API Key
                 </label>
                 <input
@@ -1107,7 +1217,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Auth Token
                 </label>
                 <input
@@ -1122,7 +1232,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Subdomain
                 </label>
                 <input
@@ -1137,7 +1247,7 @@ export default function Calls() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-app-text-faint">
                   Account SID
                 </label>
                 <input
@@ -1167,7 +1277,7 @@ export default function Calls() {
       {/* Audio Modal */}
       {showAudioModal && (
         <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-[99999]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-app-surface-secondary rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Call Recording</h3>
               <button
@@ -1185,7 +1295,7 @@ export default function Calls() {
                   {/* Loader */}
                   <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-black" />
 
-                  <p className="mt-4 text-sm font-medium text-gray-700">
+                  <p className="mt-4 text-sm font-medium text-gray-700 dark:text-app-text">
                     Loading recording...
                   </p>
 
@@ -1204,7 +1314,7 @@ export default function Calls() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-app-text">
                     <div className="h-2 w-2 rounded-full bg-green-500" />
                     Recording ready to play
                   </div>
@@ -1230,19 +1340,19 @@ export default function Calls() {
 
       {incomingCallPopup && (
         <div className="fixed inset-0 flex justify-center items-center backdrop-blur-sm bg-black/40 z-99999">
-          <div className="w-72 bg-white rounded-2xl shadow-xl p-4 border border-gray-200 animate-slideIn">
+          <div className="w-72 bg-app-surface-secondary rounded-2xl shadow-xl p-4 border border-gray-200 animate-slideIn">
             <div className="flex items-center gap-3">
               <div className="bg-green-100 text-green-600 p-2 rounded-full">
                 📞
               </div>
               <div>
                 <h3 className="text-sm font-semibold">Incoming Call</h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-app-text-faint">
                   {incomingCallData?.from}
                 </p>
               </div>
             </div>
-            <p className="text-xs mt-2 text-center text-gray-500">
+            <p className="text-xs mt-2 text-center text-gray-500 dark:text-app-text-faint">
               Please check your phone
             </p>
 
@@ -1268,13 +1378,15 @@ export default function Calls() {
 // Reusable Stat Card
 function StatCard({ icon, title, value, color }) {
   return (
-    <div className="bg-white p-6 rounded-lg">
+    <div className="bg-app-surface-secondary p-6 rounded-lg">
       <div className="flex items-center">
         <div className={`p-3 bg-${color}-100 rounded-full`}>
           <i className={`fas ${icon} text-${color}-600`}></i>
         </div>
         <div className="ml-4">
-          <h3 className="text-md font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-md font-semibold text-gray-900 dark:text-app-text">
+            {title}
+          </h3>
           <p className={`text-2xl font-bold text-${color}-600`}>
             {title === "Avg Duration" ? `${value} sec` : value}
           </p>

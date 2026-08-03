@@ -22,7 +22,6 @@ import InfluencerMarketing from "../pages/Social/InfluencerMarketing";
 import EmailMarketing from "../pages/Marketing/EmailMarketing";
 import ConversationalTool from "../pages/ConversationalTool/ConversationalTool";
 import Website from "../pages/CustomWebsite/Website";
-import Seo from "../pages/SEO/Seo";
 import ChannelManager from "../pages/Manager/ChannelManager";
 import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
 import FrontDesk from "../pages/FrontDesk/FrontDesk";
@@ -36,6 +35,7 @@ import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageL
 import AllLeads from "../pages/Enquiry/AllLeads";
 import ViewAndManageCalls from "../pages/Calls/viewCallManagement.jsx/ViewAndManageCalls";
 import Plan from "../pages/Plans/Plan";
+import BroadcastDetails from "../pages/BroadCasting/BroadcastDetails";
 
 const Navigation = () => {
   const dashboardRootPath = "/dashboard/client";
@@ -75,7 +75,7 @@ const Navigation = () => {
         {/* <Route path="email-marketing" element={<EmailMarketing />} /> */}
         <Route path="conversational-tool" element={<ConversationalTool />} />
         <Route path="custom-website" element={<Website />} />
-        <Route path="seo" element={<Seo />} />
+        {/* <Route path="seo" element={<Seo />} /> */}
         <Route path="channel-manager" element={<ChannelManager />} />
         <Route path="pms-software" element={<ChannelManager />} />
         <Route path="sms-marketing" element={<EmailMarketing />} />
@@ -99,6 +99,11 @@ const Navigation = () => {
         <Route
           path="leads-management/:slug/:leadId/view"
           element={<ViewAndMangeLeads />}
+        />
+
+        <Route
+          path="marketing/whatsapp-marketing/broadcast/:id"
+          element={<BroadcastDetails />}
         />
         {/* Dynamic Routes with Error Boundary */}
         {SidebarData?.map((data, index) => {

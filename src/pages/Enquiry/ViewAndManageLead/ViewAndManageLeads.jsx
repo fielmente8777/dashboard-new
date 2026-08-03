@@ -51,10 +51,13 @@ const ViewAndManageLeads = () => {
   const [messageLoading, setMessageLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState();
 
+  console.log(whatsAppConversation);
+
   const fetchConversation = async (conversationId) => {
     setMessageLoading(true);
     try {
       const response = await getWhatsappConversationMessages(conversationId);
+      console.log(response);
 
       if (response?.success && response?.responseStatusCode === 200) {
         setWhatsAppConversation(response?.result?.messages);
@@ -81,6 +84,7 @@ const ViewAndManageLeads = () => {
 
     try {
       const response = await getLeads(params);
+      console.log(response);
       // const response = await getLeadById(leadId, hid);
       if (response?.success) {
         setLead(response?.result?.docs?.leads[0]);
@@ -90,7 +94,7 @@ const ViewAndManageLeads = () => {
 
         setSelectedDate(followDate ? new Date(followDate) : null);
 
-        const conversationId = response?.result?.docs?.conversationId;
+        const conversationId = response?.result?.docs?.leads[0].conversationId;
 
         if (conversationId) {
           fetchConversation(conversationId);
@@ -162,10 +166,10 @@ const ViewAndManageLeads = () => {
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center gap-3 p-3 border-b bg-white">
+        <div className="flex items-center gap-3 p-3 border-b bg-app-surface">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-app-surface-secondary
                  hover:bg-gray-200 text-gray-700 transition-all duration-200"
           >
             <IoArrowBack size={18} />
@@ -176,7 +180,7 @@ const ViewAndManageLeads = () => {
 
         {/* Empty State */}
         <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
-          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-gray-100 mb-4 text-2xl">
+          <div className="w-14 h-14 flex items-center justify-center rounded-full bg-app-surface-secondary mb-4 text-2xl">
             📭
           </div>
 
@@ -193,11 +197,11 @@ const ViewAndManageLeads = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 bg-[#f4f6fb] min-h-screen space-y-3 md:space-y-6 relative">
-      <div className="flex items-center  gap-2.5 bg-white md:border md:shadow-xs border-primary/10! rounded-md p-3">
+    <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-3 md:space-y-6 relative">
+      <div className="flex items-center  gap-2.5 bg-app-surface-secondary md:border md:shadow-xs border-primary/10! rounded-md p-3">
         <button
           onClick={() => window.history.back()}
-          className="flex size-8 justify-center bg-gray-100 rounded-full items-center gap-2 text-primary hover:bg-gray-200 transition-all duration-200"
+          className="flex size-8 justify-center bg-app-surface-secondary rounded-full items-center gap-2 text-primary dark:text-app-text hover:bg-gray-200 dark:hover:text-primary transition-all duration-200"
         >
           <IoArrowBack />
         </button>
@@ -206,7 +210,7 @@ const ViewAndManageLeads = () => {
           <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           <div className="hidden md:flex  gap-2 ">
             {lead?.Contact && (
-              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white font-medium">
+              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-app-text bg-app-surface-secondary font-medium">
                 <label htmlFor="" className="">
                   Follow Up
                 </label>
@@ -286,8 +290,8 @@ const ViewAndManageLeads = () => {
           {/* Prev Button */}
           <button
             onClick={handlePrevPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
-               hover:bg-gray-100 hover:shadow-sm transition-all duration-200
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
+               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ← Prev
@@ -296,8 +300,8 @@ const ViewAndManageLeads = () => {
           {/* Next Button */}
           <button
             onClick={handleNextPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-white text-gray-700 
-               hover:bg-gray-100 hover:shadow-sm transition-all duration-200
+            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
+               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
                disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next →
@@ -320,12 +324,71 @@ const ViewAndManageLeads = () => {
 
             <div className="space-y-2">
               {lead?.Message && (
-                <div className="bg-white p-4 rounded-md space-y-2">
-                  <h3 className="font-semibold text-gray-800">Message</h3>
+                <div className="bg-app-surface-secondary p-4 rounded-md space-y-2">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
+                    Message
+                  </h3>
                   <p className="text-sm"> {lead?.Message}</p>
                 </div>
               )}
               <NotesCard lead={lead} setLead={setLead} />
+
+              {lead?.request_metadata && (
+                <div className="bg-app-surface-secondary p-4 rounded-md space-y-3">
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
+                    Request Metadata
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    {Object.entries(lead.request_metadata).map(
+                      ([key, value]) => {
+                        // Skip IP field
+                        if (key === "ip") return null;
+
+                        // Handle geo object separately
+                        if (key === "geo" && typeof value === "object") {
+                          return Object.entries(value).map(
+                            ([geoKey, geoValue]) => {
+                              if (geoKey === "ip" || geoKey === "readme")
+                                return null;
+
+                              return (
+                                <div
+                                  key={geoKey}
+                                  className="border rounded-md p-2 bg-app-surface-secondary"
+                                >
+                                  <p className="text-gray-500 capitalize">
+                                    {geoKey.replace(/_/g, " ")}
+                                  </p>
+
+                                  <p className="font-medium break-all">
+                                    {String(geoValue || "-")}
+                                  </p>
+                                </div>
+                              );
+                            },
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={key}
+                            className="border rounded-md p-2 bg-app-surface-secondary"
+                          >
+                            <p className="text-gray-500 capitalize">
+                              {key.replace(/_/g, " ")}
+                            </p>
+
+                            <p className="font-medium break-all">
+                              {String(value || "-")}
+                            </p>
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {lead?.chats?.length > 0 && (

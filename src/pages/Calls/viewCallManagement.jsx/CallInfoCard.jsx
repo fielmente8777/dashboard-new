@@ -8,7 +8,7 @@ const CallInfoCard = ({ call }) => {
   return (
     <div className="space-y-4">
       {/* ================= BASIC INFO ================= */}
-      <div className="bg-white p-4 rounded-md">
+      <div className="bg-app-surface-secondary p-4 rounded-md">
         <h3 className="font-semibold mb-3">Call Information</h3>
 
         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -46,7 +46,7 @@ const CallInfoCard = ({ call }) => {
       </div>
 
       {/* ================= TIME DETAILS ================= */}
-      <div className="bg-white p-4 rounded-md">
+      <div className="bg-app-surface-secondary p-4 rounded-md">
         <h3 className="font-semibold mb-3">Time Details</h3>
 
         <div className="space-y-2 text-sm">
@@ -69,7 +69,7 @@ const CallInfoCard = ({ call }) => {
 
       {/* ================= RECORDING ================= */}
       {call.recordingUrl && (
-        <div className="bg-white p-4 rounded-md">
+        <div className="bg-app-surface p-4 rounded-md">
           <h3 className="font-semibold mb-3">Call Recording</h3>
 
           {!play ? (

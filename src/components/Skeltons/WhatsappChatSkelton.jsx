@@ -1,5 +1,5 @@
 const Skeleton = ({ className = "" }) => (
-  <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+  <div className={`animate-pulse bg-app-surface-secondary rounded ${className}`} />
 );
 
 export const MessageSkeleton = ({ align = "left" }) => (
@@ -16,9 +16,9 @@ export const MessageSkeleton = ({ align = "left" }) => (
 
 const WhatesAppChatSkeleton = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-app-surface-secondary">
       {/* LEFT SIDEBAR */}
-      <div className="w-[320px] bg-white border-r">
+      <div className="w-[320px] bg-app-surface border-r">
         {[...Array(8)].map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-4 border-b">
             {/* Avatar */}
@@ -37,7 +37,7 @@ const WhatesAppChatSkeleton = () => {
       </div>
 
       {/* RIGHT CHAT WINDOW */}
-      <div className="flex flex-col flex-1 bg-gray-50">
+      <div className="flex flex-col flex-1 bg-app-surface">
         {/* Header */}
         <div className="h-14 bg-green-600 flex items-center px-4 gap-3">
           <Skeleton className="w-8 h-8 rounded-full bg-green-500" />
@@ -45,7 +45,7 @@ const WhatesAppChatSkeleton = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 p-6 space-y-4 overflow-hidden">
+        <div className="flex-1 p-6 space-y-4 overflow-hidden text-app-text dark:text-app-text-muted">
           <MessageSkeleton align="left" />
           <MessageSkeleton align="right" />
           <MessageSkeleton align="left" />
@@ -54,7 +54,7 @@ const WhatesAppChatSkeleton = () => {
         </div>
 
         {/* Input */}
-        <div className="p-4 bg-white border-t flex gap-3">
+        <div className="p-4 bg-app-surface-secondary border-t flex gap-3">
           <Skeleton className="h-10 flex-1" />
           <Skeleton className="h-10 w-16" />
         </div>

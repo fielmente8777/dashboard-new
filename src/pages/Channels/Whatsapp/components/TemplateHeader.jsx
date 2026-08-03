@@ -12,15 +12,16 @@ const categories = [
   { value: "AUTHENTICATION", label: "AUTHENTICATION" },
 ];
 
-const TemplateHeader = ({ onCancel, showCancelButton }) => {
+const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
   const {
     register,
+    getValues,
     control,
     formState: { errors },
   } = useFormContext();
 
   return (
-    <div className="bg-white p-4 rounded-lg border">
+    <div className="bg-app-surface p-4 rounded-lg border-primary/60!">
       <div className="flex justify-between items-start">
         <h2 className="text-lg font-semibold mb-4">
           Template name and language
@@ -38,18 +39,19 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
         )}
       </div>
 
-      <div className="flex items-start gap-2 w-full">
+      <div className="flex items-start gap-2 w-full bg-app-surface-secondary p-4 rounded-lg">
         {/* TEMPLATE NAME */}
         <div className="flex-1">
-          <label className="text-sm text-gray-600 mb-2 inline-block">
+          <label className="text-sm text-gray-600 dark:text-app-text-faint mb-2 inline-block">
             Template Name
           </label>
 
           <input
+            disabled={mode === "edit"}
             {...register("name")}
             className="w-full border border-gray-400! bordgr rounded-md px-3 py-2 text-sm 
              focus:outline-none focus:ring-1 focus:ring-primary
-             transition"
+             transition disabled:opacity-60"
           />
 
           {errors.name && (
@@ -67,10 +69,15 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
           </label>
 
           <Controller
-            name="language"
+            name="category"
             control={control}
             render={({ field }) => (
-              <CustomDropdown {...field} options={categories} className="" />
+              <CustomDropdown
+                {...field}
+                options={categories}
+                label={getValues("category") || ""}
+                disabled={mode === "edit"}
+              />
             )}
           />
 
@@ -88,7 +95,12 @@ const TemplateHeader = ({ onCancel, showCancelButton }) => {
             name="language"
             control={control}
             render={({ field }) => (
-              <CustomDropdown {...field} options={languages} className="" />
+              <CustomDropdown
+                {...field}
+                options={languages}
+                label={getValues("language") || ""}
+                disabled={mode === "edit"}
+              />
             )}
           />
 

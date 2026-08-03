@@ -136,13 +136,13 @@ const SendCampaignPopup = ({ open, setOpen, contacts, setContacts }) => {
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-xl max-w-96 w-full p-6 z-10 max-h-[80vh] hide-scrollbar overflow-y-auto">
+      <div className="relative bg-app-surface-secondary rounded-xl shadow-xl max-w-96 w-full p-6 z-10 max-h-[80vh] hide-scrollbar overflow-y-auto">
         <h2 className="text-lg font-semibold mb-4">Send Campaign</h2>
 
         {/* Dropdown */}
         <label className="text-sm font-medium">Select Template</label>
         <select
-          className="w-full mt-2 p-2 border rounded-md"
+          className="w-full mt-2 p-2 border rounded-md bg-app-surface-secondary"
           value={selectedTemplate}
           onChange={(e) => setSelectedTemplate(e.target.value)}
         >
@@ -164,7 +164,7 @@ const SendCampaignPopup = ({ open, setOpen, contacts, setContacts }) => {
           <div>
             <select
               onChange={(e) => handleSourceChange(e.target.value)}
-              className="w-full mt-2 p-2 border rounded-md"
+              className="w-full mt-2 p-2 border rounded-md bg-app-surface-secondary"
             >
               <option value="" disabled>
                 Select Source

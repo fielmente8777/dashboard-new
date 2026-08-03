@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BASE_URL } from "../../data/constant";
+import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 
 // handle auth api for login and register both**
@@ -49,6 +49,22 @@ export const addRoom = async (formData, hid) => {
 export const addReservation = async (data) => {
   try {
     const res = await axios.post(`${BASE_URL}/reservation/create?hid=${handleLocalStorage("hid")}`, data, {
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${handleLocalStorage("token")}`,
+      },
+    });
+    const result = res?.data;
+    return result;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+export const addReservationWithPaymentLink = async (data) => {
+  try {
+    const res = await axios.post(`${NEW_BASE_URL}/api/v1/reservation/create/${handleLocalStorage("ndid")}/${handleLocalStorage("hid")}`, data, {
       headers: {
         Accept: "application/json, text/plain, */*",
         "Content-Type": "application/json",

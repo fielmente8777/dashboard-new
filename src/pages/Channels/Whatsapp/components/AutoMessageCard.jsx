@@ -193,7 +193,7 @@ const AutoMessageCard = ({
     const tpl = templates.find((t) => t.name === c.templateName);
 
     return (
-      <div key={key} className="border rounded-lg p-4 bg-gray-50 space-y-3">
+      <div key={key} className="border-primary/60! rounded-lg p-4 bg-app-surface space-y-3">
         <ChannelToggle
           label={label}
           value={c.enabled}
@@ -205,7 +205,7 @@ const AutoMessageCard = ({
             <select
               value={c.type}
               onChange={(e) => updateConfig(key, "type", e.target.value)}
-              className="w-full border px-3 py-2 rounded-md text-sm"
+              className="w-full border px-3 py-2 rounded-md text-sm bg-app-surface-secondary"
             >
               <option value="template">Template</option>
               <option value="text">Text</option>
@@ -221,7 +221,7 @@ const AutoMessageCard = ({
                   onChange={(e) =>
                     updateConfig(key, "templateName", e.target.value)
                   }
-                  className="w-full border px-3 py-2 rounded-md text-sm"
+                  className="w-full border px-3 py-2 rounded-md text-sm bg-app-surface-secondary"
                 >
                   <option value="">Select template</option>
                   {templates.map((t) => (
@@ -269,18 +269,18 @@ const AutoMessageCard = ({
 
   // ---------------- RETURN ----------------
   return (
-    <div className="border bg-white px-6 py-5 space-y-5">
-      <h3 className="text-lg font-medium text-gray-600">
+    <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
+      <h3 className="text-lg font-medium text-gray-600 dark:text-app-text-muted">
         Auto Messaging Configuration
       </h3>
 
       {/* Apply to all */}
       <div
         className={`flex items-center justify-between p-3 rounded-md ${
-          !isAnyEnabled ? "bg-gray-100 opacity-50" : "bg-gray-100"
+          !isAnyEnabled ? "bg-app-surface-secondary opacity-50" : "bg-app-surface-secondary"
         }`}
       >
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-gray-700 dark:text-app-text">
           Apply same config to all modules
         </span>
 

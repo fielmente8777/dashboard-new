@@ -75,7 +75,7 @@ const notifications = [
   },
 ];
 
-export default function NotificationPopup({ isOpen, onClose }) {
+export default function NotificationPopup({ isOpen, onClose, data }) {
   return (
     <>
       {/* Overlay */}
@@ -88,7 +88,7 @@ export default function NotificationPopup({ isOpen, onClose }) {
 
       {/* Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-[380px] bg-white shadow-xl transform transition-transform duration-300 z-[99999] ${
+        className={`fixed top-0 right-0 h-full w-[380px] bg-app-surface-secondary shadow-xl transform transition-transform duration-300 z-[99999] ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -103,15 +103,15 @@ export default function NotificationPopup({ isOpen, onClose }) {
 
         {/* Notification List */}
         <div className="overflow-y-auto h-[calc(100%-60px)]">
-          {notifications.map((item) => (
+          {data?.map((item) => (
             <div
               key={item.id}
-              className="flex gap-3 p-4 border-b hover:bg-gray-50 cursor-pointer"
+              className="flex gap-3 p-4 border-b hover:bg-primary/60 cursor-pointer"
             >
               {/* Avatar */}
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold">
+              {/* <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-primary flex items-center justify-center text-sm font-semibold">
                 {item.name[0].toUpperCase()}
-              </div>
+              </div> */}
 
               {/* Content */}
               <div className="flex-1">
@@ -119,7 +119,7 @@ export default function NotificationPopup({ isOpen, onClose }) {
                   <span className="font-semibold">{item.name}</span>{" "}
                   {item.message}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">{item.time}</p>
+                {/* <p className="text-xs text-gray-500 mt-1">{item.time}</p> */}
               </div>
             </div>
           ))}

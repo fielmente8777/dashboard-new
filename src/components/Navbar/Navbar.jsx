@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import { IoIosNotifications, IoMdHome } from "react-icons/io";
 import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
@@ -16,6 +16,9 @@ import ProfilePopup from "../Popup/ProfilePopup";
 import { toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { FaAlignRight } from "react-icons/fa";
 import NotificationPopup from "../Popup/NotificationPopup";
+import ThemeToggle from "./ThemeToggle";
+import { WS_BASE_URL } from "../../data/constant";
+import WebSocketClient from "../../config/websocketClient";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -47,10 +50,12 @@ const letterColorMap = {
 };
 
 const Navbar = () => {
+  const wsRef = useRef(null);
   const dispatch = useDispatch();
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
   const token = localStorage.getItem("token");
   const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     if (token) {
@@ -113,14 +118,32 @@ const Navbar = () => {
 
   const firstLetter =
     hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
+
+  useEffect(() => {
+    wsRef.current = new WebSocketClient(WS_BASE_URL);
+
+    wsRef.current.connect((serverResponse) => {
+      const { data, event } = serverResponse;
+      console.log(serverResponse);
+      if (
+        event === "NOTIFICATION" &&
+        data?.ndid === localStorage.getItem("ndid")
+      ) {
+        setNotifications((prevNotifications) => [...prevNotifications, data]);
+      }
+    });
+
+    return () => wsRef.current?.close();
+  }, []);
+
   return (
     <div className="left-0 top-0">
-      <div className="py-2 z-10 bg-blue-100  sm:bg-primary flex cardShadow px-4 items-center justify-between top-0 w-full ">
+      <div className="py-2 z-10 bg-app-navbar sm:bg-primary dark:bg-app-navbar flex cardShadow px-4 items-center justify-between top-0 w-full transition-colors duration-200">
         <div
           onClick={() => dispatch(toggleSideBar())}
-          className={`size-8 bg-blue-100  rounded-sm  items-center justify-center cursor-pointer duration-500 md:hidden flex`}
+          className="size-8 bg-white/20 dark:bg-white/10 rounded-sm items-center justify-center cursor-pointer duration-500 md:hidden flex"
         >
-          <FaAlignRight color="#000" />
+          <FaAlignRight className="text-white" />
         </div>
 
         <Greeting name={isLoadingProfile ? "Loading..." : hotelName} />
@@ -169,9 +192,7 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
-            {/* <button onClick={() => setIsNotificationPopupOpen(true)}>
-              <IoIosNotifications size={22} color="white" />
-            </button> */}
+            <ThemeToggle />
             <button
               onClick={() => setIsNotificationPopupOpen(true)}
               className="group transition-transform duration-200 hover:scale-110 hover:shadow-md"
@@ -221,6 +242,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2.5 sm:hidden">
+          <ThemeToggle />
           <div
             onClick={() => setOpen(true)}
             className="bg-[#2e3b61] text-white sm:hidden p-1 rounded-md"
@@ -260,6 +282,7 @@ const Navbar = () => {
         <NotificationPopup
           isOpen={isNotificationPopupOpen}
           onClose={onNotificationPopupClose}
+          data={notifications}
         />
       </div>
     </div>

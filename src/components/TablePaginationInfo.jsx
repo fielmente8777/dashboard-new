@@ -11,7 +11,7 @@ const TablePaginationInfo = ({
   const end = Math.min(page * limit, total);
 
   return (
-    <div className="flex items-center justify-between mt-4 gap-5">
+    <div className="flex items-center justify-between mt-4 gap-5 bg-app-surface">
       {/* Left Text */}
       <p className="text-sm text-gray-600">
         Results: {start} – {end} of {total}
@@ -21,7 +21,7 @@ const TablePaginationInfo = ({
       <select
         value={limit}
         onChange={(e) => onLimitChange(Number(e.target.value))}
-        className="border rounded px-3 py-1 text-sm"
+        className="border rounded px-3 py-1 text-sm bg-app-surface!"
       >
         {limitOptions.map((opt) => (
           <option key={opt} value={opt}>

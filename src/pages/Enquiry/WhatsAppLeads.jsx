@@ -59,6 +59,8 @@ const WhatsAppLeads = () => {
   const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
+  const [notesFilter, setNotesFilter] = useState("");
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,6 +112,7 @@ const WhatsAppLeads = () => {
         limit: limit,
         stage: stage,
         created_from: CREATED_FROM,
+        notes: notesFilter,
       };
 
       if (withDateFilter && startDate && endDate) {
@@ -314,7 +317,16 @@ const WhatsAppLeads = () => {
     if (startDate && endDate) {
       fetchLeads(true);
     }
-  }, [isPageRestored, page, debouncedSearch, startDate, endDate, limit, stage]);
+  }, [
+    isPageRestored,
+    page,
+    debouncedSearch,
+    startDate,
+    endDate,
+    limit,
+    stage,
+    notesFilter,
+  ]);
 
   useEffect(() => {
     fetchUsersData();
@@ -342,16 +354,16 @@ const WhatsAppLeads = () => {
   // console.log(selectedLead);
 
   return (
-    <div className="bg-white md:p-2 md:space-y-2 h-[90vh] flex flex-col">
+    <div className="bg-app-surface p-2 md:space-y-2 h-[90vh] flex flex-col">
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center p-2 ">
           <h2 className="text-lg font-semibold">Whatsapp Leads</h2>
 
           {allLeads?.length > 0 && (
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5 whitespace-nowrap"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -364,17 +376,17 @@ const WhatsAppLeads = () => {
             {/* LEFT SIDE FILTERS */}
             <div className="flex flex-wrap items-center gap-3">
               {/* SEARCH */}
-              <div className="flex items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
-                <IoSearch className="text-gray-400" size={18} />
+              <div className="flex flex-1 items-center gap-2 h-10 w-72 px-3 rounded-lg border border-gray-300 bg-app-surface focus-within:ring-2 focus-within:ring-primary">
+                <IoSearch className="text-app-text-faint" size={18} />
                 <input
                   type="text"
                   placeholder="Search clients..."
-                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+                  className="w-full bg-transparent outline-none text-sm placeholder-app-text-faint"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              <div>
+              <div className="min-w-48 flex-1">
                 <CustomDropdown
                   options={[
                     {
@@ -388,8 +400,8 @@ const WhatsAppLeads = () => {
               </div>
 
               {/* DATE RANGE */}
-              <div className="relative">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-gray-50 focus-within:ring-2 focus-within:ring-primary">
+              <div className="relative flex-1">
+                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface focus-within:ring-2 focus-within:ring-primary">
                   <DatePicker
                     selectsRange
                     startDate={startDate}
@@ -414,12 +426,47 @@ const WhatsAppLeads = () => {
                   </span>
                 )}
               </div>
+
+              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+                <button
+                  onClick={() => setNotesFilter("")}
+                  className={`px-4 text-sm ${
+                    notesFilter === ""
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  All
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("true")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "true"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  Has Notes
+                </button>
+
+                <button
+                  onClick={() => setNotesFilter("false")}
+                  className={`px-4 text-sm ${
+                    notesFilter === "false"
+                      ? "bg-primary text-white"
+                      : "bg-app-surface-secondary text-app-text"
+                  }`}
+                >
+                  No Notes
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 min-h-0">
+      <div className="flex flex-col flex-1 min-h-0 md:mt-0 mt-4">
         {rowSelected?.length > 0 && (
           <button
             className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
@@ -428,16 +475,20 @@ const WhatsAppLeads = () => {
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="border rounded-lg overflow-x-auto hide-scrollbar">
+        <div className="border md:rounded-lg overflow-x-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
-                <th className="px-3 py-3 text-white">Select</th>
-                <th className="px-3 py-3 text-white">#</th>
+                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                  Select
+                </th>
+                <th className="px-3 py-3  text-white dark:text-app-text-muted">
+                  #
+                </th>
                 {tableHeaders?.map((h) => (
                   <th
                     key={h.key}
-                    className="px-3 py-3 text-left text-white min-w-40"
+                    className="px-3 py-3 text-left  text-white dark:text-app-text-muted min-w-40"
                   >
                     {h.label}
                   </th>
@@ -461,7 +512,7 @@ const WhatsAppLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-white border-b even:bg-gray-50 hover:bg-blue-50 cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint   hover:bg-blue-500/5 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
@@ -518,7 +569,7 @@ const WhatsAppLeads = () => {
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -546,7 +597,7 @@ const WhatsAppLeads = () => {
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -593,7 +644,7 @@ const WhatsAppLeads = () => {
                                   row?.conversationId,
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-gray-100! z-9!"
+                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
                             />
                           </td>
                         );

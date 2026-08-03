@@ -12,7 +12,7 @@ const TemplateButtons = () => {
   const buttons = watch("buttons") || [];
 
   return (
-    <div className="bg-white p-6 rounded-lg border">
+    <div className="bg-app-surface p-6 rounded-lg border-primary/60!">
       <h2 className="text-lg font-semibold mb-4">Buttons</h2>
 
       <div className="space-y-4 max-h-[260px] overflow-y-auto pr-1">
@@ -23,13 +23,13 @@ const TemplateButtons = () => {
           return (
             <div
               key={field.id}
-              className="border rounded-md p-3 bg-gray-50 relative"
+              className="border rounded-md p-3 bg-app-surface-secondary relative"
             >
               {/* REMOVE ICON */}
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-red-500"
+                className="absolute top-3 right-3 text-gray-400 dark:text-app-text-faint hover:text-red-500"
               >
                 <IoClose />
               </button>
@@ -50,10 +50,11 @@ const TemplateButtons = () => {
 
                     <select
                       {...register(`buttons.${index}.type`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+                      value={"URL"}
+                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
                     >
-                      <option value="visit">Visit website</option>
-                      <option value="quick">Quick reply</option>
+                      <option value="URL">Visit website</option>
+                      {/* <option value="quick">Quick reply</option> */}
                     </select>
                   </div>
 
@@ -77,7 +78,7 @@ const TemplateButtons = () => {
 
                     <select
                       {...register(`buttons.${index}.urlType`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
                     >
                       <option value="static">Static</option>
                       <option value="dynamic">Dynamic</option>
@@ -115,7 +116,7 @@ const TemplateButtons = () => {
             urlType: "static",
           })
         }
-        className="mt-4 border border-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-50"
+        className="mt-4 border border-gray-300 px-4 py-2 rounded-md text-sm hover:bg-primary/60"
       >
         + Add button
       </button>

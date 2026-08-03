@@ -50,7 +50,6 @@ import Linktree from "../Linktree/Linktree";
 import GoogleMapItiration from "../GoogleListing/GoogleMapItiration";
 import GMBProfile from "../GoogleListing/GMBProfile";
 import InfluencerMarketing from "../Social/InfluencerMarketing";
-import Seo from "../SEO/Seo";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
@@ -91,6 +90,10 @@ import WhatsAppLeads from "../Enquiry/WhatsAppLeads";
 import WhatsappBroadcasting from "../BroadCasting/WhatsappBroadcasting";
 import ViewAndMangeLeads from "../Enquiry/ViewAndManageLead/ViewAndManageLeads";
 import GoogleAnalytics from "../GoogleAnalytics/GoogleAnalytics";
+import MetaPageInsights from "../Meta/MetaPageInsights";
+
+import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
+import WebsiteSeo from "../SEO/WebsiteSeo";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -99,6 +102,8 @@ const DynamicPage = () => {
     // Dashboard
     [`${BASE_PATH}/${hid}`]: <Dashboard />,
     [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
+    [`${BASE_PATH}/${hid}/seo/local-seo`]: <SeoIntelligenceDashboard />,
+    [`${BASE_PATH}/${hid}/seo/website-seo`]: <WebsiteSeo />,
     // CMS
     [`${BASE_PATH}/${hid}/cms/privacy-policy`]: <Privacy />,
     [`${BASE_PATH}/${hid}/cms/terms-and-conditions`]: <Tandc />,
@@ -192,11 +197,11 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazbot`]: <Eazbot />,
     [`${BASE_PATH}/${hid}/booking-engine`]: <BookingEngine />,
 
-    [`${BASE_PATH}/${hid}/insights-analytics/google-ads-insights`]: (
-      <GoogleAdsInsights />
-    ),
+    [`${BASE_PATH}/${hid}/google-ads-insights`]: <GoogleAdsInsights />,
     [`${BASE_PATH}/${hid}/insights-analytics/meta-ads-insights`]: <Feedback />,
-    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: <GoogleAnalytics />,
+    [`${BASE_PATH}/${hid}/insights-analytics/google-analytics`]: (
+      <GoogleAnalytics />
+    ),
     [`${BASE_PATH}/${hid}/insights-analytics/google-console`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/gmb-insights`]: <Feedback />,
     [`${BASE_PATH}/${hid}/insights-analytics/social-media-insights`]: (
@@ -278,6 +283,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/eazmail`]: <EmailMarketingManagement />,
 
     [`${BASE_PATH}/${hid}/meta/leads`]: <MetaLeads />,
+    [`${BASE_PATH}/${hid}/meta-insights`]: <MetaPageInsights />,
     [`${BASE_PATH}/${hid}/meta/messages`]: <MetaMessages />,
     [`${BASE_PATH}/${hid}/meta/connections`]: <MetaConnections />,
     [`${BASE_PATH}/${hid}/meta/settings`]: <MetaSettings />,

@@ -1,4 +1,4 @@
-import { DayPilot, DayPilotScheduler } from "daypilot-pro-react";
+ import { DayPilot, DayPilotScheduler } from "daypilot-pro-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import AuthContext from "../../context/DataContext";
 import Zoom from "./FrontDeskZoom";
@@ -406,6 +406,8 @@ const Scheduler = () => {
     }
   }, []);
 
+
+  console.log("Booking Data:", bookingData);
   return (
     <div>
       <div className="toolbar my-4">

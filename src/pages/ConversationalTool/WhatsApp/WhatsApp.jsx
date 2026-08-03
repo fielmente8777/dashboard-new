@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import WebSocketClient from "../../../config/websocketClient";
 import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
 
+import { useSearchParams } from "react-router-dom";
 import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
 import DataContext from "../../../context/DataContext";
 import useNotificationSound from "../../../hooks/useNotificationSound";
@@ -12,6 +13,9 @@ import ProfilePanel from "./components/ProfilePanel";
 import SidebarChat from "./components/SidebarChat";
 
 const WhatsApp = () => {
+  const [searchParams] = useSearchParams();
+  const number = searchParams.get("number");
+  console.log(number);
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -19,6 +23,7 @@ const WhatsApp = () => {
     setConversations,
     conversations,
     selectedConversation,
+    setSelectedConversation,
     isLoadingIntegrationStatus,
     mobileActive,
   } = useContext(DataContext);
@@ -95,8 +100,6 @@ const WhatsApp = () => {
     wsRef.current.connect((serverResponse) => {
       const { data } = serverResponse;
 
-      console.log(data);
-
       if (
         serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
       ) {
@@ -154,16 +157,31 @@ const WhatsApp = () => {
     }
   };
 
+  useEffect(() => {
+    if (!number || conversations.length === 0) return;
+
+    const normalizePhone = (phone) => String(phone || "").replace(/\D/g, "");
+
+    const conversation = conversations.find(
+      (conv) => normalizePhone(conv.phone) === normalizePhone(number),
+    );
+
+    if (conversation) {
+      setSelectedConversation(conversation);
+    }
+  }, [number, conversations, setSelectedConversation]);
+
   if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 
   return (
-    <div className="h-[calc(100vh-8vh)] flex bg-gray-50">
+    <div className="h-[calc(100vh-8vh)] flex bg-app-surface">
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full">
-          <div className="hidden md:flex w-full">
+          <div className="hidden lg:flex w-full">
             <SidebarChat />
 
             {selectedConversation ? <ChatArea /> : <Fallback />}
+
             {selectedConversation && (
               <ProfilePanel
                 selectedContact={selectedConversation}
@@ -171,17 +189,20 @@ const WhatsApp = () => {
               />
             )}
           </div>
-          <div className="flex w-full md:hidden  flex-col ">
+
+          <div className="flex w-full lg:hidden flex-col">
             {mobileActive === "sidebar" && <SidebarChat />}
 
             {mobileActive === "chatarea" && selectedConversation && (
               <ChatArea />
             )}
             {mobileActive === "profile" && selectedConversation && (
-              <ProfilePanel
-                selectedContact={selectedConversation}
-                fetchConversations={getWhatsappConversations}
-              />
+              <div>
+                <ProfilePanel
+                  selectedContact={selectedConversation}
+                  fetchConversations={getWhatsappConversations}
+                />
+              </div>
             )}
           </div>
         </div>

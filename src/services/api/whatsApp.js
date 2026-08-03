@@ -104,6 +104,23 @@ export const deleteConversation = async ({ conversationId, phone }) => {
   return data;
 };
 
+export const deleteMultipleConversation = async ({ conversationIds }) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/conversations?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ conversationIds }),
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
 export const getWhatsappAccountDetails = async () => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/account/connection/details?hid=${localStorage.getItem("hid")}`,
@@ -160,13 +177,27 @@ export const createWhatsAppMessageTemplate = async (payload) => {
     {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify(payload),
+      body: payload,
     },
   );
 
+  const data = await response.json();
+  return data;
+};
+
+export const updateWhatsAppMessageTemplate = async (payload, id) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/message/template/${id}?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: payload,
+    },
+  );
   const data = await response.json();
   return data;
 };
@@ -341,6 +372,28 @@ export const getCampaign = async () => {
 
   const data = await response.json();
   console.log(data);
+  return data;
+};
+
+export const getCampaignDetails = async (id, params) => {
+  const searchParams = new URLSearchParams();
+
+  if (params?.status) searchParams.append("status", params?.status);
+  if (params?.search) searchParams.append("search", params?.search);
+  if (params?.page) searchParams.append("page", params?.page);
+  if (params?.limit) searchParams.append("limit", params?.limit);
+
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/broadcast/${id}?${searchParams.toString()}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+  const data = await response.json();
   return data;
 };
 

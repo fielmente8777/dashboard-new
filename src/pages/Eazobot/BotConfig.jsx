@@ -169,7 +169,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 rounded-md font-medium ${
-              activeTab === tab ? "bg-primary text-white" : "bg-gray-200"
+              activeTab === tab ? "bg-primary text-white" : "bg-app-surface-secondary"
             }`}
           >
             {tab === "basic" ? "Basic Setup" : "Questions"}
@@ -184,7 +184,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             <div>
               <lable
                 htmlFor="terminate"
-                className="font-medium text-md text-gray-500"
+                className="font-medium text-md text-gray-500 dark:text-app-text-faint"
               >
                 Chat Terminate Message
               </lable>
@@ -200,7 +200,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             </div>
 
             <div>
-              <lable htmlFor="fallback" className="font-medium text-gray-500">
+              <lable htmlFor="fallback" className="font-medium text-gray-500 dark:text-app-text-faint">
                 Fallback Message
               </lable>
               <input
@@ -214,7 +214,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
               />
             </div>
             <div className="md:col-span-2">
-              <lable htmlFor="interval" className="font-medium text-gray-500">
+              <lable htmlFor="interval" className="font-medium text-gray-500 dark:text-app-text-faint">
                 Time Intetval
               </lable>
               <input
@@ -230,7 +230,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
           </div>
 
           {/* TOGGLE BUTTONS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 ">
             {[
               { label: "Show Eazotel Branding", name: "show_eazotel_branding" },
               { label: "Show Typing Indicator", name: "show_typing_indicator" },
@@ -239,9 +239,9 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
             ].map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between bg-white p-4 border rounded-md"
+                className="flex items-center justify-between bg-app-surface-secondary p-4 border rounded-md"
               >
-                <span className="text-md text-gray-500 font-medium">
+                <span className="text-md text-gray-500 dark:text-app-text-faint font-medium">
                   {item.label}
                 </span>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -263,8 +263,8 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
         <>
           {/* EDIT FORM (conditional) */}
           {editIndex !== null && (
-            <div className="my-5 p-4 border rounded-md bg-gray-50 space-y-4">
-              <h4 className="text-md font-semibold text-gray-500">
+            <div className="my-5 p-4 border rounded-md bg-app-surface-secondary space-y-4">
+              <h4 className="text-md font-semibold text-gray-500 dark:text-app-text-faint">
                 Edit Question
               </h4>
               <input
@@ -324,14 +324,14 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                   <div
                     key={index}
                     className={`flex justify-between items-center p-4 border rounded-md transition-all duration-200 ${
-                      isActive ? "bg-white" : "bg-gray-100 opacity-60"
+                      isActive ? "bg-app-surface-secondary" : "bg-gray-100 opacity-60"
                     }`}
                   >
                     <div className="flex items-center gap-1">
                       {q.options && q.options.length > 0 && (
                         <button
                           onClick={() => toggleExpand(index)}
-                          className="text-gray-500 hover:text-gray-700"
+                          className="text-gray-500  hover:text-gray-700"
                         >
                           {isExpanded ? (
                             <FiChevronDown size={16} />
@@ -342,7 +342,7 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                       )}
 
                       <div>
-                        <div className="text-md font-medium text-gray-500">
+                        <div className="text-md font-medium text-gray-500 dark:text-app-text-faint">
                           {q.question}{" "}
                           <span className="text-gray-500">({q.type})</span>
                         </div>
@@ -409,8 +409,8 @@ const BotConfigStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
                               key={oIndex}
                               className={`flex gap-4 items-center justify-between p-3 border rounded-md ${
                                 isOptionActive
-                                  ? "bg-gray-50"
-                                  : "bg-gray-100 opacity-60"
+                                  ? "bg-app-surface"
+                                  : "bg-app-surface-secondary opacity-60"
                               }`}
                             >
                               {/* Left side */}
