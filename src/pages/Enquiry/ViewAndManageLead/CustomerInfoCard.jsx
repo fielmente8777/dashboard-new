@@ -118,7 +118,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
             fromNumber: agentNumber,
             toNumber: selectedGuestNumber,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -139,6 +139,12 @@ const CustomerInfoCard = ({ lead, onClick }) => {
       alert("Something went wrong while making the call");
     }
   };
+
+  useEffect(() => {
+    if (lead) {
+      setAgentNumber(lead?.assigneeNumber);
+    }
+  }, [lead]);
 
   useEffect(() => {
     fetchUsersData();
@@ -232,13 +238,7 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         )}
 
         {lead?.Email && (
-        
-            <InfoRow
-              label="Email Address"
-              value={lead.Email}
-              icon={<MdMail />}
-            />
-      
+          <InfoRow label="Email Address" value={lead.Email} icon={<MdMail />} />
         )}
 
         {(lead?.check_in || lead?.check_out || lead?.number_of_guest) && (

@@ -113,6 +113,11 @@ const ChatArea = () => {
     cta: "Fill Details",
   });
 
+  const [agentNumber, setAgentNumber] = useState();
+  const [selectedGuestNumber, setSelectedGuestNumber] = useState("");
+
+  const [callPopup, setCallPopup] = useState(false);
+
   const getMessageTypeFromFile = (file) => {
     if (!file) return "text";
 
@@ -762,6 +767,48 @@ const ChatArea = () => {
     }
   };
 
+  const handleCall = async () => {
+    console.log("Contact", selectedGuestNumber, agentNumber);
+    try {
+      if (!agentNumber || !selectedGuestNumber) {
+        alert("Both numbers are required");
+        return;
+      }
+
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/call/auth/make-call?hid=${localStorage.getItem("hid")}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // authMiddleware expects this
+          },
+          body: JSON.stringify({
+            fromNumber: agentNumber,
+            toNumber: selectedGuestNumber,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      // console.log("lkjhgfdxcvbmnm,",data);
+
+      if (!response.ok) {
+        alert(data?.error || "Call failed");
+        return;
+      }
+
+      alert("✅ Call initiated successfully");
+      setCallPopup(false);
+      // setFromNumber("");
+      // setToNumber("");
+    } catch (error) {
+      console.error("Call error:", error);
+      alert("Something went wrong while making the call");
+    }
+  };
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
@@ -818,20 +865,18 @@ const ChatArea = () => {
     setSelectedMessages([]);
     loadMessages(selectedConversation?._id);
     fetchFlowSession();
+
+    setSelectedGuestNumber(selectedConversation?.phone);
   }, [selectedConversation?._id]);
 
   useLayoutEffect(() => {
     bottomRef.current?.scrollIntoView({});
   }, [messageList]);
 
-  console.log(flows);
-
   const isImage = file?.type?.startsWith("image/");
   const isPDF = file?.type === "application/pdf";
   const isExcel = file?.type?.includes("sheet");
   const isWord = file?.type?.includes("word");
-
-  console.log(templates);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -882,12 +927,13 @@ const ChatArea = () => {
             </div>
           )}
 
-          <Link
-            to={`tel:${selectedConversation?.phone}`}
+          <button
+            onClick={() => setCallPopup(true)}
+            // to={`tel:${selectedConversation?.phone}`}
             className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
           >
             <MdCall size={18} /> Call
-          </Link>
+          </button>
 
           <div>
             <CustomDropdown2
@@ -1923,6 +1969,54 @@ const ChatArea = () => {
               >
                 Send
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {callPopup && (
+        <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
+          <div className="w-[400px] h-50 max-w-md p-4 bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-[#2d3748] shadow-xl flex flex-col rounded-lg">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-gray-900 dark:text-[#e8eaed]">
+                Enter Number to make a call!
+              </h1>
+
+              <CustomDropdown
+                // label={lead?.assignee || "Select Agent"}
+                label="Select Agent"
+                options={
+                  allUsers?.map((user) => ({
+                    value: user?.phone,
+                    label: user?.userName,
+                  })) || []
+                }
+                onChange={(value) => setAgentNumber(value)}
+              />
+
+              <input
+                value={selectedGuestNumber}
+                onChange={(e) => setSelectedGuestNumber(e.target.value)}
+                placeholder="Guest number"
+                required
+                className="mt-1 w-full border border-gray-300 dark:border-[#2d3748] bg-white dark:bg-[#242b3d] text-gray-900 dark:text-[#e8eaed] rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setCallPopup(false)}
+                  className="border py-1 px-5 bg-red-300 dark:bg-red-500/20 dark:text-red-300 rounded"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={handleCall}
+                  className="border border-gray-300 dark:border-[#2d3748] py-1 px-5 rounded text-gray-900 dark:text-[#e8eaed] hover:bg-orange-400 dark:hover:bg-orange-500/20"
+                >
+                  Call Now
+                </button>
+              </div>
             </div>
           </div>
         </div>
