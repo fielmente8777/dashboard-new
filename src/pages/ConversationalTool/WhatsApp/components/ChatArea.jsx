@@ -65,6 +65,9 @@ const ChatArea = () => {
   const [allUsers, setAllUsers] = useState([]);
   const [flows, setFlows] = useState([]);
 
+  const { integrationStatus } = useContext(DataContext);
+  console.log("integrationStatus", integrationStatus);
+
   const [quickReplies, setQuickReplies] = useState([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
   // const [setSelectedQuickReply, setSelectedQuickReply] = useState(null);
@@ -809,6 +812,8 @@ const ChatArea = () => {
     }
   };
 
+  console.log("integrationStatus", integrationStatus);
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
@@ -927,13 +932,23 @@ const ChatArea = () => {
             </div>
           )}
 
-          <button
-            onClick={() => setCallPopup(true)}
-            // to={`tel:${selectedConversation?.phone}`}
-            className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
-          >
-            <MdCall size={18} /> Call
-          </button>
+          {integrationStatus?.exotel ? (
+            <button
+              onClick={() => setCallPopup(true)}
+              // to={`tel:${selectedConversation?.phone}`}
+              className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
+            >
+              <MdCall size={18} /> Call
+            </button>
+          ) : (
+            <Link
+              // onClick={() => setCallPopup(true)}
+              to={`tel:${selectedConversation?.phone}`}
+              className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
+            >
+              <MdCall size={18} /> Call
+            </Link>
+          )}
 
           <div>
             <CustomDropdown2

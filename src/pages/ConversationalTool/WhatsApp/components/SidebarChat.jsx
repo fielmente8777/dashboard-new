@@ -19,7 +19,7 @@ import { FaUser } from "react-icons/fa";
 import { useToast } from "../../../../context/ToastContext";
 import { useConfirm } from "../../../../context/ConfirmContext";
 
-const tabs = ["Active", "Inactive", "Add"];
+const tabs = ["Active", "Inactive", "Converted", "Add"];
 
 const SidebarChat = () => {
   const { showToast } = useToast();
@@ -57,6 +57,7 @@ const SidebarChat = () => {
   const [countsConversation, setCountsConversation] = useState({
     active: "",
     inactive: "",
+    converted: "",
   });
 
   const isAllSelected =
@@ -138,8 +139,13 @@ const SidebarChat = () => {
           new Date(a.last_message?.updated_at || a.createdAt),
       );
 
-    console.log(conver);
+    return conver;
+  };
 
+  const convertedConversations = () => {
+    const conver = conversations?.filter(
+      (conv) => conv.status?.toLowerCase() === "converted",
+    );
     return conver;
   };
 
@@ -163,7 +169,9 @@ const SidebarChat = () => {
       ? setOpenNewContactModal(true)
       : activeTab === "active"
         ? setFilteredConversations(activeConversations())
-        : setFilteredConversations(historyConversations());
+        : activeTab === "inactive"
+          ? setFilteredConversations(historyConversations())
+          : setFilteredConversations(convertedConversations());
   };
 
   const fetchTemplates = async () => {
@@ -231,11 +239,18 @@ const SidebarChat = () => {
       // setSelectedConversation(actConversations[0]);
     } else if (activeTab === "Inactive" && historyConversations) {
       setFilteredConversations(historyConversations());
+    } else if (activeTab === "converted" && convertedConversations) {
+      setFilteredConversations(convertedConversations());
     }
 
     const actCount = activeConversations()?.length;
     const inactCount = historyConversations()?.length;
-    setCountsConversation({ active: actCount, inactive: inactCount });
+    const convCount = convertedConversations()?.length;
+    setCountsConversation({
+      active: actCount,
+      inactive: inactCount,
+      converted: convCount,
+    });
 
     fetchTemplates();
   }, [conversations]);
