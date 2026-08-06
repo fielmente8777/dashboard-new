@@ -32,7 +32,7 @@ const LIMITS = {
   },
   video: { max: 10 * 1024 * 1024, accept: "video/*", label: "8MB per video" },
   document: {
-    max: 5 * 1024 * 1024,
+    max: 100 * 1024 * 1024,
     accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx",
     label: "100MB per document",
   },
