@@ -27,7 +27,7 @@ const LIMITS = {
   document: {
     max: 10 * 1024 * 1024,
     accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx",
-    label: "5MB per document",
+    label: "10MB per document",
   },
 };
 
