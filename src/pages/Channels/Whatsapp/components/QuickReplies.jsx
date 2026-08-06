@@ -17,13 +17,6 @@ import { useToast } from "../../../../context/ToastContext";
 import Loader from "../../../../components/Loader";
 import { useConfirm } from "../../../../context/ConfirmContext";
 
-/**
- * WhatsApp limits (used for client-side validation before upload):
- * image  -> 5 MB   (jpg/png/webp)
- * video  -> 16 MB  (mp4/3gp)
- * document -> 100 MB (pdf/doc/docx/xls/xlsx/ppt/pptx)
- * caption/text -> 1024 chars when attached to media, 4096 for text-only
- */
 const LIMITS = {
   image: {
     max: 5 * 1024 * 1024,
