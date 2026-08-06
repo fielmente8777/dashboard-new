@@ -30,11 +30,11 @@ const LIMITS = {
     accept: "image/jpeg,image/png,image/PNG, image/jpg",
     label: "5MB per image",
   },
-  video: { max: 10 * 1024 * 1024, accept: "video/*", label: "8MB per video" },
+  video: { max: 10 * 1024 * 1024, accept: "video/*", label: "10MB per video" },
   document: {
-    max: 100 * 1024 * 1024,
+    max: 5 * 1024 * 1024,
     accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx",
-    label: "100MB per document",
+    label: "5MB per document",
   },
 };
 
