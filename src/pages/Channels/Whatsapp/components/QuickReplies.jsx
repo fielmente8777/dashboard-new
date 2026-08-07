@@ -155,7 +155,7 @@ const QuickReplies = () => {
   const [creating, setCreating] = useState(false);
 
   const totalAttachments = (r) =>
-    r.images.length + r.videos.length + r.documents.length;
+    r?.images?.length + r?.videos?.length + r?.documents?.length;
 
   const startCreate = () => {
     setForm(emptyForm());
@@ -164,10 +164,69 @@ const QuickReplies = () => {
   };
 
   const startEdit = (reply) => {
-    setForm({ ...reply });
+    console.log("reply", reply);
+
+    const editForm = {
+      id: reply._id,
+      title: reply.title,
+      text: "",
+      shortcut: reply.shortcut || "",
+      images: [],
+      videos: [],
+      documents: [],
+    };
+
+    reply.items.forEach((item) => {
+      if (item.type === "text") {
+        editForm.text = item.text;
+      }
+
+      if (item.type === "image") {
+        editForm.images = item.media.map((m, index) => ({
+          id: `img-${index}`,
+          name: m.fileName,
+          size: m.size || 0,
+          url: m.url,
+          mimeType: m.mimeType,
+          existing: true,
+        }));
+      }
+
+      if (item.type === "video") {
+        editForm.videos = item.media.map((m, index) => ({
+          id: `vid-${index}`,
+          name: m.fileName,
+          size: m.size || 0,
+          url: m.url,
+          mimeType: m.mimeType,
+          existing: true,
+        }));
+      }
+
+      if (item.type === "document") {
+        editForm.documents = item.media.map((m, index) => ({
+          id: `doc-${index}`,
+          name: m.fileName,
+          size: m.size || 0,
+          url: m.url,
+          mimeType: m.mimeType,
+          existing: true,
+        }));
+      }
+    });
+
+    setForm(editForm);
     setFileError("");
     setActiveTab("create");
   };
+
+  // const startEdit = (reply) => {
+  //   console.log("reply", reply);
+
+  //   setForm({ ...reply });
+  //   setFileError("");
+  //   setActiveTab("create");
+  // };
 
   const removeReply = async (id) => {
     const isConfirmed = await confirm(
@@ -247,57 +306,53 @@ const QuickReplies = () => {
   };
 
   const charLimit =
-    form.images.length + form.videos.length + form.documents.length > 0
+    form?.images?.length + form?.videos?.length + form?.documents?.length > 0
       ? 1024
       : 4096;
 
   const canSave =
-    form.title.trim().length > 0 &&
-    (form.text.trim().length > 0 || totalAttachments(form) > 0);
+    form?.title?.trim().length > 0 &&
+    (form?.text?.trim().length > 0 || totalAttachments(form) > 0);
 
   const handleSave = async () => {
     if (!canSave) return;
+
     setCreating(true);
 
     try {
+      const isEdit = !!form.id;
+
       const payload = new FormData();
 
       payload.append("title", form.title);
       payload.append("text", form.text);
-
-      [...form.images, ...form.videos, ...form.documents].forEach((item) => {
-        payload.append("file", item.file);
-      });
-
-      // let type = "";
-
-      // if (form.images.length > 0) {
-      //   type = "image";
-
-      //   form.images.forEach((img) => {
-      //     payload.append("file", img.file);
-      //   });
-      // } else if (form.videos.length > 0) {
-      //   type = "video";
-
-      //   form.videos.forEach((video) => {
-      //     payload.append("file", video.file);
-      //   });
-      // } else if (form.documents.length > 0) {
-      //   type = "document";
-
-      //   form.documents.forEach((doc) => {
-      //     payload.append("file", doc.file);
-      //   });
-      // }
-
-      // payload.append("type", type);
       payload.append("shortcut", form.shortcut || "");
 
+      // Existing media
+      const existingMedia = [];
+
+      // New files + existing files
+      [...form.images, ...form.videos, ...form.documents].forEach((item) => {
+        if (item.existing) {
+          existingMedia.push({
+            url: item.url,
+            fileName: item.name,
+            mimeType: item.mimeType,
+            size: item.size,
+          });
+        } else {
+          payload.append("file", item.file);
+        }
+      });
+
+      payload.append("media", JSON.stringify(existingMedia));
+
       const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
+        isEdit
+          ? `${NEW_BASE_URL}/api/v1/quick-reply/${form.id}?hid=${localStorage.getItem("hid")}`
+          : `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
         {
-          method: "POST",
+          method: isEdit ? "PUT" : "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -306,23 +361,41 @@ const QuickReplies = () => {
       );
 
       const data = await response.json();
-      console.log(data);
+
       if (data?.success) {
         showToast({
-          message: data?.message || "Reply created successfully",
+          message:
+            data?.responseMessage ||
+            (isEdit
+              ? "Quick reply updated successfully"
+              : "Quick reply created successfully"),
           type: "success",
         });
+
+        fetchReplies();
+
+        setForm(emptyForm());
+
+        setActiveTab("list");
 
         return;
       }
 
       showToast({
-        message: data?.responseMessage || "Failed to create reply",
+        message:
+          data?.responseMessage ||
+          (isEdit
+            ? "Failed to update quick reply"
+            : "Failed to create quick reply"),
         type: "error",
       });
     } catch (error) {
       console.log(error);
-      showToast("error", error?.message || "Failed to create reply");
+
+      showToast({
+        message: error?.message || "Something went wrong",
+        type: "error",
+      });
     } finally {
       setCreating(false);
     }
@@ -330,51 +403,82 @@ const QuickReplies = () => {
 
   // const handleSave = async () => {
   //   if (!canSave) return;
-  //   // if (form.id) {
-  //   //   setReplies((prev) =>
-  //   //     prev.map((r) => (r.id === form.id ? { ...form } : r)),
-  //   //   );
-  //   // } else {
-  //   //   setReplies((prev) => [...prev, { ...form, id: Date.now() }]);
-  //   // }
 
-  //   console.log(form);
+  //   console.log("form", form);
+  //   console.log("");
+  //   setCreating(true);
 
-  //   const payload = new FormData();
-  //   payload.append("title", form.title);
-  //   payload.append("text", form.text);
+  //   try {
+  //     const payload = new FormData();
 
-  //   // const testPayload = {
-  //   //   title:"",
-  //   //   type:"img",
-  //   //   media:[],
-  //   //   text:""
-  //   // }
+  //     payload.append("title", form.title);
+  //     payload.append("text", form.text);
 
-  //   // console.log()
-  //   // payload.append("type", img.file);
-  //   form.images.forEach((img) => payload.append("file", img.file));
-  //   // form.videos.forEach((vid) => payload.append("file", vid.file));
-  //   // form.documents.forEach((doc) => payload.append("file", doc.file));
+  //     [...form.images, ...form.videos, ...form.documents].forEach((item) => {
+  //       if (item.existing) {
+  //         payload.append("media", JSON.stringify(item));
+  //         return;
+  //       }
+  //       payload.append("file", item.file);
+  //     });
 
-  //   const response = await fetch(
-  //     `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
-  //     {
-  //       method: "POST",
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //     // let type = "";
+
+  //     // if (form.images.length > 0) {
+  //     //   type = "image";
+
+  //     //   form.images.forEach((img) => {
+  //     //     payload.append("file", img.file);
+  //     //   });
+  //     // } else if (form.videos.length > 0) {
+  //     //   type = "video";
+
+  //     //   form.videos.forEach((video) => {
+  //     //     payload.append("file", video.file);
+  //     //   });
+  //     // } else if (form.documents.length > 0) {
+  //     //   type = "document";
+
+  //     //   form.documents.forEach((doc) => {
+  //     //     payload.append("file", doc.file);
+  //     //   });
+  //     // }
+
+  //     // payload.append("type", type);
+  //     payload.append("shortcut", form.shortcut || "");
+
+  //     const response = await fetch(
+  //       `${NEW_BASE_URL}/api/v1/quick-repl?hid=${localStorage.getItem("hid")}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //         body: payload,
   //       },
-  //       body: payload,
-  //     },
-  //   );
+  //     );
 
-  //   console.log(response);
+  //     const data = await response.json();
 
-  //   // axios.post("/api/quick-replies", payload, {
-  //   //   headers: { "Content-Type": "multipart/form-data" },
-  //   // });
+  //     if (data?.success) {
+  //       showToast({
+  //         message: data?.message || "Reply created successfully",
+  //         type: "success",
+  //       });
 
-  //   // setActiveTab("list");
+  //       return;
+  //     }
+
+  //     showToast({
+  //       message: data?.responseMessage || "Failed to create reply",
+  //       type: "error",
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     showToast("error", error?.message || "Failed to create reply");
+  //   } finally {
+  //     setCreating(false);
+  //   }
   // };
 
   const fetchReplies = async () => {
@@ -522,13 +626,13 @@ const QuickReplies = () => {
                           </div>
 
                           <div className="flex gap-2 shrink-0">
-                            {/* <button
+                            <button
                               onClick={() => startEdit(item)}
                               className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
                               title="Edit"
                             >
                               <Edit size={16} />
-                            </button> */}
+                            </button>
 
                             <button
                               onClick={() => removeReply(item._id)}
@@ -631,12 +735,12 @@ const QuickReplies = () => {
                 <label className="font-medium">Message text</label>
                 <span
                   className={`text-xs ${
-                    form.text.length > charLimit
+                    form?.text?.length > charLimit
                       ? "text-red-500"
                       : "text-gray-400"
                   }`}
                 >
-                  {form.text.length}/{charLimit}
+                  {form?.text?.length}/{charLimit}
                 </span>
               </div>
               <textarea

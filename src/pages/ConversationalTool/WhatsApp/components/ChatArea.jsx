@@ -55,7 +55,7 @@ import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
-import { MessageSquareReply } from "lucide-react";
+import { MessageSquareReply, X } from "lucide-react";
 
 const ChatArea = () => {
   const navigate = useNavigate();
@@ -1634,7 +1634,7 @@ const ChatArea = () => {
         )}
 
         {showQuickReplies && (
-          <div className="grid grid-cols-3 gap-2 mb-2 bg-white w-full border rounded-lg shadow-lg max-h-96 overflow-auto p-2">
+          <div className="relative grid grid-cols-3 gap-2 mb-2 bg-white w-full border rounded-lg shadow-lg max-h-96 overflow-auto p-2">
             {quickReplies.map((reply) => {
               const textItem = reply.items.find((i) => i.type === "text");
               const mediaItem = reply.items.find((i) => i.type !== "text");
@@ -1660,6 +1660,13 @@ const ChatArea = () => {
                 </button>
               );
             })}
+
+            <div
+              className="absolute top-1 right-2 pb-5 cursor-pointer"
+              onClick={() => setShowQuickReplies(false)}
+            >
+              <X size={16} />
+            </div>
           </div>
         )}
 
@@ -1755,34 +1762,15 @@ const ChatArea = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => setShowQuickReplies(!showQuickReplies)}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <MessageSquareReply size={20} />
-            </button>
-            {/* {!templateClick ? (
-              <>
-                {!isTakeOver ? (
-                  <span
-                    onClick={() => handleTemplate(true)}
-                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
-                  >
-                    <MdChat className="" /> Templates
-                  </span>
-                ) : (
-                  ""
-                )}
-              </>
-            ) : (
-              <span
-                onClick={() => handleTemplate(false)}
-                className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+            {!is24HourComplete && (
+              <button
+                type="button"
+                onClick={() => setShowQuickReplies(!showQuickReplies)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
               >
-                Close Templates <MdClose />
-              </span>
-            )} */}
+                <MessageSquareReply size={20} />
+              </button>
+            )}
 
             {isTakeOver && (
               <div className="flex justify-center w-full">
