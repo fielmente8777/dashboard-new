@@ -128,17 +128,16 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
   };
 
   return (
-    <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-5 ">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex gap-2 items-center bg-app-surface-secondary px-4 py-1.5 w-fit rounded-full">
-          <h3 className="text-sm font-medium text-app-text dark:text-app-text">
-            Notes
-          </h3>
+    <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-5">
+        <div className="flex gap-2 items-center bg-app-surface px-3 sm:px-4 py-1.5 w-fit rounded-full">
+          <h3 className="text-sm font-medium text-app-text">Notes</h3>
 
           {lead?.notes?.length > 0 && (
             <button
               onClick={handleOnAdd}
-              className="rounded-full size-8 border bg-primary text-white border-gray-400 flex items-center justify-center text-lg"
+              aria-label="Add note"
+              className="rounded-full size-8 shrink-0 bg-primary hover:bg-primary/90 text-white flex items-center justify-center transition-colors"
             >
               <FaPlus size={10} />
             </button>
@@ -146,10 +145,10 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
         </div>
 
         {isEdit && lead?.notes?.length > 0 && (
-          <div className="flex justify-end  ">
+          <div className="flex justify-end">
             <button
               onClick={handleUpdateNote}
-              className="bg-green-600 text-white px-4 py-1 rounded flex items-center gap-2"
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
             >
               Save {isEditingLoading && <Loader size={12} color={"#fefefe"} />}
             </button>
@@ -158,7 +157,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
       </div>
 
       {lead?.notes?.length ? (
-        <div className="max-h-72 overflow-auto pr-2 ">
+        <div className="max-h-72 overflow-auto pr-1 sm:pr-2">
           <Timeline
             items={lead.notes}
             onEdit={(item, index) => {
@@ -170,14 +169,14 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center text-center px-2 py-6 sm:py-8">
           {/* SVG */}
-          <GrNotes size={26} color="#cdcaca" />
+          <GrNotes size={26} className="text-gray-300 dark:text-app-text-faint" />
           {/* Text */}
-          <h3 className="mt-4 text-sm font-semibold text-gray-700">
+          <h3 className="mt-4 text-sm font-semibold text-gray-700 dark:text-app-text">
             No notes yet
           </h3>
-          <p className="text-sm text-gray-500 mt-1 max-w-xs">
+          <p className="text-sm text-gray-500 dark:text-app-text-faint mt-1 max-w-xs">
             Keep track of conversations, follow-ups, and important details by
             adding your first note.
           </p>
@@ -185,9 +184,9 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
           {/* CTA */}
           <button
             onClick={handleOnAdd}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md bg-primary/90 hover:bg-primary text-white transition"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/90 hover:bg-primary text-white transition-colors"
           >
-            <span>＋</span>
+            <FaPlus size={10} />
             Add note
           </button>
         </div>

@@ -1,32 +1,59 @@
-import axios from "axios";
 import React, { useState } from "react";
-import { BASE_URL } from "../../data/constant";
+import axios from "axios";
 import Swal from "sweetalert2";
+import { useSelector } from "react-redux";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import { AiOutlineEye } from "react-icons/ai";
-import Loader from "../../components/Loader";
-import { useSelector } from "react-redux";
-import { RiArrowDownSLine } from "react-icons/ri";
+import { BsPencil } from "react-icons/bs";
 import { FaHotel } from "react-icons/fa";
-import { BsPencil, BsPencilFill, BsTrash, BsTrash2 } from "react-icons/bs";
+import { BASE_URL } from "../../data/constant";
+import Loader from "../../components/Loader";
 import TrashBin from "../../components/Icon/TrashBin";
-import Eazobot from "../Eazobot/Eazobot";
+import UrlManager from "./UrlManager";
 
-const Tabs = ["Profile", "Chatbot"];
+/* shared class strings — same scale as UrlManager */
+const CARD = "bg-app-surface-secondary rounded-xl p-4 sm:p-6 lg:p-8";
+const SECTION_TITLE =
+  "font-bold text-base sm:text-lg text-gray-800 dark:text-app-text flex items-center gap-3";
+const LABEL =
+  "block mb-1.5 text-sm font-medium text-gray-700 dark:text-app-text-muted";
+const FIELD =
+  "w-full min-w-0 rounded-lg border border-gray-300 dark:border-app-text-faint/25 bg-white dark:bg-app-surface px-3 py-2.5 pr-11 text-sm text-gray-800 dark:text-app-text-muted placeholder:text-gray-400 dark:placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-orange-400/60 focus:border-orange-400";
+const META_KEY = "font-semibold text-gray-700 dark:text-app-text-muted";
+const META_VAL = "text-gray-600 dark:text-app-text-faint break-words";
+
+const PasswordField = ({ id, label, value, onChange, visible, onToggle }) => (
+  <div>
+    <label htmlFor={id} className={LABEL}>
+      {label}
+    </label>
+    <div className="relative">
+      <input
+        id={id}
+        name={id}
+        type={visible ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={`Enter your ${label.toLowerCase()}`}
+        autoComplete="off"
+        className={FIELD}
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-label={visible ? `Hide ${label}` : `Show ${label}`}
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-lg text-gray-400 dark:text-app-text-faint hover:bg-gray-100 dark:hover:bg-app-surface-secondary transition-colors"
+      >
+        {visible ? <AiOutlineEye size={18} /> : <HiOutlineEyeOff size={18} />}
+      </button>
+    </div>
+  </div>
+);
 
 const Setting = () => {
-  // const [formData, setFormData] = useState({
-  //   name: "John Doe",
-  //   email: "john@example.com",
-  //   profession: "Software Engineer",
-  //   currentPassword: "",
-  //   newPassword: "",
-  //   confirmPassword: "",
-  // });
-
-  const [oldPassword, setOldPassword] = React.useState("");
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -34,32 +61,33 @@ const Setting = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const toggleCurrentPassword = () => {
-    setShowCurrentPassword(!showCurrentPassword);
-  };
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+  const profile = hotel?.Profile;
 
-  const toggleNewPassword = () => {
-    setShowNewPassword(!showNewPassword);
+  const resetPasswordFields = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
-
-  const toggleConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  // const handleChange = (e) => {
-  //   setFormData({ ...formData, [e.target.name]: e.target.value });
-  // };
 
   const handleConfirmSubmit = async (e) => {
     e.preventDefault();
 
-    if (oldPassword === "" || newPassword === "" || confirmPassword === "") {
-      alert("Please fill all the fields!");
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing details",
+        text: "Fill in all three password fields.",
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      alert("Passwords do not match!");
+      Swal.fire({
+        icon: "warning",
+        title: "Passwords don't match",
+        text: "Your new password and confirmation are different.",
+      });
       return;
     }
 
@@ -71,433 +99,177 @@ const Setting = () => {
         newAccessId: newPassword,
       });
 
-      if (response.data.Status !== true) {
+      if (response.data?.Status !== true) {
         Swal.fire({
           icon: "error",
-          title: "error",
-          text: "Old password is incorrect!",
+          title: "Couldn't update",
+          text: "Your current password is incorrect.",
           confirmButtonText: "OK",
-        }).then(() => {
-          //   onClose(); // Close the popup after submission
         });
-        setConfirmPassword("");
-        setNewPassword("");
-        setOldPassword("");
       } else {
         Swal.fire({
           icon: "success",
           title: "Success",
-          text: "Password changed successfully!",
+          text: "Password changed",
           confirmButtonText: "OK",
-        }).then(() => {
-          //   onClose(); // Close the popup after submission
         });
-        setConfirmPassword("");
-        setNewPassword("");
-        setOldPassword("");
       }
-
-      // onClose(); // Close the popup after submission
-    } catch (error) {
+      resetPasswordFields();
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Something went wrong!",
+        text: "Something went wrong. Try again.",
       });
-      // console.log(error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const [isDropDownOpen, setIsDropDownOpen] = useState(null);
+  if (!profile) return null;
 
-  // profile info
-  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
-  const profile = hotel?.Profile;
-
-  if (!hotel?.Profile) return null;
   return (
-    <div>
-      <div className="bg-app-surface p-5 space-y-5">
-        <div className="max-w-full mx-auto bg-app-surface-secondary p-8 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4">
-          {/* Profile info */}
-
-          {/* user type and email */}
-          <div className="flex space-x-4">
-            <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center text-white">
-              <p className="text-lg font-semibold">
-                {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
-              </p>
-            </div>
-            <div>
-              <div className="font-semibold text-lg capitalize">
-                {authUser?.userName}
-              </div>
-              <div className="text-sm text-gray-500 dark:text-app-text-faint capitalize">
-                Role: {authUser?.role}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-app-text-faint">{authUser?.emailId}</div>
-            </div>
-          </div>
-          {/* Organization */}
-          <div className="space-y-1 flex gap-4">
-            <h3 className="font-semibold text-gray-700 dark:text-app-text-muted">Organization:</h3>
-
-            <div className="">
-              <p className="text-gray-800 dark:text-app-text-faint font-medium">{profile.hotelName}</p>
-              <p className="text-sm text-gray-600 dark:text-app-text-faint wrap-break-word">
-                {profile.hotelDescription}{" "}
-              </p>
-            </div>
-          </div>
-          {/* Contact */}
-          <div className="space-y-1">
-            <p className="text-sm text-gray-500 dark:text-app-text-faint">
-              <span className="font-semibold text-gray-700 dark:text-app-text-muted ">Domain:</span>{" "}
-              {profile.domain}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-app-text-faint">
-              <span className="font-semibold text-gray-700 dark:text-app-text-muted">Email:</span>{" "}
-              {profile.hotelEmail}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-app-text-faint">
-              <span className="font-semibold text-gray-700 dark:text-app-text-muted">Phone:</span>{" "}
-              {profile.hotelPhone}
-            </p>
-          </div>
-          {/* Subscription */}
-          {/* <div className="space-y-1">
-            <div className="flex gap-4">
-              <h3 className="font-semibold text-gray-700">Subscription Plan</h3>
-              <p className="text-gray-800 font-medium">{hotel?.SubscriptionDetails?.planId.planName}</p>
-            </div>
-            <p className="text-sm text-gray-500">
-              <b>Active from :</b> {profile.plan?.activationDate} to{" "}
-              {profile.plan?.expiryDate}
-            </p>
-          </div> */}
-
-          {/* <div>
-              <select
-                name=""
-                id=""
-                className="border border-gray-300 px-4 py-2"
-              >
-                {hotels?.map((h) => (
-                  <option key={h._id} value={h._id}>
-                    {h.name}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-        </div>
-        {/* Hotels */}
-        <div className="bg-app-surface-secondary p-8 ">
-          <div className="flex items-center  cursor-pointer">
-            <div>
-              <h3 className="font-bold text-lg text-gray-800 dark:text-app-text flex items-center gap-4">
-                <FaHotel color="orange" className="text-2xl" />
-                Hotels
-              </h3>
-            </div>
-            <span className="ml-auto">
-              {/* <RiArrowDownSLine
-                  className={`${
-                    isDropDownOpen === 1 ? "rotate-180 " : ""
-                  } text-2xl transform transition duration-300 ease-in-out`}
-                /> */}
+    <div className="bg-app-surface p-3 sm:p-5 space-y-4 sm:space-y-5">
+      {/* ── identity + org + contact ─────────────────────────── */}
+      <div className={`${CARD} grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3`}>
+        {/* user */}
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="shrink-0 h-14 w-14 rounded-full bg-orange-100 dark:bg-app-surface flex items-center justify-center">
+            <span className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-app-text-muted">
+              {profile?.hotelName?.charAt(0).toUpperCase()}
             </span>
           </div>
-
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 `}>
-            {profile.hotels &&
-              Object.entries(profile.hotels).map(([hid, h]) => (
-                <div
-                  key={hid}
-                  className="p-2 rounded-md bg-primary transition relative"
-                >
-                  <p className="font-medium text-white dark:text-app-text-muted">{h.local}</p>
-                  <p className="text-sm text-gray-500 dark:text-app-text-faint">
-                    {h.city}, {h.state}, {h.country}
-                  </p>
-                  <p className="text-xs text-gray-400">Pin: {h.pinCode}</p>
-                  {/* delete & update */}
-                  <div className="absolute top-2 right-2 rounded-full flex gap-4 items-center">
-                    <button className="text-gray-500 hover:text-gray-100 hover:bg-gray-600 px-1 py-1 rounded-2xl">
-                      <BsPencil className="text-sm" />
-                    </button>
-                    <button className="">
-                      {/* <BsTrash className="text-sm" /> */}
-                      <TrashBin />
-                    </button>
-                  </div>
-                </div>
-              ))}
+          <div className="min-w-0">
+            <p className="font-semibold text-base sm:text-lg capitalize text-gray-800 dark:text-app-text truncate">
+              {authUser?.userName}
+            </p>
+            <p className="text-sm capitalize text-gray-500 dark:text-app-text-faint">
+              Role: {authUser?.role}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-app-text-faint break-words">
+              {authUser?.emailId}
+            </p>
           </div>
         </div>
 
-        <div className="max-w-full mx-auto bg-app-surface p-8">
-          {/* password change section */}
-          <div className="">
-            <form className={`space-y-10`} onSubmit={handleConfirmSubmit}>
-              {/* Profile Info */}
-              {/* <section>
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">
-              👤 Profile Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+        {/* organization */}
+        <div className="min-w-0">
+          <h3 className={`${META_KEY} text-sm`}>Organization</h3>
+          <p className="mt-1 font-medium text-gray-800 dark:text-app-text">
+            {profile.hotelName}
+          </p>
+          <p className="mt-0.5 text-sm text-gray-600 dark:text-app-text-faint break-words">
+            {profile.hotelDescription}
+          </p>
+        </div>
 
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+        {/* contact */}
+        <div className="min-w-0 space-y-1.5 text-sm">
+          <p>
+            <span className={META_KEY}>Domain: </span>
+            <span className={META_VAL}>{profile.domain}</span>
+          </p>
+          <p>
+            <span className={META_KEY}>Email: </span>
+            <span className={META_VAL}>{profile.hotelEmail}</span>
+          </p>
+          <p>
+            <span className={META_KEY}>Phone: </span>
+            <span className={META_VAL}>{profile.hotelPhone}</span>
+          </p>
+        </div>
+      </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-gray-600 font-medium mb-2">
-                  Profession
-                </label>
-                <input
-                  type="text"
-                  name="profession"
-                  value={formData.profession}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </section> */}
+      {/* ── hotels ───────────────────────────────────────────── */}
+      <div className={CARD}>
+        <h3 className={SECTION_TITLE}>
+          <FaHotel color="orange" className="text-xl sm:text-2xl shrink-0" />
+          Hotels
+        </h3>
 
-              {/* Change Password */}
-              <section>
-                <h2 className="text-xl font-semibold text-gray-700 dark:text-app-text mb-4">
-                  🔑 Change Password
-                </h2>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {profile.hotels &&
+            Object.entries(profile.hotels).map(([hid, h]) => (
+              <div
+                key={hid}
+                className="relative min-w-0 rounded-lg bg-gray-100 dark:bg-app-surface p-3 pr-20 transition-colors hover:bg-gray-200/70 dark:hover:bg-app-surface/70"
+              >
+                <p className="font-medium text-gray-800 dark:text-app-text truncate">
+                  {h.local}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-app-text-faint break-words">
+                  {h.city}, {h.state}, {h.country}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-app-text-faint">
+                  Pin: {h.pinCode}
+                </p>
 
-                <div
-                // onClick={onClose}
-                // className={`fixed cursor-pointer inset-0  bg-black bg-opacity-50 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
-                >
-                  <div className="bg-app-surface-secondary rounded-lg overflow-hidden w-full ">
-                    <div className="flex relative flex-col justify-between mb-4">
-                      {/* <button
-                    // onClick={onClose}
-                    className="text-[#575757]/70 absolute right-2 top-2 text-2xl hover:text-[#575757]"
+                <div className="absolute right-2 top-2 flex items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label={`Edit ${h.local}`}
+                    className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:bg-white dark:hover:bg-app-surface-secondary hover:text-gray-900 dark:hover:text-app-text transition-colors"
                   >
-                    &times;
-                  </button> */}
-                      {/* <div className="h-60 ">
-                    <img
-                      src="/3099593.jpg"
-                      alt="illustration"
-                      className="w-full h-full"
-                    />
-                  </div> */}
-                      {/* <h1 className="text-3xl font-semibold">Reset Password</h1> */}
-                      <div>
-                        <p className="text-sm text-[#575757]/70 dark:text-app-text-faint">
-                          Please kindly set your new password
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <div
-                        // onSubmit={handleConfirmSubmit}
-                        className="flex flex-col gap-4"
-                      >
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="currentPassword"
-                            className="font-medium text-[#575757]/90"
-                          >
-                            Current Password
-                          </label>
-                          <div className="w-full relative">
-                            <input
-                              name="password"
-                              type={showCurrentPassword ? "text" : "password"}
-                              placeholder="Enter your current password"
-                              className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                              onChange={(e) => setOldPassword(e.target.value)}
-                              value={oldPassword}
-                            />
-
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                              {showCurrentPassword ? (
-                                <AiOutlineEye
-                                  size={20}
-                                  onClick={toggleCurrentPassword}
-                                  className="text-gray-400"
-                                />
-                              ) : (
-                                <HiOutlineEyeOff
-                                  size={20}
-                                  onClick={toggleCurrentPassword}
-                                  className="text-gray-400"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="newPassword"
-                            className="font-medium text-[#575757]/90"
-                          >
-                            New Password
-                          </label>
-                          <div className="w-full relative">
-                            <input
-                              name="password"
-                              type={showNewPassword ? "text" : "password"}
-                              placeholder="Enter your new password"
-                              className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                              onChange={(e) => setNewPassword(e.target.value)}
-                              value={newPassword}
-                            />
-
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                              {showNewPassword ? (
-                                <AiOutlineEye
-                                  size={20}
-                                  onClick={toggleNewPassword}
-                                  className="text-gray-400"
-                                />
-                              ) : (
-                                <HiOutlineEyeOff
-                                  size={20}
-                                  onClick={toggleNewPassword}
-                                  className="text-gray-400"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label
-                            htmlFor="confirmPassword"
-                            className="font-medium text-[#575757]/90 "
-                          >
-                            Re-enter Password
-                          </label>
-                          <div className="w-full relative">
-                            <input
-                              name="password"
-                              type={showConfirmPassword ? "text" : "password"}
-                              placeholder="Enter your confirm password"
-                              className="p-3 rounded-lg border border-text-light  outline-none placeholder:text-gray-400 shadow-sm w-full"
-                              onChange={(e) =>
-                                setConfirmPassword(e.target.value)
-                              }
-                              value={confirmPassword}
-                            />
-
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 ">
-                              {showConfirmPassword ? (
-                                <AiOutlineEye
-                                  size={20}
-                                  onClick={toggleConfirmPassword}
-                                  className="text-gray-400"
-                                />
-                              ) : (
-                                <HiOutlineEyeOff
-                                  size={20}
-                                  onClick={toggleConfirmPassword}
-                                  className="text-gray-400"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          disabled={isLoading}
-                          type="submit"
-                          className="bg-primary/90 text-white py-2 rounded-lg hover:bg-primary transition-colors flex items-center gap-2 justify-center"
-                        >
-                          Confirm{" "}
-                          {isLoading && <Loader size={20} color="white" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    <BsPencil className="text-sm" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${h.local}`}
+                    className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-app-surface-secondary transition-colors"
+                  >
+                    <TrashBin />
+                  </button>
                 </div>
-                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={formData.currentPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-red-400 focus:border-red-400"
-                />
               </div>
-
-              <div>
-                <label className="block text-gray-600 font-medium mb-2">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-green-400 focus:border-green-400"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-gray-600 font-medium mb-2">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-green-400 focus:border-green-400"
-                />
-              </div>
-            </div> */}
-              </section>
-
-              {/* Save Button */}
-              {/* <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all"
-            >
-              Save Changes
-            </button>
-          </div> */}
-            </form>
-          </div>
+            ))}
         </div>
+      </div>
+
+      {/* ── urls ─────────────────────────────────────────────── */}
+      <UrlManager initialLinks={profile.urls} />
+
+      {/* ── password ─────────────────────────────────────────── */}
+      <div className={CARD}>
+        <h3 className={SECTION_TITLE}>🔑 Change Password</h3>
+        <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-app-text-faint">
+          Set a new password for your account.
+        </p>
+
+        <form onSubmit={handleConfirmSubmit} className="mt-5 max-w-xl space-y-4">
+          <PasswordField
+            id="currentPassword"
+            label="Current Password"
+            value={oldPassword}
+            onChange={setOldPassword}
+            visible={showCurrentPassword}
+            onToggle={() => setShowCurrentPassword((v) => !v)}
+          />
+          <PasswordField
+            id="newPassword"
+            label="New Password"
+            value={newPassword}
+            onChange={setNewPassword}
+            visible={showNewPassword}
+            onToggle={() => setShowNewPassword((v) => !v)}
+          />
+          <PasswordField
+            id="confirmPassword"
+            label="Re-enter Password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            visible={showConfirmPassword}
+            onToggle={() => setShowConfirmPassword((v) => !v)}
+          />
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/90 hover:bg-primary px-6 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-60 sm:w-auto"
+          >
+            Confirm
+            {isLoading && <Loader size={16} color="white" />}
+          </button>
+        </form>
       </div>
     </div>
   );

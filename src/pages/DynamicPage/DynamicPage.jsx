@@ -94,6 +94,7 @@ import MetaPageInsights from "../Meta/MetaPageInsights";
 
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 import WebsiteSeo from "../SEO/WebsiteSeo";
+import ImportAndConvertLeads from "../Enquiry/ImportAndConvertLeads/ImportAndConvertLeads";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -160,6 +161,10 @@ const DynamicPage = () => {
 
     // [`${BASE_PATH}/${hid}/leads-management/enquiries`]: <Leads />,
     [`${BASE_PATH}/${hid}/leads-management/all-visitors`]: <AllVisitors />,
+    [`${BASE_PATH}/${hid}/leads-management/import-convert`]: (
+      <ImportAndConvertLeads />
+    ),
+
     [`${BASE_PATH}/${hid}/leads-management/lead-gen-form`]: (
       <LeadGenFormTable />
     ),
