@@ -38,6 +38,15 @@ import CustomDropdown2 from "../../components/ui/Dropdown2";
 import ExportLeadsModal from "../../components/Modal/ExportLeadsModal";
 import AddLeadModal from "../../components/Modal/AddLeadModal";
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const CELL = "px-3 py-2.5 whitespace-nowrap";
+const HEAD_CELL =
+  "px-3 py-3 text-left text-white font-semibold whitespace-nowrap";
+const FILTER_SHELL =
+  "h-10 px-3 flex items-center gap-2 rounded-xl border border-app-border bg-app-surface-secondary text-app-text transition-colors focus-within:ring-2 focus-within:ring-primary";
+const INLINE_DROPDOWN =
+  "border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!";
+
 const AllLeads = () => {
   const wsRef = useRef(null);
   const navigate = useNavigate();
@@ -376,19 +385,18 @@ const AllLeads = () => {
   // }, []);
 
   return (
-    <div className="bg-app-surface text-app-text dark:text-app-text p-1 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+    <div className="bg-app-surface text-app-text p-3 md:p-4 space-y-3 md:space-y-5 min-h-[80dvh] md:h-[90vh] flex flex-col [color-scheme:light] dark:[color-scheme:dark]">
       <div className="space-y-3">
-        <div className="flex md:flex-row flex-col justify-between md:items-center space-y-2">
-          <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
-            All Leads
-          </h2>
+        {/* ── title + actions ──────────────────────────────── */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-app-text">All Leads</h2>
 
-          <div className="flex gap-2 md:flex-row flex-wrap items-center">
+          <div className="flex flex-wrap items-center gap-2">
             {allLeads?.length > 0 && (
               <button
                 disabled={isExporting}
                 onClick={() => setShowExportModal(true)}
-                className="bg-ternary flex-1 text-white px-4 py-2 rounded flex items-center gap-1.5 whitespace-nowrap"
+                className="bg-ternary hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 whitespace-nowrap transition-opacity disabled:opacity-60 flex-1 sm:flex-none"
               >
                 Export to Excel{" "}
                 {isExporting && <Loader color="#fefefe" size={12} />}
@@ -399,146 +407,141 @@ const AllLeads = () => {
 
             <button
               onClick={() => setShowAddLeadModal(true)}
-              className="bg-primary flex-1 text-center text-white px-4 py-2 rounded flex items-center gap-2 whitespace-nowrap"
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap transition-colors flex-1 sm:flex-none"
             >
               Add Lead
             </button>
           </div>
         </div>
 
-        <div className="bg-app-surface md:mt-0 mt-5">
-          <div className="flex flex-wrap items-center justify-between ">
-            <div className="flex flex-wrap  items-center md:gap-5 gap-2">
-              {/* SEARCH */}
-              <div className="flex flex-1 items-center gap-2 h-10 px-3 rounded-xl border border-app-border bg-app-surface-secondary text-app-text focus-within:ring-2 focus-within:ring-primary">
-                <IoSearch className="text-app-text-faint" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search clients..."
-                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
-                  onChange={(e) => setSearchTerm(e.target.value)}
+        {/* ── filters ──────────────────────────────────────── */}
+        <div className="bg-app-surface">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 lg:gap-4">
+            {/* SEARCH */}
+            <div
+              className={`${FILTER_SHELL} w-full sm:w-auto sm:flex-1 sm:min-w-[220px]`}
+            >
+              <IoSearch className="shrink-0 text-app-text-faint" size={18} />
+              <input
+                type="text"
+                placeholder="Search clients..."
+                className="w-full min-w-0 bg-transparent outline-none text-sm text-app-text placeholder:text-app-text-faint"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* DATE RANGE */}
+            <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[180px]">
+              <div className={FILTER_SHELL}>
+                <DatePicker
+                  selectsRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  maxDate={new Date()}
+                  onChange={(update) => setDateRange(update)}
+                  className="bg-transparent outline-none text-sm text-app-text placeholder:text-app-text-faint w-full min-w-0"
+                  placeholderText="Date range"
+                  popperClassName="z-99999!"
                 />
               </div>
 
-              {/* DATE RANGE */}
-              <div className="relative flex-1">
-                <div className="h-10 px-3 flex items-center text-app-text rounded-xl border border-app-border bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
-                  <DatePicker
-                    selectsRange
-                    startDate={startDate}
-                    endDate={endDate}
-                    maxDate={new Date()}
-                    onChange={(update) => setDateRange(update)}
-                    className="bg-transparent outline-none text-sm w-40"
-                    placeholderText="Date range"
-                    popperClassName="z-99999!"
-                  />
-                </div>
-
-                {startDate && endDate && (
-                  <span
-                    onClick={() => {
-                      setStartDate(null);
-                      setEndDate(null);
-                      localStorage.removeItem(
-                        `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
-                      );
-                      localStorage.removeItem(
-                        `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
-                      );
-                    }}
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-app-text-faint cursor-pointer"
-                  >
-                    <IoIosClose size={18} />
-                  </span>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-40">
-                <CustomDropdown
-                  label={"Source"}
-                  options={Sources}
-                  onChange={(value) => setSource(value)}
-                />
-              </div>
-
-              <div className="min-w-40 flex-1">
-                <CustomDropdown
-                  label={"Stage"}
-                  options={[
-                    {
-                      value: "",
-                      label: "All Stages",
-                    },
-                    ...Stages,
-                  ]}
-                  onChange={(value) => setStage(value)}
-                />
-              </div>
-
-              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
-                <button
-                  onClick={() => setNotesFilter("")}
-                  className={`px-4 text-sm ${
-                    notesFilter === ""
-                      ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
-                  }`}
+              {startDate && endDate && (
+                <span
+                  onClick={() => {
+                    setStartDate(null);
+                    setEndDate(null);
+                    localStorage.removeItem(
+                      `${LOCAL_STORAGE.AllLeadsPage}.startDate`,
+                    );
+                    localStorage.removeItem(
+                      `${LOCAL_STORAGE.AllLeadsPage}.endDate`,
+                    );
+                  }}
+                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white shadow cursor-pointer hover:bg-red-600 transition-colors"
                 >
-                  All
-                </button>
+                  <IoIosClose size={18} />
+                </span>
+              )}
+            </div>
 
-                <button
-                  onClick={() => setNotesFilter("true")}
-                  className={`px-4 text-sm ${
-                    notesFilter === "true"
-                      ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
-                  }`}
-                >
-                  Has Notes
-                </button>
+            <div className="w-full sm:w-auto sm:flex-1 sm:min-w-40">
+              <CustomDropdown
+                label={"Source"}
+                options={Sources}
+                onChange={(value) => setSource(value)}
+              />
+            </div>
 
-                <button
-                  onClick={() => setNotesFilter("false")}
-                  className={`px-4 text-sm ${
-                    notesFilter === "false"
-                      ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
-                  }`}
-                >
-                  No Notes
-                </button>
-              </div>
+            <div className="w-full sm:w-auto sm:flex-1 sm:min-w-40">
+              <CustomDropdown
+                label={"Stage"}
+                options={[
+                  {
+                    value: "",
+                    label: "All Stages",
+                  },
+                  ...Stages,
+                ]}
+                onChange={(value) => setStage(value)}
+              />
+            </div>
+
+            <div className="flex h-10 w-full sm:w-auto rounded-lg border border-app-border overflow-hidden">
+              <button
+                onClick={() => setNotesFilter("")}
+                className={`flex-1 sm:flex-none px-4 text-sm whitespace-nowrap transition-colors ${
+                  notesFilter === ""
+                    ? "bg-primary text-white"
+                    : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
+                }`}
+              >
+                All
+              </button>
+
+              <button
+                onClick={() => setNotesFilter("true")}
+                className={`flex-1 sm:flex-none px-4 text-sm whitespace-nowrap border-x border-app-border transition-colors ${
+                  notesFilter === "true"
+                    ? "bg-primary text-white"
+                    : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
+                }`}
+              >
+                Has Notes
+              </button>
+
+              <button
+                onClick={() => setNotesFilter("false")}
+                className={`flex-1 sm:flex-none px-4 text-sm whitespace-nowrap transition-colors ${
+                  notesFilter === "false"
+                    ? "bg-primary text-white"
+                    : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
+                }`}
+              >
+                No Notes
+              </button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* ── table ──────────────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-h-0">
         {rowSelected?.length > 0 && (
           <button
-            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            className="mb-2 bg-red-700/90 hover:bg-red-700 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit transition-colors"
             onClick={handleDeleteAll}
           >
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="flex border border-app-border bg-app-surface md:rounded-lg overflow-auto hide-scrollbar">
-          <table className="min-w-full text-sm ">
+        <div className="flex flex-1 min-h-0 border border-app-border bg-app-surface rounded-lg overflow-auto hide-scrollbar">
+          <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr className="whitespace-nowrap">
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
-                  Select
-                </th>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
-                  #
-                </th>
+                <th className={`${HEAD_CELL} text-center`}>Select</th>
+                <th className={`${HEAD_CELL} text-center`}>#</th>
                 {tableHeaders?.map((h) => (
-                  <th
-                    key={h.key}
-                    className={`px-3 py-3 text-left text-white dark:text-app-text-muted whitespace-nowrap`}
-                  >
+                  <th key={h.key} className={HEAD_CELL}>
                     {h.label}
                   </th>
                 ))}
@@ -561,14 +564,15 @@ const AllLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint  hover:bg-blue-500/5 transition-colors cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface-secondary border-b border-app-border text-app-text hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
-                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                      className="px-3 py-2.5 text-center whitespace-nowrap"
                     >
                       <input
                         type="checkbox"
+                        className="h-4 w-4 accent-primary cursor-pointer align-middle"
                         checked={rowSelected.includes(row?._id)}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -577,7 +581,7 @@ const AllLeads = () => {
                       />
                     </td>
 
-                    <td className="px-3 py-2.5">
+                    <td className="px-3 py-2.5 text-center text-app-text-faint tabular-nums">
                       {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
 
@@ -587,10 +591,7 @@ const AllLeads = () => {
                       if (h.key === "Created_at") {
                         const isLeadCreatedTime = row?.meta?.created_time;
                         return (
-                          <td
-                            key={h.key}
-                            className="px-3 py-2 whitespace-nowrap capitalize"
-                          >
+                          <td key={h.key} className={`${CELL} capitalize`}>
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -604,21 +605,30 @@ const AllLeads = () => {
                         return (
                           <td
                             key={h.key}
-                            className="px-3 flex py-2 "
+                            className={CELL}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
+                            <Link
+                              to={`tel:${row[h.key]}`}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {row[h.key]}
+                            </Link>
                           </td>
                         );
                       }
 
                       if (h.key === "status") {
                         return (
-                          <td onClick={(e) => e.stopPropagation()}>
+                          <td
+                            key={h.key}
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-3 py-2"
+                          >
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -644,8 +654,13 @@ const AllLeads = () => {
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
                         return (
-                          <td className="min-w-150 w-full">
-                            {isNotes ? noteMessage : "-"}
+                          <td
+                            key={h.key}
+                            className="px-3 py-2.5 min-w-[200px] max-w-[320px]"
+                          >
+                            <span className="block truncate text-app-text-muted">
+                              {isNotes ? noteMessage : "-"}
+                            </span>
                           </td>
                         );
                       }
@@ -654,13 +669,14 @@ const AllLeads = () => {
                         const turnAwayCode = row[h.key];
                         return (
                           <td
+                            key={h.key}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-2"
+                            className="px-3 py-2"
                           >
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -691,10 +707,10 @@ const AllLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td className="whitespace-nowrap">
+                          <td key={h.key} className={`${CELL} font-medium`}>
                             {userName}{" "}
                             {isToday && (
-                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                              <span className="ml-1 inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#fd5c01] text-white align-middle">
                                 Follow Up
                               </span>
                             )}
@@ -705,7 +721,7 @@ const AllLeads = () => {
                       if (h.key === "campaign_name") {
                         const isMeta = row?.meta;
                         return (
-                          <td className=" whitespace-nowrap">
+                          <td key={h.key} className={CELL}>
                             {isMeta ? isMeta?.campaign_name : "-"}
                           </td>
                         );
@@ -714,8 +730,9 @@ const AllLeads = () => {
                       if (h.key === "assignee") {
                         return (
                           <td
+                            key={h.key}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-2"
+                            className="px-3 py-2"
                           >
                             <CustomDropdown2
                               label={row["assignee"] || "Attempted By"}
@@ -733,7 +750,7 @@ const AllLeads = () => {
                                   row?.conversationId,
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                             />
                           </td>
                         );
@@ -741,7 +758,7 @@ const AllLeads = () => {
 
                       if (h.key === "created_from") {
                         return (
-                          <td className=" whitespace-nowrap">
+                          <td key={h.key} className={`${CELL} capitalize`}>
                             {row["created_from"] === "facebook"
                               ? "meta"
                               : row["created_from"] || "-"}
@@ -749,7 +766,7 @@ const AllLeads = () => {
                         );
                       }
                       return (
-                        <td key={h.key} className="px-3 py-2 whitespace-nowrap">
+                        <td key={h.key} className={CELL}>
                           {row[h.key]
                             ? row[h.key] === "undefined"
                               ? "-"
@@ -765,7 +782,7 @@ const AllLeads = () => {
                 <tr>
                   <td
                     colSpan={tableHeaders?.length + 2}
-                    className="py-6 text-center"
+                    className="py-10 text-center text-app-text-faint"
                   >
                     No Leads Found
                   </td>
@@ -776,7 +793,8 @@ const AllLeads = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-4">
+      {/* ── pagination ─────────────────────────────────────── */}
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 px-1 sm:px-4">
         <Pagination
           page={page}
           totalPages={totalPages}

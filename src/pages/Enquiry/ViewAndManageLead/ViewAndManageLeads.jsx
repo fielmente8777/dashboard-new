@@ -24,6 +24,14 @@ import WhatsAppConverstionCard from "./WhatsAppConverstionCard";
 import DatePicker from "react-datepicker";
 import { useToast } from "../../../context/ToastContext";
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const NAV_BTN =
+  "font-medium flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg border border-app-border bg-app-surface text-app-text hover:bg-app-surface-secondary dark:hover:text-primary hover:shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap";
+const CARD = "bg-app-surface-secondary p-4 rounded-lg";
+const CARD_TITLE = "font-semibold text-gray-800 dark:text-app-text";
+const META_TILE =
+  "rounded-md border border-app-border bg-app-surface p-2 min-w-0";
+
 const ViewAndManageLeads = () => {
   const { showToast } = useToast();
   const { leadId } = useParams();
@@ -156,7 +164,7 @@ const ViewAndManageLeads = () => {
 
   if (loading) {
     return (
-      <div className="h-[70vh] flex items-center justify-center">
+      <div className="h-[70vh] flex items-center justify-center bg-app-surface">
         <LeadDetailsSkeleton />
       </div>
     );
@@ -164,31 +172,31 @@ const ViewAndManageLeads = () => {
 
   if (!lead) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full bg-app-surface">
         {/* Header */}
-        <div className="flex items-center gap-3 p-3 border-b bg-app-surface">
+        <div className="flex items-center gap-3 p-3 border-b border-app-border bg-app-surface">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-app-surface-secondary
-                 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+            className="flex items-center justify-center w-9 h-9 shrink-0 rounded-full bg-app-surface-secondary
+                 hover:bg-app-surface text-app-text hover:text-primary transition-all duration-200"
           >
             <IoArrowBack size={18} />
           </button>
 
-          <span className="text-sm font-medium text-gray-700">Leads</span>
+          <span className="text-sm font-medium text-app-text">Leads</span>
         </div>
 
         {/* Empty State */}
-        <div className="flex flex-1 flex-col items-center justify-center text-center px-4">
+        <div className="flex flex-1 flex-col items-center justify-center text-center px-4 py-16">
           <div className="w-14 h-14 flex items-center justify-center rounded-full bg-app-surface-secondary mb-4 text-2xl">
             📭
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-app-text">
             No Leads Found
           </h3>
 
-          <p className="text-sm text-gray-500 mt-2 mb-4 max-w-xs">
+          <p className="text-sm text-gray-500 dark:text-app-text-faint mt-2 mb-4 max-w-xs">
             You don’t have any leads yet. Start by adding your first lead.
           </p>
         </div>
@@ -197,21 +205,24 @@ const ViewAndManageLeads = () => {
   }
 
   return (
-    <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-3 md:space-y-6 relative">
-      <div className="flex items-center  gap-2.5 bg-app-surface-secondary md:border md:shadow-xs border-primary/10! rounded-md p-3">
+    <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-3 md:space-y-6 relative [color-scheme:light] dark:[color-scheme:dark]">
+      {/* ── toolbar ──────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2.5 bg-app-surface-secondary md:border md:shadow-xs border-primary/10! rounded-lg p-3">
         <button
           onClick={() => window.history.back()}
-          className="flex size-8 justify-center bg-app-surface-secondary rounded-full items-center gap-2 text-primary dark:text-app-text hover:bg-gray-200 dark:hover:text-primary transition-all duration-200"
+          className="flex size-9 shrink-0 justify-center bg-app-surface rounded-full items-center text-primary dark:text-app-text hover:bg-app-surface-secondary dark:hover:text-primary transition-all duration-200"
         >
           <IoArrowBack />
         </button>
 
-        <div className="flex flex-1  justify-between items-center">
-          <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-          <div className="hidden md:flex  gap-2 ">
+        <div className="flex flex-1 min-w-0 flex-wrap justify-between items-center gap-2">
+          <div className="min-w-0 overflow-x-auto hide-scrollbar">
+            <LeadTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+          <div className="flex w-full md:w-auto">
             {lead?.Contact && (
-              <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-app-text bg-app-surface-secondary font-medium">
-                <label htmlFor="" className="">
+              <div className="flex w-full md:w-auto flex-wrap gap-2 py-2 justify-start md:justify-center rounded-lg items-center border border-app-border px-2 text-app-text bg-app-surface font-medium">
+                <label htmlFor="" className="text-sm whitespace-nowrap">
                   Follow Up
                 </label>
                 {/* <DatePicker
@@ -256,7 +267,7 @@ const ViewAndManageLeads = () => {
                   timeIntervals={5}
                   dateFormat="dd/MM/yyyy h:mm aa"
                   placeholderText="Select Date & Time"
-                  className="bg-transparent outline-none text-sm w-44"
+                  className="bg-transparent outline-none text-sm text-app-text placeholder:text-app-text-faint w-full min-w-0 md:w-44"
                   popperClassName="!z-50"
                 />
                 {(lead?.followUp || lead?.followUpDate) && (
@@ -265,6 +276,8 @@ const ViewAndManageLeads = () => {
                       setSelectedDate(null);
                       handleFollow(null);
                     }}
+                    aria-label="Clear follow up date"
+                    className="shrink-0 h-7 w-7 flex items-center justify-center rounded-md text-app-text-faint hover:bg-app-surface-secondary hover:text-red-500 transition-colors"
                   >
                     X
                   </button>
@@ -276,7 +289,7 @@ const ViewAndManageLeads = () => {
                       handleFollow(selectedDate);
                       setShowSave(false);
                     }}
-                    className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                    className="shrink-0 px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs transition-colors"
                   >
                     Save
                   </button>
@@ -286,13 +299,11 @@ const ViewAndManageLeads = () => {
           </div>
         </div>
 
-        <div className="flex justify-end items-center gap-3">
+        <div className="flex w-full md:w-auto justify-end items-center gap-2 sm:gap-3">
           {/* Prev Button */}
           <button
             onClick={handlePrevPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
-               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
-               disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`${NAV_BTN} flex-1 md:flex-none`}
           >
             ← Prev
           </button>
@@ -300,9 +311,7 @@ const ViewAndManageLeads = () => {
           {/* Next Button */}
           <button
             onClick={handleNextPage}
-            className="font-medium flex items-center gap-2 px-4 py-2 rounded border border-gray-300 bg-app-surface text-gray-700 dark:text-app-text
-               hover:bg-gray-100 dark:hover:text-primary hover:shadow-sm transition-all duration-200
-               disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`${NAV_BTN} flex-1 md:flex-none`}
           >
             Next →
           </button>
@@ -313,7 +322,7 @@ const ViewAndManageLeads = () => {
         <>
           <LeadHeader lead={lead} />
 
-          <div className="grid md:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6  min-h-28">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 mt-3 md:mt-6 min-h-28">
             <CustomerInfoCard
               lead={lead}
               onClick={() => setQuickResponseOpen(true)}
@@ -322,22 +331,20 @@ const ViewAndManageLeads = () => {
               <OtherDetailsCard otherDetails={lead?.other_details} />
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-3 min-w-0">
               {lead?.Message && (
-                <div className="bg-app-surface-secondary p-4 rounded-md space-y-2">
-                  <h3 className="font-semibold text-gray-800 dark:text-white">
-                    Message
-                  </h3>
-                  <p className="text-sm"> {lead?.Message}</p>
+                <div className={`${CARD} space-y-2`}>
+                  <h3 className={CARD_TITLE}>Message</h3>
+                  <p className="text-sm text-app-text-muted break-words">
+                    {lead?.Message}
+                  </p>
                 </div>
               )}
               <NotesCard lead={lead} setLead={setLead} />
 
               {lead?.request_metadata && (
-                <div className="bg-app-surface-secondary p-4 rounded-md space-y-3">
-                  <h3 className="font-semibold text-gray-800 dark:text-white">
-                    Request Metadata
-                  </h3>
+                <div className={`${CARD} space-y-3`}>
+                  <h3 className={CARD_TITLE}>Request Metadata</h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     {Object.entries(lead.request_metadata).map(
@@ -353,15 +360,12 @@ const ViewAndManageLeads = () => {
                                 return null;
 
                               return (
-                                <div
-                                  key={geoKey}
-                                  className="border rounded-md p-2 bg-app-surface-secondary"
-                                >
-                                  <p className="text-gray-500 capitalize">
+                                <div key={geoKey} className={META_TILE}>
+                                  <p className="text-gray-500 dark:text-app-text-faint capitalize text-xs">
                                     {geoKey.replace(/_/g, " ")}
                                   </p>
 
-                                  <p className="font-medium break-all">
+                                  <p className="font-medium break-all text-app-text">
                                     {String(geoValue || "-")}
                                   </p>
                                 </div>
@@ -371,15 +375,12 @@ const ViewAndManageLeads = () => {
                         }
 
                         return (
-                          <div
-                            key={key}
-                            className="border rounded-md p-2 bg-app-surface-secondary"
-                          >
-                            <p className="text-gray-500 capitalize">
+                          <div key={key} className={META_TILE}>
+                            <p className="text-gray-500 dark:text-app-text-faint capitalize text-xs">
                               {key.replace(/_/g, " ")}
                             </p>
 
-                            <p className="font-medium break-all">
+                            <p className="font-medium break-all text-app-text">
                               {String(value || "-")}
                             </p>
                           </div>

@@ -199,7 +199,9 @@ const CustomerInfoCard = ({ lead, onClick }) => {
         <div className="mb-4">
           <p className="text-xs text-gray-500">
             Created From :{" "}
-            <span className="text-primary">{lead?.created_from}</span>
+            <span className="text-primary dark:text-white">
+              {lead?.created_from}
+            </span>
           </p>
         </div>
 

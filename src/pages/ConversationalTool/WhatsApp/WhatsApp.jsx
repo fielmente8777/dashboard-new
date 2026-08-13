@@ -174,10 +174,10 @@ const WhatsApp = () => {
   if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 
   return (
-    <div className="h-[calc(100vh-8vh)] flex bg-app-surface">
+    <div className="h-[calc(100dvh-8vh)] flex bg-app-surface scheme-light dark:scheme-dark">
       {integrationStatus?.metaWhatsapp ? (
-        <div className="flex w-full">
-          <div className="hidden lg:flex w-full">
+        <div className="flex w-full min-h-0">
+          <div className="hidden lg:flex w-full min-h-0">
             <SidebarChat />
 
             {selectedConversation ? <ChatArea /> : <Fallback />}
@@ -190,14 +190,14 @@ const WhatsApp = () => {
             )}
           </div>
 
-          <div className="flex w-full lg:hidden flex-col">
+          <div className="flex w-full lg:hidden flex-col min-h-0">
             {mobileActive === "sidebar" && <SidebarChat />}
 
             {mobileActive === "chatarea" && selectedConversation && (
               <ChatArea />
             )}
             {mobileActive === "profile" && selectedConversation && (
-              <div>
+              <div className="flex flex-1 min-h-0 overflow-y-auto">
                 <ProfilePanel
                   selectedContact={selectedConversation}
                   fetchConversations={getWhatsappConversations}
@@ -207,9 +207,9 @@ const WhatsApp = () => {
           </div>
         </div>
       ) : (
-        <div className="flex w-full justify-center py-12 ">
-          <div>
-            <div className="max-w-md w-full rounded-2xl bg-white p-8 border border-gray-100 text-center">
+        <div className="flex w-full justify-center overflow-y-auto px-4 py-8 sm:py-12">
+          <div className="w-full max-w-md">
+            <div className="w-full rounded-2xl bg-app-surface-secondary p-6 sm:p-8 border border-app-border text-center">
               {/* Icon */}
               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-ternary/20">
                 <svg
@@ -224,12 +224,12 @@ const WhatsApp = () => {
               </div>
 
               {/* Heading */}
-              <h2 className="text-2xl font-semibold text-gray-900">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-app-text">
                 Connect WhatsApp Business
               </h2>
 
               {/* Description */}
-              <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+              <p className="mt-3 text-sm text-gray-600 dark:text-app-text-faint leading-relaxed">
                 Connect your WhatsApp Business account to send messages, manage
                 conversations, automate notifications, and engage with customers
                 directly from your dashboard.
@@ -238,13 +238,13 @@ const WhatsApp = () => {
               {/* CTA */}
               <button
                 onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ternary/90  px-6 py-3 text-sm font-medium text-white transition hover:bg-ternary focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ternary/90 px-6 py-3 text-sm font-medium text-white transition hover:bg-ternary focus:outline-none focus:ring-2 focus:ring-ternary focus:ring-offset-2 focus:ring-offset-app-surface"
               >
                 <span>Connect WhatsApp Business</span>
               </button>
 
               {/* Helper text */}
-              <p className="mt-4 text-xs text-gray-400">
+              <p className="mt-4 text-xs text-gray-400 dark:text-app-text-faint">
                 Secure Meta OAuth • Embedded signup • Official WhatsApp Cloud
                 API
               </p>
@@ -260,12 +260,12 @@ export default WhatsApp;
 
 const Fallback = () => {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center h-full w-full bg-linear-to-br from-green-50 to-teal-50 px-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center h-full w-full bg-linear-to-br from-green-50 to-teal-50 dark:from-app-surface dark:to-app-surface-secondary px-6 text-center">
       {/* Icon Circle */}
-      <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 animate-pulse">
+      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-app-surface-secondary shadow-lg flex items-center justify-center mb-6 animate-pulse">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-12 w-12 text-teal-500"
+          className="h-10 w-10 sm:h-12 sm:w-12 text-teal-500"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -280,12 +280,12 @@ const Fallback = () => {
       </div>
 
       {/* Heading */}
-      <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+      <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-app-text mb-2">
         Welcome to Eaz-WhatsApp
       </h2>
 
       {/* Subtext */}
-      <p className="text-gray-500 max-w-sm leading-relaxed">
+      <p className="text-gray-500 dark:text-app-text-faint max-w-sm leading-relaxed">
         Select a conversation from the left panel to start chatting. Your
         messages will appear here.
       </p>

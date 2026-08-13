@@ -20,6 +20,11 @@ import {
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { FiPlus } from "react-icons/fi";
+
+/* ── shared presentation tokens ─────────────────────────────── */
+const ROW_LABEL = "text-gray-600 dark:text-app-text-faint shrink-0";
+const ROW_VALUE = "text-gray-900 dark:text-app-text-muted text-right";
 
 const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   const { confirm } = useConfirm();
@@ -164,110 +169,80 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
   };
 
   return (
-    <div className="w-full xl:w-80 h-full overflow-y-auto bg-app-surface border-l border-gray-200 flex flex-col">
-      <div className="flex justify-end p-2"></div>
+    <div className="w-full lg:w-72 xl:w-80 shrink-0 h-full min-h-0 overflow-y-auto bg-app-surface border-l border-app-border flex flex-col [color-scheme:light] dark:[color-scheme:dark]">
       {/* Profile Header */}
-      <div className="px-3 md:px-6 md:py-0 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <div className="mr-2 lg:hidden">
-              <IoArrowBack
-                size={22}
-                onClick={() => setMobileActive("chatarea")}
-              />
-            </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 border text-gray-600 dark:text-app-text border-gray-900 bg-ternary/20 rounded-full flex items-center justify-center  font-bold text-md md:text-lg mr-2 md:mr-4">
+      <div className="px-3 md:px-6 py-4 border-b border-app-border">
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center min-w-0">
+            <button
+              type="button"
+              aria-label="Back to chat"
+              onClick={() => setMobileActive("chatarea")}
+              className="mr-1 lg:hidden shrink-0 size-9 flex items-center justify-center rounded-full text-app-text hover:bg-app-surface-secondary transition-colors"
+            >
+              <IoArrowBack size={22} />
+            </button>
+
+            <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 border border-ternary/40 text-gray-700 dark:text-app-text bg-ternary/20 rounded-full flex items-center justify-center font-bold text-base md:text-lg mr-2 md:mr-4">
               {selectedContact?.name?.charAt(0)?.toUpperCase()}
             </div>
-            <div>
-              <h3 className="text-md md:text-lg font-semibold text-gray-900 dark:text-app-text">
+            <div className="min-w-0">
+              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-app-text truncate">
                 {selectedContact?.name}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium">
+              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium truncate">
                 {selectedContact?.phone}
               </p>
             </div>
           </div>
           <button
             disabled={isDeleteLoading}
-            className="bg-red-200 text-red-600 p-2 font-medium text-sm rounded-sm flex items-center gap-1.5"
+            aria-label="Delete conversation"
+            className="shrink-0 bg-red-100 dark:bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/25 size-9 font-medium text-sm rounded-lg flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60"
             onClick={handleDeleteConversation}
           >
-            <RiDeleteBin6Line /> {isDeleteLoading && <Loader color="#fefefe" />}
+            <RiDeleteBin6Line />{" "}
+            {isDeleteLoading && <Loader color="#dc2626" size={12} />}
           </button>
         </div>
 
         {/* Status Information */}
         <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Status
-            </span>
-            <span className="text-gray-600 dark:text-app-text-faint bg-green-200 px-4 rounded-2xl font-medium text-sm">
+          <div className="flex justify-between items-center gap-2 text-sm">
+            <span className={ROW_LABEL}>Status</span>
+            <span className="text-green-800 dark:text-green-300 bg-green-100 dark:bg-green-500/15 px-3 py-0.5 rounded-2xl font-medium text-sm capitalize truncate">
               {/* {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"} */}
 
               {selectedContact?.status}
             </span>
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Last Active
-            </span>
-            <span className="text-gray-900 dark:text-app-text-faint">{`${formatDateByOnlyDay(
+          <div className="flex justify-between items-start gap-2 text-sm">
+            <span className={ROW_LABEL}>Last Active</span>
+            <span className={ROW_VALUE}>{`${formatDateByOnlyDay(
               selectedContact?.last_message?.created_at ||
                 lastMessage?.createdAt,
             )} ${formateDateInTimeIS(selectedContact?.last_message?.created_at || lastMessage?.createdAt)} `}</span>
           </div>
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Template Messages</span>
-            <span className="text-gray-900">0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Session Messages</span>
-            <span className="text-gray-900">1</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Unresolved Queries</span>
-            <span className="text-gray-900">0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Source</span>
-            <span className="text-gray-900">AD</span>
-          </div> */}
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Last Message</span>
-            <span className="text-gray-900">
-              {selectedContact?.last_message?.text}
-            </span>
-          </div> */}
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">WA Conversation</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">MAU Status</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Incoming</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Allowed":"Not Allowed"}</span>
-          </div> */}
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Opted In
-            </span>
 
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" checked={true} />
+          <div className="flex justify-between items-center gap-2 text-sm">
+            <span className={ROW_LABEL}>Opted In</span>
+
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={true}
+                readOnly
+              />
               <div
-                class="w-11 h-6 bg-gray-300 rounded-full peer 
-                            peer-checked:bg-teal-500 
+                className="w-11 h-6 bg-gray-300 dark:bg-app-surface-secondary rounded-full peer
+                            peer-checked:bg-teal-500
                             transition-colors duration-300"
               ></div>
               <div
-                class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
-                            transition-transform duration-300 
+                className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow
+                            transition-transform duration-300
                             peer-checked:translate-x-5"
               ></div>
             </label>
@@ -283,21 +258,10 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
                 });
               }}
             />
-            {/* <select
-              name="stage"
-              id=""
-              className="border border-gray-50 outline-none py-1 rounded-md w-full"
-              onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              {header?.map((item) => {
-                return <option value={item.value}>{item.label}</option>;
-              })}
-            </select> */}
           </div>
 
-          <div className="">
-            <h3 className="text-sm font-medium text-[#37322F] dark:text-app-text-faint mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-800 dark:text-app-text mb-3">
               Notes
             </h3>
 
@@ -308,30 +272,26 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
                 setEditingNote(null);
                 setEditingIndex(null);
               }}
-              className=" cursor-pointer flex items-center gap-3.5 mb-4"
+              className="cursor-pointer flex items-center gap-3 mb-4"
             >
-              <button className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg">
-                +
+              <button className="rounded-full w-8 aspect-square border border-app-border text-app-text hover:border-teal-500 hover:text-teal-600 flex items-center justify-center text-lg transition-colors">
+               <FiPlus />
               </button>
 
-              <p className="text-teal-600 font-medium flex items-center gap-2">
+              <p className="text-teal-600 dark:text-teal-400 font-medium flex items-center gap-1">
                 Add Activity{" "}
                 <span>
                   {isAddActivityOpen ? (
-                    <span>
-                      <IoMdArrowDropdown className="rotate-180" size={20} />
-                    </span>
+                    <IoMdArrowDropdown className="rotate-180" size={20} />
                   ) : (
-                    <span>
-                      <IoMdArrowDropdown size={20} />
-                    </span>
+                    <IoMdArrowDropdown size={20} />
                   )}
                 </span>
               </p>
             </div>
 
             {/* Timeline */}
-            <div className="max-h-72 overflow-auto pr-2">
+            <div className="max-h-72 overflow-auto pr-1 sm:pr-2">
               <Timeline
                 items={selectedConversation?.notes || []}
                 onEdit={(item, index) => {
@@ -353,113 +313,13 @@ const ProfilePanel = ({ selectedContact, fetchConversations }) => {
               handleAddLead({
                 activity,
               });
-              // setNotes((prev) => [...prev, activity]);
-              // setSelectedConversation((prev) => ({
-              //   ...prev,
-              //   notes: [...(prev.notes || []), activity],
-              // }));
             }}
           />
         </div>
       </div>
 
       {/* Expandable Sections */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Payments Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("payments")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Payments</span>
-            {expandedSections?.payments ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections?.payments && (
-            <div className="px-4 pb-4">
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Order Id</span>
-                  <span className="text-gray-600">Amount</span>
-                  <span className="text-gray-600">Status</span>
-                </div>
-                <p className="text-xs text-gray-400 text-center py-4">
-                  No payment records
-                </p>
-              </div>
-            </div>
-          )}
-        </div> */}
-
-        {/* Campaigns Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("campaigns")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Campaigns</span>
-            {expandedSections?.campaigns ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections?.campaigns && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">
-                No campaigns
-              </p>
-            </div>
-          )}
-        </div> */}
-
-        {/* Attributes Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("attributes")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">
-              Attributes
-            </span>
-            {expandedSections.attributes ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections.attributes && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">
-                No attributes
-              </p>
-            </div>
-          )}
-        </div> */}
-
-        {/* Tags Section */}
-        {/* <div>
-          <button
-            onClick={() => toggleSection("tags")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Tags</span>
-            {expandedSections.tags ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections.tags && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">No tags</p>
-            </div>
-          )}
-        </div> */}
-      </div>
+      <div className="flex-1"></div>
     </div>
   );
 };

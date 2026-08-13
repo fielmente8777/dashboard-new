@@ -6,7 +6,6 @@ import FileInfoCard from "./components/FileInfoCard";
 import axios from "axios";
 import { NEW_BASE_URL } from "../../../data/constant";
 import ColumnMapping from "./components/ColumnMapping";
-import ImportRules from "./components/ImportRules";
 
 export default function ImportAndConvertLeads() {
   const [step, setStep] = useState(1);
