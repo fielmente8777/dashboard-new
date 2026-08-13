@@ -21,13 +21,13 @@ import { useConfirm } from "../../../../context/ConfirmContext";
 
 const tabs = ["Active", "Inactive", "Converted", "Add"];
 
-const SidebarChat = () => {
+const SidebarChat = ({ activeTab, setActiveTab }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("active");
+  // const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
   const [selectedConversations, setSelectedConversations] = useState([]);
   const [hoveredConversation, setHoveredConversation] = useState(null);
@@ -105,11 +105,11 @@ const SidebarChat = () => {
   };
 
   const handleSearch = () => {
-    if (debouncedSearch === "" && activeTab.toLowerCase() === "active") {
+    if (debouncedSearch === "" && activeTab?.toLowerCase() === "active") {
       return setFilteredConversations(activeConversations());
     } else if (
       debouncedSearch === "" &&
-      activeTab.toLowerCase() === "history"
+      activeTab?.toLowerCase() === "history"
     ) {
       return setFilteredConversations(historyConversations());
     }
@@ -273,7 +273,7 @@ const SidebarChat = () => {
       {/* Tabs */}
       <div className="shrink-0 flex border-b border-app-border dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
         {tabs?.map((tab) => {
-          const isActive = tab.toLowerCase() === activeTab.toLowerCase();
+          const isActive = tab?.toLowerCase() === activeTab?.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
 
           return (

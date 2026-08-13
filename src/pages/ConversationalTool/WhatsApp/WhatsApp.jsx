@@ -15,7 +15,7 @@ import SidebarChat from "./components/SidebarChat";
 const WhatsApp = () => {
   const [searchParams] = useSearchParams();
   const number = searchParams.get("number");
-  console.log(number);
+
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -28,6 +28,7 @@ const WhatsApp = () => {
     mobileActive,
   } = useContext(DataContext);
 
+  const [activeTab, setActiveTab] = useState("active");
   const [loading, setLoading] = useState(false);
   const playNotification = useNotificationSound(
     "/notification-sound/Sound1.mp3",
@@ -178,9 +179,13 @@ const WhatsApp = () => {
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full min-h-0">
           <div className="hidden lg:flex w-full min-h-0">
-            <SidebarChat />
+            <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {selectedConversation ? <ChatArea /> : <Fallback />}
+            {selectedConversation ? (
+              <ChatArea setActiveTab={setActiveTab} />
+            ) : (
+              <Fallback />
+            )}
 
             {selectedConversation && (
               <ProfilePanel
@@ -191,10 +196,12 @@ const WhatsApp = () => {
           </div>
 
           <div className="flex w-full lg:hidden flex-col min-h-0">
-            {mobileActive === "sidebar" && <SidebarChat />}
+            {mobileActive === "sidebar" && (
+              <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
+            )}
 
             {mobileActive === "chatarea" && selectedConversation && (
-              <ChatArea />
+              <ChatArea setActiveTab={setActiveTab} />
             )}
             {mobileActive === "profile" && selectedConversation && (
               <div className="flex flex-1 min-h-0 overflow-y-auto">

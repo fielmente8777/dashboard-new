@@ -63,7 +63,7 @@ const MODAL_LABEL = "block text-sm mb-1 text-gray-700 dark:text-app-text-muted";
 const MODAL_FIELD =
   "w-full rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-primary/30 focus:border-primary";
 
-const ChatArea = () => {
+const ChatArea = ({ setActiveTab }) => {
   const navigate = useNavigate();
   const wsRef = useRef(null);
   const menuRef = useRef(null);
@@ -215,6 +215,8 @@ const ChatArea = () => {
           createdAt: new Date(),
         };
 
+        setActiveTab("active");
+
         // Push instantly to UI (optimistic update)
         setMessageList((prev) => [...prev, optimisticMessage]);
         setConversations((prevConversations) =>
@@ -234,26 +236,26 @@ const ChatArea = () => {
           }),
         );
 
-        // const response = await sendWhatsAppMessage(templatePayload);
+        const response = await sendWhatsAppMessage(templatePayload);
 
-        // setSelectedTemplate(null);
-        // setTemplateClick(false);
+        setSelectedTemplate(null);
+        setTemplateClick(false);
 
-        // if (response?.success && response?.responseStatusCode === 200) {
-        //   // Update UI
-        //   setMessageList((prev) =>
-        //     prev.map((m) => {
-        //       if (m._id === optimisticMessage._id) {
-        //         return {
-        //           ...m,
-        //           messageId: response?.result?.docs?.messageId,
-        //           status: "sent",
-        //         };
-        //       }
-        //       return m;
-        //     }),
-        //   );
-        // }
+        if (response?.success && response?.responseStatusCode === 200) {
+          // Update UI
+          setMessageList((prev) =>
+            prev.map((m) => {
+              if (m._id === optimisticMessage._id) {
+                return {
+                  ...m,
+                  messageId: response?.result?.docs?.messageId,
+                  status: "sent",
+                };
+              }
+              return m;
+            }),
+          );
+        }
         return;
       }
 
@@ -313,6 +315,7 @@ const ChatArea = () => {
           timestamp: new Date(),
           createdAt: new Date(),
         };
+        setActiveTab("active");
 
         setMessageList((prev) => [...prev, optimisticMessage]);
         await sendWhatsAppMessage(payload);
@@ -355,6 +358,8 @@ const ChatArea = () => {
         timestamp: new Date(),
         createdAt: new Date(),
       };
+
+      setActiveTab("active");
       // Push optimistic message
       setMessageList((prev) => [...prev, optimisticMessage]);
       setConversations((prevConversations) =>
