@@ -15,6 +15,8 @@ import SidebarChat from "./components/SidebarChat";
 const WhatsApp = () => {
   const [searchParams] = useSearchParams();
   const number = searchParams.get("number");
+  const [activeWhatsappTab, setActiveWhatsappTab] = useState("active");
+
   console.log(number);
   const wsRef = useRef(null);
   const {
@@ -178,9 +180,19 @@ const WhatsApp = () => {
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full min-h-0">
           <div className="hidden lg:flex w-full min-h-0">
-            <SidebarChat />
-
-            {selectedConversation ? <ChatArea /> : <Fallback />}
+            <SidebarChat
+              activeTab={activeWhatsappTab}
+              setActiveTab={setActiveWhatsappTab}
+            />
+            {/* {selectedConversation ? <ChatArea /> : <Fallback />} */}
+            {selectedConversation ? (
+              <ChatArea
+                activeTab={activeWhatsappTab}
+                setActiveTab={setActiveWhatsappTab}
+              />
+            ) : (
+              <Fallback />
+            )}
 
             {selectedConversation && (
               <ProfilePanel
@@ -191,11 +203,23 @@ const WhatsApp = () => {
           </div>
 
           <div className="flex w-full lg:hidden flex-col min-h-0">
-            {mobileActive === "sidebar" && <SidebarChat />}
+            {mobileActive === "sidebar" && (
+              <SidebarChat
+                activeTab={activeWhatsappTab}
+                setActiveTab={setActiveWhatsappTab}
+              />
+            )}
 
             {mobileActive === "chatarea" && selectedConversation && (
-              <ChatArea />
+              <ChatArea
+                activeTab={activeWhatsappTab}
+                setActiveTab={setActiveWhatsappTab}
+              />
             )}
+
+            {/* {mobileActive === "chatarea" && selectedConversation && (
+              <ChatArea />
+            )} */}
             {mobileActive === "profile" && selectedConversation && (
               <div className="flex flex-1 min-h-0 overflow-y-auto">
                 <ProfilePanel

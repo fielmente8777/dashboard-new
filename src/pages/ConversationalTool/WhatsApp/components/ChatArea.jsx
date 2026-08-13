@@ -63,7 +63,7 @@ const MODAL_LABEL = "block text-sm mb-1 text-gray-700 dark:text-app-text-muted";
 const MODAL_FIELD =
   "w-full rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-primary/30 focus:border-primary";
 
-const ChatArea = () => {
+const ChatArea = ({ setActiveTab }) => {
   const navigate = useNavigate();
   const wsRef = useRef(null);
   const menuRef = useRef(null);
@@ -233,26 +233,27 @@ const ChatArea = () => {
           }),
         );
 
-        // const response = await sendWhatsAppMessage(templatePayload);
+        const response = await sendWhatsAppMessage(templatePayload);
 
-        // setSelectedTemplate(null);
-        // setTemplateClick(false);
+        setSelectedTemplate(null);
+        setTemplateClick(false);
 
-        // if (response?.success && response?.responseStatusCode === 200) {
-        //   // Update UI
-        //   setMessageList((prev) =>
-        //     prev.map((m) => {
-        //       if (m._id === optimisticMessage._id) {
-        //         return {
-        //           ...m,
-        //           messageId: response?.result?.docs?.messageId,
-        //           status: "sent",
-        //         };
-        //       }
-        //       return m;
-        //     }),
-        //   );
-        // }
+        if (response?.success && response?.responseStatusCode === 200) {
+          // Update UI
+          setMessageList((prev) =>
+            prev.map((m) => {
+              if (m._id === optimisticMessage._id) {
+                return {
+                  ...m,
+                  messageId: response?.result?.docs?.messageId,
+                  status: "sent",
+                };
+              }
+              return m;
+            }),
+          );
+          setActiveTab("active");
+        }
         return;
       }
 
@@ -363,6 +364,7 @@ const ChatArea = () => {
               },
             };
           }
+
           return conv;
         }),
       );
@@ -946,7 +948,8 @@ const ChatArea = () => {
               // to={`tel:${selectedConversation?.phone}`}
               className="bg-teal-600 hover:bg-teal-700 text-lime-50 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
             >
-              <MdCall size={18} /> <span className="hidden sm:inline">Call</span>
+              <MdCall size={18} />{" "}
+              <span className="hidden sm:inline">Call</span>
             </button>
           ) : (
             <Link
@@ -954,7 +957,8 @@ const ChatArea = () => {
               to={`tel:${selectedConversation?.phone}`}
               className="bg-teal-600 hover:bg-teal-700 text-lime-50 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
             >
-              <MdCall size={18} /> <span className="hidden sm:inline">Call</span>
+              <MdCall size={18} />{" "}
+              <span className="hidden sm:inline">Call</span>
             </Link>
           )}
 

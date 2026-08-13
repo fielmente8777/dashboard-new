@@ -21,13 +21,13 @@ import { useConfirm } from "../../../../context/ConfirmContext";
 
 const tabs = ["Active", "Inactive", "Converted", "Add"];
 
-const SidebarChat = () => {
+const SidebarChat = ({activeTab, setActiveTab }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("active");
+  // const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
   const [selectedConversations, setSelectedConversations] = useState([]);
   const [hoveredConversation, setHoveredConversation] = useState(null);
