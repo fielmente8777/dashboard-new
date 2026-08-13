@@ -196,6 +196,13 @@ const CustomerInfoCard = ({ lead, onClick }) => {
           Customer Information
         </h3>
 
+        <div className="mb-4">
+          <p className="text-xs text-gray-500">
+            Created From :{" "}
+            <span className="text-primary">{lead?.created_from}</span>
+          </p>
+        </div>
+
         {lead?.Contact && (
           <div className="cursor-pointer flex justify-between items-center py-2 border-b border-gray-200 dark:border-[#2d3748] last:border-0">
             <div>

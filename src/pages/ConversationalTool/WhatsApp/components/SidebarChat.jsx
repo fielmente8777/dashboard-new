@@ -122,6 +122,8 @@ const SidebarChat = () => {
         conv.lastMessage?.toLowerCase().includes(lowerSearch),
     );
 
+    console.log(filtered);
+
     setFilteredConversations(filtered);
   };
 

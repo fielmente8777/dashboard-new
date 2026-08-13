@@ -154,8 +154,6 @@ const ChatArea = () => {
       return;
     }
 
-    console.log("selectedTemplate", selectedTemplate);
-
     try {
       if (selectedTemplate) {
         const templateParams =
@@ -203,6 +201,9 @@ const ChatArea = () => {
               parameters: templateParams,
             },
           },
+          last_message: {
+            updated_at: new Date(),
+          },
           status: "sent",
           timestamp: new Date(),
           createdAt: new Date(),
@@ -227,26 +228,26 @@ const ChatArea = () => {
           }),
         );
 
-        const response = await sendWhatsAppMessage(templatePayload);
+        // const response = await sendWhatsAppMessage(templatePayload);
 
-        setSelectedTemplate(null);
-        setTemplateClick(false);
+        // setSelectedTemplate(null);
+        // setTemplateClick(false);
 
-        if (response?.success && response?.responseStatusCode === 200) {
-          // Update UI
-          setMessageList((prev) =>
-            prev.map((m) => {
-              if (m._id === optimisticMessage._id) {
-                return {
-                  ...m,
-                  messageId: response?.result?.docs?.messageId,
-                  status: "sent",
-                };
-              }
-              return m;
-            }),
-          );
-        }
+        // if (response?.success && response?.responseStatusCode === 200) {
+        //   // Update UI
+        //   setMessageList((prev) =>
+        //     prev.map((m) => {
+        //       if (m._id === optimisticMessage._id) {
+        //         return {
+        //           ...m,
+        //           messageId: response?.result?.docs?.messageId,
+        //           status: "sent",
+        //         };
+        //       }
+        //       return m;
+        //     }),
+        //   );
+        // }
         return;
       }
 

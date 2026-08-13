@@ -6,6 +6,8 @@ export default function ColumnMapping({
   totalRows,
   mapping,
   setMapping,
+  onNext,
+  onBack,
 }) {
   return (
     <div className="bg-white rounded-xl border">
@@ -80,9 +82,16 @@ export default function ColumnMapping({
 
       {/* Footer */}
 
-      <div className="border-t p-6 flex justify-end">
-        <button className="bg-indigo-600 text-white px-6 py-3 rounded-lg">
-          Preview & Match
+      <div className="border-t p-6 flex justify-between">
+        <button onClick={onBack} className="border px-6 py-3 rounded-lg">
+          Back
+        </button>
+
+        <button
+          onClick={onNext}
+          className="bg-indigo-600 text-white px-6 py-3 rounded-lg"
+        >
+          Next
         </button>
       </div>
     </div>
