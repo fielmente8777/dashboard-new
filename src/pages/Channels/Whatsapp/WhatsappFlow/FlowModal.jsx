@@ -14,40 +14,51 @@ const FlowModal = ({ template, onClose, onSave }) => {
     });
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-app-surface w-[400px] rounded-xl shadow-lg p-5 relative">
-        <FiX
-          className="absolute right-4 top-4 cursor-pointer"
-          onClick={onClose}
-        />
+  const FIELD =
+    "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-3)] py-[var(--sp-2)] mt-1 text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
 
-        <h2 className="text-lg font-semibold mb-4">Enter flow details</h2>
+  const LABEL = "text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-muted";
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-[var(--sp-4)]">
+      <div className="bg-app-surface w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-[var(--r-lg)] shadow-lg p-[var(--sp-5)] relative">
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="absolute right-3 top-3 size-8 flex items-center justify-center rounded-[var(--r-sm)] text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
+        >
+          <FiX />
+        </button>
+
+        <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] pr-10 text-app-text">
+          Enter flow details
+        </h2>
 
         {/* Flow Name */}
-        <div className="mb-4">
-          <label className="text-sm text-gray-600">Flow Name</label>
+        <div className="mb-[var(--sp-4)]">
+          <label className={LABEL}>Flow Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border rounded w-full p-2 mt-1"
+            className={FIELD}
             placeholder="Enter flow name"
           />
         </div>
 
         {/* Category (DISABLED) */}
-        <div className="mb-5">
-          <label className="text-sm text-gray-600">Category</label>
+        <div className="mb-[var(--sp-5)]">
+          <label className={LABEL}>Category</label>
           <input
             value={template?.title}
             disabled
-            className="border rounded w-full p-2 mt-1 bg-app-surface-secondary cursor-not-allowed"
+            className={`${FIELD} bg-app-surface-secondary cursor-not-allowed opacity-70`}
           />
         </div>
 
         <button
           onClick={handleSubmit}
-          className="w-full bg-green-500 text-white py-2 rounded-md"
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-[var(--sp-3)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium transition-colors"
         >
           Save and continue
         </button>

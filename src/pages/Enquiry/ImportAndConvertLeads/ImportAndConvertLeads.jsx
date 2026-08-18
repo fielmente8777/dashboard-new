@@ -15,6 +15,27 @@ export default function ImportAndConvertLeads() {
   const [totalRows, setTotalRows] = useState(0);
   const [mapping, setMapping] = useState({});
   const [loading, setLoading] = useState(false);
+  const [columnValues, setColumnValues] = useState({});
+
+  // const [importRules, setImportRules] = useState({
+  //   duplicateBy: "phone",
+  //   importMode: "upsert",
+
+  //   statusRule: {
+  //     column: "",
+  //     mappings: {},
+  //   },
+
+  //   updateFields: [],
+  // });
+
+  const [importRules, setImportRules] = useState({
+    duplicateBy: "phone",
+    importMode: "upsert",
+    statusColumn: "",
+    statusMappings: {},
+    updateFields: ["status", "company"],
+  });
 
   const handleFileSelect = async (file) => {
     try {
@@ -35,6 +56,7 @@ export default function ImportAndConvertLeads() {
       setImportId(data.result?.doc?.importId);
       setHeaders(data.result?.doc?.headers);
       setTotalRows(data.result?.doc?.totalRows);
+      setColumnValues(data.result?.doc?.columnValues);
 
       setStep(2);
     } catch (err) {
@@ -44,7 +66,51 @@ export default function ImportAndConvertLeads() {
     }
   };
 
-  console.log("step", step);
+  const handlePreview = async () => {
+    console.log("aaya");
+    try {
+      if (!importRules.duplicateBy) {
+        return alert("Please select duplicate detection.");
+      }
+
+      // if (shouldShowStatusMapping && !importRules.statusColumn) {
+      //   return alert("Please select status column.");
+      // }
+
+      setLoading(true);
+
+      const payload = {
+        importId,
+
+        mapping,
+
+        rules: importRules,
+      };
+
+      const { data } = await axios.post(
+        `${NEW_BASE_URL}/api/v1/leads-import/preview?hid=${localStorage.getItem(
+          "hid",
+        )}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      console.log(data);
+
+      setPreview(data.result);
+
+      setStep(4);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 p-4">
@@ -72,6 +138,19 @@ export default function ImportAndConvertLeads() {
           totalRows={totalRows}
           mapping={mapping}
           setMapping={setMapping}
+          onNext={() => setStep(3)}
+          onBack={() => setStep(1)}
+        />
+      )}
+
+      {step === 3 && (
+        <ImportRules
+          headers={headers}
+          importRules={importRules}
+          columnValues={columnValues}
+          setImportRules={setImportRules}
+          onBack={() => setStep(2)}
+          onPreview={() => handlePreview()}
         />
       )}
     </div>

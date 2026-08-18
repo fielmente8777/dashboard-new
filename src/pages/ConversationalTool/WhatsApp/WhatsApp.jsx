@@ -15,9 +15,6 @@ import SidebarChat from "./components/SidebarChat";
 const WhatsApp = () => {
   const [searchParams] = useSearchParams();
   const number = searchParams.get("number");
-  const [activeWhatsappTab, setActiveWhatsappTab] = useState("active");
-
-  console.log(number);
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -30,6 +27,7 @@ const WhatsApp = () => {
     mobileActive,
   } = useContext(DataContext);
 
+  const [activeTab, setActiveTab] = useState("active");
   const [loading, setLoading] = useState(false);
   const playNotification = useNotificationSound(
     "/notification-sound/Sound1.mp3",
@@ -180,16 +178,10 @@ const WhatsApp = () => {
       {integrationStatus?.metaWhatsapp ? (
         <div className="flex w-full min-h-0">
           <div className="hidden lg:flex w-full min-h-0">
-            <SidebarChat
-              activeTab={activeWhatsappTab}
-              setActiveTab={setActiveWhatsappTab}
-            />
-            {/* {selectedConversation ? <ChatArea /> : <Fallback />} */}
+            <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
+
             {selectedConversation ? (
-              <ChatArea
-                activeTab={activeWhatsappTab}
-                setActiveTab={setActiveWhatsappTab}
-              />
+              <ChatArea setActiveTab={setActiveTab} />
             ) : (
               <Fallback />
             )}
@@ -204,17 +196,11 @@ const WhatsApp = () => {
 
           <div className="flex w-full lg:hidden flex-col min-h-0">
             {mobileActive === "sidebar" && (
-              <SidebarChat
-                activeTab={activeWhatsappTab}
-                setActiveTab={setActiveWhatsappTab}
-              />
+              <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
             )}
 
             {mobileActive === "chatarea" && selectedConversation && (
-              <ChatArea
-                activeTab={activeWhatsappTab}
-                setActiveTab={setActiveWhatsappTab}
-              />
+              <ChatArea setActiveTab={setActiveTab} />
             )}
 
             {/* {mobileActive === "chatarea" && selectedConversation && (

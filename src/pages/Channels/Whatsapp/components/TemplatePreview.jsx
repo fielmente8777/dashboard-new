@@ -19,16 +19,24 @@ export default function TemplatePreview({
   const footerText = footerComponent?.text;
 
   return (
-    <div className="bg-app-surface py-4 rounded-lg max-w-85 w-full">
-      <div className="bg-app-surface-secondary rounded-lg p-3 text-sm whitespace-pre-line shadow-sm space-y-2">
+    <div className="bg-app-surface py-[var(--sp-4)] rounded-[var(--r-md)] w-full max-w-[21.25rem]">
+      <div className="bg-app-surface-secondary border border-app-border rounded-[var(--r-md)] p-[var(--sp-3)] text-[length:var(--fs-sm)] whitespace-pre-line shadow-sm space-y-2">
         {headerText && (
-          <div className="font-semibold text-base">{headerText}</div>
+          <div className="font-semibold text-[length:var(--fs-base)] text-app-text break-words">
+            {headerText}
+          </div>
         )}
 
-        {bodyText && <div className="break-all">{bodyText}</div>}
+        {bodyText && (
+          <div className="break-words text-gray-800 dark:text-app-text-muted">
+            {bodyText}
+          </div>
+        )}
 
         {footerText && (
-          <div className="text-xs text-gray-900 mt-2">{footerText}</div>
+          <div className="text-[length:var(--fs-xs)] text-gray-500 dark:text-app-text-faint mt-2 break-words">
+            {footerText}
+          </div>
         )}
       </div>
 
@@ -37,7 +45,8 @@ export default function TemplatePreview({
           {buttonComponent.buttons.map((btn, i) => (
             <button
               key={i}
-              className="w-full bg-app-surface border border-gray-300 text-blue-600 text-sm py-2 rounded-md hover:bg-gray-50 transition"
+              type="button"
+              className="w-full bg-app-surface border border-app-border text-blue-600 dark:text-blue-400 text-[length:var(--fs-sm)] py-[var(--sp-2)] px-[var(--sp-3)] rounded-[var(--r-sm)] hover:bg-app-surface-secondary transition-colors truncate"
             >
               {btn.text}
             </button>

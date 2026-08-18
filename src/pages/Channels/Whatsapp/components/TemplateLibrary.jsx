@@ -93,7 +93,7 @@ const templates = [
     footer: "Make it memorable",
     buttons: [{ type: "CALL", text: "Call Us", phone: "{{3}}" }],
   },
-{
+  {
     id: 11,
     name: "early_checkin_offer",
     category: "MARKETING",
@@ -162,7 +162,7 @@ const templates = [
     category: "UTILITY",
     header: "Housekeeping Service",
     body: "Hi {{1}}, request housekeeping service at {{2}} anytime.",
-    footer: "We’re here to help",
+    footer: "We're here to help",
     buttons: [{ type: "QUICK_REPLY", text: "Request" }],
   },
   {
@@ -184,210 +184,217 @@ const templates = [
     buttons: [{ type: "URL", text: "Book Ride", url: "{{3}}" }],
   },
   {
-  id: 21,
-  name: "late_checkout_offer",
-  category: "MARKETING",
-  header: "Late Checkout Option",
-  body: "Hi {{1}}, enjoy extra time at {{2}} with our late checkout option.",
-  footer: "Relax a little longer",
-  buttons: [{ type: "URL", text: "Request Late Checkout", url: "{{3}}" }],
-},
-{
-  id: 22,
-  name: "room_service_order",
-  category: "UTILITY",
-  header: "Room Service Update",
-  body: "Hi {{1}}, your room service order at {{2}} is being prepared.",
-  footer: "Will be delivered shortly",
-  buttons: [],
-},
-{
-  id: 23,
-  name: "maintenance_alert",
-  category: "UTILITY",
-  header: "Maintenance Notice",
-  body: "Hi {{1}}, scheduled maintenance at {{2}} may affect some services.",
-  footer: "We appreciate your patience",
-  buttons: [],
-},
+    id: 21,
+    name: "late_checkout_offer",
+    category: "MARKETING",
+    header: "Late Checkout Option",
+    body: "Hi {{1}}, enjoy extra time at {{2}} with our late checkout option.",
+    footer: "Relax a little longer",
+    buttons: [{ type: "URL", text: "Request Late Checkout", url: "{{3}}" }],
+  },
+  {
+    id: 22,
+    name: "room_service_order",
+    category: "UTILITY",
+    header: "Room Service Update",
+    body: "Hi {{1}}, your room service order at {{2}} is being prepared.",
+    footer: "Will be delivered shortly",
+    buttons: [],
+  },
+  {
+    id: 23,
+    name: "maintenance_alert",
+    category: "UTILITY",
+    header: "Maintenance Notice",
+    body: "Hi {{1}}, scheduled maintenance at {{2}} may affect some services.",
+    footer: "We appreciate your patience",
+    buttons: [],
+  },
 
-{
-  id: 24,
-  name: "lost_and_found",
-  category: "UTILITY",
-  header: "Lost & Found Update",
-  body: "Hi {{1}}, an item matching your description was found at {{2}}.",
-  footer: "Contact us to claim",
-  buttons: [{ type: "CALL", text: "Call Reception", phone: "{{3}}" }],
-},
-{
-  id: 25,
-  name: "otp_verification",
-  category: "AUTHENTICATION",
-  header: "OTP Verification",
-  body: "Hi {{1}}, your OTP for verification is {{2}}. It is valid for {{3}} minutes.",
-  footer: "Do not share this code with anyone",
-  buttons: [],
-},
-{
-  id: 26,
-  name: "login_alert",
-  category: "AUTHENTICATION",
-  header: "New Login Detected",
-  body: "Hi {{1}}, a new login to your account was detected from {{2}}.",
-  footer: "If this wasn't you, please secure your account immediately",
-  buttons: [],
-},
-{
-  id: 27,
-  name: "password_reset",
-  category: "AUTHENTICATION",
-  header: "Password Reset Request",
-  body: "Hi {{1}}, use this OTP {{2}} to reset your password. Valid for {{3}} minutes.",
-  footer: "If you didn’t request this, ignore this message",
-  buttons: [],
-},
-{
-  id: 28,
-  name: "account_verification",
-  category: "AUTHENTICATION",
-  header: "Verify Your Account",
-  body: "Hi {{1}}, please verify your account using code {{2}}.",
-  footer: "Welcome aboard!",
-  buttons: [],
-},
-{
-  id: 29,
-  name: "two_factor_auth",
-  category: "AUTHENTICATION",
-  header: "2-Step Verification",
-  body: "Hi {{1}}, your 2FA code is {{2}}. It expires in {{3}} minutes.",
-  footer: "Keep your account secure",
-  buttons: [],
-},
-{
-  id: 30,
-  name: "email_verification",
-  category: "AUTHENTICATION",
-  header: "Email Verification",
-  body: "Hi {{1}}, confirm your email using this code: {{2}}.",
-  footer: "This helps us keep your account safe",
-  buttons: [],
-},
-{
-  id: 31,
-  name: "reservation_payment_link",
-  category: "MARKETING",
-  header: "Reservation Payment",
-  body: "Hi, thank you for your reservation. Please complete your payment using the secure payment link below:\n\n{{1}}\n\nOnce the payment is successful, your reservation will be confirmed.",
-  footer: "Thank you for choosing us",
-  buttons: [
-    {
-      type: "URL",
-      text: "Pay Now",
-      url: "{{1}}"
-    }
-  ]
-}
+  {
+    id: 24,
+    name: "lost_and_found",
+    category: "UTILITY",
+    header: "Lost & Found Update",
+    body: "Hi {{1}}, an item matching your description was found at {{2}}.",
+    footer: "Contact us to claim",
+    buttons: [{ type: "CALL", text: "Call Reception", phone: "{{3}}" }],
+  },
+  {
+    id: 25,
+    name: "otp_verification",
+    category: "AUTHENTICATION",
+    header: "OTP Verification",
+    body: "Hi {{1}}, your OTP for verification is {{2}}. It is valid for {{3}} minutes.",
+    footer: "Do not share this code with anyone",
+    buttons: [],
+  },
+  {
+    id: 26,
+    name: "login_alert",
+    category: "AUTHENTICATION",
+    header: "New Login Detected",
+    body: "Hi {{1}}, a new login to your account was detected from {{2}}.",
+    footer: "If this wasn't you, please secure your account immediately",
+    buttons: [],
+  },
+  {
+    id: 27,
+    name: "password_reset",
+    category: "AUTHENTICATION",
+    header: "Password Reset Request",
+    body: "Hi {{1}}, use this OTP {{2}} to reset your password. Valid for {{3}} minutes.",
+    footer: "If you didn't request this, ignore this message",
+    buttons: [],
+  },
+  {
+    id: 28,
+    name: "account_verification",
+    category: "AUTHENTICATION",
+    header: "Verify Your Account",
+    body: "Hi {{1}}, please verify your account using code {{2}}.",
+    footer: "Welcome aboard!",
+    buttons: [],
+  },
+  {
+    id: 29,
+    name: "two_factor_auth",
+    category: "AUTHENTICATION",
+    header: "2-Step Verification",
+    body: "Hi {{1}}, your 2FA code is {{2}}. It expires in {{3}} minutes.",
+    footer: "Keep your account secure",
+    buttons: [],
+  },
+  {
+    id: 30,
+    name: "email_verification",
+    category: "AUTHENTICATION",
+    header: "Email Verification",
+    body: "Hi {{1}}, confirm your email using this code: {{2}}.",
+    footer: "This helps us keep your account safe",
+    buttons: [],
+  },
+  {
+    id: 31,
+    name: "reservation_payment_link",
+    category: "MARKETING",
+    header: "Reservation Payment",
+    body: "Hi, thank you for your reservation. Please complete your payment using the secure payment link below:\n\n{{1}}\n\nOnce the payment is successful, your reservation will be confirmed.",
+    footer: "Thank you for choosing us",
+    buttons: [
+      {
+        type: "URL",
+        text: "Pay Now",
+        url: "{{1}}",
+      },
+    ],
+  },
 ];
 
-
-
 const TemplateLibrary = ({ onSelectTemplate }) => {
+  const [category, setCategory] = useState();
+  const [search, setSearch] = useState("");
+  const [filterData, setFilterData] = useState([]);
 
-const [category,setCategory]= useState();
-const [search, setSearch] = useState("");
-const [filterData, setFilterData] = useState([]);
+  const handleFilter = () => {
+    let data = templates;
 
-const handleFilter = () => {
-  let data = templates;
+    // Filter by category
+    if (category) {
+      data = data.filter(
+        (template) =>
+          template.category?.toUpperCase() === category?.toUpperCase(),
+      );
+    }
 
-  // Filter by category
-  if (category) {
-    data = data.filter(
-      (template) =>
-        template.category?.toUpperCase() === category?.toUpperCase()
-    );
-  }
+    // Filter by search (name, header, body)
+    if (search.trim()) {
+      const searchValue = search.toLowerCase();
 
-  // Filter by search (name, header, body)
-  if (search.trim()) {
-    const searchValue = search.toLowerCase();
+      data = data.filter(
+        (template) =>
+          template.name?.toLowerCase().includes(searchValue) ||
+          template.header?.toLowerCase().includes(searchValue) ||
+          template.body?.toLowerCase().includes(searchValue),
+      );
+    }
+    setFilterData(data);
+  };
 
-    data = data.filter((template) =>
-      template.name?.toLowerCase().includes(searchValue) ||
-      template.header?.toLowerCase().includes(searchValue) ||
-      template.body?.toLowerCase().includes(searchValue)
-    );
-  }
-  setFilterData(data);
-};
-
-  useEffect(()=>{
+  useEffect(() => {
     handleFilter();
-  },[search])
+  }, [search]);
 
   return (
-    <div className="p-6 bg-app-surface min-h-screen">
-      <div className="flex items-center gap-2">
-        <div>
-          <input type="search"
-          placeholder="Search template by name, header and body"
-          className="bg-app-surface-secondary border py-2 w-md text-sm px-3 outline-none rounded-lg"
-          onChange={(e)=>setSearch(e.target.value)}
+    <div className="p-[var(--sp-5)] bg-app-surface min-h-full">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-[var(--sp-3)]">
+        <div className="w-full sm:w-auto sm:flex-1 sm:max-w-md">
+          <input
+            type="search"
+            placeholder="Search template by name, header and body"
+            className="w-full min-w-0 bg-app-surface-secondary border border-app-border py-[var(--sp-2)] px-[var(--sp-3)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none rounded-[var(--r-md)] transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <CustomDropdown
             label="Category"
             options={TEMPLATE_FILTER}
             onChange={(value) => setCategory(value)}
           />
         </div>
-        </div>
+      </div>
 
-        {filterData.length>0?<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+      {filterData.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[var(--sp-4)] mt-[var(--sp-4)]">
           {filterData?.map((template) => (
             <div
               key={template.id}
               onClick={() => onSelectTemplate(template)}
-              className="bg-app-surface-secondary rounded-md border shadow-xs border-primary/10! p-5 flex flex-col justify-between min-h-45 hover:border-ternary/40 transition-all duration-300 cursor-pointer"
+              className="group relative overflow-hidden bg-app-surface-secondary rounded-[var(--r-md)] border border-app-border shadow-xs p-[var(--sp-5)] flex flex-col justify-between min-h-[11.25rem] hover:border-ternary/40 transition-all duration-300 cursor-pointer"
             >
               {/* Header */}
-              <div>
-                <h3 className="font-semibold text-lg text-primary dark:text-app-text-muted mb-2 hover:text-ternary transition-colors">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-[length:var(--fs-lg)] text-primary dark:text-app-text-muted mb-2 group-hover:text-ternary transition-colors break-words">
                   {template.header}
                 </h3>
 
-                <p className="text-sm text-gray-600 dark:text-app-text-faint leading-relaxed line-clamp-3">
+                <p className="text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint leading-relaxed line-clamp-3 break-words">
                   {template.body}
                 </p>
               </div>
 
               {/* Footer */}
-              <div className="mt-6 flex justify-between items-center">
-                <span className="text-xs px-3 py-1 bg-app-surface text-primary dark:text-app-text-muted border border-gray-200 rounded-md font-medium uppercase tracking-wide">
+              <div className="mt-[var(--sp-5)] flex flex-wrap justify-between items-center gap-2">
+                <span className="text-[length:var(--fs-xs)] px-[var(--sp-3)] py-1 bg-app-surface text-primary dark:text-app-text-muted border border-app-border rounded-[var(--r-sm)] font-medium uppercase tracking-wide">
                   {template.category}
                 </span>
 
-                <button className="text-ternary text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+                <button
+                  type="button"
+                  className="text-ternary text-[length:var(--fs-sm)] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all"
+                >
                   Use Template →
                 </button>
               </div>
 
               {/* Accent line */}
-              <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left rounded-b-2xl"></div>
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
             </div>
           ))}
-      </div>
-          :
-      <div className="flex flex-col justify-center items-center  text-gray-500 gap-2">
-        <span className="text-4xl">📄</span>
-        <p className="text-lg font-medium">No Templates Yet</p>
-        <p className="text-sm">Templates will be available soon.</p>
-      </div>
-    }
-  </div>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center items-center py-[var(--sp-6)] text-gray-500 dark:text-app-text-faint gap-2">
+          <span className="text-[length:var(--fs-2xl)]">📄</span>
+          <p className="text-[length:var(--fs-lg)] font-medium">
+            No Templates Yet
+          </p>
+          <p className="text-[length:var(--fs-sm)]">
+            Templates will be available soon.
+          </p>
+        </div>
+      )}
+    </div>
   );
 };
 

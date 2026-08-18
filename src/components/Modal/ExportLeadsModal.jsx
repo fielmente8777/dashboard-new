@@ -15,6 +15,9 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
   const [otpLoading, setOtpLoading] = useState(false);
   const [pendingRange, setPendingRange] = useState({ start: null, end: null });
 
+  const canSendOtp =
+    range === "all" || (range && range !== "") || (startDate && endDate);
+
   const rangeOptions = [
     { label: "All", value: "all" },
     { label: "Last 7 Days", value: "7" },
@@ -23,32 +26,71 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
   ];
 
   const sendOtp = async () => {
+    if (!canSendOtp) return;
+
     try {
-      const response = await sendOtpService(localStorage.getItem("ndid"));
-      console.log(response);
+      setOtpLoading(true);
+
+      await sendOtpService(localStorage.getItem("ndid"));
+
       setStep("otp");
     } catch (error) {
       console.log(error);
       setOtpError("Failed to send OTP. Try again.");
+    } finally {
+      setOtpLoading(false);
     }
   };
 
-  const handleRangeChange = async (value) => {
+  // const sendOtp = async () => {
+  //   try {
+  //     const response = await sendOtpService(localStorage.getItem("ndid"));
+  //     console.log(response);
+  //     setStep("otp");
+  //   } catch (error) {
+  //     console.log(error);
+  //     setOtpError("Failed to send OTP. Try again.");
+  //   }
+  // };
+
+  const handleRangeChange = (value) => {
     setRange(value);
     setStartDate(null);
     setEndDate(null);
 
     if (value === "all") {
-      setPendingRange({ start: null, end: null });
+      setPendingRange({
+        start: null,
+        end: null,
+      });
     } else {
       const today = new Date();
       const pastDate = new Date();
       pastDate.setDate(today.getDate() - Number(value));
-      setPendingRange({ start: pastDate, end: today });
-    }
 
-    await sendOtp(); // send OTP, then show OTP input — no export yet
+      setPendingRange({
+        start: pastDate,
+        end: today,
+      });
+    }
   };
+
+  // const handleRangeChange = async (value) => {
+  //   setRange(value);
+  //   setStartDate(null);
+  //   setEndDate(null);
+
+  //   if (value === "all") {
+  //     setPendingRange({ start: null, end: null });
+  //   } else {
+  //     const today = new Date();
+  //     const pastDate = new Date();
+  //     pastDate.setDate(today.getDate() - Number(value));
+  //     setPendingRange({ start: pastDate, end: today });
+  //   }
+
+  //   await sendOtp(); // send OTP, then show OTP input — no export yet
+  // };
 
   const handleDateChange = (dates) => {
     const [start, end] = dates;
@@ -57,9 +99,16 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
     setRange("");
 
     if (start && end) {
-      setPendingRange({ start, end });
-      sendOtp();
+      setPendingRange({
+        start,
+        end,
+      });
     }
+
+    // if (start && end) {
+    //   setPendingRange({ start, end });
+    //   sendOtp();
+    // }
   };
 
   const handleVerifyOtp = async () => {
@@ -72,17 +121,21 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
     try {
       const data = await verifyOtpService(localStorage.getItem("ndid"), otp);
 
-      console.log(data)
+      console.log(data);
 
       const isVerified = data?.result?.success && data?.result?.docs?.response;
 
-    if (isVerified) {
-      // ✅ OTP verified — now actually run export
-      onExport(pendingRange.start, pendingRange.end);
-      resetAndClose();
-    } else {
-      setOtpError(data?.result?.responseMessage || data?.responseMessage || "Invalid OTP. Try again.");
-    }
+      if (isVerified) {
+        // ✅ OTP verified — now actually run export
+        onExport(pendingRange.start, pendingRange.end);
+        resetAndClose();
+      } else {
+        setOtpError(
+          data?.result?.responseMessage ||
+            data?.responseMessage ||
+            "Invalid OTP. Try again.",
+        );
+      }
     } catch (error) {
       console.log(error);
       setOtpError("Verification failed. Try again.");
@@ -141,10 +194,30 @@ const ExportLeadsModal = ({ isOpen, onClose, onExport, isLoading }) => {
             />
 
             <div className="flex gap-2">
-              <button onClick={resetAndClose} className="w-full bg-app-text-muted py-2 rounded">
+              <button
+                onClick={resetAndClose}
+                className="w-full bg-app-text-muted py-2 rounded"
+              >
                 Close
               </button>
+
+              <button
+                onClick={sendOtp}
+                disabled={!canSendOtp || otpLoading}
+                className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
+              >
+                {otpLoading ? "Sending..." : "Send OTP"}
+              </button>
             </div>
+
+            {/* <div className="flex gap-2">
+              <button
+                onClick={resetAndClose}
+                className="w-full bg-app-text-muted py-2 rounded"
+              >
+                Close
+              </button>
+            </div> */}
           </>
         )}
 

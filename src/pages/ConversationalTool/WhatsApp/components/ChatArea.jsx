@@ -160,8 +160,6 @@ const ChatArea = ({ setActiveTab }) => {
       return;
     }
 
-    console.log("selectedTemplate", selectedTemplate);
-
     try {
       if (selectedTemplate) {
         const templateParams =
@@ -209,10 +207,15 @@ const ChatArea = ({ setActiveTab }) => {
               parameters: templateParams,
             },
           },
+          last_message: {
+            updated_at: new Date(),
+          },
           status: "sent",
           timestamp: new Date(),
           createdAt: new Date(),
         };
+
+        setActiveTab("active");
 
         // Push instantly to UI (optimistic update)
         setMessageList((prev) => [...prev, optimisticMessage]);
@@ -252,7 +255,6 @@ const ChatArea = ({ setActiveTab }) => {
               return m;
             }),
           );
-          setActiveTab("active");
         }
         return;
       }
@@ -307,9 +309,13 @@ const ChatArea = ({ setActiveTab }) => {
           body: flowConfig.body,
           interactive: payload.interactive,
           status: "sent",
+          last_message: {
+            updated_at: new Date(),
+          },
           timestamp: new Date(),
           createdAt: new Date(),
         };
+        setActiveTab("active");
 
         setMessageList((prev) => [...prev, optimisticMessage]);
         await sendWhatsAppMessage(payload);
@@ -346,9 +352,14 @@ const ChatArea = ({ setActiveTab }) => {
             }
           : undefined,
         status: "sent",
+        last_message: {
+          updated_at: new Date(),
+        },
         timestamp: new Date(),
         createdAt: new Date(),
       };
+
+      setActiveTab("active");
       // Push optimistic message
       setMessageList((prev) => [...prev, optimisticMessage]);
       setConversations((prevConversations) =>

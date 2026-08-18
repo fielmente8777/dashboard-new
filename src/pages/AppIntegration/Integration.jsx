@@ -31,7 +31,8 @@ const SELECT =
   "w-full rounded-lg border border-gray-300 dark:border-app-text-faint/25 bg-white dark:bg-app-surface px-3 py-2.5 text-sm text-gray-800 dark:text-app-text-muted outline-none transition-colors focus:ring-2 focus:ring-primary/40 focus:border-primary [color-scheme:light] dark:[color-scheme:dark]";
 /* <option> is drawn by the OS, so it needs its own explicit colors.
    Chrome/Edge/Firefox honour these; Safari falls back to color-scheme above. */
-const OPTION = "bg-white dark:bg-[#1e293b]! text-gray-800 dark:text-gray-100 appearance-none";
+const OPTION =
+  "bg-white dark:bg-[#1e293b]! text-gray-800 dark:text-gray-100 appearance-none";
 const FIELD =
   "mt-1 w-full rounded-md border border-gray-300 dark:border-app-text-faint/25 bg-white dark:bg-app-surface px-3 py-2 text-sm text-gray-800 dark:text-app-text-muted placeholder:text-gray-400 dark:placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-primary/40 focus:border-primary";
 const FIELD_LABEL =

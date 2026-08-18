@@ -24,7 +24,7 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
      */
     if (page <= 3) {
       start = 2;
-      end = 4;
+      end = 3;
     }
 
     /**
@@ -59,13 +59,18 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
 
   const visiblePages = getVisiblePages();
 
+  /* shared so every control keeps the same footprint */
+  const CELL =
+    "h-9 min-w-9 px-2 sm:px-3 shrink-0 flex items-center justify-center rounded-md border border-app-border text-sm text-app-text transition-colors";
+
   return (
-    <div className="flex items-center gap-2 border rounded-md p-2 shadow-sm">
+    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 border border-app-border bg-app-surface rounded-lg p-1.5 shadow-sm">
       {/* Prev Button */}
       <button
         onClick={onPrev}
         disabled={page === 1}
-        className="px-3 py-1 border rounded disabled:opacity-40"
+        aria-label="Previous page"
+        className={`${CELL} leading-none hover:bg-app-surface-secondary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
       >
         ‹
       </button>
@@ -74,7 +79,10 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
       {visiblePages.map((p) => {
         if (p === "left-ellipsis" || p === "right-ellipsis") {
           return (
-            <span key={p} className="px-2 text-gray-500">
+            <span
+              key={p}
+              className="px-1 sm:px-2 shrink-0 text-gray-500 dark:text-app-text-faint select-none"
+            >
               ...
             </span>
           );
@@ -84,10 +92,12 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
           <button
             key={p}
             onClick={() => onPageChange(p)}
-            className={`px-3 py-1 border rounded transition ${
+            aria-label={`Go to page ${p}`}
+            aria-current={p === Number(page) ? "page" : undefined}
+            className={`${CELL} tabular-nums ${
               p === Number(page)
-                ? "bg-primary text-white border-blue-600"
-                : "hover:bg-gray-100"
+                ? "bg-primary text-white border-primary font-medium"
+                : "hover:bg-app-surface-secondary"
             }`}
           >
             {p}
@@ -99,7 +109,8 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
       <button
         onClick={onNext}
         disabled={page === totalPages}
-        className="px-3 py-1 border rounded disabled:opacity-40"
+        aria-label="Next page"
+        className={`${CELL} leading-none hover:bg-app-surface-secondary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
       >
         ›
       </button>

@@ -20,6 +20,9 @@ const defaultConfig = {
   flowId: "",
 };
 
+const FIELD =
+  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface-secondary px-[var(--sp-3)] py-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+
 const AutoMessageCard = ({
   autoMessage = {},
   templates = [],
@@ -193,7 +196,10 @@ const AutoMessageCard = ({
     const tpl = templates.find((t) => t.name === c.templateName);
 
     return (
-      <div key={key} className="border-primary/60! rounded-lg p-4 bg-app-surface space-y-3">
+      <div
+        key={key}
+        className="border border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] bg-app-surface space-y-[var(--sp-3)]"
+      >
         <ChannelToggle
           label={label}
           value={c.enabled}
@@ -205,7 +211,7 @@ const AutoMessageCard = ({
             <select
               value={c.type}
               onChange={(e) => updateConfig(key, "type", e.target.value)}
-              className="w-full border px-3 py-2 rounded-md text-sm bg-app-surface-secondary"
+              className={`${FIELD} cursor-pointer`}
             >
               <option value="template">Template</option>
               <option value="text">Text</option>
@@ -221,7 +227,7 @@ const AutoMessageCard = ({
                   onChange={(e) =>
                     updateConfig(key, "templateName", e.target.value)
                   }
-                  className="w-full border px-3 py-2 rounded-md text-sm bg-app-surface-secondary"
+                  className={`${FIELD} cursor-pointer`}
                 >
                   <option value="">Select template</option>
                   {templates.map((t) => (
@@ -237,14 +243,15 @@ const AutoMessageCard = ({
               <textarea
                 value={c.message}
                 onChange={(e) => updateConfig(key, "message", e.target.value)}
-                className="w-full border px-3 py-2 rounded-md text-sm"
+                rows={3}
+                className={`${FIELD} resize-y`}
               />
             )}
 
             {c.type === "flow" && label.toLowerCase() === "whatsapp" && (
               <select
                 onChange={(e) => updateConfig(key, "flowId", e.target.value)}
-                className="w-full border px-3 py-2 rounded-md text-sm"
+                className={`${FIELD} cursor-pointer`}
                 value={c.flowId}
               >
                 <option value="">Select flow</option>
@@ -269,18 +276,18 @@ const AutoMessageCard = ({
 
   // ---------------- RETURN ----------------
   return (
-    <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
-      <h3 className="text-lg font-medium text-gray-600 dark:text-app-text-muted">
+    <div className="bg-app-surface px-[var(--sp-5)] py-[var(--sp-5)] space-y-[var(--sp-5)]">
+      <h3 className="text-[length:var(--fs-lg)] font-medium text-gray-600 dark:text-app-text-muted">
         Auto Messaging Configuration
       </h3>
 
       {/* Apply to all */}
-      <div
-        className={`flex items-center justify-between p-3 rounded-md ${
-          !isAnyEnabled ? "bg-app-surface-secondary opacity-50" : "bg-app-surface-secondary"
+      <label
+        className={`flex items-center justify-between gap-[var(--sp-3)] p-[var(--sp-3)] rounded-[var(--r-sm)] bg-app-surface-secondary ${
+          !isAnyEnabled ? "opacity-50" : "cursor-pointer"
         }`}
       >
-        <span className="text-sm text-gray-700 dark:text-app-text">
+        <span className="text-[length:var(--fs-sm)] text-gray-700 dark:text-app-text">
           Apply same config to all modules
         </span>
 
@@ -289,11 +296,12 @@ const AutoMessageCard = ({
           disabled={!isAnyEnabled}
           checked={applyToAll}
           onChange={handleApplyToAllToggle}
+          className="h-4 w-4 shrink-0 accent-primary cursor-pointer disabled:cursor-not-allowed"
         />
-      </div>
+      </label>
 
       {/* Modules */}
-      <div className="space-y-4">{MODULES.map(renderModule)}</div>
+      <div className="space-y-[var(--sp-4)]">{MODULES.map(renderModule)}</div>
 
       {/* Save */}
       {hasChanges && (
@@ -301,7 +309,7 @@ const AutoMessageCard = ({
           <button
             onClick={handleSave}
             disabled={loading}
-            className="bg-green-500 text-white px-5 py-2 rounded-md text-sm"
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-[var(--sp-5)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] font-medium transition-colors disabled:opacity-60"
           >
             {loading ? "Saving..." : "Save Configuration"}
           </button>

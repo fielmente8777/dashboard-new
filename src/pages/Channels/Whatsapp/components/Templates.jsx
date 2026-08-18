@@ -20,6 +20,15 @@ import { connectWhatsapp } from "../../../../services/api/Integration";
 import WhatsappMessageTemplateSkelton from "../../../../components/Skeltons/WhatsappMessageTemplateSkelton";
 import CreateTemplate from "./CreateTemplate";
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const HEAD_CELL =
+  "px-[var(--sp-4)] py-[var(--sp-3)] font-bold text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-muted whitespace-nowrap";
+const CELL = "px-[var(--sp-4)] py-[var(--sp-4)] text-[length:var(--fs-sm)]";
+const ICON_BTN =
+  "inline-flex shrink-0 items-center justify-center w-9 h-9 rounded-[var(--r-md)] transition-colors";
+const FIELD =
+  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface p-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+
 export default function WhatsAppMessageTemplate() {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
@@ -204,12 +213,12 @@ export default function WhatsAppMessageTemplate() {
 
   if (!integrationStatus?.metaWhatsapp) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="max-w-md w-full rounded-2xl bg-app-surface p-8 border border-app-border text-center">
+      <div className="flex items-center justify-center px-[var(--sp-4)] py-[var(--sp-6)]">
+        <div className="max-w-md w-full rounded-[var(--r-lg)] bg-app-surface p-[var(--sp-5)] sm:p-[var(--sp-6)] border border-app-border text-center">
           {/* Icon */}
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+          <div className="mx-auto mb-[var(--sp-5)] flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-green-500/15">
             <svg
-              className="h-7 w-7 text-green-600"
+              className="h-7 w-7 text-green-600 dark:text-green-400"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -220,12 +229,12 @@ export default function WhatsAppMessageTemplate() {
           </div>
 
           {/* Heading */}
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="text-[length:var(--fs-2xl)] font-semibold text-gray-900 dark:text-app-text">
             Connect WhatsApp Business
           </h2>
 
           {/* Description */}
-          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+          <p className="mt-3 text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint leading-relaxed">
             Connect your WhatsApp Business account to send messages, manage
             conversations, automate notifications, and engage with customers
             directly from your dashboard.
@@ -234,13 +243,13 @@ export default function WhatsAppMessageTemplate() {
           {/* CTA */}
           <button
             onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="mt-[var(--sp-6)] inline-flex w-full items-center justify-center gap-2 rounded-[var(--r-md)] bg-green-600 px-[var(--sp-5)] py-[var(--sp-3)] text-[length:var(--fs-sm)] font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-app-surface"
           >
             <span>Connect WhatsApp Business</span>
           </button>
 
           {/* Helper text */}
-          <p className="mt-4 text-xs text-gray-400">
+          <p className="mt-[var(--sp-4)] text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
             Secure Meta OAuth • Embedded signup • Official WhatsApp Cloud API
           </p>
         </div>
@@ -250,23 +259,23 @@ export default function WhatsAppMessageTemplate() {
 
   if (isLoadingIntegrationStatus || isFetching) {
     return (
-      <div className="p-4">
+      <div className="p-[var(--sp-4)]">
         <WhatsappMessageTemplateSkelton />
       </div>
     );
   }
 
   return (
-    <div className="border-primary/60! bg-app-surface px-6 py-5 space-y-5">
-      <div className="flex justify-between">
-        <h1 className="text-lg text-gray-600 dark:text-app-text font-medium">
+    <div className="bg-app-surface px-[var(--sp-5)] py-[var(--sp-5)] space-y-[var(--sp-5)]">
+      <div className="flex flex-wrap justify-between items-center gap-[var(--sp-3)]">
+        <h1 className="text-[length:var(--fs-lg)] text-gray-600 dark:text-app-text font-medium">
           WhatsApp Templates
         </h1>
 
         {templates.length > 0 && (
           <button
             onClick={() => setOpen(true)}
-            className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between"
+            className="flex gap-[5px] text-[length:var(--fs-sm)] font-medium px-[var(--sp-3)] py-[var(--sp-2)] rounded-[var(--r-sm)] bg-green-500 hover:bg-green-600 text-white items-center transition-colors whitespace-nowrap"
           >
             <MdAdd size={20} /> Create Template
           </button>
@@ -275,14 +284,16 @@ export default function WhatsAppMessageTemplate() {
 
       <div className="overflow-hidden">
         {!isFetching && templates?.length === 0 && (
-          <div className="p-10 text-center space-y-3">
-            <p className="text-lg font-medium">No templates created yet</p>
-            <p className="text-sm text-gray-500">
+          <div className="p-[var(--sp-6)] text-center space-y-3">
+            <p className="text-[length:var(--fs-lg)] font-medium text-app-text">
+              No templates created yet
+            </p>
+            <p className="text-[length:var(--fs-sm)] text-gray-500 dark:text-app-text-faint">
               Create your first WhatsApp message template to get started.
             </p>
             <button
               onClick={() => setOpen(true)}
-              className="bg-green-600 text-white px-4 py-2 rounded"
+              className="bg-green-600 hover:bg-green-700 text-white px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] font-medium transition-colors"
             >
               Create Template
             </button>
@@ -290,56 +301,52 @@ export default function WhatsAppMessageTemplate() {
         )}
 
         {!isFetching && templates?.length > 0 && (
-          <div className="overflow-x-auto bg-app-surface shadow-sm mt-6 border">
-            <table className="w-full text-sm">
-              <thead className="bg-app-surface-secondary border-b">
+          <div className="overflow-x-auto bg-app-surface shadow-sm mt-[var(--sp-5)] border border-app-border rounded-[var(--r-md)]">
+            <table className="w-full min-w-[42rem]">
+              <thead className="bg-app-surface-secondary border-b border-app-border">
                 <tr>
-                  <th className="px-5 py-3 text-left font-bold text-gray-600 dark:text-app-text-muted">
-                    Name
-                  </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
-                    Category
-                  </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
-                    Language
-                  </th>
-                  <th className="px-5 py-3 text-center font-bold text-gray-600 dark:text-app-text-muted">
-                    Status
-                  </th>
-                  <th className="px-5 py-3 text-right font-bold text-gray-600 dark:text-app-text-muted">
-                    Actions
-                  </th>
+                  <th className={`${HEAD_CELL} text-left`}>Name</th>
+                  <th className={`${HEAD_CELL} text-center`}>Category</th>
+                  <th className={`${HEAD_CELL} text-center`}>Language</th>
+                  <th className={`${HEAD_CELL} text-center`}>Status</th>
+                  <th className={`${HEAD_CELL} text-right`}>Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="">
+              <tbody>
                 {templates.map((t) => (
                   <tr
                     key={t.name}
-                    className="hover:bg-app-surface-secondary/60 transition"
+                    className="border-b border-app-border last:border-b-0 hover:bg-app-surface-secondary/60 transition-colors"
                   >
                     {/* NAME */}
-                    <td className="px-5 py-4 font-medium text-gray-800 dark:text-app-text">
+                    <td
+                      className={`${CELL} font-medium text-gray-800 dark:text-app-text break-all`}
+                    >
                       {t.name}
                     </td>
 
                     {/* CATEGORY */}
-                    <td className="px-5 py-4 text-center text-gray-600 dark:text-app-text-faint">
+                    <td
+                      className={`${CELL} text-center text-gray-600 dark:text-app-text-faint whitespace-nowrap`}
+                    >
                       {t.category}
                     </td>
 
                     {/* LANGUAGE */}
-                    <td className="px-5 py-4 text-center text-gray-600 dark:text-app-text-faint">
+                    <td
+                      className={`${CELL} text-center text-gray-600 dark:text-app-text-faint whitespace-nowrap`}
+                    >
                       {t.language}
                     </td>
 
                     {/* STATUS */}
-                    <td className="px-5 py-4 text-center">
+                    <td className={`${CELL} text-center`}>
                       <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        className={`inline-flex items-center px-[var(--sp-3)] py-1 rounded-full text-[length:var(--fs-xs)] font-medium whitespace-nowrap ${
                           t.status === "APPROVED"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
+                            ? "bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400"
+                            : "bg-yellow-100 dark:bg-yellow-500/15 text-yellow-700 dark:text-yellow-400"
                         }`}
                       >
                         {t.status}
@@ -347,14 +354,17 @@ export default function WhatsAppMessageTemplate() {
                     </td>
 
                     {/* ACTIONS */}
-                    <td className="px-5 py-4 flex justify-end gap-1.5 text-right">
+                    <td
+                      className={`${CELL} flex justify-end gap-1.5 text-right`}
+                    >
                       <button
                         onClick={() => handleDelete(t)}
+                        aria-label="Delete template"
                         // disabled={t.status === "APPROVED"}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
+                        className={`${ICON_BTN} ${
                           t.status === "APPROVED"
-                            ? "bg-red-100 text-gray-400 cursor-not-allowed"
-                            : "bg-red-50 text-red-600 hover:bg-red-100"
+                            ? "bg-red-100 dark:bg-red-500/10 text-gray-400 dark:text-app-text-faint cursor-not-allowed"
+                            : "bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/25"
                         }`}
                         title={
                           t.status === "APPROVED"
@@ -362,7 +372,7 @@ export default function WhatsAppMessageTemplate() {
                             : "Delete template"
                         }
                       >
-                        <AiOutlineDelete size={16} color="#ad3c3c" />
+                        <AiOutlineDelete size={16} />
                       </button>
 
                       <button
@@ -370,17 +380,19 @@ export default function WhatsAppMessageTemplate() {
                           setSelectedTemplate(t);
                           setOpenEditModal(true);
                         }}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-200/60 hover:bg-green-200 transition`}
+                        aria-label="Edit template"
+                        className={`${ICON_BTN} bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/25`}
                       >
-                        <AiOutlineEdit size={16} color="#2e7d32" />
+                        <AiOutlineEdit size={16} />
                       </button>
 
                       <button
                         onClick={() => setSelectedTemplatePreview(t.components)}
+                        aria-label="Preview template"
                         // disabled={t.status === "APPROVED"}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg bg-green-200/60 hover:bg-green-200 transition`}
+                        className={`${ICON_BTN} bg-green-100 dark:bg-green-500/15 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-500/25`}
                       >
-                        <AiOutlineEye size={16} color="#2e7d32" />
+                        <AiOutlineEye size={16} />
                       </button>
                     </td>
                   </tr>
@@ -400,20 +412,22 @@ export default function WhatsAppMessageTemplate() {
 
       {/* CREATE MODAL */}
       {open && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999]">
-          <div className="bg-app-surface w-full max-w-2xl rounded-lg p-6 space-y-5">
-            <h2 className="text-xl font-semibold">Create Message Template</h2>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[99999] p-[var(--sp-4)]">
+          <div className="bg-app-surface w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-[var(--r-md)] p-[var(--sp-5)] space-y-[var(--sp-5)]">
+            <h2 className="text-[length:var(--fs-xl)] font-semibold text-app-text">
+              Create Message Template
+            </h2>
 
             <input
-              className="border p-2 w-full"
+              className={FIELD}
               placeholder="Template name (snake_case)"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-[var(--sp-3)]">
               <select
-                className="border p-2 w-full bg-app-surface"
+                className={`${FIELD} cursor-pointer`}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -423,7 +437,7 @@ export default function WhatsAppMessageTemplate() {
               </select>
 
               <select
-                className="border p-2 w-full bg-app-surface"
+                className={`${FIELD} cursor-pointer`}
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
@@ -434,7 +448,7 @@ export default function WhatsAppMessageTemplate() {
             </div>
 
             <textarea
-              className="border p-2 w-full"
+              className={`${FIELD} resize-y`}
               rows={4}
               placeholder="Hello {{1}}, your order {{2}} is confirmed"
               value={body}
@@ -443,14 +457,18 @@ export default function WhatsAppMessageTemplate() {
 
             {/* Variables */}
             {Object.keys(variables).length > 0 && (
-              <div className="border rounded p-4 space-y-3">
-                <p className="text-sm font-medium">Template Variables</p>
+              <div className="border border-app-border rounded-[var(--r-sm)] p-[var(--sp-4)] space-y-[var(--sp-3)]">
+                <p className="text-[length:var(--fs-sm)] font-medium text-app-text">
+                  Template Variables
+                </p>
 
                 {Object.keys(variables).map((key) => (
-                  <div key={key} className="flex gap-3 items-center">
-                    <span className="w-16 text-sm">{key}</span>
+                  <div key={key} className="flex gap-[var(--sp-3)] items-center">
+                    <span className="w-16 shrink-0 text-[length:var(--fs-sm)] text-app-text">
+                      {key}
+                    </span>
                     <input
-                      className="border p-2 flex-1"
+                      className={FIELD}
                       placeholder={`Preview value for ${key}`}
                       value={variables[key]}
                       onChange={(e) =>
@@ -466,15 +484,19 @@ export default function WhatsAppMessageTemplate() {
             )}
 
             {/* Preview */}
-            <div className="border rounded p-4 bg-app-surface-secondary">
-              <p className="text-sm font-medium mb-1">Preview</p>
-              <p className="text-sm">{preview || "Nothing to preview yet"}</p>
+            <div className="border border-app-border rounded-[var(--r-sm)] p-[var(--sp-4)] bg-app-surface-secondary">
+              <p className="text-[length:var(--fs-sm)] font-medium mb-1 text-app-text">
+                Preview
+              </p>
+              <p className="text-[length:var(--fs-sm)] text-gray-700 dark:text-app-text-muted whitespace-pre-line break-words">
+                {preview || "Nothing to preview yet"}
+              </p>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-[var(--sp-3)]">
               <button
                 onClick={() => setOpen(false)}
-                className="px-4 py-2 border rounded"
+                className="px-[var(--sp-4)] py-[var(--sp-2)] border border-app-border text-app-text rounded-[var(--r-sm)] text-[length:var(--fs-sm)] hover:bg-app-surface-secondary transition-colors"
               >
                 Cancel
               </button>
@@ -482,7 +504,7 @@ export default function WhatsAppMessageTemplate() {
               <button
                 disabled={isCreating}
                 onClick={submit}
-                className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-60"
+                className="bg-green-600 hover:bg-green-700 text-white px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] font-medium transition-colors disabled:opacity-60"
               >
                 {isCreating ? "Creating..." : "Create Template"}
               </button>
@@ -494,8 +516,8 @@ export default function WhatsAppMessageTemplate() {
       {/* UPDATE TEMPLATE MODAL  */}
 
       {openEditModal && (
-        <div className="z-99999 absolute inset-0 bg-black/20 left-0 top-0 p-1.5 overflow-hidden">
-          <div className="w-full max-w-7xl mx-auto overflow-y-scroll h-full backdrop-blur-2xl bg-red-400 rounded-lg hide-scrollbar">
+        <div className="z-[99999] fixed inset-0 bg-black/40 p-[var(--sp-2)] overflow-hidden">
+          <div className="w-full max-w-7xl mx-auto overflow-y-auto h-full bg-app-surface border border-app-border rounded-[var(--r-md)] hide-scrollbar">
             <CreateTemplate
               mode="edit"
               initialData={selectedTemplate}

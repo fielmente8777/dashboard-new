@@ -21,7 +21,7 @@ import { useConfirm } from "../../../../context/ConfirmContext";
 
 const tabs = ["Active", "Inactive", "Converted", "Add"];
 
-const SidebarChat = ({activeTab, setActiveTab }) => {
+const SidebarChat = ({ activeTab, setActiveTab }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
@@ -105,11 +105,11 @@ const SidebarChat = ({activeTab, setActiveTab }) => {
   };
 
   const handleSearch = () => {
-    if (debouncedSearch === "" && activeTab.toLowerCase() === "active") {
+    if (debouncedSearch === "" && activeTab?.toLowerCase() === "active") {
       return setFilteredConversations(activeConversations());
     } else if (
       debouncedSearch === "" &&
-      activeTab.toLowerCase() === "history"
+      activeTab?.toLowerCase() === "history"
     ) {
       return setFilteredConversations(historyConversations());
     }
@@ -121,6 +121,8 @@ const SidebarChat = ({activeTab, setActiveTab }) => {
         conv.phone?.includes(lowerSearch) ||
         conv.lastMessage?.toLowerCase().includes(lowerSearch),
     );
+
+    console.log(filtered);
 
     setFilteredConversations(filtered);
   };
@@ -271,7 +273,7 @@ const SidebarChat = ({activeTab, setActiveTab }) => {
       {/* Tabs */}
       <div className="shrink-0 flex border-b border-app-border dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
         {tabs?.map((tab) => {
-          const isActive = tab.toLowerCase() === activeTab.toLowerCase();
+          const isActive = tab?.toLowerCase() === activeTab?.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
 
           return (

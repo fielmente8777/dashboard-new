@@ -17,6 +17,13 @@ import { useToast } from "../../../../context/ToastContext";
 import Loader from "../../../../components/Loader";
 import { useConfirm } from "../../../../context/ConfirmContext";
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const FIELD =
+  "w-full min-w-0 rounded-[var(--r-md)] border border-app-border bg-app-surface p-[var(--sp-3)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+const LABEL = "font-medium text-[length:var(--fs-sm)] text-app-text";
+const PILL =
+  "flex items-center gap-1 text-[length:var(--fs-xs)] px-[var(--sp-2)] py-1 rounded-full whitespace-nowrap";
+
 const LIMITS = {
   image: {
     max: 5 * 1024 * 1024,
@@ -71,8 +78,8 @@ const seedReplies = [
 ];
 
 const AttachmentThumb = ({ file, kind, onRemove }) => (
-  <div className="relative group flex items-center gap-2 border rounded-lg p-2 pr-3 bg-white">
-    <div className="w-9 h-9 rounded-md bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
+  <div className="relative group flex items-center gap-2 border border-app-border rounded-[var(--r-md)] p-2 pr-3 bg-app-surface">
+    <div className="w-9 h-9 rounded-[var(--r-sm)] bg-app-surface-secondary flex items-center justify-center shrink-0 overflow-hidden">
       {kind === "image" && file.url ? (
         <img
           src={file.url}
@@ -80,21 +87,26 @@ const AttachmentThumb = ({ file, kind, onRemove }) => (
           className="w-full h-full object-cover"
         />
       ) : kind === "image" ? (
-        <ImageIcon size={16} className="text-gray-400" />
+        <ImageIcon size={16} className="text-gray-400 dark:text-app-text-faint" />
       ) : kind === "video" ? (
-        <VideoIcon size={16} className="text-gray-400" />
+        <VideoIcon size={16} className="text-gray-400 dark:text-app-text-faint" />
       ) : (
-        <FileText size={16} className="text-gray-400" />
+        <FileText size={16} className="text-gray-400 dark:text-app-text-faint" />
       )}
     </div>
     <div className="min-w-0">
-      <p className="text-sm font-medium truncate max-w-[140px]">{file.name}</p>
-      <p className="text-xs text-gray-400">{formatBytes(file.size)}</p>
+      <p className="text-[length:var(--fs-sm)] font-medium truncate max-w-[8.75rem] text-app-text">
+        {file.name}
+      </p>
+      <p className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
+        {formatBytes(file.size)}
+      </p>
     </div>
     {onRemove && (
       <button
         onClick={onRemove}
-        className="absolute -top-2 -right-2 bg-white border rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+        aria-label={`Remove ${file.name}`}
+        className="absolute -top-2 -right-2 bg-app-surface border border-app-border rounded-full p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 max-sm:opacity-100 transition-opacity"
         title="Remove"
       >
         <X size={14} className="text-red-500" />
@@ -124,12 +136,17 @@ const UploadZone = ({ kind, onFiles }) => {
   return (
     <div>
       <button
+        type="button"
         onClick={() => inputRef.current?.click()}
-        className="w-full border-2 border-dashed rounded-lg p-4 flex items-center justify-center gap-2 text-gray-500 hover:border-blue-400 hover:text-blue-600 transition-colors"
+        className="w-full border-2 border-dashed border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] flex flex-wrap items-center justify-center gap-2 text-gray-500 dark:text-app-text-faint hover:border-primary hover:text-primary transition-colors"
       >
         {icon}
-        <span className="text-sm font-medium">Add {kind}</span>
-        <span className="text-xs text-gray-400">({label})</span>
+        <span className="text-[length:var(--fs-sm)] font-medium">
+          Add {kind}
+        </span>
+        <span className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
+          ({label})
+        </span>
       </button>
       <input
         ref={inputRef}
@@ -219,14 +236,6 @@ const QuickReplies = () => {
     setFileError("");
     setActiveTab("create");
   };
-
-  // const startEdit = (reply) => {
-  //   console.log("reply", reply);
-
-  //   setForm({ ...reply });
-  //   setFileError("");
-  //   setActiveTab("create");
-  // };
 
   const removeReply = async (id) => {
     const isConfirmed = await confirm(
@@ -401,86 +410,6 @@ const QuickReplies = () => {
     }
   };
 
-  // const handleSave = async () => {
-  //   if (!canSave) return;
-
-  //   console.log("form", form);
-  //   console.log("");
-  //   setCreating(true);
-
-  //   try {
-  //     const payload = new FormData();
-
-  //     payload.append("title", form.title);
-  //     payload.append("text", form.text);
-
-  //     [...form.images, ...form.videos, ...form.documents].forEach((item) => {
-  //       if (item.existing) {
-  //         payload.append("media", JSON.stringify(item));
-  //         return;
-  //       }
-  //       payload.append("file", item.file);
-  //     });
-
-  //     // let type = "";
-
-  //     // if (form.images.length > 0) {
-  //     //   type = "image";
-
-  //     //   form.images.forEach((img) => {
-  //     //     payload.append("file", img.file);
-  //     //   });
-  //     // } else if (form.videos.length > 0) {
-  //     //   type = "video";
-
-  //     //   form.videos.forEach((video) => {
-  //     //     payload.append("file", video.file);
-  //     //   });
-  //     // } else if (form.documents.length > 0) {
-  //     //   type = "document";
-
-  //     //   form.documents.forEach((doc) => {
-  //     //     payload.append("file", doc.file);
-  //     //   });
-  //     // }
-
-  //     // payload.append("type", type);
-  //     payload.append("shortcut", form.shortcut || "");
-
-  //     const response = await fetch(
-  //       `${NEW_BASE_URL}/api/v1/quick-repl?hid=${localStorage.getItem("hid")}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //         body: payload,
-  //       },
-  //     );
-
-  //     const data = await response.json();
-
-  //     if (data?.success) {
-  //       showToast({
-  //         message: data?.message || "Reply created successfully",
-  //         type: "success",
-  //       });
-
-  //       return;
-  //     }
-
-  //     showToast({
-  //       message: data?.responseMessage || "Failed to create reply",
-  //       type: "error",
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     showToast("error", error?.message || "Failed to create reply");
-  //   } finally {
-  //     setCreating(false);
-  //   }
-  // };
-
   const fetchReplies = async () => {
     const response = await fetch(
       `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
@@ -507,20 +436,22 @@ const QuickReplies = () => {
   // );
 
   return (
-    <div className="py-4 ">
-      <div className="bg-white">
+    <div className="py-[var(--sp-4)]">
+      <div className="bg-app-surface">
         {/* Header */}
-        <div className="flex justify-between items-center border-b p-5">
-          <div>
-            <h2 className="text-xl font-bold">Quick Replies</h2>
-            <p className="text-gray-500 text-sm">
+        <div className="flex flex-wrap justify-between items-center gap-[var(--sp-3)] border-b border-app-border p-[var(--sp-5)]">
+          <div className="min-w-0">
+            <h2 className="text-[length:var(--fs-xl)] font-bold text-app-text">
+              Quick Replies
+            </h2>
+            <p className="text-gray-500 dark:text-app-text-faint text-[length:var(--fs-sm)]">
               Build reusable templates with text, images, videos and documents
             </p>
           </div>
 
           <button
             onClick={startCreate}
-            className="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-lg hover:bg-primary/90 transition"
+            className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-[var(--sp-5)] py-[var(--sp-2)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium transition-colors whitespace-nowrap w-full sm:w-auto"
           >
             <Plus size={18} />
             New Reply
@@ -528,23 +459,23 @@ const QuickReplies = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b">
+        <div className="flex border-b border-app-border overflow-x-auto hide-scrollbar">
           <button
             onClick={() => setActiveTab("list")}
-            className={`px-6 py-3 ${
+            className={`px-[var(--sp-5)] py-[var(--sp-3)] text-[length:var(--fs-sm)] whitespace-nowrap border-b-2 -mb-px transition-colors ${
               activeTab === "list"
-                ? "border-b-2 border-blue-600 font-semibold text-blue-600"
-                : "text-gray-500"
+                ? "border-primary font-semibold text-primary dark:text-app-text"
+                : "border-transparent text-gray-500 dark:text-app-text-faint hover:text-app-text"
             }`}
           >
             Existing Replies
           </button>
           <button
             onClick={() => setActiveTab("create")}
-            className={`px-6 py-3 ${
+            className={`px-[var(--sp-5)] py-[var(--sp-3)] text-[length:var(--fs-sm)] whitespace-nowrap border-b-2 -mb-px transition-colors ${
               activeTab === "create"
-                ? "border-b-2 border-blue-600 font-semibold text-blue-600"
-                : "text-gray-500"
+                ? "border-primary font-semibold text-primary dark:text-app-text"
+                : "border-transparent text-gray-500 dark:text-app-text-faint hover:text-app-text"
             }`}
           >
             {form.id ? "Edit Reply" : "Create Reply"}
@@ -553,26 +484,26 @@ const QuickReplies = () => {
 
         {/* Existing Replies */}
         {activeTab === "list" && (
-          <div className="p-6">
-            <div className="relative mb-5">
+          <div className="p-[var(--sp-5)]">
+            <div className="relative mb-[var(--sp-5)]">
               <Search
-                className="absolute left-3 top-3 text-gray-400"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-app-text-faint pointer-events-none"
                 size={18}
               />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search replies..."
-                className="w-full border rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`${FIELD} pl-10`}
               />
             </div>
 
             {replies.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
+              <div className="text-center py-[var(--sp-6)] text-[length:var(--fs-sm)] text-gray-400 dark:text-app-text-faint">
                 No quick replies yet. Create one to get started.
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-[var(--sp-4)]">
                 {replies &&
                   replies.length > 0 &&
                   replies?.map((item) => {
@@ -585,13 +516,18 @@ const QuickReplies = () => {
                     const mediaCount = mediaItem?.media?.length || 0;
 
                     return (
-                      <div key={item._id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start gap-4">
+                      <div
+                        key={item._id}
+                        className="border border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] bg-app-surface hover:border-primary/40 transition-colors"
+                      >
+                        <div className="flex justify-between items-start gap-[var(--sp-4)]">
                           <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold">{item.title}</h3>
+                            <h3 className="font-semibold text-[length:var(--fs-base)] text-app-text break-words">
+                              {item.title}
+                            </h3>
 
                             {textItem?.text && (
-                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                              <p className="text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint mt-1 line-clamp-2 break-words">
                                 {textItem.text}
                               </p>
                             )}
@@ -599,7 +535,9 @@ const QuickReplies = () => {
                             {mediaItem && (
                               <div className="flex flex-wrap gap-2 mt-3">
                                 {mediaItem.type === "image" && (
-                                  <span className="flex items-center gap-1 text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
+                                  <span
+                                    className={`${PILL} bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300`}
+                                  >
                                     <ImageIcon size={12} />
                                     {mediaCount} Image
                                     {mediaCount > 1 ? "s" : ""}
@@ -607,7 +545,9 @@ const QuickReplies = () => {
                                 )}
 
                                 {mediaItem.type === "video" && (
-                                  <span className="flex items-center gap-1 text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">
+                                  <span
+                                    className={`${PILL} bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300`}
+                                  >
                                     <VideoIcon size={12} />
                                     {mediaCount} Video
                                     {mediaCount > 1 ? "s" : ""}
@@ -615,7 +555,9 @@ const QuickReplies = () => {
                                 )}
 
                                 {mediaItem.type === "document" && (
-                                  <span className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">
+                                  <span
+                                    className={`${PILL} bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300`}
+                                  >
                                     <FileText size={12} />
                                     {mediaCount} Document
                                     {mediaCount > 1 ? "s" : ""}
@@ -628,7 +570,8 @@ const QuickReplies = () => {
                           <div className="flex gap-2 shrink-0">
                             <button
                               onClick={() => startEdit(item)}
-                              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                              aria-label="Edit quick reply"
+                              className="p-2 rounded-[var(--r-md)] bg-app-surface-secondary text-app-text hover:bg-app-surface border border-app-border transition-colors"
                               title="Edit"
                             >
                               <Edit size={16} />
@@ -636,7 +579,8 @@ const QuickReplies = () => {
 
                             <button
                               onClick={() => removeReply(item._id)}
-                              className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
+                              aria-label="Delete quick reply"
+                              className="p-2 rounded-[var(--r-md)] bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors"
                               title="Delete"
                             >
                               <Trash2 size={16} />
@@ -648,82 +592,16 @@ const QuickReplies = () => {
                   })}
               </div>
             )}
-
-            {/* {filteredReplies.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                No quick replies yet. Create one to get started.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredReplies.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="min-w-0">
-                        <h3 className="font-semibold">{item.title}</h3>
-                        {item.text && (
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {item.text}
-                          </p>
-                        )}
-
-                        {totalAttachments(item) > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {item.images.length > 0 && (
-                              <span className="flex items-center gap-1 text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded-full">
-                                <ImageIcon size={12} /> {item.images.length}{" "}
-                                image
-                                {item.images.length > 1 ? "s" : ""}
-                              </span>
-                            )}
-                            {item.videos.length > 0 && (
-                              <span className="flex items-center gap-1 text-xs bg-orange-50 text-orange-700 px-2 py-1 rounded-full">
-                                <VideoIcon size={12} /> {item.videos.length}{" "}
-                                video
-                                {item.videos.length > 1 ? "s" : ""}
-                              </span>
-                            )}
-                            {item.documents.length > 0 && (
-                              <span className="flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">
-                                <FileText size={12} /> {item.documents.length}{" "}
-                                doc
-                                {item.documents.length > 1 ? "s" : ""}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex gap-2 shrink-0">
-                        <button
-                          onClick={() => startEdit(item)}
-                          className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => removeReply(item.id)}
-                          className="p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )} */}
           </div>
         )}
 
         {/* Create / Edit */}
         {activeTab === "create" && (
-          <div className="p-6 space-y-6">
+          <div className="p-[var(--sp-5)] space-y-[var(--sp-5)]">
             <div>
-              <label className="block mb-2 font-medium">Reply Name</label>
+              <label className={`${LABEL} block mb-2`}>Reply Name</label>
               <input
-                className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={FIELD}
                 placeholder="Welcome Message"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -731,13 +609,13 @@ const QuickReplies = () => {
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="font-medium">Message text</label>
+              <div className="flex justify-between items-center gap-2 mb-2">
+                <label className={LABEL}>Message text</label>
                 <span
-                  className={`text-xs ${
+                  className={`text-[length:var(--fs-xs)] shrink-0 ${
                     form?.text?.length > charLimit
                       ? "text-red-500"
-                      : "text-gray-400"
+                      : "text-gray-400 dark:text-app-text-faint"
                   }`}
                 >
                   {form?.text?.length}/{charLimit}
@@ -746,7 +624,7 @@ const QuickReplies = () => {
               <textarea
                 rows={4}
                 maxLength={charLimit}
-                className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`${FIELD} resize-y`}
                 placeholder="Type your quick reply... (sent as a caption if attachments are included)"
                 value={form.text}
                 onChange={(e) => setForm({ ...form, text: e.target.value })}
@@ -754,17 +632,20 @@ const QuickReplies = () => {
             </div>
 
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Paperclip size={16} className="text-gray-400" />
-                <label className="font-medium">Attachments</label>
-                <span className="text-xs text-gray-400">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Paperclip
+                  size={16}
+                  className="shrink-0 text-gray-400 dark:text-app-text-faint"
+                />
+                <label className={LABEL}>Attachments</label>
+                <span className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
                   Mix and match — this reply will send as{" "}
                   {Math.max(1, totalAttachments(form))} message
                   {totalAttachments(form) > 1 ? "s" : ""} on WhatsApp
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--sp-3)] mb-[var(--sp-4)]">
                 <UploadZone
                   kind="image"
                   onFiles={(f) => addFiles("image", f)}
@@ -780,13 +661,15 @@ const QuickReplies = () => {
               </div>
 
               {fileError && (
-                <p className="text-sm text-red-500 mb-3">{fileError}</p>
+                <p className="text-[length:var(--fs-sm)] text-red-500 mb-3">
+                  {fileError}
+                </p>
               )}
 
               {totalAttachments(form) > 0 && (
-                <div className="space-y-3">
+                <div className="space-y-[var(--sp-3)]">
                   {form.images.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-[var(--sp-3)]">
                       {form.images.map((f) => (
                         <AttachmentThumb
                           key={f.id}
@@ -798,7 +681,7 @@ const QuickReplies = () => {
                     </div>
                   )}
                   {form.videos.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-[var(--sp-3)]">
                       {form.videos.map((f) => (
                         <AttachmentThumb
                           key={f.id}
@@ -810,7 +693,7 @@ const QuickReplies = () => {
                     </div>
                   )}
                   {form.documents.length > 0 && (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-[var(--sp-3)]">
                       {form.documents.map((f) => (
                         <AttachmentThumb
                           key={f.id}
@@ -825,17 +708,17 @@ const QuickReplies = () => {
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-2 border-t">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-[var(--sp-3)] pt-[var(--sp-4)] border-t border-app-border">
               <button
                 onClick={() => setActiveTab("list")}
-                className="px-5 py-3 border rounded-lg hover:bg-gray-50"
+                className="px-[var(--sp-5)] py-[var(--sp-3)] border border-app-border text-app-text rounded-[var(--r-md)] text-[length:var(--fs-sm)] hover:bg-app-surface-secondary transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
                 disabled={!canSave || creating}
-                className="bg-primary/80 text-white px-6 py-3 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-primary flex items-center gap-1.5"
+                className="bg-primary/80 hover:bg-primary text-white px-[var(--sp-5)] py-[var(--sp-3)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors"
               >
                 Save Reply {creating && <Loader size={22} color="#fefefe" />}
               </button>
