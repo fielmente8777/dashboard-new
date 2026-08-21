@@ -56,6 +56,8 @@ import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
 import { MessageSquareReply, X } from "lucide-react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 /* ── shared presentation tokens ─────────────────────────────── */
 const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
@@ -72,7 +74,7 @@ const ChatArea = ({ setActiveTab }) => {
   const [flows, setFlows] = useState([]);
 
   const { integrationStatus } = useContext(DataContext);
-  console.log("integrationStatus", integrationStatus);
+  const { user, authUser } = useSelector((state) => state.userProfile);
 
   const [quickReplies, setQuickReplies] = useState([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
@@ -567,6 +569,121 @@ const ChatArea = ({ setActiveTab }) => {
     }
   };
 
+  const handleTakeOverFnc = async () => {
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/takeover`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userEmail: authUser?.emailId,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      console.log("data", data);
+
+      if (data?.success) {
+        showToast({
+          message:
+            response?.data?.message || "Conversation taken over successfully",
+          type: "success",
+        });
+
+        // Update local conversation state
+        // with the handling returned by backend
+        setSelectedConversation((prev) => ({
+          ...prev,
+          handling: data?.result?.handling,
+        }));
+      }
+    } catch (error) {
+      console.error("Take over conversation error:", error);
+
+      if (error?.response?.status === 409) {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "This conversation is already being handled by another user",
+          type: "error",
+        });
+
+        // Important:
+        // refresh conversations here so UI gets
+        // the latest handling.assignedTo
+      } else {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "Failed to take over conversation",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const handleReleaseFnc = async () => {
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/release`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userEmail: authUser?.emailId,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (data?.success) {
+        showToast({
+          message:
+            response?.data?.message || "Conversation taken over successfully",
+          type: "success",
+        });
+
+        // Update local conversation state
+        // with the handling returned by backend
+        setSelectedConversation((prev) => ({
+          ...prev,
+          handling: response?.data?.result?.handling,
+        }));
+      }
+    } catch (error) {
+      console.error("Take over conversation error:", error);
+
+      if (error?.response?.status === 409) {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "This conversation is already being handled by another user",
+          type: "error",
+        });
+
+        // Important:
+        // refresh conversations here so UI gets
+        // the latest handling.assignedTo
+      } else {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "Failed to take over conversation",
+          type: "error",
+        });
+      }
+    }
+  };
+
   const fetchFlowSession = async () => {
     const payload = {
       phone: selectedConversation.phone,
@@ -789,7 +906,6 @@ const ChatArea = ({ setActiveTab }) => {
   };
 
   const handleCall = async () => {
-    console.log("Contact", selectedGuestNumber, agentNumber);
     try {
       if (!agentNumber || !selectedGuestNumber) {
         alert("Both numbers are required");
@@ -829,8 +945,6 @@ const ChatArea = ({ setActiveTab }) => {
       alert("Something went wrong while making the call");
     }
   };
-
-  console.log("integrationStatus", integrationStatus);
 
   useEffect(() => {
     fetchTemplate();
@@ -900,6 +1014,18 @@ const ChatArea = ({ setActiveTab }) => {
   const isPDF = file?.type === "application/pdf";
   const isExcel = file?.type?.includes("sheet");
   const isWord = file?.type?.includes("word");
+
+  const handling = selectedConversation?.handling;
+
+  const isTake_Over = !handling || handling?.mode === "AI";
+
+  const isRelease =
+    handling?.mode === "HUMAN" &&
+    String(handling?.assignedTo) === String(authUser?.emailId);
+
+  const isHandledByOther =
+    handling?.mode === "HUMAN" &&
+    String(handling?.assignedTo) !== String(authUser?.emailId);
 
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-app-surface [color-scheme:light] dark:[color-scheme:dark]">
@@ -1344,6 +1470,30 @@ const ChatArea = ({ setActiveTab }) => {
                             })()}
 
                           {message?.messageType === "location" && (
+                            <div className="w-full max-w-[280px]">
+                              <iframe
+                                loading="lazy"
+                                src={`https://www.google.com/maps?q=${encodeURIComponent(
+                                  message?.location?.name,
+                                )},${message?.location?.latitude},${message?.location?.longitude}&z=17&output=embed`}
+                                className="w-full aspect-[4/3] rounded-lg border-0"
+                                allowFullScreen
+                              />
+
+                              <a
+                                href={`https://www.google.com/maps/search/${encodeURIComponent(
+                                  message?.location?.name,
+                                )}/@${message?.location?.latitude},${message?.location?.longitude},17z?hl=en`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 block text-center text-sm font-medium text-blue-600 hover:underline"
+                              >
+                                Open in Google Maps
+                              </a>
+                            </div>
+                          )}
+
+                          {/* {message?.messageType === "location" && (
                             <div>
                               <iframe
                                 loading="lazy"
@@ -1351,7 +1501,7 @@ const ChatArea = ({ setActiveTab }) => {
                                 className="max-w-70 w-full aspect-4/3 rounded-lg"
                               />
                             </div>
-                          )}
+                          )} */}
 
                           {message?.reaction && (
                             <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
@@ -1655,6 +1805,7 @@ const ChatArea = ({ setActiveTab }) => {
               </select>
             </div>
           )}
+
           <div className="flex gap-2 items-center flex-wrap">
             {templateLoading ? (
               <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
@@ -1710,6 +1861,28 @@ const ChatArea = ({ setActiveTab }) => {
                 </button>
               </div>
             )}
+
+            <div>
+              {/* {isRelease && (
+                  <div className="flex justify-center w-full">
+                    <button
+                      type="button"
+                      onClick={handleReleaseFnc}
+                      className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+                    >
+                      Release Take Over
+                    </button>
+                  </div>
+                )} */}
+
+              {/* {isHandledByOther && (
+                  <div className="flex justify-center w-full">
+                    <div className="text-xs text-app-text-faint px-3 py-1.5">
+                      This conversation is being handled by another user
+                    </div>
+                  </div>
+                )} */}
+            </div>
           </div>
 
           {!isTakeOver && (
@@ -1963,3 +2136,349 @@ const ChatArea = ({ setActiveTab }) => {
 };
 
 export default ChatArea;
+
+//  {!isHandledByOther && !isTake_Over ? (
+//         <form
+//           onSubmit={handleSendMessage}
+//           className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
+//         >
+//           {templateClick && (
+//             <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
+//               {templates?.length > 0 &&
+//                 templates?.map((template) => (
+//                   <div
+//                     onClick={() => setSelectedTemplate(template)}
+//                     key={template?.id}
+//                     className={`
+//     cursor-pointer rounded-xl overflow-hidden transition-all h-30
+//     ${
+//       selectedTemplate?.id === template?.id
+//         ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
+//         : "border border-app-border bg-app-surface hover:border-orange-300 dark:hover:border-orange-700"
+//     }
+//   `}
+//                   >
+//                     <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+//                       <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+//                         {template?.name}
+//                       </p>
+
+//                       {selectedTemplate?.id === template?.id && (
+//                         <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+//                           Selected
+//                         </span>
+//                       )}
+//                     </div>
+
+//                     <div className="p-3">
+//                       <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+//                         <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+//                           {template?.components?.[0]?.text ||
+//                             template?.components?.[1]?.text}
+//                         </p>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//             </div>
+//           )}
+
+//           {showQuickReplies && (
+//             <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
+//               {quickReplies.map((reply) => {
+//                 const textItem = reply.items.find((i) => i.type === "text");
+//                 const mediaItem = reply.items.find((i) => i.type !== "text");
+
+//                 return (
+//                   <button
+//                     type="button"
+//                     key={reply._id}
+//                     onClick={() => handleSelectQuickReply(reply)}
+//                     className="w-full min-w-0 text-left p-3 bg-app-surface-secondary hover:bg-app-surface rounded-lg border border-primary/30! transition-colors"
+//                   >
+//                     <div className="font-medium text-app-text truncate">
+//                       {reply.title}
+//                     </div>
+
+//                     <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
+//                       {textItem?.text}
+//                     </div>
+
+//                     {mediaItem && (
+//                       <div className="text-xs mt-1 text-app-text-faint">
+//                         {mediaItem.media.length} {mediaItem.type}
+//                       </div>
+//                     )}
+//                   </button>
+//                 );
+//               })}
+
+//               <button
+//                 type="button"
+//                 aria-label="Close quick replies"
+//                 className="absolute top-1.5 right-1.5 size-7 flex items-center justify-center rounded-md text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
+//                 onClick={() => setShowQuickReplies(false)}
+//               >
+//                 <X size={16} />
+//               </button>
+//             </div>
+//           )}
+
+//           {file && (
+//             <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+//               <div
+//                 onClick={() => setFile(null)}
+//                 className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
+//               >
+//                 <FiX size={10} />
+//               </div>
+
+//               {/* ✅ IMAGE PREVIEW */}
+//               {isImage ? (
+//                 <img
+//                   src={URL.createObjectURL(file)}
+//                   alt="file"
+//                   className="w-40 h-20 rounded-md object-contain"
+//                 />
+//               ) : (
+//                 // ✅ DOCUMENT UI
+//                 <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
+//                   {/* ICON */}
+//                   {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+//                   {isExcel && (
+//                     <FaFileExcel className="text-green-600 text-xl" />
+//                   )}
+//                   {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+//                   {!isPDF && !isExcel && !isWord && (
+//                     <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
+//                   )}
+
+//                   {/* FILE NAME */}
+//                   <p className="text-xs truncate text-app-text">{file.name}</p>
+//                 </div>
+//               )}
+//             </div>
+//           )}
+
+//           <div
+//             className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
+//           >
+//             {flows?.length > 0 && (
+//               <div>
+//                 <select
+//                   value={selectedFlowId || ""}
+//                   onChange={(e) => {
+//                     setSelectedFlowId(e.target.value);
+//                     if (e.target.value) {
+//                       setShowFlowModal(true);
+//                     }
+//                   }}
+//                   className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
+//                 >
+//                   <option value="" className={OPTION}>
+//                     Select Form
+//                   </option>
+
+//                   {flows.map((flow) => (
+//                     <option
+//                       key={flow.flowId}
+//                       value={flow.flowId}
+//                       className={OPTION}
+//                     >
+//                       {flow.flowName}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </div>
+//             )}
+
+//             <div className="flex gap-2 items-center flex-wrap">
+//               {templateLoading ? (
+//                 <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
+//                   Loading Templates...
+//                 </p>
+//               ) : (
+//                 <div>
+//                   {!templateClick ? (
+//                     <span
+//                       onClick={() => {
+//                         if (!templates?.length) {
+//                           navigate(
+//                             `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+//                           );
+//                         }
+
+//                         handleTemplate(true);
+//                       }}
+//                       className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                     >
+//                       <MdChat /> Templates
+//                     </span>
+//                   ) : (
+//                     <span
+//                       onClick={() => handleTemplate(false)}
+//                       className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                     >
+//                       Close Templates <MdClose />
+//                     </span>
+//                   )}
+//                 </div>
+//               )}
+
+//               {!is24HourComplete && (
+//                 <button
+//                   type="button"
+//                   aria-label="Quick replies"
+//                   onClick={() => setShowQuickReplies(!showQuickReplies)}
+//                   className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
+//                 >
+//                   <MessageSquareReply size={20} />
+//                 </button>
+//               )}
+
+//               {isTakeOver && (
+//                 <div className="flex justify-center w-full">
+//                   <button
+//                     type="button"
+//                     onClick={handleTakeOver}
+//                     className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
+//                   >
+//                     Take Over
+//                   </button>
+//                 </div>
+//               )}
+
+//               <div>
+//                 {/* {isRelease && (
+//                   <div className="flex justify-center w-full">
+//                     <button
+//                       type="button"
+//                       onClick={handleReleaseFnc}
+//                       className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+//                     >
+//                       Release Take Over
+//                     </button>
+//                   </div>
+//                 )} */}
+
+//                 {/* {isHandledByOther && (
+//                   <div className="flex justify-center w-full">
+//                     <div className="text-xs text-app-text-faint px-3 py-1.5">
+//                       This conversation is being handled by another user
+//                     </div>
+//                   </div>
+//                 )} */}
+//               </div>
+//             </div>
+
+//             {!isTakeOver && (
+//               <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
+//                 {/* Attachment */}
+//                 {!is24HourComplete && (
+//                   <button
+//                     type="button"
+//                     aria-label="Attach file"
+//                     onClick={() => fileInputRef.current.click()}
+//                     className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
+//                   >
+//                     {/* Paperclip SVG */}
+//                     <svg
+//                       width="22"
+//                       height="22"
+//                       fill="none"
+//                       viewBox="0 0 24 24"
+//                       stroke="currentColor"
+//                     >
+//                       <path
+//                         strokeWidth="2"
+//                         strokeLinecap="round"
+//                         strokeLinejoin="round"
+//                         d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+//                       />
+//                     </svg>
+//                   </button>
+//                 )}
+
+//                 {!is24HourComplete && (
+//                   <input
+//                     disabled={is24HourComplete}
+//                     ref={fileInputRef}
+//                     type="file"
+//                     hidden
+//                     onChange={(e) => {
+//                       setFile(e.target.files[0]);
+//                     }}
+//                   />
+//                 )}
+
+//                 {!is24HourComplete ? (
+//                   <textarea
+//                     disabled={is24HourComplete}
+//                     ref={textareaRef}
+//                     value={messageValue}
+//                     onChange={handleChange}
+//                     placeholder="Type a message"
+//                     rows={1}
+//                     onKeyDown={(e) => {
+//                       if (e.key === "Enter" && !e.shiftKey) {
+//                         e.preventDefault(); // ❗ stop newline
+//                         handleSendMessage(e); // OR trigger form submit
+//                       }
+//                     }}
+//                     className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
+//                   />
+//                 ) : (
+//                   <div className="flex-1"></div>
+//                 )}
+
+//                 {/* Send Button */}
+//                 <button
+//                   type="submit"
+//                   aria-label="Send message"
+//                   className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+//                 >
+//                   {/* Send SVG */}
+//                   <svg
+//                     width="18"
+//                     height="18"
+//                     fill="none"
+//                     viewBox="0 0 24 24"
+//                     stroke="currentColor"
+//                   >
+//                     <path
+//                       strokeWidth="2"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       d="M22 2L11 13"
+//                     />
+//                     <path
+//                       strokeWidth="2"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       d="M22 2L15 22l-4-9-9-4 20-7z"
+//                     />
+//                   </svg>
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </form>
+//       ) : !isHandledByOther ? (
+//         <div className="flex justify-center w-full">
+//           <button
+//             type="button"
+//             onClick={handleTakeOverFnc}
+//             className="text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors"
+//           >
+//             Take Over
+//           </button>
+//         </div>
+//       ) : (
+//         <p>
+//           <div className="flex justify-center w-full">
+//             <div className="text-xs text-app-text-faint px-3 py-1.5">
+//               This conversation is being handled by another user
+//             </div>
+//           </div>
+//         </p>
+//       )}
