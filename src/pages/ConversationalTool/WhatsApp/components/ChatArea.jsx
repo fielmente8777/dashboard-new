@@ -377,6 +377,7 @@ const ChatArea = ({ setActiveTab }) => {
               },
             };
           }
+
           return conv;
         }),
       );

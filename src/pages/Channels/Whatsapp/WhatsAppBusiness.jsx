@@ -75,7 +75,11 @@ const WhatsAppBusiness = ({ template = false }) => {
   const [activeTab, setActiveTab] = useState(
     template ? "templates" : "overview",
   );
-  const [collapsed, setCollapsed] = useState(false);
+  // Sidebar starts collapsed on small screens by default so it doesn't eat
+  // the whole viewport on mobile; users can still expand it via the toggle.
+  const [collapsed, setCollapsed] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false,
+  );
   const {
     integrationStatus,
     checkIntegrationStatus,
@@ -212,12 +216,12 @@ const WhatsAppBusiness = ({ template = false }) => {
 
   if (!integrationStatus?.metaWhatsapp) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="max-w-md w-full rounded-2xl bg-app-surface p-8 border border-gray-100 text-center">
+      <div className="flex items-center justify-center py-8 sm:py-12 px-3 sm:px-4">
+        <div className="max-w-md w-full rounded-2xl bg-app-surface p-6 sm:p-8 border border-gray-100 dark:border-gray-800 text-center">
           {/* Icon */}
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-green-500/10">
             <svg
-              className="h-7 w-7 text-green-600"
+              className="h-7 w-7 text-green-600 dark:text-green-400"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
@@ -228,12 +232,12 @@ const WhatsAppBusiness = ({ template = false }) => {
           </div>
 
           {/* Heading */}
-          <h2 className="text-2xl font-medium text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-medium text-gray-600 dark:text-app-text-muted">
             Connect WhatsApp Business
           </h2>
 
           {/* Description */}
-          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+          <p className="mt-3 text-sm text-gray-600 dark:text-app-text-faint leading-relaxed">
             Connect your WhatsApp Business account to send messages, manage
             conversations, automate notifications, and engage with customers
             directly from your dashboard.
@@ -242,13 +246,13 @@ const WhatsAppBusiness = ({ template = false }) => {
           {/* CTA */}
           <button
             onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
-            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-app-surface"
           >
             <span>Connect WhatsApp Business</span>
           </button>
 
           {/* Helper text */}
-          <p className="mt-4 text-xs text-gray-400">
+          <p className="mt-4 text-xs text-gray-400 dark:text-app-text-faint">
             Secure Meta OAuth • Verified Tech Provider • Official WhatsApp Cloud
             API
           </p>
@@ -260,82 +264,88 @@ const WhatsAppBusiness = ({ template = false }) => {
   return (
     <React.Fragment>
       {accountDetails && (
-        <div className="flex h-full">
+        <div className="flex flex-col md:flex-row h-full min-h-0">
           <div
-            className={` bg-app-surface shadow! h-full transition-all duration-300
-                        ${collapsed ? "w-10" : "w-56"} p-2`}
+            className={`bg-app-surface shadow! shrink-0 transition-all duration-300 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800
+                        ${collapsed ? "w-full md:w-12 h-12 md:h-full" : "w-full md:w-56 h-auto md:h-full"} p-2 overflow-hidden`}
           >
             {/* Hamburger */}
-            <div className="flex justify-end mb-3">
-              <button onClick={() => setCollapsed(!collapsed)}>
+            <div className="flex justify-end mb-1 md:mb-3">
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                aria-label={collapsed ? "Expand menu" : "Collapse menu"}
+                className="p-2 rounded-md hover:bg-primary/10 dark:hover:bg-primary/20 text-gray-600 dark:text-app-text-muted"
+              >
                 <FiMenu size={20} />
               </button>
             </div>
 
             {/* Sidebar Tabs */}
-            <div className="flex flex-col h-full scrollbar-hidden overflow-y-auto gap-1">
-              {sidebarTabs.map((tab) => {
-                const isOpen = openDropdown === tab.id;
+            {!(collapsed && typeof window !== "undefined" && window.innerWidth < 768) && (
+              <div className="flex flex-col md:h-full scrollbar-hidden overflow-x-auto md:overflow-y-auto md:overflow-x-hidden flex-row md:flex-col gap-1">
+                {sidebarTabs.map((tab) => {
+                  const isOpen = openDropdown === tab.id;
 
-                return (
-                  <div key={tab.id}>
-                    {/* Parent Tab */}
-                    <button
-                      onClick={() => {
-                        if (tab.children) {
-                          setOpenDropdown(isOpen ? null : tab.id);
-                          setActiveTab(tab.id);
-                          setActiveSubTab(tab.id);
-                        } else {
-                          setActiveTab(tab.id);
-                          setOpenDropdown(null);
-                        }
-                      }}
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition ${
-                        activeTab === tab.id
-                          ? "bg-primary text-white"
-                          : "text-gray-600 hover:bg-primary/10 "
-                      }`}
-                    >
-                      {!collapsed && <span>{tab.label}</span>}
+                  return (
+                    <div key={tab.id} className="shrink-0 md:shrink">
+                      {/* Parent Tab */}
+                      <button
+                        onClick={() => {
+                          if (tab.children) {
+                            setOpenDropdown(isOpen ? null : tab.id);
+                            setActiveTab(tab.id);
+                            setActiveSubTab(tab.id);
+                          } else {
+                            setActiveTab(tab.id);
+                            setOpenDropdown(null);
+                          }
+                        }}
+                        className={`flex items-center justify-between gap-2 w-full whitespace-nowrap px-3 py-2 rounded-lg text-sm transition ${
+                          activeTab === tab.id
+                            ? "bg-primary text-white"
+                            : "text-gray-600 dark:text-app-text-muted hover:bg-primary/10 dark:hover:bg-primary/20"
+                        }`}
+                      >
+                        {!collapsed && <span>{tab.label}</span>}
 
-                      {tab.children && !collapsed && (
-                        <span className="text-xs transition-all duration-300">
-                          {isOpen ? "▲" : "▼"}
-                        </span>
+                        {tab.children && !collapsed && (
+                          <span className="text-xs transition-all duration-300">
+                            {isOpen ? "▲" : "▼"}
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Sub Dropdown */}
+                      {tab.children && isOpen && !collapsed && (
+                        <div className="ml-4 mt-1 flex flex-col gap-1">
+                          {tab.children.map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                // setActiveTab(tab.id);
+                                setActiveSubTab(sub.id);
+                              }}
+                              className={`text-left px-3 py-2 rounded-md text-sm ${
+                                activeSubTab === sub.id
+                                  ? "bg-primary text-white"
+                                  : "text-gray-400 dark:text-app-text-faint hover:bg-primary/90 dark:hover:bg-primary/70 hover:text-white"
+                              }`}
+                            >
+                              {sub.label}
+                            </button>
+                          ))}
+                        </div>
                       )}
-                    </button>
-
-                    {/* Sub Dropdown */}
-                    {tab.children && isOpen && !collapsed && (
-                      <div className="ml-4 mt-1 flex flex-col gap-1">
-                        {tab.children.map((sub) => (
-                          <button
-                            key={sub.id}
-                            onClick={() => {
-                              // setActiveTab(tab.id);
-                              setActiveSubTab(sub.id);
-                            }}
-                            className={`text-left px-3 py-2 rounded-md text-sm ${
-                              activeSubTab === sub.id
-                                ? "bg-primary text-white"
-                                : "text-gray-400 hover:bg-primary/90"
-                            }`}
-                          >
-                            {sub.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          <div className="flex-1 h-full overflow-y-auto scrollbar-hidden px-4">
+          <div className="flex-1 min-w-0 h-full overflow-y-auto scrollbar-hidden px-3 sm:px-4 py-3 sm:py-4">
             {activeTab === "overview" && (
-              <div className="w-full gap-4 grid md:grid-cols-2">
+              <div className="w-full gap-4 grid grid-cols-1 md:grid-cols-2">
                 <div className="flex gap-4 flex-col">
                   {/* <BusinessInfoCard business={accountDetails?.business} /> */}
 
@@ -360,7 +370,7 @@ const WhatsAppBusiness = ({ template = false }) => {
                 />
                 <WhatsappWidgetCard phoneNumber={accountDetails?.phoneNumber} />
 
-                <div className="col-span-2">
+                <div className="col-span-1 md:col-span-2">
                   <WhatsAppMessageTemplate />
                 </div>
               </div>
@@ -410,34 +420,36 @@ const BusinessInfoCard = ({ business }) => {
   if (!business) return null;
 
   return (
-    <div className="w-full border border-gray-200 rounded-lg bg-app-surface px-6 py-5">
+    <div className="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-app-surface px-4 sm:px-6 py-5">
       {/* Top */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="space-y-1">
-          <div className="flex items-center gap-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <div className="flex items-center gap-4 flex-wrap">
+            <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-app-text-faint">
               WhatsApp Business Account
             </p>
 
             {business.verificationStatus === "verified" && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-500/10 px-2 py-0.5 rounded-full">
                 <MdVerified className="w-3.5 h-3.5" />
                 Verified
               </span>
             )}
           </div>
 
-          <h2 className="text-2xl font-medium text-gray-600 leading-none">
+          <h2 className="text-xl sm:text-2xl font-medium text-gray-600 dark:text-app-text-muted leading-none break-words">
             {business.name}
           </h2>
         </div>
       </div>
 
-      <div className="mt-4 border-t border-gray-100" />
+      <div className="mt-4 border-t border-gray-100 dark:border-gray-800" />
 
-      <div className="mt-3 text-sm text-gray-500">
+      <div className="mt-3 text-sm text-gray-500 dark:text-app-text-faint break-all">
         Business ID
-        <span className="ml-2 font-medium text-gray-800">{business.id}</span>
+        <span className="ml-2 font-medium text-gray-800 dark:text-app-text">
+          {business.id}
+        </span>
       </div>
     </div>
   );
@@ -455,21 +467,21 @@ const PhoneNumberCard = ({ phoneNumber }) => {
     : "Messaging Disabled";
 
   const messageStatusColor = isConnected
-    ? "bg-blue-100 text-blue-700"
-    : "bg-gray-100 text-gray-600";
+    ? "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
+    : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-app-text-faint";
 
   return (
-    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-6 py-5">
+    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-4 sm:px-6 py-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
         <div className="flex items-center gap-2">
-          <FaWhatsapp className="w-4 h-4 text-green-600" />
+          <FaWhatsapp className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
           <h3 className="text-sm font-medium text-gray-600 dark:text-app-text-muted">
             Phone Number
           </h3>
         </div>
 
-        <span className="text-sm font-medium text-gray-600 dark:text-app-text-faint">
+        <span className="text-sm font-medium text-gray-600 dark:text-app-text-faint flex items-center gap-2 flex-wrap">
           Quality Rating:{" "}
           <span className="bg-green-500 text-white px-3 font-medium text-sm py-1 rounded-2xl">
             {phoneNumber.qualityRating === "GREEN"
@@ -479,7 +491,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
         </span>
 
         <span
-          className={`text-xs font-medium px-2 py-0.5 rounded-full ${messageStatusColor}`}
+          className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${messageStatusColor}`}
         >
           {messageStatusLabel}
         </span>
@@ -487,16 +499,16 @@ const PhoneNumberCard = ({ phoneNumber }) => {
 
       {/* Number */}
       <div className="mb-5">
-        <p className="text-xl font-medium text-gray-600 dark:text-app-text">
+        <p className="text-lg sm:text-xl font-medium text-gray-600 dark:text-app-text break-words">
           {phoneNumber.displayPhoneNumber}
         </p>
-        <p className="text-sm text-gray-500">{phoneNumber.verifiedName}</p>
+        <p className="text-sm text-gray-500 dark:text-app-text-faint break-words">
+          {phoneNumber.verifiedName}
+        </p>
       </div>
 
       {/* Status Summary Row */}
       <div className="flex justify-between items-center gap-3 mb-4 text-sm">
-        
-
         {/* <div className="space-y-2">
           <label className="inline-block">Enable Cloud API</label>
           <ChannelToggle />
@@ -525,31 +537,37 @@ const PhoneNumberCard = ({ phoneNumber }) => {
         </div> */}
         <div>
           <span
-            className={`inline-flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-md font-medium
-            
-                `}
+            className="inline-flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md font-medium flex-wrap"
           >
-            
-            <span className="text-gray-600 font-medium">Cloud API:</span> {isConnected ? (
-              <MdLink className="w-4 h-4" />
+            <span className="text-gray-600 dark:text-app-text-muted font-medium">
+              Cloud API:
+            </span>{" "}
+            {isConnected ? (
+              <MdLink className="w-4 h-4 text-gray-600 dark:text-app-text-muted" />
             ) : (
-              <MdLinkOff className="w-4 h-4" />
+              <MdLinkOff className="w-4 h-4 text-gray-600 dark:text-app-text-muted" />
             )}
-            {isConnected ? "Connected" : "Not Connected"}
+            <span className="text-gray-600 dark:text-app-text-muted">
+              {isConnected ? "Connected" : "Not Connected"}
+            </span>
           </span>
           {!isCloudApi && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-app-text-faint block mt-1">
               Requires Cloud API to send messages
             </span>
           )}
         </div>
 
         {/* Platform */}
-        <div className="flex items-center justify-between rounded-md border border-gray-200 px-3 py-2">
-          <span className="text-gray-600 font-medium">Platform</span>
+        <div className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2">
+          <span className="text-gray-600 dark:text-app-text-muted font-medium">
+            Platform
+          </span>
           <span
             className={`font-medium ${
-              isCloudApi ? "text-green-700" : "text-gray-800"
+              isCloudApi
+                ? "text-green-700 dark:text-green-400"
+                : "text-gray-800 dark:text-app-text"
             }`}
           >
             {phoneNumber.platformType || "—"}
@@ -557,13 +575,15 @@ const PhoneNumberCard = ({ phoneNumber }) => {
         </div>
 
         {/* Account Mode */}
-        <div className="flex items-center justify-between rounded-md border px-3 py-2">
-          <span className="text-gray-600 font-medium">Account Mode</span>
+        <div className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2">
+          <span className="text-gray-600 dark:text-app-text-muted font-medium">
+            Account Mode
+          </span>
           <span
             className={`font-medium ${
               phoneNumber.accountMode === "LIVE"
                 ? "text-app-text-muted"
-                : "text-gray-500"
+                : "text-gray-500 dark:text-app-text-faint"
             }`}
           >
             {phoneNumber.accountMode || "—"}
@@ -581,27 +601,27 @@ const WabaDetailsCard = ({ waba, business }) => {
     COMPLETED: {
       label: "Completed",
       description: "Marketing messages are enabled",
-      style: "bg-green-100 text-green-700",
+      style: "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400",
     },
     IN_PROGRESS: {
       label: "In Progress",
       description: "Setup is currently under review",
-      style: "bg-yellow-100 text-yellow-700",
+      style: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400",
     },
     NOT_STARTED: {
       label: "Not Started",
       description: "Marketing messaging setup not completed",
-      style: "bg-gray-100 text-gray-600",
+      style: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-app-text-faint",
     },
     REJECTED: {
       label: "Rejected",
       description: "Setup was rejected by Meta",
-      style: "bg-red-100 text-red-700",
+      style: "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400",
     },
     UNKNOWN: {
       label: "Unknown",
       description: "Status not available",
-      style: "bg-gray-100 text-gray-500",
+      style: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-app-text-faint",
     },
   };
 
@@ -609,27 +629,27 @@ const WabaDetailsCard = ({ waba, business }) => {
   // const status = MARKETING_STATUS_UI[statusKey];
 
   return (
-    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-6 py-5">
+    <div className="w-full border border-gray-200 dark:border-primary/60! bg-app-surface px-4 sm:px-6 py-5">
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <FaWhatsapp className="w-4 h-4 text-green-600" />
+          <FaWhatsapp className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0" />
           <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-app-text">
             WhatsApp Business Account
           </span>
         </div>
 
-        <h2 className="text-xl font-medium text-gray-600 dark:text-app-text-muted">
+        <h2 className="text-lg sm:text-xl font-medium text-gray-600 dark:text-app-text-muted break-words">
           {waba.name || "Unnamed WABA"}
         </h2>
 
-        <p className="text-sm text-gray-500 dark:text-app-text-faint">
+        <p className="text-sm text-gray-500 dark:text-app-text-faint break-all">
           WABA ID:
           <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">
             {waba.id}
           </span>
         </p>
-        <p className="text-sm text-gray-500 dark:text-app-text-faint">
+        <p className="text-sm text-gray-500 dark:text-app-text-faint break-all">
           Business ID:
           <span className="ml-2 font-medium text-gray-800 dark:text-app-text-faint">
             {business.id}
@@ -675,39 +695,46 @@ const WabaDetailsCard = ({ waba, business }) => {
 const CreditInfoCard = () => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-gray-200 dark:border-primary/60! bg-app-surface-secondary px-6 py-5 space-y-5">
+    <div className="border border-gray-200 dark:border-primary/60! bg-app-surface-secondary px-4 sm:px-6 py-5 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium  text-gray-600 dark:text-app-text-muted">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-base sm:text-lg font-medium text-gray-600 dark:text-app-text-muted">
           WhatsApp Credit Report
         </h3>
 
         <button
           onClick={() => setOpen(true)}
-          className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between"
+          className="flex gap-[5px] text-sm font-medium px-3 rounded py-2 bg-green-500 text-white items-center justify-between hover:bg-green-600 transition"
         >
           <MdAdd size={20} /> Buy Credits
         </button>
       </div>
       <div>
-        <p className="flex items-center gap-1 font-medium text-gray-700">
+        <p className="flex items-center gap-1 font-medium text-gray-700 dark:text-app-text-muted">
           <MdAccountBalance />
           Account Balance
         </p>
 
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-2xl font-medium text-gray-600">0000.5</span>
-          <span className="text-sm text-gray-600">remaining credits</span>
+          <span className="text-2xl font-medium text-gray-600 dark:text-app-text-muted">
+            0000.5
+          </span>
+          <span className="text-sm text-gray-600 dark:text-app-text-faint">
+            remaining credits
+          </span>
         </div>
       </div>
 
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 bg-black/40 flex items-center justify-center z-99999"
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-99999 px-4"
         >
-          <div className="bg-white w-full max-w-md p-6 space-y-5">
-            <h2 className="font-medium text-gray-500 text-center">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-app-surface w-full max-w-md p-6 space-y-5 rounded-lg"
+          >
+            <h2 className="font-medium text-gray-500 dark:text-app-text-faint text-center">
               {" "}
               We are coming soon with this feature, Thanks
             </h2>

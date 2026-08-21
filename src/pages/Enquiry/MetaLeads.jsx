@@ -37,6 +37,16 @@ import { fetchUserManagementData } from "../../services/api";
 import { FaTrashAlt } from "react-icons/fa";
 import CustomDropdown2 from "../../components/ui/Dropdown2";
 
+/* ── shared presentation tokens (styling only) ──────────────── */
+const CELL = "px-3 py-2.5 whitespace-nowrap";
+const HEAD_CELL =
+  "px-3 py-3 text-left text-white font-semibold whitespace-nowrap min-w-40";
+const FILTER_SHELL =
+  "h-10 px-3 flex items-center gap-2 rounded-lg border border-app-border bg-app-surface-secondary text-app-text transition-colors focus-within:ring-2 focus-within:ring-primary";
+const INLINE_DROPDOWN =
+  "border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!";
+const NOTES_TAB = "flex-1 sm:flex-none px-4 text-sm whitespace-nowrap transition-colors";
+
 const CREATED_FROM = "facebook";
 
 const MetaLeads = () => {
@@ -412,16 +422,16 @@ const MetaLeads = () => {
   }, [allLeads]);
 
   return (
-    <div className="bg-app-surface p-2 md:p-4 space-y-2 md:space-y-5 h-[90vh] flex flex-col">
+    <div className="bg-app-surface text-app-text p-3 md:p-4 space-y-3 md:space-y-5 min-h-[80dvh] md:h-[90vh] flex flex-col [color-scheme:light] dark:[color-scheme:dark]">
       <div className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold ">Meta Leads</h2>
+        <div className="flex flex-wrap justify-between items-center gap-2">
+          <h2 className="text-lg font-semibold text-app-text">Meta Leads</h2>
 
           {allLeads?.length > 0 && (
             <button
               disabled={isExporting}
               onClick={exportToExcel}
-              className="bg-ternary text-white px-4 py-2 rounded flex items-center gap-1.5"
+              className="bg-ternary hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 whitespace-nowrap transition-opacity disabled:opacity-60"
             >
               Export to Excel{" "}
               {isExporting && <Loader color="#fefefe" size={12} />}
@@ -430,21 +440,26 @@ const MetaLeads = () => {
         </div>
 
         <div className="">
-          <div className="md:flex-row flex-col flex md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
             {/* LEFT SIDE FILTERS */}
-            <div className="flex flex-1 flex-wrap items-center gap-3">
+            <div className="flex flex-1 flex-wrap items-center gap-2 md:gap-3">
               {/* SEARCH */}
-              <div className="flex flex-1 items-center gap-2 h-10 w-full md:w-72 px-3 rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
-                <IoSearch className="text-gray-400" size={18} />
+              <div
+                className={`${FILTER_SHELL} w-full sm:w-auto sm:flex-1 sm:min-w-[220px]`}
+              >
+                <IoSearch
+                  className="shrink-0 text-gray-400 dark:text-app-text-faint"
+                  size={18}
+                />
                 <input
                   type="text"
                   placeholder="Search clients..."
-                  className="w-full bg-transparent outline-none text-sm placeholder-gray-400"
+                  className="w-full min-w-0 bg-transparent outline-none text-sm text-app-text placeholder:text-app-text-faint"
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              <div className="min-w-48 flex-1">
+              <div className="w-full sm:w-auto sm:flex-1 sm:min-w-48">
                 <CustomDropdown
                   options={[
                     {
@@ -490,15 +505,15 @@ const MetaLeads = () => {
             )} */}
 
               {/* DATE RANGE */}
-              <div className="relative flex-1">
-                <div className="h-10 px-3 flex items-center rounded-lg border border-gray-300 bg-app-surface-secondary focus-within:ring-2 focus-within:ring-primary">
+              <div className="relative w-full sm:w-auto sm:flex-1 sm:min-w-[180px]">
+                <div className={FILTER_SHELL}>
                   <DatePicker
                     selectsRange
                     startDate={startDate}
                     endDate={endDate}
                     maxDate={new Date()}
                     onChange={(update) => setDateRange(update)}
-                    className="bg-transparent outline-none text-sm w-40"
+                    className="bg-transparent outline-none text-sm text-app-text placeholder:text-app-text-faint w-full min-w-0"
                     placeholderText="Date range"
                     popperClassName="z-99999!"
                   />
@@ -510,20 +525,20 @@ const MetaLeads = () => {
                       setStartDate(null);
                       setEndDate(null);
                     }}
-                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 text-white cursor-pointer"
+                    className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white shadow cursor-pointer transition-colors"
                   >
                     <IoIosClose size={18} />
                   </span>
                 )}
               </div>
 
-              <div className="flex h-10 rounded-md border border-app-border overflow-hidden">
+              <div className="flex h-10 w-full sm:w-auto rounded-lg border border-app-border overflow-hidden">
                 <button
                   onClick={() => setNotesFilter("")}
-                  className={`px-4 text-sm ${
+                  className={`${NOTES_TAB} ${
                     notesFilter === ""
                       ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
+                      : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
                   }`}
                 >
                   All
@@ -531,10 +546,10 @@ const MetaLeads = () => {
 
                 <button
                   onClick={() => setNotesFilter("true")}
-                  className={`px-4 text-sm ${
+                  className={`${NOTES_TAB} border-x border-app-border ${
                     notesFilter === "true"
                       ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
+                      : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
                   }`}
                 >
                   Has Notes
@@ -542,10 +557,10 @@ const MetaLeads = () => {
 
                 <button
                   onClick={() => setNotesFilter("false")}
-                  className={`px-4 text-sm ${
+                  className={`${NOTES_TAB} ${
                     notesFilter === "false"
                       ? "bg-primary text-white"
-                      : "bg-app-surface-secondary text-app-text"
+                      : "bg-app-surface-secondary text-app-text hover:bg-app-surface"
                   }`}
                 >
                   No Notes
@@ -553,7 +568,7 @@ const MetaLeads = () => {
               </div>
 
               {allCampaigns?.length > 0 && (
-                <div className="min-w-48 flex-1">
+                <div className="w-full sm:w-auto sm:flex-1 sm:min-w-48">
                   <CustomDropdown
                     label="All Campaigns"
                     options={[
@@ -574,7 +589,7 @@ const MetaLeads = () => {
             <button
               disabled={isSyncing}
               onClick={handleBulkImportMetaLeads}
-              className="h-10 px-5 rounded-lg bg-primary text-white text-sm font-medium flex items-center gap-2 hover:bg-primary/90 disabled:opacity-60 flex justify-center"
+              className="h-10 w-full md:w-auto px-5 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-medium flex items-center justify-center gap-2 whitespace-nowrap transition-colors disabled:opacity-60"
             >
               Refresh
               <span className={isSyncing ? "animate-spin" : ""}>
@@ -588,27 +603,24 @@ const MetaLeads = () => {
       <div className="flex flex-col flex-1 min-h-0">
         {rowSelected?.length > 0 && (
           <button
-            className="mb-2 bg-red-700/90 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit"
+            className="mb-2 bg-red-700/90 hover:bg-red-700 text-white rounded-lg px-3 py-2 text-sm flex items-center gap-2 w-fit transition-colors"
             onClick={handleDeleteAll}
           >
             Delete <span>{rowSelected.length}</span> <FaTrashAlt size={12} />
           </button>
         )}
-        <div className="border md:rounded-lg overflow-auto hide-scrollbar">
+        <div className="flex flex-1 min-h-0 border border-app-border bg-app-surface rounded-lg overflow-auto hide-scrollbar">
           <table className="min-w-full text-sm">
             <thead className="bg-primary sticky top-0 z-99">
               <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                <th className="px-3 py-3 text-center text-white font-semibold whitespace-nowrap">
                   Select
                 </th>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
+                <th className="px-3 py-3 text-center text-white font-semibold whitespace-nowrap">
                   #
                 </th>
                 {tableHeaders?.map((h) => (
-                  <th
-                    key={h.key}
-                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
-                  >
+                  <th key={h.key} className={HEAD_CELL}>
                     {h.label}
                   </th>
                 ))}
@@ -631,14 +643,15 @@ const MetaLeads = () => {
                     onClick={() => {
                       handleRedirectToPage(row, i + limit * (page - 1) + 1);
                     }}
-                    className="odd:bg-app-surface even:bg-app-surface border-app-border text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
+                    className="odd:bg-app-surface even:bg-app-surface-secondary border-b border-app-border text-app-text hover:bg-primary/5 dark:hover:bg-primary/10 transition-colors cursor-pointer"
                   >
                     <td
                       onClick={(e) => e.stopPropagation()}
-                      className="py-3 px-2 text-[14px] capitalize whitespace-nowrap"
+                      className="px-3 py-2.5 text-center text-[14px] capitalize whitespace-nowrap"
                     >
                       <input
                         type="checkbox"
+                        className="h-4 w-4 accent-primary cursor-pointer align-middle"
                         checked={rowSelected.includes(row?._id)}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -646,7 +659,7 @@ const MetaLeads = () => {
                         }}
                       />
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td className="px-3 py-2.5 text-center text-app-text-faint tabular-nums">
                       {(i + limit * (page - 1) + 1).toString().padStart(2, "0")}
                     </td>
 
@@ -657,10 +670,7 @@ const MetaLeads = () => {
                         const isLeadCreatedTime = row?.meta?.created_time;
 
                         return (
-                          <td
-                            key={h.key}
-                            className="px-3 py-2 whitespace-nowrap"
-                          >
+                          <td key={h.key} className={CELL}>
                             {formatDateTime(
                               isLeadCreatedTime
                                 ? isLeadCreatedTime
@@ -673,20 +683,29 @@ const MetaLeads = () => {
                         return (
                           <td
                             key={h.key}
-                            className="px-3 py-2"
+                            className={CELL}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Link to={`tel:${row[h.key]}`}>{row[h.key]}</Link>
+                            <Link
+                              to={`tel:${row[h.key]}`}
+                              className="hover:text-primary transition-colors"
+                            >
+                              {row[h.key]}
+                            </Link>
                           </td>
                         );
                       }
                       if (h.key === "status") {
                         return (
-                          <td onClick={(e) => e.stopPropagation()}>
+                          <td
+                            key={h.key}
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-3 py-2"
+                          >
                             <CustomDropdown
                               label={row.status}
                               options={Stages}
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                               onChange={(value) => {
                                 if (value === "Follow Up") {
                                   setSelectedLead(row);
@@ -703,13 +722,14 @@ const MetaLeads = () => {
                         const turnAwayCode = row[h.key];
                         return (
                           <td
+                            key={h.key}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-2"
+                            className="px-3 py-2"
                           >
                             <CustomDropdown
                               label={turnAwayCode || "Select Code"}
                               options={TurnAwayCode}
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                               onChange={(value) => {
                                 handleUpdateStage({
                                   leadId: row?._id,
@@ -729,15 +749,20 @@ const MetaLeads = () => {
                         const noteMessage =
                           isNotes && row[h.key]?.slice(-1)[0]?.message;
                         return (
-                          <td className="min-w-150 w-full">
-                            {isNotes ? noteMessage : "-"}
+                          <td
+                            key={h.key}
+                            className="px-3 py-2.5 min-w-[200px] max-w-[320px]"
+                          >
+                            <span className="block truncate text-app-text-muted">
+                              {isNotes ? noteMessage : "-"}
+                            </span>
                           </td>
                         );
                       }
                       if (h.key === "campaign_name") {
                         const isMeta = row?.meta;
                         return (
-                          <td className="whitespace-nowrap">
+                          <td key={h.key} className={CELL}>
                             {isMeta ? isMeta?.campaign_name : "-"}
                           </td>
                         );
@@ -745,8 +770,9 @@ const MetaLeads = () => {
                       if (h.key === "assignee") {
                         return (
                           <td
+                            key={h.key}
                             onClick={(e) => e.stopPropagation()}
-                            className="px-2"
+                            className="px-3 py-2"
                           >
                             <CustomDropdown2
                               label={row["assignee"] || "Attempted By"}
@@ -764,7 +790,7 @@ const MetaLeads = () => {
                                   row?.conversationId,
                                 )
                               }
-                              className="border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!"
+                              className={INLINE_DROPDOWN}
                             />
                           </td>
                         );
@@ -785,10 +811,10 @@ const MetaLeads = () => {
                           ? isName
                           : row?.other_details?.full_name || "-";
                         return (
-                          <td className="whitespace-nowrap">
+                          <td key={h.key} className={`${CELL} font-medium`}>
                             {userName}{" "}
                             {isToday && (
-                              <span className="px-1 py-0.5 text-[12px] bg-[#fd5c01] text-white">
+                              <span className="ml-1 inline-block px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#fd5c01] text-white align-middle">
                                 Follow Up
                               </span>
                             )}
@@ -797,7 +823,7 @@ const MetaLeads = () => {
                       }
 
                       return (
-                        <td key={h.key} className="px-3 py-2">
+                        <td key={h.key} className={CELL}>
                           {row[h.key]
                             ? row[h.key]
                             : row?.created_from === "facebook"
@@ -813,7 +839,7 @@ const MetaLeads = () => {
                 <tr>
                   <td
                     colSpan={tableHeaders.length + 2}
-                    className="py-6 text-center"
+                    className="py-10 text-center text-app-text-faint"
                   >
                     No Leads Found
                   </td>
@@ -824,7 +850,7 @@ const MetaLeads = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-4">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 px-1 sm:px-4">
         <Pagination
           page={page}
           totalPages={totalPages}

@@ -47,6 +47,32 @@
     #1e293b 45%,
     #6366f1 100%
   );
+  /* ---- font sizes ---------------------------------------- */
+  --fs-2xs: clamp(0.625rem, calc(0.60rem + 0.10vw), 0.6875rem); /* 10 → 11 */
+  --fs-xs: clamp(0.6875rem, calc(0.65rem + 0.16vw), 0.75rem); /* 11 → 12 */
+  --fs-sm: clamp(0.75rem, calc(0.71rem + 0.20vw), 0.875rem); /* 12 → 14 */
+  --fs-base: clamp(0.875rem, calc(0.83rem + 0.22vw), 1rem); /* 14 → 16 */
+  --fs-md: clamp(0.9375rem, calc(0.88rem + 0.28vw), 1.125rem); /* 15 → 18 */
+  --fs-lg: clamp(1rem, calc(0.92rem + 0.40vw), 1.25rem); /* 16 → 20 */
+  --fs-xl: clamp(1.125rem, calc(1.01rem + 0.55vw), 1.5rem); /* 18 → 24 */
+  --fs-2xl: clamp(1.25rem, calc(1.08rem + 0.85vw), 1.875rem); /* 20 → 30 */
+ 
+  /* ---- spacing (padding, gap, margin) -------------------- */
+  --sp-1: clamp(0.25rem, calc(0.23rem + 0.10vw), 0.375rem); /*  4 →  6 */
+  --sp-2: clamp(0.375rem, calc(0.34rem + 0.16vw), 0.5rem); /*  6 →  8 */
+  --sp-3: clamp(0.5rem, calc(0.44rem + 0.28vw), 0.75rem); /*  8 → 12 */
+  --sp-4: clamp(0.75rem, calc(0.66rem + 0.44vw), 1rem); /* 12 → 16 */
+  --sp-5: clamp(1rem, calc(0.86rem + 0.66vw), 1.5rem); /* 16 → 24 */
+  --sp-6: clamp(1.25rem, calc(1.03rem + 1.10vw), 2rem); /* 20 → 32 */
+ 
+  /* ---- control heights (inputs, buttons, toggles) -------- */
+  --ctl-sm: clamp(1.75rem, calc(1.66rem + 0.44vw), 2rem); /* 28 → 32 */
+  --ctl-md: clamp(2.25rem, calc(2.16rem + 0.44vw), 2.5rem); /* 36 → 40 */
+ 
+  /* ---- radii --------------------------------------------- */
+  --r-sm: 0.375rem;
+  --r-md: 0.5rem;
+  --r-lg: 0.75rem;
 }
 
 /* .dark {
@@ -257,4 +283,14 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   .dark .border-gray-300 {
     border-color: var(--app-border);
   }
+}
+
+
+select option {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+html.dark select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
 }

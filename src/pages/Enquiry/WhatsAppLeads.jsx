@@ -699,7 +699,7 @@ const WhatsAppLeads = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center px-4">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 px-1 sm:px-4">
         <Pagination
           page={page}
           totalPages={totalPages}

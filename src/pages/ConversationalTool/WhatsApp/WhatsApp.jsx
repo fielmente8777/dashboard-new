@@ -15,7 +15,6 @@ import SidebarChat from "./components/SidebarChat";
 const WhatsApp = () => {
   const [searchParams] = useSearchParams();
   const number = searchParams.get("number");
-
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -203,6 +202,10 @@ const WhatsApp = () => {
             {mobileActive === "chatarea" && selectedConversation && (
               <ChatArea setActiveTab={setActiveTab} />
             )}
+
+            {/* {mobileActive === "chatarea" && selectedConversation && (
+              <ChatArea />
+            )} */}
             {mobileActive === "profile" && selectedConversation && (
               <div className="flex flex-1 min-h-0 overflow-y-auto">
                 <ProfilePanel
