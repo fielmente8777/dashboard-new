@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/fi";
 
+const COPY_BTN =
+  "flex shrink-0 items-center gap-2 rounded-[var(--r-sm)] border px-[var(--sp-3)] py-1.5 text-[length:var(--fs-sm)] transition-colors";
+const CODE_BLOCK =
+  "overflow-auto rounded-[var(--r-md)] border border-app-border bg-app-surface-secondary p-[var(--sp-4)] text-[length:var(--fs-sm)] text-primary dark:text-app-text-muted";
+const BODY_TEXT =
+  "text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint";
+
 const WhatsappWidgetCard = ({ phoneNumber }) => {
   const [copied, setCopied] = useState("");
   const apiCodeSnippet = `
@@ -64,24 +71,29 @@ window.eazbotConfig = {
   };
 
   return (
-    <div className="bg-app-surface p-6 shadow-sm">
-      <h2 className="text-xl font-semibold">WhatsApp Widget Integration</h2>
+    <div className="bg-app-surface p-[var(--sp-5)] shadow-sm">
+      <h2 className="text-[length:var(--fs-xl)] font-semibold text-app-text">
+        WhatsApp Widget Integration
+      </h2>
 
-      <p className="mt-2 text-sm text-gray-600">
+      <p className={`mt-2 ${BODY_TEXT}`}>
         Choose one of the integration methods below.
       </p>
 
       {/* Widget Script Integration */}
-      <div className="mt-6">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="font-medium">Option 1: Widget Script (Recommended)</h3>
+      <div className="mt-[var(--sp-5)]">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-[var(--sp-3)]">
+          <h3 className="font-medium text-[length:var(--fs-base)] text-app-text">
+            Option 1: Widget Script (Recommended)
+          </h3>
 
           <button
+            type="button"
             onClick={() => copyCode(widgetCodeSnippet, "widget")}
-            className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-all ${
+            className={`${COPY_BTN} ${
               copied === "widget"
-                ? "border-green-200 bg-green-50 text-green-700"
-                : "hover:bg-gray-50"
+                ? "border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400"
+                : "border-app-border text-app-text hover:bg-app-surface-secondary"
             }`}
           >
             {copied === "widget" ? <FiCheck /> : <FiCopy />}
@@ -89,27 +101,30 @@ window.eazbotConfig = {
           </button>
         </div>
 
-        <p className="mb-3 text-sm text-gray-600">
+        <p className={`mb-3 ${BODY_TEXT}`}>
           Paste this code before the closing <code>{"</body>"}</code> tag of
           your website.
         </p>
 
-        <pre className="overflow-auto rounded-lg bg-gray-100 p-4 text-sm text-primary">
+        <pre className={CODE_BLOCK}>
           <code>{widgetCodeSnippet}</code>
         </pre>
       </div>
 
       {/* Manual API Integration */}
-      <div className="mt-8">
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="font-medium">Option 2: Manual API Integration</h3>
+      <div className="mt-[var(--sp-6)]">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-[var(--sp-3)]">
+          <h3 className="font-medium text-[length:var(--fs-base)] text-app-text">
+            Option 2: Manual API Integration
+          </h3>
 
           <button
+            type="button"
             onClick={() => copyCode(apiCodeSnippet, "api")}
-            className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-all ${
+            className={`${COPY_BTN} ${
               copied === "api"
-                ? "border-green-200 bg-green-50 text-green-700"
-                : "hover:bg-gray-50"
+                ? "border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400"
+                : "border-app-border text-app-text hover:bg-app-surface-secondary"
             }`}
           >
             {copied === "api" ? <FiCheck /> : <FiCopy />}
@@ -117,21 +132,23 @@ window.eazbotConfig = {
           </button>
         </div>
 
-        <p className="mb-3 text-sm text-gray-600">
+        <p className={`mb-3 ${BODY_TEXT}`}>
           Use this if you want to manually trigger widget click tracking from
           your application.
         </p>
 
-        <pre className="overflow-auto rounded-lg bg-gray-100 p-4 text-sm text-primary">
+        <pre className={CODE_BLOCK}>
           <code>{apiCodeSnippet}</code>
         </pre>
       </div>
 
       {/* Configuration */}
-      <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-        <h4 className="font-medium text-blue-900">Configuration Options</h4>
+      <div className="mt-[var(--sp-5)] rounded-[var(--r-md)] border border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10 p-[var(--sp-4)]">
+        <h4 className="font-medium text-[length:var(--fs-base)] text-blue-900 dark:text-blue-300">
+          Configuration Options
+        </h4>
 
-        <ul className="mt-2 list-disc pl-5 text-sm text-blue-800">
+        <ul className="mt-2 list-disc pl-5 text-[length:var(--fs-sm)] text-blue-800 dark:text-blue-200 space-y-1">
           <li>
             <strong>ndid</strong> - Visitor identifier.
           </li>
@@ -156,10 +173,12 @@ window.eazbotConfig = {
       </div>
 
       {/* Recommendation */}
-      <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4">
-        <h4 className="font-medium text-green-900">Recommendation</h4>
+      <div className="mt-[var(--sp-5)] rounded-[var(--r-md)] border border-green-200 dark:border-green-500/30 bg-green-50 dark:bg-green-500/10 p-[var(--sp-4)]">
+        <h4 className="font-medium text-[length:var(--fs-base)] text-green-900 dark:text-green-300">
+          Recommendation
+        </h4>
 
-        <p className="mt-2 text-sm text-green-800">
+        <p className="mt-2 text-[length:var(--fs-sm)] text-green-800 dark:text-green-200">
           Use <strong>Widget Script Integration</strong> unless you need custom
           behavior. It automatically handles widget rendering, click tracking,
           and WhatsApp redirection.

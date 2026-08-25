@@ -1,6 +1,13 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { IoClose } from "react-icons/io5";
 
+const FIELD =
+  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-2)] py-1.5 text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+const FIELD_LABEL =
+  "text-[length:var(--fs-xs)] text-gray-500 dark:text-app-text-faint";
+const COUNTER =
+  "text-[length:var(--fs-2xs)] text-gray-400 dark:text-app-text-faint text-right";
+
 const TemplateButtons = () => {
   const { control, register, watch } = useFormContext();
 
@@ -12,10 +19,12 @@ const TemplateButtons = () => {
   const buttons = watch("buttons") || [];
 
   return (
-    <div className="bg-app-surface p-6 rounded-lg border-primary/60!">
-      <h2 className="text-lg font-semibold mb-4">Buttons</h2>
+    <div className="bg-app-surface p-[var(--sp-5)] rounded-[var(--r-md)] border border-app-border">
+      <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] text-app-text">
+        Buttons
+      </h2>
 
-      <div className="space-y-4 max-h-[260px] overflow-y-auto pr-1">
+      <div className="space-y-[var(--sp-4)] max-h-[16.25rem] overflow-y-auto pr-1">
         {fields.map((field, index) => {
           const textLength = buttons[index]?.text?.length || 0;
           const urlLength = buttons[index]?.url?.length || 0;
@@ -23,35 +32,34 @@ const TemplateButtons = () => {
           return (
             <div
               key={field.id}
-              className="border rounded-md p-3 bg-app-surface-secondary relative"
+              className="border border-app-border rounded-[var(--r-sm)] p-[var(--sp-3)] pr-10 bg-app-surface-secondary relative"
             >
               {/* REMOVE ICON */}
               <button
                 type="button"
+                aria-label="Remove button"
                 onClick={() => remove(index)}
-                className="absolute top-3 right-3 text-gray-400 dark:text-app-text-faint hover:text-red-500"
+                className="absolute top-2 right-2 size-8 flex items-center justify-center rounded-[var(--r-sm)] text-gray-400 dark:text-app-text-faint hover:bg-app-surface hover:text-red-500 transition-colors"
               >
                 <IoClose />
               </button>
 
-              <div className="flex gap-3 items-start">
+              <div className="flex gap-[var(--sp-3)] items-start">
                 {/* DRAG ICON */}
                 {/* <GripVertical
                   size={18}
                   className="text-gray-400 mt-6 cursor-grab"
                 /> */}
 
-                <div className="grid grid-cols-4 gap-3 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[var(--sp-3)] w-full min-w-0">
                   {/* TYPE */}
-                  <div>
-                    <label className="text-xs text-gray-500">
-                      Type of action
-                    </label>
+                  <div className="min-w-0">
+                    <label className={FIELD_LABEL}>Type of action</label>
 
                     <select
                       {...register(`buttons.${index}.type`)}
                       value={"URL"}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
+                      className={`${FIELD} cursor-pointer`}
                     >
                       <option value="URL">Visit website</option>
                       {/* <option value="quick">Quick reply</option> */}
@@ -59,26 +67,24 @@ const TemplateButtons = () => {
                   </div>
 
                   {/* BUTTON TEXT */}
-                  <div>
-                    <label className="text-xs text-gray-500">Button text</label>
+                  <div className="min-w-0">
+                    <label className={FIELD_LABEL}>Button text</label>
 
                     <input
                       {...register(`buttons.${index}.text`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+                      className={FIELD}
                     />
 
-                    <div className="text-[11px] text-gray-400 text-right">
-                      {textLength}/25
-                    </div>
+                    <div className={COUNTER}>{textLength}/25</div>
                   </div>
 
                   {/* URL TYPE */}
-                  <div>
-                    <label className="text-xs text-gray-500">URL type</label>
+                  <div className="min-w-0">
+                    <label className={FIELD_LABEL}>URL type</label>
 
                     <select
                       {...register(`buttons.${index}.urlType`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
+                      className={`${FIELD} cursor-pointer`}
                     >
                       <option value="static">Static</option>
                       <option value="dynamic">Dynamic</option>
@@ -86,17 +92,15 @@ const TemplateButtons = () => {
                   </div>
 
                   {/* URL */}
-                  <div>
-                    <label className="text-xs text-gray-500">Website URL</label>
+                  <div className="min-w-0">
+                    <label className={FIELD_LABEL}>Website URL</label>
 
                     <input
                       {...register(`buttons.${index}.url`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+                      className={FIELD}
                     />
 
-                    <div className="text-[11px] text-gray-400 text-right">
-                      {urlLength}/2000
-                    </div>
+                    <div className={COUNTER}>{urlLength}/2000</div>
                   </div>
                 </div>
               </div>
@@ -116,7 +120,7 @@ const TemplateButtons = () => {
             urlType: "static",
           })
         }
-        className="mt-4 border border-gray-300 px-4 py-2 rounded-md text-sm hover:bg-primary/60"
+        className="mt-[var(--sp-4)] w-full sm:w-auto border border-app-border text-app-text px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] hover:border-primary hover:text-primary transition-colors"
       >
         + Add button
       </button>
@@ -125,62 +129,3 @@ const TemplateButtons = () => {
 };
 
 export default TemplateButtons;
-
-// import { useFieldArray, useFormContext } from "react-hook-form";
-
-// const TemplateButtons = () => {
-//   const { control, register } = useFormContext();
-
-//   const { fields, append, remove } = useFieldArray({
-//     control,
-//     name: "buttons",
-//   });
-
-//   return (
-//     <div className="bg-white p-6 rounded-lg border">
-//       <h2 className="text-lg font-semibold mb-4">Buttons</h2>
-
-//       {fields.map((field, index) => (
-//         <div key={field.id} className="grid grid-cols-4 gap-3 mb-3">
-//           <select
-//             {...register(`buttons.${index}.type`)}
-//             className="border rounded-md p-2"
-//           >
-//             <option value="visit">Visit Website</option>
-//             <option value="quick">Quick Reply</option>
-//           </select>
-
-//           <input
-//             {...register(`buttons.${index}.text`)}
-//             placeholder="Button text"
-//             className="border rounded-md p-2"
-//           />
-
-//           <input
-//             {...register(`buttons.${index}.url`)}
-//             placeholder="URL"
-//             className="border rounded-md p-2"
-//           />
-
-//           <button
-//             type="button"
-//             onClick={() => remove(index)}
-//             className="text-red-500"
-//           >
-//             Remove
-//           </button>
-//         </div>
-//       ))}
-
-//       <button
-//         type="button"
-//         onClick={() => append({ type: "visit", text: "", url: "" })}
-//         className="bg-gray-200 px-4 py-2 rounded"
-//       >
-//         Add Button
-//       </button>
-//     </div>
-//   );
-// };
-
-// export default TemplateButtons;

@@ -55,15 +55,26 @@ import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
-import { MessageSquareReply } from "lucide-react";
+import { MessageSquareReply, X } from "lucide-react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
-const ChatArea = () => {
+/* ── shared presentation tokens ─────────────────────────────── */
+const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
+const MODAL_LABEL = "block text-sm mb-1 text-gray-700 dark:text-app-text-muted";
+const MODAL_FIELD =
+  "w-full rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-primary/30 focus:border-primary";
+
+const ChatArea = ({ setActiveTab }) => {
   const navigate = useNavigate();
   const wsRef = useRef(null);
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
   const [allUsers, setAllUsers] = useState([]);
   const [flows, setFlows] = useState([]);
+
+  const { integrationStatus } = useContext(DataContext);
+  const { user, authUser } = useSelector((state) => state.userProfile);
 
   const [quickReplies, setQuickReplies] = useState([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
@@ -151,8 +162,6 @@ const ChatArea = () => {
       return;
     }
 
-    console.log("selectedTemplate", selectedTemplate);
-
     try {
       if (selectedTemplate) {
         const templateParams =
@@ -200,10 +209,15 @@ const ChatArea = () => {
               parameters: templateParams,
             },
           },
+          last_message: {
+            updated_at: new Date(),
+          },
           status: "sent",
           timestamp: new Date(),
           createdAt: new Date(),
         };
+
+        setActiveTab("active");
 
         // Push instantly to UI (optimistic update)
         setMessageList((prev) => [...prev, optimisticMessage]);
@@ -297,9 +311,13 @@ const ChatArea = () => {
           body: flowConfig.body,
           interactive: payload.interactive,
           status: "sent",
+          last_message: {
+            updated_at: new Date(),
+          },
           timestamp: new Date(),
           createdAt: new Date(),
         };
+        setActiveTab("active");
 
         setMessageList((prev) => [...prev, optimisticMessage]);
         await sendWhatsAppMessage(payload);
@@ -336,9 +354,14 @@ const ChatArea = () => {
             }
           : undefined,
         status: "sent",
+        last_message: {
+          updated_at: new Date(),
+        },
         timestamp: new Date(),
         createdAt: new Date(),
       };
+
+      setActiveTab("active");
       // Push optimistic message
       setMessageList((prev) => [...prev, optimisticMessage]);
       setConversations((prevConversations) =>
@@ -354,6 +377,7 @@ const ChatArea = () => {
               },
             };
           }
+
           return conv;
         }),
       );
@@ -543,6 +567,121 @@ const ChatArea = () => {
       setIsTakeOver(!isTakeOver);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleTakeOverFnc = async () => {
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/takeover`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userEmail: authUser?.emailId,
+          }),
+        },
+      );
+
+      const data = await response.json();
+      console.log("data", data);
+
+      if (data?.success) {
+        showToast({
+          message:
+            response?.data?.message || "Conversation taken over successfully",
+          type: "success",
+        });
+
+        // Update local conversation state
+        // with the handling returned by backend
+        setSelectedConversation((prev) => ({
+          ...prev,
+          handling: data?.result?.handling,
+        }));
+      }
+    } catch (error) {
+      console.error("Take over conversation error:", error);
+
+      if (error?.response?.status === 409) {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "This conversation is already being handled by another user",
+          type: "error",
+        });
+
+        // Important:
+        // refresh conversations here so UI gets
+        // the latest handling.assignedTo
+      } else {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "Failed to take over conversation",
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const handleReleaseFnc = async () => {
+    try {
+      const response = await fetch(
+        `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/release`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userEmail: authUser?.emailId,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (data?.success) {
+        showToast({
+          message:
+            response?.data?.message || "Conversation taken over successfully",
+          type: "success",
+        });
+
+        // Update local conversation state
+        // with the handling returned by backend
+        setSelectedConversation((prev) => ({
+          ...prev,
+          handling: response?.data?.result?.handling,
+        }));
+      }
+    } catch (error) {
+      console.error("Take over conversation error:", error);
+
+      if (error?.response?.status === 409) {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "This conversation is already being handled by another user",
+          type: "error",
+        });
+
+        // Important:
+        // refresh conversations here so UI gets
+        // the latest handling.assignedTo
+      } else {
+        showToast({
+          message:
+            error?.response?.data?.message ||
+            "Failed to take over conversation",
+          type: "error",
+        });
+      }
     }
   };
 
@@ -768,7 +907,6 @@ const ChatArea = () => {
   };
 
   const handleCall = async () => {
-    console.log("Contact", selectedGuestNumber, agentNumber);
     try {
       if (!agentNumber || !selectedGuestNumber) {
         alert("Both numbers are required");
@@ -878,64 +1016,90 @@ const ChatArea = () => {
   const isExcel = file?.type?.includes("sheet");
   const isWord = file?.type?.includes("word");
 
+  const handling = selectedConversation?.handling;
+
+  const isTake_Over = !handling || handling?.mode === "AI";
+
+  const isRelease =
+    handling?.mode === "HUMAN" &&
+    String(handling?.assignedTo) === String(authUser?.emailId);
+
+  const isHandledByOther =
+    handling?.mode === "HUMAN" &&
+    String(handling?.assignedTo) !== String(authUser?.emailId);
+
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-app-surface [color-scheme:light] dark:[color-scheme:dark]">
       {/* Header */}
-      <div className="flex z-5 max-md:bg-app-surface justify-between items-center px-4 md:px-6 h-16 shadow-sm max-md:fixed max-md:w-full">
-        <div className=" flex items-center">
-          <div className="mr-2 lg:hidden ">
-            <IoArrowBack size={20} onClick={() => setMobileActive("sidebar")} />
+      <div className="shrink-0 flex z-5 bg-app-surface justify-between items-center gap-2 px-3 md:px-6 h-16 border-b border-app-border shadow-sm">
+        <div className="flex items-center min-w-0">
+          <button
+            type="button"
+            aria-label="Back to conversations"
+            className="mr-1 lg:hidden shrink-0 size-9 flex items-center justify-center rounded-full text-app-text hover:bg-app-surface-secondary transition-colors"
+            onClick={() => setMobileActive("sidebar")}
+          >
+            <IoArrowBack size={20} />
+          </button>
+
+          <div
+            onClick={() => setMobileActive("profile")}
+            className="w-9 h-9 md:w-12 md:h-12 shrink-0 cursor-pointer text-white bg-teal-600 rounded-full flex items-center justify-center font-bold text-sm mr-2 md:mr-4"
+          >
+            {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
 
-          <div>
-            <div
-              onClick={() => setMobileActive("profile")}
-              className="w-8 h-8 md:w-12 md:h-12 text-white bg-teal-600 rounded-full flex items-center justify-center  font-bold text-sm mr-2 md:mr-4"
-            >
-              {selectedConversation?.name?.charAt(0)?.toUpperCase()}
-            </div>
-            {/* <p className="text-xs md:text-sm text-gray-600 ">
-              {selectedConversation.phone}
-            </p> */}
-          </div>
-
-          <div onClick={() => setMobileActive("profile")}>
-            <h3 className="text-md md:text-md text-gray-600 font-medium capitalize">
+          <div
+            onClick={() => setMobileActive("profile")}
+            className="min-w-0 cursor-pointer"
+          >
+            <h3 className="text-sm md:text-base text-app-text font-medium capitalize truncate">
               {selectedConversation?.name}
             </h3>
-            <p className="text-xs md:text-sm  text-gray-600 ">
+            <p className="text-xs md:text-sm text-gray-500 dark:text-app-text-faint truncate">
               {selectedConversation.phone}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center md:gap-6 gap-2">
+        <div className="flex items-center md:gap-4 gap-2 shrink-0">
           {selectionMode && (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-medium ">
-                  {selectedMessages.length} Messages
-                </span>
-              </div>
+              <span className="hidden sm:inline text-xs font-medium text-app-text">
+                {selectedMessages.length} Messages
+              </span>
 
               <button
                 onClick={handleBulkDelete}
-                className="text-red-600 font-medium size-7 flex justify-center items-center bg-red-200 rounded-full"
+                aria-label="Delete selected messages"
+                className="text-red-600 dark:text-red-400 font-medium size-8 flex justify-center items-center bg-red-100 dark:bg-red-500/15 hover:bg-red-200 dark:hover:bg-red-500/25 rounded-full transition-colors"
               >
                 <RiDeleteBin6Line size={16} />
               </button>
             </div>
           )}
 
-          <button
-            onClick={() => setCallPopup(true)}
-            // to={`tel:${selectedConversation?.phone}`}
-            className="bg-teal-600  text-lime-50 px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1"
-          >
-            <MdCall size={18} /> Call
-          </button>
+          {integrationStatus?.exotel ? (
+            <button
+              onClick={() => setCallPopup(true)}
+              // to={`tel:${selectedConversation?.phone}`}
+              className="bg-teal-600 hover:bg-teal-700 text-lime-50 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+            >
+              <MdCall size={18} />{" "}
+              <span className="hidden sm:inline">Call</span>
+            </button>
+          ) : (
+            <Link
+              // onClick={() => setCallPopup(true)}
+              to={`tel:${selectedConversation?.phone}`}
+              className="bg-teal-600 hover:bg-teal-700 text-lime-50 px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-1 transition-colors"
+            >
+              <MdCall size={18} />{" "}
+              <span className="hidden sm:inline">Call</span>
+            </Link>
+          )}
 
-          <div>
+          <div className="hidden sm:block">
             <CustomDropdown2
               label={selectedConversation?.assignedTo || "Select User"}
               options={
@@ -956,7 +1120,7 @@ const ChatArea = () => {
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/cubes.png')",
         }}
-        className="flex-1 p-6 max-md:mt-16 max-md:mb-30 overflow-y-auto scrollbar-hidden  "
+        className="flex-1 min-h-0 p-3 sm:p-6 overflow-y-auto scrollbar-hidden bg-app-surface"
       >
         {messageLoading ? (
           <div className="space-y-4">
@@ -966,7 +1130,7 @@ const ChatArea = () => {
         ) : (
           <div className="space-y-1">
             {selectedConversation?.adAttribution && (
-              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-app-surface-secondary border rounded-tr-xl rounded-br-lg rounded-bl-xl text-gray-700">
+              <div className="max-w-xs flex flex-col gap-2 px-3 py-2 mb-2 bg-app-surface-secondary border border-app-border rounded-tr-xl rounded-br-lg rounded-bl-xl text-app-text">
                 {selectedConversation?.adAttribution?.mediaType === "image" && (
                   <img
                     src={selectedConversation?.adAttribution?.imageUrl}
@@ -989,22 +1153,17 @@ const ChatArea = () => {
                         type="video/mp4"
                       />
                     </video>
-                    // <img
-                    //   src={"https://scontent.xx.fbcdn.net/v/t15.5256-10/649561265_919658240780341_2774417990312888579_n.jpg?stp=dst-jpg_p180x540_tt6&_nc_cat=108&ccb=1-7&_nc_sid=40cf1a&_nc_ohc=FuFjMQHfdogQ7kNvwGf5n0N&_nc_oc=Admab3rVEXpXJfb0ENwfNJ9X8xwAjYoSh4vxTQRujDrJE8w2zpqrckyqX1eGggxIWGwBSSte9wpSj4LjFzd-LhOI&_nc_ad=z-m&_nc_cid=0&_nc_zt=23&_nc_ht=scontent.xx&_nc_gid=d8LpEvFRFPgFTVvr5h5baA&_nc_ss=8&oh=00_AfxVaChDBeHwPmiHpXZPp5bE507iew1PQTG3QRQkf5ELPQ&oe=69B9C69D"}
-                    //   alt={selectedConversation?.adAttribution?.sourceType}
-                    //   className="rounded"
-                    // />
                   )}
 
-                <h1 className="font-medium ">
+                <h1 className="font-medium">
                   {selectedConversation?.adAttribution?.headline}
                 </h1>
-                <p className="text-sm">
+                <p className="text-sm text-gray-600 dark:text-app-text-muted">
                   {selectedConversation?.adAttribution?.body}
                 </p>
 
                 <div className="flex justify-end items-center gap-3">
-                  <p className="text-sm capitalize bg-gray-200 rounded px-2 py-1">
+                  <p className="text-sm capitalize bg-gray-200 dark:bg-app-surface text-gray-700 dark:text-app-text-muted rounded px-2 py-1">
                     {selectedConversation?.adAttribution?.sourceType}
                   </p>
                   <p className="text-[10px] opacity-70">
@@ -1025,9 +1184,10 @@ const ChatArea = () => {
 
                 return (
                   <div
-                    className={`flex gap-1 items-center py-2 ${
+                    key={message?._id || index}
+                    className={`flex gap-1 items-center py-2 rounded-lg ${
                       selectedMessages.includes(message?.messageId)
-                        ? "bg-slate-200 border-blue-400"
+                        ? "bg-primary/10 dark:bg-primary/20"
                         : isMe
                           ? ""
                           : ""
@@ -1036,7 +1196,7 @@ const ChatArea = () => {
                     {selectionMode && (
                       <input
                         type="checkbox"
-                        className="mt-3"
+                        className="mt-3 h-4 w-4 shrink-0 accent-primary cursor-pointer"
                         checked={selectedMessages.includes(message?.messageId)}
                         onChange={() =>
                           toggleSelectMessage(
@@ -1047,11 +1207,10 @@ const ChatArea = () => {
                     )}
 
                     <div
-                      key={index}
-                      className={`relative flex flex-1 ${isMe ? "justify-end" : "justify-start"}  mb-2`}
+                      className={`relative flex flex-1 min-w-0 ${isMe ? "justify-end" : "justify-start"} mb-2`}
                     >
                       <div
-                        className={`relative max-w-xs  p-3 ${
+                        className={`relative max-w-[85%] sm:max-w-md p-3 ${
                           isMe
                             ? "rounded-tl-xl border shadow-md !border-ternary dark:border-primary/60 rounded-br-xl rounded-bl-lg bg-white dark:bg-app-surface"
                             : "rounded-br-xl border shadow-md !border-ternary dark:border-primary/60 rounded-tr-xl rounded-bl-lg bg-white dark:bg-app-surface"
@@ -1064,13 +1223,13 @@ const ChatArea = () => {
                             message?.messageType === "unsupported" ||
                             message?.messageType === "interactive") &&
                             message.body && (
-                              <div className="max-w-xs ml-auto mt-3">
-                                <div className=" text-slate-700 rounded-lg relative">
+                              <div className="ml-auto mt-3">
+                                <div className="rounded-lg relative">
                                   {/* Context / Reply Preview */}
                                   {message?.context &&
                                     message?.context?.message && (
-                                      <div className="bg-slate-600 border-l-4 border-green-300 px-2 py-1 rounded mb-1">
-                                        <p className="text-xs text-green-100 dark:text-app-text-faint truncate">
+                                      <div className="bg-gray-100 dark:bg-app-surface-secondary border-l-4 border-green-500 px-2 py-1 rounded mb-1">
+                                        <p className="text-xs text-gray-600 dark:text-app-text-faint truncate">
                                           {message?.context?.message}
                                         </p>
                                       </div>
@@ -1078,7 +1237,7 @@ const ChatArea = () => {
 
                                   {/* Actual Message */}
 
-                                  <p className="text-sm whitespace-pre-wrap text-blue-500">
+                                  <p className="text-sm whitespace-pre-wrap break-words text-gray-800 dark:text-app-text-muted">
                                     {expandedMessages[message._id]
                                       ? renderMessageWithLinks(message?.body)
                                       : renderMessageWithLinks(
@@ -1119,7 +1278,7 @@ const ChatArea = () => {
                                 )}`;
 
                               return (
-                                <div className="px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
+                                <div className="px-2 py-1 rounded-lg">
                                   {/* HEADER */}
                                   {header && (
                                     <>
@@ -1148,14 +1307,14 @@ const ChatArea = () => {
                                           href={imageUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="mb-2 flex items-center gap-2 p-3 rounded bg-gray-100 dark:bg-gray-700"
+                                          className="mb-2 flex items-center gap-2 p-3 rounded bg-gray-100 dark:bg-app-surface-secondary text-app-text"
                                         >
                                           📄 View Document
                                         </a>
                                       )}
 
                                       {headerParam?.type === "text" && (
-                                        <p className="font-medium mb-2">
+                                        <p className="font-medium mb-2 text-app-text">
                                           {headerParam.text}
                                         </p>
                                       )}
@@ -1168,7 +1327,7 @@ const ChatArea = () => {
                                   </p>
 
                                   {/* Body */}
-                                  <pre className="text-sm whitespace-pre-wrap font-sans">
+                                  <pre className="text-sm whitespace-pre-wrap break-words font-sans text-gray-800 dark:text-app-text-muted">
                                     {message.body || (
                                       <span className="text-xs text-zinc-400 dark:text-app-text-faint">
                                         No text defined
@@ -1178,63 +1337,6 @@ const ChatArea = () => {
                                 </div>
                               );
                             })()}
-                          {/* {message?.messageType === "template" &&
-                            message?.template?.template?.name && (
-                              <div className=" px-2 py-1 rounded-lg max-w-xs dark:bg-primary!">
-                                <img
-                                  onClick={() =>
-                                    setImagePreview(
-                                      message?.media?.url ||
-                                        `${NEW_BASE_URL}/api/v1/whatsapp/media/${
-                                          message?.template?.template
-                                            ?.components?.[0]?.parameters?.[0]
-                                            ?._id
-                                        }?ndid=${localStorage.getItem("ndid")}`,
-                                    )
-                                  }
-                                  src={
-                                    message?.media?.url ||
-                                    `${NEW_BASE_URL}/api/v1/whatsapp/media/${
-                                      message?.template?.template
-                                        ?.components?.[0]?.parameters?.[0]?._id
-                                    }?ndid=${localStorage.getItem("ndid")}`
-                                  }
-                                  alt="WhatsApp"
-                                  className="mt-2 rounded-lg w-full size-44 cursor-pointer"
-                                />
-
-                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
-                                  {message.template?.template?.components[0].parameters[0].type}
-                                </p>
-                                <img
-                              onClick={() =>
-                                setImagePreview(
-                                  message?.media?.url ||
-                                    ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`,
-                                )
-                              }
-                              src={
-                                message.media?.url ||
-                                ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message.template?.template?.components[0].parameters[0]._id}?ndid=${localStorage.getItem("ndid")}`
-                              }
-                              alt="WhatsApp"
-                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
-                            />
-                                <p className="text-xs text-orange-500 dark:text-app-text-faint mb-1 capitalize">
-                                  {message.template?.template?.name}
-                                </p>
-
-                                <pre className="text-sm whitespace-pre-wrap font-sans">
-                                  {message.body ? (
-                                    message.body
-                                  ) : (
-                                    <span className="text-xs text-zinc-400 dark:text-app-text-faint">
-                                      No text defined
-                                    </span>
-                                  )}
-                                </pre>
-                              </div>
-                            )} */}
 
                           {/* IMAGE */}
                           {(message.messageType === "image" ||
@@ -1251,7 +1353,7 @@ const ChatArea = () => {
                                 ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
                               }
                               alt="WhatsApp"
-                              className="mt-2 rounded-lg w-full size-44 cursor-pointer"
+                              className="mt-2 rounded-lg w-full max-w-44 aspect-square object-cover cursor-pointer"
                             />
                           )}
 
@@ -1264,14 +1366,6 @@ const ChatArea = () => {
                                   `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
                                 }
                               />
-                              {/* <audio
-                            src={
-                              message?.media?.url ||
-                              ` ${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                            }
-                            controls
-                            className="mt-2"
-                          /> */}
                             </div>
                           )}
 
@@ -1287,21 +1381,6 @@ const ChatArea = () => {
                               />
                             </div>
                           )}
-
-                          {/* {message?.messageType === "document" && (
-                            <div>
-                              <a
-                                href={
-                                  message?.media?.url ||
-                                  `${NEW_BASE_URL}/api/v1/whatsapp/media/${message?.media?.id}?ndid=${localStorage.getItem("ndid")}`
-                                }
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <iframe src />
-                              </a>
-                            </div>
-                          )} */}
 
                           {message?.messageType === "document" &&
                             (() => {
@@ -1354,7 +1433,7 @@ const ChatArea = () => {
 
                                 // ✅ DEFAULT
                                 return (
-                                  <FaFileAlt className="text-gray-500 text-3xl" />
+                                  <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-3xl" />
                                 );
                               };
 
@@ -1363,15 +1442,9 @@ const ChatArea = () => {
                                   {/* 📦 CARD */}
                                   <div
                                     onClick={() => window.open(url, "_blank")}
-                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border bg-app-surface flex flex-col justify-center items-center"
+                                    className="h-32 overflow-hidden cursor-pointer relative rounded-lg border border-app-border bg-app-surface-secondary flex flex-col justify-center items-center"
                                   >
-                                    {/* <iframe
-                                      src={url}
-                                      className="w-full h-full pointer-events-none"
-                                      style={{ border: "none" }}
-                                    /> */}
-
-                                    <div className="flex flex-col items-center justify-center text-gray-600 px-2">
+                                    <div className="flex flex-col items-center justify-center px-2">
                                       {getIcon()}
                                     </div>
 
@@ -1380,7 +1453,7 @@ const ChatArea = () => {
                                   </div>
 
                                   {/* 📄 FILE NAME */}
-                                  <p className="text-xs mt-1 truncate text-gray-700">
+                                  <p className="text-xs mt-1 truncate text-gray-700 dark:text-app-text-muted">
                                     {fileName}
                                   </p>
 
@@ -1389,7 +1462,7 @@ const ChatArea = () => {
                                     href={url}
                                     download
                                     onClick={(e) => e.stopPropagation()}
-                                    className="text-xs text-green-600 hover:underline flex items-center gap-1 mt-2"
+                                    className="text-xs text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 mt-2"
                                   >
                                     <MdOutlineFileDownload size={20} /> Download
                                   </a>
@@ -1398,15 +1471,38 @@ const ChatArea = () => {
                             })()}
 
                           {message?.messageType === "location" && (
-                            <div>
+                            <div className="w-full max-w-[280px]">
                               <iframe
-                                // style={"border:0"}
                                 loading="lazy"
-                                src={`https://www.google.com/maps?q=${message?.location?.latitude},${message?.location?.longitude}&output=embed`}
-                                className="max-w-70 w-full aspect-4/3"
+                                src={`https://www.google.com/maps?q=${encodeURIComponent(
+                                  message?.location?.name,
+                                )},${message?.location?.latitude},${message?.location?.longitude}&z=17&output=embed`}
+                                className="w-full aspect-[4/3] rounded-lg border-0"
+                                allowFullScreen
                               />
+
+                              <a
+                                href={`https://www.google.com/maps/search/${encodeURIComponent(
+                                  message?.location?.name,
+                                )}/@${message?.location?.latitude},${message?.location?.longitude},17z?hl=en`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 block text-center text-sm font-medium text-blue-600 hover:underline"
+                              >
+                                Open in Google Maps
+                              </a>
                             </div>
                           )}
+
+                          {/* {message?.messageType === "location" && (
+                            <div>
+                              <iframe
+                                loading="lazy"
+                                src={`https://www.google.com/maps?q=${message?.location?.latitude},${message?.location?.longitude}&output=embed`}
+                                className="max-w-70 w-full aspect-4/3 rounded-lg"
+                              />
+                            </div>
+                          )} */}
 
                           {message?.reaction && (
                             <div className="flex items-center gap-1 mt-4 absolute bottom-0 right-1">
@@ -1425,7 +1521,7 @@ const ChatArea = () => {
 
                         {/* status and time  */}
                         <div className="flex justify-end px-2 mt-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5 text-gray-500 dark:text-app-text-faint">
                             <div className="text-[10px] text-right mt-1 opacity-70">
                               {new Date(message.createdAt).toLocaleTimeString(
                                 [],
@@ -1471,19 +1567,20 @@ const ChatArea = () => {
                         <div className="absolute -top-1 right-1">
                           <button
                             ref={menuRef}
+                            aria-label="Message options"
                             onClick={() => {
                               // e.preventDefault();
                               setOpenMenuIndex(
                                 openMenuIndex === index ? null : index,
                               );
                             }}
-                            className="text-gray-600 hover:text-black p-1"
+                            className="text-gray-500 dark:text-app-text-faint hover:text-app-text p-1 leading-none"
                           >
                             ⋮
                           </button>
 
                           {openMenuIndex === index && (
-                            <div className="absolute -right-6 mt-1 w-28 bg-app-surface border rounded shadow-md z-10">
+                            <div className="absolute right-0 mt-1 w-28 bg-app-surface border border-app-border rounded-lg shadow-lg z-10 overflow-hidden">
                               {![
                                 "image",
                                 "video",
@@ -1494,24 +1591,18 @@ const ChatArea = () => {
                               ].includes(message?.messageType) && (
                                 <button
                                   onClick={() => handleCopy(message.body)}
-                                  className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
+                                  className="block w-full text-left px-3 py-2 hover:bg-app-surface-secondary text-sm text-app-text transition-colors"
                                 >
                                   Copy
                                 </button>
                               )}
-                              {/* <button
-                                onClick={() => handleSelectMode(message)}
-                                className="block w-full text-left px-3 py-1 hover:bg-gray-100 text-sm"
-                              >
-                                Select
-                              </button> */}
                               <button
                                 onClick={(e) => {
                                   // e.stopPropagation();
 
                                   handleSelectMode(message);
                                 }}
-                                className="block w-full text-left px-3 py-1 hover:bg-red-100 text-sm text-red-500"
+                                className="block w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-500/15 text-sm text-red-500 transition-colors"
                               >
                                 Delete
                               </button>
@@ -1524,22 +1615,25 @@ const ChatArea = () => {
                 );
               })
             ) : (
-              <p className="text-center text-gray-400">No conversation yet</p>
+              <p className="text-center text-gray-400 dark:text-app-text-faint py-8">
+                No conversation yet
+              </p>
             )}
 
             {imagePreview && (
               <div
-                className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999999"
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-9999999 p-4"
                 onClick={() => setImagePreview("")}
               >
                 {/* Prevent closing when clicking on image */}
                 <div
-                  className="relative max-w-4xl w-full px-4"
+                  className="relative max-w-4xl w-full"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {/* Close Button */}
                   <button
                     onClick={() => setImagePreview("")}
+                    aria-label="Close preview"
                     className="absolute -top-10 right-0 text-white text-2xl"
                   >
                     ✕
@@ -1563,24 +1657,12 @@ const ChatArea = () => {
       {/* Input Area */}
       <form
         onSubmit={handleSendMessage}
-        className=" bg-app-surface-secondary border-t flex flex-col px-6 py-5 max-md:fixed bottom-0 max-md:w-full "
+        className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
       >
         {templateClick && (
-          <div className="mb-2 grid grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-scroll scrollbar-hidden">
+          <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
             {templates?.length > 0 &&
               templates?.map((template) => (
-                // <div
-                //   onClick={() => setSelectedTemplate(template)}
-                //   key={template?.id}
-                //   className={`cursor-pointer flex flex-col gap-2 rounded-lg overflow-hidden ${selectedTemplate?.id === template?.id ? "border border-green-600! " : "border border-gray-600 opacity-60"} h-30 `}
-                // >
-                //   <p className=" break-words text-xs capitalize font-medium border-b px-2 py-2 bg-teal-100">
-                //     {template?.name}
-                //   </p>
-                //   <p className="text-sm px-2 pb-2 bg-gray-100">
-                //     {template?.components[0]?.text}
-                //   </p>
-                // </div>
                 <div
                   onClick={() => setSelectedTemplate(template)}
                   key={template?.id}
@@ -1589,7 +1671,7 @@ const ChatArea = () => {
     ${
       selectedTemplate?.id === template?.id
         ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
-        : "border border-gray-200 bg-white hover:border-orange-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-orange-700"
+        : "border border-app-border bg-app-surface hover:border-orange-300 dark:hover:border-orange-700"
     }
   `}
                 >
@@ -1619,7 +1701,7 @@ const ChatArea = () => {
         )}
 
         {showQuickReplies && (
-          <div className="grid grid-cols-3 gap-2 mb-2 bg-white w-full border rounded-lg shadow-lg max-h-96 overflow-auto p-2">
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
             {quickReplies.map((reply) => {
               const textItem = reply.items.find((i) => i.type === "text");
               const mediaItem = reply.items.find((i) => i.type !== "text");
@@ -1629,22 +1711,33 @@ const ChatArea = () => {
                   type="button"
                   key={reply._id}
                   onClick={() => handleSelectQuickReply(reply)}
-                  className="w-full text-left p-3 hover:bg-gray-50 bg-gray-100 rounded-lg border border-primary/30!"
+                  className="w-full min-w-0 text-left p-3 bg-app-surface-secondary hover:bg-app-surface rounded-lg border border-primary/30! transition-colors"
                 >
-                  <div className="font-medium">{reply.title}</div>
+                  <div className="font-medium text-app-text truncate">
+                    {reply.title}
+                  </div>
 
-                  <div className="text-sm text-gray-500 truncate">
+                  <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
                     {textItem?.text}
                   </div>
 
                   {mediaItem && (
-                    <div className="text-xs mt-1">
+                    <div className="text-xs mt-1 text-app-text-faint">
                       {mediaItem.media.length} {mediaItem.type}
                     </div>
                   )}
                 </button>
               );
             })}
+
+            <button
+              type="button"
+              aria-label="Close quick replies"
+              className="absolute top-1.5 right-1.5 size-7 flex items-center justify-center rounded-md text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
+              onClick={() => setShowQuickReplies(false)}
+            >
+              <X size={16} />
+            </button>
           </div>
         )}
 
@@ -1652,7 +1745,7 @@ const ChatArea = () => {
           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
             <div
               onClick={() => setFile(null)}
-              className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-3.5 bg-red-500 rounded-full text-white"
+              className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
             >
               <FiX size={10} />
             </div>
@@ -1666,7 +1759,7 @@ const ChatArea = () => {
               />
             ) : (
               // ✅ DOCUMENT UI
-              <div className="flex items-center gap-2 border rounded-md px-3 py-2 bg-app-surface-secondary max-w-60">
+              <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
                 {/* ICON */}
                 {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
                 {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
@@ -1676,14 +1769,14 @@ const ChatArea = () => {
                 )}
 
                 {/* FILE NAME */}
-                <p className="text-xs truncate">{file.name}</p>
+                <p className="text-xs truncate text-app-text">{file.name}</p>
               </div>
             )}
           </div>
         )}
 
         <div
-          className={`${!is24HourComplete ? "" : "flex"} items-center space-y-1`}
+          className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
         >
           {flows?.length > 0 && (
             <div>
@@ -1695,21 +1788,28 @@ const ChatArea = () => {
                     setShowFlowModal(true);
                   }
                 }}
-                className="border bg-gray-100 dark:bg-primary outline-none text-sm py-1 rounded-md"
+                className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
               >
-                <option value="">Select Form</option>
+                <option value="" className={OPTION}>
+                  Select Form
+                </option>
 
                 {flows.map((flow) => (
-                  <option key={flow.flowId} value={flow.flowId}>
+                  <option
+                    key={flow.flowId}
+                    value={flow.flowId}
+                    className={OPTION}
+                  >
                     {flow.flowName}
                   </option>
                 ))}
               </select>
             </div>
           )}
-          <div className="flex gap-2 items-center">
+
+          <div className="flex gap-2 items-center flex-wrap">
             {templateLoading ? (
-              <p className="text-xs text-gray-500 animate-pulse">
+              <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
                 Loading Templates...
               </p>
             ) : (
@@ -1725,14 +1825,14 @@ const ChatArea = () => {
 
                       handleTemplate(true);
                     }}
-                    className="cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
                   >
-                    <MdChat className="" /> Templates
+                    <MdChat /> Templates
                   </span>
                 ) : (
                   <span
                     onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-4 py-1 text-sm text-gray-500 dark:text-app-text-faint"
+                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
                   >
                     Close Templates <MdClose />
                   </span>
@@ -1740,56 +1840,61 @@ const ChatArea = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => setShowQuickReplies(!showQuickReplies)}
-              className="p-2 hover:bg-gray-100 rounded-lg"
-            >
-              <MessageSquareReply size={20} />
-            </button>
-            {/* {!templateClick ? (
-              <>
-                {!isTakeOver ? (
-                  <span
-                    onClick={() => handleTemplate(true)}
-                    className="cursor-pointer bg-zinc-100 flex items-center gap-1 rounded-lg px-4 py-1 text-sm text-gray-500"
-                  >
-                    <MdChat className="" /> Templates
-                  </span>
-                ) : (
-                  ""
-                )}
-              </>
-            ) : (
-              <span
-                onClick={() => handleTemplate(false)}
-                className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-zinc-100 rounded-lg px-4 py-1 text-sm text-gray-500"
+            {!is24HourComplete && (
+              <button
+                type="button"
+                aria-label="Quick replies"
+                onClick={() => setShowQuickReplies(!showQuickReplies)}
+                className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
               >
-                Close Templates <MdClose />
-              </span>
-            )} */}
+                <MessageSquareReply size={20} />
+              </button>
+            )}
 
             {isTakeOver && (
               <div className="flex justify-center w-full">
                 <button
                   type="button"
                   onClick={handleTakeOver}
-                  className={`text-xs bg-primary rounded-sm text-white px-2 py-1 ${!isTakeOver ? "opacity-70" : ""}`}
+                  className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
                 >
                   Take Over
                 </button>
               </div>
             )}
+
+            <div>
+              {/* {isRelease && (
+                  <div className="flex justify-center w-full">
+                    <button
+                      type="button"
+                      onClick={handleReleaseFnc}
+                      className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+                    >
+                      Release Take Over
+                    </button>
+                  </div>
+                )} */}
+
+              {/* {isHandledByOther && (
+                  <div className="flex justify-center w-full">
+                    <div className="text-xs text-app-text-faint px-3 py-1.5">
+                      This conversation is being handled by another user
+                    </div>
+                  </div>
+                )} */}
+            </div>
           </div>
 
           {!isTakeOver && (
-            <div className="py-3 flex w-full items-center gap-3">
+            <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
               {/* Attachment */}
               {!is24HourComplete && (
                 <button
                   type="button"
+                  aria-label="Attach file"
                   onClick={() => fileInputRef.current.click()}
-                  className="text-gray-500 hover:text-teal-600"
+                  className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
                 >
                   {/* Paperclip SVG */}
                   <svg
@@ -1835,7 +1940,7 @@ const ChatArea = () => {
                       handleSendMessage(e); // OR trigger form submit
                     }
                   }}
-                  className="flex-1 bg-zinc-100 dark:bg-app-surface-secondary resize-none rounded-lg px-4 py-2 focus:outline-none focus:border-teal-500 overflow-y-auto"
+                  className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
                 />
               ) : (
                 <div className="flex-1"></div>
@@ -1844,7 +1949,8 @@ const ChatArea = () => {
               {/* Send Button */}
               <button
                 type="submit"
-                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center"
+                aria-label="Send message"
+                className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
               >
                 {/* Send SVG */}
                 <svg
@@ -1874,19 +1980,23 @@ const ChatArea = () => {
       </form>
 
       {showFlowModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999]">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999] p-4">
+          <div className="bg-app-surface rounded-xl w-full max-w-md p-5 sm:p-6 max-h-[90dvh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Set Flow</h3>
+              <h3 className="text-lg font-semibold text-app-text">Set Flow</h3>
 
-              <button onClick={() => setShowFlowModal(false)}>
+              <button
+                onClick={() => setShowFlowModal(false)}
+                aria-label="Close"
+                className="size-8 flex items-center justify-center rounded-lg text-app-text hover:bg-app-surface-secondary transition-colors"
+              >
                 <MdClose size={20} />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm mb-1">Header</label>
+                <label className={MODAL_LABEL}>Header</label>
                 <input
                   type="text"
                   value={flowConfig.header}
@@ -1896,12 +2006,12 @@ const ChatArea = () => {
                       header: e.target.value,
                     }))
                   }
-                  className="w-full border rounded-md px-3 py-2"
+                  className={MODAL_FIELD}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-1">
+                <label className={MODAL_LABEL}>
                   Body <span className="text-red-500">*</span>
                 </label>
 
@@ -1914,12 +2024,12 @@ const ChatArea = () => {
                       body: e.target.value,
                     }))
                   }
-                  className="w-full border rounded-md px-3 py-2"
+                  className={`${MODAL_FIELD} resize-none`}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-1">Footer</label>
+                <label className={MODAL_LABEL}>Footer</label>
 
                 <input
                   type="text"
@@ -1930,12 +2040,12 @@ const ChatArea = () => {
                       footer: e.target.value,
                     }))
                   }
-                  className="w-full border rounded-md px-3 py-2"
+                  className={MODAL_FIELD}
                 />
               </div>
 
               <div>
-                <label className="block text-sm mb-1">CTA Button Text</label>
+                <label className={MODAL_LABEL}>CTA Button Text</label>
 
                 <input
                   type="text"
@@ -1946,15 +2056,15 @@ const ChatArea = () => {
                       cta: e.target.value,
                     }))
                   }
-                  className="w-full border rounded-md px-3 py-2"
+                  className={MODAL_FIELD}
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 mt-6">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6">
               <button
                 onClick={() => setShowFlowModal(false)}
-                className="border px-4 py-2 rounded-md"
+                className="border border-app-border text-app-text px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-app-surface-secondary transition-colors"
               >
                 Cancel
               </button>
@@ -1965,7 +2075,7 @@ const ChatArea = () => {
                   setShowFlowModal(false);
                   handleSendMessage();
                 }}
-                className="bg-green-500 text-white px-4 py-2 rounded-md"
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
               >
                 Send
               </button>
@@ -1975,10 +2085,10 @@ const ChatArea = () => {
       )}
 
       {callPopup && (
-        <div className="fixed inset-0 z-[99999] flex justify-center bg-black/50">
-          <div className="w-[400px] h-50 max-w-md p-4 bg-white dark:bg-[#1a1f2e] border border-gray-200 dark:border-[#2d3748] shadow-xl flex flex-col rounded-lg">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-gray-900 dark:text-[#e8eaed]">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md p-5 bg-app-surface border border-app-border shadow-xl flex flex-col rounded-xl max-h-[90dvh] overflow-y-auto">
+            <div className="flex flex-col gap-3">
+              <h1 className="text-base font-semibold text-app-text">
                 Enter Number to make a call!
               </h1>
 
@@ -1999,20 +2109,21 @@ const ChatArea = () => {
                 onChange={(e) => setSelectedGuestNumber(e.target.value)}
                 placeholder="Guest number"
                 required
-                className="mt-1 w-full border border-gray-300 dark:border-[#2d3748] bg-white dark:bg-[#242b3d] text-gray-900 dark:text-[#e8eaed] rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                inputMode="tel"
+                className={MODAL_FIELD}
               />
 
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-2">
                 <button
                   onClick={() => setCallPopup(false)}
-                  className="border py-1 px-5 bg-red-300 dark:bg-red-500/20 dark:text-red-300 rounded"
+                  className="px-5 py-2 rounded-lg text-sm font-medium border border-app-border text-app-text hover:bg-app-surface-secondary transition-colors"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={handleCall}
-                  className="border border-gray-300 dark:border-[#2d3748] py-1 px-5 rounded text-gray-900 dark:text-[#e8eaed] hover:bg-orange-400 dark:hover:bg-orange-500/20"
+                  className="px-5 py-2 rounded-lg text-sm font-medium bg-teal-600 hover:bg-teal-700 text-white transition-colors"
                 >
                   Call Now
                 </button>
@@ -2026,3 +2137,349 @@ const ChatArea = () => {
 };
 
 export default ChatArea;
+
+//  {!isHandledByOther && !isTake_Over ? (
+//         <form
+//           onSubmit={handleSendMessage}
+//           className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
+//         >
+//           {templateClick && (
+//             <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
+//               {templates?.length > 0 &&
+//                 templates?.map((template) => (
+//                   <div
+//                     onClick={() => setSelectedTemplate(template)}
+//                     key={template?.id}
+//                     className={`
+//     cursor-pointer rounded-xl overflow-hidden transition-all h-30
+//     ${
+//       selectedTemplate?.id === template?.id
+//         ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
+//         : "border border-app-border bg-app-surface hover:border-orange-300 dark:hover:border-orange-700"
+//     }
+//   `}
+//                   >
+//                     <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+//                       <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+//                         {template?.name}
+//                       </p>
+
+//                       {selectedTemplate?.id === template?.id && (
+//                         <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+//                           Selected
+//                         </span>
+//                       )}
+//                     </div>
+
+//                     <div className="p-3">
+//                       <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+//                         <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+//                           {template?.components?.[0]?.text ||
+//                             template?.components?.[1]?.text}
+//                         </p>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 ))}
+//             </div>
+//           )}
+
+//           {showQuickReplies && (
+//             <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
+//               {quickReplies.map((reply) => {
+//                 const textItem = reply.items.find((i) => i.type === "text");
+//                 const mediaItem = reply.items.find((i) => i.type !== "text");
+
+//                 return (
+//                   <button
+//                     type="button"
+//                     key={reply._id}
+//                     onClick={() => handleSelectQuickReply(reply)}
+//                     className="w-full min-w-0 text-left p-3 bg-app-surface-secondary hover:bg-app-surface rounded-lg border border-primary/30! transition-colors"
+//                   >
+//                     <div className="font-medium text-app-text truncate">
+//                       {reply.title}
+//                     </div>
+
+//                     <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
+//                       {textItem?.text}
+//                     </div>
+
+//                     {mediaItem && (
+//                       <div className="text-xs mt-1 text-app-text-faint">
+//                         {mediaItem.media.length} {mediaItem.type}
+//                       </div>
+//                     )}
+//                   </button>
+//                 );
+//               })}
+
+//               <button
+//                 type="button"
+//                 aria-label="Close quick replies"
+//                 className="absolute top-1.5 right-1.5 size-7 flex items-center justify-center rounded-md text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
+//                 onClick={() => setShowQuickReplies(false)}
+//               >
+//                 <X size={16} />
+//               </button>
+//             </div>
+//           )}
+
+//           {file && (
+//             <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+//               <div
+//                 onClick={() => setFile(null)}
+//                 className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
+//               >
+//                 <FiX size={10} />
+//               </div>
+
+//               {/* ✅ IMAGE PREVIEW */}
+//               {isImage ? (
+//                 <img
+//                   src={URL.createObjectURL(file)}
+//                   alt="file"
+//                   className="w-40 h-20 rounded-md object-contain"
+//                 />
+//               ) : (
+//                 // ✅ DOCUMENT UI
+//                 <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
+//                   {/* ICON */}
+//                   {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+//                   {isExcel && (
+//                     <FaFileExcel className="text-green-600 text-xl" />
+//                   )}
+//                   {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+//                   {!isPDF && !isExcel && !isWord && (
+//                     <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
+//                   )}
+
+//                   {/* FILE NAME */}
+//                   <p className="text-xs truncate text-app-text">{file.name}</p>
+//                 </div>
+//               )}
+//             </div>
+//           )}
+
+//           <div
+//             className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
+//           >
+//             {flows?.length > 0 && (
+//               <div>
+//                 <select
+//                   value={selectedFlowId || ""}
+//                   onChange={(e) => {
+//                     setSelectedFlowId(e.target.value);
+//                     if (e.target.value) {
+//                       setShowFlowModal(true);
+//                     }
+//                   }}
+//                   className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
+//                 >
+//                   <option value="" className={OPTION}>
+//                     Select Form
+//                   </option>
+
+//                   {flows.map((flow) => (
+//                     <option
+//                       key={flow.flowId}
+//                       value={flow.flowId}
+//                       className={OPTION}
+//                     >
+//                       {flow.flowName}
+//                     </option>
+//                   ))}
+//                 </select>
+//               </div>
+//             )}
+
+//             <div className="flex gap-2 items-center flex-wrap">
+//               {templateLoading ? (
+//                 <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
+//                   Loading Templates...
+//                 </p>
+//               ) : (
+//                 <div>
+//                   {!templateClick ? (
+//                     <span
+//                       onClick={() => {
+//                         if (!templates?.length) {
+//                           navigate(
+//                             `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+//                           );
+//                         }
+
+//                         handleTemplate(true);
+//                       }}
+//                       className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                     >
+//                       <MdChat /> Templates
+//                     </span>
+//                   ) : (
+//                     <span
+//                       onClick={() => handleTemplate(false)}
+//                       className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                     >
+//                       Close Templates <MdClose />
+//                     </span>
+//                   )}
+//                 </div>
+//               )}
+
+//               {!is24HourComplete && (
+//                 <button
+//                   type="button"
+//                   aria-label="Quick replies"
+//                   onClick={() => setShowQuickReplies(!showQuickReplies)}
+//                   className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
+//                 >
+//                   <MessageSquareReply size={20} />
+//                 </button>
+//               )}
+
+//               {isTakeOver && (
+//                 <div className="flex justify-center w-full">
+//                   <button
+//                     type="button"
+//                     onClick={handleTakeOver}
+//                     className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
+//                   >
+//                     Take Over
+//                   </button>
+//                 </div>
+//               )}
+
+//               <div>
+//                 {/* {isRelease && (
+//                   <div className="flex justify-center w-full">
+//                     <button
+//                       type="button"
+//                       onClick={handleReleaseFnc}
+//                       className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+//                     >
+//                       Release Take Over
+//                     </button>
+//                   </div>
+//                 )} */}
+
+//                 {/* {isHandledByOther && (
+//                   <div className="flex justify-center w-full">
+//                     <div className="text-xs text-app-text-faint px-3 py-1.5">
+//                       This conversation is being handled by another user
+//                     </div>
+//                   </div>
+//                 )} */}
+//               </div>
+//             </div>
+
+//             {!isTakeOver && (
+//               <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
+//                 {/* Attachment */}
+//                 {!is24HourComplete && (
+//                   <button
+//                     type="button"
+//                     aria-label="Attach file"
+//                     onClick={() => fileInputRef.current.click()}
+//                     className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
+//                   >
+//                     {/* Paperclip SVG */}
+//                     <svg
+//                       width="22"
+//                       height="22"
+//                       fill="none"
+//                       viewBox="0 0 24 24"
+//                       stroke="currentColor"
+//                     >
+//                       <path
+//                         strokeWidth="2"
+//                         strokeLinecap="round"
+//                         strokeLinejoin="round"
+//                         d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+//                       />
+//                     </svg>
+//                   </button>
+//                 )}
+
+//                 {!is24HourComplete && (
+//                   <input
+//                     disabled={is24HourComplete}
+//                     ref={fileInputRef}
+//                     type="file"
+//                     hidden
+//                     onChange={(e) => {
+//                       setFile(e.target.files[0]);
+//                     }}
+//                   />
+//                 )}
+
+//                 {!is24HourComplete ? (
+//                   <textarea
+//                     disabled={is24HourComplete}
+//                     ref={textareaRef}
+//                     value={messageValue}
+//                     onChange={handleChange}
+//                     placeholder="Type a message"
+//                     rows={1}
+//                     onKeyDown={(e) => {
+//                       if (e.key === "Enter" && !e.shiftKey) {
+//                         e.preventDefault(); // ❗ stop newline
+//                         handleSendMessage(e); // OR trigger form submit
+//                       }
+//                     }}
+//                     className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
+//                   />
+//                 ) : (
+//                   <div className="flex-1"></div>
+//                 )}
+
+//                 {/* Send Button */}
+//                 <button
+//                   type="submit"
+//                   aria-label="Send message"
+//                   className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+//                 >
+//                   {/* Send SVG */}
+//                   <svg
+//                     width="18"
+//                     height="18"
+//                     fill="none"
+//                     viewBox="0 0 24 24"
+//                     stroke="currentColor"
+//                   >
+//                     <path
+//                       strokeWidth="2"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       d="M22 2L11 13"
+//                     />
+//                     <path
+//                       strokeWidth="2"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       d="M22 2L15 22l-4-9-9-4 20-7z"
+//                     />
+//                   </svg>
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </form>
+//       ) : !isHandledByOther ? (
+//         <div className="flex justify-center w-full">
+//           <button
+//             type="button"
+//             onClick={handleTakeOverFnc}
+//             className="text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors"
+//           >
+//             Take Over
+//           </button>
+//         </div>
+//       ) : (
+//         <p>
+//           <div className="flex justify-center w-full">
+//             <div className="text-xs text-app-text-faint px-3 py-1.5">
+//               This conversation is being handled by another user
+//             </div>
+//           </div>
+//         </p>
+//       )}

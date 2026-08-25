@@ -12,6 +12,9 @@ const categories = [
   { value: "AUTHENTICATION", label: "AUTHENTICATION" },
 ];
 
+const LABEL =
+  "text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-muted mb-1.5 inline-block";
+
 const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
   const {
     register,
@@ -21,16 +24,17 @@ const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
   } = useFormContext();
 
   return (
-    <div className="bg-app-surface p-4 rounded-lg border-primary/60!">
-      <div className="flex justify-between items-start">
-        <h2 className="text-lg font-semibold mb-4">
+    <div className="bg-app-surface p-[var(--sp-4)] rounded-[var(--r-md)] border border-app-border">
+      <div className="flex flex-wrap justify-between items-start gap-[var(--sp-3)]">
+        <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] text-app-text">
           Template name and language
         </h2>
 
         {showCancelButton && (
           <div>
             <button
-              className="bg-red-500 rounded-sm text-white px-2 py-1"
+              type="button"
+              className="bg-red-500 hover:bg-red-600 rounded-[var(--r-sm)] text-white px-[var(--sp-3)] py-[var(--sp-1)] text-[length:var(--fs-sm)] transition-colors"
               onClick={onCancel}
             >
               Cancel
@@ -39,34 +43,32 @@ const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
         )}
       </div>
 
-      <div className="flex items-start gap-2 w-full bg-app-surface-secondary p-4 rounded-lg">
+      <div className="flex items-start gap-[var(--sp-3)] w-full bg-app-surface-secondary p-[var(--sp-4)] rounded-[var(--r-md)]">
         {/* TEMPLATE NAME */}
-        <div className="flex-1">
-          <label className="text-sm text-gray-600 dark:text-app-text-faint mb-2 inline-block">
-            Template Name
-          </label>
+        <div className="flex-1 min-w-0">
+          <label className={LABEL}>Template Name</label>
 
           <input
             disabled={mode === "edit"}
             {...register("name")}
-            className="w-full border border-gray-400! bordgr rounded-md px-3 py-2 text-sm 
-             focus:outline-none focus:ring-1 focus:ring-primary
-             transition disabled:opacity-60"
+            className="w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-3)] py-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint
+             outline-none focus:border-primary focus:ring-2 focus:ring-primary/30
+             transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           />
 
           {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            <p className="text-red-500 text-[length:var(--fs-sm)] mt-1">
+              {errors.name.message}
+            </p>
           )}
         </div>
 
         {/* LANGUAGE DROPDOWN */}
       </div>
 
-      <div className="flex gap-2 mt-2">
-        <div>
-          <label className="text-sm text-gray-600 inline-block mb-1.5">
-            Category
-          </label>
+      <div className="flex flex-col sm:flex-row gap-[var(--sp-3)] mt-[var(--sp-3)]">
+        <div className="min-w-0 sm:flex-1">
+          <label className={LABEL}>Category</label>
 
           <Controller
             name="category"
@@ -82,14 +84,14 @@ const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
           />
 
           {errors.language && (
-            <p className="text-red-500 text-sm">{errors.language.message}</p>
+            <p className="text-red-500 text-[length:var(--fs-sm)]">
+              {errors.language.message}
+            </p>
           )}
         </div>
 
-        <div>
-          <label className="text-sm text-gray-600 inline-block mb-1.5">
-            Language
-          </label>
+        <div className="min-w-0 sm:flex-1">
+          <label className={LABEL}>Language</label>
 
           <Controller
             name="language"
@@ -105,7 +107,9 @@ const TemplateHeader = ({ onCancel, showCancelButton, mode }) => {
           />
 
           {errors.language && (
-            <p className="text-red-500 text-sm">{errors.language.message}</p>
+            <p className="text-red-500 text-[length:var(--fs-sm)]">
+              {errors.language.message}
+            </p>
           )}
         </div>
       </div>

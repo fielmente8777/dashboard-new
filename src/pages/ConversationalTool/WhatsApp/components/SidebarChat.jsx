@@ -19,15 +19,15 @@ import { FaUser } from "react-icons/fa";
 import { useToast } from "../../../../context/ToastContext";
 import { useConfirm } from "../../../../context/ConfirmContext";
 
-const tabs = ["Active", "Inactive", "Add"];
+const tabs = ["Active", "Inactive", "Converted", "Add"];
 
-const SidebarChat = () => {
+const SidebarChat = ({ activeTab, setActiveTab }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [openNewContactModal, setOpenNewContactModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("active");
+  // const [activeTab, setActiveTab] = useState("active");
   const debouncedSearch = useDebounce(search, 500);
   const [selectedConversations, setSelectedConversations] = useState([]);
   const [hoveredConversation, setHoveredConversation] = useState(null);
@@ -57,6 +57,7 @@ const SidebarChat = () => {
   const [countsConversation, setCountsConversation] = useState({
     active: "",
     inactive: "",
+    converted: "",
   });
 
   const isAllSelected =
@@ -104,11 +105,11 @@ const SidebarChat = () => {
   };
 
   const handleSearch = () => {
-    if (debouncedSearch === "" && activeTab.toLowerCase() === "active") {
+    if (debouncedSearch === "" && activeTab?.toLowerCase() === "active") {
       return setFilteredConversations(activeConversations());
     } else if (
       debouncedSearch === "" &&
-      activeTab.toLowerCase() === "history"
+      activeTab?.toLowerCase() === "history"
     ) {
       return setFilteredConversations(historyConversations());
     }
@@ -120,6 +121,8 @@ const SidebarChat = () => {
         conv.phone?.includes(lowerSearch) ||
         conv.lastMessage?.toLowerCase().includes(lowerSearch),
     );
+
+    console.log(filtered);
 
     setFilteredConversations(filtered);
   };
@@ -138,8 +141,13 @@ const SidebarChat = () => {
           new Date(a.last_message?.updated_at || a.createdAt),
       );
 
-    console.log(conver);
+    return conver;
+  };
 
+  const convertedConversations = () => {
+    const conver = conversations?.filter(
+      (conv) => conv.status?.toLowerCase() === "converted",
+    );
     return conver;
   };
 
@@ -163,7 +171,9 @@ const SidebarChat = () => {
       ? setOpenNewContactModal(true)
       : activeTab === "active"
         ? setFilteredConversations(activeConversations())
-        : setFilteredConversations(historyConversations());
+        : activeTab === "inactive"
+          ? setFilteredConversations(historyConversations())
+          : setFilteredConversations(convertedConversations());
   };
 
   const fetchTemplates = async () => {
@@ -231,40 +241,49 @@ const SidebarChat = () => {
       // setSelectedConversation(actConversations[0]);
     } else if (activeTab === "Inactive" && historyConversations) {
       setFilteredConversations(historyConversations());
+    } else if (activeTab === "converted" && convertedConversations) {
+      setFilteredConversations(convertedConversations());
     }
 
     const actCount = activeConversations()?.length;
     const inactCount = historyConversations()?.length;
-    setCountsConversation({ active: actCount, inactive: inactCount });
+    const convCount = convertedConversations()?.length;
+    setCountsConversation({
+      active: actCount,
+      inactive: inactCount,
+      converted: convCount,
+    });
 
     fetchTemplates();
   }, [conversations]);
 
   return (
-    <div className="w-full xl:w-90! lg:w-60! border-b  md:border-r dark:border-primary/60! flex flex-col bg-app-surface">
-      <div className="px-4 py-3 shadow-sm h-16 flex ">
+    <div className="w-full lg:w-60! xl:w-90! shrink-0 min-h-0 border-b md:border-r border-app-border dark:border-primary/60! flex flex-col bg-app-surface">
+      {/* Search */}
+      <div className="shrink-0 px-3 sm:px-4 py-3 shadow-sm h-16 flex items-center border-b border-app-border dark:border-primary/60!">
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search conversations..."
-          className="border border-ternary! text-sm text-app-text dark:text-app-text font-medium dark:bg-primary px-3 py-2 rounded-xl w-full focus:outline-none focus:ring-1 focus:ring-ternary"
+          className="border border-ternary! text-sm text-app-text placeholder:text-app-text-faint font-medium bg-app-surface-secondary px-3 py-2 rounded-xl w-full min-w-0 focus:outline-none focus:ring-1 focus:ring-ternary"
         />
       </div>
 
-      <div className="flex border-b dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
+      {/* Tabs */}
+      <div className="shrink-0 flex border-b border-app-border dark:border-primary/60! bg-app-surface-secondary overflow-x-auto hide-scrollbar">
         {tabs?.map((tab) => {
-          const isActive = tab.toLowerCase() === activeTab.toLowerCase();
+          const isActive = tab?.toLowerCase() === activeTab?.toLowerCase();
           const count = countsConversation?.[tab.toLowerCase()];
 
           return (
             <button
               key={tab}
               onClick={() => handleTabChnage(tab)}
-              className={`flex items-center justify-center gap-2 px-4 py-3 w-full text-sm font-medium transition-all duration-200 relative ${
+              className={`flex flex-1 min-w-fit items-center justify-center gap-1.5 px-3 sm:px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 relative ${
                 isActive
-                  ? "bg-ternary text-white border-b-2  "
-                  : "text-slate-600 dark:text-app-text-muted hover:bg-slate-100 border-b-2 border-transparent hover:border-gray-300"
+                  ? "bg-ternary text-white border-b-2 border-ternary"
+                  : "text-slate-600 dark:text-app-text-muted hover:bg-slate-100 dark:hover:bg-app-surface border-b-2 border-transparent hover:border-gray-300 dark:hover:border-primary/60"
               }`}
             >
               <span>{tab}</span>
@@ -274,8 +293,8 @@ const SidebarChat = () => {
                   className={`min-w-5 h-5 px-1 flex items-center justify-center rounded-full text-[10px] font-semibold
                     ${
                       isActive
-                        ? "bg-gray-100 text-primary "
-                        : "bg-slate-200 text-slate-700"
+                        ? "bg-white text-ternary"
+                        : "bg-slate-200 dark:bg-app-surface text-slate-700 dark:text-app-text-muted"
                     }`}
                 >
                   {count}
@@ -286,48 +305,34 @@ const SidebarChat = () => {
         })}
       </div>
 
-      {/* <div className="flex  justify-center items-center gap-2 border-b border-gray-200">
-        {tabs?.map((tab) => (
-          <button
-            onClick={() => handleTabChnage(tab)}
-            key={tab}
-            className={`px-4 py-4 w-full ${tab.toLowerCase() === activeTab.toLowerCase() ? "bg-primary text-white" : ""} text-sm font-medium text-slate-800 cursor-pointer relative`}
-          >
-            {tab}
-
-            {Object.keys(countsConversation)?.length > 0 &&
-              countsConversation[tab?.toLowerCase()] && (
-                <span className="absolute top-0 left-0 size-6 flex justify-center items-center rounded-full bg-slate-900 text-white text-xs">
-                  {countsConversation[tab.toLowerCase()]}
-                </span>
-              )}
-          </button>
-        ))}
-      </div> */}
-
+      {/* Bulk select bar */}
       {selectedConversations.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-primary/10">
-          <label className="flex items-center gap-2 text-sm">
+        <div className="shrink-0 flex items-center justify-between gap-2 px-3 sm:px-4 py-2 border-b border-app-border dark:border-primary/60! bg-primary/10">
+          <label className="flex items-center gap-2 text-sm text-app-text min-w-0 cursor-pointer">
             <input
               type="checkbox"
               checked={isAllSelected}
               onChange={handleSelectAll}
+              className="h-4 w-4 shrink-0 accent-primary cursor-pointer"
             />
-            <span>Select All ({selectedConversations.length})</span>
+            <span className="truncate">
+              Select All ({selectedConversations.length})
+            </span>
           </label>
 
           <button
             onClick={() => {
               handleDeleteConversations();
             }}
-            className="px-3 py-1 bg-red-500 text-white rounded text-xs"
+            className="shrink-0 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs font-medium transition-colors"
           >
             Delete
           </button>
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto scrollbar-hidden">
+      {/* Conversation list */}
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hidden">
         {filteredConversations && filteredConversations?.length > 0 ? (
           filteredConversations?.map((conv) => (
             <div
@@ -338,7 +343,7 @@ const SidebarChat = () => {
               }}
               onMouseEnter={() => setHoveredConversation(conv._id)}
               onMouseLeave={() => setHoveredConversation(null)}
-              className={`relative flex p-3 pl-6 border-b border-primary/60! cursor-pointer transition-colors ${
+              className={`relative flex p-3 pl-6 border-b border-app-border dark:border-primary/60! cursor-pointer transition-colors ${
                 selectedConversation?._id === conv._id
                   ? "bg-app-surface-secondary"
                   : "hover:bg-green-200/30 dark:hover:bg-primary/30"
@@ -355,12 +360,13 @@ const SidebarChat = () => {
                       handleCheckboxChange(conv._id);
                     }}
                     onClick={(e) => e.stopPropagation()}
+                    className="h-4 w-4 accent-primary cursor-pointer"
                   />
                 )}
               </div>
 
               {/* Avatar */}
-              <div className="relative">
+              <div className="relative shrink-0">
                 {conv.name ? (
                   <div
                     className={`size-10 rounded-full flex items-center justify-center text-white font-medium ${getAvatarColor(
@@ -370,7 +376,7 @@ const SidebarChat = () => {
                     {conv?.name?.charAt(0).toUpperCase()}
                   </div>
                 ) : (
-                  <div className="size-10 rounded-full flex items-center justify-center text-white font-medium bg-gray-400">
+                  <div className="size-10 rounded-full flex items-center justify-center text-white font-medium bg-gray-400 dark:bg-app-surface-secondary">
                     <FaUser />
                   </div>
                 )}
@@ -384,66 +390,42 @@ const SidebarChat = () => {
 
               {/* Info */}
               <div className="ml-3 flex-1 min-w-0">
-                <div className="flex justify-between">
-                  <p className="text-sm font-medium text-gray-900 dark:text-app-text-muted truncat flex flex-col">
-                    {conv?.name}
+                <div className="flex justify-between gap-2">
+                  <div className="min-w-0 flex flex-col">
+                    <p className="text-sm font-medium text-gray-900 dark:text-app-text-muted truncate">
+                      {conv?.name}
+                    </p>
 
-                    <span className="text-[10px] mt-1">{conv?.phone}</span>
+                    <span className="text-[10px] mt-1 text-gray-500 dark:text-app-text-faint truncate">
+                      {conv?.phone}
+                    </span>
 
-                    <p className="text-sm text-gray-500 truncate mt-1 w-44">
+                    <p className="text-sm text-gray-500 dark:text-app-text-faint truncate mt-1">
                       {conv?.last_message?.text || "No messages yet"}
                     </p>
-                  </p>
+                  </div>
 
                   {conv.updatedAt && (
-                    <span className="text-xs text-gray-500">
+                    <span className="shrink-0 text-xs text-gray-500 dark:text-app-text-faint">
                       {new Date(conv.updatedAt).toLocaleDateString("en-GB")}
                     </span>
                   )}
                 </div>
 
-                <div className="flex justify-between mt-2">
-                  <div className="flex justify-end text-xs text-white bg-green-500 w-fit px-2 rounded-full">
+                <div className="flex justify-between items-center gap-2 mt-2">
+                  <div className="text-xs text-white bg-green-500 w-fit px-2 py-0.5 rounded-full capitalize">
                     {conv?.status?.toLowerCase() === "active"
                       ? "Open"
                       : conv?.status}
-                  </div>
-
-                  <div className="flex justify-between">
-                    {/* <div className="flex items-center gap-2">
-                      <span className="border! border-orange-600! bg-amber-100 text-orange-600 rounded px-2 capitalize text-xs flex items-center justify-center">
-                        {conv?.adAttribution?.sourceType || "Ad"}
-                      </span>
-
-                      {conv?.adAttribution?.sourceUrl ? (
-                        conv?.adAttribution?.sourceUrl.match(
-                          /^https:\/\/www.instagram.com/,
-                        ) ? (
-                          <InstaICon />
-                        ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/www.facebook.com/,
-                          ) ? (
-                          <FacebookIcon />
-                        ) : conv?.adAttribution?.sourceUrl.match(
-                            /^https:\/\/wa.me/,
-                          ) ? (
-                          <WhatsappIcon />
-                        ) : (
-                          ""
-                        )
-                      ) : (
-                        <GoogleAdsIcon />
-                      )}
-                    </div> */}
                   </div>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <div className="flex flex-col max-md:h-[60dvh] items-center justify-center h-full px-6 text-center text-gray-500">
+          <div className="flex flex-col max-md:h-[60dvh] items-center justify-center h-full px-6 py-10 text-center">
             {/* Icon */}
-            <div className="w-16 h-16 rounded-full bg-teal-50 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-app-surface-secondary flex items-center justify-center mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-8 w-8 text-teal-500"
@@ -461,10 +443,10 @@ const SidebarChat = () => {
             </div>
 
             {/* Text */}
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-app-text">
               No conversations yet
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-gray-400 dark:text-app-text-faint mt-1">
               Incoming WhatsApp messages will appear here
             </p>
           </div>

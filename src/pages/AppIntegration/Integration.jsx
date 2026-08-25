@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { MdMail, MdOutlineTrackChanges } from "react-icons/md";
+import { MdMail, MdOutlineTrackChanges, MdSearch } from "react-icons/md";
 import { SiAnalogue, SiGoogleanalytics } from "react-icons/si";
 import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
@@ -19,12 +19,33 @@ import { useSelector } from "react-redux";
 import { Lock } from "lucide-react";
 import GscSettings from "../../components/GscSettings";
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const MODAL_BACKDROP =
+  "fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 p-4";
+const MODAL_PANEL =
+  "w-full max-w-md rounded-xl bg-white dark:bg-app-surface-secondary p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto";
+const MODAL_TITLE =
+  "text-base sm:text-lg font-semibold text-gray-900 dark:text-app-text";
+const MODAL_SUB = "mt-1 text-sm text-gray-600 dark:text-app-text-faint";
+const SELECT =
+  "w-full rounded-lg border border-gray-300 dark:border-app-text-faint/25 bg-white dark:bg-app-surface px-3 py-2.5 text-sm text-gray-800 dark:text-app-text-muted outline-none transition-colors focus:ring-2 focus:ring-primary/40 focus:border-primary [color-scheme:light] dark:[color-scheme:dark]";
+/* <option> is drawn by the OS, so it needs its own explicit colors.
+   Chrome/Edge/Firefox honour these; Safari falls back to color-scheme above. */
+const OPTION =
+  "bg-white dark:bg-[#1e293b]! text-gray-800 dark:text-gray-100 appearance-none";
+const FIELD =
+  "mt-1 w-full rounded-md border border-gray-300 dark:border-app-text-faint/25 bg-white dark:bg-app-surface px-3 py-2 text-sm text-gray-800 dark:text-app-text-muted placeholder:text-gray-400 dark:placeholder:text-app-text-faint outline-none transition-colors focus:ring-2 focus:ring-primary/40 focus:border-primary";
+const FIELD_LABEL =
+  "block text-sm font-medium text-gray-700 dark:text-app-text-muted";
+const GHOST_BTN =
+  "w-full rounded-lg border border-gray-300 dark:border-app-text-faint/25 px-4 py-2.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-50 dark:hover:bg-app-surface transition-colors";
+
 const mapIntegrationId = {
   metaWhatsapp: "whatsapp",
   exotel: "exotel",
   meta: "meta",
   googleadsinsights: "googleadsinsights",
-  google_analytics: "google_analytics"
+  google_analytics: "google_analytics",
 };
 
 function Integration() {
@@ -41,7 +62,7 @@ function Integration() {
     try {
       setGmbLoading(true);
       const response = await axios.get(`${NEW_BASE_URL}/api/v1/gmb/locations`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setGmbLocations(response.data.locations || []);
     } catch (error) {
@@ -55,20 +76,26 @@ function Integration() {
   const handleSaveGmbLocation = async () => {
     if (!selectedGmbLocation) return alert("Please select a location");
 
-    const locationData = gmbLocations.find(loc => loc.locationId === selectedGmbLocation);
+    const locationData = gmbLocations.find(
+      (loc) => loc.locationId === selectedGmbLocation,
+    );
 
     try {
-      await axios.post(`${NEW_BASE_URL}/api/v1/gmb/save-location`, {
-        locationId: locationData.locationId,
-        accountId: locationData.accountId,
-        title: locationData.title
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-      });
+      await axios.post(
+        `${NEW_BASE_URL}/api/v1/gmb/save-location`,
+        {
+          locationId: locationData.locationId,
+          accountId: locationData.accountId,
+          title: locationData.title,
+        },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        },
+      );
 
       alert("GMB Connected Successfully!");
       setShowGmbModal(false);
-      checkIntegrationStatus(); 
+      checkIntegrationStatus();
     } catch (error) {
       console.error("Failed to save GMB location", error);
       alert("Error saving location.");
@@ -90,7 +117,7 @@ function Integration() {
     try {
       const hid = localStorage.getItem("hid");
       await axios.post(`${BASE_URL}/google/disconnect`, { hid });
-      setIsGaConnected(false); 
+      setIsGaConnected(false);
       alert("Google Analytics disconnected!");
     } catch (error) {
       console.error("Failed to disconnect GA:", error);
@@ -128,7 +155,7 @@ function Integration() {
   const fetchGoogleProperties = async (email) => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/google/properties?email=${email}`
+        `${BASE_URL}/google/properties?email=${email}`,
       );
       setProperties(response.data.properties || []);
     } catch (error) {
@@ -176,7 +203,7 @@ function Integration() {
     checkIntegrationStatus,
     isLoadingIntegrationStatus,
   } = useContext(DataContext);
-  
+
   const [formData, setFormData] = useState({
     apiKey: "",
     authToken: "",
@@ -197,7 +224,8 @@ function Integration() {
     {
       id: "gmail",
       name: "Gmail",
-      description: "Sync your inbox and manage emails directly from your dashboard.",
+      description:
+        "Sync your inbox and manage emails directly from your dashboard.",
       icon: <MailIcon className="" />,
       status: "connected",
       category: "Communication",
@@ -206,12 +234,14 @@ function Integration() {
     {
       id: "gmb",
       name: "GMB",
-      description: "Sync your inbox and manage emails directly from your dashboard.",
+      description:
+        "Sync your inbox and manage emails directly from your dashboard.",
       icon: <MailIcon className="" />,
       status: "connected",
       category: "Communication",
       color: "",
-     onClick: () => window.location.href = `/api/local-seo/oauth/start?ndid=${ndid}`
+      onClick: () =>
+        (window.location.href = `/api/local-seo/oauth/start?ndid=${ndid}`),
     },
     {
       id: "googleadsinsights",
@@ -225,7 +255,8 @@ function Integration() {
     {
       id: "metaWhatsapp",
       name: "WhatsApp Business",
-      description: "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
+      description:
+        "Connect whatsapp to manage your business with our Hotelier WhatsApp Manager",
       icon: <IoLogoWhatsapp className="w-10 h-10" />,
       status: "not-connected",
       category: "Communication",
@@ -234,7 +265,8 @@ function Integration() {
     {
       id: "meta",
       name: "Meta Leads",
-      description: "Connect website tracking code to your website and get Website Engagement",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
       icon: <FaMeta className="w-10 h-10" color="#0281F0" />,
       status: "not-connected",
       category: "Analytics",
@@ -243,7 +275,8 @@ function Integration() {
     {
       id: "WebsiteTracking",
       name: "Website Tracking",
-      description: "Connect website tracking code to your website and get Website Engagement",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
       icon: <MdOutlineTrackChanges className="w-10 h-10" color="#2D1953" />,
       status: "not-connected",
       category: "Analytics",
@@ -252,7 +285,8 @@ function Integration() {
     {
       id: "exotel",
       name: "Exotel",
-      description: "Connect website tracking code to your website and get Website Engagement",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
       img: "/exotel.jpg",
       status: "not-connected",
       category: "Analytics",
@@ -261,7 +295,8 @@ function Integration() {
     {
       id: "otp-less",
       name: "OTP-Less",
-      description: "Connect website tracking code to your website and get Website Engagement",
+      description:
+        "Connect website tracking code to your website and get Website Engagement",
       img: "/otp.png",
       status: "not-connected",
       category: "Analytics",
@@ -270,7 +305,8 @@ function Integration() {
     {
       id: "google_analytics",
       name: "Google Analytics",
-      description: "Connect Google Analytics account to track website traffic and hotel performance insights.",
+      description:
+        "Connect Google Analytics account to track website traffic and hotel performance insights.",
       icon: <SiGoogleanalytics className="w-10 h-10 text-orange-500" />,
       status: "not-connected",
       category: "Analytics",
@@ -281,11 +317,7 @@ function Integration() {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = [
-    "All",
-    "Communication",
-    "Analytics",
-  ];
+  const categories = ["All", "Communication", "Analytics"];
 
   const filteredIntegrations = integrations.filter((integration) => {
     const matchesCategory =
@@ -326,7 +358,8 @@ function Integration() {
       if (response?.success && response?.responseStatusCode) {
         checkIntegrationStatus();
       }
-    } catch (error) {} finally {
+    } catch (error) {
+    } finally {
       setCurrentIntegrationId(null);
     }
   };
@@ -364,17 +397,29 @@ function Integration() {
         try {
           const response = await axios.get(
             `${NEW_BASE_URL}/api/v1/gmb/connect?ndid=${localStorage.getItem("ndid")}`,
-            { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            },
           );
 
           const width = 500;
           const height = 600;
           const left = window.screen.width / 2 - width / 2;
           const top = window.screen.height / 2 - height / 2;
-          window.open(response.data.url, "GMBAuth", `width=${width},height=${height},top=${top},left=${left}`);
+          window.open(
+            response.data.url,
+            "GMBAuth",
+            `width=${width},height=${height},top=${top},left=${left}`,
+          );
 
           const messageListener = (event) => {
-            if (!event.origin.includes("localhost") && !NEW_BASE_URL.includes(event.origin)) return;
+            if (
+              !event.origin.includes("localhost") &&
+              !NEW_BASE_URL.includes(event.origin)
+            )
+              return;
 
             if (event.data?.type === "GMB_OAUTH_SUCCESS") {
               window.removeEventListener("message", messageListener);
@@ -415,19 +460,23 @@ function Integration() {
       const authWindow = window.open(
         authUrl,
         "GoogleAnalyticsAuth",
-        `width=${width},height=${height},top=${top},left=${left}`
+        `width=${width},height=${height},top=${top},left=${left}`,
       );
 
       const messageListener = (event) => {
-        if (!event.origin.includes("localhost") && !BASE_URL.includes(event.origin)) return;
+        if (
+          !event.origin.includes("localhost") &&
+          !BASE_URL.includes(event.origin)
+        )
+          return;
 
         if (event.data?.type === "GOOGLE_OAUTH_SUCCESS") {
           const newEmail = event.data.email;
           setGoogleEmail(newEmail);
           setPropertiesLoading(true);
           fetchGoogleProperties(newEmail);
-          
-          navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });      
+
+          navigate(`?ga_connected=true&email=${newEmail}`, { replace: true });
           window.removeEventListener("message", messageListener);
         }
       };
@@ -473,7 +522,7 @@ function Integration() {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
     } catch (err) {}
   };
@@ -491,7 +540,9 @@ function Integration() {
           },
         },
       );
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const fetchleads = async () => {
@@ -507,10 +558,12 @@ function Integration() {
           },
         },
       );
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  console.log("Subscription",subscription)
+  console.log("Subscription", subscription);
   useEffect(() => {
     checkIntegrationStatus();
     fetchForms();
@@ -522,43 +575,47 @@ function Integration() {
   }
 
   return (
-    <div className="">
+    <div className="bg-app-surface min-h-full">
+      {/* ── page header ─────────────────────────────────────── */}
       <div className="bg-app-surface-secondary">
-        <div className="px-4 py-6">
-          <h1 className="text-2xl font-semibold  mb-1">
+        <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-app-text mb-1">
             Integrations
           </h1>
-          <p className="text-sm ">
+          <p className="text-sm text-gray-600 dark:text-app-text-faint">
             Connect your favorite apps to bring all your data into one dashboard
           </p>
         </div>
       </div>
 
-      <div className="px-4 py-8">
-        <div className="bg-app-surface-secondary rounded-sm  mb-6">
-          <div className="p-6 0">
+      <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        {/* ── search + category tabs ────────────────────────── */}
+        <div className="bg-app-surface-secondary rounded-lg mb-6 overflow-hidden">
+          <div className="p-4 sm:p-6">
             <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
+              <div className="flex-1 relative min-w-0">
+                <MdSearch className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-gray-400 dark:text-app-text-faint" />
                 <input
                   type="text"
                   placeholder="Search integrations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-app-surface rounded-sm text-sm focus:outline-none focus:ring-1 "
+                  className="w-full min-w-0 pl-10 pr-4 py-2.5 bg-app-surface rounded-lg text-sm text-gray-800 dark:text-app-text-muted placeholder:text-gray-400 dark:placeholder:text-app-text-faint border border-gray-200 dark:border-app-text-faint/20 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto border-t border-gray-200 dark:border-app-text-faint/15">
             {categories?.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedFilter(category)}
-                className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors ${selectedFilter === category
-                  ? "dark:text-white bg-app-surface"
-                  : "text-gray-600 dark:hover:text-white hover:bg-app-surface"
-                  }`}
+                className={`px-5 sm:px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+                  selectedFilter === category
+                    ? "border-primary text-primary dark:text-app-text bg-app-surface"
+                    : "border-transparent text-gray-600 dark:text-app-text-faint hover:text-gray-900 dark:hover:text-app-text hover:bg-app-surface"
+                }`}
               >
                 {category}
               </button>
@@ -566,7 +623,8 @@ function Integration() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* ── integration cards ─────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {integrationStatus &&
             filteredIntegrations?.map((integration) => {
               let status = false;
@@ -574,7 +632,7 @@ function Integration() {
               if (integration?.id === "googleadsinsights") {
                 status = integrationStatus[integration?.id]?.status;
               } else if (integration?.id === "google_analytics") {
-                status = isGaConnected; 
+                status = isGaConnected;
               } else {
                 status = integrationStatus[integration?.id] ?? false;
               }
@@ -584,19 +642,23 @@ function Integration() {
               return (
                 <div
                   key={integration?.id}
-                  className={`${subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId] ? "opacity-50" : ""} relative bg-app-surface rounded-sm `}
+                  className={`${subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId] ? "opacity-60" : ""} relative flex flex-col bg-app-surface rounded-lg border border-gray-200 dark:border-app-text-faint/15 overflow-hidden transition-shadow hover:shadow-md`}
                 >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`${integration?.color} text-white rounded-sm`}>
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className="flex items-start justify-between gap-3 mb-4">
+                      <div
+                        className={`${integration?.color} text-white rounded-lg shrink-0 overflow-hidden`}
+                      >
                         <div>
                           {integration?.img ? (
                             <img
                               src={integration?.img}
-                              className={`${integration.id === "otp-less"
-                                ? "w-40 -ml-4"
-                                : "w-16 -ml-2"
-                                } object-contain`}
+                              alt={integration?.name}
+                              className={`${
+                                integration.id === "otp-less"
+                                  ? "w-32 sm:w-40 -ml-3"
+                                  : "w-16 -ml-2"
+                              } max-w-full object-contain`}
                             />
                           ) : (
                             integration?.icon
@@ -604,137 +666,212 @@ function Integration() {
                         </div>
                       </div>
                       {status && (
-                        <span className="text-xs font-medium text-green-600 bg-green-50 px-2.5 py-1 rounded-sm border border-green-200">
+                        <span className="shrink-0 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-500/10 px-2.5 py-1 rounded-md border border-green-200 dark:border-green-500/30">
                           Connected
                         </span>
                       )}
                     </div>
 
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-app-text-faint mb-2">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-app-text mb-2">
                       {integration.name}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4 leading-relaxed min-h-[40px]">
+                    <p className="text-sm text-gray-600 dark:text-app-text-faint mb-4 leading-relaxed min-h-[40px]">
                       {integration.description}
                     </p>
-                    {integration.id === "google_analytics" && properties.length > 0 && (
-                      <div className="mb-4">
-                        <select
-                          className="w-full border rounded-md p-2 text-sm"
-                          value={selectedProperty}
-                          onChange={(e) => setSelectedProperty(e.target.value)}
-                        >
-                          <option value="">Select Property</option>
-                          {properties.map((property) => (
-                            <option key={property.property_id} value={property.property_id}>
-                              {property.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
 
-                    {integration.id === "google_analytics" && properties.length > 0 && selectedProperty && (
-                      <button onClick={saveGoogleProperty} className="w-full mb-3 bg-green-600 text-white py-2 rounded-sm">
-                        Save Property
-                      </button>
-                    )}
-                    <button
-                      disabled={currentIntegrationId === integration.id || (subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId])}
-                      onClick={() => {
-                        if (!status) {
-                          toggleIntegration(integration.id);
-                        } else {
-                          if (integration.id === "google_analytics") {
-                            handleDisconnectGA(); 
-                          } else {
-                            handleDisconnectIntegration(integration.id);
-                          }
+                    {/* pushes the action button to the bottom of every card */}
+                    <div className="mt-auto">
+                      {integration.id === "google_analytics" &&
+                        properties.length > 0 && (
+                          <div className="mb-3">
+                            <select
+                              className={SELECT}
+                              value={selectedProperty}
+                              onChange={(e) =>
+                                setSelectedProperty(e.target.value)
+                              }
+                            >
+                              <option value="" className={OPTION}>
+                                Select Property
+                              </option>
+                              {properties.map((property) => (
+                                <option
+                                  key={property.property_id}
+                                  value={property.property_id}
+                                  className={OPTION}
+                                >
+                                  {property.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                      {integration.id === "google_analytics" &&
+                        properties.length > 0 &&
+                        selectedProperty && (
+                          <button
+                            onClick={saveGoogleProperty}
+                            className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Save Property
+                          </button>
+                        )}
+                      <button
+                        disabled={
+                          currentIntegrationId === integration.id ||
+                          (subscription?.appAccess &&
+                            mappedId &&
+                            !subscription?.appAccess[mappedId])
                         }
-                      }}
-                      className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-sm text-sm font-medium transition-all ${status
-                        ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        : "bg-primary text-white hover:bg-primary/90"
-                        } ${currentIntegrationId === integration.id
-                          ? "opacity-70 cursor-not-allowed"
-                          : ""
+                        onClick={() => {
+                          if (!status) {
+                            toggleIntegration(integration.id);
+                          } else {
+                            if (integration.id === "google_analytics") {
+                              handleDisconnectGA();
+                            } else {
+                              handleDisconnectIntegration(integration.id);
+                            }
+                          }
+                        }}
+                        className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+                          status
+                            ? "bg-transparent border border-gray-300 dark:border-app-text-faint/25 text-gray-700 dark:text-app-text-muted hover:bg-gray-50 dark:hover:bg-app-surface-secondary"
+                            : "bg-primary text-white hover:bg-primary/90"
+                        } ${
+                          currentIntegrationId === integration.id
+                            ? "opacity-70 cursor-not-allowed"
+                            : ""
                         }`}
-                    >
-                      {currentIntegrationId === integration.id ? (
-                        <>
-                          <Loader color="#132e69" />
-                          <span>Disconnecting...</span>
-                        </>
-                      ) : status ? (
-                        "Disconnect"
-                      ) : (
-                        "Connect"
-                      )}
-                    </button>
+                      >
+                        {currentIntegrationId === integration.id ? (
+                          <>
+                            <Loader color="#132e69" />
+                            <span>Disconnecting...</span>
+                          </>
+                        ) : status ? (
+                          "Disconnect"
+                        ) : (
+                          "Connect"
+                        )}
+                      </button>
+                    </div>
                   </div>
 
-                  {subscription?.appAccess && mappedId && !subscription?.appAccess[mappedId] && (
-                    <div className="bg-white/80 text-white absolute top-0 left-0 w-full h-full flex justify-center items-center z-50">
-                      <Link to="/plans" className="px-4 py-2 bg-primary shadow-md rounded-lg text-sm flex items-center gap-2">
-                        Upgrade <Lock size={18} />
-                      </Link>
-                    </div>
-                  )}
-
+                  {subscription?.appAccess &&
+                    mappedId &&
+                    !subscription?.appAccess[mappedId] && (
+                      <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 dark:bg-black/60 backdrop-blur-[2px]">
+                        <Link
+                          to="/plans"
+                          className="px-4 py-2 bg-primary text-white shadow-md rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-primary/90 transition-colors"
+                        >
+                          Upgrade <Lock size={18} />
+                        </Link>
+                      </div>
+                    )}
                 </div>
               );
             })}
-      <GscSettings />
-
+          <GscSettings />
         </div>
 
         {filteredIntegrations.length === 0 && (
-          <div className="bg-white rounded-sm border border-gray-200 p-12 text-center">
-            <p className="text-gray-600">No integrations found matching your search.</p>
+          <div className="bg-app-surface rounded-lg border border-gray-200 dark:border-app-text-faint/15 p-8 sm:p-12 text-center">
+            <p className="text-gray-600 dark:text-app-text-faint">
+              No integrations found matching your search.
+            </p>
           </div>
         )}
 
-        <div className="py-3"> 
-
-
-        </div>
-
-
+        <div className="py-3"></div>
       </div>
 
+      {/* ── exotel sidebar ────────────────────────────────────── */}
       {showSidebar && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div className="w-full max-w-md bg-white dark:bg-app-surface-secondary h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-app-text-faint/15">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-app-text">
                 Connect Your Account
               </h2>
-              <button onClick={() => setShowSidebar(false)} className="text-gray-500 hover:text-gray-800">
-                <IoIosClose size={30} />
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="shrink-0 h-9 w-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:bg-gray-100 dark:hover:bg-app-surface hover:text-gray-800 dark:hover:text-app-text transition-colors"
+              >
+                <IoIosClose size={28} />
               </button>
             </div>
-            <form onSubmit={handleConnect} className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+            <form
+              onSubmit={handleConnect}
+              className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-5"
+            >
               <div>
-                <label className="block text-sm font-medium text-gray-700">API Key</label>
-                <input type="text" name="apiKey" value={formData.apiKey} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your API Key" required />
+                <label className={FIELD_LABEL}>API Key</label>
+                <input
+                  type="text"
+                  name="apiKey"
+                  value={formData.apiKey}
+                  onChange={handleChange}
+                  className={FIELD}
+                  placeholder="Enter your API Key"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Auth Token</label>
-                <input type="password" name="authToken" value={formData.authToken} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Auth Token" required />
+                <label className={FIELD_LABEL}>Auth Token</label>
+                <input
+                  type="password"
+                  name="authToken"
+                  value={formData.authToken}
+                  onChange={handleChange}
+                  className={FIELD}
+                  placeholder="Enter your Auth Token"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Subdomain</label>
-                <input type="text" name="subDomain" value={formData.subDomain} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Subdomain" required />
+                <label className={FIELD_LABEL}>Subdomain</label>
+                <input
+                  type="text"
+                  name="subDomain"
+                  value={formData.subDomain}
+                  onChange={handleChange}
+                  className={FIELD}
+                  placeholder="Enter your Subdomain"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Account SID</label>
-                <input type="text" name="accountSID" value={formData.accountSID} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Account SID" required />
+                <label className={FIELD_LABEL}>Account SID</label>
+                <input
+                  type="text"
+                  name="accountSID"
+                  value={formData.accountSID}
+                  onChange={handleChange}
+                  className={FIELD}
+                  placeholder="Enter your Account SID"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Exotel Phone Number</label>
-                <input type="text" name="virtualNumber" value={formData.virtualNumber} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Account SID" required />
+                <label className={FIELD_LABEL}>Exotel Phone Number</label>
+                <input
+                  type="text"
+                  name="virtualNumber"
+                  value={formData.virtualNumber}
+                  onChange={handleChange}
+                  className={FIELD}
+                  placeholder="Enter your Account SID"
+                  required
+                />
               </div>
-              <div className="pt-6">
-                <button type="submit" className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4">
+              <div className="pt-4 sm:pt-6">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4"
+                >
                   Connect {isCreateConnectLoading && <Loader color="#fff" />}
                 </button>
               </div>
@@ -743,28 +880,54 @@ function Integration() {
         </div>
       )}
 
+      {/* ── otp-less sidebar ──────────────────────────────────── */}
       {showOtpLessSidebar && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div className="w-full max-w-md bg-white dark:bg-app-surface-secondary h-full shadow-xl transform transition-transform duration-300 ease-out translate-x-0 flex flex-col">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-app-text-faint/15">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-app-text">
                 Connect Your Account
               </h2>
-              <button onClick={() => setOtpLessSidebar(false)} className="text-gray-500 hover:text-gray-800">
-                <IoIosClose size={30} />
+              <button
+                onClick={() => setOtpLessSidebar(false)}
+                className="shrink-0 h-9 w-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:bg-gray-100 dark:hover:bg-app-surface hover:text-gray-800 dark:hover:text-app-text transition-colors"
+              >
+                <IoIosClose size={28} />
               </button>
             </div>
-            <form onSubmit={handleOtpLessConnect} className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+            <form
+              onSubmit={handleOtpLessConnect}
+              className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-5"
+            >
               <div>
-                <label className="block text-sm font-medium text-gray-700">Client Id</label>
-                <input type="text" name="apiKey" value={clientId} onChange={(e) => setClientId(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Client Id" required />
+                <label className={FIELD_LABEL}>Client Id</label>
+                <input
+                  type="text"
+                  name="apiKey"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className={FIELD}
+                  placeholder="Enter your Client Id"
+                  required
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Client Secret</label>
-                <input type="password" name="authToken" value={clientSecret} onChange={(e) => setClientSecret(e.target.value)} className="mt-1 w-full border rounded-md px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your Client Secret" required />
+                <label className={FIELD_LABEL}>Client Secret</label>
+                <input
+                  type="password"
+                  name="authToken"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  className={FIELD}
+                  placeholder="Enter your Client Secret"
+                  required
+                />
               </div>
-              <div className="pt-6">
-                <button type="submit" className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4">
+              <div className="pt-4 sm:pt-6">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition flex items-center justify-center gap-4"
+                >
                   Connect {isCreateConnectLoading && <Loader color="#fff" />}
                 </button>
               </div>
@@ -773,40 +936,24 @@ function Integration() {
         </div>
       )}
 
+      {/* ── GA property modal ─────────────────────────────────── */}
       {showPropertyModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            zIndex: 999999,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "32px",
-              borderRadius: "12px",
-              width: "420px",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-            }}
-          >
-            <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>
-              Select Google Analytics Property
-            </h2>
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
-              Connected as <strong>{googleEmail || emailParam}</strong>
+        <div className={MODAL_BACKDROP}>
+          <div className={MODAL_PANEL}>
+            <h2 className={MODAL_TITLE}>Select Google Analytics Property</h2>
+            <p className={`${MODAL_SUB} mb-5 break-words`}>
+              Connected as{" "}
+              <strong className="text-gray-800 dark:text-app-text-muted">
+                {googleEmail || emailParam}
+              </strong>
             </p>
 
             {propertiesLoading ? (
-              <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>
+              <p className="py-5 text-center text-sm text-gray-600 dark:text-app-text-faint">
                 Loading properties...
               </p>
             ) : properties.length === 0 ? (
-              <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>
+              <p className="py-5 text-center text-sm text-red-500">
                 No GA4 properties found for this account.
               </p>
             ) : (
@@ -814,17 +961,17 @@ function Integration() {
                 <select
                   value={selectedProperty}
                   onChange={(e) => setSelectedProperty(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    fontSize: "14px",
-                  }}
+                  className={SELECT}
                 >
-                  <option value="">— Select a Property —</option>
+                  <option value="" className={OPTION}>
+                    — Select a Property —
+                  </option>
                   {properties.map((property) => (
-                    <option key={property.property_id} value={property.property_id}>
+                    <option
+                      key={property.property_id}
+                      value={property.property_id}
+                      className={OPTION}
+                    >
                       {property.name} ({property.account})
                     </option>
                   ))}
@@ -833,63 +980,58 @@ function Integration() {
                 <button
                   onClick={saveGoogleProperty}
                   disabled={!selectedProperty}
-                  style={{
-                    width: "100%",
-                    marginTop: "16px",
-                    padding: "12px",
-                    background: selectedProperty ? "#16a34a" : "#ccc",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "8px",
-                    fontSize: "15px",
-                    fontWeight: 600,
-                    cursor: selectedProperty ? "pointer" : "not-allowed",
-                  }}
+                  className="mt-4 w-full rounded-lg bg-green-600 hover:bg-green-700 px-4 py-3 text-sm font-semibold text-white transition-colors disabled:bg-gray-300 dark:disabled:bg-app-surface disabled:text-gray-500 dark:disabled:text-app-text-faint disabled:cursor-not-allowed"
                 >
-                  Save & Connect
+                  Save &amp; Connect
                 </button>
               </>
             )}
 
             <button
-              onClick={() => navigate(window.location.pathname, { replace: true })}
-              style={{
-                width: "100%",
-                marginTop: "10px",
-                padding: "10px",
-                background: "transparent",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                fontSize: "14px",
-                cursor: "pointer",
-                color: "#666",
-              }}
+              onClick={() =>
+                navigate(window.location.pathname, { replace: true })
+              }
+              className={`${GHOST_BTN} mt-2.5`}
             >
               Cancel
             </button>
           </div>
         </div>
       )}
+
+      {/* ── GMB location modal ────────────────────────────────── */}
       {showGmbModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 999999, display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ background: "white", padding: "32px", borderRadius: "12px", width: "420px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <h2 style={{ marginBottom: "8px", fontSize: "18px", fontWeight: 600 }}>Select Google Business Profile</h2>
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>Choose the hotel location to connect.</p>
+        <div className={MODAL_BACKDROP}>
+          <div className={MODAL_PANEL}>
+            <h2 className={MODAL_TITLE}>Select Google Business Profile</h2>
+            <p className={`${MODAL_SUB} mb-5`}>
+              Choose the hotel location to connect.
+            </p>
 
             {gmbLoading ? (
-              <p style={{ textAlign: "center", padding: "20px", color: "#666" }}>Loading your properties...</p>
+              <p className="py-5 text-center text-sm text-gray-600 dark:text-app-text-faint">
+                Loading your properties...
+              </p>
             ) : gmbLocations.length === 0 ? (
-              <p style={{ textAlign: "center", padding: "20px", color: "#e53e3e" }}>No Google Business Profiles found for this account.</p>
+              <p className="py-5 text-center text-sm text-red-500">
+                No Google Business Profiles found for this account.
+              </p>
             ) : (
               <>
                 <select
                   value={selectedGmbLocation}
                   onChange={(e) => setSelectedGmbLocation(e.target.value)}
-                  style={{ width: "100%", padding: "10px", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", marginBottom: "16px" }}
+                  className={`${SELECT} mb-4`}
                 >
-                  <option value="">— Select a Location —</option>
+                  <option value="" className={OPTION}>
+                    — Select a Location —
+                  </option>
                   {gmbLocations.map((loc) => (
-                    <option key={loc.locationId} value={loc.locationId}>
+                    <option
+                      key={loc.locationId}
+                      value={loc.locationId}
+                      className={OPTION}
+                    >
                       {loc.title}
                     </option>
                   ))}
@@ -898,23 +1040,22 @@ function Integration() {
                 <button
                   onClick={handleSaveGmbLocation}
                   disabled={!selectedGmbLocation}
-                  style={{ width: "100%", padding: "12px", background: selectedGmbLocation ? "#16a34a" : "#ccc", color: "white", border: "none", borderRadius: "8px", fontSize: "15px", fontWeight: 600, cursor: selectedGmbLocation ? "pointer" : "not-allowed" }}
+                  className="w-full rounded-lg bg-green-600 hover:bg-green-700 px-4 py-3 text-sm font-semibold text-white transition-colors disabled:bg-gray-300 dark:disabled:bg-app-surface disabled:text-gray-500 dark:disabled:text-app-text-faint disabled:cursor-not-allowed"
                 >
-                  Save & Connect
+                  Save &amp; Connect
                 </button>
               </>
             )}
 
             <button
               onClick={() => setShowGmbModal(false)}
-              style={{ width: "100%", marginTop: "10px", padding: "10px", background: "transparent", border: "1px solid #ddd", borderRadius: "8px", fontSize: "14px", cursor: "pointer", color: "#666" }}
+              className={`${GHOST_BTN} mt-2.5`}
             >
               Cancel
             </button>
           </div>
         </div>
       )}
-
     </div>
   );
 }
@@ -943,8 +1084,8 @@ const MailIcon = () => {
         fill="#FFBC00"
       />
       <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
+        fillRule="evenodd"
+        clipRule="evenodd"
         d="M116.364 250.229L70.771 153.919L116.364 98.956L256 203.683L395.636 98.956V250.229L256 354.956L116.364 250.229Z"
         fill="#FF4131"
       />

@@ -24,22 +24,33 @@ const channels = [
   // { id: 2, name: "Email", icon: "📧", detail: "hem@example.com" },
 ];
 
+/* ── shared presentation tokens ─────────────────────────────── */
+const SEND_BTN =
+  "w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors";
+
 // Component: Channel Option
 const ChannelOption = ({ channel, selected, onSelect }) => {
   return (
     <div
       onClick={() => onSelect(channel)}
-      className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${
-        selected.id === channel.id ? "bg-primary text-white" : "bg-white"
+      className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center gap-2 transition-colors ${
+        selected.id === channel.id
+          ? "bg-primary text-white"
+          : "bg-app-surface text-app-text hover:bg-app-surface-secondary"
       } border-primary/75`}
     >
-      <div>
+      <div className="min-w-0">
         <div className="flex gap-2 items-center">
           <span>{channel.icon}</span>
-          <p>{channel.name}</p>
+          <p className="truncate">{channel.name}</p>
         </div>
       </div>
-      <input type="radio" checked={selected?.id === channel.id} readOnly />
+      <input
+        type="radio"
+        checked={selected?.id === channel.id}
+        readOnly
+        className="shrink-0 h-4 w-4 accent-primary cursor-pointer"
+      />
     </div>
   );
 };
@@ -47,18 +58,22 @@ const ChannelOption = ({ channel, selected, onSelect }) => {
 // Component: Template Card
 const TemplateCard = ({ template, selected, onSelect }) => {
   return (
-    <div className="border rounded p-4 flex justify-between items-start gap-5 bg-gray-100">
-      <div className="flex-1">
-        <h3 className="font-semibold">{template.name}</h3>
-        <p className="text-sm text-gray-600">{template.body}</p>
-        <p className="text-xs text-gray-400 mt-1">
+    <div className="border border-app-border rounded-lg p-4 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-5 bg-app-surface-secondary">
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-app-text break-words">
+          {template.name}
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-app-text-muted break-words">
+          {template.body}
+        </p>
+        <p className="text-xs text-gray-400 dark:text-app-text-faint mt-1">
           Language: {template.language}
         </p>
       </div>
 
       <button
         onClick={() => onSelect(template)}
-        className={`px-4 py-2 rounded ${
+        className={`shrink-0 w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
           selected?.id === template.id
             ? "bg-green-600 text-white"
             : "bg-primary/90 hover:bg-primary text-white"
@@ -229,13 +244,17 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-99999">
-      <div className="bg-app-surface rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-99999 p-4 scheme-light dark:scheme-dark]">
+      <div className="bg-app-surface rounded-xl shadow-lg flex md:flex-row flex-col min-h-96 max-h-[90dvh] max-w-4xl w-full overflow-hidden hide-scrollbar relative transition-all duration-300 ease-in-out">
         {/* Left Panel */}
-        <div className="md:w-64 w-full bg-app-surface-secondary p-4 space-y-6">
-          <div className="border-b border-gray-200! py-1">
-            <h2 className="text-lg font-semibold">Send Response To</h2>
-            <p className="text-primary font-medium">{lead?.Name}</p>
+        <div className="md:w-64 w-full shrink-0 bg-app-surface-secondary p-4 space-y-5 md:space-y-6 md:overflow-y-auto hide-scrollbar">
+          <div className="border-b border-app-border py-1 pr-10 md:pr-0">
+            <h2 className="text-lg font-semibold text-app-text">
+              Send Response To
+            </h2>
+            <p className="text-primary font-medium break-words">
+              {lead?.Name}
+            </p>
           </div>
 
           <div>
@@ -256,12 +275,16 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
         </div>
 
         {/* Right Panel */}
-        <div className="flex-1 p-6 space-y-6">
-          <div className="flex items-center gap-4">
+        <div className="flex-1 min-w-0 p-4 sm:p-6 space-y-5 md:space-y-6 overflow-y-auto hide-scrollbar">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 ">
             {tabs?.map((tab) => (
               <button
                 key={tab.value}
-                className={`${selectedTab === tab.value && " text-app-text dark:text-app-text border-b-2 border-gray-400!"} px-2 py-1.5 font-medium`}
+                className={`${
+                  selectedTab === tab.value
+                    ? "text-app-text border-b-2 border-primary"
+                    : "text-gray-500 dark:text-app-text-faint border-b-2 border-transparent! hover:text-app-text"
+                } px-2 py-1.5 font-medium text-sm sm:text-base whitespace-nowrap transition-colors -mb-px`}
                 onClick={() => setSelectedTab(tab.value)}
               >
                 {tab.label}
@@ -273,22 +296,19 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
             <div className="w-full">
               <textarea
                 rows={8}
-                className={`w-full outline-none border border-gray-200! rounded-sm p-3 bg-app-surface-secondary resize-none focus:border-gray-300! transition duration-300`}
+                className={`w-full outline-none border border-app-border rounded-lg p-3 bg-app-surface-secondary text-app-text placeholder:text-app-text-faint resize-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition duration-300`}
                 placeholder="Type your message here..."
                 onChange={(e) => setText(e.target.value)}
               />
 
-              <button
-                className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
-                onClick={handleSend}
-              >
+              <button className={`${SEND_BTN} mt-3`} onClick={handleSend}>
                 Send Message
               </button>
             </div>
           )}
 
           {selectedTab === "whatsapp templates" && (
-            <div className="space-y-2 max-h-90 overflow-y-auto">
+            <div className="space-y-2 max-h-90 overflow-y-auto hide-scrollbar">
               {!selectedTemplate &&
                 templates?.map((template) => (
                   <TemplateCard
@@ -303,7 +323,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
                 <div>
                   <div className="flex items-center gap-2">
                     <button
-                      className="size-6 bg-app-surface rounded-full flex justify-center items-center"
+                      className="size-8 shrink-0 bg-app-surface-secondary hover:bg-app-surface text-app-text rounded-full flex justify-center items-center transition-colors"
                       onClick={() => {
                         setSelectedTemplate(null);
                         setValues({});
@@ -311,7 +331,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
                     >
                       <IoArrowBack />
                     </button>
-                    <h2 className="text-lg font-bold">Template Preview</h2>
+                    <h2 className="text-base sm:text-lg font-bold text-app-text">
+                      Template Preview
+                    </h2>
                   </div>
 
                   {selectedTemplate && (
@@ -334,7 +356,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
                   )}
 
                   <button
-                    className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 mt-4"
+                    className={`${SEND_BTN} mt-4`}
                     onClick={handleSend}
                   >
                     Send Template
@@ -346,17 +368,17 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
         </div>
 
         {/* Cross Icon */}
-        <div
-          className="absolute right-4 top-2 size-5 flex items-center justify-center bg-red-500 text-white rounded-full cursor-pointer"
+        <button
+          type="button"
+          aria-label="Close"
+          className="absolute right-3 top-3 size-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full cursor-pointer transition-colors z-10"
           onClick={() => {
             setOpen(false);
             setValues({});
           }}
         >
-          <span className="text-lg font-bold">
-            <MdClose size={14} />
-          </span>
-        </div>
+          <MdClose size={16} />
+        </button>
       </div>
     </div>
   );

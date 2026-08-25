@@ -70,6 +70,9 @@ const normalizeTemplate = (template) => {
   };
 };
 
+const SUBMIT_BTN =
+  "outline-none border border-app-border text-gray-600 dark:text-app-text px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] hover:bg-slate-700 hover:text-white hover:border-slate-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto";
+
 const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
   const [loading, setLoading] = React.useState(false);
   const { showToast } = useToast();
@@ -101,25 +104,6 @@ const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
       buttons: formData?.buttons || [],
     },
   });
-
-  // const methods = useForm({
-  //   resolver: zodResolver(templateSchema),
-  //   defaultValues: {
-  //     name: initialData?.name || "",
-  //     language: initialData?.language || "en_US",
-  //     category: initialData?.category || "UTILITY",
-  //     header: initialData?.header || "",
-  //     headerType: "NONE",
-  //     headerImage: null,
-  //     headerVideo: null,
-  //     headerDocument: null,
-  //     body: initialData?.body || "",
-  //     footer: initialData?.footer || "",
-  //     headerVariables: initialData?.headerVariables || [],
-  //     bodyVariables: initialData?.bodyVariables || [],
-  //     buttons: initialData?.buttons || [],
-  //   },
-  // });
 
   const {
     handleSubmit,
@@ -253,37 +237,6 @@ const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
     }
   };
 
-  // const onSubmit = async (data) => {
-  //   setLoading(true);
-  //   console.log(data);
-  //   try {
-  //     const response = await createWhatsAppMessageTemplate(data);
-
-  //     if (response?.success && response?.responseStatusCode === 200) {
-  //       showToast({
-  //         message: "Template created successfully",
-  //         type: "success",
-  //       });
-
-  //       return;
-  //     }
-
-  //     showToast({
-  //       message:
-  //         response?.error?.error?.error_user_msg || "Failed to create template",
-  //       type: "error",
-  //     });
-  //   } catch (error) {
-  //     console.error(error);
-  //     showToast({
-  //       message: error?.message || "Failed to create template",
-  //       type: "error",
-  //     });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   useEffect(() => {
     const headerVars = extractVariables(header);
     const bodyVars = extractVariables(body);
@@ -305,11 +258,11 @@ const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
     <FormProvider {...methods}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="flex md:flex-row flex-col gap-6 p-2 bg-app-surface "
+        className="flex flex-col lg:flex-row gap-[var(--sp-5)] p-[var(--sp-2)] bg-app-surface"
       >
         {/* LEFT FORM */}
 
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-[var(--sp-5)]">
           <TemplateHeader
             onCancel={onClose}
             showCancelButton={initialData}
@@ -320,32 +273,22 @@ const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
 
           <div className="flex justify-end">
             {mode === "edit" ? (
-              <button
-                type="submit"
-                className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
-              >
-                Pulish Chnages {loading && <Loader color="#378863" />}
+              <button type="submit" className={SUBMIT_BTN}>
+                Publish Changes {loading && <Loader color="#378863" />}
               </button>
             ) : (
-              <button
-                type="submit"
-                className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
-              >
+              <button type="submit" className={SUBMIT_BTN}>
                 + Create Template {loading && <Loader color="#378863" />}
               </button>
             )}
-            {/* <button
-              type="submit"
-              className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
-            >
-              + Create Template {loading && <Loader color="#378863" />}
-            </button> */}
           </div>
         </div>
 
         {/* PREVIEW */}
-        <div className="">
-          <h2 className="mb-2">Template Preview</h2>
+        <div className="w-full lg:w-auto lg:shrink-0 lg:sticky lg:top-[var(--sp-4)] lg:self-start">
+          <h2 className="mb-2 text-[length:var(--fs-base)] font-medium text-app-text">
+            Template Preview
+          </h2>
           <TemplatePreview
             components={components}
             headerVariables={watch("headerVariables")}
