@@ -39,6 +39,8 @@ import Flows from "./components/Flows";
 import ChannelToggle from "./components/ChannelToggle";
 import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
 import QuickReplies from "./components/QuickReplies";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -281,7 +283,11 @@ const WhatsAppBusiness = ({ template = false }) => {
             </div>
 
             {/* Sidebar Tabs */}
-            {!(collapsed && typeof window !== "undefined" && window.innerWidth < 768) && (
+            {!(
+              collapsed &&
+              typeof window !== "undefined" &&
+              window.innerWidth < 768
+            ) && (
               <div className="flex flex-col md:h-full scrollbar-hidden overflow-x-auto md:overflow-y-auto md:overflow-x-hidden flex-row md:flex-col gap-1">
                 {sidebarTabs.map((tab) => {
                   const isOpen = openDropdown === tab.id;
@@ -368,7 +374,9 @@ const WhatsAppBusiness = ({ template = false }) => {
                   flows={flows || []}
                   notification={accountDetails?.notification}
                 />
+
                 <WhatsappWidgetCard phoneNumber={accountDetails?.phoneNumber} />
+                <AIConfigurationCard />
 
                 <div className="col-span-1 md:col-span-2">
                   <WhatsAppMessageTemplate />
@@ -536,9 +544,7 @@ const PhoneNumberCard = ({ phoneNumber }) => {
           </span>
         </div> */}
         <div>
-          <span
-            className="inline-flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md font-medium flex-wrap"
-          >
+          <span className="inline-flex items-center gap-1 px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md font-medium flex-wrap">
             <span className="text-gray-600 dark:text-app-text-muted font-medium">
               Cloud API:
             </span>{" "}
@@ -601,17 +607,20 @@ const WabaDetailsCard = ({ waba, business }) => {
     COMPLETED: {
       label: "Completed",
       description: "Marketing messages are enabled",
-      style: "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400",
+      style:
+        "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400",
     },
     IN_PROGRESS: {
       label: "In Progress",
       description: "Setup is currently under review",
-      style: "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400",
+      style:
+        "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400",
     },
     NOT_STARTED: {
       label: "Not Started",
       description: "Marketing messaging setup not completed",
-      style: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-app-text-faint",
+      style:
+        "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-app-text-faint",
     },
     REJECTED: {
       label: "Rejected",
@@ -621,7 +630,8 @@ const WabaDetailsCard = ({ waba, business }) => {
     UNKNOWN: {
       label: "Unknown",
       description: "Status not available",
-      style: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-app-text-faint",
+      style:
+        "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-app-text-faint",
     },
   };
 
@@ -691,6 +701,171 @@ const WabaDetailsCard = ({ waba, business }) => {
     </div>
   );
 };
+
+//Ai configurtion
+
+const AIConfigurationCard = () => {
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  const [fromTime, setFromTime] = useState(null);
+  const [toTime, setToTime] = useState(null);
+
+  const handleSaveConfiguration = async () => {
+  try {
+    console.log("Saving configuration...");
+
+    const payload = {
+      aiEnabled,
+      fromTime: fromTime
+        ? fromTime.toISOString()
+        : null,
+      toTime: toTime
+        ? toTime.toISOString()
+        : null,
+    };
+
+    console.log("Payload:", payload);
+
+    const response = await axios.post(
+      "http://localhost:5000/api/ai/configuration",     ///api call backend
+      payload
+    );
+
+    console.log("API Response:", response.data);
+
+    alert("AI configuration saved successfully");
+  } catch (error) {
+    console.error("Save configuration error:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "Failed to save AI configuration"
+    );
+  }
+};
+
+  return (
+    <div className="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-app-surface px-4 sm:px-6 py-5">
+      {/* Top */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="space-y-1">
+          <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-app-text-faint">
+            AI Configuration
+          </p>
+
+          <h2 className="text-xl sm:text-2xl font-medium text-gray-600 dark:text-app-text-muted leading-none">
+            AI
+          </h2>
+        </div>
+
+        {/* Toggle */}
+        <button
+          type="button"
+          onClick={() => setAiEnabled(!aiEnabled)}
+          className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ${
+            aiEnabled ? "bg-green-500" : "bg-gray-300 dark:bg-gray-700"
+          }`}
+          aria-label="Toggle AI"
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+              aiEnabled ? "translate-x-8" : "translate-x-1"
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="mt-4 border-t border-gray-100 dark:border-gray-800" />
+
+      {/* Time Configuration */}
+      {aiEnabled && (
+        <div className="mt-5">
+          <p className="text-sm font-medium text-gray-600 dark:text-app-text-muted mb-3">
+            AI Active Duration
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* From Time */}
+            <div className="relative">
+              <label className="block text-xs font-medium text-gray-500 dark:text-app-text-faint mb-2">
+                From Time
+              </label>
+
+              <DatePicker
+                selected={fromTime}
+                onChange={(date) => setFromTime(date)}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={30}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                placeholderText="Select start time"
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-app-surface px-3 py-2.5 text-sm"
+                wrapperClassName="w-full"
+                popperClassName="!z-[99999]"
+              />
+            </div>
+
+            {/* To Time */}
+            <div className="relative">
+              <label className="block text-xs font-medium text-gray-500 dark:text-app-text-faint mb-2">
+                To Time
+              </label>
+
+              <DatePicker
+                selected={toTime}
+                onChange={(date) => setToTime(date)}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={30}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                placeholderText="Select end time"
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-app-surface px-3 py-2.5 text-sm"
+                wrapperClassName="w-full"
+                popperClassName="!z-[99999]"
+              />
+            </div>
+          </div>
+
+          {/* Status */}
+          <p className="mt-3 text-xs text-gray-500 dark:text-app-text-faint">
+            AI will be active from{" "}
+            <span className="font-medium text-gray-700 dark:text-app-text-muted">
+              {fromTime
+                ? fromTime.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })
+                : "--:--"}
+            </span>{" "}
+            to{" "}
+            <span className="font-medium text-gray-700 dark:text-app-text-muted">
+              {toTime
+                ? toTime.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })
+                : "--:--"}
+            </span>
+            .
+          </p>
+
+          {/* Save Button */}
+          <button
+            type="button"
+            onClick={handleSaveConfiguration}
+            className="mt-5 w-full sm:w-auto px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-medium transition-colors duration-200"
+          >
+            Save Configuration
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+//Complete
 
 const CreditInfoCard = () => {
   const [open, setOpen] = useState(false);
