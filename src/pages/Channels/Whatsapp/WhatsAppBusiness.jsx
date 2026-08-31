@@ -702,6 +702,16 @@ const WabaDetailsCard = ({ waba, business }) => {
   );
 };
 
+
+const formatTime24 = (time) => {
+  if (!time) return null;
+
+  const date = new Date(time);
+
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes()
+  ).padStart(2, "0")}`;
+};
 //Ai configurtion
 
 const AIConfigurationCard = () => {
@@ -717,11 +727,9 @@ const AIConfigurationCard = () => {
     const payload = {
       aiEnabled,
       fromTime: fromTime
-        ? fromTime.toISOString()
-        : null,
+        ? formatTime24(fromTime) : null,
       toTime: toTime
-        ? toTime.toISOString()
-        : null,
+        ? formatTime24(toTime) : null,
     };
 
     console.log("Payload:", payload);
