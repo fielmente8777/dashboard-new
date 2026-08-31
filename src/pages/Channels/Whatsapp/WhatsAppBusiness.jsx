@@ -109,7 +109,7 @@ const WhatsAppBusiness = ({ template = false }) => {
   const fetchAccountDetails = useCallback(async () => {
     try {
       const response = await getWhatsappAccountDetails();
-      console.log(response);
+
       setAccountDetails(response?.result?.docs);
     } catch (error) {
       console.error("Error fetching data", error?.message);
@@ -209,9 +209,6 @@ const WhatsAppBusiness = ({ template = false }) => {
   useEffect(() => {
     fetchFlows();
   }, []);
-
-  console.log(accountDetails);
-  console.log(integrationStatus);
 
   if (!accountDetails) {
     return <WhatsappBusinessSkelton />;
@@ -379,6 +376,7 @@ const WhatsAppBusiness = ({ template = false }) => {
                 <WhatsappWidgetCard phoneNumber={accountDetails?.phoneNumber} />
                 <AIConfigurationCard
                   phoneNumber={accountDetails?.phoneNumber}
+                  ai={accountDetails?.ai}
                 />
 
                 <div className="col-span-1 md:col-span-2">
@@ -705,9 +703,30 @@ const WabaDetailsCard = ({ waba, business }) => {
   );
 };
 
-//Ai configurtion
+const formatTime24 = (time) => {
+  if (!time) return null;
 
-const AIConfigurationCard = (phoneNumber) => {
+  const date = new Date(time);
+
+  return `${String(date.getHours()).padStart(2, "0")}:${String(
+    date.getMinutes(),
+  ).padStart(2, "0")}`;
+};
+
+const timeStringToDate = (time) => {
+  if (!time) return null;
+
+  const [hours, minutes] = time.split(":").map(Number);
+
+  const date = new Date();
+
+  date.setHours(hours, minutes, 0, 0);
+
+  return date;
+};
+
+//Ai configurtion
+const AIConfigurationCard = ({ ai, phoneNumber }) => {
   const [aiEnabled, setAiEnabled] = useState(false);
   const [fromTime, setFromTime] = useState(null);
   const [toTime, setToTime] = useState(null);
@@ -724,27 +743,47 @@ const AIConfigurationCard = (phoneNumber) => {
         return;
       }
 
-      if (fromTime && toTime) {
-        if (fromTime > toTime) {
-          showToast({
-            message: "From time cannot be greater than To time",
-            type: "error",
-          });
-          return;
-        }
+      const from = formatTime24(fromTime);
+      const to = formatTime24(toTime);
+
+      if (from > to) {
+        showToast({
+          message: "From time cannot be greater than To time",
+          type: "error",
+        });
+        return;
       }
 
       const payload = {
         phoneNumberId: phoneNumber?.id,
         ai: {
           enabled: aiEnabled,
-          fromTime: fromTime ? fromTime.toISOString() : null,
-          toTime: toTime ? toTime.toISOString() : null,
+          duration: {
+            from: fromTime ? formatTime24(fromTime) : null,
+            to: toTime ? formatTime24(toTime) : null,
+          },
+          timezone: "Asia/Kolkata",
         },
       };
 
+      // const payload = {
+      //   phoneNumberId: phoneNumber?.id,
+      //   ai: {
+      //     enabled: aiEnabled,
+      //     fromTime: fromTime ? fromTime.toISOString() : null,
+      //     toTime: toTime ? toTime.toISOString() : null,
+      //   },
+      // };
+
       const res = await updateAutoMessageConfig(payload);
-      console.log(res);
+
+      if (res.success) {
+        showToast({
+          message:
+            res?.responseMessage || "AI configuration saved successfully",
+          type: "success",
+        });
+      }
 
       // const response = await axios.post(
       //   "http://localhost:5000/api/ai/configuration",     ///api call backend
@@ -760,6 +799,14 @@ const AIConfigurationCard = (phoneNumber) => {
       alert(error.response?.data?.message || "Failed to save AI configuration");
     }
   };
+
+  useEffect(() => {
+    setAiEnabled(ai?.enabled);
+    if (ai?.duration) {
+      setFromTime(timeStringToDate(ai?.duration?.from));
+      setToTime(timeStringToDate(ai?.duration?.to));
+    }
+  }, [ai]);
 
   return (
     <div className="w-full border border-gray-200 dark:border-gray-700 rounded-lg bg-app-surface px-4 sm:px-6 py-5">
