@@ -5,7 +5,10 @@ export const formatDateTime = (inputDate) => {
     month: "short",
   });
 
-  const day = date.toLocaleString("en-US", { day: "2-digit", timeZone: "UTC" });
+  const day = date.toLocaleString("en-US", {
+    day: "2-digit",
+    timeZone: "Asia/Kolkata",
+  });
 
   const time = date.toLocaleString("en-US", {
     hour: "2-digit",

@@ -360,7 +360,7 @@ export const TurnAwayCode = [
 ];
 
 export const Sources = [
-  { label: "All Sources", value: "" },
+  // { label: "All Sources", value: "" },
   { label: "Eazbot", value: "eazbot" },
   { label: "Webform", value: "webform" },
   { label: "WhatsApp", value: "whatsapp" },

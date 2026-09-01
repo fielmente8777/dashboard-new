@@ -67,7 +67,7 @@ const AllLeads = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [stage, setStage] = useState("");
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState([]);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTurnAwayModal, setShowTurnAwayModal] = useState(false);
@@ -466,9 +466,10 @@ const AllLeads = () => {
 
             <div className="w-full sm:w-auto sm:flex-1 sm:min-w-40">
               <CustomDropdown
+                multiple
                 label={"Source"}
                 options={Sources}
-                onChange={(value) => setSource(value)}
+                onChange={(value) => setSource(() => [...value])}
               />
             </div>
 

@@ -244,12 +244,6 @@
 //     return <p className="text-gray-900 dark:text-app-text-faint">{String(data)}</p>;
 //   };
 
-
-
-
-
-
-
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import {
@@ -279,11 +273,12 @@ import {
   Image as ImageIcon,
   Lock,
 } from "lucide-react";
+import { NEW_BASE_URL } from "../../data/constant";
 
 // ---------------------------------------------------------------------------
 // Wire these to your real backend. Left as constants so it's a one-line swap.
 // ---------------------------------------------------------------------------
-const SALES_AGENT_BASE_URL = "http://localhost:8000"; // <-- replace with your real base url
+const SALES_AGENT_BASE_URL = NEW_BASE_URL; // <-- replace with your real base url
 const GENERATE_ENDPOINT = `${SALES_AGENT_BASE_URL}/api/v1/kb-generator/generate`;
 // Same base used for list / get / create / update / delete — the CRUD
 // routes for saved knowledge bases (see knowledgeBase.routes.ts).
@@ -1234,7 +1229,8 @@ function EditableKnowledgeBase({
 
           {slug && (
             <div className="mt-2 text-xs text-gray-500">
-              Last saved {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}
+              Last saved{" "}
+              {updatedAt ? new Date(updatedAt).toLocaleString() : "-"}
             </div>
           )}
         </div>
@@ -1290,7 +1286,11 @@ function EditableKnowledgeBase({
           ) : (
             <Save size={16} />
           )}
-          {publishing ? "Saving..." : slug ? "Save Changes" : "Publish Knowledge Base"}
+          {publishing
+            ? "Saving..."
+            : slug
+              ? "Save Changes"
+              : "Publish Knowledge Base"}
         </button>
 
         {published && <span className="text-sm text-emerald-400">Saved</span>}
