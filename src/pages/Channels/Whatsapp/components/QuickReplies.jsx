@@ -87,11 +87,20 @@ const AttachmentThumb = ({ file, kind, onRemove }) => (
           className="w-full h-full object-cover"
         />
       ) : kind === "image" ? (
-        <ImageIcon size={16} className="text-gray-400 dark:text-app-text-faint" />
+        <ImageIcon
+          size={16}
+          className="text-gray-400 dark:text-app-text-faint"
+        />
       ) : kind === "video" ? (
-        <VideoIcon size={16} className="text-gray-400 dark:text-app-text-faint" />
+        <VideoIcon
+          size={16}
+          className="text-gray-400 dark:text-app-text-faint"
+        />
       ) : (
-        <FileText size={16} className="text-gray-400 dark:text-app-text-faint" />
+        <FileText
+          size={16}
+          className="text-gray-400 dark:text-app-text-faint"
+        />
       )}
     </div>
     <div className="min-w-0">
@@ -314,10 +323,10 @@ const QuickReplies = () => {
     }));
   };
 
-  const charLimit =
-    form?.images?.length + form?.videos?.length + form?.documents?.length > 0
-      ? 1024
-      : 4096;
+  // const charLimit =
+  //   form?.images?.length + form?.videos?.length + form?.documents?.length > 0
+  //     ? 1024
+  //     : 4096;
 
   const canSave =
     form?.title?.trim().length > 0 &&
@@ -611,19 +620,19 @@ const QuickReplies = () => {
             <div>
               <div className="flex justify-between items-center gap-2 mb-2">
                 <label className={LABEL}>Message text</label>
-                <span
+                {/* <span
                   className={`text-[length:var(--fs-xs)] shrink-0 ${
                     form?.text?.length > charLimit
                       ? "text-red-500"
                       : "text-gray-400 dark:text-app-text-faint"
                   }`}
                 >
-                  {form?.text?.length}/{charLimit}
-                </span>
+                  {form?.text?.length}/{charLimit} 
+                </span> */}
               </div>
               <textarea
                 rows={4}
-                maxLength={charLimit}
+                // maxLength={charLimit}
                 className={`${FIELD} resize-y`}
                 placeholder="Type your quick reply... (sent as a caption if attachments are included)"
                 value={form.text}
