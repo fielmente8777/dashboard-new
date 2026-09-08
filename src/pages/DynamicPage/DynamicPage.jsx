@@ -121,6 +121,7 @@ const DynamicPage = () => {
     // Reservation Desk
 
     [`${BASE_PATH}/${hid}/reservation-desk`]: <ReservationDesk />,
+    
 
     // Bookin Engine
     [`${BASE_PATH}/${hid}/booking-engine/all-bookings`]: <BookingEngine />,

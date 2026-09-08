@@ -21,6 +21,12 @@ import { formatDate } from "../../utils/formateDate";
 
 // import { inventoryGetApi, priceGetApi } from '../../Api-helpers/Api';
 
+/* ── styling only ───────────────────────────────────────────── */
+const TOOLBAR_BTN =
+  "px-4 py-2 text-sm font-medium rounded-lg bg-app-surface text-app-text border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors duration-300 flex items-center gap-1";
+const CELL_INPUT =
+  "w-[100%] py-1 text-center outline-none h-[100%] bg-app-surface text-app-text";
+
 const RoomsAndInventory = () => {
   const { baseUrl } = useContext(AuthContext);
   const [inventory, setInventory] = useState({});
@@ -390,7 +396,7 @@ const RoomsAndInventory = () => {
   }, []);
 
   return (
-    <div className="maxwidth mx-auto mt-4 bg-app-surface p-4 cardShadow mb-10">
+    <div className="maxwidth mx-auto mt-4 bg-app-surface p-4 cardShadow mb-10 [color-scheme:light] dark:[color-scheme:dark]">
       <div className="flex justify-between max-md:px-2">
         <div className="inline-flex rounded-lg shadow-sm" role="group">
           {/* <button onClick={handleAllClick} type="button" className={`px-4 py-2 text-sm font-medium  rounded-s-lg   ${showAll === true ? "border border-orange-600 bg-orange-600 text-white" : "text-gray-900 bg-white border border-gray-200 hover:text-orange-600 hover:bg-neutral-100"} `}>
@@ -399,10 +405,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handleInventoryClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg ${
+            className={`px-4 py-2 text-sm font-medium  rounded-s-lg transition-colors ${
               showInventory === true
                 ? "border-t border-b border-primary bg-primary  text-white"
-                : "text-app-text dark:text-app-text bg-app-surface-secondary border-t border-b border-primary/60! hover:bg-neutral-100 hover:text-orange-600"
+                : "text-app-text bg-app-surface-secondary border-t border-b border-primary/60! dark:border-white/15! hover:bg-app-surface hover:text-orange-600"
             }`}
           >
             Inventory
@@ -411,10 +417,10 @@ const RoomsAndInventory = () => {
           <button
             onClick={handlePriceClick}
             type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg ${
+            className={`px-4 py-2 text-sm font-medium  rounded-e-lg transition-colors ${
               showPrice
                 ? "border bg-primary border-primary text-white"
-                : "text-app-text dark:text-app-text bg-app-surface-secondary border border-primary/90! hover:bg-neutral-100 hover:text-orange-600 "
+                : "text-app-text bg-app-surface-secondary border border-primary/90! dark:border-white/15! hover:bg-app-surface hover:text-orange-600 "
             } `}
           >
             Price
@@ -426,18 +432,18 @@ const RoomsAndInventory = () => {
       </div>
 
       <div className="relative overflow-x-auto mt-4">
-        <table className="w-full text-sm text-left rtl:text-right text-gray-500 border border-primary/90!">
-          <thead className="text-xs text-gray-700 uppercase">
+        <table className="w-full text-sm text-left rtl:text-right text-app-text border border-primary/90! dark:border-white/15!">
+          <thead className="text-xs uppercase text-app-text-muted">
             <tr>
               <th
                 scope="col"
                 className="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-app-surface-secondary"
               >
-                <button className="px-4 text-sm font-medium  rounded-lg text-app-text dark:text-primary bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 py-1.5 text-sm font-medium rounded-lg text-app-text bg-app-surface border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors flex items-center gap-1">
                   <IoSync size={20} />
                   Sync
                 </button>
-                <button className="px-4 text-sm font-medium  rounded-lg  text-app-text dark:text-primary bg-white hover:bg-orange-600 hover:text-white flex items-center gap-1">
+                <button className="px-4 py-1.5 text-sm font-medium rounded-lg text-app-text bg-app-surface border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors flex items-center gap-1">
                   <GiBackwardTime size={20} />
                   Logs
                 </button>
@@ -445,7 +451,7 @@ const RoomsAndInventory = () => {
 
               <th
                 scope="col"
-                className="px-4  py-3 bg-app-surface-secondary w-full mx-auto text-center border-t border-r border-b border-primary/90!"
+                className="px-4  py-3 bg-app-surface-secondary w-full mx-auto text-center border-t border-r border-b border-primary/90! dark:border-white/15!"
               >
                 <div className="flex justify-between">
                   <div className="w-[33.33%] max-md:hidden"></div>
@@ -460,7 +466,7 @@ const RoomsAndInventory = () => {
                         isPreviousDisabled
                           ? "cursor-not-allowed opacity-65"
                           : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                      } me-1 p-2 bg-white border rounded-full `}
+                      } me-1 p-2 bg-app-surface text-app-text border border-app-border rounded-full `}
                     >
                       <FaArrowLeft />
                     </button>
@@ -470,14 +476,14 @@ const RoomsAndInventory = () => {
                       onChange={(e) => {
                         GetDataForDate(e.target.value, "next");
                       }}
-                      className="border py-2 px-4 bg-white text-app-text dark:text-primary rounded-md"
+                      className="border border-app-border py-2 px-4 bg-app-surface text-app-text rounded-md outline-none focus:border-primary transition-colors"
                     />
 
                     <button
                       onClick={(e) => {
                         GetDataForDate(nextDate, "next");
                       }}
-                      className="ms-1 p-2 bg-white border text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white rounded-full "
+                      className="ms-1 p-2 bg-app-surface border border-app-border text-app-text duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white rounded-full "
                     >
                       <FaArrowRight />
                     </button>
@@ -487,7 +493,7 @@ const RoomsAndInventory = () => {
                       onClick={() => {
                         bulkupdateFunction();
                       }}
-                      className="px-4 py-2 text-sm font-medium  rounded-lg  text-app-text dark:text-primary bg-white border hover:bg-orange-600 duration-300 hover:text-white flex items-center gap-1"
+                      className={TOOLBAR_BTN}
                     >
                       Bulk Update{" "}
                       {isBulkUpdateLoading && <Loader color="#262524" />}
@@ -499,24 +505,24 @@ const RoomsAndInventory = () => {
           </thead>
 
           <tbody>
-            <tr className="bg-app-surface-secondary border-b border-primary/90! flex-grow">
+            <tr className="bg-app-surface-secondary border-b border-primary/90! dark:border-white/15! flex-grow">
               <th
                 scope="row"
-                className="px-4 py-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary whitespace-nowrap w-[16rem]"
+                className="px-4 py-4 font-medium text-app-text bg-app-surface-secondary whitespace-nowrap w-[16rem]"
               >
-                <span className="text-2xl font-bold text-app-text dark:text-app-text-muted">Rooms</span>
+                <span className="text-2xl font-bold text-app-text-muted">Rooms</span>
               </th>
 
               <td className="w-full flex justify-between">
                 {dates?.map((date, index) => (
                   <div
                     key={index}
-                    className="flex flex-col  w-full text-center text-app-text dark:text-app-text-muted border-r border-primary/90!"
+                    className="flex flex-col  w-full text-center text-app-text-muted border-r border-primary/90! dark:border-white/15!"
                   >
                     <span>{getMonthInWords(date)}</span>
                     <span>{getYearFromDate(date)}</span>
                     <span>{getDayOfWeek(date)}</span>
-                    <span className="bg-zinc-500 text-white max-md:px-7 ">
+                    <span className="bg-zinc-500 dark:bg-app-surface dark:text-app-text-muted text-white max-md:px-7 ">
                       {getDayFromDate(date)}
                     </span>
                   </div>
@@ -531,9 +537,9 @@ const RoomsAndInventory = () => {
                   Object?.keys(inventoryData)?.map((item, itemIndex) => (
                     <tr
                       key={itemIndex}
-                      className="bg-app-surface-secondary border-t border-primary/90!"
+                      className="bg-app-surface-secondary border-t border-primary/90! dark:border-white/15!"
                     >
-                      <th className="px-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary w-[16rem] py-2">
+                      <th className="px-4 font-medium text-app-text bg-app-surface-secondary w-[16rem] py-2">
                         <div className="gap-4 flex flex-col">
                           <span className="font-bold text-md uppercase">
                             {room_type_name[item]}
@@ -544,7 +550,7 @@ const RoomsAndInventory = () => {
                               <span className="text-bold">Inventory</span>
                             </div>
                             <div className="ms-7">
-                              <span className="font-light border-b-2 border-primary/90!">
+                              <span className="font-light border-b-2 border-primary/90! dark:border-white/40!">
                                 Multi Update
                               </span>
                             </div>
@@ -556,17 +562,17 @@ const RoomsAndInventory = () => {
                         {dates?.map((date) => (
                           <div
                             key={date}
-                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90!"
+                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90! dark:border-white/15!"
                           >
-                            <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                            <span className="border-2  rounded-md text-center overflow-hidden">
+                            <span className="bg-gradient-to-r from-emerald-500 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
+                            <span className="border-2 border-app-border rounded-md text-center overflow-hidden block">
                               <input
                                 type="text"
                                 value={inventoryData[item][date]}
                                 onChange={(e) =>
                                   InventoryUpdate(e.target.value, item, date)
                                 }
-                                className="w-[100%]  py-1 text-center outline-none  h-[100%] "
+                                className={CELL_INPUT}
                               />
                             </span>
                           </div>
@@ -582,9 +588,9 @@ const RoomsAndInventory = () => {
                 {Object?.keys(priceData)?.map((item, itemIndex) => (
                   <tr
                     key={itemIndex}
-                    className="bg-app-surface-secondary border-t border-primary/90!"
+                    className="bg-app-surface-secondary border-t border-primary/90! dark:border-white/15!"
                   >
-                    <th className="px-4 font-medium text-app-text dark:text-app-text bg-app-surface-secondary w-[16rem] py-2">
+                    <th className="px-4 font-medium text-app-text bg-app-surface-secondary w-[16rem] py-2">
                       <div className="gap-4 flex flex-col">
                         <span className="font-extrabold text-1xl uppercase">
                           {room_type_name[item]}
@@ -595,7 +601,7 @@ const RoomsAndInventory = () => {
                             <span className="text-bold">Price</span>
                           </div>
                           <div className="ms-7">
-                            <span className="font-light border-b-2 border-primary/90!">
+                            <span className="font-light border-b-2 border-primary/90! dark:border-white/40!">
                               Multi Update
                             </span>
                           </div>
@@ -607,17 +613,17 @@ const RoomsAndInventory = () => {
                       {dates?.map((date) => (
                         <div
                           key={date}
-                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90!"
+                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90! dark:border-white/15!"
                         >
-                          <span className="bg-gradient-to-r from-primary/80 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                          <span className="border-2 border-gray-300 rounded-md text-center overflow-hidden">
+                          <span className="bg-gradient-to-r from-emerald-500 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
+                          <span className="border-2 border-app-border rounded-md text-center overflow-hidden block">
                             <input
                               type="text"
                               value={priceData[item][date]}
                               onChange={(e) =>
                                 PriceUpdate(e.target.value, item, date)
                               }
-                              className="w-[100%] py-1 text-center outline-none  h-[100%] "
+                              className={CELL_INPUT}
                             />
                           </span>
                         </div>
