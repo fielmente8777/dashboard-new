@@ -55,9 +55,10 @@ import CustomDropdown from "../../../../components/ui/Dropdown";
 import { fetchUserManagementData } from "../../../../services/api";
 import { updateLead } from "../../../../services/api/leads.api";
 import CustomDropdown2 from "../../../../components/ui/Dropdown2";
-import { MessageSquareReply, X } from "lucide-react";
+import { Eye, MessageSquareReply, X } from "lucide-react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { QuickReplyPreview } from "./QuickReplyPreview";
 
 /* ── shared presentation tokens ─────────────────────────────── */
 const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
@@ -80,6 +81,7 @@ const ChatArea = ({ setActiveTab }) => {
   const [loadingReplies, setLoadingReplies] = useState(false);
   // const [setSelectedQuickReply, setSelectedQuickReply] = useState(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [previewQuickReply, setPreviewQuickReply] = useState(null);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -1699,8 +1701,158 @@ const ChatArea = ({ setActiveTab }) => {
               ))}
           </div>
         )}
-
         {showQuickReplies && (
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
+            {quickReplies.map((reply) => {
+              const textItem = reply.items?.find((i) => i.type === "text");
+
+              const mediaItems =
+                reply.items?.filter((i) => i.type !== "text") || [];
+
+              return (
+                <div key={reply._id} className="relative w-full min-w-0">
+                  {/* Quick Reply Card */}
+                  <button
+                    type="button"
+                    onClick={() => handleSelectQuickReply(reply)}
+                    className="
+              w-full min-w-0 text-left p-3 pr-10
+              bg-app-surface-secondary
+              hover:bg-app-surface
+              rounded-lg
+              border border-primary/30!
+              transition-colors
+              cursor-pointer
+            "
+                  >
+                    {/* Title */}
+                    <div className="font-medium text-app-text truncate">
+                      {reply.title}
+                    </div>
+
+                    {/* Text */}
+                    <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
+                      {textItem?.text}
+                    </div>
+
+                    {/* Media count */}
+                    {mediaItems.length > 0 && (
+                      <div className="text-xs mt-1 text-app-text-faint">
+                        {mediaItems.length}{" "}
+                        {mediaItems.length === 1 ? "media" : "media"}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Preview Eye */}
+                  <button
+                    type="button"
+                    aria-label={`Preview ${reply.title}`}
+                    title="Preview"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPreviewQuickReply(reply);
+                    }}
+                    className="
+              absolute
+              top-2
+              right-2
+              z-10
+              size-7
+              flex
+              items-center
+              justify-center
+              rounded-md
+              text-app-text-faint
+              hover:text-app-text
+              hover:bg-app-surface
+              cursor-pointer
+              transition-colors
+            "
+                  >
+                    <Eye size={16} />
+                  </button>
+                </div>
+              );
+            })}
+
+            {/* Close Quick Replies */}
+            <button
+              type="button"
+              aria-label="Close quick replies"
+              className="
+        absolute
+        top-1.5
+        right-1.5
+        size-7
+        flex
+        items-center
+        justify-center
+        rounded-md
+        text-app-text
+        hover:bg-app-surface-secondary
+        cursor-pointer
+        transition-colors
+      "
+              onClick={() => setShowQuickReplies(false)}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
+        {previewQuickReply && (
+          <div
+            className=" fixed inset-0 z-9999  bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setPreviewQuickReply(null)}
+          >
+            {/* Preview Container */}
+            <div
+              className=" relative w-full max-w-md max-h-[90vh] bg-app-surface rounded-2xl shadow-2xl overflow-hidden flex flex-co "
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="">
+                {/* <div className="min-w-0">
+                  <div className="font-semibold text-app-text truncate">
+                    {previewQuickReply.title}
+                  </div>
+
+                  <div className="text-xs text-app-text-faint mt-0.5">
+                    Quick reply preview
+                  </div>
+                </div> */}
+
+                <button
+                  type="button"
+                  aria-label="Close preview"
+                  onClick={() => setPreviewQuickReply(null)}
+                  className="
+            shrink-0
+            size-8
+            flex
+            items-center
+            justify-center
+            rounded-lg
+            text-app-text
+            hover:bg-app-surface-secondary
+            cursor-pointer
+            transition-colors
+          "
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Preview Content */}
+              <div className="overflow-y-auto p-5">
+                <QuickReplyPreview reply={previewQuickReply} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* {showQuickReplies && (
           <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
             {quickReplies.map((reply) => {
               const textItem = reply.items.find((i) => i.type === "text");
@@ -1739,7 +1891,7 @@ const ChatArea = ({ setActiveTab }) => {
               <X size={16} />
             </button>
           </div>
-        )}
+        )} */}
 
         {file && (
           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
