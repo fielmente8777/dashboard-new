@@ -48,6 +48,7 @@
     "tailwindcss": "^4.1.11",
     "use-sound": "^5.0.0",
     "uuid": "^13.0.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {

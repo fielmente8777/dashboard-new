@@ -216,11 +216,11 @@ export const SidebarData = [
         link: `marketing/whatsapp-marketing`,
         icon: <RiWhatsappFill color="green" />,
       },
-      // {
-      //   name: "Email Marketing",
-      //   link: `marketing/email-marketing`,
-      //   icon: <MailIcon />,
-      // },
+      {
+        name: "Email Marketing",
+        link: `marketing/email-marketing`,
+        icon: <MailIcon />,
+      },
     ],
   },
 

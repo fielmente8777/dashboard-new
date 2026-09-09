@@ -358,423 +358,1751 @@
 
 // export default EmailMarketingManagement;
 
-import { useEffect, useState } from "react";
-import { CiStar } from "react-icons/ci";
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  FiSearch,
+  FiRefreshCw,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMoreVertical,
+  FiSend,
+  FiStar,
+  FiInbox,
+  FiTrash2,
+  FiEdit3,
+  FiAlertCircle,
+  FiMail,
+  FiX,
+  FiMenu,
+  FiArchive,
+  FiClock,
+  FiChevronDown,
+  FiUpload,
+  FiUsers,
+  FiFileText,
+} from "react-icons/fi";
+
+import * as XLSX from "xlsx"; /*npm install xlsx --legacy-peer-deps */
+
 import { getEmails } from "../../services/api/Email.api";
-import { MailIcon } from "../../icons/icon";
-// import {
-//   Search,
-//   SlidersHorizontal,
-//   MoreVertical,
-//   ChevronLeft,
-//   ChevronRight,
-//   RefreshCw,
-//   Square,
-//   Star,
-//   Inbox,
-//   Send,
-//   FileText,
-//   Tag,
-//   ChevronDown,
-//   Plus,
-//   HelpCircle,
-//   Settings,
-//   Menu,
-//   Sparkles
-// } from 'lucide-react';
+import ComposeEmail from "../../components/Email/ComposeEmail";
+
+/* =========================================================
+   EXCEL RECIPIENT IMPORT
+========================================================= */
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+
+const normalizeHeader = (value) =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "");
+
+const EMAIL_COLUMN_NAMES = new Set([
+  "email",
+  "emailaddress",
+  "emailid",
+  "emailids",
+  "mail",
+  "mailid",
+  "mailaddress",
+  "recipient",
+  "recipientemail",
+  "recipientemailaddress",
+  "e-mail",
+  "e-mailaddress",
+]);
+
+const extractEmailsFromExcel = async (file) => {
+  const buffer = await file.arrayBuffer();
+
+  const workbook = XLSX.read(buffer, {
+    type: "array",
+  });
+
+  const foundEmails = [];
+
+  workbook.SheetNames.forEach((sheetName) => {
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      defval: "",
+      raw: false,
+    });
+
+    if (!rows.length) {
+      return;
+    }
+
+    /*
+      First try to identify a column whose header is:
+      Email / Email Address / Mail / Recipient Email etc.
+    */
+    const headerRow = rows[0] || [];
+
+    const emailColumnIndexes = headerRow
+      .map((header, index) => ({
+        header: normalizeHeader(header),
+        index,
+      }))
+      .filter(({ header }) => EMAIL_COLUMN_NAMES.has(header))
+      .map(({ index }) => index);
+
+    if (emailColumnIndexes.length > 0) {
+      // Read only the detected email columns.
+      rows.slice(1).forEach((row) => {
+        emailColumnIndexes.forEach((columnIndex) => {
+          const value = String(row[columnIndex] ?? "")
+            .trim()
+            .toLowerCase();
+
+          if (EMAIL_REGEX.test(value)) {
+            foundEmails.push(value);
+          }
+        });
+      });
+
+      return;
+    }
+
+    /*
+      If no email column exists, scan every cell.
+      This supports spreadsheets where the email column
+      has an unusual name or there is no header row.
+    */
+    rows.forEach((row) => {
+      row.forEach((cell) => {
+        const value = String(cell ?? "")
+          .trim()
+          .toLowerCase();
+
+        if (EMAIL_REGEX.test(value)) {
+          foundEmails.push(value);
+        }
+      });
+    });
+  });
+
+  return [...new Set(foundEmails)];
+};
+
+const PAGE_SIZE = 50;
+
+/* =========================================================
+   FALLBACK DATA
+========================================================= */
+
+const fallbackEmails = [
+  {
+    id: 1,
+    sender: "Subframe",
+    email: "hello@subframe.com",
+    subject: "More ideas? Create new projects in Subframe",
+    preview:
+      "Every idea counts. Build more projects in Subframe. Projects let you work on different apps from one Subframe account, each w...",
+    time: "16:07",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 2,
+    sender: "Deepti Mankani",
+    email: "deepti.mankani@example.com",
+    subject:
+      "Invitation: The Lumi X Eazotel @ Mon Oct 6, 2025 3pm – 4pm (IST) (Abhijeet)",
+    preview:
+      "The Lumi X Eazotel Join with Google Meet – You have been invited by Deepti Mankani to atten...",
+    time: "14:06",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 3,
+    sender: "Brand24",
+    email: "notifications@brand24.com",
+    subject: "Eazotel – new mentions: 1",
+    preview:
+      "Starting today, we are unlocking automatic e-mail reports! Now you can stay on top of your project data...",
+    time: "14:06",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 4,
+    sender: "Brand24 Webinars",
+    email: "webinars@brand24.com",
+    subject: "Want proof of your social listening skills? Get certified 👍",
+    preview: "Hi there, We're excited to invite you to our Free Masterclass...",
+    time: "13:33",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 5,
+    sender: "Atlassian",
+    email: "updates@atlassian.com",
+    subject: "Tip #4: create perfect roadmaps for every stakeholder",
+    preview:
+      "Communicate the right amount of information for every audience...",
+    time: "12:36",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 6,
+    sender: "Chrome Web Store",
+    email: "chromewebstore-noreply@google.com",
+    subject: "Annual reminder about our Chrome Web Store terms and policies",
+    preview: "Hi Chrome Web Store user, This email is an annual reminder...",
+    time: "07:30",
+    starred: false,
+    read: false,
+  },
+  {
+    id: 7,
+    sender: "Help Desk",
+    email: "info@eazotel.com",
+    subject: "Request to publish DNS records for my domain",
+    preview: "Base Camp Hospitality Share Text Records Account Inactive...",
+    time: "5 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 8,
+    sender: "Atlassian",
+    email: "support@atlassian.com",
+    subject: "Step 3: automate repetitive tasks",
+    preview: "Save hours with just a few clicks. Focus on what's important...",
+    time: "5 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 9,
+    sender: "Atlassian",
+    email: "team@atlassian.com",
+    subject: "Tip #3: keep all data and insights in one place",
+    preview: "No more decisions based on gut feel. Add evidence to ideas...",
+    time: "5 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 10,
+    sender: "Eric at Bolt.new",
+    email: "eric@bolt.new",
+    subject: "Happy Birthday, Bolt! 🎂",
+    preview: "Bolt turns 1 🎂 + watch Bolt's origin story...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 11,
+    sender: "Atlassian",
+    email: "newsletter@atlassian.com",
+    subject: "How to deliver great service experiences, fast",
+    preview: "Tips to help you streamline service experiences...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 12,
+    sender: "Pinterest",
+    email: "news@pinterest.com",
+    subject: "Abhijeet, big mood",
+    preview: "Marriage Jokes | Funny Work Jokes | Architectural Designs...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 13,
+    sender: "Arun Chinnachamy",
+    email: "arun@example.com",
+    subject:
+      "Languages That Refuse to Die – Why COBOL, Fortran, and Erlang Still Matter in 2025",
+    preview: "",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 14,
+    sender: "info...@viafreezohor...",
+    email: "info@viafreezohor.com",
+    subject: "Add Zoho SalesIQ Code to Our Website",
+    preview: "Hi, We want to add visitor tracking driven by Zoho SalesIQ...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 15,
+    sender: "Atlassian",
+    email: "chat@atlassian.com",
+    subject: "Step 2: set up chat",
+    preview: "Multichannel support makes it easier to ask for help...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 16,
+    sender: "Atlassian",
+    email: "automation@atlassian.com",
+    subject: "Step 2: set up chat",
+    preview: "Make it easy for your employees and customers to ask for help...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+  {
+    id: 17,
+    sender: "Atlassian",
+    email: "updates@atlassian.com",
+    subject: "Step 2: set up chat",
+    preview: "Meet your employees and customers where they are...",
+    time: "3 Oct",
+    starred: false,
+    read: true,
+  },
+];
+
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 function EmailMarketingManagement() {
-  const [emails] = useState([
-    {
-      id: 1,
-      sender: "Subframe",
-      subject: "More ideas? Create new projects in Subframe",
-      preview:
-        "Every idea counts. Build more projects in Subframe. Projects let you work on different apps from one Subframe account, each w...",
-      time: "16:07",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 2,
-      sender: "Deepti Mankani",
-      subject:
-        "Invitation: The Lumi X Eazotel @ Mon Oct 6, 2025 3pm - 4pm (IST) (Abhijeet)",
-      preview:
-        "The Lumi X Eazotel Join with Google Meet – You have been invited by Deepti Mankani to atten...",
-      time: "14:06",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 3,
-      sender: "Brand24",
-      subject: "Eazotel - new mentions: 1",
-      preview:
-        "Starting today, we are unlocking automatic e-mail reports! Now you can stay on top of your project data. 6 days left of your Free Trial - keep the insig...",
-      time: "14:06",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 4,
-      sender: "Brand24 Webinars",
-      subject: "Want proof of your social listening skills? Get certified 👍",
-      preview:
-        "Hi there, We're excited to invite you to our Free Masterclass, where you can become the Certified Social Listening ...",
-      time: "13:33",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 5,
-      sender: "Atlassian",
-      subject: "Tip #4: create perfect roadmaps for every stakeholder",
-      preview:
-        "Communicate the right amount of information for every audience The right roadmap for every audience Tip #4: creat...",
-      time: "12:36",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 6,
-      sender: "Chrome Web Store",
-      subject: "Annual reminder about our Chrome Web Store terms and policies",
-      preview:
-        "Hi Chrome Web Store user, This email is an annual reminder that your use of the Chrome Web Store is subj...",
-      time: "07:30",
-      starred: false,
-      read: false,
-    },
-    {
-      id: 7,
-      sender: "Help Desk",
-      subject: "Request to publish DNS records for my domain",
-      preview:
-        "Base Camp Hospitality Share Text Records Account Inactive Hi This email is from ZohoCampaigns on behalf of Help Desk(info@...",
-      time: "5 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 8,
-      sender: "Atlassian",
-      subject: "Step 3: automate repetitive tasks",
-      preview:
-        "Save hours with just a few clicks Focus on what's important and let automation do the rest Step 3: automate repetitive tasks Quickly scale se...",
-      time: "5 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 9,
-      sender: "Atlassian",
-      subject: "Tip #3: keep all data and insights in one place",
-      preview:
-        "No more decisions based on gut feel Add evidence to ideas with insights Tip #3: keep all data and insights in one place Add insi...",
-      time: "5 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 10,
-      sender: "Eric at Bolt.new",
-      subject: "Happy Birthday, Bolt!",
-      preview:
-        "Bolt turns 1 🎂 + watch Bolt's origin story + don't miss the v2 livestream Hey builders, Happy Birthday, Bolt! One year ago today, Bolt gave non-developer...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 11,
-      sender: "Atlassian",
-      subject: "How to deliver great service experiences, fast",
-      preview:
-        "Tips to help you streamline Three tips for delivering great service experiences, fast We noticed you selected our general servic...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 12,
-      sender: "Pinterest",
-      subject: "Abhijeet, big mood",
-      preview:
-        "Marriage Jokes | Funny Work Jokes | Funny Marriage Jokes Architectural Designs House Plans Marriage Jokes | ... Marriage Jokes | Funny Work Jokes | Fun...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 13,
-      sender: "Arun Chinnachamy",
-      subject: "Languages That Refuse to Die",
-      preview: "Why COBOL, Fortran, and Erlang Still Matter in 2025",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 14,
-      sender: "info...@viafreezohor...",
-      subject: "Add Zoho SalesIQ Code to Our Website",
-      preview:
-        "Hi, We want to add visitor tracking (driven by Zoho SalesIQ) to our website. Zoho SalesIQ is a real-time sales intelligence platform to c...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 15,
-      sender: "Atlassian",
-      subject: "Step 2: set up chat",
-      preview:
-        "Multichannel support makes it easier to ask for help Make it easy for your employees and customers to ask for help Step 2: set up chat Meet your employees...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 15,
-      sender: "Atlassian",
-      subject: "Step 2: set up chat",
-      preview:
-        "Multichannel support makes it easier to ask for help Make it easy for your employees and customers to ask for help Step 2: set up chat Meet your employees...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-    {
-      id: 15,
-      sender: "Atlassian",
-      subject: "Step 2: set up chat",
-      preview:
-        "Multichannel support makes it easier to ask for help Make it easy for your employees and customers to ask for help Step 2: set up chat Meet your employees...",
-      time: "3 Oct",
-      starred: false,
-      read: true,
-    },
-  ]);
+  /* -------------------------------------------------------
+     EMAIL DATA
+  ------------------------------------------------------- */
+
+  const [emails, setEmails] = useState(fallbackEmails);
+
+  /* -------------------------------------------------------
+     SEARCH
+  ------------------------------------------------------- */
+
+  const [search, setSearch] = useState("");
+
+  /* -------------------------------------------------------
+     SELECTION
+  ------------------------------------------------------- */
 
   const [selectedEmails, setSelectedEmails] = useState([]);
 
-  const toggleEmailSelection = (id) => {
-    setSelectedEmails((prev) =>
-      prev.includes(id)
-        ? prev.filter((emailId) => emailId !== id)
-        : [...prev, id]
-    );
-  };
+  /* -------------------------------------------------------
+     PAGINATION
+  ------------------------------------------------------- */
 
-  const toggleAllEmails = () => {
-    setSelectedEmails(
-      selectedEmails.length === emails.length ? [] : emails.map((e) => e.id)
-    );
-  };
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchEmails = async () => {
+  /* -------------------------------------------------------
+     LOADING
+  ------------------------------------------------------- */
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  /* -------------------------------------------------------
+     COMPOSE
+  ------------------------------------------------------- */
+
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
+
+  const [broadcastRecipients, setBroadcastRecipients] = useState([]);
+
+  /* -------------------------------------------------------
+     MAIL NAVIGATION
+  ------------------------------------------------------- */
+
+  const [activeFolder, setActiveFolder] = useState("inbox");
+
+  /* -------------------------------------------------------
+     MOBILE MAIL SIDEBAR
+  ------------------------------------------------------- */
+
+  const [isMobileMailNavOpen, setIsMobileMailNavOpen] = useState(false);
+
+  /* -------------------------------------------------------
+     BROADCAST MENU / EXCEL IMPORT
+  ------------------------------------------------------- */
+
+  const [isBroadcastMenuOpen, setIsBroadcastMenuOpen] = useState(false);
+
+  const [isImportingExcel, setIsImportingExcel] = useState(false);
+
+  const [isRecipientPreviewOpen, setIsRecipientPreviewOpen] = useState(false);
+
+  const [excelRecipients, setExcelRecipients] = useState([]);
+
+  const excelInputRef = useRef(null);
+  /* =======================================================
+     LOAD EMAILS
+  ======================================================= */
+
+  const loadEmails = async () => {
     try {
+      setIsLoading(true);
+
       const response = await getEmails();
-      // console.log(response);
+
+      const apiEmails = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response?.emails)
+            ? response.emails
+            : [];
+
+      if (apiEmails.length > 0) {
+        const normalizedEmails = apiEmails.map((item, index) => ({
+          id: item.id ?? item._id ?? index + 1,
+
+          folder:
+            item.folder ??
+            item.mailbox ??
+            item.folderName ??
+            item.mailFolder ??
+            "inbox",
+
+          sender: item.sender ?? item.fromName ?? item.from ?? "Unknown Sender",
+
+          email: item.email ?? item.senderEmail ?? item.fromEmail ?? "",
+
+          subject: item.subject ?? "(No subject)",
+
+          preview: item.preview ?? item.snippet ?? item.bodyPreview ?? "",
+
+          time: item.time ?? item.date ?? item.createdAt ?? "",
+
+          starred: Boolean(item.starred),
+
+          read: Boolean(item.read),
+        }));
+
+        setEmails(normalizedEmails);
+      }
     } catch (error) {
-      console.error("Error fetching emails:", error);
+      console.error("Error loading emails:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEmails();
+    loadEmails();
   }, []);
 
+  /* =======================================================
+     SEARCH
+  ======================================================= */
+
+  const filteredEmails = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    // First filter by selected folder
+    const folderEmails = emails.filter(
+      (email) => (email.folder || "inbox") === activeFolder,
+    );
+
+    // Then apply search
+    if (!query) {
+      return folderEmails;
+    }
+
+    return folderEmails.filter((email) => {
+      return (
+        email.sender?.toLowerCase().includes(query) ||
+        email.email?.toLowerCase().includes(query) ||
+        email.subject?.toLowerCase().includes(query) ||
+        email.preview?.toLowerCase().includes(query)
+      );
+    });
+  }, [emails, search, activeFolder]);
+
+  /* =======================================================
+     PAGINATION
+  ======================================================= */
+
+  const totalPages = Math.max(1, Math.ceil(filteredEmails.length / PAGE_SIZE));
+
+  const safePage = Math.min(currentPage, totalPages);
+
+  const startIndex = (safePage - 1) * PAGE_SIZE;
+
+  const visibleEmails = filteredEmails.slice(
+    startIndex,
+    startIndex + PAGE_SIZE,
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedEmails([]);
+  }, [search]);
+
+  /* =======================================================
+     SELECTION
+  ======================================================= */
+
+  const toggleEmailSelection = (id) => {
+    setSelectedEmails((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((emailId) => emailId !== id);
+      }
+
+      return [...prev, id];
+    });
+  };
+
+  const isAllSelected =
+    visibleEmails.length > 0 &&
+    visibleEmails.every((email) => selectedEmails.includes(email.id));
+
+  const toggleSelectAll = () => {
+    const visibleIds = visibleEmails.map((email) => email.id);
+
+    if (isAllSelected) {
+      setSelectedEmails((prev) =>
+        prev.filter((id) => !visibleIds.includes(id)),
+      );
+
+      return;
+    }
+
+    setSelectedEmails((prev) => [...new Set([...prev, ...visibleIds])]);
+  };
+
+  /* =======================================================
+     STAR
+  ======================================================= */
+
+  const toggleStar = (id) => {
+    setEmails((prev) =>
+      prev.map((email) =>
+        email.id === id
+          ? {
+              ...email,
+              starred: !email.starred,
+            }
+          : email,
+      ),
+    );
+  };
+
+  /* =======================================================
+     BROADCAST
+  ======================================================= */
+
+  const openSelectedBroadcast = () => {
+    if (selectedEmails.length === 0) {
+      setIsBroadcastMenuOpen(true);
+      return;
+    }
+
+    const recipients = [
+      ...new Set(
+        emails
+          .filter((email) => selectedEmails.includes(email.id))
+          .map((email) => email.email?.trim())
+          .filter((email) => email && EMAIL_REGEX.test(email)),
+      ),
+    ];
+
+    if (recipients.length === 0) {
+      alert("No valid email addresses found for selected emails");
+      return;
+    }
+
+    console.log("Selected Email IDs:", selectedEmails);
+
+    console.log("Broadcast Recipients:", recipients);
+
+    setBroadcastRecipients(recipients);
+    setIsComposeOpen(true);
+    setIsBroadcastMenuOpen(false);
+    setIsMobileMailNavOpen(false);
+  };
+
+  const openExcelPicker = () => {
+    setIsBroadcastMenuOpen(false);
+    excelInputRef.current?.click();
+  };
+
+  const handleExcelFileChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    // Allow the same file to be selected again later.
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsImportingExcel(true);
+
+      const recipients = await extractEmailsFromExcel(file);
+
+      if (recipients.length === 0) {
+        alert("No valid email addresses were found in this Excel file.");
+        return;
+      }
+
+      console.log("Excel file:", file.name);
+
+      console.log("Imported recipients:", recipients);
+
+      setExcelRecipients(recipients);
+      setIsRecipientPreviewOpen(true);
+
+      setBroadcastRecipients([]);
+      setSelectedEmails([]);
+      setIsComposeOpen(false);
+      setIsMobileMailNavOpen(false);
+    } catch (error) {
+      console.error("Excel recipient import failed:", error);
+
+      alert(
+        "Could not read this Excel file. Please upload a valid .xlsx or .xls file.",
+      );
+    } finally {
+      setIsImportingExcel(false);
+    }
+  };
+
+  const handleRecipientEdit = (index, value) => {
+    setExcelRecipients((prev) =>
+      prev.map((email, i) => (i === index ? value : email)),
+    );
+  };
+
+  const handleRecipientDelete = (index) => {
+    setExcelRecipients((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleContinueToCompose = () => {
+    const validRecipients = [
+      ...new Set(
+        excelRecipients
+          .map((email) => email.trim().toLowerCase())
+          .filter((email) => email && EMAIL_REGEX.test(email)),
+      ),
+    ];
+
+    if (validRecipients.length === 0) {
+      alert("Please add at least one valid email address.");
+      return;
+    }
+
+    setBroadcastRecipients(validRecipients);
+
+    setIsRecipientPreviewOpen(false);
+
+    setIsComposeOpen(true);
+  };
+  /* =======================================================
+     NORMAL COMPOSE
+  ======================================================= */
+
+  const openCompose = () => {
+    setBroadcastRecipients([]);
+
+    setIsComposeOpen(true);
+
+    setIsMobileMailNavOpen(false);
+  };
+
+  /* =======================================================
+     CLOSE COMPOSE
+  ======================================================= */
+
+  const closeCompose = () => {
+    setIsComposeOpen(false);
+
+    setBroadcastRecipients([]);
+  };
+
+  /* =======================================================
+     FOLDER
+  ======================================================= */
+
+  const handleFolderChange = (folder) => {
+    setActiveFolder(folder);
+    setSelectedEmails([]);
+    setCurrentPage(1);
+    setSearch("");
+    setIsBroadcastMenuOpen(false);
+    setIsMobileMailNavOpen(false);
+  };
+
+  /* =======================================================
+     PAGINATION
+  ======================================================= */
+
+  const goPrevious = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const goNext = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  };
+
+  /* =======================================================
+     RANGE
+  ======================================================= */
+
+  const rangeText =
+    filteredEmails.length === 0
+      ? "0–0 of 0"
+      : `${startIndex + 1}–${Math.min(
+          startIndex + PAGE_SIZE,
+          filteredEmails.length,
+        )} of ${filteredEmails.length}`;
+
+  /* =======================================================
+     FOLDER COUNTS
+  ======================================================= */
+
+  const folderCounts = useMemo(
+    () => ({
+      inbox: emails.filter((email) => (email.folder || "inbox") === "inbox")
+        .length,
+      sent: emails.filter((email) => email.folder === "sent").length,
+      spam: emails.filter((email) => email.folder === "spam").length,
+      bin: emails.filter((email) => email.folder === "bin").length,
+    }),
+    [emails],
+  );
+
+  /* =======================================================
+     MAIL NAV
+  ======================================================= */
+
+  const MailNavigation = ({ mobile = false }) => (
+    <div className={`flex flex-col ${mobile ? "h-full" : "h-full"}`}>
+      {/* Compose */}
+      <div className="p-4">
+        <button
+          type="button"
+          onClick={openCompose}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+        >
+          <FiEdit3 size={17} />
+          Compose
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="space-y-1 px-3">
+        {/* Inbox */}
+        <button
+          type="button"
+          onClick={() => handleFolderChange("inbox")}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeFolder === "inbox"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiInbox size={18} />
+
+          <span>Inbox</span>
+
+          <span
+            className={`ml-auto text-xs ${
+              activeFolder === "inbox" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            {folderCounts.inbox}
+          </span>
+        </button>
+
+        {/* Sent */}
+        <button
+          type="button"
+          onClick={() => handleFolderChange("sent")}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeFolder === "sent"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiSend size={18} />
+
+          <span>Sent</span>
+
+          <span
+            className={`ml-auto text-xs ${
+              activeFolder === "sent" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            {folderCounts.sent}
+          </span>
+        </button>
+
+        {/* Spam */}
+        <button
+          type="button"
+          onClick={() => handleFolderChange("spam")}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeFolder === "spam"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiAlertCircle size={18} />
+
+          <span>Spam</span>
+
+          <span
+            className={`ml-auto text-xs ${
+              activeFolder === "spam" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            {folderCounts.spam}
+          </span>
+        </button>
+
+        {/* Bin */}
+        <button
+          type="button"
+          onClick={() => handleFolderChange("bin")}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeFolder === "bin"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiTrash2 size={18} />
+
+          <span>Bin</span>
+
+          <span
+            className={`ml-auto text-xs ${
+              activeFolder === "bin" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
+            {folderCounts.bin}
+          </span>
+        </button>
+      </nav>
+
+      {/* Extra navigation */}
+      <div className="mt-4 border-t border-gray-100 px-3 pt-4">
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-500 hover:bg-gray-100"
+        >
+          <FiStar size={18} />
+
+          <span>Starred</span>
+        </button>
+
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-500 hover:bg-gray-100"
+        >
+          <FiClock size={18} />
+
+          <span>Snoozed</span>
+        </button>
+
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-500 hover:bg-gray-100"
+        >
+          <FiArchive size={18} />
+
+          <span>Archive</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  /* =======================================================
+     RETURN
+  ======================================================= */
+
   return (
-    <div className="h-screen flex flex-col bg-white fixed">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="flex items-center gap-2">
-            {/* <Menu className="w-6 h-6 text-gray-600 cursor-pointer" /> */}
-            <div className="flex items-center gap-2">
-              <MailIcon size={32}/>
-              <span className="text-xl text-gray-700 font-medium">EazeMail</span>
+    <div className="relative flex h-screen min-h-0 w-full min-w-0 overflow-hidden bg-white">
+      {/* ==================================================
+          MOBILE MAIL SIDEBAR OVERLAY
+      ================================================== */}
+
+      {isMobileMailNavOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close mail navigation"
+            onClick={() => setIsMobileMailNavOpen(false)}
+            className="fixed inset-0 z-[9990] bg-black/30 md:hidden"
+          />
+
+          <aside className="fixed bottom-0 left-0 top-0 z-[9999] w-[280px] bg-white shadow-2xl md:hidden">
+            {/* Mobile nav header */}
+            <div className="flex h-14 items-center justify-between border-b border-gray-200 px-4">
+              <div className="flex items-center gap-2">
+                <FiMail size={19} className="text-blue-600" />
+
+                <span className="text-sm font-semibold">Mail</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsMobileMailNavOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+              >
+                <FiX size={19} />
+              </button>
             </div>
-          </div>
 
-          <div className="flex items-center flex-1 max-w-2xl bg-gray-100 rounded-lg px-4 py-2.5 hover:bg-gray-200 transition-colors">
-            {/* <Search className="w-5 h-5 text-gray-600" /> */}
-            <input
-              type="text"
-              placeholder="Search mail"
-              className="flex-1 bg-transparent border-none outline-none px-3 text-sm"
-            />
-            {/* <SlidersHorizontal className="w-5 h-5 text-gray-600 cursor-pointer" /> */}
+            <MailNavigation mobile />
+          </aside>
+        </>
+      )}
+
+      {/* ==================================================
+          DESKTOP EMAIL SIDEBAR
+
+          IMPORTANT:
+          EXACT CLASS REQUESTED BY USER
+      ================================================== */}
+
+      <aside className="hidden w-[220px] shrink-0 border-r border-gray-200 bg-white md:flex md:flex-col">
+        {/* Header */}
+        <div className="flex h-14 shrink-0 items-center border-b border-gray-200 px-4">
+          <div className="flex items-center gap-2">
+            <FiMail size={19} className="text-blue-600" />
+
+            <span className="text-sm font-semibold text-gray-800">
+              EazoMail
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full hover:bg-gray-100 cursor-pointer">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-sm text-gray-700">Active</span>
-            {/* <ChevronDown className="w-4 h-4 text-gray-600" /> */}
-          </div>
-          {/* <HelpCircle className="w-5 h-5 text-gray-600 cursor-pointer hover:bg-gray-100 rounded-full p-0.5" /> */}
-          {/* <Settings className="w-5 h-5 text-gray-600 cursor-pointer hover:bg-gray-100 rounded-full p-0.5" /> */}
-          {/* <Sparkles className="w-5 h-5 text-gray-600 cursor-pointer hover:bg-gray-100 rounded-full p-0.5" /> */}
-          {/* <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center cursor-pointer">
-            <span className="text-white text-sm font-medium">A</span>
-          </div> */}
+        {/* Navigation */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <MailNavigation />
         </div>
-      </header>
+      </aside>
 
-      <div className="flex flex-1 h-full border">
-        {/* Sidebar */}
-        <aside className="w-64 p-2 flex flex-col gap-1 h-full">
-          <button className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-blue-50 hover:bg-blue-100 text-gray-800 font-medium shadow-sm mb-2">
-            <svg viewBox="0 0 24 24" className="w-8 h-8" fill="currentColor">
-              <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-            </svg>
+      {/* ==================================================
+          EMAIL CONTENT
+      ================================================== */}
+
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        {/* ==================================================
+            MOBILE EMAIL HEADER
+        ================================================== */}
+
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 md:hidden">
+          <div className="flex min-w-0 items-center gap-2">
+            {/* Mail navigation */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMailNavOpen(true)}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+              aria-label="Open mail navigation"
+            >
+              <FiMenu size={20} />
+            </button>
+
+            <span className="truncate text-sm font-semibold text-gray-800">
+              {activeFolder === "inbox"
+                ? "Inbox"
+                : activeFolder === "sent"
+                  ? "Sent"
+                  : activeFolder === "spam"
+                    ? "Spam"
+                    : "Bin"}
+            </span>
+          </div>
+
+          {/* Mobile compose */}
+          <button
+            type="button"
+            onClick={openCompose}
+            className="flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-medium text-white"
+          >
+            <FiEdit3 size={14} />
             Compose
           </button>
+        </div>
 
-          <div className="flex flex-col gap-0.5">
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <Inbox className="w-5 h-5 text-gray-700" /> */}
-              <span className="flex-1 text-left font-medium text-gray-900">
-                Inbox
+        {/* ==================================================
+            SEARCH + BROADCAST
+        ================================================== */}
+
+        <div className="flex shrink-0 flex-col gap-2 border-b border-gray-200 p-3 sm:p-4 md:flex-row md:items-center md:gap-3 md:px-5 md:py-3">
+          {/* Search */}
+          <div className="relative min-w-0 flex-1">
+            <FiSearch
+              size={18}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search mail"
+              className="h-11 w-full rounded-lg border border-gray-200 bg-gray-100 pl-10 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          {/* Desktop actions */}
+          <div className="flex shrink-0 items-center gap-2">
+            {/* Broadcast split button */}
+            <div className="relative flex shrink-0">
+              {/* Hidden Excel file input */}
+              <input
+                ref={excelInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleExcelFileChange}
+                className="hidden"
+                aria-hidden="true"
+              />
+
+              {/* Main action */}
+              <button
+                type="button"
+                onClick={openSelectedBroadcast}
+                disabled={isImportingExcel}
+                className="flex h-11 items-center gap-2 rounded-l-lg border-r border-gray-300 bg-gray-100 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-wait disabled:opacity-60 sm:px-4"
+                title={
+                  selectedEmails.length > 0
+                    ? "Broadcast selected emails"
+                    : "Choose recipients"
+                }
+              >
+                <FiSend size={16} />
+
+                <span className="hidden sm:inline">Broadcast</span>
+
+                {selectedEmails.length > 0 && (
+                  <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] text-white">
+                    {selectedEmails.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown trigger */}
+              <button
+                type="button"
+                onClick={() => setIsBroadcastMenuOpen((prev) => !prev)}
+                disabled={isImportingExcel}
+                className="flex h-11 w-9 items-center justify-center rounded-r-lg bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-wait disabled:opacity-60"
+                aria-label="Broadcast options"
+                aria-expanded={isBroadcastMenuOpen}
+              >
+                <FiChevronDown size={15} />
+              </button>
+
+              {/* Dropdown menu */}
+              {isBroadcastMenuOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] z-[10000] w-72 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                  {/* Selected inbox recipients */}
+                  <button
+                    type="button"
+                    onClick={openSelectedBroadcast}
+                    disabled={selectedEmails.length === 0}
+                    className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <FiUsers
+                      size={18}
+                      className="mt-0.5 shrink-0 text-blue-600"
+                    />
+
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-gray-800">
+                        Selected inbox emails
+                      </span>
+
+                      <span className="mt-0.5 block text-xs text-gray-400">
+                        {selectedEmails.length > 0
+                          ? `${selectedEmails.length} selected recipient${
+                              selectedEmails.length === 1 ? "" : "s"
+                            }`
+                          : "Select emails from Inbox first"}
+                      </span>
+                    </span>
+                  </button>
+
+                  <div className="border-t border-gray-100" />
+
+                  {/* Excel import */}
+                  <button
+                    type="button"
+                    onClick={openExcelPicker}
+                    disabled={isImportingExcel}
+                    className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <FiUpload
+                      size={18}
+                      className="mt-0.5 shrink-0 text-green-600"
+                    />
+
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-gray-800">
+                        {isImportingExcel
+                          ? "Reading Excel..."
+                          : "Import from Excel"}
+                      </span>
+
+                      <span className="mt-0.5 block text-xs leading-4 text-gray-400">
+                        Upload .xlsx, .xls or .csv and extract email addresses
+                      </span>
+                    </span>
+                  </button>
+
+                  <div className="border-t border-gray-100" />
+
+                  <div className="flex items-start gap-3 px-4 py-3">
+                    <FiFileText
+                      size={17}
+                      className="mt-0.5 shrink-0 text-gray-400"
+                    />
+
+                    <p className="text-[11px] leading-4 text-gray-400">
+                      The importer checks columns such as
+                      <span className="font-medium text-gray-500">
+                        {" "}
+                        Email, Email Address, Mail
+                      </span>{" "}
+                      and also scans the sheet for valid email addresses.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex h-11 items-center gap-2 px-1 text-sm text-gray-700">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+
+              <span className="hidden sm:inline">Active</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ==================================================
+            TOOLBAR
+        ================================================== */}
+
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 sm:px-4 md:h-14 md:px-5">
+          {/* Left */}
+          <div className="flex items-center gap-1">
+            {/* Select all */}
+            <button
+              type="button"
+              onClick={toggleSelectAll}
+              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100"
+              aria-label="Select all emails"
+            >
+              <span
+                className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                  isAllSelected
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-gray-300 bg-white"
+                }`}
+              >
+                {isAllSelected ? "✓" : ""}
               </span>
-              <span className="text-gray-900 font-medium">1,883</span>
             </button>
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <Star className="w-5 h-5 text-gray-700" /> */}
-              <span className="flex-1 text-left text-gray-700">Starred</span>
+
+            {/* Refresh */}
+            <button
+              type="button"
+              onClick={loadEmails}
+              disabled={isLoading}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+              aria-label="Refresh emails"
+            >
+              <FiRefreshCw
+                size={17}
+                className={isLoading ? "animate-spin" : ""}
+              />
             </button>
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <div className="w-5 h-5 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 8v4l3 3"/>
-                  <circle cx="12" cy="12" r="10"/>
-                </svg>
-              </div> */}
-              <span className="flex-1 text-left text-gray-700">Snoozed</span>
-            </button>
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <Send className="w-5 h-5 text-gray-700" /> */}
-              <span className="flex-1 text-left text-gray-700">Sent</span>
-            </button>
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <FileText className="w-5 h-5 text-gray-700" /> */}
-              <span className="flex-1 text-left text-gray-700">Drafts</span>
-              <span className="text-gray-600">8</span>
-            </button>
-            <button className="flex items-center gap-4 px-4 py-2 rounded-r-full hover:bg-gray-100 text-sm">
-              {/* <ChevronDown className="w-5 h-5 text-gray-700" /> */}
-              <span className="flex-1 text-left text-gray-700">More</span>
-            </button>
+
+            {selectedEmails.length > 0 && (
+              <span className="ml-1 whitespace-nowrap text-xs font-medium text-blue-600 sm:text-sm">
+                {selectedEmails.length} selected
+              </span>
+            )}
           </div>
 
-          <div className="mt-4">
-            <div className="flex items-center justify-between px-4 py-2">
-              <span className="text-sm font-medium text-gray-700">Labels</span>
-              {/* <Plus className="w-4 h-4 text-gray-600 cursor-pointer" /> */}
-            </div>
+          {/* Right */}
+          <div className="flex items-center gap-0.5">
+            <span className="mr-1 whitespace-nowrap text-xs text-gray-600 sm:mr-2 sm:text-sm">
+              {rangeText}
+            </span>
+
+            <button
+              type="button"
+              onClick={goPrevious}
+              disabled={safePage <= 1}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Previous page"
+            >
+              <FiChevronLeft size={18} />
+            </button>
+
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={safePage >= totalPages}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label="Next page"
+            >
+              <FiChevronRight size={18} />
+            </button>
+
+            <button
+              type="button"
+              className="hidden h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 sm:flex"
+            >
+              <FiMoreVertical size={17} />
+            </button>
           </div>
-        </aside>
+        </div>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col border-l border-gray-200 h-full">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={selectedEmails.length === emails.length}
-                  onChange={toggleAllEmails}
-                  className="w-5 h-5 cursor-pointer"
-                />
-                {/* <ChevronDown className="w-5 h-5 text-gray-600 cursor-pointer ml-1" /> */}
-              </div>
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                {/* <RefreshCw className="w-5 h-5 text-gray-600" /> */}
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full">
-                {/* <MoreVertical className="w-5 h-5 text-gray-600" /> */}
-              </button>
+        {/* ==================================================
+            EMAIL LIST
+        ================================================== */}
+
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          {visibleEmails.length === 0 ? (
+            <div className="flex h-52 flex-col items-center justify-center px-5 text-center">
+              <FiInbox size={38} className="mb-3 text-gray-300" />
+
+              <p className="text-sm font-medium text-gray-700">
+                {search.trim()
+                  ? "No emails found"
+                  : `No ${
+                      activeFolder === "bin"
+                        ? "Bin"
+                        : activeFolder.charAt(0).toUpperCase() +
+                          activeFolder.slice(1)
+                    } emails`}
+              </p>
+
+              <p className="mt-1 text-xs text-gray-400">
+                {search.trim()
+                  ? "Try another search."
+                  : `Your ${
+                      activeFolder === "bin" ? "deleted" : activeFolder
+                    } emails will appear here.`}
+              </p>
             </div>
+          ) : (
+            visibleEmails.map((email) => {
+              const isSelected = selectedEmails.includes(email.id);
 
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">1–50 of 2,435</span>
-              <div className="flex items-center gap-1">
-                <button className="p-2 hover:bg-gray-100 rounded-full">
-                  {/* <ChevronLeft className="w-5 h-5 text-gray-600" /> */}
-                </button>
-                <button className="p-2 hover:bg-gray-100 rounded-full">
-                  {/* <ChevronRight className="w-5 h-5 text-gray-600" /> */}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Email List */}
-          <div className=" pt-2 pb-10 overflow-auto">
-            <div className="flex-1 h-full">
-              {emails.map((email) => (
+              return (
                 <div
                   key={email.id}
-                  className={`flex items-center px-4 py-2 border-b border-gray-100 hover:shadow-sm cursor-pointer ${
-                    !email.read ? "bg-white" : "bg-gray-50"
+                  className={`border-b border-gray-200 transition ${
+                    isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedEmails.includes(email.id)}
-                    onChange={() => toggleEmailSelection(email.id)}
-                    className="w-5 h-5 mr-2"
-                  />
-                  <CiStar
-                    className={`w-5 h-5 mr-2 cursor-pointer ${
-                      email.starred
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-400"
-                    }`}
-                  />
-                  <div className="flex-1 min-w-0 text-sm flex items-center gap-4">
-                    <span
-                      className={`w-48 truncate ${
-                        !email.read
-                          ? "font-semibold text-gray-900"
-                          : "text-gray-700"
+                  {/* =================================================
+                      DESKTOP EMAIL ROW
+                  ================================================= */}
+
+                  <div className="hidden min-w-0 grid-cols-[38px_38px_minmax(160px,240px)_minmax(0,1fr)_65px] items-center gap-1 px-3 py-3 lg:grid lg:px-4">
+                    {/* Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => toggleEmailSelection(email.id)}
+                      className="flex h-8 w-8 items-center justify-center"
+                      aria-label={`Select ${email.sender}`}
+                    >
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                          isSelected
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+
+                    {/* Star */}
+                    <button
+                      type="button"
+                      onClick={() => toggleStar(email.id)}
+                      className="flex h-8 w-8 items-center justify-center"
+                      aria-label={`Star ${email.sender}`}
+                    >
+                      <FiStar
+                        size={19}
+                        className={
+                          email.starred
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-400"
+                        }
+                      />
+                    </button>
+
+                    {/* Sender */}
+                    <div
+                      className={`min-w-0 truncate pr-3 text-sm ${
+                        email.read
+                          ? "font-normal text-gray-600"
+                          : "font-semibold text-gray-900"
                       }`}
+                      title={email.email}
                     >
                       {email.sender}
-                    </span>
-                    <div className="flex-1 min-w-0">
+                    </div>
+
+                    {/* Subject */}
+                    <div className="min-w-0 truncate text-sm">
                       <span
-                        className={`${
-                          !email.read
-                            ? "font-semibold text-gray-900"
-                            : "text-gray-700"
-                        }`}
+                        className={
+                          email.read
+                            ? "text-gray-600"
+                            : "font-semibold text-gray-900"
+                        }
                       >
                         {email.subject}
                       </span>
-                      <span className="text-gray-600"> - {email.preview}</span>
+
+                      {email.preview && (
+                        <span className="text-gray-500">
+                          {" "}
+                          - {email.preview}
+                        </span>
+                      )}
                     </div>
-                    <span
-                      className={`text-sm whitespace-nowrap ml-4 ${
-                        !email.read
-                          ? "font-semibold text-gray-900"
-                          : "text-gray-600"
+
+                    {/* Time */}
+                    <div
+                      className={`truncate text-right text-xs ${
+                        email.read
+                          ? "text-gray-500"
+                          : "font-semibold text-gray-900"
                       }`}
                     >
                       {email.time}
-                    </span>
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      TABLET EMAIL ROW
+                  ================================================= */}
+
+                  <div className="hidden min-w-0 grid-cols-[36px_32px_minmax(130px,190px)_minmax(0,1fr)_60px] items-center gap-1 px-3 py-3 md:grid lg:hidden">
+                    {/* Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => toggleEmailSelection(email.id)}
+                      className="flex h-8 w-8 items-center justify-center"
+                    >
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                          isSelected
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+
+                    {/* Star */}
+                    <button
+                      type="button"
+                      onClick={() => toggleStar(email.id)}
+                      className="flex h-8 w-8 items-center justify-center"
+                    >
+                      <FiStar
+                        size={18}
+                        className={
+                          email.starred
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-400"
+                        }
+                      />
+                    </button>
+
+                    {/* Sender */}
+                    <div
+                      className={`min-w-0 truncate text-sm ${
+                        email.read
+                          ? "text-gray-600"
+                          : "font-semibold text-gray-900"
+                      }`}
+                    >
+                      {email.sender}
+                    </div>
+
+                    {/* Subject */}
+                    <div className="min-w-0 truncate text-sm">
+                      <span
+                        className={
+                          email.read
+                            ? "text-gray-600"
+                            : "font-semibold text-gray-900"
+                        }
+                      >
+                        {email.subject}
+                      </span>
+
+                      {email.preview && (
+                        <span className="text-gray-500">
+                          {" "}
+                          - {email.preview}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Time */}
+                    <div className="truncate text-right text-xs text-gray-500">
+                      {email.time}
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      MOBILE EMAIL ROW
+                  ================================================= */}
+
+                  <div className="flex min-w-0 items-start gap-1 px-2 py-2.5 sm:px-3 sm:py-3 md:hidden">
+                    {/* Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => toggleEmailSelection(email.id)}
+                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center"
+                    >
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                          isSelected
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+
+                    {/* Star */}
+                    <button
+                      type="button"
+                      onClick={() => toggleStar(email.id)}
+                      className="mt-0.5 flex h-9 w-8 shrink-0 items-center justify-center"
+                    >
+                      <FiStar
+                        size={18}
+                        className={
+                          email.starred
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-gray-400"
+                        }
+                      />
+                    </button>
+
+                    {/* Content */}
+                    <div className="min-w-0 flex-1">
+                      {/* Sender + Time */}
+                      <div className="flex min-w-0 items-center justify-between gap-2">
+                        <p
+                          className={`min-w-0 truncate pr-2 text-sm ${
+                            email.read
+                              ? "text-gray-600"
+                              : "font-semibold text-gray-900"
+                          }`}
+                        >
+                          {email.sender}
+                        </p>
+
+                        <span
+                          className={`shrink-0 text-[11px] ${
+                            email.read
+                              ? "text-gray-500"
+                              : "font-semibold text-gray-900"
+                          }`}
+                        >
+                          {email.time}
+                        </span>
+                      </div>
+
+                      {/* Subject */}
+                      <p
+                        className={`mt-0.5 truncate text-[13px] leading-5 ${
+                          email.read
+                            ? "text-gray-600"
+                            : "font-medium text-gray-900"
+                        }`}
+                      >
+                        {email.subject}
+                      </p>
+
+                      {/* Preview */}
+                      {email.preview && (
+                        <p className="truncate text-xs leading-5 text-gray-400">
+                          {email.preview}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              ))}
+              );
+            })
+          )}
+        </div>
+      </section>
+      {/* ==================================================
+    EXCEL RECIPIENT PREVIEW
+================================================== */}
+
+      {isRecipientPreviewOpen && (
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-3 sm:p-5">
+          <div
+            className="
+        flex
+        max-h-[90vh]
+        w-full
+        max-w-2xl
+        flex-col
+        overflow-hidden
+        rounded-2xl
+        bg-white
+        shadow-2xl
+      "
+          >
+            {/* HEADER */}
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-5">
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Broadcast Recipients
+                </h2>
+
+                <p className="mt-1 text-xs text-gray-500">
+                  {excelRecipients.length} email
+                  {excelRecipients.length === 1 ? "" : "s"} imported from Excel
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRecipientPreviewOpen(false);
+                  setExcelRecipients([]);
+                }}
+                className="
+            flex
+            h-9
+            w-9
+            shrink-0
+            items-center
+            justify-center
+            rounded-lg
+            text-gray-500
+            transition
+            hover:bg-gray-100
+            hover:text-gray-900
+          "
+                aria-label="Close recipient preview"
+              >
+                <FiX size={19} />
+              </button>
+            </div>
+
+            {/* RECIPIENT LIST */}
+            <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4">
+              {excelRecipients.length > 0 ? (
+                <div className="space-y-2">
+                  {excelRecipients.map((email, index) => (
+                    <div
+                      key={`${email}-${index}`}
+                      className="
+                  flex
+                  items-center
+                  gap-2
+                  rounded-lg
+                  border
+                  border-gray-200
+                  bg-gray-50
+                  p-2
+                  transition
+                  hover:bg-white
+                "
+                    >
+                      {/* NUMBER */}
+                      <span
+                        className="
+                    flex
+                    h-7
+                    w-7
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-full
+                    bg-white
+                    text-[11px]
+                    font-medium
+                    text-gray-500
+                  "
+                      >
+                        {index + 1}
+                      </span>
+
+                      {/* EMAIL */}
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) =>
+                          handleRecipientEdit(index, e.target.value)
+                        }
+                        className="
+                    min-w-0
+                    flex-1
+                    rounded-md
+                    border
+                    border-transparent
+                    bg-transparent
+                    px-2
+                    py-1.5
+                    text-sm
+                    text-gray-800
+                    outline-none
+                    focus:border-blue-300
+                    focus:bg-white
+                  "
+                      />
+
+                      {/* DELETE */}
+                      <button
+                        type="button"
+                        onClick={() => handleRecipientDelete(index)}
+                        className="
+                    flex
+                    h-8
+                    w-8
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+                    text-gray-400
+                    transition
+                    hover:bg-red-50
+                    hover:text-red-500
+                  "
+                        title="Remove recipient"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-48 items-center justify-center">
+                  <p className="text-sm text-gray-400">No recipients found.</p>
+                </div>
+              )}
+            </div>
+
+            {/* FOOTER */}
+            <div
+              className="
+          flex
+          shrink-0
+          flex-col
+          gap-2
+          border-t
+          border-gray-200
+          bg-white
+          px-4
+          py-3
+          sm:flex-row
+          sm:items-center
+          sm:justify-between
+          sm:px-5
+        "
+            >
+              {/* CANCEL */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRecipientPreviewOpen(false);
+                  setExcelRecipients([]);
+                }}
+                className="
+            w-full
+            rounded-lg
+            border
+            border-gray-200
+            px-4
+            py-2
+            text-sm
+            font-medium
+            text-gray-600
+            transition
+            hover:bg-gray-50
+            sm:w-auto
+          "
+              >
+                Cancel
+              </button>
+
+              {/* CONTINUE */}
+              <button
+                type="button"
+                onClick={handleContinueToCompose}
+                disabled={excelRecipients.length === 0}
+                className="
+            w-full
+            rounded-lg
+            bg-blue-600
+            px-5
+            py-2
+            text-sm
+            font-medium
+            text-white
+            transition
+            hover:bg-blue-700
+            disabled:cursor-not-allowed
+            disabled:opacity-50
+            sm:w-auto
+          "
+              >
+                Continue to Compose
+              </button>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      )}
+
+      {/* ==================================================
+    COMPOSE
+================================================== */}
+
+      {isComposeOpen && (
+        <ComposeEmail
+          onClose={closeCompose}
+          recipients={broadcastRecipients}
+          isBroadcast={broadcastRecipients.length > 0}
+        />
+      )}
+      {/* ==================================================
+          COMPOSE
+      ================================================== */}
+
+      {isComposeOpen && (
+        <ComposeEmail
+          onClose={closeCompose}
+          recipients={broadcastRecipients}
+          isBroadcast={broadcastRecipients.length > 0}
+        />
+      )}
     </div>
   );
 }
