@@ -2095,7 +2095,14 @@ const ChatArea = ({ setActiveTab }) => {
                   className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
                 />
               ) : (
-                <div className="flex-1"></div>
+                <div className="flex-1 ">
+                  <p className="text-red-600 opacity-70 text-xs">
+                    24-hour messaging window has expired. You can no longer send
+                    a regular message to this customer. To continue the
+                    conversation, please use an approved WhatsApp message
+                    template.
+                  </p>
+                </div>
               )}
 
               {/* Send Button */}

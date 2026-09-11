@@ -70,7 +70,7 @@ import MetaMessages from "../Meta/MetaMessage";
 import MetaConnections from "../Meta/MetaConnection";
 import MetaSettings from "../Meta/MetaSetting";
 import Calls from "../Calls/Calls";
-import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
+// import EmailMarketingManagement from "../EmailMarketing/EmailMarketing";
 import Contacts from "../Contacts/Contacts";
 import EazbotEnquiries from "../Enquiry/EazbotEnquiries";
 import Overview from "../Gmb/Overview";
@@ -95,6 +95,7 @@ import MetaPageInsights from "../Meta/MetaPageInsights";
 import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
 import WebsiteSeo from "../SEO/WebsiteSeo";
 import ImportAndConvertLeads from "../Enquiry/ImportAndConvertLeads/ImportAndConvertLeads";
+import { EmailMarketingManagement } from "../EmailMarketing/EmailMarketing";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -121,7 +122,6 @@ const DynamicPage = () => {
     // Reservation Desk
 
     [`${BASE_PATH}/${hid}/reservation-desk`]: <ReservationDesk />,
-    
 
     // Bookin Engine
     [`${BASE_PATH}/${hid}/booking-engine/all-bookings`]: <BookingEngine />,
