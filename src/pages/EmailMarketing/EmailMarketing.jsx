@@ -387,6 +387,7 @@ import {
   sendEmailCampaign,
 } from "../../services/api/emailCampaign.js";
 import ComposeEmail from "../../components/Email/ComposeEmail";
+import CampaignsList from "../../components/Email/CampaignsList.jsx";
 
 /* =========================================================
    EXCEL RECIPIENT IMPORT
@@ -494,6 +495,7 @@ export function EmailMarketingManagement() {
 
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [isAllMatchingSelected, setIsAllMatchingSelected] = useState(false);
+  const [activeView, setActiveView] = useState("recipients");
 
   const recipientsTotalPages = Math.max(
     1,
@@ -759,6 +761,7 @@ export function EmailMarketingManagement() {
     text,
     fromName,
     fromEmail,
+    attachments,
   }) => {
     try {
       setIsSendingCampaign(true);
@@ -786,6 +789,7 @@ export function EmailMarketingManagement() {
         fromName,
         fromEmail,
         recipientBatchIds: [batchId],
+        attachments,
       });
 
       const campaignId = campaignRes?.doc?.campaign?._id;
@@ -813,6 +817,31 @@ export function EmailMarketingManagement() {
      RENDER
   ========================================================= */
 
+  // const SideNav = ({ mobile = false }) => (
+  //   <div className={`flex flex-col ${mobile ? "h-full" : "h-full"}`}>
+  //     <div className="p-4">
+  //       <button
+  //         type="button"
+  //         onClick={openCompose}
+  //         className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+  //       >
+  //         <FiEdit3 size={17} />
+  //         Compose
+  //       </button>
+  //     </div>
+
+  //     <nav className="space-y-1 px-3">
+  //       <div className="flex w-full items-center gap-3 rounded-lg bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-700">
+  //         <FiUsers size={18} />
+  //         <span>Recipients</span>
+  //         <span className="ml-auto text-xs text-blue-600">
+  //           {recipientsTotal}
+  //         </span>
+  //       </div>
+  //     </nav>
+  //   </div>
+  // );
+
   const SideNav = ({ mobile = false }) => (
     <div className={`flex flex-col ${mobile ? "h-full" : "h-full"}`}>
       <div className="p-4">
@@ -827,13 +856,44 @@ export function EmailMarketingManagement() {
       </div>
 
       <nav className="space-y-1 px-3">
-        <div className="flex w-full items-center gap-3 rounded-lg bg-blue-50 px-3 py-2.5 text-sm font-medium text-blue-700">
+        <button
+          type="button"
+          onClick={() => {
+            setActiveView("recipients");
+            setIsMobileNavOpen(false);
+          }}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeView === "recipients"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
           <FiUsers size={18} />
           <span>Recipients</span>
-          <span className="ml-auto text-xs text-blue-600">
+          <span
+            className={`ml-auto text-xs ${
+              activeView === "recipients" ? "text-blue-600" : "text-gray-400"
+            }`}
+          >
             {recipientsTotal}
           </span>
-        </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveView("campaigns");
+            setIsMobileNavOpen(false);
+          }}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeView === "campaigns"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiSend size={18} />
+          <span>Campaigns</span>
+        </button>
       </nav>
     </div>
   );
@@ -883,319 +943,325 @@ export function EmailMarketingManagement() {
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        {/* MOBILE HEADER */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 md:hidden">
-          <div className="flex min-w-0 items-center gap-2">
+      {activeView === "recipients" ? (
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          {/* MOBILE HEADER */}
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 md:hidden">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsMobileNavOpen(true)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+                aria-label="Open navigation"
+              >
+                <FiMenu size={20} />
+              </button>
+              <span className="truncate text-sm font-semibold text-gray-800">
+                Recipients
+              </span>
+            </div>
             <button
               type="button"
-              onClick={() => setIsMobileNavOpen(true)}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-              aria-label="Open navigation"
+              onClick={openCompose}
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-medium text-white"
             >
-              <FiMenu size={20} />
+              <FiEdit3 size={14} />
+              Compose
             </button>
-            <span className="truncate text-sm font-semibold text-gray-800">
-              Recipients
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={openCompose}
-            className="flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-medium text-white"
-          >
-            <FiEdit3 size={14} />
-            Compose
-          </button>
-        </div>
-
-        {/* Search + Broadcast */}
-        <div className="flex shrink-0 flex-col gap-2 border-b border-gray-200 p-3 sm:p-4 md:flex-row md:items-center md:gap-3 md:px-5 md:py-3">
-          <div className="relative min-w-0 flex-1">
-            <FiSearch
-              size={18}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              value={recipientsSearch}
-              onChange={(e) => setRecipientsSearch(e.target.value)}
-              placeholder="Search recipients by name or email"
-              className="h-11 w-full rounded-lg border border-gray-200 bg-gray-100 pl-10 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
-            />
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="relative flex shrink-0">
+          {/* Search + Broadcast */}
+          <div className="flex shrink-0 flex-col gap-2 border-b border-gray-200 p-3 sm:p-4 md:flex-row md:items-center md:gap-3 md:px-5 md:py-3">
+            <div className="relative min-w-0 flex-1">
+              <FiSearch
+                size={18}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <input
-                ref={excelInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={handleExcelFileChange}
-                className="hidden"
-                aria-hidden="true"
+                type="text"
+                value={recipientsSearch}
+                onChange={(e) => setRecipientsSearch(e.target.value)}
+                placeholder="Search recipients by name or email"
+                className="h-11 w-full rounded-lg border border-gray-200 bg-gray-100 pl-10 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
               />
+            </div>
 
-              <button
-                type="button"
-                onClick={openLeadsBroadcast}
-                disabled={
-                  isImportingExcel ||
-                  isCreatingBatch ||
-                  effectiveSelectedCount === 0
-                }
-                className="flex h-11 items-center gap-2 rounded-l-lg border-r border-gray-300 bg-gray-100 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
-                title="Broadcast to selected recipients"
-              >
-                <FiSend size={16} />
-                <span className="hidden sm:inline">Broadcast</span>
-                {effectiveSelectedCount > 0 && (
-                  <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] text-white">
-                    {effectiveSelectedCount}
-                  </span>
-                )}
-              </button>
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="relative flex shrink-0">
+                <input
+                  ref={excelInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleExcelFileChange}
+                  className="hidden"
+                  aria-hidden="true"
+                />
 
-              <button
-                type="button"
-                onClick={() => setIsBroadcastMenuOpen((p) => !p)}
-                disabled={isImportingExcel}
-                className="flex h-11 w-9 items-center justify-center rounded-r-lg bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-wait disabled:opacity-60"
-                aria-label="Broadcast options"
-                aria-expanded={isBroadcastMenuOpen}
-              >
-                <FiChevronDown size={15} />
-              </button>
-
-              {isBroadcastMenuOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] z-[10000] w-72 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-                  <button
-                    type="button"
-                    onClick={openLeadsBroadcast}
-                    disabled={effectiveSelectedCount === 0}
-                    className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <FiUsers
-                      size={18}
-                      className="mt-0.5 shrink-0 text-blue-600"
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-gray-800">
-                        Selected recipients
-                      </span>
-                      <span className="mt-0.5 block text-xs text-gray-400">
-                        {effectiveSelectedCount > 0
-                          ? `${effectiveSelectedCount} selected`
-                          : "Select recipients below first"}
-                      </span>
+                <button
+                  type="button"
+                  onClick={openLeadsBroadcast}
+                  disabled={
+                    isImportingExcel ||
+                    isCreatingBatch ||
+                    effectiveSelectedCount === 0
+                  }
+                  className="flex h-11 items-center gap-2 rounded-l-lg border-r border-gray-300 bg-gray-100 px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
+                  title="Broadcast to selected recipients"
+                >
+                  <FiSend size={16} />
+                  <span className="hidden sm:inline">Broadcast</span>
+                  {effectiveSelectedCount > 0 && (
+                    <span className="rounded-full bg-blue-600 px-1.5 py-0.5 text-[10px] text-white">
+                      {effectiveSelectedCount}
                     </span>
-                  </button>
+                  )}
+                </button>
 
-                  <div className="border-t border-gray-100" />
+                <button
+                  type="button"
+                  onClick={() => setIsBroadcastMenuOpen((p) => !p)}
+                  disabled={isImportingExcel}
+                  className="flex h-11 w-9 items-center justify-center rounded-r-lg bg-gray-100 text-gray-600 transition hover:bg-gray-200 disabled:cursor-wait disabled:opacity-60"
+                  aria-label="Broadcast options"
+                  aria-expanded={isBroadcastMenuOpen}
+                >
+                  <FiChevronDown size={15} />
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={openExcelPicker}
-                    disabled={isImportingExcel}
-                    className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
-                  >
-                    <FiUpload
-                      size={18}
-                      className="mt-0.5 shrink-0 text-green-600"
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-gray-800">
-                        {isImportingExcel
-                          ? "Reading Excel..."
-                          : "Import from Excel"}
+                {isBroadcastMenuOpen && (
+                  <div className="absolute right-0 top-[calc(100%+8px)] z-[10000] w-72 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                    <button
+                      type="button"
+                      onClick={openLeadsBroadcast}
+                      disabled={effectiveSelectedCount === 0}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      <FiUsers
+                        size={18}
+                        className="mt-0.5 shrink-0 text-blue-600"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-gray-800">
+                          Selected recipients
+                        </span>
+                        <span className="mt-0.5 block text-xs text-gray-400">
+                          {effectiveSelectedCount > 0
+                            ? `${effectiveSelectedCount} selected`
+                            : "Select recipients below first"}
+                        </span>
                       </span>
-                      <span className="mt-0.5 block text-xs leading-4 text-gray-400">
-                        Upload .xlsx, .xls or .csv — any size
+                    </button>
+
+                    <div className="border-t border-gray-100" />
+
+                    <button
+                      type="button"
+                      onClick={openExcelPicker}
+                      disabled={isImportingExcel}
+                      className="flex w-full items-start gap-3 px-4 py-3 text-left transition hover:bg-blue-50 disabled:cursor-wait disabled:opacity-60"
+                    >
+                      <FiUpload
+                        size={18}
+                        className="mt-0.5 shrink-0 text-green-600"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-medium text-gray-800">
+                          {isImportingExcel
+                            ? "Reading Excel..."
+                            : "Import from Excel"}
+                        </span>
+                        <span className="mt-0.5 block text-xs leading-4 text-gray-400">
+                          Upload .xlsx, .xls or .csv — any size
+                        </span>
                       </span>
-                    </span>
-                  </button>
+                    </button>
 
-                  <div className="border-t border-gray-100" />
+                    <div className="border-t border-gray-100" />
 
-                  <div className="flex items-start gap-3 px-4 py-3">
-                    <FiFileText
-                      size={17}
-                      className="mt-0.5 shrink-0 text-gray-400"
-                    />
-                    <p className="text-[11px] leading-4 text-gray-400">
-                      Selecting recipients here queues them into a recipient
-                      batch on the server before composing.
-                    </p>
+                    <div className="flex items-start gap-3 px-4 py-3">
+                      <FiFileText
+                        size={17}
+                        className="mt-0.5 shrink-0 text-gray-400"
+                      />
+                      <p className="text-[11px] leading-4 text-gray-400">
+                        Selecting recipients here queues them into a recipient
+                        batch on the server before composing.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Toolbar */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 sm:px-4 md:h-14 md:px-5">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={togglePageSelectAll}
-              className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100"
-              aria-label="Select all on this page"
-            >
-              <span
-                className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
-                  isPageAllSelected
-                    ? "border-blue-600 bg-blue-600 text-white"
-                    : "border-gray-300 bg-white"
-                }`}
+          {/* Toolbar */}
+          <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 sm:px-4 md:h-14 md:px-5">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={togglePageSelectAll}
+                className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-gray-100"
+                aria-label="Select all on this page"
               >
-                {isPageAllSelected ? "✓" : ""}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={loadRecipients}
-              disabled={isRecipientsLoading}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
-              aria-label="Refresh recipients"
-            >
-              <FiRefreshCw
-                size={17}
-                className={isRecipientsLoading ? "animate-spin" : ""}
-              />
-            </button>
-
-            {effectiveSelectedCount > 0 && (
-              <span className="ml-1 whitespace-nowrap text-xs font-medium text-blue-600 sm:text-sm">
-                {effectiveSelectedCount} selected
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-0.5">
-            <span className="mr-1 whitespace-nowrap text-xs text-gray-600 sm:mr-2 sm:text-sm">
-              {recipientsTotal === 0
-                ? "0–0 of 0"
-                : `${(recipientsPage - 1) * RECIPIENTS_PAGE_SIZE + 1}–${Math.min(
-                    recipientsPage * RECIPIENTS_PAGE_SIZE,
-                    recipientsTotal,
-                  )} of ${recipientsTotal}`}
-            </span>
-
-            <button
-              type="button"
-              onClick={goRecipientsPrevious}
-              disabled={recipientsPage <= 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-              aria-label="Previous page"
-            >
-              <FiChevronLeft size={18} />
-            </button>
-
-            <button
-              type="button"
-              onClick={goRecipientsNext}
-              disabled={recipientsPage >= recipientsTotalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-              aria-label="Next page"
-            >
-              <FiChevronRight size={18} />
-            </button>
-          </div>
-        </div>
-
-        {/* "Select all matching" banner */}
-        {showSelectAllBanner && (
-          <div className="flex items-center justify-center gap-2 border-b border-blue-100 bg-blue-50 px-4 py-2 text-center text-sm text-blue-700">
-            <span>
-              All {recipients.length} recipients on this page are selected.
-            </span>
-            <button
-              type="button"
-              onClick={handleSelectAllMatching}
-              className="font-semibold underline hover:text-blue-900"
-            >
-              Select all {recipientsTotal} matching recipients
-            </button>
-          </div>
-        )}
-
-        {isAllMatchingSelected && (
-          <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
-            <span>All {recipientsTotal} matching recipients selected.</span>
-            <button
-              type="button"
-              onClick={clearAllMatchingSelection}
-              className="font-semibold underline hover:text-blue-900"
-            >
-              Clear selection
-            </button>
-          </div>
-        )}
-
-        {/* Recipient rows */}
-        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-          {isRecipientsLoading ? (
-            <div className="flex h-52 items-center justify-center text-sm text-gray-400">
-              Loading recipients...
-            </div>
-          ) : recipients.length === 0 ? (
-            <div className="flex h-52 flex-col items-center justify-center px-5 text-center">
-              <FiUsers size={38} className="mb-3 text-gray-300" />
-              <p className="text-sm font-medium text-gray-700">
-                {recipientsSearch.trim()
-                  ? "No recipients found"
-                  : "No recipients yet"}
-              </p>
-              <p className="mt-1 text-xs text-gray-400">
-                {recipientsSearch.trim()
-                  ? "Try another search."
-                  : "Leads with a valid email will appear here."}
-              </p>
-            </div>
-          ) : (
-            recipients.map((r) => {
-              const isSelected =
-                isAllMatchingSelected || selectedLeadIds.includes(r.id);
-
-              return (
-                <div
-                  key={r.id}
-                  className={`flex items-center gap-3 border-b border-gray-200 px-4 py-3 transition ${
-                    isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                    isPageAllSelected
+                      ? "border-blue-600 bg-blue-600 text-white"
+                      : "border-gray-300 bg-white"
                   }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => toggleLeadSelection(r.id)}
-                    disabled={isAllMatchingSelected}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center disabled:cursor-not-allowed"
-                    aria-label={`Select ${r.email}`}
-                  >
-                    <span
-                      className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
-                        isSelected
-                          ? "border-blue-600 bg-blue-600 text-white"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {isSelected ? "✓" : ""}
-                    </span>
-                  </button>
+                  {isPageAllSelected ? "✓" : ""}
+                </span>
+              </button>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {r.name || "Unnamed"}
-                    </p>
-                    <p className="truncate text-xs text-gray-500">{r.email}</p>
-                  </div>
-                </div>
-              );
-            })
+              <button
+                type="button"
+                onClick={loadRecipients}
+                disabled={isRecipientsLoading}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+                aria-label="Refresh recipients"
+              >
+                <FiRefreshCw
+                  size={17}
+                  className={isRecipientsLoading ? "animate-spin" : ""}
+                />
+              </button>
+
+              {effectiveSelectedCount > 0 && (
+                <span className="ml-1 whitespace-nowrap text-xs font-medium text-blue-600 sm:text-sm">
+                  {effectiveSelectedCount} selected
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-0.5">
+              <span className="mr-1 whitespace-nowrap text-xs text-gray-600 sm:mr-2 sm:text-sm">
+                {recipientsTotal === 0
+                  ? "0–0 of 0"
+                  : `${(recipientsPage - 1) * RECIPIENTS_PAGE_SIZE + 1}–${Math.min(
+                      recipientsPage * RECIPIENTS_PAGE_SIZE,
+                      recipientsTotal,
+                    )} of ${recipientsTotal}`}
+              </span>
+
+              <button
+                type="button"
+                onClick={goRecipientsPrevious}
+                disabled={recipientsPage <= 1}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label="Previous page"
+              >
+                <FiChevronLeft size={18} />
+              </button>
+
+              <button
+                type="button"
+                onClick={goRecipientsNext}
+                disabled={recipientsPage >= recipientsTotalPages}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label="Next page"
+              >
+                <FiChevronRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* "Select all matching" banner */}
+          {showSelectAllBanner && (
+            <div className="flex items-center justify-center gap-2 border-b border-blue-100 bg-blue-50 px-4 py-2 text-center text-sm text-blue-700">
+              <span>
+                All {recipients.length} recipients on this page are selected.
+              </span>
+              <button
+                type="button"
+                onClick={handleSelectAllMatching}
+                className="font-semibold underline hover:text-blue-900"
+              >
+                Select all {recipientsTotal} matching recipients
+              </button>
+            </div>
           )}
-        </div>
-      </section>
+
+          {isAllMatchingSelected && (
+            <div className="flex items-center justify-between border-b border-blue-100 bg-blue-50 px-4 py-2 text-sm text-blue-700">
+              <span>All {recipientsTotal} matching recipients selected.</span>
+              <button
+                type="button"
+                onClick={clearAllMatchingSelection}
+                className="font-semibold underline hover:text-blue-900"
+              >
+                Clear selection
+              </button>
+            </div>
+          )}
+
+          {/* Recipient rows */}
+          <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+            {isRecipientsLoading ? (
+              <div className="flex h-52 items-center justify-center text-sm text-gray-400">
+                Loading recipients...
+              </div>
+            ) : recipients.length === 0 ? (
+              <div className="flex h-52 flex-col items-center justify-center px-5 text-center">
+                <FiUsers size={38} className="mb-3 text-gray-300" />
+                <p className="text-sm font-medium text-gray-700">
+                  {recipientsSearch.trim()
+                    ? "No recipients found"
+                    : "No recipients yet"}
+                </p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {recipientsSearch.trim()
+                    ? "Try another search."
+                    : "Leads with a valid email will appear here."}
+                </p>
+              </div>
+            ) : (
+              recipients.map((r) => {
+                const isSelected =
+                  isAllMatchingSelected || selectedLeadIds.includes(r.id);
+
+                return (
+                  <div
+                    key={r.id}
+                    className={`flex items-center gap-3 border-b border-gray-200 px-4 py-3 transition ${
+                      isSelected ? "bg-blue-50" : "bg-white hover:bg-gray-50"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => toggleLeadSelection(r.id)}
+                      disabled={isAllMatchingSelected}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center disabled:cursor-not-allowed"
+                      aria-label={`Select ${r.email}`}
+                    >
+                      <span
+                        className={`flex h-5 w-5 items-center justify-center rounded border text-xs ${
+                          isSelected
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected ? "✓" : ""}
+                      </span>
+                    </button>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900">
+                        {r.name || "Unnamed"}
+                      </p>
+                      <p className="truncate text-xs text-gray-500">
+                        {r.email}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+      ) : (
+        <CampaignsList />
+      )}
 
       {/* EXCEL RECIPIENT PREVIEW */}
       {isRecipientPreviewOpen && (

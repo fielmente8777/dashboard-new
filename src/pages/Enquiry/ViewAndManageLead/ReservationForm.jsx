@@ -111,8 +111,8 @@ export default function ReservationForm({
         checked_in: false,
         checked_out: false,
       };
-      const response = await addReservation(payload);
-      // const response = await addReservationWithPaymentLink(payload);
+      // const response = await addReservation(payload);
+      const response = await addReservationWithPaymentLink(payload);
 
       console.log("response", response);
 

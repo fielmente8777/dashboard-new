@@ -430,7 +430,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import JoditEditor from "jodit-react";
-import { FiX, FiTrash2, FiSend, FiMinus, FiMaximize2 } from "react-icons/fi";
+import {
+  FiX,
+  FiTrash2,
+  FiSend,
+  FiMinus,
+  FiMaximize2,
+  FiPaperclip,
+  FiFile,
+} from "react-icons/fi";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
@@ -448,6 +456,7 @@ function ComposeEmail({
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [minimized, setMinimized] = useState(false);
+  const [attachments, setAttachments] = useState([]);
 
   /*
    * ---------------------------------------------------------
@@ -493,8 +502,8 @@ function ComposeEmail({
         "ul",
         "ol",
         "|",
-        "link",
-        "image",
+        // "link",
+        // "image",
         "|",
         "align",
         "|",
@@ -645,6 +654,7 @@ function ComposeEmail({
         subject: subject.trim(),
         html: body,
         text: text.trim(),
+        attachments,
       });
     } catch (error) {
       console.error("Compose email send error:", error);
@@ -731,7 +741,6 @@ function ComposeEmail({
 
         <div className="flex items-center gap-1">
           {/* Minimize */}
-
           <button
             type="button"
             onClick={() => setMinimized((prev) => !prev)}
@@ -935,8 +944,193 @@ function ComposeEmail({
           {/* =================================================
               FOOTER
           ================================================= */}
+          <div className="border-t border-gray-200 bg-white">
+            {/* Attachments */}
+            {attachments.length > 0 && (
+              <div className="px-3 pt-3 sm:px-4">
+                <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+                  {/* Header */}
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <FiPaperclip size={15} />
 
-          <div
+                      <span>
+                        {attachments.length}{" "}
+                        {attachments.length === 1 ? "file" : "files"} attached
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setAttachments([])}
+                      disabled={isSubmitting}
+                      className="text-xs font-medium text-gray-500 hover:text-red-500 disabled:opacity-50"
+                    >
+                      Remove all
+                    </button>
+                  </div>
+
+                  {/* File names */}
+                  <div className="flex flex-wrap gap-2">
+                    {attachments.map((file, index) => (
+                      <div
+                        key={`${file.name}-${index}`}
+                        className="flex max-w-full items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5"
+                      >
+                        <FiFile size={14} className="shrink-0 text-gray-500" />
+
+                        <span
+                          title={file.name}
+                          className="max-w-[180px] truncate text-xs text-gray-700"
+                        >
+                          {file.name}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachments((prev) =>
+                              prev.filter((_, i) => i !== index),
+                            );
+                          }}
+                          disabled={isSubmitting}
+                          className="shrink-0 rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                        >
+                          <FiX size={13} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom actions */}
+            <div
+              className="
+      flex
+      items-center
+      justify-between
+      gap-3
+      px-3
+      py-3
+      sm:px-4
+    "
+            >
+              {/* Left actions */}
+              <div className="flex items-center gap-2">
+                {/* Hidden file input */}
+                <input
+                  id="email-attachments"
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+
+                    if (!files.length) return;
+
+                    setAttachments((prev) => [...prev, ...files]);
+
+                    // Allow selecting the same file again
+                    e.target.value = "";
+                  }}
+                />
+
+                {/* Attach button */}
+                <label
+                  htmlFor="email-attachments"
+                  className="
+          flex
+          h-9
+          cursor-pointer
+          items-center
+          gap-2
+          rounded-lg
+          border
+          border-gray-200
+          bg-white
+          px-3
+          text-sm
+          font-medium
+          text-gray-600
+          transition
+          hover:border-gray-300
+          hover:bg-gray-50
+          hover:text-gray-800
+        "
+                >
+                  <FiPaperclip size={16} />
+
+                  <span className="hidden sm:inline">Attach files</span>
+
+                  {attachments.length > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[11px] font-semibold text-blue-600">
+                      {attachments.length}
+                    </span>
+                  )}
+                </label>
+              </div>
+
+              {/* Right actions */}
+              <div className="flex items-center gap-2">
+                {/* Delete / close */}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  title="Discard email"
+                  className="
+          flex
+          h-9
+          w-9
+          items-center
+          justify-center
+          rounded-lg
+          text-gray-500
+          transition
+          hover:bg-red-50
+          hover:text-red-500
+          disabled:cursor-not-allowed
+          disabled:opacity-50
+        "
+                >
+                  <FiTrash2 size={17} />
+                </button>
+
+                {/* Send */}
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={isSubmitting}
+                  className="
+          flex
+          h-9
+          items-center
+          gap-2
+          rounded-lg
+          bg-blue-600
+          px-4
+          text-sm
+          font-medium
+          text-white
+          shadow-sm
+          transition
+          hover:bg-blue-700
+          hover:shadow
+          disabled:cursor-not-allowed
+          disabled:opacity-60
+        "
+                >
+                  <FiSend size={15} />
+
+                  <span>{isSubmitting ? "Sending..." : "Send"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* <div
             className="
               flex
               items-center
@@ -993,7 +1187,7 @@ function ComposeEmail({
             >
               <FiTrash2 size={17} />
             </button>
-          </div>
+          </div> */}
         </>
       )}
     </div>

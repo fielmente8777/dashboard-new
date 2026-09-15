@@ -5,10 +5,11 @@ const API_PREFIX = "/api/v1/email-marketing";
 
 const getHid = () => localStorage.getItem("hid");
 
-const getAuthHeaders = (extra = {}) => {
+const getAuthHeaders = (extra = true) => {
   const token = localStorage.getItem("token");
   return {
-    "Content-Type": "application/json",
+    // "Content-Type": "application/json",
+    ...(extra && { "Content-Type": "application/json" }),
     Authorization: `Bearer ${token}`,
     ...extra,
   };
@@ -124,13 +125,15 @@ export const createManualRecipientBatch = async ({ emails }) => {
       `${EMAIL_BASE_URL}${API_PREFIX}/recipient-batches/manual`,
       {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: getAuthHeaders({
+          multip,
+        }),
         body: JSON.stringify({ hid: getHid(), emails }),
       },
     );
 
     const result = await response.json();
-    return result?.data;
+    return result?.result;
   } catch (error) {
     console.error("Error creating manual recipient batch:", error);
     throw error;
@@ -191,24 +194,34 @@ export const createEmailCampaign = async ({
   fromName = "",
   fromEmail = "",
   recipientBatchIds,
+  attachments = [],
 }) => {
   try {
+    const formData = new FormData();
+
+    // Normal fields
+    formData.append("hid", getHid());
+    formData.append("name", name);
+    formData.append("subject", subject);
+    formData.append("html", html);
+    formData.append("text", text);
+    formData.append("fromName", fromName);
+    formData.append("fromEmail", fromEmail);
+    formData.append("recipientBatchIds", JSON.stringify(recipientBatchIds));
+
+    // Files
+    attachments.forEach((file) => {
+      formData.append("attachments", file);
+    });
+
     const response = await fetch(`${EMAIL_BASE_URL}${API_PREFIX}/campaigns`, {
       method: "POST",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
-        hid: getHid(),
-        name,
-        subject,
-        html,
-        text,
-        fromName,
-        fromEmail,
-        recipientBatchIds,
-      }),
+      headers: getAuthHeaders(false),
+      body: formData,
     });
 
     const result = await response.json();
+
     return result?.result;
   } catch (error) {
     console.error("Error creating email campaign:", error);
@@ -232,7 +245,7 @@ export const getEmailCampaigns = async ({ page = 1, limit = 20 } = {}) => {
     );
 
     const result = await response.json();
-    return result?.data;
+    return result?.result;
   } catch (error) {
     console.error("Error getting email campaigns:", error);
     throw error;
@@ -253,9 +266,38 @@ export const getEmailCampaign = async ({ campaignId }) => {
     );
 
     const result = await response.json();
-    return result?.data;
+    return result?.result;
   } catch (error) {
     console.error("Error getting email campaign:", error);
+    throw error;
+  }
+};
+
+export const getCampaignRecipients = async ({
+  campaignId,
+  status = "",
+  page = 1,
+  limit = 50,
+}) => {
+  try {
+    const params = new URLSearchParams();
+    params.append("hid", getHid());
+    params.append("page", page);
+    params.append("limit", limit);
+    if (status) params.append("status", status);
+
+    const response = await fetch(
+      `${EMAIL_BASE_URL}${API_PREFIX}/campaigns/${campaignId}/recipients?${params.toString()}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      },
+    );
+
+    const result = await response.json();
+    return result?.result;
+  } catch (error) {
+    console.error("Error getting campaign recipients:", error);
     throw error;
   }
 };
