@@ -29,7 +29,9 @@ import { MdOutlineFileDownload } from "react-icons/md";
 const MAX_LENGTH = 150; // adjust as needed
 // import { GoogleMap, useLoadScript } from "@react-google-maps/api";
 import {
+  BASE_PATH,
   NEW_BASE_URL,
+  ROUTES_PATH,
   WEBSOCKET_EVENTS,
   WS_BASE_URL,
 } from "../../../../data/constant";
@@ -43,6 +45,7 @@ import {
   sendWhatsAppMessage,
   updateFlowSession,
 } from "../../../../services/api/whatsApp";
+import { getLeads } from "../../../../services/api/leads.api";
 import { is24HoursCompletedFnc } from "../../../../utils/is24Hours";
 import normalizePhone from "../../../../utils/normalizePhone";
 import { renderMessageWithLinks } from "../../../../utils/urlParser";
@@ -68,6 +71,155 @@ const MODAL_FIELD =
 
 const ChatArea = ({ setActiveTab }) => {
   const navigate = useNavigate();
+  const handleOpenLead = async () => {
+    const phone = selectedConversation?.phone;
+
+    if (!phone) {
+      showToast({
+        type: "error",
+        message: "Phone number not available for this contact",
+      });
+      return;
+    }
+
+    const hid =
+      selectedConversation?.hid ||
+      localStorage.getItem("hid");
+
+    if (!hid) {
+      showToast({
+        type: "error",
+        message: "Hotel ID not available",
+      });
+      return;
+    }
+
+    try {
+      /*
+       * The leads API uses the search value directly inside a MongoDB
+       * regex. A phone number such as +919999999999 can therefore cause
+       * a regex error because "+" is a regex operator.
+       *
+       * Use only digits for the API search. Using the last 10 digits also
+       * allows the search to work whether Contact is stored as:
+       *   +919999999999
+       *   919999999999
+       *   9999999999
+       *   +91 99999 99999
+       */
+      const phoneDigits = String(phone).replace(/\D/g, "");
+      const normalizedPhone = phoneDigits.slice(-10);
+
+      if (normalizedPhone.length < 10) {
+        showToast({
+          type: "error",
+          message: "Invalid phone number",
+        });
+        return;
+      }
+
+      console.log("Searching lead for:", normalizedPhone);
+      console.log("HID:", hid);
+
+      /*
+       * getLeads already adds the hotel ID from localStorage.
+       * Therefore make sure the current conversation's hotel ID is also
+       * available there when it is different.
+       */
+      const storedHid = localStorage.getItem("hid");
+
+      if (storedHid !== String(hid)) {
+        localStorage.setItem("hid", String(hid));
+      }
+
+      const response = await getLeads({
+        search: normalizedPhone,
+        limit: 20,
+        page: 1,
+      });
+
+      console.log("Lead search response:", response);
+
+      const leads = response?.result?.docs?.leads || [];
+
+      if (!leads.length) {
+        showToast({
+          type: "error",
+          message: "No lead found for this contact",
+        });
+        return;
+      }
+
+      /*
+       * Match using the last 10 digits instead of comparing the complete
+       * phone string. This handles country-code and formatting differences.
+       */
+      const matchedLead = leads.find((lead) => {
+        const leadPhoneDigits = String(lead?.Contact || "").replace(
+          /\D/g,
+          "",
+        );
+
+        const leadPhone = leadPhoneDigits.slice(-10);
+
+        return leadPhone === normalizedPhone;
+      });
+      console.log("Matched:" , matchedLead);
+      
+
+      if (!matchedLead) {
+        showToast({
+          type: "error",
+          message: "Lead not found for this contact",
+        });
+        return;
+      }
+
+      const leadId = matchedLead?._id;
+      const leadHid = matchedLead?.hId || hid;
+      console.log("WWWWWWWWW:", leadId);
+      console.log("JUYBGHGY:", leadHid);
+      
+      
+
+      if (!leadId) {
+        showToast({
+          type: "error",
+          message: "Lead ID not found",
+        });
+        return;
+      }
+
+      /*
+       * This is the same route structure used by AllLeads when opening
+       * a specific lead:
+       *
+       * /{BASE_PATH}/{hid}/leads-management/all-leads/{leadId}/view
+       */
+      const queryParams = new URLSearchParams({
+        hid: String(leadHid),
+        lead: "1",
+      });
+
+      const navigatePath =
+        `${BASE_PATH}/${leadHid}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${leadId}/view?${queryParams.toString()}`;
+
+      console.log("Opening Lead:", navigatePath);
+
+      navigate(navigatePath);
+    } catch (error) {
+      console.error("Failed to find/open lead:", error);
+
+      showToast({
+        type: "error",
+        message:
+          error?.response?.data?.message ||
+          error?.response?.data?.responseMessage ||
+          "Failed to open lead",
+      });
+    }
+  };
+
   const wsRef = useRef(null);
   const menuRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -1045,14 +1197,16 @@ const ChatArea = ({ setActiveTab }) => {
           </button>
 
           <div
-            onClick={() => setMobileActive("profile")}
+            onClick={handleOpenLead}
+            title="Open Lead"
             className="w-9 h-9 md:w-12 md:h-12 shrink-0 cursor-pointer text-white bg-teal-600 rounded-full flex items-center justify-center font-bold text-sm mr-2 md:mr-4"
           >
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
 
           <div
-            onClick={() => setMobileActive("profile")}
+            onClick={handleOpenLead}
+            title="Open Lead"
             className="min-w-0 cursor-pointer"
           >
             <h3 className="text-sm md:text-base text-app-text font-medium capitalize truncate">
