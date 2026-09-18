@@ -25,7 +25,6 @@ import { verify } from "../../utils/verify";
 import { useToast } from "../../context/ToastContext";
 
 const Login = () => {
-
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
     email: "",
@@ -112,6 +111,7 @@ const Login = () => {
     try {
       const token = response.credential;
       const result = (await verify(token)).data;
+      console.log("login result", result);
 
       let timerInterval;
       if (result?.status === true) {
