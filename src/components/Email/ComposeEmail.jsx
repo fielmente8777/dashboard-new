@@ -449,7 +449,9 @@ function ComposeEmail({
   isBroadcast = false,
   onSend,
   isSubmitting = false,
+  defaultFrom = "",
 }) {
+  const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState("");
   const [cc, setCc] = useState("");
   const [bcc, setBcc] = useState("");
@@ -469,6 +471,12 @@ function ComposeEmail({
       setTo(recipients.join(", "));
     }
   }, [recipients]);
+
+  useEffect(() => {
+    if (defaultFrom) {
+      setFrom(defaultFrom);
+    }
+  }, [defaultFrom]);
 
   /*
    * ---------------------------------------------------------
@@ -551,11 +559,22 @@ function ComposeEmail({
       return;
     }
 
+    const fromEmail = from.trim().toLowerCase();
+
+    if (!fromEmail) {
+      alert("Please enter the From email.");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(fromEmail)) {
+      alert(`Invalid From email:\n\n${fromEmail}`);
+      return;
+    }
+
     /*
      * Parse To
      */
     const toEmails = parseEmails(to);
-
     if (recipientCount === 0) {
       alert("Please enter at least one recipient email.");
       return;
@@ -648,6 +667,7 @@ function ComposeEmail({
 
     try {
       await onSend({
+        from: fromEmail,
         toEmails,
         ccEmails,
         bccEmails,
@@ -799,6 +819,34 @@ function ComposeEmail({
             "
           >
             <div className="px-3 sm:px-4">
+              <div className="border-b py-2.5">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 shrink-0 text-sm text-gray-500">
+                    From<span className="text-red-500">*</span>
+                  </span>
+
+                  <input
+                    type="email"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    placeholder="sender@yourdomain.com"
+                    disabled={isSubmitting}
+                    required
+                    className="
+        min-w-0
+        flex-1
+        bg-transparent
+        text-sm
+        text-gray-900
+        outline-none
+        placeholder:text-gray-400
+        disabled:cursor-not-allowed
+        disabled:opacity-60
+      "
+                  />
+                </div>
+              </div>
+
               {/* =================================================
                   TO
               ================================================= */}

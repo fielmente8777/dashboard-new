@@ -521,8 +521,6 @@ export function EmailMarketingManagement() {
     }
   }, [recipientsPage, recipientsSearch]);
 
-  console.log("recipients", recipients);
-
   useEffect(() => {
     loadRecipients();
   }, [loadRecipients]);
@@ -760,7 +758,7 @@ export function EmailMarketingManagement() {
     html,
     text,
     fromName,
-    fromEmail,
+    from,
     attachments,
   }) => {
     try {
@@ -787,7 +785,7 @@ export function EmailMarketingManagement() {
         html,
         text,
         fromName,
-        fromEmail,
+        fromEmail: from,
         recipientBatchIds: [batchId],
         attachments,
       });

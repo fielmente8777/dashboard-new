@@ -96,6 +96,7 @@ import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceD
 import WebsiteSeo from "../SEO/WebsiteSeo";
 import ImportAndConvertLeads from "../Enquiry/ImportAndConvertLeads/ImportAndConvertLeads";
 import { EmailMarketingManagement } from "../EmailMarketing/EmailMarketing";
+import AiTrainingPage from "../AiTraining/AiTrainingPage";
 
 const DynamicPage = () => {
   const location = useLocation();
@@ -285,6 +286,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/website-tracking/visitors`]: <WebsiteTracker />,
     [`${BASE_PATH}/${hid}/website-tracking/activities`]: <VisitorActivity />,
     [`${BASE_PATH}/${hid}/knowledge-base`]: <KnowledgeBase />,
+    [`${BASE_PATH}/${hid}/ai-training`]: <AiTrainingPage />,
 
     [`${BASE_PATH}/${hid}/eazmail`]: <EmailMarketingManagement />,
 
