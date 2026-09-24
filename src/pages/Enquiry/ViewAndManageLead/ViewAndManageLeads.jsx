@@ -59,7 +59,7 @@ const ViewAndManageLeads = () => {
   const [messageLoading, setMessageLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState();
 
-  console.log(whatsAppConversation);
+  const isDirectLead = !leadPageNumber;
 
   const fetchConversation = async (conversationId) => {
     setMessageLoading(true);
@@ -77,37 +77,49 @@ const ViewAndManageLeads = () => {
     }
   };
 
+  const applyLead = (leadData) => {
+    if (!leadData) return;
+    setLead(leadData);
+
+    const followDate = leadData?.followUpDate || leadData?.folloUp;
+    setSelectedDate(followDate ? new Date(followDate) : null);
+
+    if (leadData?.conversationId) fetchConversation(leadData.conversationId);
+  };
+
   const fetchLead = async () => {
     setLoading(true);
-    const params = {
-      page: leadPageNumberState,
-      limit: 1,
-      ...(created_from && { created_from: created_from }),
-      ...(search && { search: search }),
-      ...(source && { source: source }),
-      ...(stage && { stage: stage }),
-      ...(startDate && { startDate: startDate }),
-      ...(endDate && { endDate: endDate }),
-    };
-
     try {
-      const response = await getLeads(params);
-      console.log(response);
-      // const response = await getLeadById(leadId, hid);
-      if (response?.success) {
-        setLead(response?.result?.docs?.leads[0]);
-        const followDate =
-          response?.result?.docs?.leads[0]?.followUpDate ||
-          response?.result?.docs?.leads[0]?.folloUp;
+      // 👇 direct open from global search — fetch this one lead by id
+      if (isDirectLead) {
+        const response = await getLeadById(leadId, hid);
+        const leadData =
+          response?.result?.docs?.lead ||
+          response?.result?.docs?.leads?.[0] ||
+          response?.result?.lead ||
+          response?.result?.docs ||
+          null;
 
-        setSelectedDate(followDate ? new Date(followDate) : null);
-
-        const conversationId = response?.result?.docs?.leads[0].conversationId;
-
-        if (conversationId) {
-          fetchConversation(conversationId);
-        }
+        applyLead(leadData);
+        return;
       }
+
+      // existing paged flow (Prev / Next from the leads table)
+      const params = {
+        page: leadPageNumberState,
+        limit: 1,
+        ...(created_from && { created_from }),
+        ...(search && { search }),
+        ...(source && { source }),
+        ...(stage && { stage }),
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+      };
+
+      const response = await getLeads(params);
+      if (response?.success) applyLead(response?.result?.docs?.leads?.[0]);
+    } catch (error) {
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -299,23 +311,22 @@ const ViewAndManageLeads = () => {
           </div>
         </div>
 
-        <div className="flex w-full md:w-auto justify-end items-center gap-2 sm:gap-3">
-          {/* Prev Button */}
-          <button
-            onClick={handlePrevPage}
-            className={`${NAV_BTN} flex-1 md:flex-none`}
-          >
-            ← Prev
-          </button>
-
-          {/* Next Button */}
-          <button
-            onClick={handleNextPage}
-            className={`${NAV_BTN} flex-1 md:flex-none`}
-          >
-            Next →
-          </button>
-        </div>
+        {!isDirectLead && (
+          <div className="flex w-full md:w-auto justify-end items-center gap-2 sm:gap-3">
+            <button
+              onClick={handlePrevPage}
+              className={`${NAV_BTN} flex-1 md:flex-none`}
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={handleNextPage}
+              className={`${NAV_BTN} flex-1 md:flex-none`}
+            >
+              Next →
+            </button>
+          </div>
+        )}
       </div>
 
       {activeTab === 0 && (

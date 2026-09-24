@@ -59,6 +59,7 @@ import { Eye, MessageSquareReply, X } from "lucide-react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { QuickReplyPreview } from "./QuickReplyPreview";
+import { buildLink } from "../../../../utils/buildLink";
 
 /* ── shared presentation tokens ─────────────────────────────── */
 const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
@@ -949,6 +950,34 @@ const ChatArea = ({ setActiveTab }) => {
     }
   };
 
+  // // open a conversation coming from global search
+  // useEffect(() => {
+  //   const conversationId = searchParams.get("conversationId");
+  //   const phone = searchParams.get("phone");
+  //   if (!conversationId && !phone) return;
+  //   if (!conversations?.length) return; // wait for the list to load
+
+  //   const normalize = (v) =>
+  //     String(v || "")
+  //       .replace(/\D/g, "")
+  //       .slice(-10);
+
+  //   const match =
+  //     conversations.find((c) => String(c._id) === String(conversationId)) ||
+  //     (phone &&
+  //       conversations.find((c) => normalize(c.phone) === normalize(phone)));
+
+  //   if (match) {
+  //     setSelectedConversation(match);
+  //     setMobileActive?.("chat");
+
+  //     // clean the URL so a refresh doesn't re-trigger it
+  //     searchParams.delete("conversationId");
+  //     searchParams.delete("phone");
+  //     setSearchParams(searchParams, { replace: true });
+  //   }
+  // }, [conversations, searchParams]);
+
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
@@ -1030,6 +1059,21 @@ const ChatArea = ({ setActiveTab }) => {
     handling?.mode === "HUMAN" &&
     String(handling?.assignedTo) !== String(authUser?.emailId);
 
+  const handleSelect = () => {
+    const group = {
+      key: "leads",
+    };
+    const item = {
+      id: selectedConversation?.leadId,
+      hId: localStorage.getItem("hid"),
+    };
+    console.log(selectedConversation);
+
+    const link = buildLink(group, item);
+    console.log("link", link);
+    if (link) navigate(link);
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 min-w-0 bg-app-surface [color-scheme:light] dark:[color-scheme:dark]">
       {/* Header */}
@@ -1045,7 +1089,8 @@ const ChatArea = ({ setActiveTab }) => {
           </button>
 
           <div
-            onClick={() => setMobileActive("profile")}
+            // onClick={() => setMobileActive("profile")}
+            onClick={() => handleSelect()}
             className="w-9 h-9 md:w-12 md:h-12 shrink-0 cursor-pointer text-white bg-teal-600 rounded-full flex items-center justify-center font-bold text-sm mr-2 md:mr-4"
           >
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
@@ -1053,6 +1098,7 @@ const ChatArea = ({ setActiveTab }) => {
 
           <div
             onClick={() => setMobileActive("profile")}
+            // onClick={() => alert("helo")}
             className="min-w-0 cursor-pointer"
           >
             <h3 className="text-sm md:text-base text-app-text font-medium capitalize truncate">

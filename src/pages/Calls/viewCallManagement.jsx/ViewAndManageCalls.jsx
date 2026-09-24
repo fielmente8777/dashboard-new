@@ -18,6 +18,7 @@ const ViewAndManageCalls = () => {
   const [searchParams] = useSearchParams();
 
   const hid = searchParams.get("hid");
+  const sid = searchParams.get("sid"); // 👈 this was missing
   const search = searchParams.get("search");
   const stage = searchParams.get("stage");
   const from = searchParams.get("from");
@@ -31,32 +32,46 @@ const ViewAndManageCalls = () => {
   const [selectedDate, setSelectedDate] = useState();
   const [showSave, setShowSave] = useState(false);
 
-  // ✅ FETCH CALL (same like leads pagination)
+  // no "call" page number -> opened from global search
+  const isDirectCall = !callPageNumber;
+
+  const applyCall = (callData) => {
+    if (!callData) return setCall(null);
+    setCall(callData);
+    setSelectedDate(
+      callData.followUpDate ? new Date(callData.followUpDate) : null,
+    );
+  };
+
   const fetchCall = async () => {
     setLoading(true);
-
-    const params = {
-      hid,
-      page,
-      limit: 1,
-      ...(search && { search: search }),
-      ...(stage && { stage: stage }),
-      ...(from && { from: from }),
-      ...(to && { to: to }),
-      ...(status && { status: status }),
-    };
-
     try {
-      const response = await getAllCalls(params);
-      const callData = response?.result?.docs?.calls?.[0];
-
-      if (callData) {
-        setCall(callData);
-        const followUpDate = callData.followUpDate;
-        setSelectedDate(followUpDate ? new Date(followUpDate) : null);
-      } else {
-        setCall(null);
+      // 👇 direct open from global search — fetch this one call by sid
+      if (isDirectCall) {
+        const response = await getAllCalls({
+          hid,
+          page: 1,
+          limit: 1,
+          search: sid,
+        });
+        applyCall(response?.result?.docs?.calls?.[0]);
+        return;
       }
+
+      // existing paged flow (Prev / Next from the calls table)
+      const params = {
+        hid,
+        page,
+        limit: 1,
+        ...(search && { search }),
+        ...(stage && { stage }),
+        ...(from && { from }),
+        ...(to && { to }),
+        ...(status && { status }),
+      };
+
+      const response = await getAllCalls(params);
+      applyCall(response?.result?.docs?.calls?.[0]);
     } catch (error) {
       console.log(error);
     } finally {
@@ -102,7 +117,7 @@ const ViewAndManageCalls = () => {
   useEffect(() => {
     if (!hid) return;
     fetchCall();
-  }, [hid, page]);
+  }, [hid, page, sid]);
 
   // ================= UI =================
 
@@ -146,14 +161,11 @@ const ViewAndManageCalls = () => {
         </button>
 
         <div className="flex flex-1 justify-between items-center">
-          {/* Pagination Buttons */}
           <h2>Call Details</h2>
 
           <div className="flex items-center gap-2">
             <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white dark:bg-app-surface dark:text-app-text font-medium">
-              <label htmlFor="" className="">
-                Follow Up
-              </label>
+              <label htmlFor="">Follow Up</label>
 
               <DatePicker
                 minDate={new Date()}
@@ -173,6 +185,7 @@ const ViewAndManageCalls = () => {
                 className="bg-transparent outline-none text-sm w-44"
                 popperClassName="!z-50"
               />
+
               {call?.followUpDate && (
                 <button
                   className="size-4 flex items-center justify-center bg-red-200 text-red-500 rounded-full"
@@ -198,31 +211,30 @@ const ViewAndManageCalls = () => {
               )}
             </div>
 
-            <div className="flex gap-3">
-              <button
-                onClick={handlePrevPage}
-                className="px-4 py-2 border rounded bg-white dark:bg-app-surface disabled:opacity-80"
-                disabled={Number(page) === 1}
-              >
-                ← Prev
-              </button>
+            {!isDirectCall && (
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePrevPage}
+                  className="px-4 py-2 border rounded bg-white dark:bg-app-surface disabled:opacity-80"
+                  disabled={Number(page) === 1}
+                >
+                  ← Prev
+                </button>
 
-              <button
-                onClick={handleNextPage}
-                className="px-4 py-2 border rounded bg-white dark:bg-app-surface"
-              >
-                Next →
-              </button>
-            </div>
+                <button
+                  onClick={handleNextPage}
+                  className="px-4 py-2 border rounded bg-white dark:bg-app-surface"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* LEFT */}
         <CallInfoCard call={call} />
-
-        {/* RIGHT */}
         <NotesCard lead={call} setLead={setCall} callManagement={true} />
       </div>
     </div>
@@ -230,3 +242,270 @@ const ViewAndManageCalls = () => {
 };
 
 export default ViewAndManageCalls;
+
+// const ViewAndManageCalls = () => {
+//   const { showToast } = useToast();
+//   const { leadId } = useParams(); // actually callId
+
+//   const [searchParams] = useSearchParams();
+
+//   const hid = searchParams.get("hid");
+//   const search = searchParams.get("search");
+//   const stage = searchParams.get("stage");
+//   const from = searchParams.get("from");
+//   const to = searchParams.get("to");
+//   const status = searchParams.get("status");
+//   const callPageNumber = searchParams.get("call");
+
+//   const [page, setPage] = useState(callPageNumber || 1);
+//   const [call, setCall] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const [selectedDate, setSelectedDate] = useState();
+//   const [showSave, setShowSave] = useState(false);
+
+//   const isDirectCall = !callPageNumber;
+
+//   // // ✅ FETCH CALL (same like leads pagination)
+//   // const fetchCall = async () => {
+//   //   setLoading(true);
+
+//   //   const params = {
+//   //     hid,
+//   //     page,
+//   //     limit: 1,
+//   //     ...(search && { search: search }),
+//   //     ...(stage && { stage: stage }),
+//   //     ...(from && { from: from }),
+//   //     ...(to && { to: to }),
+//   //     ...(status && { status: status }),
+//   //   };
+
+//   //   try {
+//   //     const response = await getAllCalls(params);
+//   //     const callData = response?.result?.docs?.calls?.[0];
+
+//   //     if (callData) {
+//   //       setCall(callData);
+//   //       const followUpDate = callData.followUpDate;
+//   //       setSelectedDate(followUpDate ? new Date(followUpDate) : null);
+//   //     } else {
+//   //       setCall(null);
+//   //     }
+//   //   } catch (error) {
+//   //     console.log(error);
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
+
+//   const applyCall = (callData) => {
+//     if (!callData) return setCall(null);
+//     setCall(callData);
+//     setSelectedDate(
+//       callData.followUpDate ? new Date(callData.followUpDate) : null,
+//     );
+//   };
+
+//   const fetchCall = async () => {
+//     setLoading(true);
+//     try {
+//       // 👇 direct open from global search — find this one call
+//       if (isDirectCall) {
+//         const response = await getAllCalls({
+//           hid,
+//           page: 1,
+//           limit: 1,
+//           search: sid,
+//         });
+//         applyCall(response?.result?.docs?.calls?.[0]);
+//         return;
+//       }
+//       // existing paged flow (Prev / Next from the calls table)
+//       const params = {
+//         hid,
+//         page,
+//         limit: 1,
+//         ...(search && { search }),
+//         ...(stage && { stage }),
+//         ...(from && { from }),
+//         ...(to && { to }),
+//         ...(status && { status }),
+//       };
+
+//       const response = await getAllCalls(params);
+//       applyCall(response?.result?.docs?.calls?.[0]);
+//     } catch (error) {
+//       console.log(error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // ✅ Pagination
+//   const handleNextPage = () => {
+//     setPage((prev) => Number(prev) + 1);
+//   };
+
+//   const handlePrevPage = () => {
+//     if (page === 1) return;
+//     setPage((prev) => Number(prev) - 1);
+//   };
+
+//   const handleFollow = async (value) => {
+//     try {
+//       const payload = {
+//         sid: call?.sid,
+//         followUpDate: value,
+//         stage: "Follow Up",
+//       };
+
+//       const response = await updateCall(payload);
+
+//       if (response?.success && response?.responseStatusCode === 200) {
+//         showToast({
+//           message:
+//             response?.responseMessage || "Lead stage updated successfully",
+//           type: "success",
+//         });
+//       }
+//     } catch (error) {
+//       showToast({
+//         message: error?.message || "Failed to update lead stage",
+//         type: "error",
+//       });
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (!hid) return;
+//     fetchCall();
+//   }, [hid, page]);
+
+//   // ================= UI =================
+
+//   if (loading) {
+//     return (
+//       <div className="h-[70vh] flex items-center justify-center">
+//         <LeadDetailsSkeleton />
+//       </div>
+//     );
+//   }
+
+//   if (!call) {
+//     return (
+//       <div className="flex flex-col h-full">
+//         <div className="flex items-center gap-3 p-3 border-b bg-app-surface">
+//           <button
+//             onClick={() => window.history.back()}
+//             className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-100"
+//           >
+//             <IoArrowBack size={18} />
+//           </button>
+//           <span className="text-sm font-medium text-gray-700">Calls</span>
+//         </div>
+
+//         <div className="flex flex-1 flex-col items-center justify-center text-center">
+//           <h3 className="text-lg font-semibold">No Calls Found</h3>
+//         </div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-3 md:p-6 bg-app-surface min-h-screen space-y-4">
+//       {/* HEADER */}
+//       <div className="flex items-center gap-2.5 bg-app-surface-secondary p-3 rounded-md">
+//         <button
+//           onClick={() => window.history.back()}
+//           className="flex size-8 justify-center bg-gray-100 dark:bg-primary/20 rounded-full items-center"
+//         >
+//           <IoArrowBack />
+//         </button>
+
+//         <div className="flex flex-1 justify-between items-center">
+//           {/* Pagination Buttons */}
+//           <h2>Call Details</h2>
+
+//           <div className="flex items-center gap-2">
+//             <div className="flex gap-2 py-2 justify-center rounded items-center border px-2 text-primary/90 bg-white dark:bg-app-surface dark:text-app-text font-medium">
+//               <label htmlFor="" className="">
+//                 Follow Up
+//               </label>
+
+//               <DatePicker
+//                 minDate={new Date()}
+//                 selected={selectedDate}
+//                 onChange={(date) => {
+//                   setSelectedDate(date);
+//                 }}
+//                 onCalendarClose={() => {
+//                   if (selectedDate) {
+//                     handleFollow(selectedDate);
+//                   }
+//                 }}
+//                 showTimeSelect
+//                 timeIntervals={5}
+//                 dateFormat="dd/MM/yyyy h:mm aa"
+//                 placeholderText="Select Date & Time"
+//                 className="bg-transparent outline-none text-sm w-44"
+//                 popperClassName="!z-50"
+//               />
+//               {call?.followUpDate && (
+//                 <button
+//                   className="size-4 flex items-center justify-center bg-red-200 text-red-500 rounded-full"
+//                   onClick={() => {
+//                     setSelectedDate(null);
+//                     handleFollow(null);
+//                   }}
+//                 >
+//                   <FiX size={12} />
+//                 </button>
+//               )}
+
+//               {showSave && (
+//                 <button
+//                   onClick={() => {
+//                     handleFollow(selectedDate);
+//                     setShowSave(false);
+//                   }}
+//                   className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+//                 >
+//                   Save
+//                 </button>
+//               )}
+//             </div>
+
+//             {!isDirectCall && (
+//               <div className="flex gap-3">
+//                 <button
+//                   onClick={handlePrevPage}
+//                   className="px-4 py-2 border rounded bg-white dark:bg-app-surface disabled:opacity-80"
+//                   disabled={Number(page) === 1}
+//                 >
+//                   ← Prev
+//                 </button>
+
+//                 <button
+//                   onClick={handleNextPage}
+//                   className="px-4 py-2 border rounded bg-white dark:bg-app-surface"
+//                 >
+//                   Next →
+//                 </button>
+//               </div>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="grid md:grid-cols-2 gap-6">
+//         {/* LEFT */}
+//         <CallInfoCard call={call} />
+
+//         {/* RIGHT */}
+//         <NotesCard lead={call} setLead={setCall} callManagement={true} />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ViewAndManageCalls;
