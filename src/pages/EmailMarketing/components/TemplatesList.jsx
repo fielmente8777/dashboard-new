@@ -261,14 +261,14 @@ export default function TemplatesList({ onUseTemplate, onOpenMobileNav }) {
                   </p>
 
                   <div className="mt-3 flex items-center gap-1.5">
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => onUseTemplate?.(template)}
                       className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 text-xs font-medium text-white transition hover:bg-blue-700"
                     >
                       <FiSend size={13} />
                       Use in email
-                    </button>
+                    </button> */}
                     <button
                       type="button"
                       onClick={() => openEdit(template)}
