@@ -438,7 +438,11 @@ import {
   FiMaximize2,
   FiPaperclip,
   FiFile,
+  FiZap,
+  FiLayout,
 } from "react-icons/fi";
+import AITemplateModal from "../../pages/EmailMarketing/components/AITemplateModal";
+import EmailPreviewFrame from "../../pages/EmailMarketing/components/EmailPreviewFrame";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
@@ -450,21 +454,27 @@ function ComposeEmail({
   onSend,
   isSubmitting = false,
   defaultFrom = "",
+  initialTemplate = null,
 }) {
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState("");
   const [cc, setCc] = useState("");
   const [bcc, setBcc] = useState("");
-  const [subject, setSubject] = useState("");
+  const [subject, setSubject] = useState(initialTemplate?.subject || "");
   const [body, setBody] = useState("");
   const [minimized, setMinimized] = useState(false);
   const [attachments, setAttachments] = useState([]);
 
-  /*
-   * ---------------------------------------------------------
-   * SET RECIPIENTS
-   * ---------------------------------------------------------
-   */
+  // AI / saved template
+  const [appliedTemplate, setAppliedTemplate] = useState(
+    initialTemplate?.html ? initialTemplate : null,
+  );
+  const [isAITemplateOpen, setIsAITemplateOpen] = useState(false);
+  const [editorKey, setEditorKey] = useState(0);
+
+  /* ---------------------------------------------------------
+     SET RECIPIENTS
+  --------------------------------------------------------- */
 
   useEffect(() => {
     if (recipients?.length > 0) {
@@ -478,27 +488,21 @@ function ComposeEmail({
     }
   }, [defaultFrom]);
 
-  /*
-   * ---------------------------------------------------------
-   * JODIT CONFIG
-   * ---------------------------------------------------------
-   */
+  /* ---------------------------------------------------------
+     JODIT CONFIG
+  --------------------------------------------------------- */
 
   const config = useMemo(
     () => ({
       readonly: false,
       height: 220,
       minHeight: 160,
-
       placeholder: "Write your message...",
-
       toolbarAdaptive: true,
       toolbarSticky: false,
-
       showCharsCounter: false,
       showWordsCounter: false,
       showXPathInStatusbar: false,
-
       buttons: [
         "bold",
         "italic",
@@ -510,54 +514,58 @@ function ComposeEmail({
         "ul",
         "ol",
         "|",
-        // "link",
-        // "image",
-        "|",
         "align",
         "|",
         "undo",
         "redo",
       ],
-
       style: {
         color: "#111827",
         fontSize: "14px",
       },
-
       uploader: {
         insertImageAsBase64URI: true,
+      },
+      // keeps template table cells intact when edited as text
+      cleanHTML: {
+        removeEmptyElements: false,
       },
     }),
     [],
   );
 
-  /*
-   * ---------------------------------------------------------
-   * PARSE EMAILS
-   * ---------------------------------------------------------
-   */
+  /* ---------------------------------------------------------
+     HELPERS
+  --------------------------------------------------------- */
 
-  const parseEmails = (value) => {
-    return [
-      ...new Set(
-        String(value || "")
-          .split(/[,\n;]/)
-          .map((email) => email.trim().toLowerCase())
-          .filter(Boolean),
-      ),
-    ];
+  const parseEmails = (value) => [
+    ...new Set(
+      String(value || "")
+        .split(/[,\n;]/)
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
+
+  const handleApplyTemplate = (template) => {
+    setAppliedTemplate(template);
+    if (template?.subject) setSubject(template.subject);
   };
 
-  /*
-   * ---------------------------------------------------------
-   * SEND
-   * ---------------------------------------------------------
-   */
+  // Moves the template into Jodit for free-text editing
+  const handleEditTemplateInEditor = () => {
+    if (!appliedTemplate) return;
+    setBody(appliedTemplate.html);
+    setAppliedTemplate(null);
+    setEditorKey((k) => k + 1); // remount Jodit with the new value
+  };
+
+  /* ---------------------------------------------------------
+     SEND
+  --------------------------------------------------------- */
 
   const handleSend = async () => {
-    if (isSubmitting) {
-      return;
-    }
+    if (isSubmitting) return;
 
     const fromEmail = from.trim().toLowerCase();
 
@@ -571,67 +579,51 @@ function ComposeEmail({
       return;
     }
 
-    /*
-     * Parse To
-     */
+    // To
     const toEmails = parseEmails(to);
-    if (recipientCount === 0) {
+
+    if (toEmails.length === 0 && recipientCount === 0) {
       alert("Please enter at least one recipient email.");
       return;
     }
 
-    /*
-     * Validate To
-     */
     const invalidToEmails = toEmails.filter(
       (email) => !EMAIL_REGEX.test(email),
     );
-
     if (invalidToEmails.length > 0) {
       alert(`Invalid recipient email:\n\n${invalidToEmails.join("\n")}`);
       return;
     }
 
-    /*
-     * Parse CC
-     */
+    // CC
     const ccEmails = parseEmails(cc);
-
     const invalidCcEmails = ccEmails.filter(
       (email) => !EMAIL_REGEX.test(email),
     );
-
     if (invalidCcEmails.length > 0) {
       alert(`Invalid CC email:\n\n${invalidCcEmails.join("\n")}`);
       return;
     }
 
-    /*
-     * Parse BCC
-     */
+    // BCC
     const bccEmails = parseEmails(bcc);
-
     const invalidBccEmails = bccEmails.filter(
       (email) => !EMAIL_REGEX.test(email),
     );
-
     if (invalidBccEmails.length > 0) {
       alert(`Invalid BCC email:\n\n${invalidBccEmails.join("\n")}`);
       return;
     }
 
-    /*
-     * Subject
-     */
+    // Subject
     if (!subject.trim()) {
       alert("Please enter subject.");
       return;
     }
 
-    /*
-     * Body
-     */
-    const cleanedBody = body?.trim();
+    // Body — template HTML wins over the editor when a template is applied
+    const finalHtml = appliedTemplate ? appliedTemplate.html : body;
+    const cleanedBody = finalHtml?.trim();
 
     if (
       !cleanedBody ||
@@ -642,29 +634,17 @@ function ComposeEmail({
       return;
     }
 
-    /*
-     * -------------------------------------------------------
-     * Convert HTML to simple text
-     * -------------------------------------------------------
-     */
-
+    // HTML → plain text
     const temporaryDiv = document.createElement("div");
-    temporaryDiv.innerHTML = body;
-
+    temporaryDiv.innerHTML = finalHtml;
     const text = temporaryDiv.textContent || temporaryDiv.innerText || "";
 
     /*
-     * -------------------------------------------------------
-     * SEND DATA TO PARENT
-     *
      * Parent will:
-     *
      * 1. Create recipient batch if needed
      * 2. Create campaign
      * 3. Call sendEmailCampaign()
-     * -------------------------------------------------------
      */
-
     try {
       await onSend({
         from: fromEmail,
@@ -672,7 +652,7 @@ function ComposeEmail({
         ccEmails,
         bccEmails,
         subject: subject.trim(),
-        html: body,
+        html: finalHtml,
         text: text.trim(),
         attachments,
       });
@@ -681,125 +661,50 @@ function ComposeEmail({
     }
   };
 
-  /*
-   * ---------------------------------------------------------
-   * RENDER
-   * ---------------------------------------------------------
-   */
+  /* ---------------------------------------------------------
+     RENDER
+  --------------------------------------------------------- */
+
+  const fieldInputClass =
+    "min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60";
 
   return (
     <div
-      className={`
-        fixed
-        z-[99999]
-        overflow-hidden
-        border
-        border-gray-200
-        bg-white
-        shadow-2xl
-
-        ${
-          minimized
-            ? `
-              bottom-0
-              right-2
-              w-[280px]
-              rounded-t-xl
-              sm:right-5
-            `
-            : `
-              bottom-0
-              left-0
-              right-0
-              w-full
-              rounded-t-xl
-
-              sm:left-auto
-              sm:right-4
-              sm:w-[520px]
-            `
-        }
-      `}
+      className={`fixed z-[99999] overflow-hidden border border-gray-200 bg-white shadow-2xl ${
+        minimized
+          ? "bottom-0 right-2 w-[280px] rounded-t-xl sm:right-5"
+          : "bottom-0 left-0 right-0 w-full rounded-t-xl sm:left-auto sm:right-4 sm:w-[520px]"
+      }`}
     >
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
-      <div
-        className="
-          flex
-          h-12
-          items-center
-          justify-between
-          bg-gray-100
-          px-3
-          sm:px-4
-        "
-      >
+      {/* HEADER */}
+      <div className="flex h-12 items-center justify-between bg-gray-100 px-3 sm:px-4">
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="truncate text-sm font-semibold text-gray-800">
             {isBroadcast ? "Broadcast Message" : "New Message"}
           </h2>
 
           {isBroadcast && (
-            <span
-              className="
-                shrink-0
-                rounded-full
-                bg-blue-100
-                px-2
-                py-0.5
-                text-[10px]
-                font-medium
-                text-blue-700
-              "
-            >
+            <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700">
               {recipientCount || recipients.length}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Minimize */}
           <button
             type="button"
             onClick={() => setMinimized((prev) => !prev)}
             disabled={isSubmitting}
-            className="
-              hidden
-              h-8
-              w-8
-              items-center
-              justify-center
-              rounded
-              text-gray-500
-              hover:bg-gray-200
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-              sm:flex
-            "
+            className="hidden h-8 w-8 items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50 sm:flex"
           >
             {minimized ? <FiMaximize2 size={15} /> : <FiMinus size={16} />}
           </button>
-
-          {/* Close */}
 
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="
-              flex
-              h-8
-              w-8
-              items-center
-              justify-center
-              rounded
-              text-gray-500
-              hover:bg-gray-200
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-            "
+            className="flex h-8 w-8 items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FiX size={18} />
           </button>
@@ -808,23 +713,15 @@ function ComposeEmail({
 
       {!minimized && (
         <>
-          {/* =================================================
-              BODY
-          ================================================= */}
-
-          <div
-            className="
-              max-h-[calc(100vh-110px)]
-              overflow-y-auto
-            "
-          >
+          {/* BODY */}
+          <div className="max-h-[calc(100vh-110px)] overflow-y-auto">
             <div className="px-3 sm:px-4">
+              {/* FROM */}
               <div className="border-b py-2.5">
                 <div className="flex items-center gap-3">
                   <span className="w-8 shrink-0 text-sm text-gray-500">
                     From<span className="text-red-500">*</span>
                   </span>
-
                   <input
                     type="email"
                     value={from}
@@ -832,55 +729,28 @@ function ComposeEmail({
                     placeholder="sender@yourdomain.com"
                     disabled={isSubmitting}
                     required
-                    className="
-        min-w-0
-        flex-1
-        bg-transparent
-        text-sm
-        text-gray-900
-        outline-none
-        placeholder:text-gray-400
-        disabled:cursor-not-allowed
-        disabled:opacity-60
-      "
+                    className={fieldInputClass}
                   />
                 </div>
               </div>
 
-              {/* =================================================
-                  TO
-              ================================================= */}
-
+              {/* TO */}
               <div className="border-b py-2.5">
                 <div className="flex items-start gap-3">
                   <span className="w-8 shrink-0 pt-1 text-sm text-gray-500">
                     To
                   </span>
-
                   <textarea
                     value={to}
                     onChange={(e) => setTo(e.target.value)}
                     rows={to.split(/[,;\n]/).length > 5 ? 3 : 1}
                     placeholder={
                       isBroadcast
-                        ? `${recipientCount} recipients selected — add more emails if needed`
+                        ? `${recipientCount} recipient${recipientCount !== 1 ? "s" : ""} selected — add more emails if needed`
                         : "Recipients"
                     }
                     disabled={isSubmitting}
-                    className="
-        min-h-[26px]
-        flex-1
-        resize-none
-        overflow-y-auto
-        bg-transparent
-        text-sm
-        leading-6
-        text-gray-900
-        outline-none
-        placeholder:text-gray-400
-        disabled:cursor-not-allowed
-        disabled:opacity-60
-      "
+                    className="min-h-[26px] flex-1 resize-none overflow-y-auto bg-transparent text-sm leading-6 text-gray-900 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60"
                   />
                 </div>
 
@@ -892,66 +762,39 @@ function ComposeEmail({
                 )}
               </div>
 
-              {/* =================================================
-                  CC
-              ================================================= */}
-
+              {/* CC */}
               <div className="border-b py-2.5">
                 <div className="flex items-center gap-3">
                   <span className="w-8 shrink-0 text-sm text-gray-500">Cc</span>
-
                   <input
                     type="text"
                     value={cc}
                     onChange={(e) => setCc(e.target.value)}
                     placeholder="Cc"
                     disabled={isSubmitting}
-                    className="
-                      min-w-0
-                      flex-1
-                      bg-transparent
-                      text-sm
-                      outline-none
-                      disabled:cursor-not-allowed
-                      disabled:opacity-60
-                    "
+                    className={fieldInputClass}
                   />
                 </div>
               </div>
 
-              {/* =================================================
-                  BCC
-              ================================================= */}
-
+              {/* BCC */}
               <div className="border-b py-2.5">
                 <div className="flex items-center gap-3">
                   <span className="w-8 shrink-0 text-sm text-gray-500">
                     Bcc
                   </span>
-
                   <input
                     type="text"
                     value={bcc}
                     onChange={(e) => setBcc(e.target.value)}
                     placeholder="Bcc"
                     disabled={isSubmitting}
-                    className="
-                      min-w-0
-                      flex-1
-                      bg-transparent
-                      text-sm
-                      outline-none
-                      disabled:cursor-not-allowed
-                      disabled:opacity-60
-                    "
+                    className={fieldInputClass}
                   />
                 </div>
               </div>
 
-              {/* =================================================
-                  SUBJECT
-              ================================================= */}
-
+              {/* SUBJECT */}
               <div className="border-b py-2.5">
                 <input
                   type="text"
@@ -959,49 +802,80 @@ function ComposeEmail({
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Subject"
                   disabled={isSubmitting}
-                  className="
-                    w-full
-                    bg-transparent
-                    text-sm
-                    text-gray-900
-                    outline-none
-                    placeholder:text-gray-400
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                  "
+                  className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-60"
                 />
               </div>
 
-              {/* =================================================
-                  EDITOR
-              ================================================= */}
-
+              {/* EDITOR / TEMPLATE PREVIEW */}
               <div className="py-3">
-                <JoditEditor
-                  value={body}
-                  config={{
-                    ...config,
-                    disabled: isSubmitting,
-                  }}
-                  onBlur={(content) => setBody(content)}
-                />
+                {appliedTemplate ? (
+                  <div className="overflow-hidden rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-3 py-2">
+                      <div className="flex min-w-0 items-center gap-2 text-xs font-medium text-gray-700">
+                        <FiLayout
+                          size={14}
+                          className="shrink-0 text-blue-600"
+                        />
+                        <span className="truncate">
+                          {appliedTemplate.name || "Email template"}
+                        </span>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setIsAITemplateOpen(true)}
+                          disabled={isSubmitting}
+                          className="rounded-md px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                        >
+                          Change
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleEditTemplateInEditor}
+                          disabled={isSubmitting}
+                          title="Open in the text editor. Some layout may be simplified."
+                          className="rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+                        >
+                          Edit text
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAppliedTemplate(null)}
+                          disabled={isSubmitting}
+                          className="rounded-md px-2 py-1 text-xs font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    <EmailPreviewFrame
+                      html={appliedTemplate.html}
+                      className="h-[320px]"
+                    />
+                  </div>
+                ) : (
+                  <JoditEditor
+                    key={editorKey}
+                    value={body}
+                    config={{ ...config, disabled: isSubmitting }}
+                    onBlur={(content) => setBody(content)}
+                  />
+                )}
               </div>
             </div>
           </div>
 
-          {/* =================================================
-              FOOTER
-          ================================================= */}
+          {/* FOOTER */}
           <div className="border-t border-gray-200 bg-white">
             {/* Attachments */}
             {attachments.length > 0 && (
               <div className="px-3 pt-3 sm:px-4">
                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
-                  {/* Header */}
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <FiPaperclip size={15} />
-
                       <span>
                         {attachments.length}{" "}
                         {attachments.length === 1 ? "file" : "files"} attached
@@ -1018,7 +892,6 @@ function ComposeEmail({
                     </button>
                   </div>
 
-                  {/* File names */}
                   <div className="flex flex-wrap gap-2">
                     {attachments.map((file, index) => (
                       <div
@@ -1026,21 +899,19 @@ function ComposeEmail({
                         className="flex max-w-full items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5"
                       >
                         <FiFile size={14} className="shrink-0 text-gray-500" />
-
                         <span
                           title={file.name}
                           className="max-w-[180px] truncate text-xs text-gray-700"
                         >
                           {file.name}
                         </span>
-
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={() =>
                             setAttachments((prev) =>
                               prev.filter((_, i) => i !== index),
-                            );
-                          }}
+                            )
+                          }
                           disabled={isSubmitting}
                           className="shrink-0 rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
                         >
@@ -1054,20 +925,8 @@ function ComposeEmail({
             )}
 
             {/* Bottom actions */}
-            <div
-              className="
-      flex
-      items-center
-      justify-between
-      gap-3
-      px-3
-      py-3
-      sm:px-4
-    "
-            >
-              {/* Left actions */}
+            <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-4">
               <div className="flex items-center gap-2">
-                {/* Hidden file input */}
                 <input
                   id="email-attachments"
                   type="file"
@@ -1075,174 +934,877 @@ function ComposeEmail({
                   className="hidden"
                   onChange={(e) => {
                     const files = Array.from(e.target.files || []);
-
                     if (!files.length) return;
-
                     setAttachments((prev) => [...prev, ...files]);
-
-                    // Allow selecting the same file again
-                    e.target.value = "";
+                    e.target.value = ""; // allow selecting the same file again
                   }}
                 />
 
-                {/* Attach button */}
                 <label
                   htmlFor="email-attachments"
-                  className="
-          flex
-          h-9
-          cursor-pointer
-          items-center
-          gap-2
-          rounded-lg
-          border
-          border-gray-200
-          bg-white
-          px-3
-          text-sm
-          font-medium
-          text-gray-600
-          transition
-          hover:border-gray-300
-          hover:bg-gray-50
-          hover:text-gray-800
-        "
+                  className="flex h-9 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 hover:text-gray-800"
                 >
                   <FiPaperclip size={16} />
-
                   <span className="hidden sm:inline">Attach files</span>
-
                   {attachments.length > 0 && (
                     <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[11px] font-semibold text-blue-600">
                       {attachments.length}
                     </span>
                   )}
                 </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAITemplateOpen(true)}
+                  disabled={isSubmitting}
+                  className="flex h-9 items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FiZap size={16} />
+                  <span className="hidden sm:inline">AI template</span>
+                </button>
               </div>
 
-              {/* Right actions */}
               <div className="flex items-center gap-2">
-                {/* Delete / close */}
                 <button
                   type="button"
                   onClick={onClose}
                   disabled={isSubmitting}
                   title="Discard email"
-                  className="
-          flex
-          h-9
-          w-9
-          items-center
-          justify-center
-          rounded-lg
-          text-gray-500
-          transition
-          hover:bg-red-50
-          hover:text-red-500
-          disabled:cursor-not-allowed
-          disabled:opacity-50
-        "
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <FiTrash2 size={17} />
                 </button>
 
-                {/* Send */}
                 <button
                   type="button"
                   onClick={handleSend}
                   disabled={isSubmitting}
-                  className="
-          flex
-          h-9
-          items-center
-          gap-2
-          rounded-lg
-          bg-blue-600
-          px-4
-          text-sm
-          font-medium
-          text-white
-          shadow-sm
-          transition
-          hover:bg-blue-700
-          hover:shadow
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
+                  className="flex h-9 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 hover:shadow disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <FiSend size={15} />
-
                   <span>{isSubmitting ? "Sending..." : "Send"}</span>
                 </button>
               </div>
             </div>
           </div>
-
-          {/* <div
-            className="
-              flex
-              items-center
-              justify-between
-              border-t
-              border-gray-200
-              px-3
-              py-3
-              sm:px-4
-            "
-          >
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={isSubmitting}
-              className="
-                flex
-                items-center
-                gap-2
-                rounded-full
-                bg-blue-600
-                px-5
-                py-2
-                text-sm
-                font-medium
-                text-white
-                hover:bg-blue-700
-                disabled:cursor-not-allowed
-                disabled:opacity-60
-              "
-            >
-              <FiSend size={15} />
-
-              {isSubmitting ? "Sending..." : "Send"}
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="
-                flex
-                h-9
-                w-9
-                items-center
-                justify-center
-                rounded-lg
-                text-gray-500
-                hover:bg-red-50
-                hover:text-red-500
-                disabled:cursor-not-allowed
-                disabled:opacity-50
-              "
-            >
-              <FiTrash2 size={17} />
-            </button>
-          </div> */}
         </>
       )}
+
+      {/* Renders through a portal to document.body, so it isn't clipped */}
+      <AITemplateModal
+        isOpen={isAITemplateOpen}
+        mode="compose"
+        initialTemplate={appliedTemplate}
+        onClose={() => setIsAITemplateOpen(false)}
+        onUse={handleApplyTemplate}
+      />
     </div>
   );
 }
 
 export default ComposeEmail;
+
+// function ComposeEmail({
+//   onClose,
+//   recipients = [],
+//   recipientCount = 0,
+//   isBroadcast = false,
+//   onSend,
+//   isSubmitting = false,
+//   defaultFrom = "",
+// }) {
+//   const [from, setFrom] = useState(defaultFrom);
+//   const [to, setTo] = useState("");
+//   const [cc, setCc] = useState("");
+//   const [bcc, setBcc] = useState("");
+//   const [subject, setSubject] = useState("");
+//   const [body, setBody] = useState("");
+//   const [minimized, setMinimized] = useState(false);
+//   const [attachments, setAttachments] = useState([]);
+
+//   /*
+//    * ---------------------------------------------------------
+//    * SET RECIPIENTS
+//    * ---------------------------------------------------------
+//    */
+
+//   useEffect(() => {
+//     if (recipients?.length > 0) {
+//       setTo(recipients.join(", "));
+//     }
+//   }, [recipients]);
+
+//   useEffect(() => {
+//     if (defaultFrom) {
+//       setFrom(defaultFrom);
+//     }
+//   }, [defaultFrom]);
+
+//   /*
+//    * ---------------------------------------------------------
+//    * JODIT CONFIG
+//    * ---------------------------------------------------------
+//    */
+
+//   const config = useMemo(
+//     () => ({
+//       readonly: false,
+//       height: 220,
+//       minHeight: 160,
+
+//       placeholder: "Write your message...",
+
+//       toolbarAdaptive: true,
+//       toolbarSticky: false,
+
+//       showCharsCounter: false,
+//       showWordsCounter: false,
+//       showXPathInStatusbar: false,
+
+//       buttons: [
+//         "bold",
+//         "italic",
+//         "underline",
+//         "|",
+//         "fontsize",
+//         "brush",
+//         "|",
+//         "ul",
+//         "ol",
+//         "|",
+//         // "link",
+//         // "image",
+//         "|",
+//         "align",
+//         "|",
+//         "undo",
+//         "redo",
+//       ],
+
+//       style: {
+//         color: "#111827",
+//         fontSize: "14px",
+//       },
+
+//       uploader: {
+//         insertImageAsBase64URI: true,
+//       },
+//     }),
+//     [],
+//   );
+
+//   /*
+//    * ---------------------------------------------------------
+//    * PARSE EMAILS
+//    * ---------------------------------------------------------
+//    */
+
+//   const parseEmails = (value) => {
+//     return [
+//       ...new Set(
+//         String(value || "")
+//           .split(/[,\n;]/)
+//           .map((email) => email.trim().toLowerCase())
+//           .filter(Boolean),
+//       ),
+//     ];
+//   };
+
+//   /*
+//    * ---------------------------------------------------------
+//    * SEND
+//    * ---------------------------------------------------------
+//    */
+
+//   const handleSend = async () => {
+//     if (isSubmitting) {
+//       return;
+//     }
+
+//     const fromEmail = from.trim().toLowerCase();
+
+//     if (!fromEmail) {
+//       alert("Please enter the From email.");
+//       return;
+//     }
+
+//     if (!EMAIL_REGEX.test(fromEmail)) {
+//       alert(`Invalid From email:\n\n${fromEmail}`);
+//       return;
+//     }
+
+//     /*
+//      * Parse To
+//      */
+//     const toEmails = parseEmails(to);
+//     if (recipientCount === 0) {
+//       alert("Please enter at least one recipient email.");
+//       return;
+//     }
+
+//     /*
+//      * Validate To
+//      */
+//     const invalidToEmails = toEmails.filter(
+//       (email) => !EMAIL_REGEX.test(email),
+//     );
+
+//     if (invalidToEmails.length > 0) {
+//       alert(`Invalid recipient email:\n\n${invalidToEmails.join("\n")}`);
+//       return;
+//     }
+
+//     /*
+//      * Parse CC
+//      */
+//     const ccEmails = parseEmails(cc);
+
+//     const invalidCcEmails = ccEmails.filter(
+//       (email) => !EMAIL_REGEX.test(email),
+//     );
+
+//     if (invalidCcEmails.length > 0) {
+//       alert(`Invalid CC email:\n\n${invalidCcEmails.join("\n")}`);
+//       return;
+//     }
+
+//     /*
+//      * Parse BCC
+//      */
+//     const bccEmails = parseEmails(bcc);
+
+//     const invalidBccEmails = bccEmails.filter(
+//       (email) => !EMAIL_REGEX.test(email),
+//     );
+
+//     if (invalidBccEmails.length > 0) {
+//       alert(`Invalid BCC email:\n\n${invalidBccEmails.join("\n")}`);
+//       return;
+//     }
+
+//     /*
+//      * Subject
+//      */
+//     if (!subject.trim()) {
+//       alert("Please enter subject.");
+//       return;
+//     }
+
+//     /*
+//      * Body
+//      */
+//     const cleanedBody = body?.trim();
+
+//     if (
+//       !cleanedBody ||
+//       cleanedBody === "<p><br></p>" ||
+//       cleanedBody === "<p></p>"
+//     ) {
+//       alert("Please write your message.");
+//       return;
+//     }
+
+//     /*
+//      * -------------------------------------------------------
+//      * Convert HTML to simple text
+//      * -------------------------------------------------------
+//      */
+
+//     const temporaryDiv = document.createElement("div");
+//     temporaryDiv.innerHTML = body;
+
+//     const text = temporaryDiv.textContent || temporaryDiv.innerText || "";
+
+//     /*
+//      * -------------------------------------------------------
+//      * SEND DATA TO PARENT
+//      *
+//      * Parent will:
+//      *
+//      * 1. Create recipient batch if needed
+//      * 2. Create campaign
+//      * 3. Call sendEmailCampaign()
+//      * -------------------------------------------------------
+//      */
+
+//     try {
+//       await onSend({
+//         from: fromEmail,
+//         toEmails,
+//         ccEmails,
+//         bccEmails,
+//         subject: subject.trim(),
+//         html: body,
+//         text: text.trim(),
+//         attachments,
+//       });
+//     } catch (error) {
+//       console.error("Compose email send error:", error);
+//     }
+//   };
+
+//   /*
+//    * ---------------------------------------------------------
+//    * RENDER
+//    * ---------------------------------------------------------
+//    */
+
+//   return (
+//     <div
+//       className={`
+//         fixed
+//         z-[99999]
+//         overflow-hidden
+//         border
+//         border-gray-200
+//         bg-white
+//         shadow-2xl
+
+//         ${
+//           minimized
+//             ? `
+//               bottom-0
+//               right-2
+//               w-[280px]
+//               rounded-t-xl
+//               sm:right-5
+//             `
+//             : `
+//               bottom-0
+//               left-0
+//               right-0
+//               w-full
+//               rounded-t-xl
+
+//               sm:left-auto
+//               sm:right-4
+//               sm:w-[520px]
+//             `
+//         }
+//       `}
+//     >
+//       {/* =====================================================
+//           HEADER
+//       ===================================================== */}
+
+//       <div
+//         className="
+//           flex
+//           h-12
+//           items-center
+//           justify-between
+//           bg-gray-100
+//           px-3
+//           sm:px-4
+//         "
+//       >
+//         <div className="flex min-w-0 items-center gap-2">
+//           <h2 className="truncate text-sm font-semibold text-gray-800">
+//             {isBroadcast ? "Broadcast Message" : "New Message"}
+//           </h2>
+
+//           {isBroadcast && (
+//             <span
+//               className="
+//                 shrink-0
+//                 rounded-full
+//                 bg-blue-100
+//                 px-2
+//                 py-0.5
+//                 text-[10px]
+//                 font-medium
+//                 text-blue-700
+//               "
+//             >
+//               {recipientCount || recipients.length}
+//             </span>
+//           )}
+//         </div>
+
+//         <div className="flex items-center gap-1">
+//           {/* Minimize */}
+//           <button
+//             type="button"
+//             onClick={() => setMinimized((prev) => !prev)}
+//             disabled={isSubmitting}
+//             className="
+//               hidden
+//               h-8
+//               w-8
+//               items-center
+//               justify-center
+//               rounded
+//               text-gray-500
+//               hover:bg-gray-200
+//               disabled:cursor-not-allowed
+//               disabled:opacity-50
+//               sm:flex
+//             "
+//           >
+//             {minimized ? <FiMaximize2 size={15} /> : <FiMinus size={16} />}
+//           </button>
+
+//           {/* Close */}
+
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             disabled={isSubmitting}
+//             className="
+//               flex
+//               h-8
+//               w-8
+//               items-center
+//               justify-center
+//               rounded
+//               text-gray-500
+//               hover:bg-gray-200
+//               disabled:cursor-not-allowed
+//               disabled:opacity-50
+//             "
+//           >
+//             <FiX size={18} />
+//           </button>
+//         </div>
+//       </div>
+
+//       {!minimized && (
+//         <>
+//           {/* =================================================
+//               BODY
+//           ================================================= */}
+
+//           <div
+//             className="
+//               max-h-[calc(100vh-110px)]
+//               overflow-y-auto
+//             "
+//           >
+//             <div className="px-3 sm:px-4">
+//               <div className="border-b py-2.5">
+//                 <div className="flex items-center gap-3">
+//                   <span className="w-8 shrink-0 text-sm text-gray-500">
+//                     From<span className="text-red-500">*</span>
+//                   </span>
+
+//                   <input
+//                     type="email"
+//                     value={from}
+//                     onChange={(e) => setFrom(e.target.value)}
+//                     placeholder="sender@yourdomain.com"
+//                     disabled={isSubmitting}
+//                     required
+//                     className="
+//         min-w-0
+//         flex-1
+//         bg-transparent
+//         text-sm
+//         text-gray-900
+//         outline-none
+//         placeholder:text-gray-400
+//         disabled:cursor-not-allowed
+//         disabled:opacity-60
+//       "
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* =================================================
+//                   TO
+//               ================================================= */}
+
+//               <div className="border-b py-2.5">
+//                 <div className="flex items-start gap-3">
+//                   <span className="w-8 shrink-0 pt-1 text-sm text-gray-500">
+//                     To
+//                   </span>
+
+//                   <textarea
+//                     value={to}
+//                     onChange={(e) => setTo(e.target.value)}
+//                     rows={to.split(/[,;\n]/).length > 5 ? 3 : 1}
+//                     placeholder={
+//                       isBroadcast
+//                         ? `${recipientCount} recipients selected — add more emails if needed`
+//                         : "Recipients"
+//                     }
+//                     disabled={isSubmitting}
+//                     className="
+//         min-h-[26px]
+//         flex-1
+//         resize-none
+//         overflow-y-auto
+//         bg-transparent
+//         text-sm
+//         leading-6
+//         text-gray-900
+//         outline-none
+//         placeholder:text-gray-400
+//         disabled:cursor-not-allowed
+//         disabled:opacity-60
+//       "
+//                   />
+//                 </div>
+
+//                 {isBroadcast && recipientCount > 0 && (
+//                   <div className="ml-11 mt-1 text-xs text-gray-500">
+//                     {recipientCount} broadcast recipient
+//                     {recipientCount !== 1 ? "s" : ""} selected
+//                   </div>
+//                 )}
+//               </div>
+
+//               {/* =================================================
+//                   CC
+//               ================================================= */}
+
+//               <div className="border-b py-2.5">
+//                 <div className="flex items-center gap-3">
+//                   <span className="w-8 shrink-0 text-sm text-gray-500">Cc</span>
+
+//                   <input
+//                     type="text"
+//                     value={cc}
+//                     onChange={(e) => setCc(e.target.value)}
+//                     placeholder="Cc"
+//                     disabled={isSubmitting}
+//                     className="
+//                       min-w-0
+//                       flex-1
+//                       bg-transparent
+//                       text-sm
+//                       outline-none
+//                       disabled:cursor-not-allowed
+//                       disabled:opacity-60
+//                     "
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* =================================================
+//                   BCC
+//               ================================================= */}
+
+//               <div className="border-b py-2.5">
+//                 <div className="flex items-center gap-3">
+//                   <span className="w-8 shrink-0 text-sm text-gray-500">
+//                     Bcc
+//                   </span>
+
+//                   <input
+//                     type="text"
+//                     value={bcc}
+//                     onChange={(e) => setBcc(e.target.value)}
+//                     placeholder="Bcc"
+//                     disabled={isSubmitting}
+//                     className="
+//                       min-w-0
+//                       flex-1
+//                       bg-transparent
+//                       text-sm
+//                       outline-none
+//                       disabled:cursor-not-allowed
+//                       disabled:opacity-60
+//                     "
+//                   />
+//                 </div>
+//               </div>
+
+//               {/* =================================================
+//                   SUBJECT
+//               ================================================= */}
+
+//               <div className="border-b py-2.5">
+//                 <input
+//                   type="text"
+//                   value={subject}
+//                   onChange={(e) => setSubject(e.target.value)}
+//                   placeholder="Subject"
+//                   disabled={isSubmitting}
+//                   className="
+//                     w-full
+//                     bg-transparent
+//                     text-sm
+//                     text-gray-900
+//                     outline-none
+//                     placeholder:text-gray-400
+//                     disabled:cursor-not-allowed
+//                     disabled:opacity-60
+//                   "
+//                 />
+//               </div>
+
+//               {/* =================================================
+//                   EDITOR
+//               ================================================= */}
+
+//               <div className="py-3">
+//                 <JoditEditor
+//                   value={body}
+//                   config={{
+//                     ...config,
+//                     disabled: isSubmitting,
+//                   }}
+//                   onBlur={(content) => setBody(content)}
+//                 />
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* =================================================
+//               FOOTER
+//           ================================================= */}
+//           <div className="border-t border-gray-200 bg-white">
+//             {/* Attachments */}
+//             {attachments.length > 0 && (
+//               <div className="px-3 pt-3 sm:px-4">
+//                 <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5">
+//                   {/* Header */}
+//                   <div className="mb-2 flex items-center justify-between">
+//                     <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+//                       <FiPaperclip size={15} />
+
+//                       <span>
+//                         {attachments.length}{" "}
+//                         {attachments.length === 1 ? "file" : "files"} attached
+//                       </span>
+//                     </div>
+
+//                     <button
+//                       type="button"
+//                       onClick={() => setAttachments([])}
+//                       disabled={isSubmitting}
+//                       className="text-xs font-medium text-gray-500 hover:text-red-500 disabled:opacity-50"
+//                     >
+//                       Remove all
+//                     </button>
+//                   </div>
+
+//                   {/* File names */}
+//                   <div className="flex flex-wrap gap-2">
+//                     {attachments.map((file, index) => (
+//                       <div
+//                         key={`${file.name}-${index}`}
+//                         className="flex max-w-full items-center gap-2 rounded-md border border-gray-200 bg-white px-2.5 py-1.5"
+//                       >
+//                         <FiFile size={14} className="shrink-0 text-gray-500" />
+
+//                         <span
+//                           title={file.name}
+//                           className="max-w-[180px] truncate text-xs text-gray-700"
+//                         >
+//                           {file.name}
+//                         </span>
+
+//                         <button
+//                           type="button"
+//                           onClick={() => {
+//                             setAttachments((prev) =>
+//                               prev.filter((_, i) => i !== index),
+//                             );
+//                           }}
+//                           disabled={isSubmitting}
+//                           className="shrink-0 rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+//                         >
+//                           <FiX size={13} />
+//                         </button>
+//                       </div>
+//                     ))}
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Bottom actions */}
+//             <div
+//               className="
+//       flex
+//       items-center
+//       justify-between
+//       gap-3
+//       px-3
+//       py-3
+//       sm:px-4
+//     "
+//             >
+//               {/* Left actions */}
+//               <div className="flex items-center gap-2">
+//                 {/* Hidden file input */}
+//                 <input
+//                   id="email-attachments"
+//                   type="file"
+//                   multiple
+//                   className="hidden"
+//                   onChange={(e) => {
+//                     const files = Array.from(e.target.files || []);
+
+//                     if (!files.length) return;
+
+//                     setAttachments((prev) => [...prev, ...files]);
+
+//                     // Allow selecting the same file again
+//                     e.target.value = "";
+//                   }}
+//                 />
+
+//                 {/* Attach button */}
+//                 <label
+//                   htmlFor="email-attachments"
+//                   className="
+//           flex
+//           h-9
+//           cursor-pointer
+//           items-center
+//           gap-2
+//           rounded-lg
+//           border
+//           border-gray-200
+//           bg-white
+//           px-3
+//           text-sm
+//           font-medium
+//           text-gray-600
+//           transition
+//           hover:border-gray-300
+//           hover:bg-gray-50
+//           hover:text-gray-800
+//         "
+//                 >
+//                   <FiPaperclip size={16} />
+
+//                   <span className="hidden sm:inline">Attach files</span>
+
+//                   {attachments.length > 0 && (
+//                     <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1.5 text-[11px] font-semibold text-blue-600">
+//                       {attachments.length}
+//                     </span>
+//                   )}
+//                 </label>
+//               </div>
+
+//               {/* Right actions */}
+//               <div className="flex items-center gap-2">
+//                 {/* Delete / close */}
+//                 <button
+//                   type="button"
+//                   onClick={onClose}
+//                   disabled={isSubmitting}
+//                   title="Discard email"
+//                   className="
+//           flex
+//           h-9
+//           w-9
+//           items-center
+//           justify-center
+//           rounded-lg
+//           text-gray-500
+//           transition
+//           hover:bg-red-50
+//           hover:text-red-500
+//           disabled:cursor-not-allowed
+//           disabled:opacity-50
+//         "
+//                 >
+//                   <FiTrash2 size={17} />
+//                 </button>
+
+//                 {/* Send */}
+//                 <button
+//                   type="button"
+//                   onClick={handleSend}
+//                   disabled={isSubmitting}
+//                   className="
+//           flex
+//           h-9
+//           items-center
+//           gap-2
+//           rounded-lg
+//           bg-blue-600
+//           px-4
+//           text-sm
+//           font-medium
+//           text-white
+//           shadow-sm
+//           transition
+//           hover:bg-blue-700
+//           hover:shadow
+//           disabled:cursor-not-allowed
+//           disabled:opacity-60
+//         "
+//                 >
+//                   <FiSend size={15} />
+
+//                   <span>{isSubmitting ? "Sending..." : "Send"}</span>
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* <div
+//             className="
+//               flex
+//               items-center
+//               justify-between
+//               border-t
+//               border-gray-200
+//               px-3
+//               py-3
+//               sm:px-4
+//             "
+//           >
+//             <button
+//               type="button"
+//               onClick={handleSend}
+//               disabled={isSubmitting}
+//               className="
+//                 flex
+//                 items-center
+//                 gap-2
+//                 rounded-full
+//                 bg-blue-600
+//                 px-5
+//                 py-2
+//                 text-sm
+//                 font-medium
+//                 text-white
+//                 hover:bg-blue-700
+//                 disabled:cursor-not-allowed
+//                 disabled:opacity-60
+//               "
+//             >
+//               <FiSend size={15} />
+
+//               {isSubmitting ? "Sending..." : "Send"}
+//             </button>
+
+//             <button
+//               type="button"
+//               onClick={onClose}
+//               disabled={isSubmitting}
+//               className="
+//                 flex
+//                 h-9
+//                 w-9
+//                 items-center
+//                 justify-center
+//                 rounded-lg
+//                 text-gray-500
+//                 hover:bg-red-50
+//                 hover:text-red-500
+//                 disabled:cursor-not-allowed
+//                 disabled:opacity-50
+//               "
+//             >
+//               <FiTrash2 size={17} />
+//             </button>
+//           </div> */}
+//         </>
+//       )}
+//     </div>
+//   );
+// }
+
+// export default ComposeEmail;
 
 // function ComposeEmail({ onClose, recipients = [], isBroadcast = false }) {
 //   const [to, setTo] = useState("");

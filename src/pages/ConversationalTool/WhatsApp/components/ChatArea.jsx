@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -37,6 +38,7 @@ import {
   addWhatsAppLead,
   deleteWhatsAppMessage,
   getFlowSession,
+  getWhatsappAccountDetails,
   getWhatsappConversationMessages,
   getWhatsAppFlowScreens,
   getWhatsAppMessageTemplates,
@@ -83,6 +85,9 @@ const ChatArea = ({ setActiveTab }) => {
   // const [setSelectedQuickReply, setSelectedQuickReply] = useState(null);
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [previewQuickReply, setPreviewQuickReply] = useState(null);
+  const [accountDetails, setAccountDetails] = useState(null);
+
+  const [releasing, setReleasing] = useState(false);
 
   const textareaRef = useRef(null);
   const { showToast } = useToast();
@@ -601,10 +606,22 @@ const ChatArea = ({ setActiveTab }) => {
 
         // Update local conversation state
         // with the handling returned by backend
+
         setSelectedConversation((prev) => ({
           ...prev,
           handling: data?.result?.handling,
         }));
+        setConversations((prevConversations) =>
+          prevConversations.map((conv) => {
+            if (conv._id === selectedConversation._id) {
+              return {
+                ...conv,
+                handling: data?.result?.handling,
+              };
+            }
+            return conv;
+          }),
+        );
       }
     } catch (error) {
       console.error("Take over conversation error:", error);
@@ -632,6 +649,19 @@ const ChatArea = ({ setActiveTab }) => {
   };
 
   const handleReleaseFnc = async () => {
+    if (releasing) return;
+
+    const isConfirmed = await confirm(
+      "The AI will resume replying to this guest.",
+      {
+        title: "Hand back to AI?",
+        confirmText: "Hand back",
+        variant: "primary",
+      },
+    );
+    if (!isConfirmed) return;
+
+    setReleasing(true);
     try {
       const response = await fetch(
         `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/release`,
@@ -641,52 +671,108 @@ const ChatArea = ({ setActiveTab }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            userEmail: authUser?.emailId,
-          }),
+          body: JSON.stringify({ userEmail: authUser?.emailId }),
         },
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
-      if (data?.success) {
+      if (!response.ok || !data?.success) {
         showToast({
+          type: "error",
           message:
-            response?.data?.message || "Conversation taken over successfully",
-          type: "success",
+            data?.message ||
+            data?.responseMessage ||
+            (response.status === 409
+              ? "This conversation is being handled by another user"
+              : "Failed to hand conversation back to AI"),
         });
-
-        // Update local conversation state
-        // with the handling returned by backend
-        setSelectedConversation((prev) => ({
-          ...prev,
-          handling: response?.data?.result?.handling,
-        }));
+        return;
       }
+
+      const handling = data?.result?.handling || {
+        mode: "AI",
+        assignedTo: null,
+      };
+
+      setSelectedConversation((prev) => ({ ...prev, handling }));
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConversation._id ? { ...c, handling } : c,
+        ),
+      );
+
+      showToast({
+        type: "success",
+        message: data?.responseMessage || "Conversation handed back to AI",
+      });
     } catch (error) {
-      console.error("Take over conversation error:", error);
-
-      if (error?.response?.status === 409) {
-        showToast({
-          message:
-            error?.response?.data?.message ||
-            "This conversation is already being handled by another user",
-          type: "error",
-        });
-
-        // Important:
-        // refresh conversations here so UI gets
-        // the latest handling.assignedTo
-      } else {
-        showToast({
-          message:
-            error?.response?.data?.message ||
-            "Failed to take over conversation",
-          type: "error",
-        });
-      }
+      console.error("Hand back to AI error:", error);
+      showToast({
+        type: "error",
+        message: "Failed to hand conversation back to AI",
+      });
+    } finally {
+      setReleasing(false);
     }
   };
+
+  // const handleReleaseFnc = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${NEW_BASE_URL}/api/v1/whatsapp/conversations/${selectedConversation?._id}/release`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //         body: JSON.stringify({
+  //           userEmail: authUser?.emailId,
+  //         }),
+  //       },
+  //     );
+
+  //     const data = await response.json();
+
+  //     if (data?.success) {
+  //       showToast({
+  //         message:
+  //           response?.data?.message || "Conversation taken over successfully",
+  //         type: "success",
+  //       });
+
+  //       // Update local conversation state
+  //       // with the handling returned by backend
+  //       setSelectedConversation((prev) => ({
+  //         ...prev,
+  //         handling: response?.data?.result?.handling,
+  //       }));
+  //     }
+  //   } catch (error) {
+  //     console.error("Take over conversation error:", error);
+
+  //     if (error?.response?.status === 409) {
+  //       showToast({
+  //         message:
+  //           error?.response?.data?.message ||
+  //           "This conversation is already being handled by another user",
+  //         type: "error",
+  //       });
+
+  //       // Important:
+  //       // refresh conversations here so UI gets
+  //       // the latest handling.assignedTo
+  //     } else {
+  //       showToast({
+  //         message:
+  //           error?.response?.data?.message ||
+  //           "Failed to take over conversation",
+  //         type: "error",
+  //       });
+  //     }
+  //   }
+  // };
 
   const fetchFlowSession = async () => {
     const payload = {
@@ -950,39 +1036,23 @@ const ChatArea = ({ setActiveTab }) => {
     }
   };
 
-  // // open a conversation coming from global search
-  // useEffect(() => {
-  //   const conversationId = searchParams.get("conversationId");
-  //   const phone = searchParams.get("phone");
-  //   if (!conversationId && !phone) return;
-  //   if (!conversations?.length) return; // wait for the list to load
+  const fetchAccountDetails = useCallback(async () => {
+    try {
+      const response = await getWhatsappAccountDetails();
+      console.log(response);
 
-  //   const normalize = (v) =>
-  //     String(v || "")
-  //       .replace(/\D/g, "")
-  //       .slice(-10);
-
-  //   const match =
-  //     conversations.find((c) => String(c._id) === String(conversationId)) ||
-  //     (phone &&
-  //       conversations.find((c) => normalize(c.phone) === normalize(phone)));
-
-  //   if (match) {
-  //     setSelectedConversation(match);
-  //     setMobileActive?.("chat");
-
-  //     // clean the URL so a refresh doesn't re-trigger it
-  //     searchParams.delete("conversationId");
-  //     searchParams.delete("phone");
-  //     setSearchParams(searchParams, { replace: true });
-  //   }
-  // }, [conversations, searchParams]);
+      setAccountDetails(response?.result?.docs);
+    } catch (error) {
+      console.error("Error fetching data", error?.message);
+    }
+  }, []);
 
   useEffect(() => {
     fetchTemplate();
     fetchUsersData();
     fetchFlows();
     fetchReplies();
+    fetchAccountDetails();
   }, []);
 
   useEffect(() => {
@@ -1048,7 +1118,6 @@ const ChatArea = ({ setActiveTab }) => {
   const isWord = file?.type?.includes("word");
 
   const handling = selectedConversation?.handling;
-
   const isTake_Over = !handling || handling?.mode === "AI";
 
   const isRelease =
@@ -1059,6 +1128,16 @@ const ChatArea = ({ setActiveTab }) => {
     handling?.mode === "HUMAN" &&
     String(handling?.assignedTo) !== String(authUser?.emailId);
 
+  const isAiEnabled = !!accountDetails?.ai?.enabled;
+
+  const showComposer = !isAiEnabled || (!isHandledByOther && !isTake_Over);
+  const showTakeOverBtn = isAiEnabled && isTake_Over && !isHandledByOther;
+  const showHandledByOther = isAiEnabled && isHandledByOther;
+  const canHandBackToAi = isAiEnabled && isRelease;
+
+  // const isAiEnabled = !!accountDetails?.ai?.enabled;
+  // const canHandBackToAi = isAiEnabled && isRelease;
+
   const handleSelect = () => {
     const group = {
       key: "leads",
@@ -1067,7 +1146,6 @@ const ChatArea = ({ setActiveTab }) => {
       id: selectedConversation?.leadId,
       hId: localStorage.getItem("hid"),
     };
-    console.log(selectedConversation);
 
     const link = buildLink(group, item);
     console.log("link", link);
@@ -1703,18 +1781,20 @@ const ChatArea = ({ setActiveTab }) => {
       </div>
 
       {/* Input Area */}
-      <form
-        onSubmit={handleSendMessage}
-        className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
-      >
-        {templateClick && (
-          <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
-            {templates?.length > 0 &&
-              templates?.map((template) => (
-                <div
-                  onClick={() => setSelectedTemplate(template)}
-                  key={template?.id}
-                  className={`
+
+      {!accountDetails ? null : showComposer ? (
+        <form
+          onSubmit={handleSendMessage}
+          className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
+        >
+          {templateClick && (
+            <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
+              {templates?.length > 0 &&
+                templates?.map((template) => (
+                  <div
+                    onClick={() => setSelectedTemplate(template)}
+                    key={template?.id}
+                    className={`
     cursor-pointer rounded-xl overflow-hidden transition-all h-30
     ${
       selectedTemplate?.id === template?.id
@@ -1722,382 +1802,288 @@ const ChatArea = ({ setActiveTab }) => {
         : "border border-app-border bg-app-surface hover:border-orange-300 dark:hover:border-orange-700"
     }
   `}
-                >
-                  <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
-                    <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
-                      {template?.name}
-                    </p>
-
-                    {selectedTemplate?.id === template?.id && (
-                      <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
-                        Selected
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-3">
-                    <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
-                      <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
-                        {template?.components?.[0]?.text ||
-                          template?.components?.[1]?.text}
+                  >
+                    <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+                      <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+                        {template?.name}
                       </p>
+
+                      {selectedTemplate?.id === template?.id && (
+                        <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-3">
+                      <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+                        <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+                          {template?.components?.[0]?.text ||
+                            template?.components?.[1]?.text}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-          </div>
-        )}
-        {showQuickReplies && (
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
-            {quickReplies.map((reply) => {
-              const textItem = reply.items?.find((i) => i.type === "text");
+                ))}
+            </div>
+          )}
 
-              const mediaItems =
-                reply.items?.filter((i) => i.type !== "text") || [];
+          {showQuickReplies && (
+            <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
+              {quickReplies.map((reply) => {
+                const textItem = reply.items.find((i) => i.type === "text");
+                const mediaItem = reply.items.find((i) => i.type !== "text");
 
-              return (
-                <div key={reply._id} className="relative w-full min-w-0">
-                  {/* Quick Reply Card */}
+                return (
                   <button
                     type="button"
+                    key={reply._id}
                     onClick={() => handleSelectQuickReply(reply)}
-                    className="
-              w-full min-w-0 text-left p-3 pr-10
-              bg-app-surface-secondary
-              hover:bg-app-surface
-              rounded-lg
-              border border-primary/30!
-              transition-colors
-              cursor-pointer
-            "
+                    className="w-full min-w-0 text-left p-3 bg-app-surface-secondary hover:bg-app-surface rounded-lg border border-primary/30! transition-colors"
                   >
-                    {/* Title */}
                     <div className="font-medium text-app-text truncate">
                       {reply.title}
                     </div>
 
-                    {/* Text */}
                     <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
                       {textItem?.text}
                     </div>
 
-                    {/* Media count */}
-                    {mediaItems.length > 0 && (
+                    {mediaItem && (
                       <div className="text-xs mt-1 text-app-text-faint">
-                        {mediaItems.length}{" "}
-                        {mediaItems.length === 1 ? "media" : "media"}
+                        {mediaItem.media.length} {mediaItem.type}
                       </div>
                     )}
                   </button>
+                );
+              })}
 
-                  {/* Preview Eye */}
-                  <button
-                    type="button"
-                    aria-label={`Preview ${reply.title}`}
-                    title="Preview"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPreviewQuickReply(reply);
-                    }}
-                    className="
-              absolute
-              top-2
-              right-2
-              z-10
-              size-7
-              flex
-              items-center
-              justify-center
-              rounded-md
-              text-app-text-faint
-              hover:text-app-text
-              hover:bg-app-surface
-              cursor-pointer
-              transition-colors
-            "
-                  >
-                    <Eye size={16} />
-                  </button>
-                </div>
-              );
-            })}
-
-            {/* Close Quick Replies */}
-            <button
-              type="button"
-              aria-label="Close quick replies"
-              className="
-        absolute
-        top-1.5
-        right-1.5
-        size-7
-        flex
-        items-center
-        justify-center
-        rounded-md
-        text-app-text
-        hover:bg-app-surface-secondary
-        cursor-pointer
-        transition-colors
-      "
-              onClick={() => setShowQuickReplies(false)}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )}
-
-        {previewQuickReply && (
-          <div
-            className=" fixed inset-0 z-9999  bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-            onClick={() => setPreviewQuickReply(null)}
-          >
-            {/* Preview Container */}
-            <div
-              className=" relative w-full max-w-md max-h-[90vh] bg-app-surface rounded-2xl shadow-2xl overflow-hidden flex flex-co "
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="">
-                {/* <div className="min-w-0">
-                  <div className="font-semibold text-app-text truncate">
-                    {previewQuickReply.title}
-                  </div>
-
-                  <div className="text-xs text-app-text-faint mt-0.5">
-                    Quick reply preview
-                  </div>
-                </div> */}
-
-                <button
-                  type="button"
-                  aria-label="Close preview"
-                  onClick={() => setPreviewQuickReply(null)}
-                  className="
-            shrink-0
-            size-8
-            flex
-            items-center
-            justify-center
-            rounded-lg
-            text-app-text
-            hover:bg-app-surface-secondary
-            cursor-pointer
-            transition-colors
-          "
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Preview Content */}
-              <div className="overflow-y-auto p-5">
-                <QuickReplyPreview reply={previewQuickReply} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* {showQuickReplies && (
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
-            {quickReplies.map((reply) => {
-              const textItem = reply.items.find((i) => i.type === "text");
-              const mediaItem = reply.items.find((i) => i.type !== "text");
-
-              return (
-                <button
-                  type="button"
-                  key={reply._id}
-                  onClick={() => handleSelectQuickReply(reply)}
-                  className="w-full min-w-0 text-left p-3 bg-app-surface-secondary hover:bg-app-surface rounded-lg border border-primary/30! transition-colors"
-                >
-                  <div className="font-medium text-app-text truncate">
-                    {reply.title}
-                  </div>
-
-                  <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
-                    {textItem?.text}
-                  </div>
-
-                  {mediaItem && (
-                    <div className="text-xs mt-1 text-app-text-faint">
-                      {mediaItem.media.length} {mediaItem.type}
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-
-            <button
-              type="button"
-              aria-label="Close quick replies"
-              className="absolute top-1.5 right-1.5 size-7 flex items-center justify-center rounded-md text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
-              onClick={() => setShowQuickReplies(false)}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        )} */}
-
-        {file && (
-          <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
-            <div
-              onClick={() => setFile(null)}
-              className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
-            >
-              <FiX size={10} />
-            </div>
-
-            {/* ✅ IMAGE PREVIEW */}
-            {isImage ? (
-              <img
-                src={URL.createObjectURL(file)}
-                alt="file"
-                className="w-40 h-20 rounded-md object-contain"
-              />
-            ) : (
-              // ✅ DOCUMENT UI
-              <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
-                {/* ICON */}
-                {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
-                {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
-                {isWord && <FaFileWord className="text-blue-500 text-xl" />}
-                {!isPDF && !isExcel && !isWord && (
-                  <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
-                )}
-
-                {/* FILE NAME */}
-                <p className="text-xs truncate text-app-text">{file.name}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div
-          className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
-        >
-          {flows?.length > 0 && (
-            <div>
-              <select
-                value={selectedFlowId || ""}
-                onChange={(e) => {
-                  setSelectedFlowId(e.target.value);
-                  if (e.target.value) {
-                    setShowFlowModal(true);
-                  }
-                }}
-                className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
+              <button
+                type="button"
+                aria-label="Close quick replies"
+                className="absolute top-1.5 right-1.5 size-7 flex items-center justify-center rounded-md text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
+                onClick={() => setShowQuickReplies(false)}
               >
-                <option value="" className={OPTION}>
-                  Select Form
-                </option>
-
-                {flows.map((flow) => (
-                  <option
-                    key={flow.flowId}
-                    value={flow.flowId}
-                    className={OPTION}
-                  >
-                    {flow.flowName}
-                  </option>
-                ))}
-              </select>
+                <X size={16} />
+              </button>
             </div>
           )}
 
-          <div className="flex gap-2 items-center flex-wrap">
-            {templateLoading ? (
-              <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
-                Loading Templates...
-              </p>
-            ) : (
-              <div>
-                {!templateClick ? (
-                  <span
-                    onClick={() => {
-                      if (!templates?.length) {
-                        navigate(
-                          `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
-                        );
-                      }
-
-                      handleTemplate(true);
-                    }}
-                    className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
-                  >
-                    <MdChat /> Templates
-                  </span>
-                ) : (
-                  <span
-                    onClick={() => handleTemplate(false)}
-                    className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
-                  >
-                    Close Templates <MdClose />
-                  </span>
-                )}
-              </div>
-            )}
-
-            {!is24HourComplete && (
-              <button
-                type="button"
-                aria-label="Quick replies"
-                onClick={() => setShowQuickReplies(!showQuickReplies)}
-                className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
+          {file && (
+            <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+              <div
+                onClick={() => setFile(null)}
+                className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
               >
-                <MessageSquareReply size={20} />
-              </button>
-            )}
+                <FiX size={10} />
+              </div>
 
-            {isTakeOver && (
-              <div className="flex justify-center w-full">
-                <button
-                  type="button"
-                  onClick={handleTakeOver}
-                  className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
+              {/* ✅ IMAGE PREVIEW */}
+              {isImage ? (
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="file"
+                  className="w-40 h-20 rounded-md object-contain"
+                />
+              ) : (
+                // ✅ DOCUMENT UI
+                <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
+                  {/* ICON */}
+                  {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+                  {isExcel && (
+                    <FaFileExcel className="text-green-600 text-xl" />
+                  )}
+                  {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+                  {!isPDF && !isExcel && !isWord && (
+                    <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
+                  )}
+
+                  {/* FILE NAME */}
+                  <p className="text-xs truncate text-app-text">{file.name}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div
+            className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
+          >
+            {flows?.length > 0 && (
+              <div>
+                <select
+                  value={selectedFlowId || ""}
+                  onChange={(e) => {
+                    setSelectedFlowId(e.target.value);
+                    if (e.target.value) {
+                      setShowFlowModal(true);
+                    }
+                  }}
+                  className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
                 >
-                  Take Over
-                </button>
+                  <option value="" className={OPTION}>
+                    Select Form
+                  </option>
+
+                  {flows.map((flow) => (
+                    <option
+                      key={flow.flowId}
+                      value={flow.flowId}
+                      className={OPTION}
+                    >
+                      {flow.flowName}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 
-            <div>
-              {/* {isRelease && (
-                  <div className="flex justify-center w-full">
-                    <button
-                      type="button"
-                      onClick={handleReleaseFnc}
-                      className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+            <div className="flex gap-2 items-center flex-wrap">
+              {templateLoading ? (
+                <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
+                  Loading Templates...
+                </p>
+              ) : (
+                <div>
+                  {!templateClick ? (
+                    <span
+                      onClick={() => {
+                        if (!templates?.length) {
+                          navigate(
+                            `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+                          );
+                        }
+
+                        handleTemplate(true);
+                      }}
+                      className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
                     >
-                      Release Take Over
-                    </button>
-                  </div>
-                )} */}
+                      <MdChat /> Templates
+                    </span>
+                  ) : (
+                    <span
+                      onClick={() => handleTemplate(false)}
+                      className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+                    >
+                      Close Templates <MdClose />
+                    </span>
+                  )}
+                </div>
+              )}
 
-              {/* {isHandledByOther && (
-                  <div className="flex justify-center w-full">
-                    <div className="text-xs text-app-text-faint px-3 py-1.5">
-                      This conversation is being handled by another user
-                    </div>
-                  </div>
-                )} */}
-            </div>
-          </div>
-
-          {!isTakeOver && (
-            <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
-              {/* Attachment */}
               {!is24HourComplete && (
                 <button
                   type="button"
-                  aria-label="Attach file"
-                  onClick={() => fileInputRef.current.click()}
-                  className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
+                  aria-label="Quick replies"
+                  onClick={() => setShowQuickReplies(!showQuickReplies)}
+                  className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
                 >
-                  {/* Paperclip SVG */}
+                  <MessageSquareReply size={20} />
+                </button>
+              )}
+
+              {isTakeOver && (
+                <div className="flex justify-center w-full">
+                  <button
+                    type="button"
+                    onClick={handleTakeOver}
+                    className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
+                  >
+                    Take Over
+                  </button>
+                </div>
+              )}
+
+              <div>
+                {canHandBackToAi && (
+                  <button
+                    type="button"
+                    onClick={handleReleaseFnc}
+                    disabled={releasing}
+                    className="flex items-center gap-1 whitespace-nowrap text-xs bg-teal-600 hover:bg-teal-700 disabled:opacity-60 rounded-md text-white px-3 py-1.5 transition-colors"
+                  >
+                    {releasing ? "Handing back..." : "Hand back to AI"}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {!isTakeOver && (
+              <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
+                {/* Attachment */}
+                {!is24HourComplete && (
+                  <button
+                    type="button"
+                    aria-label="Attach file"
+                    onClick={() => fileInputRef.current.click()}
+                    className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
+                  >
+                    {/* Paperclip SVG */}
+                    <svg
+                      width="22"
+                      height="22"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                      />
+                    </svg>
+                  </button>
+                )}
+
+                {!is24HourComplete && (
+                  <input
+                    disabled={is24HourComplete}
+                    ref={fileInputRef}
+                    type="file"
+                    hidden
+                    onChange={(e) => {
+                      setFile(e.target.files[0]);
+                    }}
+                  />
+                )}
+
+                {!is24HourComplete ? (
+                  <textarea
+                    disabled={is24HourComplete}
+                    ref={textareaRef}
+                    value={messageValue}
+                    onChange={handleChange}
+                    placeholder="Type a message"
+                    rows={1}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault(); // ❗ stop newline
+                        handleSendMessage(e); // OR trigger form submit
+                      }
+                    }}
+                    className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
+                  />
+                ) : (
+                  <div className="flex-1 ">
+                    <p className="text-red-600 opacity-70 text-xs">
+                      24-hour messaging window has expired. You can no longer
+                      send a regular message to this customer. To continue the
+                      conversation, please use an approved WhatsApp message
+                      template.
+                    </p>
+                  </div>
+                )}
+
+                {/* Send Button */}
+                <button
+                  type="submit"
+                  aria-label="Send message"
+                  className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+                >
+                  {/* Send SVG */}
                   <svg
-                    width="22"
-                    height="22"
+                    width="18"
+                    height="18"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -2106,83 +2092,39 @@ const ChatArea = ({ setActiveTab }) => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+                      d="M22 2L11 13"
+                    />
+                    <path
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M22 2L15 22l-4-9-9-4 20-7z"
                     />
                   </svg>
                 </button>
-              )}
-
-              {!is24HourComplete && (
-                <input
-                  disabled={is24HourComplete}
-                  ref={fileInputRef}
-                  type="file"
-                  hidden
-                  onChange={(e) => {
-                    setFile(e.target.files[0]);
-                  }}
-                />
-              )}
-
-              {!is24HourComplete ? (
-                <textarea
-                  disabled={is24HourComplete}
-                  ref={textareaRef}
-                  value={messageValue}
-                  onChange={handleChange}
-                  placeholder="Type a message"
-                  rows={1}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault(); // ❗ stop newline
-                      handleSendMessage(e); // OR trigger form submit
-                    }
-                  }}
-                  className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
-                />
-              ) : (
-                <div className="flex-1 ">
-                  <p className="text-red-600 opacity-70 text-xs">
-                    24-hour messaging window has expired. You can no longer send
-                    a regular message to this customer. To continue the
-                    conversation, please use an approved WhatsApp message
-                    template.
-                  </p>
-                </div>
-              )}
-
-              {/* Send Button */}
-              <button
-                type="submit"
-                aria-label="Send message"
-                className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
-              >
-                {/* Send SVG */}
-                <svg
-                  width="18"
-                  height="18"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M22 2L11 13"
-                  />
-                  <path
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M22 2L15 22l-4-9-9-4 20-7z"
-                  />
-                </svg>
-              </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
+        </form>
+      ) : showTakeOverBtn ? (
+        <div className="flex justify-center w-full">
+          <button
+            type="button"
+            onClick={handleTakeOverFnc}
+            className="text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors"
+          >
+            Take Over
+          </button>
         </div>
-      </form>
+      ) : showHandledByOther ? (
+        <p>
+          <div className="flex justify-center w-full">
+            <div className="text-xs text-app-text-faint px-3 py-1.5">
+              This conversation is being handled by another user
+            </div>
+          </div>
+        </p>
+      ) : null}
 
       {showFlowModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[99999] p-4">
@@ -2687,4 +2629,446 @@ export default ChatArea;
 //             </div>
 //           </div>
 //         </p>
-//       )}
+// )}
+
+// this is working form
+//  <form
+//         onSubmit={handleSendMessage}
+//         className="shrink-0 bg-app-surface-secondary border-t border-app-border flex flex-col px-3 sm:px-6 py-3 sm:py-4"
+//       >
+//         {templateClick && (
+//           <div className="mb-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 h-40 gap-2 overflow-y-auto scrollbar-hidden">
+//             {templates?.length > 0 &&
+//               templates?.map((template) => (
+//                 <div
+//                   onClick={() => setSelectedTemplate(template)}
+//                   key={template?.id}
+//                   className={`
+//     cursor-pointer rounded-xl overflow-hidden transition-all h-30
+//     ${
+//       selectedTemplate?.id === template?.id
+//         ? "ring-1 ring-orange-500 bg-orange-50 dark:bg-orange-950/50"
+//         : "border border-app-border bg-app-surface hover:border-orange-300 dark:hover:border-orange-700"
+//     }
+//   `}
+//                 >
+//                   <div className="flex items-center justify-between px-3 py-2 bg-orange-100 border-b border-orange-200 dark:bg-orange-900/30 dark:border-orange-900">
+//                     <p className="break-words text-xs font-semibold text-orange-700 dark:text-orange-300 truncate">
+//                       {template?.name}
+//                     </p>
+
+//                     {selectedTemplate?.id === template?.id && (
+//                       <span className="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full">
+//                         Selected
+//                       </span>
+//                     )}
+//                   </div>
+
+//                   <div className="p-3">
+//                     <div className="bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-900 rounded-lg p-2 w-full">
+//                       <p className="text-xs text-gray-800 dark:text-gray-300 line-clamp-3 break-words">
+//                         {template?.components?.[0]?.text ||
+//                           template?.components?.[1]?.text}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
+//               ))}
+//           </div>
+//         )}
+
+//         {showQuickReplies && (
+//           <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-2 bg-app-surface w-full border border-app-border rounded-lg shadow-lg max-h-96 overflow-auto p-2 pt-8">
+//             {quickReplies.map((reply) => {
+//               const textItem = reply.items?.find((i) => i.type === "text");
+
+//               const mediaItems =
+//                 reply.items?.filter((i) => i.type !== "text") || [];
+
+//               return (
+//                 <div key={reply._id} className="relative w-full min-w-0">
+//                   {/* Quick Reply Card */}
+//                   <button
+//                     type="button"
+//                     onClick={() => handleSelectQuickReply(reply)}
+//                     className="
+//               w-full min-w-0 text-left p-3 pr-10
+//               bg-app-surface-secondary
+//               hover:bg-app-surface
+//               rounded-lg
+//               border border-primary/30!
+//               transition-colors
+//               cursor-pointer
+//             "
+//                   >
+//                     {/* Title */}
+//                     <div className="font-medium text-app-text truncate">
+//                       {reply.title}
+//                     </div>
+
+//                     {/* Text */}
+//                     <div className="text-sm text-gray-500 dark:text-app-text-faint truncate">
+//                       {textItem?.text}
+//                     </div>
+
+//                     {/* Media count */}
+//                     {mediaItems.length > 0 && (
+//                       <div className="text-xs mt-1 text-app-text-faint">
+//                         {mediaItems.length}{" "}
+//                         {mediaItems.length === 1 ? "media" : "media"}
+//                       </div>
+//                     )}
+//                   </button>
+
+//                   {/* Preview Eye */}
+//                   <button
+//                     type="button"
+//                     aria-label={`Preview ${reply.title}`}
+//                     title="Preview"
+//                     onClick={(e) => {
+//                       e.stopPropagation();
+//                       setPreviewQuickReply(reply);
+//                     }}
+//                     className="
+//               absolute
+//               top-2
+//               right-2
+//               z-10
+//               size-7
+//               flex
+//               items-center
+//               justify-center
+//               rounded-md
+//               text-app-text-faint
+//               hover:text-app-text
+//               hover:bg-app-surface
+//               cursor-pointer
+//               transition-colors
+//             "
+//                   >
+//                     <Eye size={16} />
+//                   </button>
+//                 </div>
+//               );
+//             })}
+
+//             {/* Close Quick Replies */}
+//             <button
+//               type="button"
+//               aria-label="Close quick replies"
+//               className="
+//         absolute
+//         top-1.5
+//         right-1.5
+//         size-7
+//         flex
+//         items-center
+//         justify-center
+//         rounded-md
+//         text-app-text
+//         hover:bg-app-surface-secondary
+//         cursor-pointer
+//         transition-colors
+//       "
+//               onClick={() => setShowQuickReplies(false)}
+//             >
+//               <X size={16} />
+//             </button>
+//           </div>
+//         )}
+
+//         {previewQuickReply && (
+//           <div
+//             className=" fixed inset-0 z-9999  bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+//             onClick={() => setPreviewQuickReply(null)}
+//           >
+//             {/* Preview Container */}
+//             <div
+//               className=" relative w-full max-w-md max-h-[90vh] bg-app-surface rounded-2xl shadow-2xl overflow-hidden flex flex-co "
+//               onClick={(e) => e.stopPropagation()}
+//             >
+//               {/* Header */}
+//               <div className="">
+//                 {/* <div className="min-w-0">
+//                   <div className="font-semibold text-app-text truncate">
+//                     {previewQuickReply.title}
+//                   </div>
+
+//                   <div className="text-xs text-app-text-faint mt-0.5">
+//                     Quick reply preview
+//                   </div>
+//                 </div> */}
+
+//                 <button
+//                   type="button"
+//                   aria-label="Close preview"
+//                   onClick={() => setPreviewQuickReply(null)}
+//                   className="
+//             shrink-0
+//             size-8
+//             flex
+//             items-center
+//             justify-center
+//             rounded-lg
+//             text-app-text
+//             hover:bg-app-surface-secondary
+//             cursor-pointer
+//             transition-colors
+//           "
+//                 >
+//                   <X size={18} />
+//                 </button>
+//               </div>
+
+//               {/* Preview Content */}
+//               <div className="overflow-y-auto p-5">
+//                 <QuickReplyPreview reply={previewQuickReply} />
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         {file && (
+//           <div className="flex flex-col items-start gap-2 mb-2 relative w-fit">
+//             <div
+//               onClick={() => setFile(null)}
+//               className="flex justify-center items-center absolute -left-1 -top-1 cursor-pointer size-4 bg-red-500 rounded-full text-white z-10"
+//             >
+//               <FiX size={10} />
+//             </div>
+
+//             {/* ✅ IMAGE PREVIEW */}
+//             {isImage ? (
+//               <img
+//                 src={URL.createObjectURL(file)}
+//                 alt="file"
+//                 className="w-40 h-20 rounded-md object-contain"
+//               />
+//             ) : (
+//               // ✅ DOCUMENT UI
+//               <div className="flex items-center gap-2 border border-app-border rounded-md px-3 py-2 bg-app-surface max-w-60">
+//                 {/* ICON */}
+//                 {isPDF && <FaFilePdf className="text-red-500 text-xl" />}
+//                 {isExcel && <FaFileExcel className="text-green-600 text-xl" />}
+//                 {isWord && <FaFileWord className="text-blue-500 text-xl" />}
+//                 {!isPDF && !isExcel && !isWord && (
+//                   <FaFileAlt className="text-gray-500 dark:text-app-text-faint text-xl" />
+//                 )}
+
+//                 {/* FILE NAME */}
+//                 <p className="text-xs truncate text-app-text">{file.name}</p>
+//               </div>
+//             )}
+//           </div>
+//         )}
+
+//         <div
+//           className={`${!is24HourComplete ? "" : "flex flex-wrap"} items-center gap-2 space-y-1`}
+//         >
+//           {flows?.length > 0 && (
+//             <div>
+//               <select
+//                 value={selectedFlowId || ""}
+//                 onChange={(e) => {
+//                   setSelectedFlowId(e.target.value);
+//                   if (e.target.value) {
+//                     setShowFlowModal(true);
+//                   }
+//                 }}
+//                 className="border border-app-border bg-app-surface text-app-text outline-none text-sm px-2 py-1.5 rounded-md cursor-pointer focus:ring-2 focus:ring-primary/30"
+//               >
+//                 <option value="" className={OPTION}>
+//                   Select Form
+//                 </option>
+
+//                 {flows.map((flow) => (
+//                   <option
+//                     key={flow.flowId}
+//                     value={flow.flowId}
+//                     className={OPTION}
+//                   >
+//                     {flow.flowName}
+//                   </option>
+//                 ))}
+//               </select>
+//             </div>
+//           )}
+
+//           <div className="flex gap-2 items-center flex-wrap">
+//             {templateLoading ? (
+//               <p className="text-xs text-gray-500 dark:text-app-text-faint animate-pulse">
+//                 Loading Templates...
+//               </p>
+//             ) : (
+//               <div>
+//                 {!templateClick ? (
+//                   <span
+//                     onClick={() => {
+//                       if (!templates?.length) {
+//                         navigate(
+//                           `/dashboard/client/68017653/settings?tab=whatsapp&template=true`,
+//                         );
+//                       }
+
+//                       handleTemplate(true);
+//                     }}
+//                     className="whitespace-nowrap cursor-pointer bg-gray-200 dark:bg-primary flex items-center gap-1 rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                   >
+//                     <MdChat /> Templates
+//                   </span>
+//                 ) : (
+//                   <span
+//                     onClick={() => handleTemplate(false)}
+//                     className="whitespace-nowrap cursor-pointer flex items-center gap-1 bg-gray-200 dark:bg-primary rounded-lg px-3 sm:px-4 py-1.5 text-sm text-gray-600 dark:text-app-text-faint hover:bg-gray-300 dark:hover:bg-primary/80 transition-colors"
+//                   >
+//                     Close Templates <MdClose />
+//                   </span>
+//                 )}
+//               </div>
+//             )}
+
+//             {!is24HourComplete && (
+//               <button
+//                 type="button"
+//                 aria-label="Quick replies"
+//                 onClick={() => setShowQuickReplies(!showQuickReplies)}
+//                 className="p-2 text-app-text hover:bg-app-surface rounded-lg transition-colors"
+//               >
+//                 <MessageSquareReply size={20} />
+//               </button>
+//             )}
+
+//             {isTakeOver && (
+//               <div className="flex justify-center w-full">
+//                 <button
+//                   type="button"
+//                   onClick={handleTakeOver}
+//                   className={`text-xs bg-primary hover:bg-primary/90 rounded-md text-white px-3 py-1.5 transition-colors ${!isTakeOver ? "opacity-70" : ""}`}
+//                 >
+//                   Take Over
+//                 </button>
+//               </div>
+//             )}
+
+//             <div>
+//               {/* {isRelease && (
+//                   <div className="flex justify-center w-full">
+//                     <button
+//                       type="button"
+//                       onClick={handleReleaseFnc}
+//                       className="text-xs bg-red-500 hover:bg-red-600 rounded-md text-white px-3 py-1.5 transition-colors"
+//                     >
+//                       Release Take Over
+//                     </button>
+//                   </div>
+//                 )} */}
+
+//               {/* {isHandledByOther && (
+//                   <div className="flex justify-center w-full">
+//                     <div className="text-xs text-app-text-faint px-3 py-1.5">
+//                       This conversation is being handled by another user
+//                     </div>
+//                   </div>
+//                 )} */}
+//             </div>
+//           </div>
+
+//           {!isTakeOver && (
+//             <div className="py-2 flex w-full items-end gap-2 sm:gap-3">
+//               {/* Attachment */}
+//               {!is24HourComplete && (
+//                 <button
+//                   type="button"
+//                   aria-label="Attach file"
+//                   onClick={() => fileInputRef.current.click()}
+//                   className="shrink-0 size-10 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:text-teal-600 hover:bg-app-surface transition-colors"
+//                 >
+//                   {/* Paperclip SVG */}
+//                   <svg
+//                     width="22"
+//                     height="22"
+//                     fill="none"
+//                     viewBox="0 0 24 24"
+//                     stroke="currentColor"
+//                   >
+//                     <path
+//                       strokeWidth="2"
+//                       strokeLinecap="round"
+//                       strokeLinejoin="round"
+//                       d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l9.9-9.9a3.5 3.5 0 114.95 4.95l-9.9 9.9a2 2 0 11-2.83-2.83l8.49-8.48"
+//                     />
+//                   </svg>
+//                 </button>
+//               )}
+
+//               {!is24HourComplete && (
+//                 <input
+//                   disabled={is24HourComplete}
+//                   ref={fileInputRef}
+//                   type="file"
+//                   hidden
+//                   onChange={(e) => {
+//                     setFile(e.target.files[0]);
+//                   }}
+//                 />
+//               )}
+
+//               {!is24HourComplete ? (
+//                 <textarea
+//                   disabled={is24HourComplete}
+//                   ref={textareaRef}
+//                   value={messageValue}
+//                   onChange={handleChange}
+//                   placeholder="Type a message"
+//                   rows={1}
+//                   onKeyDown={(e) => {
+//                     if (e.key === "Enter" && !e.shiftKey) {
+//                       e.preventDefault(); // ❗ stop newline
+//                       handleSendMessage(e); // OR trigger form submit
+//                     }
+//                   }}
+//                   className="flex-1 min-w-0 bg-app-surface border border-app-border text-app-text placeholder:text-app-text-faint resize-none rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 overflow-y-auto transition-colors"
+//                 />
+//               ) : (
+//                 <div className="flex-1 ">
+//                   <p className="text-red-600 opacity-70 text-xs">
+//                     24-hour messaging window has expired. You can no longer send
+//                     a regular message to this customer. To continue the
+//                     conversation, please use an approved WhatsApp message
+//                     template.
+//                   </p>
+//                 </div>
+//               )}
+
+//               {/* Send Button */}
+//               <button
+//                 type="submit"
+//                 aria-label="Send message"
+//                 className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+//               >
+//                 {/* Send SVG */}
+//                 <svg
+//                   width="18"
+//                   height="18"
+//                   fill="none"
+//                   viewBox="0 0 24 24"
+//                   stroke="currentColor"
+//                 >
+//                   <path
+//                     strokeWidth="2"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M22 2L11 13"
+//                   />
+//                   <path
+//                     strokeWidth="2"
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M22 2L15 22l-4-9-9-4 20-7z"
+//                   />
+//                 </svg>
+//               </button>
+//             </div>
+//           )}
+//         </div>
+// </form>

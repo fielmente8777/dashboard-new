@@ -403,16 +403,16 @@ const ViewAndManageLeads = () => {
               )}
             </div>
 
-            {lead?.chats?.length > 0 && (
+            {/* {lead?.chats?.length > 0 && (
               <ConversationsCard chats={lead?.chats} />
-            )}
+            )} */}
 
-            {whatsAppConversation && (
+            {/* {whatsAppConversation && (
               <WhatsAppConverstionCard
                 messageList={whatsAppConversation}
                 messageLoading={messageLoading}
               />
-            )}
+            )} */}
           </div>
 
           {/* <LeadFooter lead={lead} /> */}

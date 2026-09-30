@@ -358,7 +358,7 @@
 
 // export default EmailMarketingManagement;
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useContext } from "react";
 import {
   FiSearch,
   FiRefreshCw,
@@ -374,6 +374,7 @@ import {
   FiUpload,
   FiFileText,
   FiInbox,
+  FiLayout,
 } from "react-icons/fi";
 
 import * as XLSX from "xlsx"; /* npm install xlsx --legacy-peer-deps */
@@ -388,6 +389,8 @@ import {
 } from "../../services/api/emailCampaign.js";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import CampaignsList from "../../components/Email/CampaignsList.jsx";
+import { useSelector } from "react-redux";
+import TemplatesList from "./components/TemplatesList.jsx";
 
 /* =========================================================
    EXCEL RECIPIENT IMPORT
@@ -496,6 +499,10 @@ export function EmailMarketingManagement() {
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
   const [isAllMatchingSelected, setIsAllMatchingSelected] = useState(false);
   const [activeView, setActiveView] = useState("recipients");
+
+  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
+
+  console.log("authUser", hotel);
 
   const recipientsTotalPages = Math.max(
     1,
@@ -843,14 +850,14 @@ export function EmailMarketingManagement() {
   const SideNav = ({ mobile = false }) => (
     <div className={`flex flex-col ${mobile ? "h-full" : "h-full"}`}>
       <div className="p-4">
-        <button
+        {/* <button
           type="button"
           onClick={openCompose}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           <FiEdit3 size={17} />
           Compose
-        </button>
+        </button> */}
       </div>
 
       <nav className="space-y-1 px-3">
@@ -891,6 +898,22 @@ export function EmailMarketingManagement() {
         >
           <FiSend size={18} />
           <span>Campaigns</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveView("templates");
+            setIsMobileNavOpen(false);
+          }}
+          className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${
+            activeView === "templates"
+              ? "bg-blue-50 font-medium text-blue-700"
+              : "text-gray-600 hover:bg-gray-100"
+          }`}
+        >
+          <FiLayout size={18} />
+          <span>Templates</span>
         </button>
       </nav>
     </div>
@@ -1257,6 +1280,8 @@ export function EmailMarketingManagement() {
             )}
           </div>
         </section>
+      ) : activeView === "templates" ? (
+        <TemplatesList />
       ) : (
         <CampaignsList />
       )}
@@ -1358,6 +1383,7 @@ export function EmailMarketingManagement() {
           recipientCount={activeRecipientCount}
           onSend={handleSend}
           isSubmitting={isSendingCampaign}
+          defaultFrom={hotel?.Profile?.hotelEmail}
         />
       )}
     </div>
