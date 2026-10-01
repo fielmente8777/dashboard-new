@@ -19,6 +19,7 @@ import NotificationPopup from "../Popup/NotificationPopup";
 import ThemeToggle from "./ThemeToggle";
 import { WS_BASE_URL } from "../../data/constant";
 import WebSocketClient from "../../config/websocketClient";
+import GlobalSearch from "../GlobalSearch/GlobalSearch";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -155,6 +156,10 @@ const Navbar = () => {
               className="h-full w-full object-contain"
             />
           </div>
+
+          {/* <div className="flex-1 flex justify-end sm:justify-center px-2 sm:px-6">
+            <GlobalSearch />
+          </div> */}
         </div>
 
         {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
@@ -192,6 +197,10 @@ const Navbar = () => {
           </div> */}
 
           <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
+            <div className="flex-1 flex justify-end sm:justify-center px-2 sm:px-6">
+              <GlobalSearch />
+            </div>
+
             <ThemeToggle />
             <button
               onClick={() => setIsNotificationPopupOpen(true)}
@@ -242,6 +251,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2.5 sm:hidden">
+          <GlobalSearch />
           <ThemeToggle />
           <div
             onClick={() => setOpen(true)}

@@ -4,13 +4,22 @@ const ConfirmContext = createContext();
 
 export const useConfirm = () => useContext(ConfirmContext);
 
+const VARIANT_CLASSES = {
+  danger: "bg-red-700 hover:bg-red-600",
+  primary: "bg-teal-600 hover:bg-teal-700",
+};
+
 export const ConfirmProvider = ({ children }) => {
   const [confirmState, setConfirmState] = useState(null);
 
-  const confirm = (message) => {
+  const confirm = (message, options = {}) => {
     return new Promise((resolve) => {
       setConfirmState({
         message,
+        title: options.title || "Confirm Action",
+        confirmText: options.confirmText || "Delete",
+        cancelText: options.cancelText || "Cancel",
+        variant: options.variant || "danger",
         resolve,
       });
     });
@@ -32,12 +41,9 @@ export const ConfirmProvider = ({ children }) => {
 
       {confirmState && (
         <div className="fixed inset-0 z-9999999 flex items-start justify-center bg-black/40 backdrop-blur-sm">
-          <div
-            className="mt-4 w-105 rounded-xl bg-white p-6 shadow-xl
-            animate-[slideDown_.25s_ease]"
-          >
+          <div className="mt-4 w-105 rounded-xl bg-white p-6 shadow-xl animate-[slideDown_.25s_ease]">
             <h2 className="text-lg font-semibold text-gray-800">
-              Confirm Action
+              {confirmState.title}
             </h2>
 
             <p className="mt-2 text-sm text-gray-600">{confirmState.message}</p>
@@ -47,14 +53,17 @@ export const ConfirmProvider = ({ children }) => {
                 onClick={handleClose}
                 className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100"
               >
-                Cancel
+                {confirmState.cancelText}
               </button>
 
               <button
                 onClick={handleConfirm}
-                className="rounded-lg bg-red-700 px-4 py-2 text-sm text-white hover:bg-red-600"
+                className={`rounded-lg px-4 py-2 text-sm text-white ${
+                  VARIANT_CLASSES[confirmState.variant] ||
+                  VARIANT_CLASSES.danger
+                }`}
               >
-                Delete
+                {confirmState.confirmText}
               </button>
             </div>
           </div>
@@ -63,3 +72,69 @@ export const ConfirmProvider = ({ children }) => {
     </ConfirmContext.Provider>
   );
 };
+
+// import { createContext, useContext, useState } from "react";
+
+// const ConfirmContext = createContext();
+
+// export const useConfirm = () => useContext(ConfirmContext);
+
+// export const ConfirmProvider = ({ children }) => {
+//   const [confirmState, setConfirmState] = useState(null);
+
+//   const confirm = (message) => {
+//     return new Promise((resolve) => {
+//       setConfirmState({
+//         message,
+//         resolve,
+//       });
+//     });
+//   };
+
+//   const handleClose = () => {
+//     confirmState?.resolve(false);
+//     setConfirmState(null);
+//   };
+
+//   const handleConfirm = () => {
+//     confirmState?.resolve(true);
+//     setConfirmState(null);
+//   };
+
+//   return (
+//     <ConfirmContext.Provider value={{ confirm }}>
+//       {children}
+
+//       {confirmState && (
+//         <div className="fixed inset-0 z-9999999 flex items-start justify-center bg-black/40 backdrop-blur-sm">
+//           <div
+//             className="mt-4 w-105 rounded-xl bg-white p-6 shadow-xl
+//             animate-[slideDown_.25s_ease]"
+//           >
+//             <h2 className="text-lg font-semibold text-gray-800">
+//               Confirm Action
+//             </h2>
+
+//             <p className="mt-2 text-sm text-gray-600">{confirmState.message}</p>
+
+//             <div className="mt-6 flex justify-end gap-3">
+//               <button
+//                 onClick={handleClose}
+//                 className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-100"
+//               >
+//                 Cancel
+//               </button>
+
+//               <button
+//                 onClick={handleConfirm}
+//                 className="rounded-lg bg-red-700 px-4 py-2 text-sm text-white hover:bg-red-600"
+//               >
+//                 Delete
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </ConfirmContext.Provider>
+//   );
+// };

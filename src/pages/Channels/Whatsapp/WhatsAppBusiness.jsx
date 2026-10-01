@@ -109,6 +109,7 @@ const WhatsAppBusiness = ({ template = false }) => {
   const fetchAccountDetails = useCallback(async () => {
     try {
       const response = await getWhatsappAccountDetails();
+      console.log(response);
 
       setAccountDetails(response?.result?.docs);
     } catch (error) {

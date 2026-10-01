@@ -45,7 +45,7 @@ import {
 import { SiPayloadcms, SiAnalogue } from "react-icons/si";
 import { MdAnalytics } from "react-icons/md";
 import { MdLeaderboard } from "react-icons/md";
-import { GrAnnounce, GrResources } from "react-icons/gr";
+import { GrAnnounce, GrResources, GrRobot } from "react-icons/gr";
 import { FaRobot } from "react-icons/fa6";
 import { MdMarkEmailUnread, MdPayment } from "react-icons/md";
 import { SiGoogleearthengine, SiGoogleforms } from "react-icons/si";
@@ -577,6 +577,13 @@ export const SidebarData = [
     // key: "",
     link: `knowledge-base`,
     icon: <HiOutlineUserGroup />,
+  },
+
+  {
+    name: "Ai Training",
+    // key: "",
+    link: `ai-training`,
+    icon: <GrRobot />,
   },
 
   {

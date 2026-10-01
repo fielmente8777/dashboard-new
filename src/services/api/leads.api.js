@@ -65,13 +65,19 @@ export const getLeadById = async (leadId, hid) => {
 
 export const updateLead = async (payload) => {
   const token = localStorage.getItem("token");
+  const isForm = payload instanceof FormData;
+
+  // NotesCard also sets leadId / hid directly on the FormData object,
+  // so payload.leadId and payload.hid work in both cases
   const hid = payload?.hId || payload?.hid;
+  const id = payload?.leadId || payload?.conversationId;
+
   const { data } = await axios.put(
-    `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId || payload?.conversationId}/update?hid=${hid}`,
+    `${NEW_BASE_URL}/api/v1/leads/${id}/update?hid=${hid}`,
     payload,
     {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": isForm ? "multipart/form-data" : "application/json",
         Authorization: `Bearer ${token}`,
       },
     },
@@ -79,6 +85,23 @@ export const updateLead = async (payload) => {
 
   return data;
 };
+
+// export const updateLead = async (payload) => {
+//   const token = localStorage.getItem("token");
+//   const hid = payload?.hId || payload?.hid;
+//   const { data } = await axios.put(
+//     `${NEW_BASE_URL}/api/v1/leads/${payload?.leadId || payload?.conversationId}/update?hid=${hid}`,
+//     payload,
+//     {
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`,
+//       },
+//     },
+//   );
+
+//   return data;
+// };
 export const importLead = async (payload) => {
   const { data } = await axios.post(
     `${NEW_BASE_URL}/api/v1/leads/import?hid=${localStorage.getItem("hid")}`,

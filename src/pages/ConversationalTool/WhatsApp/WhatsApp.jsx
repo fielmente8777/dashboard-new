@@ -11,10 +11,12 @@ import { getWhatsappConversation } from "../../../services/api/whatsApp";
 import ChatArea from "./components/ChatArea";
 import ProfilePanel from "./components/ProfilePanel";
 import SidebarChat from "./components/SidebarChat";
+import { is24HoursCompletedFnc } from "../../../utils/is24Hours";
 
 const WhatsApp = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const number = searchParams.get("number");
+
   const wsRef = useRef(null);
   const {
     integrationStatus,
@@ -158,18 +160,54 @@ const WhatsApp = () => {
   };
 
   useEffect(() => {
-    if (!number || conversations.length === 0) return;
+    const conversationId = searchParams.get("conversationId");
+    const phone = searchParams.get("phone") || number;
 
-    const normalizePhone = (phone) => String(phone || "").replace(/\D/g, "");
+    if (!conversationId && !phone) return;
+    if (!conversations?.length) return; // wait for the list
 
-    const conversation = conversations.find(
-      (conv) => normalizePhone(conv.phone) === normalizePhone(number),
+    const normalize = (v) =>
+      String(v || "")
+        .replace(/\D/g, "")
+        .slice(-10);
+
+    const match =
+      (conversationId &&
+        conversations.find((c) => String(c._id) === String(conversationId))) ||
+      (phone &&
+        conversations.find((c) => normalize(c.phone) === normalize(phone)));
+
+    if (!match) return;
+
+    // tabs are derived from the 24h rule, not from status
+    const isConverted = match?.status?.toLowerCase() === "converted";
+    const isOld = is24HoursCompletedFnc(
+      match?.last_message?.updated_at || match?.createdAt,
     );
 
-    if (conversation) {
-      setSelectedConversation(conversation);
-    }
-  }, [number, conversations, setSelectedConversation]);
+    setActiveTab(isConverted ? "converted" : isOld ? "inactive" : "active");
+    setSelectedConversation(match);
+
+    // clean the URL so a refresh doesn't re-trigger it
+    ["conversationId", "phone", "number", "status"].forEach((k) =>
+      searchParams.delete(k),
+    );
+    setSearchParams(searchParams, { replace: true });
+  }, [conversations, searchParams, number]);
+
+  // useEffect(() => {
+  //   if (!number || conversations.length === 0) return;
+
+  //   const normalizePhone = (phone) => String(phone || "").replace(/\D/g, "");
+
+  //   const conversation = conversations.find(
+  //     (conv) => normalizePhone(conv.phone) === normalizePhone(number),
+  //   );
+
+  //   if (conversation) {
+  //     setSelectedConversation(conversation);
+  //   }
+  // }, [number, conversations, setSelectedConversation]);
 
   if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
 
