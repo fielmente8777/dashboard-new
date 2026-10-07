@@ -434,3 +434,73 @@ export const getCampaignUsers = async (prms) => {
   const data = await response.json();
   return data;
 };
+
+export const getWhatsAppBilling = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/billing?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
+export const createWhatsAppCreditOrder = async (amount) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/billing/razorpay/order?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ amount }),
+    },
+  );
+
+  return await response.json();
+};
+
+export const verifyWhatsAppCreditPayment = async (payload) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/billing/razorpay/verify`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return await response.json();
+};
+
+export const getWhatsAppTransactions = async ({
+  page = 1,
+  limit = 10,
+} = {}) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/billing/transactions?hid=${localStorage.getItem("hid")}&page=${page}&limit=${limit}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  return await response.json();
+};

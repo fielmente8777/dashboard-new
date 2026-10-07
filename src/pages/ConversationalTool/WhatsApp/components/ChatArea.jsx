@@ -395,6 +395,17 @@ const ChatArea = ({ setActiveTab }) => {
 
       const response = await sendWhatsAppMessage(formData);
 
+      if (!response?.success && response?.responseStatusCode === 402) {
+        showToast({
+          message: response?.responseMessage || "Failed to send message",
+          type: "error",
+        });
+        navigate(
+          `/dashboard/client/${localStorage.getItem("hid")}/settings?tab=WhatsApp&section=credits`,
+        );
+        return;
+      }
+
       if (response?.success && response?.responseStatusCode === 200) {
         // Update UI
         setMessageList((prev) =>
@@ -411,6 +422,7 @@ const ChatArea = ({ setActiveTab }) => {
         );
       }
     } catch (error) {
+      console.log("aaya ider to");
       showToast({
         message: error?.responseMessage || "Failed to send message",
         type: "error",

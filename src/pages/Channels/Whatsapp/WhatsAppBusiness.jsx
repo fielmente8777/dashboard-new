@@ -42,6 +42,8 @@ import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
 import QuickReplies from "./components/QuickReplies";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import WhatsAppCreditsCard from "./components/WhatsAppCredits/WhatsAppCreditsCard";
+import { DUMMY_WHATSAPP_BILLING } from "./components/WhatsAppCredits/billingDummyData";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -65,19 +67,23 @@ const sidebarTabs = [
   },
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
   { id: "quick-replies", label: "Quick Replies" },
+  { id: "credits", label: "Credits & Usage" },
 ];
 
-const WhatsAppBusiness = ({ template = false }) => {
+const WhatsAppBusiness = ({ template = false, section = null }) => {
   const hasFetchedRef = useRef(false);
   const { showToast } = useToast();
 
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [activeSubTab, setActiveSubTab] = useState("create-template");
   const [openDropdown, setOpenDropdown] = useState(null);
-
   const [activeTab, setActiveTab] = useState(
-    template ? "templates" : "overview",
+    section || (template ? "templates" : "overview"),
   );
+
+  // const [activeTab, setActiveTab] = useState(
+  //   template ? "templates" : "overview",
+  // );
   // Sidebar starts collapsed on small screens by default so it doesn't eat
   // the whole viewport on mobile; users can still expand it via the toggle.
   const [collapsed, setCollapsed] = useState(
@@ -353,7 +359,6 @@ const WhatsAppBusiness = ({ template = false }) => {
               <div className="w-full gap-4 grid grid-cols-1 md:grid-cols-2">
                 <div className="flex gap-4 flex-col">
                   {/* <BusinessInfoCard business={accountDetails?.business} /> */}
-
                   <WabaDetailsCard
                     waba={accountDetails?.waba}
                     business={accountDetails?.business}
@@ -417,6 +422,15 @@ const WhatsAppBusiness = ({ template = false }) => {
 
             {activeSubTab === "flows" && <Flows />}
             {activeTab === "quick-replies" && <QuickReplies />}
+            {activeTab === "credits" && (
+              <div className="w-full max-w-5xl">
+                <WhatsAppCreditsCard
+                  onAddCredits={async (amount) =>
+                    console.log("recharge", amount)
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
