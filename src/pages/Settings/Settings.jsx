@@ -16,13 +16,14 @@ const Settings = () => {
   const [searchParams] = useSearchParams();
   const tab = searchParams.get("tab");
   const template = searchParams.get("template");
+  const section = searchParams.get("section");
   // ✅ Centralized config
   const TABS = [
     { key: "Profile", label: "Profile", component: <Setting /> },
     {
       key: "WhatsApp",
       label: "WhatsApp",
-      component: <WhatsAppBusiness template={template} />,
+      component: <WhatsAppBusiness template={template} section={section} />,
     },
     { key: "Eazbot", label: "Eazbot", component: <Eazobot /> },
     { key: "Integration", label: "Integration", component: <Integration /> },
