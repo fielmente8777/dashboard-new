@@ -1319,26 +1319,16 @@ const ChatArea = ({ setActiveTab }) => {
           </button>
 
           <div
-<<<<<<< HEAD
-            onClick={handleOpenLead}
-            title="Open Lead"
-=======
             // onClick={() => setMobileActive("profile")}
             onClick={() => handleSelect()}
->>>>>>> 014380221153e2cab1bb5324105eff21f88447ec
             className="w-9 h-9 md:w-12 md:h-12 shrink-0 cursor-pointer text-white bg-teal-600 rounded-full flex items-center justify-center font-bold text-sm mr-2 md:mr-4"
           >
             {selectedConversation?.name?.charAt(0)?.toUpperCase()}
           </div>
 
           <div
-<<<<<<< HEAD
-            onClick={handleOpenLead}
-            title="Open Lead"
-=======
             onClick={() => setMobileActive("profile")}
             // onClick={() => alert("helo")}
->>>>>>> 014380221153e2cab1bb5324105eff21f88447ec
             className="min-w-0 cursor-pointer"
           >
             <h3 className="text-sm md:text-base text-app-text font-medium capitalize truncate">
