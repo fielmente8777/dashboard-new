@@ -45,7 +45,8 @@ const FILTER_SHELL =
   "h-10 px-3 flex items-center gap-2 rounded-lg border border-app-border bg-app-surface-secondary text-app-text transition-colors focus-within:ring-2 focus-within:ring-primary";
 const INLINE_DROPDOWN =
   "border w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!";
-const NOTES_TAB = "flex-1 sm:flex-none px-4 text-sm whitespace-nowrap transition-colors";
+const NOTES_TAB =
+  "flex-1 sm:flex-none px-4 text-sm whitespace-nowrap transition-colors";
 
 const CREATED_FROM = "facebook";
 
@@ -237,6 +238,7 @@ const MetaLeads = () => {
       followUpDate: followUpDate || null,
       ...(turnAwayCode && { turnAwayCode }),
     };
+
     try {
       const response = await updateLead(payload);
       if (response?.success && response?.responseStatusCode === 200) {
@@ -711,7 +713,12 @@ const MetaLeads = () => {
                                   setSelectedLead(row);
                                   setShowDatePicker(true);
                                 } else {
-                                  handleUpdateStage(row?._id, row?.hId, value);
+                                  handleUpdateStage({
+                                    leadId: row?._id,
+                                    hid: row?.hId,
+                                    stage: value,
+                                    conversationId: row?.conversationId,
+                                  });
                                 }
                               }}
                             />
