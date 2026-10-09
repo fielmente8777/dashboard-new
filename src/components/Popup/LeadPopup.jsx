@@ -15,6 +15,7 @@ import { useState } from "react";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import CallDetails from "../../pages/AiSalesAgents/CallDetails";
 import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
+import { API_URLS } from "../../config/env";
 
 const Tabs = ["All Details", "Call Details"];
 
@@ -81,7 +82,7 @@ const LeadPopup = ({
     if (confirmation.isConfirmed) {
       try {
         const response = await axios.post(
-          "https://nexon.eazotel.com/eazotel/delete-contact-query",
+          `${API_URLS.core}/eazotel/delete-contact-query`,
           {
             token: localStorage.getItem("token"),
             id: id,
@@ -116,7 +117,7 @@ const LeadPopup = ({
   const handleQueryStatus = async (status) => {
     try {
       const response = await axios.post(
-        "https://nexon.eazotel.com/eazotel/edit-contact-query",
+        `${API_URLS.core}/eazotel/edit-contact-query`,
         {
           token: localStorage.getItem("token"),
           Contact: lead.Contact,

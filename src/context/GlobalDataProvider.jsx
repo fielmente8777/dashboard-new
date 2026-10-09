@@ -9,9 +9,15 @@ import { fetchWebsiteData } from "../redux/slice/websiteDataSlice";
 import handleLocalStorage from "../utils/handleLocalStorage";
 import { getCookie } from "../utils/handleCookies";
 import { useNavigate } from "react-router-dom";
-import { BASE_PATH } from "../data/constant";
+import {
+  PAGES,
+  ROUTES,
+  dashboardPath,
+  isInsideDashboard,
+} from "../routes/paths";
 import { isExpired } from "../utils/isExpired";
 import { fetchSubscriptionData } from "../redux/slice/subscriptionDataSlice";
+import { resolveHid } from "../utils/resolveLocation";
 
 const GlobalDataProvider = () => {
   const dispatch = useDispatch();
@@ -41,26 +47,32 @@ const GlobalDataProvider = () => {
       localStorage.setItem("ndid", hotel.Data.ndid);
     }
 
-    if (hotel?.Profile?.hotels) {
-      const hotelKeys = Object.keys(hotel.Profile.hotels);
-      if (authUser?.isAdmin) {
-        if (hotelKeys.length > 0) {
-          dispatch(setHid(hotelKeys[hotelKeys.length - 1]));
-        }
-      } else {
-        dispatch(setHid(authUser?.assigned_location[0]?.hid));
-      }
+    // Wait for both the hotel profile and the signed-in user, then keep the
+    // location selected last time (or fall back to the default one).
+    if (hotel?.Profile?.hotels && authUser) {
+      const nextHid = resolveHid({
+        hotels: hotel.Profile.hotels,
+        authUser,
+        storedHid: localStorage.getItem("hid"),
+      });
+      if (nextHid) dispatch(setHid(nextHid));
     }
-  }, [hotel]);
+  }, [hotel, authUser, dispatch]);
 
   useEffect(() => {
     if (hotel?.SubscriptionDetails?.endDate) {
       const isExpire = isExpired(hotel?.SubscriptionDetails?.endDate);
       if (isExpire) {
-        return navigate(`/plans`);
+        return navigate(ROUTES.PLANS);
       }
     }
-    if (hid) navigate(`${BASE_PATH}/${handleLocalStorage("hid")}`);
+    // Already on a page of this hotel (refresh, deep link, or a location switch
+    // that navigated in the same click): stay there. The address bar is read
+    // directly because the router has not re-rendered yet at this point.
+    const currentHid = handleLocalStorage("hid");
+    if (hid && !isInsideDashboard(window.location.pathname, currentHid)) {
+      navigate(dashboardPath(PAGES.HOME, { hid: currentHid }));
+    }
   }, [hid]);
 
   return null;

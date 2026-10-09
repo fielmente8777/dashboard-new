@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { FiCheck, FiMessageSquare, FiX } from "react-icons/fi";
 import { IoIosCopy } from "react-icons/io";
+import { CHATBOT_WIDGET_SCRIPT_URL } from "../../config/env";
 
 const colors = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#3B82F6"];
 
@@ -22,7 +23,7 @@ const BotBuilderStep = ({ chatbotData, setChatbotData, setIsEdit }) => {
         hid: "${localStorage.getItem("hid")}",
       };
 </script>
-<script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>
+<script src="${CHATBOT_WIDGET_SCRIPT_URL}"></script>
   `,
   });
 

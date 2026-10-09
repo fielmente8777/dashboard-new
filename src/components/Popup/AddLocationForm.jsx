@@ -1,260 +1,183 @@
-import axios from "axios";
+import { Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { MdAddBusiness } from "react-icons/md";
 import { useDispatch } from "react-redux";
-import Swal from "sweetalert2";
-import { BASE_URL } from "../../data/constant";
+import { useApiAction } from "../../hooks/useApiAction";
+import { useAddLocationMutation } from "../../redux/api/locationsApi";
 import { fetchUserProfile } from "../../redux/slice/UserSlice";
-import handleLocalStorage from "../../utils/handleLocalStorage";
+import { getToken } from "../../utils/session";
+import Button from "../ui/Button";
+import Dialog from "../ui/Dialog";
+import { Field, Input, Select } from "../ui/Field";
+import { PLACES_API_URL } from "../../config/env";
 
+const EMPTY_FORM = { name: "", country: "", state: "", city: "", pincode: "" };
+
+// Resolves with the list at `path`, or [] when it cannot be loaded.
+const loadPlaces = async (path, body) => {
+  try {
+    const response = await fetch(`${PLACES_API_URL}${path}`, {
+      method: body ? "POST" : "GET",
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    return (await response.json())?.data || [];
+  } catch {
+    return [];
+  }
+};
+
+const toOptions = (placeholder, names) => [
+  { value: "", label: placeholder },
+  ...names.map((name) => ({ value: name, label: name })),
+];
+
+// Adds another hotel location to the account.
 const AddLocationForm = ({ isOpen, handleClose }) => {
-  const [countries, setCountries] = useState([]);
+  const dispatch = useDispatch();
+  const run = useApiAction();
+  const [addLocation, { isLoading }] = useAddLocationMutation();
+
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [countries, setCountries] = useState(null); // null = not loaded yet
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
-  const [loadingCountries, setLoadingCountries] = useState(true);
-  const [loadingStates, setLoadingStates] = useState(false);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [local, setLocal] = useState("");
-  const [pin, setPinCode] = useState("");
 
-  const dispatch = useDispatch();
+  useEffect(() => {
+    if (isOpen) setForm(EMPTY_FORM);
+  }, [isOpen]);
 
-  const handleFormSubmit = async (e) => {
+  // the countries are loaded once, the first time the dialog opens
+  useEffect(() => {
+    if (!isOpen || countries) return;
+
+    loadPlaces("").then((list) =>
+      setCountries(list.map((item) => item.country)),
+    );
+  }, [isOpen, countries]);
+
+  useEffect(() => {
+    setStates([]);
+    if (!form.country) return undefined;
+
+    let current = true;
+    loadPlaces("/states", { country: form.country }).then((data) => {
+      if (current) setStates((data.states || []).map((item) => item.name));
+    });
+    return () => {
+      current = false;
+    };
+  }, [form.country]);
+
+  useEffect(() => {
+    setCities([]);
+    if (!form.country || !form.state) return undefined;
+
+    let current = true;
+    loadPlaces("/state/cities", {
+      country: form.country,
+      state: form.state,
+    }).then((list) => {
+      if (current) setCities(list);
+    });
+    return () => {
+      current = false;
+    };
+  }, [form.country, form.state]);
+
+  const setField = (name) => (e) => setForm({ ...form, [name]: e.target.value });
+
+  const isComplete = Object.values(form).every((value) => value.trim());
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!local || !pin || !selectedCity || !selectedCountry || !selectedState) {
-      Swal.fire({
-        icon: "warning",
-        title: "Warning",
-        text: "Please fill in all fields.",
-      });
-      return;
-    }
 
-    try {
-      const { data } = await axios.post(
-        // "https://nexon.eazotel.com/multilocation/addlocations/dashboard",
-        `${BASE_URL}/multilocation/addlocations/dashboard`,
-        {
-          token: handleLocalStorage("token"),
-          local: local,
-          city: selectedCity,
-          state: selectedState,
-          country: selectedCountry,
-          pincode: pin,
-        }
-      );
+    const added = await run(
+      addLocation({
+        local: form.name.trim(),
+        country: form.country,
+        state: form.state,
+        city: form.city,
+        pincode: form.pincode.trim(),
+      }),
+      { success: "Location added", error: "Could not add the location." },
+    );
+    if (!added) return;
 
-      if (data.Status) {
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: data?.Message || "Hotel added successfully.",
-        });
-        dispatch(fetchUserProfile(handleLocalStorage("token")));
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: data?.Message || "Something went wrong.",
-        });
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: error?.Message || "Getting some rrror.",
-      });
-    } finally {
-      handleClose();
-    }
+    // the new location shows up in the switcher
+    dispatch(fetchUserProfile(getToken()));
+    handleClose();
   };
 
-  // Fetch countries on mount
-  useEffect(() => {
-    fetch("https://countriesnow.space/api/v0.1/countries")
-      .then((res) => res.json())
-      .then((data) => {
-        setCountries(data.data);
-        setLoadingCountries(false);
-      });
-  }, []);
-
-  // Fetch states when country changes
-  useEffect(() => {
-    if (selectedCountry) {
-      setLoadingStates(true);
-      fetch("https://countriesnow.space/api/v0.1/countries/states", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          country: selectedCountry,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setStates(data.data?.states || []);
-          setLoadingStates(false);
-        });
-    }
-  }, [selectedCountry]);
-
-  // Fetch cities when state changes
-  useEffect(() => {
-    if (selectedCountry && selectedState) {
-      setLoadingCities(true);
-      fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          country: selectedCountry,
-          state: selectedState,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setCities(data.data || []);
-          setLoadingCities(false);
-        });
-    }
-  }, [selectedCountry, selectedState]);
-
   return (
-    <div>
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/40 text-gray-600 flex items-center justify-center z-50">
-          <form
-            onSubmit={handleFormSubmit}
-            className="relative max-w-xl w-full mx-auto bg-white/95 py-7 px-5 rounded-lg space-y-6"
-          >
-            {/* Existing Local input */}
-            <div>
-              <div className="w-full">
-                <label htmlFor="local" className="font-medium text-primary/70!">
-                  Hotel Name
-                </label>
-                <input
-                  id="local"
-                  type="text"
-                  onChange={(e) => setLocal(e.target.value)}
-                  className="outline-none py-2 px-3 border rounded-sm w-full"
-                />
-              </div>
-            </div>
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
+      title="Add a location"
+      description="Add another hotel to manage from this account."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Field label="Hotel name">
+          <Input autoFocus value={form.name} onChange={setField("name")} />
+        </Field>
 
-            {/* Country, State, City Dropdowns */}
-            <div className="flex gap-4">
-              <div className="flex flex-col gap-1 w-full">
-                <label className="font-medium text-primary/70">Country</label>
-                <select
-                  value={selectedCountry}
-                  onChange={(e) => {
-                    setSelectedCountry(e.target.value);
-                    setSelectedState("");
-                    setSelectedCity("");
-                  }}
-                  className="outline-none py-2 px-3 border rounded-sm w-full"
-                  disabled={loadingCountries}
-                >
-                  <option value="">Select Country</option>
-                  {loadingCountries ? (
-                    <option>Loading countries...</option>
-                  ) : (
-                    countries.map((country) => (
-                      <option className="text-gray-600" key={country.country} value={country.country}>
-                        {country.country}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-1 w-full">
-                <label className="font-medium text-primary/70">State</label>
-                <select
-                  value={selectedState}
-                  onChange={(e) => {
-                    setSelectedState(e.target.value);
-                    setSelectedCity("");
-                  }}
-                  className="outline-none py-2 px-3 border rounded-sm w-full"
-                  disabled={!selectedCountry || loadingStates}
-                >
-                  <option value="">Select State</option>
-                  {loadingStates ? (
-                    <option>Loading states...</option>
-                  ) : (
-                    states.map((state) => (
-                      <option key={state.name} value={state.name}>
-                        {state.name}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="flex flex-col gap-1 w-full">
-                <label className="font-medium text-primary/70">City</label>
-                <select
-                  value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="outline-none py-2 px-3 border rounded-sm w-full"
-                  disabled={!selectedState || loadingCities}
-                >
-                  <option value="">Select City</option>
-                  {loadingCities ? (
-                    <option>Loading cities...</option>
-                  ) : (
-                    cities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              {/* Existing Pin Code input */}
-              <div className="flex flex-col gap-1 w-full">
-                <label className="font-medium text-primary/70">Pin Code</label>
-                <input
-                  type="text"
-                  onChange={(e) => setPinCode(e.target.value)}
-                  className="outline-none py-2 px-3 border rounded-sm w-full"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                className="w-full flex gap-2 justify-center items-center bg-primary/90 font-semibold text-white py-3"
-              >
-                <MdAddBusiness size={22} /> Add New Location
-              </button>
-            </div>
-
-            {/* form close button  */}
-            <div
-              className="flex justify-end absolute right-3 -top-4"
-              onClick={handleClose}
-            >
-              <span className="size-7 text-xs font-bold cursor-pointer rounded-full flex items-center justify-center bg-primary text-white">
-                X
-              </span>
-            </div>
-          </form>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Country">
+            <Select
+              value={form.country}
+              disabled={!countries}
+              // a new country has its own states and cities
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  country: e.target.value,
+                  state: "",
+                  city: "",
+                })
+              }
+              options={toOptions(
+                countries ? "Select country" : "Loading countries...",
+                countries || [],
+              )}
+            />
+          </Field>
+          <Field label="State">
+            <Select
+              value={form.state}
+              disabled={!form.country}
+              onChange={(e) =>
+                setForm({ ...form, state: e.target.value, city: "" })
+              }
+              options={toOptions("Select state", states)}
+            />
+          </Field>
+          <Field label="City">
+            <Select
+              value={form.city}
+              disabled={!form.state}
+              onChange={setField("city")}
+              options={toOptions("Select city", cities)}
+            />
+          </Field>
+          <Field label="Pin code">
+            <Input value={form.pincode} onChange={setField("pincode")} />
+          </Field>
         </div>
-      )}
-    </div>
+
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            icon={Building2}
+            disabled={!isComplete}
+            loading={isLoading}
+          >
+            Add location
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 };
 

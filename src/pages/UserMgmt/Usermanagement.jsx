@@ -5,11 +5,11 @@ import { IoClose } from "react-icons/io5";
 import { MdDeleteOutline } from "react-icons/md";
 import Swal from "sweetalert2";
 import { fetchUserManagementData } from "../../services/api";
-import EditUserPopup from "./EditUserPopup";
-import UserMgmtPopup from "./UserMgmtPopup";
+import UserFormDialog from "./UserFormDialog";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
+import { API_URLS } from "../../config/env";
 
 const Usermanagement = () => {
   const { showToast } = useToast();
@@ -44,7 +44,7 @@ const Usermanagement = () => {
     if (confirmation.isConfirmed) {
       try {
         const response = await fetch(
-          `https://nexon.eazotel.com/user/delete/${emailId}`,
+          `${API_URLS.core}/user/delete/${emailId}`,
           {
             method: "POST",
             headers: {
@@ -243,21 +243,19 @@ const Usermanagement = () => {
       </div>
 
       {/* render user management popup for user deails */}
-      <UserMgmtPopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        fetchData={fetchData}
+      <UserFormDialog
+        open={isPopupOpen}
         accessScope={authUser?.accessScope}
+        onClose={() => setIsPopupOpen(false)}
+        onSaved={fetchData}
       />
 
-      {/* render edit user popup for editing  */}
-      <EditUserPopup
-        editData={editUserData}
-        setEditUserData={setEditUserData}
-        isEditPopupOpen={isEditPopupOpen}
-        onClose={() => setIsEditPopupOpen(false)}
-        fetchData={fetchData}
+      <UserFormDialog
+        open={isEditPopupOpen}
+        user={editUserData}
         accessScope={authUser?.accessScope}
+        onClose={() => setIsEditPopupOpen(false)}
+        onSaved={fetchData}
       />
     </div>
   );

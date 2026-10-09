@@ -1,12 +1,12 @@
+import { PAGES, ROUTES, dashboardPath } from "../../routes/paths";
 import { useContext, useEffect, useState } from "react";
 import { MdMail, MdOutlineTrackChanges, MdSearch } from "react-icons/md";
 import { SiAnalogue, SiGoogleanalytics } from "react-icons/si";
 import { FaMeta } from "react-icons/fa6";
 import { IoIosClose, IoLogoWhatsapp } from "react-icons/io";
-import { BASE_PATH, BASE_URL, NEW_BASE_URL } from "../../data/constant";
+import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import axios from "axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import handleLocalStorage from "../../utils/handleLocalStorage";
 import Loader from "../../components/Loader";
 import DataContext from "../../context/DataContext";
 import {
@@ -501,7 +501,7 @@ function Integration() {
       );
       if (data?.success) {
         setShowSidebar(false);
-        navigate(`${BASE_PATH}/${handleLocalStorage("hid")}/calls-management`);
+        navigate(dashboardPath(PAGES.CALLS));
       }
     } catch (error) {
     } finally {
@@ -764,7 +764,7 @@ function Integration() {
                     !subscription?.appAccess[mappedId] && (
                       <div className="absolute inset-0 z-40 flex items-center justify-center bg-white/70 dark:bg-black/60 backdrop-blur-[2px]">
                         <Link
-                          to="/plans"
+                          to={ROUTES.PLANS}
                           className="px-4 py-2 bg-primary text-white shadow-md rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-primary/90 transition-colors"
                         >
                           Upgrade <Lock size={18} />

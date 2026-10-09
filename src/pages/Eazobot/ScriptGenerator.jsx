@@ -1,5 +1,6 @@
 import { FiCopy } from "react-icons/fi";
 import { useState } from "react";
+import { CHATBOT_WIDGET_SCRIPT_URL } from "../../config/env";
 
 const ScriptGenerator = () => {
   const [copied, setCopied] = useState("");
@@ -14,7 +15,7 @@ const ScriptGenerator = () => {
   \` }
 </Script>
 <Script
-  src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"
+  src="${CHATBOT_WIDGET_SCRIPT_URL}"
   strategy="afterInteractive"
 />`;
 
@@ -25,7 +26,7 @@ const ScriptGenerator = () => {
     hid: "${localStorage.getItem("hid") || ""}",
   };
 </script>
-<script src="https://cb-script.dyq28lyxrazm2.amplifyapp.com/widget/lead-chatbot.js"></script>`;
+<script src="${CHATBOT_WIDGET_SCRIPT_URL}"></script>`;
 
   const handleCopy = (type) => {
     const text = type === "nextjs" ? nextjsScript : rawScript;

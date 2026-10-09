@@ -8,7 +8,6 @@ import GlobalDataProvider from "./context/GlobalDataProvider.jsx";
 import { Provider } from "react-redux";
 import store from "./redux/Store.js";
 import Whatsapp from "./components/Contacts/WhtasApp.jsx";
-import ProfileDropDown from "./components/Popup/ProfileDropDown.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { ConfirmProvider } from "./context/ConfirmContext.jsx";
 
@@ -23,7 +22,6 @@ createRoot(document.getElementById("root")).render(
             <App />
           </ConfirmProvider>
         </ToastProvider>
-        <ProfileDropDown />
       </BrowserRouter>
     </DataProvider>
   </Provider>,

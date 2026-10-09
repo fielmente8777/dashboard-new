@@ -1,85 +1,92 @@
-import { MdEmail } from 'react-icons/md';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Copy, Mail } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import Button from "../../components/ui/Button";
+import DataTable from "../../components/ui/DataTable";
+import { Input } from "../../components/ui/Field";
+import PageShell from "../../components/ui/PageShell";
+import { useToast } from "../../context/ToastContext";
+import Icon from "../../components/ui/Icon";
+
+const COLUMNS = [
+  { key: "index", header: "#", className: "w-14", render: (_, i) => i + 1 },
+  { key: "email", header: "Email" },
+  {
+    key: "action",
+    header: "Action",
+    className: "w-28",
+    render: (subscriber) => (
+      <a
+        href={`mailto:${subscriber.email}`}
+        className="inline-flex items-center gap-1.5 text-blue-500 hover:underline"
+      >
+        <Icon icon={Mail} /> Email
+      </a>
+    ),
+  },
+];
 
 const Newsletter = () => {
-    const { newsletterData: data, loading } = useSelector(
-        (state) => state?.hotelsWebsiteData
-    );
+  const { showToast } = useToast();
+  const { newsletterData, loading } = useSelector(
+    (state) => state.hotelsWebsiteData,
+  );
+  const [search, setSearch] = useState("");
 
-    return (
-        <div className="bg-white cardShadow mb-10">
-            <div className="bg-app-surface-secondary p-4">
-                <h2 className="text-md font-semibold text-[#575757]">
-                    Newsletters
-                </h2>
-            </div>
+  const subscribers = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const all = (newsletterData || []).filter((s) => s?.email);
+    return term
+      ? all.filter((s) => s.email.toLowerCase().includes(term))
+      : all;
+  }, [newsletterData, search]);
 
-            <div className="bg-app-surface-secondary p-4  ">
-                {!loading ? (
-                    <div className="overflow-auto">
-                        <table className="w-full text-left bg-[#0a3a75] text-white/90 rounded-sm shadow-md shadow-black/20">
-                            <thead>
-                                <tr className="border-b">
+  const copyEmails = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        subscribers.map((s) => s.email).join(", "),
+      );
+      showToast({ message: `${subscribers.length} emails copied` });
+    } catch {
+      showToast({ message: "Could not copy the emails.", type: "error" });
+    }
+  };
 
-                                    {/* <th className="py-3 px-2 text-[14px] font-medium capitalize whitespace-nowrap">
-                                        ID
-                                    </th> */}
-                                    <th className="py-3 px-2 text-[14px] font-medium capitalize">
-                                        Email
-                                    </th>
-                                    <th className="py-3 px-2 text-[14px] font-medium capitalize">
-                                        Action
-                                    </th>
-                                </tr>
-                            </thead>
+  return (
+    <PageShell
+      title="Newsletter"
+      description="People who subscribed to the newsletter on your website."
+      actions={
+        <>
+          <div className="w-56">
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search email"
+              aria-label="Search email"
+            />
+          </div>
+          <Button
+            variant="secondary"
+            icon={Copy}
+            disabled={subscribers.length === 0}
+            onClick={copyEmails}
+          >
+            Copy emails
+          </Button>
+        </>
+      }
+    >
+      <DataTable
+        columns={COLUMNS}
+        rows={subscribers}
+        rowKey={(subscriber, index) => subscriber._id || `${subscriber.email}-${index}`}
+        loading={loading && !newsletterData}
+        emptyMessage={search ? "No subscriber matches your search." : "No subscribers yet."}
+      />
+    </PageShell>
+  );
+};
 
-                            {data?.length > 0 ? (
-                                // {currentLoactionWebsiteData?.NewsletterData?.length > 0 ? (
-                                <tbody>
-                                    {data?.map((subs, index) => (
-                                        // {currentLoactionWebsiteData?.NewsletterData?.map((subs, index) => (
-                                        <tr
-                                            key={index}
-                                            className={`py-1 border-b odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint   hover:bg-blue-500/5 transition-colors  cursor-pointer `}
-                                        >
-                                            {/* <td className="py-3 px-2 text-[14px] text-[#575757]">
-                                                {subs?._id}
-                                            </td> */}
-                                            <td className="py-3 px-2 text-[14px] text-[#575757]">
-                                                {subs?.email}
-                                            </td>
-                                            <td className="py-3 px-2 text-[16px] text-[#575757]">
-                                                <Link to={`mailto:${subs?.email}`} className='bg-red-900'>
-                                                    <MdEmail size={24} />
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            ) : (
-                                <tbody>
-                                    <tr className="bg-white text-gray-600 text-center border">
-                                        <td colSpan={9} className="py-2">
-                                            Data not found!
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            )}
-                        </table>
-                    </div>
-                ) : (
-                    <div className="space-y-2">
-                        {[1, 2, 3, 4, 5].map((_, index) => (
-                            <div key={index}>
-                                <p className="py-[1.35rem] animate-pulse bg-gray-100"></p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </div>
-    )
-}
-
-export default Newsletter
+export default Newsletter;

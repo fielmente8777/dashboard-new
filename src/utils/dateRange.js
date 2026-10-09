@@ -14,6 +14,8 @@ export const getDateRange = (type) => {
     case "yesterday":
       start.setDate(start.getDate() - 1);
       start.setHours(0, 0, 0, 0);
+      // yesterday only: the range must not run on into today
+      end.setDate(end.getDate() - 1);
       break;
 
     case "7days":

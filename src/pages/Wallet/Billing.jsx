@@ -9,6 +9,7 @@ import {
 } from "../../redux/slice/subscriptionDataSlice";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { RAZORPAY_BILLING_KEY_ID, RAZORPAY_CHECKOUT_SCRIPT_URL } from "../../config/env";
 
 // Plan data
 const PLANS = [
@@ -225,7 +226,7 @@ const BillingSummary = ({
   function loadRazorpay() {
     return new Promise((resolve) => {
       const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.src = RAZORPAY_CHECKOUT_SCRIPT_URL;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
@@ -284,8 +285,7 @@ const BillingSummary = ({
 
       // open razorpay checkout with order details
       const options = {
-        // key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
-        key: "rzp_test_UZ0V9jh3jMC0C9",
+        key: RAZORPAY_BILLING_KEY_ID,
         amount: order.result.doc.amount, // Amount in paise
         // currency: order.currency,
         currency: "INR",

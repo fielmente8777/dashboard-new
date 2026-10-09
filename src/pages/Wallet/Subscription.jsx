@@ -1,3 +1,4 @@
+import { ROUTES } from "../../routes/paths";
 import React, { useEffect, useState } from "react";
 import { NEW_BASE_URL } from "../../data/constant";
 import {
@@ -253,7 +254,7 @@ const Subscription = () => {
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3">
             <Link
-              to="/plans"
+              to={ROUTES.PLANS}
               className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold bg-ternary text-white hover:scale-[1.02]"
             >
               <Crown className="h-4 w-4" />

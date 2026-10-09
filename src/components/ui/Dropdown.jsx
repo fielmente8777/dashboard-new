@@ -198,7 +198,6 @@ export default function CustomDropdown({
             className="rounded-lg bg-app-surface border border-gray-200 shadow-xl min-w-40 max-h-64 overflow-y-auto"
           >
             {options.map((opt) => {
-              console.log(opt);
               const isSelected = multiple
                 ? selected.includes(opt.value)
                 : selected === opt.value;

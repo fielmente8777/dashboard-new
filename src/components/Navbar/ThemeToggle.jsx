@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
 import DataContext from "../../context/DataContext";
+import Icon from "../ui/Icon";
 
 const ThemeToggle = ({ className = "" }) => {
   const { isDarkMode, toggleColorMode } = useContext(DataContext);
@@ -11,12 +12,12 @@ const ThemeToggle = ({ className = "" }) => {
       onClick={toggleColorMode}
       aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       title={isDarkMode ? "Light mode" : "Dark mode"}
-      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white transition hover:bg-white/20 hover:scale-105 active:scale-95 ${className}`}
+      className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white ${className}`}
     >
       {isDarkMode ? (
-        <LuSun className="h-4 w-4" />
+        <Icon icon={LuSun} size="xl" />
       ) : (
-        <LuMoon className="h-4 w-4" />
+        <Icon icon={LuMoon} size="xl" />
       )}
     </button>
   );

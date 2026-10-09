@@ -22,6 +22,7 @@ import {
 import { useSelector } from "react-redux";
 import Loader from "../../components/Loader";
 import { createExportData } from "../../utils/exportLeadData";
+import { API_URLS } from "../../config/env";
 export const extractBookingInfo = (input) => {
   if (!input) return null;
   const parts = input.split(",");
@@ -289,7 +290,7 @@ const Leads = () => {
   // const handleQueryStatus = async (status) => {
   //     try {
   //       const response = await axios.post(
-  //         "https://nexon.eazotel.com/eazotel/edit-contact-query",
+  //         `${API_URLS.core}/eazotel/edit-contact-query`,
   //         {
   //           token: localStorage.getItem("token"),
   //           Contact: lead.Contact,
@@ -368,7 +369,7 @@ const Leads = () => {
     }
     try {
       const response = await axios.post(
-        "https://nexon.eazotel.com/eazotel/edit-contact-query",
+        `${API_URLS.core}/eazotel/edit-contact-query`,
         {
           token: localStorage.getItem("token"),
           Contact: lead.Contact,
@@ -425,7 +426,7 @@ const Leads = () => {
     if (confirmation.isConfirmed) {
       try {
         const response = await axios.post(
-          "https://nexon.eazotel.com/eazotel/delete-contact-query",
+          `${API_URLS.core}/eazotel/delete-contact-query`,
           {
             token: localStorage.getItem("token"),
             id: id,

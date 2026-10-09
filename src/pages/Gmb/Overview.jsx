@@ -11,6 +11,7 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { HiSparkles } from "react-icons/hi";
+import { API_URLS } from "../../config/env";
 
 export function Overview() {
   const metrics = [
@@ -102,7 +103,7 @@ export function Overview() {
 
   const getData = async () => {
     const response = await fetch(
-      "http://localhost:8000/api/v1/google-ads/sync",
+      `${API_URLS.node}/api/v1/google-ads/sync`,
       {
         method: "POST",
         headers: {

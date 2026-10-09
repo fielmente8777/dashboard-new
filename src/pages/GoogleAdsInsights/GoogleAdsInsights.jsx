@@ -1,3 +1,4 @@
+import { PAGES, dashboardPath } from "../../routes/paths";
 import { useContext, useEffect, useState, useRef, useMemo, createContext } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -8,7 +9,7 @@ import {
   Tooltip, Legend,
 } from "recharts";
 
-import { BASE_PATH, NEW_BASE_URL } from "../../data/constant";
+import { NEW_BASE_URL } from "../../data/constant";
 import DataContext from "../../context/DataContext";
 
 /* ============================================================================
@@ -527,7 +528,7 @@ export default function GoogleAdsInsights() {
       <div style={{ background: C.bg }} className="flex items-center justify-center py-16 min-h-screen">
         <div className="max-w-md w-full rounded-3xl p-10 text-center" style={{ background: C.panel, border: `1px solid ${C.border}`, boxShadow: "0 24px 60px -20px rgba(0,0,0,0.7)" }}>
           <h2 className="text-2xl font-bold" style={{ color: C.text }}>Connect Google Ads</h2>
-          <Link to={`${BASE_PATH}/${localStorage.getItem("hid")}/integration`} className="mt-8 inline-flex w-full items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition" style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.indigo})` }}>Connect Now</Link>
+          <Link to={dashboardPath(PAGES.INTEGRATION)} className="mt-8 inline-flex w-full items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition" style={{ background: `linear-gradient(135deg, ${C.blue}, ${C.indigo})` }}>Connect Now</Link>
         </div>
       </div>
     );

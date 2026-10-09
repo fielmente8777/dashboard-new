@@ -3,6 +3,7 @@ import { createContext, useEffect, useState } from "react";
 import { BASE_URL, NEW_BASE_URL } from "../data/constant";
 import { is24HoursCompletedFnc } from "../utils/is24Hours";
 import { getMetaAccounts, getMetaLeads } from "../services/api/MetaLeads.api";
+import { API_URLS } from "../config/env";
 
 const DataContext = createContext({});
 
@@ -48,8 +49,7 @@ export const DataProvider = ({ children }) => {
     useState(false);
   const [mobileActive, setMobileActive] = useState("sidebar");
 
-  // const host = "http://localhost:8000"
-  const host = "https://hmsbackend-7pyp.onrender.com";
+  const host = API_URLS.grm;
 
   // const socket = io(host, {
   //   transports: ["websocket"], // Ensure WebSocket transport is used
@@ -321,13 +321,36 @@ export const DataProvider = ({ children }) => {
     if (metaTheme) {
       metaTheme.setAttribute(
         "content",
-        colorMode === "dark" ? "#0f1419" : "#152547",
+        colorMode === "dark" ? "#0f1419" : "#1e2d52",
       );
     }
   }, [colorMode]);
 
+  // Light <-> dark as one smooth cross-fade instead of an instant flip.
   const toggleColorMode = () => {
-    setColorMode((prev) => (prev === "dark" ? "light" : "dark"));
+    const next = colorMode === "dark" ? "light" : "dark";
+    const root = document.documentElement;
+
+    // The class is set here as well as in the effect above: the browser
+    // needs the new colours in place before this callback returns.
+    const apply = () => {
+      root.classList.toggle("dark", next === "dark");
+      setColorMode(next);
+    };
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (reduceMotion) {
+      apply();
+    } else if (document.startViewTransition) {
+      document.startViewTransition(apply);
+    } else {
+      root.classList.add("theme-switching");
+      apply();
+      setTimeout(() => root.classList.remove("theme-switching"), 450);
+    }
   };
 
   return (

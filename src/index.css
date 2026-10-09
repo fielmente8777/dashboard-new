@@ -16,23 +16,44 @@
   --app-shadow: rgba(0, 0, 0, 0.08);
 } */
 :root {
-  --app-bg: #f6f7fb;
-  --app-surface: #ffffff;
-  --app-surface-secondary: #f1f3f9;
+  /* Light theme. Kept soft on purpose: nothing is pure white or pure black.
+     A cool grey page sits behind light grey cards, with ink-blue text.
+     Text on a card is still about 12:1 (muted text about 5.5:1), so it stays
+     easy to read without the glare. */
+  --app-bg: #e9ecf1;
+  --app-surface: #f4f6f9;
+  --app-surface-secondary: #e6e9ef;
 
-  --app-text: #0f1222;
-  --app-text-muted: #5c6175;
-  --app-text-faint: #9aa0b4;
+  --app-text: #232a3b;
+  --app-text-muted: #566175;
+  --app-text-faint: #8a96aa;
 
-  --app-border: #e6e8f0;
-  --app-border-strong: #d4d7e3;
+  --app-border: #d7dce5;
+  --app-border-strong: #c2c9d5;
 
-  --app-navbar: #0f1222;
+  --app-navbar: #1e2d52;
 
-  --tooltip-bg: rgba(255,255,255,0.95);
-  --tooltip-text: #0f172a;
-  --tooltip-label: #475569;
-  --tooltip-border: rgba(0,0,0,0.08);
+  /* brand colours; the dark theme keeps the stronger originals */
+  --brand-primary: #1e2d52;
+  --brand-accent: #f0692b;
+
+  --tooltip-bg: rgba(244,246,249,0.97);
+  --tooltip-text: #232a3b;
+  --tooltip-label: #566175;
+  --tooltip-border: rgba(35,42,59,0.1);
+
+  /* Chart series colours, used in this fixed order (see components/Charts/chartTheme.js).
+     The order keeps neighbouring colours distinguishable for colour-blind readers. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
+  --chart-other: #8a96aa;
+  --chart-grid: #d7dce5;
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -102,10 +123,24 @@
 
   --app-navbar: #0d1117;
 
+  --brand-primary: #152547;
+  --brand-accent: #fc5f07;
+
   --tooltip-bg: rgba(15,23,42,0.92);
   --tooltip-text: #ffffff;
   --tooltip-label: #cbd5e1;
   --tooltip-border: rgba(255,255,255,0.08);
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+  --chart-other: #6b7280;
+  --chart-grid: #2a2a36;
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -173,6 +208,60 @@ code {
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
+/* ── scrollbars ──────────────────────────────────────────────
+   One slim, rounded scrollbar for every scrolling area, in the theme's
+   colours (so it follows light / dark on its own). The thumb is drawn
+   inset from the edges and darkens on hover. Areas that should show no
+   scrollbar at all use .scrollbar-hidden / .hide-scrollbar below. */
+:root {
+  --scrollbar-thumb: color-mix(in srgb, var(--app-text-faint) 55%, transparent);
+  --scrollbar-thumb-hover: var(--app-text-muted);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  /* the transparent border is what insets the thumb from the edges */
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: var(--scrollbar-thumb);
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:active {
+  border-width: 2px;
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox has no ::-webkit-scrollbar. Kept behind @supports because in
+   Chrome these two properties would switch the styles above off. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+/* The dotted backdrop behind chat messages. Drawn in CSS from the theme's
+   colours, so it needs no image and follows light / dark. */
+.chat-backdrop {
+  background-color: var(--app-bg);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--app-text-faint) 28%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+
 .scrollbar-hidden::-webkit-scrollbar {
   display: none;
 }
@@ -233,9 +322,9 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
 
 @theme inline {
   /* --color-primary: #0A3A75; */
-  --color-primary: #152547;
+  --color-primary: var(--brand-primary);
   --color-secondary: #0a3a75;
-  --color-ternary: #fc5f07;
+  --color-ternary: var(--brand-accent);
   --color-color-1: #d1b14e;
   --color-color-2: #040404;
   --color-text-gray: #747474;
@@ -286,11 +375,232 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
 }
 
 
+/* Pages that still hard-code white (bg-white) get the soft card colour in
+   the light theme too. Written outside the Tailwind layers so it wins over
+   the utility class. Anything that must stay truly white should set it with
+   an inline style. */
+:root:not(.dark) .bg-white {
+  background-color: var(--app-surface);
+}
+
 select option {
-  background-color: #ffffff;
+  background-color: #f4f6f9;
   color: #1f2937;
 }
 html.dark select option {
   background-color: #1e293b;
   color: #f1f5f9;
+}
+
+
+/* ── Motion ──────────────────────────────────────────────────────────────
+   Small, quick entrance animations for the pages built on components/ui.
+   They only move things in; nothing loops except the loading shimmer.
+   Everything is switched off for people who ask for reduced motion.
+   They use fill-mode "backwards" on purpose: once an element has entered,
+   the animation lets go of it, so hover effects such as anim-lift still work.
+
+   anim-enter     fades up into place              (sections, opened panels)
+   anim-fade      plain fade                       (overlays, table rows)
+   anim-pop       scales up from slightly smaller  (dialogs, badges, popups)
+   anim-menu      drops down from its trigger      (menus)
+   anim-slide-in  slides in from the right         (drawers)
+   anim-grow-x    grows from the left              (bars)
+   anim-stagger   put on a parent: its children enter one after another
+   anim-shimmer   light sweeping across            (loading placeholders)
+   anim-lift      rises a little on hover          (clickable cards)        */
+
+@keyframes app-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes app-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-menu {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes app-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes app-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+:root {
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shimmer: rgba(255, 255, 255, 0.55);
+}
+
+.dark {
+  --shimmer: rgba(255, 255, 255, 0.06);
+}
+
+.anim-enter,
+.anim-stagger > * {
+  animation: app-fade-up 0.4s var(--ease-out) backwards;
+}
+
+.anim-fade {
+  animation: app-fade 0.25s ease-out backwards;
+}
+
+.anim-pop {
+  animation: app-pop 0.2s var(--ease-out) backwards;
+}
+
+.anim-menu {
+  transform-origin: top right;
+  animation: app-menu 0.18s var(--ease-out) backwards;
+}
+
+.anim-slide-in {
+  animation: app-slide-in 0.3s var(--ease-out) backwards;
+}
+
+.anim-grow-x {
+  transform-origin: left;
+  animation: app-grow-x 0.6s var(--ease-out) backwards;
+}
+
+/* each child starts a little after the one before it; from the 9th on they
+   all share the last delay, so long lists never keep the reader waiting */
+.anim-stagger > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.anim-stagger > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.anim-stagger > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+.anim-stagger > *:nth-child(5) {
+  animation-delay: 200ms;
+}
+.anim-stagger > *:nth-child(6) {
+  animation-delay: 250ms;
+}
+.anim-stagger > *:nth-child(7) {
+  animation-delay: 300ms;
+}
+.anim-stagger > *:nth-child(n + 8) {
+  animation-delay: 350ms;
+}
+
+.anim-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.anim-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
+  animation: app-shimmer 1.4s ease-in-out infinite;
+}
+
+.anim-lift {
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out),
+    border-color 0.2s;
+}
+
+.anim-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-enter,
+  .anim-fade,
+  .anim-pop,
+  .anim-menu,
+  .anim-slide-in,
+  .anim-grow-x,
+  .anim-stagger > *,
+  .anim-shimmer::after {
+    animation: none;
+  }
+
+  .anim-lift,
+  .anim-lift:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Switching between light and dark ────────────────────────────────────
+   The switch is a cross-fade of the whole page (see toggleColorMode in
+   context/DataContext.jsx). Browsers without view transitions get the
+   `theme-switching` class instead, which eases every colour for a moment. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: ease-in-out;
+}
+
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease,
+    box-shadow 0.4s ease !important;
 }

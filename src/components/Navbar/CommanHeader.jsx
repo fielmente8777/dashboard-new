@@ -1,27 +1,17 @@
 import { useState } from "react";
-import ContactForm from "../Popup/ContactForm";
-import { MarketPlaceService } from "../../data/constant";
 import MarkInterestedPopup from "../Popup/MarkInterestedPopup";
+import Button from "../ui/Button";
 
+// The bar on top of a service page: the service's name and the button to
+// tell us you are interested in it.
 const CommanHeader = ({ serviceName }) => {
   const [open, setOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState([serviceName]);
 
-  // console.log(selectedServices);
   return (
-    <div className="bg-white">
-      <div className="flex justify-between items-center">
-        <p className="text-gray-600 font-semibold">{serviceName}</p>
-        {/* <button onClick={handleMarkAsInterested(serviceName)} className="bg-green-600 text-white py-2 px-3 rounded-lg hover:scale-95 font-semibold">
-          Mark as interested
-        </button> */}
-        <button
-          onClick={() => setOpen(true)}
-          className="bg-green-600 text-white py-2 px-3 rounded-lg hover:scale-95 font-semibold"
-        >
-          Mark as interested
-        </button>
-      </div>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <p className="font-semibold text-app-text">{serviceName}</p>
+      <Button onClick={() => setOpen(true)}>Mark as interested</Button>
 
       <MarkInterestedPopup
         open={open}

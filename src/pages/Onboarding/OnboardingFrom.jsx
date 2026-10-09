@@ -1,3 +1,4 @@
+import { PAGES, dashboardPath } from "../../routes/paths";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import handleLocalStorage from "../../utils/handleLocalStorage";
@@ -6,6 +7,7 @@ import { BASE_URL } from "../../data/constant";
 import Loader from "../../components/Loader";
 import { useDispatch } from "react-redux";
 import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+import { PLACES_API_URL } from "../../config/env";
 
 const Steps = {
   1: {
@@ -235,7 +237,7 @@ const OnboardingForm = () => {
     if (data?.Status) {
       handleLocalStorage("hid", data?.hId);
       dispatch(fetchWebsiteData(localStorage.getItem("token"), data?.hId));
-      navigate(`/dashboard/client/${data?.hId}`);
+      navigate(dashboardPath(PAGES.HOME, { hid: data?.hId }));
       setSpinner(false);
     }
 
@@ -267,7 +269,7 @@ const OnboardingForm = () => {
 
   const fetchCountries = async () => {
     const response = await fetch(
-      "https://countriesnow.space/api/v0.1/countries"
+      PLACES_API_URL
     );
     const data = await response.json();
 
@@ -296,7 +298,7 @@ const OnboardingForm = () => {
 
   const fetchStates = async () => {
     const response = await fetch(
-      "https://countriesnow.space/api/v0.1/countries/states",
+      `${PLACES_API_URL}/states`,
       {
         method: "POST",
         headers: {
@@ -333,7 +335,7 @@ const OnboardingForm = () => {
 
   const fetchCities = async () => {
     const response = await fetch(
-      "https://countriesnow.space/api/v0.1/countries/state/cities",
+      `${PLACES_API_URL}/state/cities`,
       {
         method: "POST",
         headers: {

@@ -26,15 +26,15 @@ import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
 import Loading from "../../components/Loading";
-import AudienceInsights from "../../components/AudienceInsight";
+import AudienceInsights from "../../components/Analytics/AudienceInsights";
 
 // ===== GA COMPONENTS =====
-import GoogleAnalyticsChart from "../../components/GoogleAnalyticsChart";
-import TrafficSources from "../../components/TrafficSources";
-import TopPagesTable from "../../components/TopPagesTable";
-import ConversionEvents from "../../components/ConversionEvent";
-import DeviceAnalytics from "../../components/DeviceAnalytics";
-import GeoAnalytics from "../../components/GeoAnalytics";
+import GoogleAnalyticsChart from "../../components/Analytics/GoogleAnalyticsChart";
+import TrafficSources from "../../components/Analytics/TrafficSources";
+import TopPagesTable from "../../components/Analytics/TopPagesTable";
+import ConversionEvents from "../../components/Analytics/ConversionEvents";
+import DeviceAnalytics from "../../components/Analytics/DeviceAnalytics";
+import GeoAnalytics from "../../components/Analytics/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
 import CallsAnalytics from "../Calls/CallsAnalytics";

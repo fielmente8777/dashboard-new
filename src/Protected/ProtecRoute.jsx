@@ -1,3 +1,4 @@
+import { ROUTES } from "../routes/paths";
 import { Navigate, Outlet, useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 import handleLocalStorage from "../utils/handleLocalStorage";
@@ -53,7 +54,7 @@ export default function ProtectedRoute() {
       if (ndid !== String(handleLocalStorage("hid"))) {
         localStorage.clear();
         removeCookie("token");
-        navigate("/login");
+        navigate(ROUTES.LOGIN);
         return;
       }
     }
@@ -63,6 +64,6 @@ export default function ProtectedRoute() {
       <Outlet />
     </DashboardLayout>
   ) : (
-    <Navigate to="/login" replace />
+    <Navigate to={ROUTES.LOGIN} replace />
   );
 }

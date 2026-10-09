@@ -1,12 +1,5 @@
-import React from 'react'
-import WebsiteSeoDashboard from '../../components/WebsiteDashboard'
+import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
 
-const WebsiteSeo = () => {
-    return (
-        <div>
-            <WebsiteSeoDashboard/>
-        </div>
-    )
-}
+const WebsiteSeo = () => <WebsiteSeoDashboard />;
 
-export default WebsiteSeo
+export default WebsiteSeo;

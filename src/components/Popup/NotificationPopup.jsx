@@ -1,4 +1,5 @@
 import { MdClose } from "react-icons/md";
+import Icon from "../ui/Icon";
 
 const notifications = [
   {
@@ -97,12 +98,17 @@ export default function NotificationPopup({ isOpen, onClose, data }) {
         <div className="flex items-center justify-between p-4 border-b shadow-2xl">
           <h2 className="text-lg font-medium">Notifications</h2>
           <button onClick={onClose}>
-            <MdClose size={20} />
+            <Icon icon={MdClose} size="xl" />
           </button>
         </div>
 
         {/* Notification List */}
         <div className="overflow-y-auto h-[calc(100%-60px)]">
+          {!data?.length && (
+            <p className="px-4 py-10 text-center text-sm text-app-text-muted">
+              No new notifications
+            </p>
+          )}
           {data?.map((item) => (
             <div
               key={item.id}

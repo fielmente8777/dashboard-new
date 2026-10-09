@@ -1,24 +1,12 @@
-export const BASE_PATH = "/dashboard/client";
-export const BASE_URL = "https://nexon.eazotel.com";
-// export const BASE_URL = "http://127.0.0.1:8001";
-// export const BASE_URL =
-//   "https://aeec-2409-40d2-12ac-ca77-bdcb-54ef-5244-e4f4.ngrok-free.app";
+import { API_URLS, WS_URL } from "../config/env";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
-// export const NEW_BASE_URL ="https://9979-2409-40d2-10e3-a381-8543-29db-31b1-4dde.ngrok-free.app";
-
-// export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
-
-// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-
-// export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-
-export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-// export const WS_BASE_URL = "ws://localhost:8000";
-export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
-// export const NODE_BASE_URL = "http://localhost:8000/api/v1";
-export const NODE_BASE_URL = "https://gian-1eve.onrender.com/api/v1";
+export { BASE_PATH } from "../routes/paths";
+// Backend URLs live in src/config/env.js - change them there (or in .env).
+export const BASE_URL = API_URLS.core;
+export const NEW_BASE_URL = API_URLS.node;
+export const SALES_AGEENT_BASE_URL = API_URLS.salesAgent;
+export const WS_BASE_URL = WS_URL;
+export const NODE_BASE_URL = `${API_URLS.node}/api/v1`;
 
 export const room_type_name = {
   1: "DELUXE",
@@ -267,41 +255,6 @@ export const countriesCode = [
   { name: "ZMB", code: "+260" },
   { name: "ZWE", code: "+263" },
 ];
-
-const PATHS = {
-  DASHBOARD: "/",
-  LOGIN: "/login",
-  SIGNUP: "/signup",
-  FORGET_PASSWORD: "/forget-password",
-  CHANGE_PASSWORD: "/change-password",
-
-  LEADS_MANAGEMENT: "leads-management",
-  CALLS_MANAGEMENT: "calls-management",
-};
-
-export const ROUTES_PATH = {
-  DASHBOARD: "/",
-  LOGIN: "/login",
-  SIGNUP: "/signup",
-  FORGET_PASSWORD: "/forget-password",
-  CHANGE_PASSWORD: "/change-password",
-
-  // admin
-  ADMIN_DASHBOARD: "/admin",
-  ADMIN_LOGIN: "/admin/login",
-  ADMIN_SIGNUP: "/admin/signup",
-  ADMIN_FORGET_PASSWORD: "/admin/forget-password",
-  ADMIN_CHANGE_PASSWORD: "/admin/change-password",
-
-  // leads management
-  LEADS_MANAGEMENT: `${PATHS.LEADS_MANAGEMENT}`,
-  LEADS_MANAGEMENT_ALL_LEADS: `${PATHS.LEADS_MANAGEMENT}/all-leads`,
-  LEADS_MANAGEMENT_META_LEADS: `${PATHS.LEADS_MANAGEMENT}/meta-leads`,
-  LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
-
-  // calls management
-  CALLS_MANAGEMENT: `${PATHS.CALLS_MANAGEMENT}`,
-};
 
 export const tableHeaders = [
   { key: "Created_at", label: "Created Time" },

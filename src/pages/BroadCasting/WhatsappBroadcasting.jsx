@@ -1,3 +1,4 @@
+import { broadcastPath } from "../../routes/paths";
 import { useEffect, useState } from "react";
 import { IoMdRefresh } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
@@ -166,7 +167,7 @@ const WhatsappBroadcasting = () => {
                       className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
                       onClick={() =>
                         navigate(
-                          `/dashboard/client/${localStorage.getItem("hid")}/marketing/whatsapp-marketing/broadcast/${campaign._id}`,
+                          broadcastPath(campaign._id),
                         )
                       }
                     >

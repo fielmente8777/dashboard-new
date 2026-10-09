@@ -1,64 +1,12 @@
-import { useSelector } from "react-redux";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
-import { useState } from "react";
-import ProfileDropDown from "../components/Popup/ProfileDropDown";
-import { isExpired } from "../utils/isExpired";
-import { useNavigate } from "react-router-dom";
-import { BASE_PATH } from "../data/constant";
-import handleLocalStorage from "../utils/handleLocalStorage";
 
 export default function DashboardLayout({ children }) {
-  const [sideBarWidth, setSidebarWidth] = useState(247);
-  const [isSmooth, setIsSmooth] = useState(true);
-  const navigate = useNavigate();
-
-  const { isOpen } = useSelector((state) => state.toggle);
-
-  // const isExpire = isExpired(PLAN.endDate);
-
-  // if (isExpire) {
-  //   return navigate(`${BASE_PATH}/${localStorage.getItem("hid")}/plans`);
-  // }
-
   return (
-    <div className="flex h-screen overflow-hidden">
-      <div
-        style={{
-          width: isOpen ? ` ${sideBarWidth}px` : "70px",
-        }}
-        className={`md:block hidden ${
-          isSmooth ? "transition-all duration-300" : ""
-        } overflow-hidden sm:overflow-hidden`}
-      >
-        <div>
-          <Sidebar
-            sideBarWidth={sideBarWidth}
-            setSidebarWidth={setSidebarWidth}
-            setIsSmooth={setIsSmooth}
-          />
-        </div>
-      </div>
+    <div className="flex h-dvh overflow-hidden">
+      <Sidebar />
 
-      <div
-        style={{
-          width: isOpen ? `100%` : "0px",
-        }}
-        className={` ${isOpen ? "block md:hidden" : "hidden"} ${
-          isSmooth ? "transition-all duration-300" : ""
-        } overflow-hidden bg-app-surface sm:overflow-hidden w-full`}
-      >
-        <div>
-          <Sidebar
-            sideBarWidth={sideBarWidth}
-            setSidebarWidth={setSidebarWidth}
-            setIsSmooth={setIsSmooth}
-            isMobile={true}
-          />
-        </div>
-      </div>
-
-      <div className="flex-1 h-full flex flex-col overflow-hidden scrollbar-hidden bg-app-bg transition-colors duration-200">
+      <div className="flex-1 min-w-0 h-full flex flex-col overflow-hidden scrollbar-hidden bg-app-bg transition-colors duration-200">
         <div>
           <Navbar />
         </div>

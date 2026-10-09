@@ -1,9 +1,9 @@
+import { PAGES, dashboardPath } from "../../../../routes/paths";
 import { useEffect, useState } from "react";
 import StatusPill from "./StatusPill";
 import { timeAgo } from "../../../../utils/formateDate";
 import Pagination from "../../../../components/Pagination";
 import { useNavigate } from "react-router-dom";
-import { BASE_PATH } from "../../../../data/constant";
 
 const TABS = ["all", "sent", "delivered", "read", "failed"];
 const LIMIT = 20;
@@ -89,7 +89,7 @@ const RecipientRow = ({ item, index }) => {
   const navigate = useNavigate();
   const handleRowClick = () => {
     navigate(
-      `${BASE_PATH}/${localStorage?.getItem("hid")}/channel/wa/chat?number=${item.phone}`,
+      dashboardPath(PAGES.CHAT_WHATSAPP, { query: `number=${item.phone}` }),
     );
   };
   return (

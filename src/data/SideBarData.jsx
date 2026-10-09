@@ -83,6 +83,7 @@ import {
   LiveChatIcon,
   Dashboard,
 } from "../icons/icon";
+import { SOCIAL_PORTAL_URL } from "../config/env";
 
 export const SidebarData = [
   {
@@ -363,7 +364,7 @@ export const SidebarData = [
     name: "Social Media",
     key: "Social Media",
     target: "_blank",
-    link: `https://social.eazotel.com`,
+    link: SOCIAL_PORTAL_URL,
     icon: <TiSocialSkype size={18} />,
   },
 

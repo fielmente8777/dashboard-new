@@ -57,6 +57,8 @@ import {
   type SeoTokenPricing,
 } from "../../utils/seoTokenPricing";
 import { notifySeoTokensChanged } from "../../utils/seoTokenEvents";
+import { useToast } from "../../context/ToastContext";
+import { GEOCODING_API_URL } from "../../config/env";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -211,9 +213,6 @@ function useSeoProgress(onDone?: () => void) {
     const url = `${NODE_BASE_URL}/seo/seo-intelligence/progress?token=${encodeURIComponent(token || "")}`;
     const es = new EventSource(url);
 
-    es.onopen = () => {
-      console.log("[SSE] Connected ✅");
-    };
     es.onmessage = (e) => {
       try {
         const data: ScanProgress = JSON.parse(e.data);
@@ -760,6 +759,7 @@ const OnboardingWizard = ({
   onComplete: () => void;
   authConfig: any;
 }) => {
+  const { showToast } = useToast();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -818,7 +818,7 @@ const OnboardingWizard = ({
       set("lng", lng.toFixed(6));
       try {
         const r = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`,
+          `${GEOCODING_API_URL}/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`,
         );
         const data = await r.json();
         const addr = data.address || {};
@@ -859,7 +859,7 @@ const OnboardingWizard = ({
           mapRef.current.setView([latitude, longitude], 15, { animate: true });
         }
         fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`,
+          `${GEOCODING_API_URL}/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`,
         )
           .then((r) => r.json())
           .then((data) => {
@@ -966,7 +966,10 @@ const OnboardingWizard = ({
       }
       onComplete();
     } catch (err: any) {
-      alert("Setup failed: " + (err?.response?.data?.error || err.message));
+      showToast({
+        message: "Setup failed: " + (err?.response?.data?.error || err.message),
+        type: "error",
+      });
     } finally {
       setSaving(false);
     }

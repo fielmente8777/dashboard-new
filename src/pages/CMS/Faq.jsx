@@ -1,229 +1,157 @@
+import { ChevronDown, HelpCircle, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { MdDeleteOutline } from "react-icons/md";
-import Swal from "sweetalert2";
-import { useDispatch, useSelector } from "react-redux";
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { BASE_URL } from "../../data/constant";
-import Loader from "../../components/Loader";
-import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import { Field, Input, Textarea } from "../../components/ui/Field";
+import IconButton from "../../components/ui/IconButton";
+import PageShell from "../../components/ui/PageShell";
+import { EmptyState, Skeleton } from "../../components/ui/States";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useFaqOperationMutation } from "../../redux/api/cmsApi";
+import { useCmsAction } from "./hooks/useCmsAction";
+import { useWebsiteData } from "./hooks/useWebsiteData";
+import Icon from "../../components/ui/Icon";
 
-const Analytics = () => {
+const ANSWER_MAX_LENGTH = 500;
+const EMPTY_FORM = { question: "", answer: "" };
+
+const Faq = () => {
+  const { data, isLoading } = useWebsiteData();
+  const { confirm } = useConfirm();
+  const runCmsAction = useCmsAction();
+  const [addFaq, { isLoading: isAdding }] = useFaqOperationMutation();
+  const [removeFaq] = useFaqOperationMutation();
   const [openIndex, setOpenIndex] = useState(null);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
-  const [loadingAddFaq, setLoadingAddFaq] = useState(false);
-  // const []
+  const [form, setForm] = useState(EMPTY_FORM);
 
-  const dispatch = useDispatch();
+  const faqs = data?.Faq || [];
+  const question = form.question.trim();
+  const answer = form.answer.trim();
 
-  const { currentLoactionWebsiteData, loading } = useSelector(
-    (state) => state?.hotelsWebsiteData
-  );
+  const handleAdd = async (e) => {
+    e.preventDefault();
 
-  // handle delete faq function here
-  const deleteFaq = async (que, ans, index) => {
-    const confirmation = await Swal.fire({
-      title: "Are you sure?",
-      text: `Do you really want to delete this ${que}? This action cannot be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-    });
-    if (confirmation.isConfirmed) {
-      try {
-        const response = await fetch(`${BASE_URL}/cms/operation/Faq`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: localStorage.getItem("token"),
-            operation: "remove",
-            question: que,
-            answer: ans,
-            index: index,
-            hid: String(handleLocalStorage("hid")),
-          }),
-        });
-        const data = await response.json();
-
-        if (data?.Status) {
-          dispatch(
-            fetchWebsiteData(
-              handleLocalStorage("token"),
-              handleLocalStorage("hid")
-            )
-          );
-          Swal.fire({
-            icon: "success",
-            title: "Deleted!",
-            text: data.Message || "User has been deleted successfully.",
-            timer: 600,
-            showConfirmButton: false,
-          });
-        }
-
-        // console.log("FAQ deleted successfully:", data);
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Faq API error. Please try again.",
-        });
-      }
-    }
+    const added = await runCmsAction(
+      addFaq({ operation: "append", question, answer, index: 0 }),
+      { success: "FAQ added", error: "Could not add the FAQ." },
+    );
+    if (added) setForm(EMPTY_FORM);
   };
 
-  // handle add faq function
-  const addFaq = async () => {
-    if (question === "" || answer === "") {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Please fill in all fields.",
-      });
-      return;
-    }
+  const handleDelete = async (faq, index) => {
+    const confirmed = await confirm(
+      `Delete "${faq.Question}"? This cannot be undone.`,
+      { title: "Delete FAQ" },
+    );
+    if (!confirmed) return;
 
-    let obj = {
-      token: localStorage.getItem("token"),
-      operation: "append",
-      question: question,
-      answer: answer,
-      index: 0,
-      hid: String(handleLocalStorage("hid")),
-    };
-
-    try {
-      setLoadingAddFaq(true);
-      obj["token"] = localStorage.getItem("token");
-      const url = `${BASE_URL}/cms/operation/Faq`;
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(obj),
-      });
-      const resp = await response.json();
-      if (resp.Status === true) {
-        dispatch(
-          fetchWebsiteData(
-            handleLocalStorage("token"),
-            handleLocalStorage("hid")
-          )
-        );
-        Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: resp.Message || "FAQ added successfully.",
-        }).then(() => {
-          setAnswer("");
-          setQuestion("");
-        });
-        return true;
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: resp.Message || "Failed to add FAQ.",
-        });
-        return false;
-      }
-    } catch {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "An error occurred while adding the FAQ.",
-      });
-      return false;
-    } finally {
-      setLoadingAddFaq(false);
-    }
-  };
-
-  const toggleAccordion = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
+    const removed = await runCmsAction(
+      removeFaq({
+        operation: "remove",
+        question: faq.Question,
+        answer: faq.Answer,
+        index,
+      }),
+      { success: "FAQ deleted", error: "Could not delete the FAQ." },
+    );
+    if (removed) setOpenIndex(null);
   };
 
   return (
-    <div className="bg-white">
-      <div className="bg-white p-4">
-        <h2 className="text-sm font-semibold text-[#575757]">
-          Frequently ask questions
-        </h2>
-      </div>
-      <div className="px-4">
-        {!loading ? (
-          <>
-            {currentLoactionWebsiteData &&
-            currentLoactionWebsiteData?.Faq?.length > 0 ? (
-              currentLoactionWebsiteData?.Faq.map((faq, index) => (
-                <div key={index} className="border-b border-gray-200">
-                  <button
-                    className="w-full flex justify-between items-center text-left text-sm py-3 font-medium text-[#333] focus:outline-none"
-                    onClick={() => toggleAccordion(index)}
+    <PageShell
+      title="FAQs"
+      description="Questions and answers shown on your website."
+    >
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <Card
+          title="Frequently asked questions"
+          description={isLoading ? "" : `${faqs.length} published`}
+          className="lg:col-span-2"
+        >
+          {isLoading && <Skeleton className="h-64" />}
+
+          {!isLoading && faqs.length === 0 && (
+            <EmptyState
+              icon={HelpCircle}
+              title="No FAQs yet"
+              description="Add the first question with the form."
+            />
+          )}
+
+          {!isLoading && (
+            <ul>
+              {faqs.map((faq, index) => {
+                const isOpen = openIndex === index;
+
+                return (
+                  <li
+                    key={`${index}-${faq.Question}`}
+                    className="border-t border-app-border! first:border-t-0"
                   >
-                    {faq.Question}{" "}
-                    {openIndex === index && (
-                      <MdDeleteOutline
-                        size={20}
-                        onClick={() =>
-                          deleteFaq(faq.Question, faq.Answer, index)
-                        }
-                        className="text-red-500 mt-[2px]"
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        onClick={() => setOpenIndex(isOpen ? null : index)}
+                        className="flex min-w-0 flex-1 items-center gap-2 py-3 text-left text-sm font-medium text-app-text"
+                      >
+                        <Icon icon={ChevronDown} className={`shrink-0 text-app-text-muted transition-transform ${isOpen ? "" : "-rotate-90"}`} />
+                        <span className="min-w-0 flex-1">{faq.Question}</span>
+                      </button>
+                      <IconButton
+                        icon={Trash2}
+                        label="Delete FAQ"
+                        tone="danger"
+                        onClick={() => handleDelete(faq, index)}
                       />
-                    )}
-                  </button>
-                  {openIndex === index && (
-                    <div className="pb-4 text-sm text-gray-600">
-                      {faq.Answer}
                     </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-gray-500">No FAQs available.</p>
-            )}
-          </>
-        ) : (
-          <p className="h-[50dvh] animate-pulse bg-gray-100 mt-2"></p>
-        )}
+                    {isOpen && (
+                      <p className="anim-enter whitespace-pre-line pb-4 pl-6 pr-10 text-sm text-app-text-muted">
+                        {faq.Answer}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
 
-        <div className="mt-4 rounded">
-          <h2 className="text-sm font-semibold text-[#575757] mt-4">Add FAQ</h2>
-
-          <div className="flex flex-col gap-4 mt-4">
-            <input
-              type="text"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Question"
-              className="border border-gray-300 p-2 rounded outline-none"
-            />
-            <textarea
-              placeholder="Answer"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              maxLength={500}
-              className="border border-gray-300 p-2 rounded outline-none"
-              rows="4"
-            />
-            <button
-              disabled={loadingAddFaq}
-              onClick={addFaq}
-              className="bg-primary disabled:opacity-75 text-white py-2 px-4 rounded flex items-center gap-4 justify-center"
+        <Card title="Add FAQ">
+          <form onSubmit={handleAdd} className="space-y-4">
+            <Field label="Question">
+              <Input
+                value={form.question}
+                onChange={(e) => setForm({ ...form, question: e.target.value })}
+                placeholder="e.g. What time is check-in?"
+              />
+            </Field>
+            <Field
+              label="Answer"
+              hint={`${form.answer.length}/${ANSWER_MAX_LENGTH}`}
             >
-              Add FAQ {loadingAddFaq && <Loader size={20} color="#fff" />}
-            </button>
-          </div>
-        </div>
+              <Textarea
+                rows={5}
+                maxLength={ANSWER_MAX_LENGTH}
+                value={form.answer}
+                onChange={(e) => setForm({ ...form, answer: e.target.value })}
+                placeholder="Write the answer"
+              />
+            </Field>
+            <Button
+              type="submit"
+              icon={Plus}
+              loading={isAdding}
+              disabled={!question || !answer}
+              className="w-full"
+            >
+              Add FAQ
+            </Button>
+          </form>
+        </Card>
       </div>
-    </div>
+    </PageShell>
   );
 };
 
-export default Analytics;
+export default Faq;

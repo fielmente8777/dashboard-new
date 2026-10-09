@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FiCheck, FiCopy } from "react-icons/fi";
+import { API_URLS, WHATSAPP_WIDGET_SCRIPT_URL } from "../../../../config/env";
 
 const COPY_BTN =
   "flex shrink-0 items-center gap-2 rounded-[var(--r-sm)] border px-[var(--sp-3)] py-1.5 text-[length:var(--fs-sm)] transition-colors";
@@ -23,7 +24,7 @@ try{
 };
 
 const response = await fetch(
-  "https://gian-1eve.onrender.com/api/v1/widget/click",
+  "${API_URLS.node}/api/v1/widget/click",
   {
     method: "POST",
     headers: {
@@ -54,7 +55,7 @@ window.eazbotConfig = {
 };
 </script>
 
-<script src="https://whatsapp-widget-tau.vercel.app/widget/whatsapp.js"></script>`;
+<script src="${WHATSAPP_WIDGET_SCRIPT_URL}"></script>`;
 
   const copyCode = async (code, type) => {
     try {

@@ -1,345 +1,313 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import WebSocketClient from "../../../config/websocketClient";
-import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../data/constant";
-
+import { MessageCircle, MessagesSquare } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import WhatesAppChatSkeleton from "../../../components/Skeltons/WhatsappChatSkelton";
-import DataContext from "../../../context/DataContext";
-import useNotificationSound from "../../../hooks/useNotificationSound";
-import { connectWhatsapp } from "../../../services/api/Integration";
-import { getWhatsappConversation } from "../../../services/api/whatsApp";
-import ChatArea from "./components/ChatArea";
+import Button from "../../../components/ui/Button";
+import Icon from "../../../components/ui/Icon";
+import { EmptyState, ErrorState } from "../../../components/ui/States";
+import { useConfirm } from "../../../context/ConfirmContext";
+import { useApiAction } from "../../../hooks/useApiAction";
+import { useTenant } from "../../../hooks/useTenant";
+import { useGetWhatsAppTemplatesQuery } from "../../../redux/api/callsApi";
+import {
+  useConnectWhatsAppMutation,
+  useDeleteConversationMutation,
+  useDeleteConversationsMutation,
+  useGetConversationsQuery,
+  useGetIntegrationStatusQuery,
+  useGetMessagesQuery,
+  useMarkConversationReadMutation,
+} from "../../../redux/api/whatsappApi";
+import { getConversationTab, samePhone } from "./chatUtils";
+import ChatPanel from "./components/ChatPanel";
+import ChatSkeleton from "./components/ChatSkeleton";
+import ConversationList from "./components/ConversationList";
+import NewContactModal from "./components/NewContactModal";
 import ProfilePanel from "./components/ProfilePanel";
-import SidebarChat from "./components/SidebarChat";
-import { is24HoursCompletedFnc } from "../../../utils/is24Hours";
+import { useChatCache } from "./hooks/useChatCache";
+import { useChatSocket } from "./hooks/useChatSocket";
 
+const NO_CONVERSATIONS = [];
+const PAGE_TITLE = "WhatsApp";
+
+const ConnectWhatsApp = ({ connecting, onConnect }) => (
+  <div className="flex w-full items-start justify-center overflow-y-auto px-4 py-10">
+    <div className="anim-enter w-full max-w-md rounded-2xl border border-app-border! bg-app-surface p-6 text-center sm:p-8">
+      <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+        <Icon icon={MessageCircle} size={28} />
+      </span>
+      <h2 className="text-xl font-semibold text-app-text">
+        Connect WhatsApp Business
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-app-text-muted">
+        Connect your WhatsApp Business account to chat with guests, send
+        templates and automate replies, all from this dashboard.
+      </p>
+      <Button
+        size="lg"
+        className="mt-6 w-full"
+        loading={connecting}
+        onClick={onConnect}
+      >
+        Connect WhatsApp Business
+      </Button>
+      <p className="mt-4 text-xs text-app-text-faint">
+        Secure sign-in with Meta · Official WhatsApp Cloud API
+      </p>
+    </div>
+  </div>
+);
+
+// WhatsApp live chat: the conversations, the open chat and the guest's
+// details. On a wide screen all three sit side by side; on a narrow one
+// `pane` says which one is showing.
 const WhatsApp = () => {
+  const { confirm } = useConfirm();
+  const run = useApiAction();
+  const { hid, ndid } = useTenant();
+  const cache = useChatCache(hid);
   const [searchParams, setSearchParams] = useSearchParams();
-  const number = searchParams.get("number");
 
-  const wsRef = useRef(null);
-  const {
-    integrationStatus,
-    checkIntegrationStatus,
-    setConversations,
-    conversations,
-    selectedConversation,
-    setSelectedConversation,
-    isLoadingIntegrationStatus,
-    mobileActive,
-  } = useContext(DataContext);
+  const [openId, setOpenId] = useState(null);
+  const [tab, setTab] = useState("active");
+  const [pane, setPane] = useState("list"); // "list" | "chat" | "profile"
+  const [isNewOpen, setIsNewOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("active");
-  const [loading, setLoading] = useState(false);
-  const playNotification = useNotificationSound(
-    "/notification-sound/Sound1.mp3",
+  const integration = useGetIntegrationStatusQuery(hid, { skip: !hid });
+  const isConnected = Boolean(integration.data?.metaWhatsapp);
+  const conversationsQuery = useGetConversationsQuery(hid, {
+    skip: !hid || !isConnected,
+    refetchOnMountOrArgChange: true,
+  });
+  // only needed once "new message" has been opened
+  const templates = useGetWhatsAppTemplatesQuery(hid, {
+    skip: !hid || !isNewOpen,
+  });
+  const [connect, { isLoading: isConnecting }] = useConnectWhatsAppMutation();
+  const [markRead] = useMarkConversationReadMutation();
+  const [deleteOne, { isLoading: isDeletingOne }] =
+    useDeleteConversationMutation();
+  const [deleteMany] = useDeleteConversationsMutation();
+
+  const conversations = conversationsQuery.data || NO_CONVERSATIONS;
+  const openConversation =
+    conversations.find((item) => item._id === openId) || null;
+  // already loaded by the chat panel; here for "last active"
+  const openMessages = useGetMessagesQuery(openId, { skip: !openConversation });
+
+  useChatSocket({ hid, ndid, openConversation });
+
+  const handleOpen = useCallback(
+    (conversation) => {
+      setOpenId(conversation._id);
+      setPane("chat");
+
+      if (conversation.unread_count > 0) {
+        cache.patchConversation(conversation._id, { unread_count: 0 });
+        markRead(conversation._id);
+      }
+    },
+    [cache, markRead],
   );
 
-  const updateConversationWithMessage = (
-    conversations,
-    incomingMessage,
-    selectedConversationId,
-  ) => {
-    const fromPhone = incomingMessage.from;
-
-    // 1️⃣ Find index of conversation
-    const index = conversations.findIndex((conv) => conv.phone === fromPhone);
-
-    // If conversation not found → ignore (or create new)
-    if (index === -1) return conversations;
-
-    const conv = conversations[index];
-
-    // 2️⃣ Update conversation data
-    const updatedConversation = {
-      ...conv,
-      last_message: {
-        text: incomingMessage.body || incomingMessage.text,
-        sender: incomingMessage.sender,
-        created_at: incomingMessage.createdAt || new Date(),
-        updated_at: incomingMessage.updatedAt || new Date(),
-      },
-      unread_count:
-        conv._id === selectedConversationId
-          ? conv.unread_count // if open → don't increment
-          : (conv.unread_count || 0) + 1,
-      updatedAt: new Date(),
-    };
-
-    // 3️⃣ Remove from current position
-    const newList = [...conversations];
-    newList.splice(index, 1);
-
-    // 4️⃣ Add to TOP
-    newList.unshift(updatedConversation);
-
-    return newList;
-  };
-
-  // 🔹 Fetch contacts → build conversations
-  const getWhatsappConversations = async () => {
-    setLoading(true);
-
-    if (!integrationStatus?.metaWhatsapp) return setLoading(false);
-
-    try {
-      const response = await getWhatsappConversation();
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        setConversations(response?.result?.conversations);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 WebSocket incoming messages
-  useEffect(() => {
-    wsRef.current = new WebSocketClient(WS_BASE_URL);
-
-    wsRef.current.connect((serverResponse) => {
-      const { data } = serverResponse;
-
-      if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_CONVERSATION
-      ) {
-        const conversation = {
-          _id: data._id,
-          phone: data.phone,
-          name: data.name,
-          profile_image: data.profile_image,
-          last_message: data?.last_message,
-          status: data?.status,
-          unreadCount: 0,
-          updatedAt: new Date(),
-          createdAt: data?.createdAt,
-        };
-
-        console.log("data", data);
-
-        if (data?.ndid === localStorage.getItem("ndid")) {
-          playNotification();
-          setConversations((prev) => [conversation, ...prev]);
-        }
-      } else if (
-        serverResponse?.event === WEBSOCKET_EVENTS.WHATSAPP_NEW_MESSAGE
-      ) {
-        if (data?.ndid !== localStorage.getItem("ndid")) return;
-        playNotification();
-        setConversations((prev) =>
-          updateConversationWithMessage(prev, data, selectedConversation?._id),
-        );
-
-        document.title = `(${data?.unread_count + 1}) ${data?.name} | Whatsapp`;
-      }
-    });
-
-    return () => wsRef.current?.close();
-  }, [selectedConversation, conversations]);
-
-  useEffect(() => {
-    checkIntegrationStatus();
-  }, []);
-
-  useEffect(() => {
-    getWhatsappConversations();
-  }, [integrationStatus?.metaWhatsapp]);
-
-  const handleWhatsappConnect = async () => {
-    try {
-      const response = await connectWhatsapp();
-
-      if (response?.success && response?.responseStatusCode) {
-        window.open(response?.result?.docs?.signupUrl, "_blank");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  // Opened from a link (global search, a lead): ?conversationId= or ?phone=
   useEffect(() => {
     const conversationId = searchParams.get("conversationId");
-    const phone = searchParams.get("phone") || number;
-
-    if (!conversationId && !phone) return;
-    if (!conversations?.length) return; // wait for the list
-
-    const normalize = (v) =>
-      String(v || "")
-        .replace(/\D/g, "")
-        .slice(-10);
+    const phone = searchParams.get("phone") || searchParams.get("number");
+    if ((!conversationId && !phone) || conversations.length === 0) return;
 
     const match =
-      (conversationId &&
-        conversations.find((c) => String(c._id) === String(conversationId))) ||
-      (phone &&
-        conversations.find((c) => normalize(c.phone) === normalize(phone)));
+      conversations.find((item) => String(item._id) === conversationId) ||
+      (phone && conversations.find((item) => samePhone(item.phone, phone)));
 
-    if (!match) return;
+    if (match) {
+      setTab(getConversationTab(match));
+      handleOpen(match);
+    }
 
-    // tabs are derived from the 24h rule, not from status
-    const isConverted = match?.status?.toLowerCase() === "converted";
-    const isOld = is24HoursCompletedFnc(
-      match?.last_message?.updated_at || match?.createdAt,
+    // done with them: a reload must not reopen the conversation
+    const next = new URLSearchParams(searchParams);
+    ["conversationId", "phone", "number", "status"].forEach((name) =>
+      next.delete(name),
     );
+    setSearchParams(next, { replace: true });
+  }, [conversations, searchParams, setSearchParams, handleOpen]);
 
-    setActiveTab(isConverted ? "converted" : isOld ? "inactive" : "active");
-    setSelectedConversation(match);
+  // the browser tab shows how many conversations are waiting, and gets its
+  // own title back when the page is left
+  const [originalTitle] = useState(() => document.title);
+  const waiting = conversations.filter((item) => item.unread_count > 0).length;
+  useEffect(() => {
+    document.title = waiting ? `(${waiting}) ${PAGE_TITLE}` : PAGE_TITLE;
+    return () => {
+      document.title = originalTitle;
+    };
+  }, [waiting, originalTitle]);
 
-    // clean the URL so a refresh doesn't re-trigger it
-    ["conversationId", "phone", "number", "status"].forEach((k) =>
-      searchParams.delete(k),
+  const removeFromList = (ids) => {
+    cache.patchConversations((list) =>
+      list.filter((item) => !ids.includes(item._id)),
     );
-    setSearchParams(searchParams, { replace: true });
-  }, [conversations, searchParams, number]);
+    if (ids.includes(openId)) {
+      setOpenId(null);
+      setPane("list");
+    }
+  };
 
-  // useEffect(() => {
-  //   if (!number || conversations.length === 0) return;
+  const handleDeleteMany = async (ids) => {
+    const confirmed = await confirm(
+      `Delete ${ids.length} ${ids.length === 1 ? "conversation" : "conversations"} and all their messages?`,
+      { title: "Delete conversations" },
+    );
+    if (!confirmed) return false;
 
-  //   const normalizePhone = (phone) => String(phone || "").replace(/\D/g, "");
+    const deleted = await run(deleteMany({ hid, conversationIds: ids }), {
+      success: ids.length === 1 ? "Conversation deleted" : "Conversations deleted",
+      error: "Could not delete the conversations.",
+    });
+    if (deleted) removeFromList(ids);
+    return Boolean(deleted);
+  };
 
-  //   const conversation = conversations.find(
-  //     (conv) => normalizePhone(conv.phone) === normalizePhone(number),
-  //   );
+  const handleDeleteOpen = async () => {
+    const confirmed = await confirm(
+      "Delete this conversation and all its messages?",
+      { title: "Delete conversation" },
+    );
+    if (!confirmed) return;
 
-  //   if (conversation) {
-  //     setSelectedConversation(conversation);
-  //   }
-  // }, [number, conversations, setSelectedConversation]);
+    const deleted = await run(
+      deleteOne({
+        hid,
+        conversationId: openConversation._id,
+        phone: openConversation.phone,
+      }),
+      {
+        success: "Conversation deleted",
+        error: "Could not delete the conversation.",
+      },
+    );
+    if (deleted) removeFromList([openConversation._id]);
+  };
 
-  if (isLoadingIntegrationStatus || loading) return <WhatesAppChatSkeleton />;
+  const handleConnect = async () => {
+    const signupUrl = await run(connect({ hid, ndid }), {
+      error: "Could not start the WhatsApp connection.",
+    });
+    if (typeof signupUrl === "string" && signupUrl) {
+      window.open(signupUrl, "_blank", "noopener");
+    }
+  };
+
+  // after a reply the conversation is active again: keep it in view
+  const handleSend = useCallback(
+    () => setTab((current) => (current === "inactive" ? "active" : current)),
+    [],
+  );
+
+  if (!hid || integration.isLoading || conversationsQuery.isLoading) {
+    return <ChatSkeleton />;
+  }
+
+  const frameClassName = "flex h-[calc(100dvh-8vh)] bg-app-surface";
+
+  if (integration.isError || conversationsQuery.isError) {
+    const failed = integration.isError ? integration : conversationsQuery;
+    return (
+      <div className={`${frameClassName} items-start p-4`}>
+        <div className="w-full">
+          <ErrorState
+            message="Could not load your WhatsApp conversations."
+            onRetry={failed.refetch}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (!isConnected) {
+    return (
+      <div className={frameClassName}>
+        <ConnectWhatsApp connecting={isConnecting} onConnect={handleConnect} />
+      </div>
+    );
+  }
+
+  // Narrow screens show one pane; from `lg` the list and chat sit side by
+  // side, and from `xl` the guest details join them.
+  const showOn = (name) => (pane === name ? "flex" : "hidden");
 
   return (
-    <div className="h-[calc(100dvh-8vh)] flex bg-app-surface scheme-light dark:scheme-dark">
-      {integrationStatus?.metaWhatsapp ? (
-        <div className="flex w-full min-h-0">
-          <div className="hidden lg:flex w-full min-h-0">
-            <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className={frameClassName}>
+      <div
+        className={`${showOn("list")} min-h-0 w-full shrink-0 border-app-border! lg:flex lg:w-80 lg:border-r xl:w-96`}
+      >
+        <ConversationList
+          conversations={conversations}
+          openId={openId}
+          tab={tab}
+          onTabChange={setTab}
+          onOpen={handleOpen}
+          onNew={() => setIsNewOpen(true)}
+          onDelete={handleDeleteMany}
+        />
+      </div>
 
-            {selectedConversation ? (
-              <ChatArea setActiveTab={setActiveTab} />
-            ) : (
-              <Fallback />
-            )}
-
-            {selectedConversation && (
-              <ProfilePanel
-                selectedContact={selectedConversation}
-                fetchConversations={getWhatsappConversations}
-              />
-            )}
+      {openConversation ? (
+        <>
+          <div
+            className={`${showOn("chat")} min-h-0 min-w-0 flex-1 ${pane === "profile" ? "xl:flex" : "lg:flex"}`}
+          >
+            <ChatPanel
+              key={openConversation._id}
+              conversation={openConversation}
+              hid={hid}
+              ndid={ndid}
+              canCall={Boolean(integration.data?.exotel)}
+              onBack={() => setPane("list")}
+              onShowProfile={() => setPane("profile")}
+              onSend={handleSend}
+            />
           </div>
 
-          <div className="flex w-full lg:hidden flex-col min-h-0">
-            {mobileActive === "sidebar" && (
-              <SidebarChat activeTab={activeTab} setActiveTab={setActiveTab} />
-            )}
-
-            {mobileActive === "chatarea" && selectedConversation && (
-              <ChatArea setActiveTab={setActiveTab} />
-            )}
-
-            {/* {mobileActive === "chatarea" && selectedConversation && (
-              <ChatArea />
-            )} */}
-            {mobileActive === "profile" && selectedConversation && (
-              <div className="flex flex-1 min-h-0 overflow-y-auto">
-                <ProfilePanel
-                  selectedContact={selectedConversation}
-                  fetchConversations={getWhatsappConversations}
-                />
-              </div>
-            )}
+          <div
+            className={`${showOn("profile")} min-h-0 w-full border-app-border! lg:min-w-0 lg:flex-1 xl:flex xl:w-80 xl:flex-none xl:border-l`}
+          >
+            <ProfilePanel
+              key={openConversation._id}
+              conversation={openConversation}
+              hid={hid}
+              lastActive={
+                openMessages.data?.at(-1)?.createdAt ||
+                openConversation.last_message?.created_at
+              }
+              deleting={isDeletingOne}
+              onBack={() => setPane("chat")}
+              onDelete={handleDeleteOpen}
+            />
           </div>
-        </div>
+        </>
       ) : (
-        <div className="flex w-full justify-center overflow-y-auto px-4 py-8 sm:py-12">
-          <div className="w-full max-w-md">
-            <div className="w-full rounded-2xl bg-app-surface-secondary p-6 sm:p-8 border border-app-border text-center">
-              {/* Icon */}
-              <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-ternary/20">
-                <svg
-                  className="h-7 w-7 text-ternary"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M3 21l1.5-4.5A8.5 8.5 0 1 1 21 12a8.5 8.5 0 0 1-8.5 8.5H3z" />
-                </svg>
-              </div>
-
-              {/* Heading */}
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-app-text">
-                Connect WhatsApp Business
-              </h2>
-
-              {/* Description */}
-              <p className="mt-3 text-sm text-gray-600 dark:text-app-text-faint leading-relaxed">
-                Connect your WhatsApp Business account to send messages, manage
-                conversations, automate notifications, and engage with customers
-                directly from your dashboard.
-              </p>
-
-              {/* CTA */}
-              <button
-                onClick={handleWhatsappConnect} // 👈 Meta OAuth / Embedded Signup
-                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ternary/90 px-6 py-3 text-sm font-medium text-white transition hover:bg-ternary focus:outline-none focus:ring-2 focus:ring-ternary focus:ring-offset-2 focus:ring-offset-app-surface"
-              >
-                <span>Connect WhatsApp Business</span>
-              </button>
-
-              {/* Helper text */}
-              <p className="mt-4 text-xs text-gray-400 dark:text-app-text-faint">
-                Secure Meta OAuth • Embedded signup • Official WhatsApp Cloud
-                API
-              </p>
-            </div>
-          </div>
+        <div className="chat-backdrop hidden min-w-0 flex-1 items-center justify-center p-6 lg:flex">
+          <EmptyState
+            icon={MessagesSquare}
+            title="Select a conversation"
+            description="Choose a conversation on the left to read and reply to it."
+          />
         </div>
       )}
+
+      <NewContactModal
+        open={isNewOpen}
+        templates={templates.data || []}
+        loading={templates.isLoading}
+        onClose={(sent) => {
+          setIsNewOpen(false);
+          // the message may have started a conversation
+          if (sent) conversationsQuery.refetch();
+        }}
+      />
     </div>
   );
 };
 
 export default WhatsApp;
-
-const Fallback = () => {
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center h-full w-full bg-linear-to-br from-green-50 to-teal-50 dark:from-app-surface dark:to-app-surface-secondary px-6 text-center">
-      {/* Icon Circle */}
-      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white dark:bg-app-surface-secondary shadow-lg flex items-center justify-center mb-6 animate-pulse">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-10 w-10 sm:h-12 sm:w-12 text-teal-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 20l1.3-3.9A7.6 7.6 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-          />
-        </svg>
-      </div>
-
-      {/* Heading */}
-      <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 dark:text-app-text mb-2">
-        Welcome to Eaz-WhatsApp
-      </h2>
-
-      {/* Subtext */}
-      <p className="text-gray-500 dark:text-app-text-faint max-w-sm leading-relaxed">
-        Select a conversation from the left panel to start chatting. Your
-        messages will appear here.
-      </p>
-
-      {/* Decorative Divider */}
-      <div className="mt-8 w-24 h-1 bg-teal-400 rounded-full opacity-60"></div>
-    </div>
-  );
-};

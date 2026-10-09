@@ -10,6 +10,7 @@ import {
   type SeoTokenPricing,
 } from "../utils/seoTokenPricing";
 import { notifySeoTokensChanged } from "../utils/seoTokenEvents";
+import { useToast } from "../context/ToastContext";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n: any) => (n == null ? "—" : Number(n).toLocaleString());
@@ -103,6 +104,7 @@ const TrackLinkModal = ({ open, onClose, onAdd, saving, tokenBalance, pricing, a
 
 // ─── Main Website SEO Dashboard ──────────────────────────────────────────────
 const WebsiteSeoDashboard = () => {
+  const { showToast } = useToast();
   const [linkKeywords, setLinkKeywords] = useState<any[]>([]);
   const [lockedUrl, setLockedUrl] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("IN");
@@ -185,7 +187,7 @@ const WebsiteSeoDashboard = () => {
       await axios.post(`${NODE_BASE_URL}/seo/seo-intelligence/set-website`, { websiteUrl: setupUrl }, getAuthConfig());
       await fetchData();
     } catch (err: any) {
-      alert(err?.response?.data?.error || "Setup failed");
+      showToast({ message: err?.response?.data?.error || "Setup failed", type: "error" });
     } finally {
       setIsSettingUrl(false);
     }

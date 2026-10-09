@@ -18,6 +18,7 @@ import UsageBreakdown from "./UsageBreakdown";
 import { formatCount, formatDate, formatMoney, percent } from "./utils";
 import { useToast } from "../../../../../context/ToastContext";
 import WhatsAppTransactions from "./WhatsAppTransactions";
+import { RAZORPAY_CHECKOUT_SCRIPT_URL } from "../../../../../config/env";
 
 const Stat = ({ label, value, highlight = false }) => (
   <div className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
@@ -79,7 +80,7 @@ const loadRazorpay = () =>
   new Promise((resolve) => {
     if (window.Razorpay) return resolve(true);
     const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.src = RAZORPAY_CHECKOUT_SCRIPT_URL;
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
     document.body.appendChild(script);

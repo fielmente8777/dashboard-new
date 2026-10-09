@@ -1,147 +1,41 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { ROUTES_PATH } from "../data/constant";
-import { SidebarData } from "../data/SideBarData";
-import DynamicPage from "../pages/DynamicPage/DynamicPage";
-import Dashboard from "../pages/Home/Dashboard";
-import Login from "../pages/Login/Login";
-import ProtectedRoute from "../Protected/ProtecRoute";
-import RootRoute from "./RootRoute";
-import Whatsapp from "../components/Contacts/WhtasApp";
-import Signup from "../pages/Register/Signup";
-import WhatsappMarketing from "../pages/Marketing/WhatsappMarketing";
-import SocialMedia from "../pages/Social/SocialMedia";
-import OTAListing from "../pages/OTA/OTAListing";
-import OTAOptimization from "../pages/OTA/OTAOptimization";
-import Accounting from "../pages/Accounting/Accounting";
-import GSTFiling from "../pages/Accounting/GSTFiling";
-import PublicRelation from "../pages/Social/PublicRelation";
-import Linktree from "../pages/Linktree/Linktree";
-import GMBProfile from "../pages/GoogleListing/GMBProfile";
-import GoogleMapItiration from "../pages/GoogleListing/GoogleMapItiration";
-import InfluencerMarketing from "../pages/Social/InfluencerMarketing";
-import EmailMarketing from "../pages/Marketing/EmailMarketing";
-import ConversationalTool from "../pages/ConversationalTool/ConversationalTool";
-import Website from "../pages/CustomWebsite/Website";
-import ChannelManager from "../pages/Manager/ChannelManager";
-import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
-import FrontDesk from "../pages/FrontDesk/FrontDesk";
 import OnboardingForm from "../pages/Onboarding/OnboardingFrom";
-import Setting from "../pages/Setting/Setting";
-import Usermanagement from "../pages/UserMgmt/Usermanagement";
-import Integration from "../pages/AppIntegration/Integration";
-import GRMSettings from "../pages/Grm/Settings";
-import Settings from "../pages/Settings/Settings";
-import ViewAndMangeLeads from "../pages/Enquiry/ViewAndManageLead/ViewAndManageLeads";
-import AllLeads from "../pages/Enquiry/AllLeads";
-import ViewAndManageCalls from "../pages/Calls/viewCallManagement.jsx/ViewAndManageCalls";
+import Login from "../pages/Login/Login";
 import Plan from "../pages/Plans/Plan";
-import BroadcastDetails from "../pages/BroadCasting/BroadcastDetails";
+import Signup from "../pages/Register/Signup";
+import ProtectedRoute from "../Protected/ProtecRoute";
+import { dashboardRoutes } from "../routes/dashboardRoutes";
+import { BASE_PATH, ROUTES } from "../routes/paths";
+import RootRoute from "./RootRoute";
 
 const Navigation = () => {
-  const dashboardRootPath = "/dashboard/client";
-
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/onboarding/form" element={<OnboardingForm />} />
-      <Route path="plans" element={<Plan />} />
+      <Route path={ROUTES.LOGIN} element={<Login />} />
+      <Route path={ROUTES.SIGNUP} element={<Signup />} />
+      <Route path={ROUTES.ONBOARDING_FORM} element={<OnboardingForm />} />
+      <Route path={ROUTES.PLANS} element={<Plan />} />
 
       {/* Protected Routes */}
-      <Route path="/" element={<ProtectedRoute />}>
+      <Route path={ROUTES.ROOT} element={<ProtectedRoute />}>
         <Route index element={<RootRoute />} />
       </Route>
 
-      {/* Dashboard Routes with Error Handling */}
-      <Route path={`${dashboardRootPath}/:ndid`} element={<ProtectedRoute />}>
-        <Route index element={<Dashboard />} />
-        <Route path="whatsapp-marketing" element={<WhatsappMarketing />} />
-        <Route path="social-media" element={<SocialMedia />} />
-        <Route path="ota-listing" element={<OTAListing />} />
-        <Route path="ota-optimization" element={<OTAOptimization />} />
-        <Route path="ota-management" element={<OTAOptimization />} />
-        <Route path="accounting" element={<Accounting />} />
-        <Route path="gst-filing" element={<GSTFiling />} />
-        <Route
-          path="performance-marketing"
-          element={<PerformanceMarketing />}
-        />
-        <Route path="pr" element={<PublicRelation />} />
-        <Route path="linktree-setup" element={<Linktree />} />
-        <Route path="google-listing" element={<GMBProfile />} />
-        <Route path="google-map-iterations" element={<GoogleMapItiration />} />
-        <Route path="influencer-marketing" element={<InfluencerMarketing />} />
-        {/* <Route path="email-marketing" element={<EmailMarketing />} /> */}
-        <Route path="conversational-tool" element={<ConversationalTool />} />
-        <Route path="custom-website" element={<Website />} />
-        {/* <Route path="seo" element={<Seo />} /> */}
-        <Route path="channel-manager" element={<ChannelManager />} />
-        <Route path="pms-software" element={<ChannelManager />} />
-        <Route path="sms-marketing" element={<EmailMarketing />} />
-        <Route path="front-desk" element={<FrontDesk />} />
-        <Route path="profile" element={<Setting />} />
-        <Route path="user-management/all-users" element={<Usermanagement />} />
-        <Route path="integration" element={<Integration />} />
-        <Route path="qr-code" element={<GRMSettings />} />
-        <Route path="settings" element={<Settings />} />
-
-        {/* <Route
-          path={ROUTES_PATH.LEADS_MANAGEMENT_ALL_LEADS}
-          element={<AllLeads />}
-        /> */}
-
-        <Route
-          path="calls-management/:slug/:sid/view"
-          element={<ViewAndManageCalls />}
-        />
-
-        <Route
-          path="leads-management/:slug/:leadId/view"
-          element={<ViewAndMangeLeads />}
-        />
-
-        <Route
-          path="marketing/whatsapp-marketing/broadcast/:id"
-          element={<BroadcastDetails />}
-        />
-        {/* Dynamic Routes with Error Boundary */}
-        {SidebarData?.map((data, index) => {
-          if (!data?.subLinks) {
-            return (
-              <Route
-                key={`main-${index}-${data.link}`}
-                path={encodeRoutePath(data.link)}
-                element={<DynamicPage />}
-              />
-            );
-          }
-
-          return data.subLinks?.map((subLink, subIndex) => (
-            <Route
-              key={`sub-${index}-${subIndex}-${subLink.link}`}
-              path={encodeRoutePath(subLink.link)}
-              element={<DynamicPage />}
-            />
-          ));
-        })}
+      {/* Dashboard Routes - the list lives in routes/dashboardRoutes.jsx */}
+      <Route path={`${BASE_PATH}/:ndid`} element={<ProtectedRoute />}>
+        {dashboardRoutes.map(({ path, element }) =>
+          path === "" ? (
+            <Route key="index" index element={element} />
+          ) : (
+            <Route key={path} path={path} element={element} />
+          ),
+        )}
       </Route>
 
-      {/* Catch-all route with error handling */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={ROUTES.ROOT} replace />} />
     </Routes>
   );
-};
-
-// Helper function to safely encode route paths
-const encodeRoutePath = (path) => {
-  try {
-    // Remove any malformed URI sequences
-    return path.replace(/[^\w\-/]/g, "").replace(/\/+/g, "/");
-  } catch (error) {
-    console.warn("Error encoding path:", path, error);
-    return "/"; // Fallback to home
-  }
 };
 
 export default Navigation;
