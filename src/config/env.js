@@ -10,13 +10,13 @@ const env = import.meta.env;
 const trimSlash = (url) => url.replace(/\/+$/, "");
 
 export const API_URLS = {
-  core: trimSlash(env.VITE_CORE_API_URL || "https://nexon.eazotel.com"),
-  node: trimSlash(env.VITE_NODE_API_URL || ""),
-  salesAgent: trimSlash(env.VITE_SALES_AGENT_API_URL || ""),
-  // guest request management (requests raised by guests from the GRM site)
-  grm: trimSlash(
-    env.VITE_GRM_API_URL || "https://hmsbackend-7pyp.onrender.com",
+  core: trimSlash(env.VITE_CORE_API_URL || "https://nexon-0l4r.onrender.com"),
+  node: trimSlash(env.VITE_NODE_API_URL || "https://gian-1eve.onrender.com"),
+  salesAgent: trimSlash(
+    env.VITE_SALES_AGENT_API_URL || "https://ai-sales-agent-o4wi.onrender.com",
   ),
+  // guest request management (requests raised by guests from the GRM site)
+  grm: trimSlash(env.VITE_GRM_API_URL || "https://hmsbackend-7pyp.onrender.com"),
 };
 
 // the site guests open (usually by scanning the QR code) to raise requests
@@ -26,7 +26,9 @@ export const GRM_SITE_URL = trimSlash(
 
 export const WS_URL = env.VITE_WS_URL || API_URLS.node.replace(/^http/, "ws");
 
-export const GOOGLE_CLIENT_ID = env.VITE_CLIENT_ID;
+export const GOOGLE_CLIENT_ID =
+  env.VITE_CLIENT_ID ||
+  "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com";
 
 export const ONBOARDING_SIGNUP_URL =
   env.VITE_ONBOARDING_SIGNUP_URL || "https://onboarding.eazotel.com/sign-in";
@@ -56,11 +58,13 @@ export const RAZORPAY_CHECKOUT_SCRIPT_URL =
   "https://checkout.razorpay.com/v1/checkout.js";
 
 // used when buying a plan (Wallet > pricing cards)
-export const RAZORPAY_KEY_ID = env.VITE_RAZORPAY_KEY_ID || "";
+export const RAZORPAY_KEY_ID =
+  env.VITE_RAZORPAY_KEY_ID || "rzp_live_ShEPN150XB1irg";
 
 // used on the Billing page. NOTE: this has been a TEST key, so payments
 // made there are not real. Set it to the live key when Billing goes live.
-export const RAZORPAY_BILLING_KEY_ID = env.VITE_RAZORPAY_BILLING_KEY_ID || "";
+export const RAZORPAY_BILLING_KEY_ID =
+  env.VITE_RAZORPAY_BILLING_KEY_ID || "rzp_test_UZ0V9jh3jMC0C9";
 
 // --- third-party services ---
 // weather on the home dashboard (weatherapi.com)
