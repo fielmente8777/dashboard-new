@@ -266,7 +266,7 @@ const GoogleAds = () => {
       if (result.isConfirmed) {
         const data = await deleteLMultipleeadGenForm(rowSelected);
         if (data?.Status) {
-          fetchLeads(false);
+          fetchLeads(true);
           Swal.fire("Deleted!", "The record has been removed.", "success");
           setRowSelected([]);
         } else {
