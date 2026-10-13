@@ -46,7 +46,9 @@ const Main = () => {
           </div>
         </div>
       </div>
-       <ChatbotWidget />
+       <ChatbotBoundary>
+        <ChatbotWidget pages={pages} onNavigate={(path) => navigate(path)} />
+      </ChatbotBoundary>
     </div>
   );
 };
