@@ -281,7 +281,7 @@ const WebformLeads = () => {
       if (result.isConfirmed) {
         const data = await deleteLMultipleeadGenForm(rowSelected);
         if (data?.Status) {
-          fetchLeads(false);
+          fetchLeads(true);
           Swal.fire("Deleted!", "The record has been removed.", "success");
           setRowSelected([]);
         } else {
@@ -685,8 +685,8 @@ const WebformLeads = () => {
         </div>
       </div>
 
-     <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 px-1 sm:px-4">
-       <Pagination
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-between sm:items-center gap-3 px-1 sm:px-4">
+        <Pagination
           page={page}
           totalPages={totalPages}
           onPageChange={goToPage}
