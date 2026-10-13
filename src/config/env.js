@@ -77,3 +77,9 @@ export const PLACES_API_URL = "https://countriesnow.space/api/v0.1/countries";
 
 // coordinates -> place name (OpenStreetMap, free, no key)
 export const GEOCODING_API_URL = "https://nominatim.openstreetmap.org";
+
+// Google Maps (Local SEO maps + WhatsApp chat location). Browser key:
+// restrict it in Google Cloud to our websites (HTTP referrers) and to
+// "Maps JavaScript API" + "Maps Embed API".
+export const GOOGLE_MAPS_API_KEY =
+  env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyDuVL4di42wGAKroxfkR3wY1X34mWxBYrs";

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import Icon from "../../../../components/ui/Icon";
+import { findLocationInText } from "../../../../utils/googleMaps";
 import { renderMessageWithLinks } from "../../../../utils/urlParser";
 import {
   formatTime,
@@ -21,6 +22,7 @@ import {
 } from "../chatUtils";
 import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
+import LocationCard from "./LocationCard";
 import VideoMessage from "./VideoMessage";
 
 // longer texts are cut, with a "Read more"
@@ -125,6 +127,30 @@ const TemplateHeader = ({ message, ndid, onImageClick }) => {
   return null;
 };
 
+// "📍 My location\nhttps://maps.google.com/?q=28.6,78.5" -> map card;
+// any other text stays text (extra words are shown above the card)
+const TextOrLocation = ({ text }) => {
+  const location = findLocationInText(text);
+  if (!location) return <TextBody text={text} />;
+
+  const isShortLabel = location.label.length <= 60 && !location.label.includes("\n");
+
+  return (
+    <>
+      {!isShortLabel && (
+        <div className="mb-1.5">
+          <TextBody text={location.label} />
+        </div>
+      )}
+      <LocationCard
+        latitude={location.latitude}
+        longitude={location.longitude}
+        name={isShortLabel ? location.label : ""}
+      />
+    </>
+  );
+};
+
 const MessageContent = ({ message, ndid, onImageClick }) => {
   const type = message.messageType;
   const mediaUrl = getMediaUrl(message.media, ndid);
@@ -176,22 +202,12 @@ const MessageContent = ({ message, ndid, onImageClick }) => {
       )}
 
       {type === "location" && message.location && (
-        <div className="w-64 max-w-full">
-          <iframe
-            title="Location"
-            loading="lazy"
-            src={`https://www.google.com/maps?q=${encodeURIComponent(message.location.name || "")},${message.location.latitude},${message.location.longitude}&z=17&output=embed`}
-            className="aspect-[4/3] w-full rounded-lg border-0"
-          />
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${message.location.latitude},${message.location.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 block text-center text-sm font-medium text-blue-500 hover:underline"
-          >
-            Open in Google Maps
-          </a>
-        </div>
+        <LocationCard
+          latitude={message.location.latitude}
+          longitude={message.location.longitude}
+          name={message.location.name}
+          address={message.location.address}
+        />
       )}
 
       {(type === "image" || type === "document") && message.caption && (
@@ -201,7 +217,7 @@ const MessageContent = ({ message, ndid, onImageClick }) => {
       )}
 
       {TEXT_TYPES.includes(type) && message.body && (
-        <TextBody text={message.body} />
+        <TextOrLocation text={message.body} />
       )}
 
       {message.interactive && (

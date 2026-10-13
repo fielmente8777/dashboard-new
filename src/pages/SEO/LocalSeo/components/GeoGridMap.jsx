@@ -1,33 +1,44 @@
-import L from "leaflet";
 import { useEffect, useRef } from "react";
-import { createMap, escapeHtml, labelIcon } from "../leafletMap";
+import { useGoogleMaps } from "../../../../utils/googleMaps";
+import { createMap, escapeHtml, labelIcon } from "../googleMap";
 import { parseRank, rankBand } from "../localSeoUtils";
+import MapStatus from "./MapStatus";
 
 // The geo-grid: your Maps rank at each point of a grid around the property.
 // points: [{ lat, lng, rank, row, col }]; the middle cell is the property.
 const GeoGridMap = ({ points, center, gridSize = 5, businessName, place }) => {
+  const { isLoaded, loadError } = useGoogleMaps();
   const containerRef = useRef(null);
   const mapRef = useRef(null);
-  const layerRef = useRef(null);
+  const markersRef = useRef([]);
+  const popupRef = useRef(null);
   const [lat, lng] = center;
+
+  const clearMarkers = () => {
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+  };
 
   // the map itself: rebuilt when the property moves
   useEffect(() => {
-    const map = createMap(containerRef.current, { center: [lat, lng] });
-    layerRef.current = L.layerGroup().addTo(map);
+    if (!isLoaded) return;
+    const { map, destroy } = createMap(containerRef.current, { center: [lat, lng] });
+    popupRef.current = new window.google.maps.InfoWindow();
     mapRef.current = map;
     return () => {
-      map.remove();
+      clearMarkers();
+      popupRef.current?.close();
+      destroy();
       mapRef.current = null;
-      layerRef.current = null;
+      popupRef.current = null;
     };
-  }, [lat, lng]);
+  }, [isLoaded, lat, lng]);
 
   // the markers: redrawn when the scan results change
   useEffect(() => {
-    const layer = layerRef.current;
-    if (!layer) return;
-    layer.clearLayers();
+    const map = mapRef.current;
+    if (!isLoaded || !map) return;
+    clearMarkers();
 
     const middle = Math.floor(gridSize / 2);
     points.forEach((point) => {
@@ -38,7 +49,7 @@ const GeoGridMap = ({ points, center, gridSize = 5, businessName, place }) => {
       const rank = parseRank(point.rank);
       const band = rankBand(rank);
       const isCenter = Number(point.row) === middle && Number(point.col) === middle;
-      const text = rank == null ? "–" : rank >= 20 ? "20+" : rank;
+      const text = rank == null ? "–" : rank >= 20 ? "20+" : String(rank);
 
       const title = isCenter
         ? escapeHtml(businessName || "Your property")
@@ -47,7 +58,9 @@ const GeoGridMap = ({ points, center, gridSize = 5, businessName, place }) => {
           : `Rank #${rank}`;
       const subtitle = isCenter ? escapeHtml(place) : band.label;
 
-      L.marker([pointLat, pointLng], {
+      const marker = new window.google.maps.Marker({
+        map,
+        position: { lat: pointLat, lng: pointLng },
         icon: labelIcon({
           text,
           color: band.color,
@@ -55,18 +68,27 @@ const GeoGridMap = ({ points, center, gridSize = 5, businessName, place }) => {
           ring: isCenter,
           muted: rank == null,
         }),
-        zIndexOffset: isCenter ? 1000 : 0,
-      })
-        .bindPopup(
+        zIndex: isCenter ? 1000 : 1,
+      });
+
+      marker.addListener("click", () => {
+        popupRef.current?.setContent(
           `<div class="local-seo-popup__title">${title}</div>
            <div class="local-seo-popup__meta">${subtitle}<br/>${pointLat.toFixed(4)}, ${pointLng.toFixed(4)}</div>`,
-          { className: "local-seo-popup", closeButton: false },
-        )
-        .addTo(layer);
-    });
-  }, [points, gridSize, businessName, place, lat, lng]);
+        );
+        popupRef.current?.open({ anchor: marker, map });
+      });
 
-  return <div ref={containerRef} className="size-full" />;
+      markersRef.current.push(marker);
+    });
+  }, [isLoaded, points, gridSize, businessName, place, lat, lng]);
+
+  return (
+    <div className="relative size-full">
+      <div ref={containerRef} className="size-full" />
+      {(!isLoaded || loadError) && <MapStatus loadError={loadError} />}
+    </div>
+  );
 };
 
 export default GeoGridMap;
