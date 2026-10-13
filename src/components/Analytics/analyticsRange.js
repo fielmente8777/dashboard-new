@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectHid } from "../../redux/slice/UserSlice";
-
-// start / end are in the Google Analytics date format
-export const DATE_OPTIONS = [
-  { label: "Today", start: "today", end: "today" },
-  { label: "Yesterday", start: "yesterday", end: "yesterday" },
-  { label: "Last 7 days", start: "7daysAgo", end: "today" },
-  { label: "Last 28 days", start: "28daysAgo", end: "today" },
-  { label: "Last 30 days", start: "30daysAgo", end: "today" },
-  { label: "Last 90 days", start: "90daysAgo", end: "today" },
-];
+import { presetRange } from "../../utils/datePresets";
 
 // Window events that other dashboard widgets (Search Console, the home
 // page) also listen to, so the names must stay as they are.
@@ -19,8 +10,9 @@ const PROPERTY_EVENT = "dashboard_property_changed";
 
 // The date range is shared by every analytics widget on the page. It lives
 // outside React so a widget that mounts later starts on the range already
-// picked instead of its own default.
-let currentRange = DATE_OPTIONS[2];
+// picked instead of its own default. Shape: { start, end, preset, label }
+// with "YYYY-MM-DD" dates (Google Analytics accepts them as they are).
+let currentRange = presetRange("last7");
 
 export const setAnalyticsRange = (range) => {
   currentRange = range;

@@ -28,11 +28,11 @@ import {
   gridProps,
   tooltipProps,
 } from "../Charts/chartTheme";
+import DateRangePicker from "../ui/DateRangePicker";
 import Card from "../ui/Card";
 import { Select } from "../ui/Field";
 import { Skeleton } from "../ui/States";
 import {
-  DATE_OPTIONS,
   announceAnalyticsRange,
   announcePropertyChange,
   setAnalyticsRange,
@@ -63,7 +63,9 @@ const getTotal = (rows, metric) => {
 const formatMetric = (metric, value) =>
   metric.average ? formatDuration(value) : formatCompact(value);
 
-const GoogleAnalyticsChart = () => {
+// `showDatePicker={false}` when the page has its own range picker that
+// drives the shared analytics range (the home page).
+const GoogleAnalyticsChart = ({ showDatePicker = true }) => {
   const gradientId = useId().replace(/:/g, "");
   const run = useApiAction();
   const hid = useSelector(selectHid);
@@ -146,21 +148,9 @@ const GoogleAnalyticsChart = () => {
               />
             </div>
           )}
-          <div className="w-40">
-            <Select
-              aria-label="Date range"
-              value={range.start}
-              onChange={(e) =>
-                setAnalyticsRange(
-                  DATE_OPTIONS.find((option) => option.start === e.target.value),
-                )
-              }
-              options={DATE_OPTIONS.map((option) => ({
-                value: option.start,
-                label: option.label,
-              }))}
-            />
-          </div>
+          {showDatePicker && (
+            <DateRangePicker value={range} onChange={setAnalyticsRange} />
+          )}
         </div>
       }
     >

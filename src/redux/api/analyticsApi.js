@@ -5,7 +5,7 @@ import { baseApi } from "./baseApi";
 const OPEN = { skipAuth: true };
 
 // A report for one hotel and date range. `range` is { start, end } in the
-// Google Analytics format ("7daysAgo", "today", ...).
+// Google Analytics date format: "YYYY-MM-DD" (or "7daysAgo", "today", ...).
 const report = (build, path, transformResponse) =>
   build.query({
     query: ({ hid, range }) => ({

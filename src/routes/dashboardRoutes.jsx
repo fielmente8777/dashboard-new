@@ -28,8 +28,8 @@ import EmailMarketing from "../pages/Marketing/EmailMarketing";
 import GoogleAdsInsights from "../pages/GoogleAdsInsights/GoogleAdsInsights";
 import ChannelManager from "../pages/Manager/ChannelManager";
 import Seo from "../pages/SEO/Seo";
-import SeoIntelligenceDashboard from "../components/LocalSEO/SeoIntelligenceDashboard";
-import WebsiteSeo from "../pages/SEO/WebsiteSeo";
+import LocalSeo from "../pages/SEO/LocalSeo/LocalSeo";
+import WebsiteSeo from "../pages/SEO/WebsiteSeo/WebsiteSeo";
 import GoogleAnalytics from "../pages/GoogleAnalytics/GoogleAnalytics";
 import AnalyticsReporting from "../pages/Analytics/AnalyticsReporting";
 import MetaPageInsights from "../pages/Meta/MetaPageInsights";
@@ -140,7 +140,7 @@ export const dashboardRoutes = [
   // Insights, SEO & Meta
   { path: PAGES.GOOGLE_ADS_INSIGHTS, element: <GoogleAdsInsights /> },
   { path: PAGES.SEO, element: <Seo /> },
-  { path: PAGES.SEO_LOCAL, element: <SeoIntelligenceDashboard /> },
+  { path: PAGES.SEO_LOCAL, element: <LocalSeo /> },
   { path: PAGES.SEO_WEBSITE, element: <WebsiteSeo /> },
   { path: PAGES.INSIGHTS_GOOGLE_ANALYTICS, element: <GoogleAnalytics /> },
   { path: PAGES.INSIGHTS_META_ADS, element: <Feedback /> },

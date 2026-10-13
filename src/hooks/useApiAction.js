@@ -14,13 +14,20 @@ const isRejected = (result) =>
 //   const run = useApiAction();
 //   const saved = await run(saveRule(body), { success: "Rule saved" });
 //   if (saved) closeForm();
+//
+// `formatError(err, fallback)` replaces the default error text when a page
+// knows its API better (e.g. an out-of-credits answer).
 export const useApiAction = () => {
   const { showToast } = useToast();
 
   return useCallback(
     async (
       request,
-      { success, error = "Something went wrong. Please try again." } = {},
+      {
+        success,
+        error = "Something went wrong. Please try again.",
+        formatError = getApiErrorMessage,
+      } = {},
     ) => {
       const requests = Array.isArray(request) ? request : [request];
 
@@ -39,7 +46,7 @@ export const useApiAction = () => {
         if (success) showToast({ message: success });
         return Array.isArray(request) ? results : (results[0] ?? true);
       } catch (err) {
-        showToast({ message: getApiErrorMessage(err, error), type: "error" });
+        showToast({ message: formatError(err, error), type: "error" });
         return null;
       }
     },

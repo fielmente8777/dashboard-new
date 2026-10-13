@@ -3,24 +3,21 @@ import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
 import GscSettings from "../../components/GscSettings";
 import axios from "axios";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  LabelList,
-} from "recharts";
+  BadgeCheck,
+  MessageCircle,
+  Percent,
+  PieChart as PieChartIcon,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { CHART_COLORS } from "../../components/Charts/chartTheme";
+import DonutChart from "../../components/Charts/DonutChart";
+import UiCard from "../../components/ui/Card";
+import ProgressList from "../../components/ui/ProgressList";
+import StatCard from "../../components/ui/StatCard";
+import { EmptyState } from "../../components/ui/States";
 import { getAnalyticsService } from "../../services/api/analytics.api";
-import DashboardCard from "../../components/Card/DashboardCard";
 import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
-import SeoIntelligenceDashboard from "../../components/LocalSEO/SeoIntelligenceDashboard";
-import WebsiteSeoDashboard from "../../components/WebsiteDashboard";
-import SeoTokenBalanceCard from "../../components/SeoToken/SeoTokenBalanceCard";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
@@ -30,6 +27,11 @@ import AudienceInsights from "../../components/Analytics/AudienceInsights";
 
 // ===== GA COMPONENTS =====
 import GoogleAnalyticsChart from "../../components/Analytics/GoogleAnalyticsChart";
+import {
+  setAnalyticsRange,
+  useAnalyticsRange,
+} from "../../components/Analytics/analyticsRange";
+import DateRangePicker from "../../components/ui/DateRangePicker";
 import TrafficSources from "../../components/Analytics/TrafficSources";
 import TopPagesTable from "../../components/Analytics/TopPagesTable";
 import ConversionEvents from "../../components/Analytics/ConversionEvents";
@@ -38,18 +40,24 @@ import GeoAnalytics from "../../components/Analytics/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
 import CallsAnalytics from "../Calls/CallsAnalytics";
-const COLORS = [
-  "#22c55e",
-  "#3b82f6",
-  "#f97316",
-  "#eab308",
-  "#a855f7",
-  "#ef4444",
-  "#14b8a6",
-];
+// [{ name, count }] -> ProgressList items, biggest first. The colour follows
+// the name (its place in alphabetical order), so it doesn't change when the
+// counts reorder the list.
+const toListItems = (rows) => {
+  const names = rows.map((row) => row.name).sort();
+  return [...rows]
+    .sort((a, b) => b.count - a.count)
+    .map((row) => ({
+      key: row.name,
+      label: row.name,
+      value: row.count,
+      color: CHART_COLORS[names.indexOf(row.name) % CHART_COLORS.length],
+    }));
+};
 
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
+  const analyticsRange = useAnalyticsRange();
   const [data, setData] = useState(null);
   const [currentAnalytics, setCurrentAnalytics] = useState("overview");
 
@@ -171,6 +179,9 @@ const Dashboard = () => {
     );
   }, [data]);
 
+  const sourceItems = useMemo(() => toListItems(cleanedSource), [cleanedSource]);
+  const stageItems = useMemo(() => toListItems(cleanedStatus), [cleanedStatus]);
+
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
@@ -182,14 +193,15 @@ const Dashboard = () => {
 
   return (
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
-      <div className="flex justify-between items-center">
-         <div>
-        <h1 className="text-xl font-bold">Analytics Overview</h1>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Monitor leads, performance and trends.
-        </p>
-      </div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold">Analytics Overview</h1>
+          <p className="mt-1 text-sm text-app-text-muted">
+            Monitor leads, performance and trends.
+          </p>
+        </div>
+        {/* drives the call and Google Analytics sections below */}
+        <DateRangePicker value={analyticsRange} onChange={setAnalyticsRange} />
         {/* <select
           name=""
           id=""
@@ -200,24 +212,18 @@ const Dashboard = () => {
           <option value="call-analytics">Call Analytics</option>
         </select> */}
       </div>
-      {/* CRM KPI CARDS (Normal, no fade) */}
-      <div>
-        {/* <h2 className="text-lg font-bold text-app-text dark:text-app-text mb-3">
-          CRM Data
-        </h2> */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4  text-app-text dark:text-app-text-muted">
-          <DashboardCard amount={total} label={"Total Leads"} />
-          <DashboardCard amount={today} label={"Today Leads"} />
-          <DashboardCard amount={converted} label={"Converted Leads"} />
-          <DashboardCard
-            amount={`${conversionRate}%`}
-            label={"Conversion Rate"}
-            progress={conversionRate}
-          />
-          <DashboardCard amount={whatsapp} label={"WhatsApp Conversations"} />
-        </div>
+      {/* CRM KPI CARDS */}
+      <div className="anim-stagger grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
+        <StatCard icon={Users} label="Total leads" value={total.toLocaleString()} />
+        <StatCard icon={UserPlus} label="Today's leads" value={today.toLocaleString()} />
+        <StatCard icon={BadgeCheck} label="Converted leads" value={converted.toLocaleString()} />
+        <StatCard icon={Percent} label="Conversion rate" value={`${conversionRate}%`} />
+        <StatCard
+          icon={MessageCircle}
+          label="WhatsApp conversations"
+          value={whatsapp.toLocaleString()}
+        />
       </div>
-
 
       {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
       {/* <div className="mt-8 mb-4">
@@ -301,186 +307,43 @@ const Dashboard = () => {
       </div> */}
 
       {/* CHARTS SECTION */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Source Distribution — bold ranked leaderboard */}
-        <div className="bg-app-surface dark:bg-app-surface drop-shadow-xl p-4 md:p-6">
-          <div className="mb-5">
-            <p className="text-[11px] font-semibold tracking-wider uppercase text-app-text/50 dark:text-app-text/50 mb-1">
-              Overview
-            </p>
-            <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
-              Source distribution
-            </h2>
-          </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <UiCard title="Source distribution" description="Where your leads come from">
+          {sourceItems.length ? (
+            <div className="max-h-80 overflow-y-auto pr-1">
+              <ProgressList showShare items={sourceItems} />
+            </div>
+          ) : (
+            <EmptyState icon={PieChartIcon} title="No leads yet" />
+          )}
+        </UiCard>
 
-          {(() => {
-            const sorted = [...cleanedSource].sort((a, b) => b.count - a.count);
-            const max = Math.max(...sorted.map((d) => d.count));
-            const total = sorted.reduce((sum, d) => sum + d.count, 0);
-
-            return (
-              <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto pr-1">
-                {sorted.map((item, index) => {
-                  const color = COLORS[index % COLORS.length];
-                  const pct = total
-                    ? Math.round((item.count / total) * 100)
-                    : 0;
-                  const widthPct = max ? (item.count / max) * 100 : 0;
-                  return (
-                    <div key={item.name} className="flex items-center gap-3">
-                      <span
-                        className="flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-bold shrink-0"
-                        style={{
-                          backgroundColor: `${color}26`,
-                          color: color,
-                        }}
-                      >
-                        {index + 1}
-                      </span>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[13px] font-semibold text-app-text dark:text-app-text truncate capitalize">
-                            {item.name}
-                          </span>
-                          <span className="text-[13px] font-bold text-app-text dark:text-app-text shrink-0 ml-2">
-                            {item.count}
-                            <span className="text-[11px] font-medium text-app-text/40 dark:text-app-text/40 ml-1">
-                              {pct}%
-                            </span>
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-app-text/[0.06] dark:bg-white/[0.08] overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-700 ease-out"
-                            style={{
-                              width: `${widthPct}%`,
-                              backgroundColor: color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+        <UiCard title="Stages breakdown" description="Leads in each pipeline stage">
+          {stageItems.length ? (
+            <div className="grid items-center gap-5 sm:grid-cols-2">
+              <DonutChart
+                data={stageItems.map(({ label, value, color }) => ({ name: label, value, color }))}
+                centerLabel="Leads"
+                unit="leads"
+              />
+              <div className="max-h-72 overflow-y-auto pr-1">
+                <ProgressList
+                  showShare
+                  total={stageItems.reduce((sum, item) => sum + item.value, 0)}
+                  items={stageItems}
+                />
               </div>
-            );
-          })()}
-        </div>
-
-        {/* Status Breakdown — bold donut with center total */}
-        <div className="bg-app-surface dark:bg-app-surface drop-shadow-xl p-4 md:p-6">
-          <div className="mb-5">
-            <p className="text-[11px] font-semibold tracking-wider uppercase text-app-text/50 dark:text-app-text/50 mb-1">
-              Pipeline
-            </p>
-            <h2 className="text-lg font-semibold text-app-text dark:text-app-text">
-              Stages breakdown
-            </h2>
-          </div>
-
-          {(() => {
-            const total = cleanedStatus.reduce((sum, d) => sum + d.count, 0);
-            return (
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div
-                  className="relative shrink-0"
-                  style={{ width: 200, height: 200 }}
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Tooltip
-                        contentStyle={{
-                          background: "var(--tooltip-bg)",
-                          border: "1px solid var(--tooltip-border)",
-                          // borderRadius: "16px",
-                          backdropFilter: "blur(16px)",
-                          WebkitBackdropFilter: "blur(16px)",
-                          boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                          color: "var(--tooltip-text)",
-                          padding: "10px 14px",
-                        }}
-                        itemStyle={{
-                          color: "var(--tooltip-text)",
-                          fontSize: "14px",
-                          fontWeight: 500,
-                        }}
-                        labelStyle={{
-                          color: "var(--tooltip-label)",
-                          fontWeight: 600,
-                        }}
-                      />
-                      <Pie
-                        data={cleanedStatus}
-                        dataKey="count"
-                        nameKey="name"
-                        innerRadius={62}
-                        outerRadius={92}
-                        paddingAngle={3}
-                        cornerRadius={6}
-                        animationDuration={700}
-                        animationEasing="ease-out"
-                      >
-                        {cleanedStatus.map((_, index) => (
-                          <Cell
-                            key={index}
-                            fill={COLORS[index % COLORS.length]}
-                            stroke="none"
-                          />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-bold text-app-text dark:text-app-text">
-                      {total}
-                    </span>
-                    <span className="text-[11px] font-medium text-app-text/50 dark:text-app-text/50 uppercase tracking-wide">
-                      Total
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2.5 w-full">
-                  {cleanedStatus.map((item, index) => {
-                    const color = COLORS[index % COLORS.length];
-                    const pct = total
-                      ? Math.round((item.count / total) * 100)
-                      : 0;
-                    return (
-                      <div
-                        key={item.name}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span
-                            className="w-3 h-3 rounded-[4px] shrink-0"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="text-[13px] font-medium text-app-text dark:text-app-text truncate capitalize">
-                            {item.name}
-                          </span>
-                        </div>
-                        <span className="text-[13px] font-bold text-app-text dark:text-app-text shrink-0">
-                          {item.count}
-                          <span className="text-[11px] font-medium text-app-text/40 dark:text-app-text/40 ml-1">
-                            {pct}%
-                          </span>
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
+            </div>
+          ) : (
+            <EmptyState icon={PieChartIcon} title="No leads yet" />
+          )}
+        </UiCard>
       </div>
-      <CallsAnalytics />
+      <CallsAnalytics dateRange={analyticsRange} />
 
       {/* ===== GOOGLE ANALYTICS SECTION ===== */}
       <div className="w-full space-y-4">
-        <GoogleAnalyticsChart />
+        <GoogleAnalyticsChart showDatePicker={false} />
         <TrafficSources />
         <TopPagesTable />
         {/* <GscSettings /> */}
@@ -489,7 +352,6 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
-        {/* <SeoIntelligenceDashboard /> */}
       </div>
 
       {/* <div className="w-full space-y-6 mt-6">

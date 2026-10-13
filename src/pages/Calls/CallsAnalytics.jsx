@@ -38,6 +38,7 @@ import { ErrorState, Skeleton } from "../../components/ui/States";
 import { useGetCallAnalyticsQuery } from "../../redux/api/callsApi";
 import { selectHid } from "../../redux/slice/UserSlice";
 import { getDateRange } from "../../utils/dateRange";
+import { toTimestampRange } from "../../utils/datePresets";
 
 const RANGE_OPTIONS = [
   { value: "today", label: "Today" },
@@ -138,11 +139,16 @@ const Distribution = ({ title, slices }) => (
   </Card>
 );
 
-const CallsAnalytics = () => {
+// Pass `dateRange` ({ start, end } as "YYYY-MM-DD") when the page has its own
+// date picker (the home page); the period dropdown is then hidden.
+const CallsAnalytics = ({ dateRange }) => {
   const hid = useSelector(selectHid);
   const [rangeType, setRangeType] = useState("7days");
   // worked out once per choice, so the request is not repeated on every render
-  const range = useMemo(() => getDateRange(rangeType), [rangeType]);
+  const range = useMemo(
+    () => (dateRange ? toTimestampRange(dateRange) : getDateRange(rangeType)),
+    [dateRange, rangeType],
+  );
 
   const analytics = useGetCallAnalyticsQuery(
     { hid, ...range },
@@ -162,14 +168,16 @@ const CallsAnalytics = () => {
             Monitor call performance and trends.
           </p>
         </div>
-        <div className="w-40">
-          <Select
-            aria-label="Period"
-            value={rangeType}
-            onChange={(e) => setRangeType(e.target.value)}
-            options={RANGE_OPTIONS}
-          />
-        </div>
+        {!dateRange && (
+          <div className="w-40">
+            <Select
+              aria-label="Period"
+              value={rangeType}
+              onChange={(e) => setRangeType(e.target.value)}
+              options={RANGE_OPTIONS}
+            />
+          </div>
+        )}
       </div>
 
       {analytics.isError && (

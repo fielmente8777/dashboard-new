@@ -184,6 +184,38 @@
   .geogrid-popup .leaflet-popup-content {
     margin: 12px 14px;
   }
+
+/* Local SEO maps: follow the app theme (beats the global leaflet colours above) */
+.local-seo-map .leaflet-container {
+  background: var(--app-surface-secondary) !important;
+  font-family: inherit;
+}
+.dark .local-seo-map .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+}
+.local-seo-popup .leaflet-popup-content-wrapper,
+.local-seo-popup .leaflet-popup-tip {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  box-shadow: 0 8px 24px var(--app-shadow);
+}
+.local-seo-popup .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+}
+.local-seo-popup .leaflet-popup-content {
+  margin: 10px 12px;
+}
+.local-seo-popup__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.local-seo-popup__meta {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--app-text-muted);
+}
 button,
 a {
   cursor: pointer;
