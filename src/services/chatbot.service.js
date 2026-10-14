@@ -3,14 +3,6 @@ const API_URL = (
   import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"
 ).replace(/\/+$/, "");
 
-/**
- * Auth: backend client (tenant) ko login token se pehchanta hai.
- * Frontend KABHI clientId nahi bhejta.
- *
- * Default: token localStorage[VITE_AUTH_TOKEN_KEY] se padhta hai.
- * Aapka app token kahin aur rakhta ho to ek baar startup pe:
- *   setChatbotTokenProvider(() => yourAuthStore.getToken());
- */
 
 let tokenProvider = () => {
   try {
@@ -28,11 +20,6 @@ export function setChatbotTokenProvider(fn) {
   tokenProvider = fn;
 }
 
-/**
- * Optional: selected property (hid), wahi jo Leads page bhejta hai.
- *   setChatbotContextProvider(() => ({ hid: selectedHotelId }));
- * Iske bina chatbot login wale account (ndid) ki saari properties dekhta hai.
- */
 let contextProvider = () => ({});
 export function setChatbotContextProvider(fn) { contextProvider = fn; }
 
@@ -41,13 +28,12 @@ async function request(endpoint, options = {}) {
   if (!token) {
   throw new Error("Login token missing. Please log in again.");
 }
-  const headers = {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    // Sirf local testing. Vite production build se ye branch hata deta hai.
-    ...(import.meta.env.DEV && import.meta.env.VITE_DEV_CLIENT_ID ? { "x-client-id": import.meta.env.VITE_DEV_CLIENT_ID } : {}),
-    ...(options.headers || {}),
-  };
+const headers = {
+  "Content-Type": "application/json",
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  ...(options.headers || {}),
+};
+
 
   let response;
   try {
