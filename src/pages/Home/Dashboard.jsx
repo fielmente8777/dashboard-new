@@ -38,6 +38,8 @@ import GeoAnalytics from "../../components/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import { BASE_URL } from "../../data/constant";
 import CallsAnalytics from "../Calls/CallsAnalytics";
+import ChatbotWidget from "../../components/chatbot/ChatbotWidget.jsx";
+
 const COLORS = [
   "#22c55e",
   "#3b82f6",
@@ -181,6 +183,7 @@ const Dashboard = () => {
   }
 
   return (
+    
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       <div className="flex justify-between items-center">
          <div>
@@ -489,6 +492,7 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
+         <ChatbotWidget />
         {/* <SeoIntelligenceDashboard /> */}
       </div>
 
