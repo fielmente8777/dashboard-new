@@ -44,7 +44,7 @@ export function EmailThumbnail({ html, height = 190, scale = 0.4 }) {
 
   return (
     <div
-      className="pointer-events-none relative w-full overflow-hidden bg-gray-50"
+      className="pointer-events-none relative w-full overflow-hidden bg-app-surface-secondary"
       style={{ height }}
       aria-hidden="true"
     >

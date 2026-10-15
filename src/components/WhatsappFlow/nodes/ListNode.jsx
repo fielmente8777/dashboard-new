@@ -22,7 +22,7 @@ export default function ListNode({ data, id }) {
   };
 
   return (
-    <div className="w-64 bg-white rounded-lg shadow border overflow-hidden">
+    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
       {/* Header */}
       <div className="bg-purple-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
         <div className="flex items-center gap-2">
@@ -43,19 +43,19 @@ export default function ListNode({ data, id }) {
 
       {/* Header Text */}
       {headerText && (
-        <div className="px-3 text-sm text-gray-700 font-medium border-b mb-2 py-1.5">
+        <div className="px-3 text-sm text-app-text font-medium border-b mb-2 py-1.5">
           {headerText}
         </div>
       )}
 
       {/* Body */}
-      <div className="px-3 text-sm text-gray-700 border-b mb-2 py-1.5">
+      <div className="px-3 text-sm text-app-text border-b mb-2 py-1.5">
         {bodyText}
       </div>
 
       {/* Footer */}
       {footerText && (
-        <div className="px-3 text-sm text-gray-700 border-b py-1.5">
+        <div className="px-3 text-sm text-app-text border-b py-1.5">
           {footerText}
         </div>
       )}
@@ -66,7 +66,7 @@ export default function ListNode({ data, id }) {
           <div key={sIndex}>
             {/* Section Title */}
             {section.title && (
-              <div className="text-xs text-gray-500 mb-1 font-semibold">
+              <div className="text-xs text-app-text-muted mb-1 font-semibold">
                 {section.title}
               </div>
             )}
@@ -76,7 +76,7 @@ export default function ListNode({ data, id }) {
               {section.rows?.map((row) => (
                 <div
                   key={row.id}
-                  className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center"
+                  className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center"
                 >
                   {row.title}
 
@@ -94,7 +94,7 @@ export default function ListNode({ data, id }) {
         ))}
 
         {/* Default Path */}
-        {/* <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
+        {/* <div className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center">
           Default
           <Handle
             type="source"

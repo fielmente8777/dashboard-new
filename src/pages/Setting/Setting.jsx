@@ -129,7 +129,7 @@ const Setting = () => {
   if (!profile) return null;
 
   return (
-    <div className="bg-app-surface p-3 sm:p-5 space-y-4 sm:space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* ── identity + org + contact ─────────────────────────── */}
       <div className={`${CARD} grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3`}>
         {/* user */}

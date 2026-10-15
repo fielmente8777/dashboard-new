@@ -1,4 +1,3 @@
-import React from "react";
 import { formatCount, formatMoney } from "./utils";
 
 const CATEGORIES = [
@@ -38,20 +37,20 @@ const UsageBreakdown = ({
   );
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-        <p className="text-sm font-medium text-gray-600 dark:text-app-text-muted">
+    <div className="overflow-hidden rounded-xl border border-app-border! bg-app-surface">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-app-border!">
+        <p className="text-sm font-semibold text-app-text">
           Usage this month
         </p>
         {cycleLabel && (
-          <span className="text-xs text-gray-500 dark:text-app-text-faint">
+          <span className="text-xs text-app-text-muted">
             {cycleLabel}
           </span>
         )}
       </div>
 
       {/* Column headings */}
-      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 px-4 py-2 text-xs uppercase tracking-wide text-gray-400 dark:text-app-text-faint">
+      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 px-4 py-2 bg-app-surface-secondary text-xs uppercase tracking-wide text-app-text-muted">
         <span>Type</span>
         <span className="text-right">Messages</span>
         <span className="hidden sm:block text-right">Rate</span>
@@ -63,28 +62,28 @@ const UsageBreakdown = ({
         return (
           <div
             key={c.key}
-            className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 items-center px-4 py-2.5 text-sm border-t border-gray-50 dark:border-gray-800/60"
+            className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 items-center px-4 py-2.5 text-sm border-t border-app-border!"
           >
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full shrink-0 ${c.dot}`} />
-                <span className="font-medium text-gray-700 dark:text-app-text-muted">
+                <span className="font-medium text-app-text">
                   {c.label}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 dark:text-app-text-faint ml-4 truncate">
+              <p className="ml-4 truncate text-xs text-app-text-faint">
                 {c.key === "service" && row.billableCount !== undefined
                   ? `${formatCount(row.billableCount)} billable`
                   : c.hint}
               </p>
             </div>
-            <span className="text-right text-gray-700 dark:text-app-text">
+            <span className="text-right text-app-text">
               {formatCount(row.count)}
             </span>
-            <span className="hidden sm:block text-right text-gray-500 dark:text-app-text-faint">
+            <span className="hidden text-right text-app-text-muted sm:block">
               {formatMoney(rates[c.key], currency, 4)}
             </span>
-            <span className="text-right font-medium text-gray-700 dark:text-app-text">
+            <span className="text-right font-medium text-app-text">
               {formatMoney(row.cost, currency)}
             </span>
           </div>
@@ -92,13 +91,13 @@ const UsageBreakdown = ({
       })}
 
       {/* Totals */}
-      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 px-4 py-3 text-sm font-medium border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/40 rounded-b-lg">
-        <span className="text-gray-700 dark:text-app-text-muted">Total</span>
-        <span className="text-right text-gray-800 dark:text-app-text">
+      <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[1fr_90px_90px_100px] gap-3 px-4 py-3 text-sm font-medium border-t border-app-border! bg-app-surface-secondary">
+        <span className="text-app-text">Total</span>
+        <span className="text-right text-app-text">
           {formatCount(totals.count)}
         </span>
         <span className="hidden sm:block" />
-        <span className="text-right text-gray-800 dark:text-app-text">
+        <span className="text-right text-app-text">
           {formatMoney(totals.cost, currency)}
         </span>
       </div>

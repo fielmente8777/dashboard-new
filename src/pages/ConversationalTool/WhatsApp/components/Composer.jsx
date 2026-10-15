@@ -4,6 +4,7 @@ import {
   LayoutTemplate,
   MessageSquareReply,
   Paperclip,
+  Pencil,
   SendHorizontal,
   X,
 } from "lucide-react";
@@ -15,8 +16,9 @@ import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import { useToast } from "../../../../context/ToastContext";
 import { PAGES, dashboardPath } from "../../../../routes/paths";
-import { MAX_FILE_SIZE } from "../chatUtils";
+import { MAX_FILE_SIZE, fillTemplate, hasTemplateVariables } from "../chatUtils";
 import FlowDialog from "./FlowDialog";
+import TemplateValuesDialog from "./TemplateValuesDialog";
 
 // the message box grows with the text up to this height (px)
 const MAX_INPUT_HEIGHT = 192;
@@ -39,22 +41,35 @@ const PickerPanel = ({ title, onClose, children }) => (
   </div>
 );
 
-const PickerCard = ({ title, text, note, selected, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`min-w-0 rounded-lg border p-2.5 text-left transition-colors ${
-      selected
-        ? "border-blue-500! bg-blue-500/10"
-        : "border-app-border! bg-app-surface-secondary hover:border-blue-500!"
-    }`}
-  >
-    <p className="truncate text-xs font-semibold text-app-text">{title}</p>
-    <p className="mt-1 line-clamp-2 break-words text-xs text-app-text-muted">
-      {text}
-    </p>
-    {note && <p className="mt-1 text-[11px] text-app-text-faint">{note}</p>}
-  </button>
+// `onEdit` adds a pencil in the corner for editing before it is sent.
+const PickerCard = ({ title, text, note, selected, onClick, onEdit }) => (
+  <div className="group relative min-w-0">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-full w-full min-w-0 rounded-lg border p-2.5 text-left transition-colors ${
+        onEdit ? "pr-9" : ""
+      } ${
+        selected
+          ? "border-blue-500! bg-blue-500/10"
+          : "border-app-border! bg-app-surface-secondary hover:border-blue-500!"
+      }`}
+    >
+      <p className="truncate text-xs font-semibold text-app-text">{title}</p>
+      <p className="mt-1 line-clamp-2 break-words text-xs text-app-text-muted">
+        {text}
+      </p>
+      {note && <p className="mt-1 text-[11px] text-app-text-faint">{note}</p>}
+    </button>
+    {onEdit && (
+      <IconButton
+        icon={Pencil}
+        label={`Edit ${title}`}
+        onClick={onEdit}
+        className="absolute right-1.5 top-1.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+      />
+    )}
+  </div>
 );
 
 const FilePreview = ({ file, onRemove }) => {
@@ -110,6 +125,9 @@ const Composer = ({
   const [file, setFile] = useState(null);
   const [panel, setPanel] = useState(null); // "templates" | "quickReplies"
   const [template, setTemplate] = useState(null);
+  // values typed in for the chosen template's {{n}}; null = its samples
+  const [templateValues, setTemplateValues] = useState(null);
+  const [editing, setEditing] = useState(null); // template in the values popup
   const [flow, setFlow] = useState(null);
 
   // the box is as tall as its text, up to the limit
@@ -137,9 +155,15 @@ const Composer = ({
     setPanel("templates");
   };
 
+  const pickTemplate = (item) => {
+    if (item.id !== template?.id) setTemplateValues(null);
+    setTemplate(item);
+  };
+
   const closePanel = () => {
     setPanel(null);
     setTemplate(null);
+    setTemplateValues(null);
   };
 
   const handleFile = (picked) => {
@@ -159,7 +183,7 @@ const Composer = ({
     if (!canSend) return;
 
     if (template) {
-      send.sendTemplate(template);
+      send.sendTemplate(template, templateValues || undefined);
       closePanel();
       return;
     }
@@ -184,7 +208,8 @@ const Composer = ({
                 title={item.name}
                 text={getTemplateText(item)}
                 selected={template?.id === item.id}
-                onClick={() => setTemplate(item)}
+                onClick={() => pickTemplate(item)}
+                onEdit={hasTemplateVariables(item) ? () => setEditing(item) : undefined}
               />
             ))}
           </PickerPanel>
@@ -283,11 +308,34 @@ const Composer = ({
         </div>
 
         <div className="flex items-end gap-2">
-          {windowClosed ? (
+          {template ? (
+            <div className="flex min-w-0 flex-1 items-start gap-3 rounded-lg border border-blue-500/30! bg-blue-500/10 px-3 py-2">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-app-text">
+                  {template.name}
+                  <span className="ml-1.5 font-normal text-app-text-muted">
+                    is ready to send
+                  </span>
+                </p>
+                <p className="mt-0.5 line-clamp-2 whitespace-pre-line break-words text-xs text-app-text-muted">
+                  {fillTemplate(template, templateValues || undefined).body}
+                </p>
+              </div>
+              {hasTemplateVariables(template) && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={Pencil}
+                  onClick={() => setEditing(template)}
+                >
+                  Edit values
+                </Button>
+              )}
+            </div>
+          ) : windowClosed ? (
             <p className="flex-1 rounded-lg border border-amber-500/30! bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-              {template
-                ? `"${template.name}" is ready to send.`
-                : "The 24-hour reply window has closed. Choose an approved template to message this guest again."}
+              The 24-hour reply window has closed. Choose an approved template to
+              message this guest again.
             </p>
           ) : (
             <>
@@ -311,19 +359,14 @@ const Composer = ({
                 ref={inputRef}
                 rows={1}
                 value={text}
-                disabled={Boolean(template)}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={(e) => {
                   // Enter sends, Shift + Enter starts a new line
                   if (e.key === "Enter" && !e.shiftKey) handleSend(e);
                 }}
-                placeholder={
-                  template
-                    ? `"${template.name}" is ready to send`
-                    : "Type a message"
-                }
+                placeholder="Type a message"
                 aria-label="Message"
-                className="min-w-0 flex-1 resize-none rounded-2xl border border-app-border! bg-app-surface px-4 py-2 text-sm text-app-text outline-none transition placeholder:text-app-text-faint focus:border-blue-500! focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+                className="min-w-0 flex-1 resize-none rounded-2xl border border-app-border! bg-app-surface px-4 py-2 text-sm text-app-text outline-none transition placeholder:text-app-text-faint focus:border-blue-500! focus:ring-1 focus:ring-blue-500 "
               />
             </>
           )}
@@ -340,7 +383,17 @@ const Composer = ({
         </div>
       </form>
 
-      {/* outside the form: a submit inside the dialog must not send the message box */}
+      {/* outside the form: a submit inside a dialog must not send the message box */}
+      <TemplateValuesDialog
+        template={editing}
+        values={editing?.id === template?.id ? templateValues : null}
+        onClose={() => setEditing(null)}
+        onSave={(values) => {
+          setTemplate(editing);
+          setTemplateValues(values);
+          setEditing(null);
+        }}
+      />
       <FlowDialog
         flow={flow}
         onClose={() => setFlow(null)}

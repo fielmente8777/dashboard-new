@@ -1,130 +1,103 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
-import { IoClose } from "react-icons/io5";
+import { Plus, Trash2 } from "lucide-react";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { Field, Input } from "../../../../components/ui/Field";
+import IconButton from "../../../../components/ui/IconButton";
+import SelectMenu from "../../../../components/ui/SelectMenu";
+import { BUTTON_TYPES } from "./templateUtils";
 
-const FIELD =
-  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-2)] py-1.5 text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-const FIELD_LABEL =
-  "text-[length:var(--fs-xs)] text-gray-500 dark:text-app-text-faint";
-const COUNTER =
-  "text-[length:var(--fs-2xs)] text-gray-400 dark:text-app-text-faint text-right";
+const MAX_BUTTONS = 3;
 
+// Up to three buttons under the message.
 const TemplateButtons = () => {
   const { control, register, watch } = useFormContext();
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "buttons",
-  });
-
+  const { fields, append, remove } = useFieldArray({ control, name: "buttons" });
   const buttons = watch("buttons") || [];
 
   return (
-    <div className="bg-app-surface p-[var(--sp-5)] rounded-[var(--r-md)] border border-app-border">
-      <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] text-app-text">
-        Buttons
-      </h2>
-
-      <div className="space-y-[var(--sp-4)] max-h-[16.25rem] overflow-y-auto pr-1">
+    <Card
+      title="Buttons (optional)"
+      description="Let guests open a link, call you or reply with one tap."
+    >
+      <div className="space-y-3">
         {fields.map((field, index) => {
-          const textLength = buttons[index]?.text?.length || 0;
-          const urlLength = buttons[index]?.url?.length || 0;
-
+          const type = buttons[index]?.type || "URL";
           return (
             <div
               key={field.id}
-              className="border border-app-border rounded-[var(--r-sm)] p-[var(--sp-3)] pr-10 bg-app-surface-secondary relative"
+              className="grid gap-3 rounded-lg border border-app-border! p-3 sm:grid-cols-[11rem_1fr_auto]"
             >
-              {/* REMOVE ICON */}
-              <button
-                type="button"
-                aria-label="Remove button"
-                onClick={() => remove(index)}
-                className="absolute top-2 right-2 size-8 flex items-center justify-center rounded-[var(--r-sm)] text-gray-400 dark:text-app-text-faint hover:bg-app-surface hover:text-red-500 transition-colors"
-              >
-                <IoClose />
-              </button>
-
-              <div className="flex gap-[var(--sp-3)] items-start">
-                {/* DRAG ICON */}
-                {/* <GripVertical
-                  size={18}
-                  className="text-gray-400 mt-6 cursor-grab"
-                /> */}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-[var(--sp-3)] w-full min-w-0">
-                  {/* TYPE */}
-                  <div className="min-w-0">
-                    <label className={FIELD_LABEL}>Type of action</label>
-
-                    <select
-                      {...register(`buttons.${index}.type`)}
-                      value={"URL"}
-                      className={`${FIELD} cursor-pointer`}
-                    >
-                      <option value="URL">Visit website</option>
-                      {/* <option value="quick">Quick reply</option> */}
-                    </select>
-                  </div>
-
-                  {/* BUTTON TEXT */}
-                  <div className="min-w-0">
-                    <label className={FIELD_LABEL}>Button text</label>
-
-                    <input
-                      {...register(`buttons.${index}.text`)}
-                      className={FIELD}
+              <Field as="div" label="Action">
+                <Controller
+                  name={`buttons.${index}.type`}
+                  control={control}
+                  render={({ field: typeField }) => (
+                    <SelectMenu
+                      label="Button action"
+                      options={BUTTON_TYPES}
+                      value={typeField.value}
+                      onChange={typeField.onChange}
+                      className="w-full"
                     />
+                  )}
+                />
+              </Field>
 
-                    <div className={COUNTER}>{textLength}/25</div>
-                  </div>
-
-                  {/* URL TYPE */}
-                  <div className="min-w-0">
-                    <label className={FIELD_LABEL}>URL type</label>
-
-                    <select
-                      {...register(`buttons.${index}.urlType`)}
-                      className={`${FIELD} cursor-pointer`}
-                    >
-                      <option value="static">Static</option>
-                      <option value="dynamic">Dynamic</option>
-                    </select>
-                  </div>
-
-                  {/* URL */}
-                  <div className="min-w-0">
-                    <label className={FIELD_LABEL}>Website URL</label>
-
-                    <input
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label={`Label (${buttons[index]?.text?.length || 0}/25)`}>
+                  <Input
+                    {...register(`buttons.${index}.text`)}
+                    maxLength={25}
+                    placeholder={type === "PHONE_NUMBER" ? "Call us" : type === "URL" ? "View booking" : "Yes, please"}
+                  />
+                </Field>
+                {type === "URL" && (
+                  <Field label="Website address">
+                    <Input
                       {...register(`buttons.${index}.url`)}
-                      className={FIELD}
+                      type="url"
+                      maxLength={2000}
+                      placeholder="https://yourhotel.com"
                     />
-
-                    <div className={COUNTER}>{urlLength}/2000</div>
-                  </div>
-                </div>
+                  </Field>
+                )}
+                {type === "PHONE_NUMBER" && (
+                  <Field label="Phone number">
+                    <Input
+                      {...register(`buttons.${index}.phone_number`)}
+                      type="tel"
+                      placeholder="+919876543210"
+                    />
+                  </Field>
+                )}
               </div>
+
+              <IconButton
+                icon={Trash2}
+                label="Remove button"
+                tone="danger"
+                onClick={() => remove(index)}
+                className="self-end"
+              />
             </div>
           );
         })}
-      </div>
 
-      {/* ADD BUTTON */}
-      <button
-        type="button"
-        onClick={() =>
-          append({
-            type: "visit",
-            text: "",
-            url: "",
-            urlType: "static",
-          })
-        }
-        className="mt-[var(--sp-4)] w-full sm:w-auto border border-app-border text-app-text px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] hover:border-primary hover:text-primary transition-colors"
-      >
-        + Add button
-      </button>
-    </div>
+        {fields.length < MAX_BUTTONS ? (
+          <Button
+            variant="dashed"
+            size="sm"
+            icon={Plus}
+            onClick={() => append({ type: "URL", text: "", url: "", phone_number: "" })}
+          >
+            Add button
+          </Button>
+        ) : (
+          <p className="text-xs text-app-text-muted">WhatsApp allows up to {MAX_BUTTONS} buttons.</p>
+        )}
+      </div>
+    </Card>
   );
 };
 

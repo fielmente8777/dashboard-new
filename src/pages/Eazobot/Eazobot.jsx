@@ -1,215 +1,200 @@
-import React, { useEffect, useState } from "react";
-import BotBuilderStep from "./BotBuilder";
-import BotProfileStep from "./BotProfile";
-import BotConfigStep from "./BotConfig";
-import BotInstallStep from "./BotInstallStep";
-import StepIndicator from "./StepIndicator";
+import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
+import { useState } from "react";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import { ErrorState, Skeleton } from "../../components/ui/States";
+import InstallSection from "./components/InstallSection";
+import QuestionsSection from "./components/QuestionsSection";
+import StepTabs from "./components/StepTabs";
 import {
-  createChatbotData,
-  getChatbotData,
-} from "../../services/api/chatbot.api";
-import Loader from "../../components/Loader";
-import Swal from "sweetalert2";
+  AppearanceSection,
+  MessagesSection,
+  ProfileSection,
+} from "./components/SettingsSections";
+import WidgetPreview from "./components/WidgetPreview";
+import { validateStep } from "./eazbotUtils";
+import { useEazbot } from "./hooks/useEazbot";
 
-const steps = [
-  { id: 0, title: "Bot Builder" },
-  { id: 1, title: "Profile" },
-  { id: 2, title: "Configuration" },
-  { id: 3, title: "Install" },
+// Set up in order; everything is published together after the questions,
+// then the install code is shown.
+const STEPS = [
+  { key: "profile", label: "Profile", description: "How the bot introduces itself." },
+  { key: "appearance", label: "Appearance", description: "Match the chat widget to your brand." },
+  { key: "messages", label: "Messages", description: "What the bot says and how it behaves." },
+  { key: "questions", label: "Questions", description: "What the bot asks to capture a lead." },
+  { key: "install", label: "Install", description: "Add the chat widget to your website." },
 ];
+const PUBLISH_STEP = STEPS.findIndex((s) => s.key === "questions");
+const INSTALL_STEP = STEPS.length - 1;
 
 const Eazobot = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [chatbotData, setChatbotData] = useState({
-    bot_name: "",
-    email: "",
-    contact: "",
-    description: "",
-    welcome_message: "",
-    fallback_message: "",
-    chat_terminate_message: "",
-    bg_color: "",
-    text_color: "",
-    button_color: "",
-    button_text_color: "",
-    active: false,
-    avatar_url: "",
-    enable_live_chat: false,
-    show_typing_indicator: false,
-    time_interval: "40",
-    show_eazotel_branding: false,
-    bot_type: "",
-    // chat_flow: [],
-  });
+  const bot = useEazbot();
+  const { form } = bot;
+  const [step, setStep] = useState(0);
+  // furthest step the user may jump to; a published bot can open any step
+  const [reached, setReached] = useState(0);
+  const [errors, setErrors] = useState({});
 
-  const [isLoader, setIsLoader] = useState(false);
+  if (bot.bot.isError) {
+    return (
+      <div>
+        <ErrorState message="Could not load your chatbot." onRetry={bot.bot.refetch} />
+      </div>
+    );
+  }
 
-  const [isEdit, setIsEdit] = useState(false);
+  if (bot.bot.isLoading || bot.bot.isUninitialized) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12" />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96" />
+        </div>
+      </div>
+    );
+  }
 
-  const handlePublish = async () => {
-    setIsLoader(true);
-    try {
-      const chatbotFormData = {
-        hid: localStorage.getItem("hid"),
-        chatbotData: {
-          bot_name: chatbotData.bot_name,
-          email: chatbotData.email,
-          contact: chatbotData.contact,
-          description: chatbotData.description,
-          welcome_message: chatbotData.welcome_message,
-          fallback_message: chatbotData.fallback_message,
-          chat_terminate_message: chatbotData.chat_terminate_message,
-          bg_color: chatbotData.bg_color,
-          text_color: chatbotData?.text_color,
-          button_color: chatbotData?.button_color,
-          button_text_color: chatbotData?.button_text_color,
-          active: chatbotData.active,
-          avatar_url: chatbotData.avatar_url,
-          enable_live_chat: chatbotData.enable_live_chat,
-          show_typing_indicator: chatbotData.show_typing_indicator,
-          time_interval: chatbotData.time_interval,
-          show_eazotel_branding: chatbotData.show_eazotel_branding,
-          bot_type: "lead",
-          chat_flow: chatbotData?.chat_flow,
-          redirection_url: "thankyou",
-        },
-      };
+  const reachable = bot.isNew ? reached : INSTALL_STEP;
+  const current = STEPS[step];
 
-      const data = await createChatbotData(chatbotFormData);
-      // console.log(data);
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: data?.Message,
+  const setField = (key, value) => {
+    bot.setField(key, value);
+    if (errors[key]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
       });
-    } catch (error) {
-    } finally {
-      setIsLoader(false);
     }
   };
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    }
+  const goTo = (index) => {
+    setErrors({});
+    setStep(index);
+    setReached((prev) => Math.max(prev, index));
   };
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
+  const next = () => {
+    const stepErrors = validateStep(current.key, form);
+    setErrors(stepErrors);
+    if (!Object.keys(stepErrors).length) goTo(step + 1);
   };
 
-  const renderStep = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <BotBuilderStep
-            chatbotData={chatbotData}
-            setChatbotData={setChatbotData}
-            setIsEdit={setIsEdit}
-          />
-        );
-      case 1:
-        return (
-          <BotProfileStep
-            chatbotData={chatbotData}
-            setChatbotData={setChatbotData}
-            setIsEdit={setIsEdit}
-          />
-        );
-      case 2:
-        return (
-          <BotConfigStep
-            chatbotData={chatbotData}
-            setChatbotData={setChatbotData}
-            setIsEdit={setIsEdit}
-          />
-        );
-      case 3:
-        return <BotInstallStep />;
-      default:
-        return null;
+  // checks every step first, then publishes the whole draft
+  const publish = async () => {
+    for (let index = 0; index < PUBLISH_STEP; index += 1) {
+      const stepErrors = validateStep(STEPS[index].key, form);
+      if (Object.keys(stepErrors).length) {
+        setStep(index);
+        setErrors(stepErrors);
+        return;
+      }
     }
+    const published = await bot.save();
+    if (published) goTo(INSTALL_STEP);
   };
 
-  const updatedSteps = steps.map((step, index) => ({
-    ...step,
-    completed: index < currentStep,
-  }));
-
-  const getChatbotDetails = async () => {
-    const data = await getChatbotData({
-      //   ndid: "5617a084-5783-4bac-b299-bdb6e8e471bb",
-      //   hid: "4534543",
-      ndid: localStorage.getItem("ndid"),
-      hid: localStorage.getItem("hid"),
-    });
-
-    if (data?.Status) {
-      setChatbotData((prev) => ({
-        ...prev,
-        ...data?.Data,
-        bg_color: data?.Data?.theme?.bg_color,
-        button_text_color: data?.Data?.theme?.button_text_color,
-        text_color: data?.Data?.theme?.text_color,
-        button_color: data?.Data?.theme?.button_color,
-      }));
-    }
-  };
-
-  useEffect(() => {
-    getChatbotDetails();
-  }, []);
-
-  // console.log(chatbotData);
+  const isPublishStep = step === PUBLISH_STEP;
+  const busy = bot.isSaving || bot.isUploading;
 
   return (
-    <div className=" w-full mx-auto py-6">
-      <div className="">
-        {isEdit && (
-          <div className="flex justify-end px-4">
-            <button
-              disabled={isLoader}
-              className={`flex items-center gap-2 border border-primary hover:bg-primary/80 px-4 py-2 mb-4 rounded-sm bg-primary text-white transition-all duration-200 ${
-                isLoader && "opacity-40"
-              }`}
-              onClick={handlePublish}
-            >
-              Publish {isLoader && <Loader size={20} color="#fff" />}
-            </button>
-          </div>
-        )}
-
-        <StepIndicator steps={updatedSteps} currentStep={currentStep} />
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="flex items-center gap-2 text-base font-semibold text-app-text">
+            Eazbot
+            {bot.isNew ? (
+              <Badge>Not published</Badge>
+            ) : form.active ? (
+              <Badge tone="green">Live on website</Badge>
+            ) : (
+              <Badge>Hidden</Badge>
+            )}
+          </h2>
+          <p className="text-xs text-app-text-muted">
+            The chat widget that greets website visitors and turns them into leads.
+          </p>
+        </div>
       </div>
 
-      <div className="mt-6">{renderStep()}</div>
+      <StepTabs
+        steps={STEPS}
+        current={step}
+        reachable={reachable}
+        onSelect={goTo}
+        showProgress={bot.isNew}
+      />
 
-      <div className="flex gap-5 mt-8 items-center px-4">
-        <button
-          onClick={handlePrev}
-          disabled={currentStep === 0}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === 0
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
-        >
-          Previous
-        </button>
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <Card className="min-w-0" title={current.label} description={current.description}>
+          {current.key === "profile" && (
+            <ProfileSection
+              form={form}
+              setField={setField}
+              onAvatar={bot.uploadAvatar}
+              isUploading={bot.isUploading}
+              errors={errors}
+            />
+          )}
+          {current.key === "appearance" && <AppearanceSection form={form} setField={setField} />}
+          {current.key === "messages" && (
+            <MessagesSection form={form} setField={setField} errors={errors} />
+          )}
+          {current.key === "questions" && (
+            <QuestionsSection
+              flow={form.chat_flow}
+              setQuestion={bot.setQuestion}
+              setOption={bot.setOption}
+              addOption={bot.addOption}
+              removeOption={bot.removeOption}
+            />
+          )}
+          {current.key === "install" && <InstallSection tenant={bot.tenant} />}
 
-        <button
-          onClick={handleNext}
-          disabled={currentStep === steps.length - 1}
-          className={`px-4 py-2 rounded text-white transition ${
-            currentStep === steps.length
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-primary hover:bg-primary/80"
-          }`}
-        >
-          {currentStep === steps.length - 1 ? "Finish" : "Next"}
-        </button>
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-app-border! pt-4">
+            {step > 0 && (
+              <Button variant="secondary" icon={ArrowLeft} onClick={() => goTo(step - 1)} disabled={busy}>
+                Back
+              </Button>
+            )}
+
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {/* a published bot can be updated from any step */}
+              {!bot.isNew && bot.isDirty && (
+                <Button variant="ghost" onClick={bot.discard} disabled={busy}>
+                  Discard changes
+                </Button>
+              )}
+              {!bot.isNew && bot.isDirty && !isPublishStep && (
+                <Button variant="secondary" icon={Rocket} onClick={publish} loading={bot.isSaving} disabled={bot.isUploading}>
+                  Publish now
+                </Button>
+              )}
+
+              {isPublishStep ? (
+                <Button icon={Rocket} onClick={publish} loading={bot.isSaving} disabled={bot.isUploading}>
+                  {bot.isNew ? "Publish" : "Publish changes"}
+                </Button>
+              ) : (
+                step < INSTALL_STEP && (
+                  <Button onClick={next} disabled={busy}>
+                    Next
+                    <ArrowRight className="size-4" />
+                  </Button>
+                )
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <aside className="rounded-xl border border-app-border! bg-app-surface-secondary p-4 lg:sticky lg:top-0">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-app-text-muted">
+            Live preview
+          </p>
+          <WidgetPreview form={form} />
+        </aside>
       </div>
     </div>
   );

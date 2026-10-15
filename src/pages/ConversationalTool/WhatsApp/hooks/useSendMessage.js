@@ -107,9 +107,10 @@ export const useSendMessage = (hid, conversation, onSend) => {
         );
       },
 
-      // an approved template, with its sample values
-      sendTemplate: (template) => {
-        const { body, params, headerParams } = fillTemplate(template);
+      // an approved template, with the given variable values
+      // ({ header, body }) or else its sample ones
+      sendTemplate: (template, values) => {
+        const { body, params, headerParams } = fillTemplate(template, values);
         const language = template.language || "en";
 
         return deliver(

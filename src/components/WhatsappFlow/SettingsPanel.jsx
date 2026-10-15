@@ -42,7 +42,7 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
 
         <FiX
           size={20}
-          className="cursor-pointer text-gray-500 hover:text-black dark:hover:text-white"
+          className="cursor-pointer text-app-text-muted hover:text-app-text"
           onClick={handleButtonCancel}
         />
       </div>

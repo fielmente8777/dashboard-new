@@ -228,7 +228,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
   };
 
   return (
-    <div className="bg-white w-full rounded-xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
+    <div className="bg-app-surface w-full rounded-xl shadow-xl p-6 max-h-[90vh] overflow-y-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
         <h2 className="font-semibold text-xl">Carousel Settings</h2>
@@ -245,7 +245,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
           placeholder="Enter message..."
         />
 
-        <span className="text-end block text-gray-500 text-xs">Max 1024</span>
+        <span className="text-end block text-app-text-muted text-xs">Max 1024</span>
       </div>
 
       {/* Button Type  */}
@@ -265,7 +265,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
       {/* Cards */}
       {cards?.map((card, index) => {
         return (
-          <div key={card.id} className="border rounded-xl p-4 mb-5 bg-gray-50">
+          <div key={card.id} className="border rounded-xl p-4 mb-5 bg-app-surface-secondary">
             <div className="flex justify-between mb-3">
               <h3 className="font-medium">Card {index + 1}</h3>
 
@@ -312,9 +312,9 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
 
                 <div
                   onClick={() => fileInputRef.current.click()}
-                  className="flex items-center justify-center border-2 border-dashed rounded-lg h-32 cursor-pointer bg-white hover:bg-gray-100"
+                  className="flex items-center justify-center border-2 border-dashed rounded-lg h-32 cursor-pointer bg-app-surface hover:bg-app-surface-secondary"
                 >
-                  <div className="text-center text-gray-500">
+                  <div className="text-center text-app-text-muted">
                     <FiUpload className="mx-auto text-2xl mb-1" />
                     Upload Image
                   </div>
@@ -347,7 +347,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
                 className="border w-full p-2 mt-3 rounded"
                 placeholder="Card description..."
               />
-              <span className="block text-end text-xs text-gray-500">
+              <span className="block text-end text-xs text-app-text-muted">
                 Max 160
               </span>
             </div>
@@ -365,7 +365,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
                     }
                     className="border w-full p-2 rounded"
                   />
-                  <span className="block text-end text-xs text-gray-500">
+                  <span className="block text-end text-xs text-app-text-muted">
                     Max 20
                   </span>
                 </div>
@@ -395,7 +395,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
                         className="border w-full p-2 rounded"
                         placeholder={`Button ${btnIndex + 1}`}
                       />
-                      <span className="block text-end text-xs text-gray-500">
+                      <span className="block text-end text-xs text-app-text-muted">
                         Max 20
                       </span>
                     </div>
@@ -639,7 +639,7 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
 //   };
 
 //   return (
-//     <div className="bg-white w-full rounded-lg shadow-lg p-5 max-h-[90vh] overflow-y-auto">
+//     <div className="bg-app-surface w-full rounded-lg shadow-lg p-5 max-h-[90vh] overflow-y-auto">
 //       {/* Header */}
 //       <div className="flex justify-between items-center mb-4">
 //         <h2 className="font-semibold text-lg">Set Carousel</h2>

@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import WhatsAppBusiness from "../Channels/Whatsapp/WhatsAppBusiness";
 import Setting from "../Setting/Setting";
 import Eazobot from "../Eazobot/Eazobot";
 import Integration from "../AppIntegration/Integration";
 import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
-import Notification from "./Notification";
+import Notification from "./Notification/Notification";
 import Billing from "../Wallet/Billing";
 import { useSearchParams } from "react-router-dom";
 import Subscription from "../Wallet/Subscription";
 import { useSelector } from "react-redux";
+import Tabs from "../../components/ui/Tabs";
 
 const Settings = () => {
   const { subscription } = useSelector((state) => state?.subscription);
@@ -24,6 +25,8 @@ const Settings = () => {
       key: "WhatsApp",
       label: "WhatsApp",
       component: <WhatsAppBusiness template={template} section={section} />,
+      // lays out its own side menu edge to edge
+      fullBleed: true,
     },
     { key: "Eazbot", label: "Eazbot", component: <Eazobot /> },
     { key: "Integration", label: "Integration", component: <Integration /> },
@@ -39,49 +42,42 @@ const Settings = () => {
   ];
   const [activeTab, setActiveTab] = useState(tab || TABS[0].key);
 
-  // ✅ Find active component
-  const activeComponent = TABS.find(
-    (tab) => tab.key?.toLowerCase() === activeTab?.toLowerCase(),
-  )?.component;
+  // follow ?tab= links while the page is open (e.g. Integration -> Eazbot)
+  useEffect(() => {
+    if (tab) setActiveTab(tab);
+  }, [tab]);
 
-  console.log(subscription);
+  const active = TABS.find(
+    (tab) => tab.key?.toLowerCase() === activeTab?.toLowerCase(),
+  );
 
   return (
-    <div className="w-full flex flex-col h-full">
-      {/* Tabs */}
-      <div className="flex gap-4 overflow-x-auto p-2 border-b w-fit">
-        {TABS.map((tab) => {
-          if (
-            tab?.key === "WhatsApp" &&
-            !subscription?.appAccess?.["whatsapp"]
-          ) {
-            return null;
-          } else if (
-            tab?.key === "Eazbot" &&
-            !subscription?.appAccess?.["eazbot"]
-          ) {
-            return null;
-          }
-
-          return (
-            <span
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex shrink-0 cursor-pointer ${
-                activeTab?.toLowerCase() === tab.key?.toLowerCase()
-                  ? "bg-primary text-white"
-                  : "bg-app-surface"
-              } hover:bg-gray-300 transition-all duration-150 text-sm font-medium p-2 text-center rounded-sm`}
-            >
-              {tab.label}
-            </span>
-          );
-        })}
+    <div className="flex h-full w-full flex-col">
+      {/* Tabs (WhatsApp and Eazbot only with the matching app access) */}
+      <div className="shrink-0 overflow-x-auto border-b border-app-border! px-3 py-2.5 sm:px-5 scrollbar-hidden">
+        <Tabs
+          tabs={TABS.filter(
+            (t) =>
+              !(t.key === "WhatsApp" && !subscription?.appAccess?.["whatsapp"]) &&
+              !(t.key === "Eazbot" && !subscription?.appAccess?.["eazbot"]),
+          ).map((t) => ({ value: t.key, label: t.label }))}
+          value={active?.key}
+          className="flex-nowrap!"
+          onChange={setActiveTab}
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 h-full overflow-y-auto scrollbar-hidden">
-        {activeComponent}
+      <div
+        className={`min-h-0 flex-1 overflow-y-auto scrollbar-hidden ${
+          active?.fullBleed ? "" : "px-3 py-4 sm:px-5 sm:py-5"
+        }`}
+      >
+        {active?.fullBleed ? (
+          active.component
+        ) : (
+          <div className="mx-auto w-full max-w-7xl">{active?.component}</div>
+        )}
       </div>
     </div>
   );

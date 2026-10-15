@@ -1,15 +1,28 @@
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { BASE_URL } from "../data/constant";
-import { FiGlobe, FiSave, FiCheckCircle, FiEdit2, FiX } from "react-icons/fi";
+import { CheckCircle2, Globe, Pencil } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import Badge from "./ui/Badge";
+import Button from "./ui/Button";
+import Card from "./ui/Card";
+import { Field, Input } from "./ui/Field";
+import Segmented from "./ui/Segmented";
 
+const PROPERTY_TYPES = [
+  { value: "domain", label: "Domain" },
+  { value: "url_prefix", label: "URL prefix" },
+];
+
+// The Google Search Console site linked to the selected Analytics property.
 const GscSettings = () => {
+  const { showToast } = useToast();
+  const [hasProperty, setHasProperty] = useState(Boolean(localStorage.getItem("activePropertyId")));
   const [rawDomain, setRawDomain] = useState("");
   const [propertyType, setPropertyType] = useState("domain"); // "domain" | "url_prefix"
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savedFlash, setSavedFlash] = useState(false);
 
   // Auto-collapse state
   const [isConfigured, setIsConfigured] = useState(false); // domain already set?
@@ -18,6 +31,7 @@ const GscSettings = () => {
 
   const loadSettings = useCallback(async () => {
     const propertyId = localStorage.getItem("activePropertyId");
+    setHasProperty(Boolean(propertyId));
     if (!propertyId) {
       setIsConfigured(false);
       setIsEditing(true); // no property -> nothing to show, keep form ready
@@ -84,7 +98,7 @@ const GscSettings = () => {
     const propertyId = localStorage.getItem("activePropertyId");
     const hid = localStorage.getItem("hid");
     if (!propertyId || !rawDomain.trim()) {
-      alert("Please select a GA property and enter a domain.");
+      showToast({ message: "Enter your website's domain.", type: "error" });
       return;
     }
     try {
@@ -107,121 +121,103 @@ const GscSettings = () => {
       setIsConfigured(true);
       setIsEditing(false);
 
-      setSavedFlash(true);
-      setTimeout(() => setSavedFlash(false), 2500);
+      showToast({ message: "Search Console connected" });
     } catch (err) {
       console.error("Failed to save GSC settings:", err);
-      alert("Failed to save settings. Please try again.");
+      showToast({ message: "Could not save the Search Console settings.", type: "error" });
     } finally {
       setSaving(false);
     }
   };
 
-  // ---- COMPACT VIEW: domain configured, form hidden ----
-  if (isConfigured && !isEditing) {
+  const title = (
+    <span className="flex items-center gap-2">
+      <Globe className="size-4 text-app-text-muted" />
+      Google Search Console
+    </span>
+  );
+
+  if (!hasProperty) {
     return (
-      <div className="bg-app-surface p-5 rounded-2xl shadow-sm border border-slate-200/80 max-w-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-50 text-green-600 border border-green-100">
-              <FiCheckCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-app-text dark:text-app-text-muted ">Search Console Connected</h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {savedDomain || "Auto-detected"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1.5 text-xs font-medium text-app-text dark:text-app-text-muted  hover:text-blue-700 border border-blue-200 hover:border-blue-300 rounded-md px-3 py-1.5 transition"
-          >
-            <FiEdit2 className="w-3.5 h-3.5" /> Edit Settings
-          </button>
-        </div>
-      </div>
+      <Card title={title} description="See which Google searches bring guests to your website.">
+        <p className="text-sm text-app-text-muted">
+          Connect Google Analytics first. Search Console is linked to your Analytics property.
+        </p>
+      </Card>
     );
   }
 
-  // ---- FORM VIEW: not configured, or user clicked Edit ----
-  return (
-    <div className="bg-app-surface p-6 ">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <FiGlobe className="w-5 h-5 text-app-text dark:text-app-text-muted " />
-          <h2 className="text-md font-semibold">Search Console</h2>
+  // set up: one line with the domain
+  if (isConfigured && !isEditing) {
+    return (
+      <Card
+        title={title}
+        actions={
+          <Button size="sm" variant="secondary" icon={Pencil} onClick={() => setIsEditing(true)}>
+            Change
+          </Button>
+        }
+      >
+        <div className="flex items-center gap-2 text-sm text-app-text">
+          <CheckCircle2 className="size-4 text-green-500" />
+          {savedDomain || "Detected automatically"}
+          <Badge tone="green">Connected</Badge>
         </div>
-        {/* Allow cancelling the edit only if a domain was already configured */}
-        {isConfigured && (
-          <button
-            onClick={() => { setRawDomain(savedDomain); setIsEditing(false); }}
-            className="text-slate-400 hover:text-slate-600"
-            title="Cancel"
-          >
-            <FiX className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-      <p className="text-xs text-app-text dark:text-app-text-muted mb-6">
-        Configure the Google Search Console property for this hotel.
-      </p>
+      </Card>
+    );
+  }
 
+  return (
+    <Card title={title} description="Which website should we show Google search data for?">
       {loading ? (
-        <p className="text-sm text-slate-400">Loading…</p>
+        <p className="text-sm text-app-text-muted">Loading…</p>
       ) : (
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-app-text-faint mb-1">Property Type</label>
-            <select
+          <Field as="div" label="Property type in Search Console">
+            <Segmented
+              label="Property type"
+              options={PROPERTY_TYPES}
               value={propertyType}
-              onChange={(e) => setPropertyType(e.target.value)}
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="domain">Domain (sc-domain:example.com)</option>
-              <option value="url_prefix">URL Prefix (https://example.com/)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-app-text-faint mb-1">Domain</label>
-            <input
-              type="text"
-              value={rawDomain}
-              onChange={(e) => setRawDomain(e.target.value)}
-              placeholder="www.example.com"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
+              onChange={setPropertyType}
             />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Enter the bare domain. We'll format it correctly based on the property type above.
-            </p>
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Website domain" hint="Just the domain; we format it for you.">
+              <Input
+                value={rawDomain}
+                onChange={(e) => setRawDomain(e.target.value)}
+                placeholder="www.yourhotel.com"
+              />
+            </Field>
+            <Field label="Google account (optional)" hint="The account that owns the Search Console property.">
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="owner@yourhotel.com"
+              />
+            </Field>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-app-text-faint mb-1">Connected Google Email (optional)</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="owner@example.com"
-              className="w-full border border-slate-300 rounded-md px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-md text-sm font-medium transition disabled:opacity-60"
-          >
-            {savedFlash ? (
-              <><FiCheckCircle className="w-4 h-4" /> Saved!</>
-            ) : (
-              <><FiSave className="w-4 h-4" /> {saving ? "Saving…" : "Save Settings"}</>
+          <div className="flex justify-end gap-2">
+            {isConfigured && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setRawDomain(savedDomain);
+                  setIsEditing(false);
+                }}
+                disabled={saving}
+              >
+                Cancel
+              </Button>
             )}
-          </button>
+            <Button onClick={handleSave} loading={saving} disabled={!rawDomain.trim()}>
+              Save
+            </Button>
+          </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 

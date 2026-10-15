@@ -70,6 +70,15 @@ export const selectCurrentLocation = createSelector(
   (hotels, hid) => hotels?.[hid] ?? null,
 );
 
+// true once the profile has loaded and the account has no hotel yet: the
+// user has to finish onboarding before the dashboard can be used.
+// null while it is not known (profile still loading or the request failed).
+export const selectNeedsOnboarding = (state) => {
+  const { user } = state.userProfile;
+  if (!user) return null;
+  return user.Status === false || !Object.keys(user.Profile?.hotels ?? {}).length;
+};
+
 // Locations the signed-in user may switch to
 export const selectAvailableLocations = createSelector(
   [selectHotels, selectAuthUser],

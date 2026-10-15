@@ -11,6 +11,7 @@ const MENU_MAX_HEIGHT = 320;
 // `searchable` defaults to on when there are more than 8 options; `icon`
 // shows before the value. The menu
 // is portalled to <body>, so it is never cut off by a card's overflow.
+// With `multiple`, `value` is an array, options toggle and the menu stays open.
 const SelectMenu = ({
   options,
   value,
@@ -20,6 +21,7 @@ const SelectMenu = ({
   disabled = false,
   label,
   icon,
+  multiple = false,
   className = "",
 }) => {
   const [open, setOpen] = useState(false);
@@ -30,7 +32,14 @@ const SelectMenu = ({
   const menuRef = useRef(null);
   const listRef = useRef(null);
 
-  const selected = options.find((option) => option.value === value);
+  const isSelected = (option) =>
+    multiple ? (value || []).includes(option.value) : option.value === value;
+  const selectedOptions = options.filter(isSelected);
+  const selectedLabel = !selectedOptions.length
+    ? null
+    : multiple && selectedOptions.length > 2
+      ? `${selectedOptions[0].label}, ${selectedOptions[1].label} +${selectedOptions.length - 2}`
+      : selectedOptions.map((option) => option.label).join(", ");
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     return term
@@ -45,6 +54,15 @@ const SelectMenu = ({
   };
 
   const choose = (option) => {
+    if (multiple) {
+      const current = value || [];
+      onChange(
+        isSelected(option)
+          ? current.filter((item) => item !== option.value)
+          : [...current, option.value],
+      );
+      return;
+    }
     if (option.value !== value) onChange(option.value);
     close();
   };
@@ -90,7 +108,7 @@ const SelectMenu = ({
 
   // start on the selected option; keep the highlighted one in view
   useEffect(() => {
-    if (open) setActive(Math.max(0, filtered.findIndex((o) => o.value === value)));
+    if (open) setActive(Math.max(0, filtered.findIndex(isSelected)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, query]);
   useEffect(() => {
@@ -127,6 +145,7 @@ const SelectMenu = ({
         type="button"
         disabled={disabled}
         aria-haspopup="listbox"
+        title={multiple ? selectedOptions.map((o) => o.label).join(", ") : undefined}
         aria-expanded={open}
         aria-label={label}
         onClick={() => (open ? close() : setOpen(true))}
@@ -138,8 +157,8 @@ const SelectMenu = ({
         } ${className}`}
       >
         {icon && <Icon icon={icon} size="sm" tone="muted" />}
-        <span className={`min-w-0 flex-1 truncate ${selected ? "text-app-text" : "text-app-text-faint"}`}>
-          {selected?.label ?? placeholder}
+        <span className={`min-w-0 flex-1 truncate ${selectedLabel ? "text-app-text" : "text-app-text-faint"}`}>
+          {selectedLabel ?? placeholder}
         </span>
         <Icon
           icon={ChevronDown}
@@ -184,27 +203,28 @@ const SelectMenu = ({
               ref={listRef}
               role="listbox"
               aria-label={label}
+              aria-multiselectable={multiple || undefined}
               tabIndex={-1}
               className="max-h-64 overflow-y-auto p-1"
             >
               {filtered.map((option, index) => {
-                const isSelected = option.value === value;
+                const checked = isSelected(option);
                 return (
                   <li
                     key={option.value}
                     role="option"
-                    aria-selected={isSelected}
+                    aria-selected={checked}
                     onMouseEnter={() => setActive(index)}
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => choose(option)}
                     className={`flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-2 text-sm ${
                       index === active ? "bg-app-surface-secondary" : ""
-                    } ${isSelected ? "font-medium text-blue-600 dark:text-blue-400" : ""}`}
+                    } ${checked ? "font-medium text-blue-600 dark:text-blue-400" : ""}`}
                   >
                     <span className="min-w-0 flex-1 truncate" title={option.label}>
                       {option.label}
                     </span>
-                    {isSelected && <Icon icon={Check} size="sm" />}
+                    {checked && <Icon icon={Check} size="sm" />}
                   </li>
                 );
               })}

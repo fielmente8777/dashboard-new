@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { getCookie, removeCookie } from "../utils/handleCookies";
 import { useSelector } from "react-redux";
 import { isExpired } from "../utils/isExpired";
+import { selectNeedsOnboarding } from "../redux/slice/UserSlice";
 
 const PLAN = {
   _id: "6995a0a2da382ec32cc83bd7",
@@ -44,6 +45,7 @@ const isAuthenticated = () => {
 export default function ProtectedRoute() {
   const { ndid } = useParams();
   const navigate = useNavigate();
+  const needsOnboarding = useSelector(selectNeedsOnboarding);
 
   // const { user: hotel } = useSelector((state) => state.userProfile);
   // console.log("user", hotel);
@@ -59,6 +61,11 @@ export default function ProtectedRoute() {
       }
     }
   }, [ndid]);
+  // A new account has no hotel yet: send it to onboarding first.
+  if (isAuthenticated() && needsOnboarding) {
+    return <Navigate to={ROUTES.ONBOARDING_FORM} replace />;
+  }
+
   return isAuthenticated() ? (
     <DashboardLayout>
       <Outlet />

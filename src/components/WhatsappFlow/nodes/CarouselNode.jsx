@@ -40,7 +40,7 @@ export default function CarouselNode({ id, data }) {
       </div>
 
       {/* Body */}
-      <div className="px-3 text-sm text-gray-700 border-b py-2">{bodyText}</div>
+      <div className="px-3 text-sm text-app-text border-b py-2">{bodyText}</div>
 
       {/* Cards */}
       <div className="px-3 py-2 space-y-3">
@@ -50,7 +50,7 @@ export default function CarouselNode({ id, data }) {
           const buttons = card.action?.buttons || [];
 
           return (
-            <div key={cardIndex} className="border rounded-md p-2 bg-gray-50">
+            <div key={cardIndex} className="border rounded-md p-2 bg-app-surface-secondary">
               {/* HEADER */}
               {header?.type === "image" && header?.image?.link && (
                 <img
@@ -67,13 +67,13 @@ export default function CarouselNode({ id, data }) {
               )}
 
               {/* BODY */}
-              <div className="text-xs text-gray-600 mb-2">{description}</div>
+              <div className="text-xs text-app-text-muted mb-2">{description}</div>
 
               {/* BUTTONS */}
               {buttons.map((btn, idx) => (
                 <div
                   key={btn.quick_reply?.id || idx}
-                  className="relative bg-gray-100 rounded px-2 py-1 text-xs mb-1 flex justify-between items-center"
+                  className="relative bg-app-surface-secondary rounded px-2 py-1 text-xs mb-1 flex justify-between items-center"
                 >
                   {btn.quick_reply?.title}
 
@@ -90,7 +90,7 @@ export default function CarouselNode({ id, data }) {
         })}
 
         {/* Default Path */}
-        <div className="relative bg-gray-100 rounded px-2 py-1 text-xs flex justify-between items-center">
+        <div className="relative bg-app-surface-secondary rounded px-2 py-1 text-xs flex justify-between items-center">
           Default
           <Handle
             type="source"

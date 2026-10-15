@@ -1,69 +1,48 @@
-import { useState } from "react";
-import { FiX } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import Button from "../../../../components/ui/Button";
+import Dialog from "../../../../components/ui/Dialog";
+import { Field, Input } from "../../../../components/ui/Field";
 
+// Names a new flow before the builder opens.
 const FlowModal = ({ template, onClose, onSave }) => {
   const [name, setName] = useState("");
 
-  const handleSubmit = () => {
-    if (!name.trim()) return;
+  useEffect(() => {
+    if (template) setName("");
+  }, [template]);
 
-    onSave({
-      name,
-      category: template?.category, // ✅ fixed
-      templateId: template?.id,
-    });
+  const submit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave({ name: name.trim(), category: template?.category, template });
   };
 
-  const FIELD =
-    "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-3)] py-[var(--sp-2)] mt-1 text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-
-  const LABEL = "text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-muted";
-
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-[var(--sp-4)]">
-      <div className="bg-app-surface w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-[var(--r-lg)] shadow-lg p-[var(--sp-5)] relative">
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className="absolute right-3 top-3 size-8 flex items-center justify-center rounded-[var(--r-sm)] text-app-text hover:bg-app-surface-secondary cursor-pointer transition-colors"
-        >
-          <FiX />
-        </button>
-
-        <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] pr-10 text-app-text">
-          Enter flow details
-        </h2>
-
-        {/* Flow Name */}
-        <div className="mb-[var(--sp-4)]">
-          <label className={LABEL}>Flow Name</label>
-          <input
+    <Dialog
+      open={Boolean(template)}
+      onClose={onClose}
+      title="Name your flow"
+      description={`Starting from the “${template?.title}” template.`}
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Flow name" hint="Only your team sees this.">
+          <Input
+            autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className={FIELD}
-            placeholder="Enter flow name"
+            placeholder="e.g. Room enquiry form"
           />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!name.trim()}>
+            Continue
+          </Button>
         </div>
-
-        {/* Category (DISABLED) */}
-        <div className="mb-[var(--sp-5)]">
-          <label className={LABEL}>Category</label>
-          <input
-            value={template?.title}
-            disabled
-            className={`${FIELD} bg-app-surface-secondary cursor-not-allowed opacity-70`}
-          />
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-[var(--sp-3)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium transition-colors"
-        >
-          Save and continue
-        </button>
-      </div>
-    </div>
+      </form>
+    </Dialog>
   );
 };
 

@@ -111,7 +111,7 @@ export default function SendMessageNode({ id, data }) {
   };
 
   return (
-    <div className="w-[320px] rounded-xl shadow-lg bg-white border relative">
+    <div className="w-[320px] rounded-xl shadow-lg bg-app-surface border relative">
       {/* Header */}
       <div className="bg-primary/90 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
         <div className="flex items-center gap-2 font-semibold">
@@ -414,7 +414,7 @@ function SmallButton({ label, onClick }) {
 //   /* ---------------- UI ---------------- */
 
 //   return (
-//     <div className="w-[320px] rounded-xl shadow-lg bg-white border relative">
+//     <div className="w-[320px] rounded-xl shadow-lg bg-app-surface border relative">
 //       {/* Header */}
 //       <div className="bg-red-500 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
 //         <div className="flex items-center gap-2 font-semibold">
@@ -454,7 +454,7 @@ function SmallButton({ label, onClick }) {
 //             {!block.file && (
 //               <label
 //                 htmlFor={`file-${block.id}`}
-//                 className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+//                 className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 text-app-text-muted hover:bg-gray-50 cursor-pointer"
 //               >
 //                 <div className="text-xl">{getIcon(block.type)}</div>
 

@@ -46,25 +46,29 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
     {
       type: "carousel",
       label: "Carousel",
-      desc: "Show selectable list options",
+      desc: "Swipeable cards with images",
       color: "from-primary to-primary/85",
       icon: "📋",
     },
   ];
 
   return (
-    <div className="w-72  bg-primary/ h-full bordrer-r! border-gray-200! p-4">
+    <div className="w-44 shrink-0 overflow-y-auto border-r border-app-border! bg-app-surface p-3 sm:w-60">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-app-text-faint">
+        {showQuestionMenu ? "Question blocks" : "Blocks"}
+      </p>
       {showQuestionMenu && (
-        <div
+        <button
+          type="button"
           onClick={() => setShowQuestionMenu(false)}
-          className="size-6 rounded-full bg-slate-800 flex items-center justify-center cursor-pointer  "
+          className="mb-1 flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-app-text-muted hover:bg-app-surface-secondary hover:text-app-text"
         >
-          <IoMdArrowRoundBack color="#fefefe" size={14} />
-        </div>
+          <IoMdArrowRoundBack size={14} /> All blocks
+        </button>
       )}
 
       {!showQuestionMenu && (
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           {blocks.map((block) => (
             <div
               key={block.type}
@@ -77,7 +81,7 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
                   addNode(block.type);
                 }
               }}
-              className={`cursor-pointer rounded-xl p-4 text-white bg-gradient-to-r ${block.color} shadow hover:scale-[1.02] transition`}
+              className={`cursor-pointer rounded-xl p-3 text-white bg-gradient-to-r ${block.color} shadow hover:scale-[1.02] transition`}
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -94,12 +98,12 @@ export default function Sidebar({ addNode, addSendMessageNode }) {
       )}
 
       {showQuestionMenu && (
-        <div className="space-y-4 mt-4">
+        <div className="mt-2 space-y-2.5">
           {questionsBlock.map((item) => (
             <div
               key={item.type}
               onClick={() => addNode(item.type)}
-              className={`cursor-pointer rounded-xl p-4 text-white bg-gradient-to-r ${item.color} shadow hover:scale-[1.02] transition`}
+              className={`cursor-pointer rounded-xl p-3 text-white bg-gradient-to-r ${item.color} shadow hover:scale-[1.02] transition`}
             >
               <div className="flex justify-between items-center">
                 <div>

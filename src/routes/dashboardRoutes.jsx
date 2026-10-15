@@ -91,16 +91,18 @@ import { PAGES } from "./paths";
 // The leads lists are one page with a different source each; the key gives
 // every route its own state.
 const leadsList = (source) => <LeadsList key={source.key} source={source} />;
+// Settings sections also open on their own; Settings gives them this gutter.
+const padded = (page) => <div className="px-3 py-4 sm:px-5 sm:py-5">{page}</div>;
 
 export const dashboardRoutes = [
   // Home & account
   { path: PAGES.HOME, element: <Dashboard /> },
-  { path: PAGES.PROFILE, element: <Setting /> },
+  { path: PAGES.PROFILE, element: padded(<Setting />) },
   { path: PAGES.SETTINGS, element: <Settings /> },
-  { path: PAGES.INTEGRATION, element: <Integration /> },
+  { path: PAGES.INTEGRATION, element: padded(<Integration />) },
   { path: PAGES.QR_CODE, element: <GrmSettings /> },
-  { path: PAGES.USER_MANAGEMENT_ALL_USERS, element: <Usermanagement /> },
-  { path: PAGES.USER_MANAGEMENT_SETTINGS, element: <Usermanagement /> },
+  { path: PAGES.USER_MANAGEMENT_ALL_USERS, element: padded(<Usermanagement />) },
+  { path: PAGES.USER_MANAGEMENT_SETTINGS, element: padded(<Usermanagement />) },
   { path: PAGES.CONTACTS, element: <Contacts /> },
 
   // Live chat

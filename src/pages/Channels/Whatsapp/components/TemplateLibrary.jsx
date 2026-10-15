@@ -1,397 +1,125 @@
-import { useEffect, useState } from "react";
-import CustomDropdown from "../../../../components/ui/Dropdown";
-import { TEMPLATE_FILTER } from "../../../../data/constant";
+import { ArrowRight, ExternalLink, FileText, Phone, Reply, Search } from "lucide-react";
+import { useMemo, useState } from "react";
+import Badge from "../../../../components/ui/Badge";
+import Icon from "../../../../components/ui/Icon";
+import { Input } from "../../../../components/ui/Field";
+import { EmptyState } from "../../../../components/ui/States";
+import Tabs from "../../../../components/ui/Tabs";
+import { LIBRARY_TEMPLATES } from "./templateLibraryData";
+import TemplateText from "./TemplateText";
+import { CATEGORY_TONE } from "./templateUtils";
 
-const templates = [
-  {
-    id: 1,
-    name: "booking_confirmation",
-    category: "UTILITY",
-    header: "Booking Confirmed",
-    body: "Hi {{1}}, your booking at {{2}} is confirmed from {{3}} to {{4}}.",
-    footer: "We look forward to hosting you!",
-    buttons: [{ type: "URL", text: "View Booking", url: "{{5}}" }],
-  },
-  {
-    id: 2,
-    name: "pre_arrival",
-    category: "UTILITY",
-    header: "Welcome Soon",
-    body: "Hi {{1}}, we are excited to welcome you to {{2}} tomorrow.",
-    footer: "Safe travels!",
-    buttons: [{ type: "QUICK_REPLY", text: "Share Arrival Time" }],
-  },
-  {
-    id: 3,
-    name: "welcome_message",
-    category: "UTILITY",
-    header: "Welcome",
-    body: "Welcome {{1}} to {{2}}. Let us know if you need anything.",
-    footer: "Enjoy your stay!",
-    buttons: [],
-  },
-  {
-    id: 4,
-    name: "upsell_services",
-    category: "MARKETING",
-    header: "Enhance Stay",
-    body: "Hi {{1}}, explore spa, dining & tours at {{2}}.",
-    footer: "Limited time offers",
-    buttons: [{ type: "URL", text: "Explore Offers", url: "{{3}}" }],
-  },
-  {
-    id: 5,
-    name: "restaurant_offer",
-    category: "MARKETING",
-    header: "Special Dining Offer",
-    body: "Enjoy {{1}} at {{2}}. Book your table now.",
-    footer: "Limited seats available",
-    buttons: [{ type: "URL", text: "Reserve Table", url: "{{3}}" }],
-  },
-  {
-    id: 6,
-    name: "seasonal_offer",
-    category: "MARKETING",
-    header: "Exclusive Deal",
-    body: "Get {{1}} off on your next stay at {{2}}.",
-    footer: "Valid till {{3}}",
-    buttons: [{ type: "URL", text: "Book Now", url: "{{4}}" }],
-  },
-  {
-    id: 7,
-    name: "checkout_reminder",
-    category: "UTILITY",
-    header: "Checkout Reminder",
-    body: "Hi {{1}}, your checkout time is {{2}}.",
-    footer: "Thank you!",
-    buttons: [],
-  },
-  {
-    id: 8,
-    name: "feedback_request",
-    category: "UTILITY",
-    header: "Feedback",
-    body: "Hi {{1}}, please share your experience at {{2}}.",
-    footer: "We value your feedback",
-    buttons: [{ type: "URL", text: "Give Feedback", url: "{{3}}" }],
-  },
-  {
-    id: 9,
-    name: "re_engagement",
-    category: "MARKETING",
-    header: "We Miss You",
-    body: "Hi {{1}}, enjoy {{2}} on your next visit to {{3}}.",
-    footer: "Come back soon!",
-    buttons: [{ type: "URL", text: "Book Again", url: "{{4}}" }],
-  },
-  {
-    id: 10,
-    name: "event_promotion",
-    category: "MARKETING",
-    header: "Celebrate With Us",
-    body: "Plan your {{1}} at {{2}} with exclusive packages.",
-    footer: "Make it memorable",
-    buttons: [{ type: "CALL", text: "Call Us", phone: "{{3}}" }],
-  },
-  {
-    id: 11,
-    name: "early_checkin_offer",
-    category: "MARKETING",
-    header: "Early Check-in",
-    body: "Hi {{1}}, start your stay earlier at {{2}} with early check-in access.",
-    footer: "Limited availability",
-    buttons: [{ type: "URL", text: "Request Now", url: "{{3}}" }],
-  },
-  {
-    id: 12,
-    name: "room_upgrade",
-    category: "MARKETING",
-    header: "Upgrade Your Room",
-    body: "Hi {{1}}, move to a premium room at {{2}} for enhanced comfort.",
-    footer: "Upgrade your experience",
-    buttons: [{ type: "URL", text: "Upgrade", url: "{{3}}" }],
-  },
-  {
-    id: 13,
-    name: "checkin_reminder",
-    category: "UTILITY",
-    header: "Check-in Reminder",
-    body: "Hi {{1}}, your check-in at {{2}} is scheduled for {{3}}.",
-    footer: "See you soon",
-    buttons: [],
-  },
-  {
-    id: 14,
-    name: "payment_confirmation",
-    category: "UTILITY",
-    header: "Payment Received",
-    body: "Hi {{1}}, your payment of {{2}} has been successfully processed.",
-    footer: "Thank you",
-    buttons: [],
-  },
-  {
-    id: 15,
-    name: "cancellation_confirmation",
-    category: "UTILITY",
-    header: "Booking Cancelled",
-    body: "Hi {{1}}, your reservation at {{2}} has been cancelled successfully.",
-    footer: "Hope to host you again",
-    buttons: [],
-  },
-  {
-    id: 16,
-    name: "loyalty_reward",
-    category: "MARKETING",
-    header: "Reward Unlocked",
-    body: "Hi {{1}}, you've unlocked exclusive rewards after your stay at {{2}}.",
-    footer: "Enjoy your benefits",
-    buttons: [{ type: "URL", text: "View Rewards", url: "{{3}}" }],
-  },
-  {
-    id: 17,
-    name: "festival_offer",
-    category: "MARKETING",
-    header: "Festive Experience",
-    body: "Celebrate {{1}} at {{2}} with special themed experiences.",
-    footer: "Celebrate in style",
-    buttons: [{ type: "URL", text: "Explore", url: "{{3}}" }],
-  },
-  {
-    id: 18,
-    name: "housekeeping_request",
-    category: "UTILITY",
-    header: "Housekeeping Service",
-    body: "Hi {{1}}, request housekeeping service at {{2}} anytime.",
-    footer: "We're here to help",
-    buttons: [{ type: "QUICK_REPLY", text: "Request" }],
-  },
-  {
-    id: 19,
-    name: "wifi_details",
-    category: "UTILITY",
-    header: "WiFi Access",
-    body: "Hi {{1}}, connect to WiFi at {{2}} using provided credentials.",
-    footer: "Stay connected",
-    buttons: [],
-  },
-  {
-    id: 20,
-    name: "transport_service",
-    category: "MARKETING",
-    header: "Travel Assistance",
-    body: "Hi {{1}}, arrange your transport to or from {{2}} easily.",
-    footer: "Travel made simple",
-    buttons: [{ type: "URL", text: "Book Ride", url: "{{3}}" }],
-  },
-  {
-    id: 21,
-    name: "late_checkout_offer",
-    category: "MARKETING",
-    header: "Late Checkout Option",
-    body: "Hi {{1}}, enjoy extra time at {{2}} with our late checkout option.",
-    footer: "Relax a little longer",
-    buttons: [{ type: "URL", text: "Request Late Checkout", url: "{{3}}" }],
-  },
-  {
-    id: 22,
-    name: "room_service_order",
-    category: "UTILITY",
-    header: "Room Service Update",
-    body: "Hi {{1}}, your room service order at {{2}} is being prepared.",
-    footer: "Will be delivered shortly",
-    buttons: [],
-  },
-  {
-    id: 23,
-    name: "maintenance_alert",
-    category: "UTILITY",
-    header: "Maintenance Notice",
-    body: "Hi {{1}}, scheduled maintenance at {{2}} may affect some services.",
-    footer: "We appreciate your patience",
-    buttons: [],
-  },
-
-  {
-    id: 24,
-    name: "lost_and_found",
-    category: "UTILITY",
-    header: "Lost & Found Update",
-    body: "Hi {{1}}, an item matching your description was found at {{2}}.",
-    footer: "Contact us to claim",
-    buttons: [{ type: "CALL", text: "Call Reception", phone: "{{3}}" }],
-  },
-  {
-    id: 25,
-    name: "otp_verification",
-    category: "AUTHENTICATION",
-    header: "OTP Verification",
-    body: "Hi {{1}}, your OTP for verification is {{2}}. It is valid for {{3}} minutes.",
-    footer: "Do not share this code with anyone",
-    buttons: [],
-  },
-  {
-    id: 26,
-    name: "login_alert",
-    category: "AUTHENTICATION",
-    header: "New Login Detected",
-    body: "Hi {{1}}, a new login to your account was detected from {{2}}.",
-    footer: "If this wasn't you, please secure your account immediately",
-    buttons: [],
-  },
-  {
-    id: 27,
-    name: "password_reset",
-    category: "AUTHENTICATION",
-    header: "Password Reset Request",
-    body: "Hi {{1}}, use this OTP {{2}} to reset your password. Valid for {{3}} minutes.",
-    footer: "If you didn't request this, ignore this message",
-    buttons: [],
-  },
-  {
-    id: 28,
-    name: "account_verification",
-    category: "AUTHENTICATION",
-    header: "Verify Your Account",
-    body: "Hi {{1}}, please verify your account using code {{2}}.",
-    footer: "Welcome aboard!",
-    buttons: [],
-  },
-  {
-    id: 29,
-    name: "two_factor_auth",
-    category: "AUTHENTICATION",
-    header: "2-Step Verification",
-    body: "Hi {{1}}, your 2FA code is {{2}}. It expires in {{3}} minutes.",
-    footer: "Keep your account secure",
-    buttons: [],
-  },
-  {
-    id: 30,
-    name: "email_verification",
-    category: "AUTHENTICATION",
-    header: "Email Verification",
-    body: "Hi {{1}}, confirm your email using this code: {{2}}.",
-    footer: "This helps us keep your account safe",
-    buttons: [],
-  },
-  {
-    id: 31,
-    name: "reservation_payment_link",
-    category: "MARKETING",
-    header: "Reservation Payment",
-    body: "Hi, thank you for your reservation. Please complete your payment using the secure payment link below:\n\n{{1}}\n\nOnce the payment is successful, your reservation will be confirmed.",
-    footer: "Thank you for choosing us",
-    buttons: [
-      {
-        type: "URL",
-        text: "Pay Now",
-        url: "{{1}}",
-      },
-    ],
-  },
+const CATEGORIES = [
+  { value: "", label: "All" },
+  { value: "UTILITY", label: "Utility" },
+  { value: "MARKETING", label: "Marketing" },
+  { value: "AUTHENTICATION", label: "Authentication" },
 ];
+const BUTTON_ICONS = { URL: ExternalLink, CALL: Phone, PHONE_NUMBER: Phone, QUICK_REPLY: Reply };
 
+const matches = (template, term) =>
+  [template.name, template.header, template.body].some((value) =>
+    value?.toLowerCase().includes(term),
+  );
+
+// Ready-made templates; picking one opens it in "Create template".
 const TemplateLibrary = ({ onSelectTemplate }) => {
-  const [category, setCategory] = useState();
+  const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [filterData, setFilterData] = useState([]);
 
-  const handleFilter = () => {
-    let data = templates;
+  const term = search.trim().toLowerCase();
+  const searched = useMemo(
+    () => (term ? LIBRARY_TEMPLATES.filter((t) => matches(t, term)) : LIBRARY_TEMPLATES),
+    [term],
+  );
+  const shown = category ? searched.filter((t) => t.category === category) : searched;
 
-    // Filter by category
-    if (category) {
-      data = data.filter(
-        (template) =>
-          template.category?.toUpperCase() === category?.toUpperCase(),
-      );
-    }
-
-    // Filter by search (name, header, body)
-    if (search.trim()) {
-      const searchValue = search.toLowerCase();
-
-      data = data.filter(
-        (template) =>
-          template.name?.toLowerCase().includes(searchValue) ||
-          template.header?.toLowerCase().includes(searchValue) ||
-          template.body?.toLowerCase().includes(searchValue),
-      );
-    }
-    setFilterData(data);
-  };
-
-  useEffect(() => {
-    handleFilter();
-  }, [search]);
+  const tabs = CATEGORIES.map((c) => ({
+    ...c,
+    label: `${c.label} (${c.value ? searched.filter((t) => t.category === c.value).length : searched.length})`,
+  }));
 
   return (
-    <div className="p-[var(--sp-5)] bg-app-surface min-h-full">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-[var(--sp-3)]">
-        <div className="w-full sm:w-auto sm:flex-1 sm:max-w-md">
-          <input
-            type="search"
-            placeholder="Search template by name, header and body"
-            className="w-full min-w-0 bg-app-surface-secondary border border-app-border py-[var(--sp-2)] px-[var(--sp-3)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none rounded-[var(--r-md)] transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="w-full sm:w-auto">
-          <CustomDropdown
-            label="Category"
-            options={TEMPLATE_FILTER}
-            onChange={(value) => setCategory(value)}
-          />
-        </div>
+    <div className="space-y-4">
+      <div>
+        <h2 className="text-base font-semibold text-app-text">Template library</h2>
+        <p className="text-xs text-app-text-muted">
+          Ready-made messages for hotels. Pick one to edit it and send it to Meta for
+          approval.
+        </p>
       </div>
 
-      {filterData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[var(--sp-4)] mt-[var(--sp-4)]">
-          {filterData?.map((template) => (
-            <div
-              key={template.id}
-              onClick={() => onSelectTemplate(template)}
-              className="group relative overflow-hidden bg-app-surface-secondary rounded-[var(--r-md)] border border-app-border shadow-xs p-[var(--sp-5)] flex flex-col justify-between min-h-[11.25rem] hover:border-ternary/40 transition-all duration-300 cursor-pointer"
-            >
-              {/* Header */}
-              <div className="min-w-0">
-                <h3 className="font-semibold text-[length:var(--fs-lg)] text-primary dark:text-app-text-muted mb-2 group-hover:text-ternary transition-colors break-words">
-                  {template.header}
-                </h3>
-
-                <p className="text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint leading-relaxed line-clamp-3 break-words">
-                  {template.body}
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div className="mt-[var(--sp-5)] flex flex-wrap justify-between items-center gap-2">
-                <span className="text-[length:var(--fs-xs)] px-[var(--sp-3)] py-1 bg-app-surface text-primary dark:text-app-text-muted border border-app-border rounded-[var(--r-sm)] font-medium uppercase tracking-wide">
-                  {template.category}
-                </span>
-
-                <button
-                  type="button"
-                  className="text-ternary text-[length:var(--fs-sm)] font-semibold flex items-center gap-1 group-hover:gap-2 transition-all"
-                >
-                  Use Template →
-                </button>
-              </div>
-
-              {/* Accent line */}
-              <div className="absolute inset-x-0 bottom-0 h-1 bg-ternary scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
-            </div>
-          ))}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div className="relative lg:w-80">
+          <Icon
+            icon={Search}
+            size="sm"
+            tone="faint"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+          />
+          <Input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search templates"
+            className="pl-9"
+          />
         </div>
+        <Tabs tabs={tabs} value={category} onChange={setCategory} />
+      </div>
+
+      {shown.length === 0 ? (
+        <EmptyState
+          icon={FileText}
+          title="No templates match"
+          description="Try another word or category."
+        />
       ) : (
-        <div className="flex flex-col justify-center items-center py-[var(--sp-6)] text-gray-500 dark:text-app-text-faint gap-2">
-          <span className="text-[length:var(--fs-2xl)]">📄</span>
-          <p className="text-[length:var(--fs-lg)] font-medium">
-            No Templates Yet
-          </p>
-          <p className="text-[length:var(--fs-sm)]">
-            Templates will be available soon.
-          </p>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {shown.map((template) => (
+            <button
+              key={template.id}
+              type="button"
+              onClick={() => onSelectTemplate(template)}
+              className="group flex flex-col rounded-xl border border-app-border! bg-app-surface p-4 text-left transition hover:border-blue-500! hover:shadow-sm"
+            >
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <h3 className="text-sm font-semibold text-app-text">{template.header}</h3>
+                <Badge tone={CATEGORY_TONE[template.category]}>
+                  {template.category.toLowerCase()}
+                </Badge>
+              </div>
+
+              {/* message bubble */}
+              <div className="flex-1 rounded-lg rounded-tl-none bg-app-surface-secondary p-3">
+                <TemplateText
+                  text={template.body}
+                  className="line-clamp-4 text-sm text-app-text"
+                />
+                {template.footer && (
+                  <p className="mt-2 text-xs text-app-text-faint">{template.footer}</p>
+                )}
+              </div>
+
+              {template.buttons?.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {template.buttons.map((button, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 rounded-md border border-app-border! px-2 py-1 text-xs text-blue-600 dark:text-blue-400"
+                    >
+                      <Icon icon={BUTTON_ICONS[button.type] || Reply} size="xs" />
+                      {button.text}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <span className="mt-3 flex items-center gap-1 text-xs font-medium text-blue-600 transition-all group-hover:gap-2 dark:text-blue-400">
+                Use this template <Icon icon={ArrowRight} size="xs" />
+              </span>
+            </button>
+          ))}
         </div>
       )}
     </div>

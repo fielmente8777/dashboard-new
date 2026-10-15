@@ -1,4 +1,6 @@
-const AuthLayout = ({ title, subtitle, children }) => {
+// `action` sits next to the logo (e.g. a theme toggle); `compact` tightens the
+// spacing so a longer form fits on one screen.
+const AuthLayout = ({ title, subtitle, action, compact = false, children }) => {
   return (
     <div className="min-h-dvh w-full grid lg:grid-cols-2 bg-app-surface">
       {/* Brand panel - desktop only */}
@@ -24,22 +26,31 @@ const AuthLayout = ({ title, subtitle, children }) => {
         />
       </aside>
 
-      <main className="flex items-center justify-center px-6 py-10 sm:px-10">
+      <main
+        className={`flex items-center justify-center px-6 sm:px-10 ${compact ? "py-6" : "py-10"}`}
+      >
         <div className="w-full max-w-md">
-          <img
-            src="/EAZOTEL LOGO.png"
-            alt="Eazotel"
-            className="h-9 w-auto -ml-3 rounded-md object-contain dark:ml-0 dark:bg-white dark:px-2 dark:py-1"
-          />
+          <div className="flex items-center justify-between gap-4">
+            <img
+              src="/EAZOTEL LOGO.png"
+              alt="Eazotel"
+              className="h-9 w-auto -ml-3 rounded-md object-contain dark:ml-0 dark:bg-white dark:px-2 dark:py-1"
+            />
+            {action}
+          </div>
 
-          <div className="mt-10 space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-bold text-app-text">
+          <div className={compact ? "mt-6 space-y-1" : "mt-10 space-y-2"}>
+            <h2
+              className={`font-bold text-app-text ${compact ? "text-2xl" : "text-2xl sm:text-3xl"}`}
+            >
               {title}
             </h2>
             <p className="text-app-text-muted">{subtitle}</p>
           </div>
 
-          <div className="mt-8 space-y-6">{children}</div>
+          <div className={compact ? "mt-6 space-y-4" : "mt-8 space-y-6"}>
+            {children}
+          </div>
         </div>
       </main>
     </div>

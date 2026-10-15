@@ -6,7 +6,7 @@ export default function QuestionNode({ data }) {
   const variable = data?.variable || "@answer";
 
   return (
-    <div className="w-64 bg-white rounded-lg shadow border overflow-hidden">
+    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
       {/* Header */}
       <div className="bg-orange-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
         <div className="flex items-center gap-2">
@@ -18,10 +18,10 @@ export default function QuestionNode({ data }) {
       </div>
 
       {/* Question Text */}
-      <div className="px-3 py-3 text-sm text-gray-700 border-b">{question}</div>
+      <div className="px-3 py-3 text-sm text-app-text border-b">{question}</div>
 
       {/* Variable */}
-      <div className="px-3 py-2 text-xs text-gray-500">
+      <div className="px-3 py-2 text-xs text-app-text-muted">
         Save answer → <span className="font-semibold">{variable}</span>
       </div>
 

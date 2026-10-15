@@ -1,18 +1,27 @@
 import { getToken } from "../../utils/session";
 import { baseApi } from "./baseApi";
 
-// The team members of the account. (The list itself is `getTeamUsers` in
-// callsApi.) These endpoints take the token in the URL.
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["TeamUsers"] });
+
+// The team members of the account. These endpoints take the token in the URL.
 // A user is { emailId, phone, displayName, userName, role, access_id (the
-// password), isAdmin, assigned_location: [{ hid, disPlayLocation, accessScope }] }
-export const usersApi = baseApi.injectEndpoints({
+// password), isAdmin, createdAt, assigned_location: [{ hid, disPlayLocation, accessScope }] }
+export const usersApi = api.injectEndpoints({
   endpoints: (build) => ({
+    getTeamUsers: build.query({
+      query: () => `/user/${getToken()}`,
+      transformResponse: (response) => response?.data || [],
+      providesTags: ["TeamUsers"],
+      extraOptions: { skipAuth: true },
+    }),
+
     createUser: build.mutation({
       query: (user) => ({
         url: `/user/create/${getToken()}`,
         method: "POST",
         body: user,
       }),
+      invalidatesTags: ["TeamUsers"],
       extraOptions: { skipAuth: true },
     }),
 
@@ -23,9 +32,24 @@ export const usersApi = baseApi.injectEndpoints({
         method: "POST",
         body: user,
       }),
+      invalidatesTags: ["TeamUsers"],
+      extraOptions: { skipAuth: true },
+    }),
+
+    deleteUser: build.mutation({
+      query: (emailId) => ({
+        url: `/user/delete/${emailId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["TeamUsers"],
       extraOptions: { skipAuth: true },
     }),
   }),
 });
 
-export const { useCreateUserMutation, useUpdateUserMutation } = usersApi;
+export const {
+  useGetTeamUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+} = usersApi;

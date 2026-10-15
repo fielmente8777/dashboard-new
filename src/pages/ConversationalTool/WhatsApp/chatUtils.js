@@ -1,4 +1,5 @@
 import { API_URLS } from "../../../config/env";
+import { getTemplateDefaults } from "../../../components/WhatsApp/templateValues";
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const DAY = 24 * 60 * 60 * 1000;
@@ -133,20 +134,29 @@ export const buildOutgoingMessage = (conversation, fields) => {
   };
 };
 
-// A template's body with its sample values filled in, plus those values
-// (what the send API expects).
-export const fillTemplate = (template) => {
-  const find = (type) =>
-    template.components?.find((component) => component.type === type);
-  const params = find("BODY")?.example?.body_text?.[0] || [];
-  const headerParams = find("HEADER")?.example?.header_text || [];
+const templatePart = (template, type) =>
+  template.components?.find((component) => component.type === type);
 
-  const body = params.reduce(
-    (text, param, index) => text.replace(`{{${index + 1}}}`, param),
-    find("BODY")?.text || "",
+const fillVariables = (text = "", values = []) =>
+  values.reduce(
+    (filled, value, index) => filled.replaceAll(`{{${index + 1}}}`, value),
+    text,
   );
-  return { body, params, headerParams };
-};
+
+// true when the template's header or body has a {{n}} to fill in
+export const hasTemplateVariables = (template) =>
+  ["HEADER", "BODY"].some((type) =>
+    /\{\{\d+\}\}/.test(templatePart(template, type)?.text || ""),
+  );
+
+// A template's body with its variables filled in, plus those values (what
+// the send API expects). `values` is { body, header }; without it the sample
+// values are used.
+export const fillTemplate = (template, values = getTemplateDefaults(template)) => ({
+  body: fillVariables(templatePart(template, "BODY")?.text, values.body),
+  params: values.body,
+  headerParams: values.header,
+});
 
 // What to send again for a message that failed, or null if it cannot be resent.
 export const buildResendPayload = (message) => {

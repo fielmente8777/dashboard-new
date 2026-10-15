@@ -1,4 +1,3 @@
-import { getToken } from "../../utils/session";
 import { baseApi } from "./baseApi";
 
 const NODE = { service: "node" };
@@ -69,13 +68,6 @@ export const callsApi = api.injectEndpoints({
     }),
 
     // --- shared look-ups the calls pages need ---
-    // team members of the account (the core API takes the token in the URL)
-    getTeamUsers: build.query({
-      query: () => `/user/${getToken()}`,
-      transformResponse: (response) => response?.data || [],
-      extraOptions: { skipAuth: true },
-    }),
-
     getWhatsAppTemplates: build.query({
       query: (hid) => ({
         url: "/api/v1/whatsapp/message/template/get",
@@ -94,6 +86,8 @@ export const {
   useMakeCallMutation,
   useUpdateCallMutation,
   useGetCallAnalyticsQuery,
-  useGetTeamUsersQuery,
   useGetWhatsAppTemplatesQuery,
 } = callsApi;
+
+// the team list moved to usersApi; re-exported for the pages that import it here
+export { useGetTeamUsersQuery } from "./usersApi";

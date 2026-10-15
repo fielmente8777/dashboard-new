@@ -1,308 +1,178 @@
+import { LayoutTemplate, Pencil, Search, Send, Sparkles, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiEdit3,
-  FiLayout,
-  FiMenu,
-  FiRefreshCw,
-  FiSearch,
-  FiSend,
-  FiTrash2,
-  FiZap,
-} from "react-icons/fi";
-
+import Button from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Field";
+import Icon from "../../../components/ui/Icon";
+import IconButton from "../../../components/ui/IconButton";
+import { EmptyState, ErrorState, Skeleton } from "../../../components/ui/States";
+import { useConfirm } from "../../../context/ConfirmContext";
+import { useToast } from "../../../context/ToastContext";
+import useDebounce from "../../../hooks/useDebounce";
+import { deleteEmailTemplate, getEmailTemplates } from "../../../services/api/emailTemplate";
+import { formatDate } from "../emailUtils";
 import AITemplateModal from "./AITemplateModal";
 import { EmailThumbnail } from "./EmailPreviewFrame";
-import {
-  deleteEmailTemplate,
-  getEmailTemplates,
-} from "../../../services/api/emailTemplate";
 
 const PAGE_SIZE = 12;
 
-const formatDate = (value) => {
-  if (!value) return "";
-  try {
-    return new Date(value).toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return "";
-  }
-};
-
-export default function TemplatesList({ onUseTemplate, onOpenMobileNav }) {
+// Saved email designs, made with AI; any of them can start a new email.
+export default function TemplatesList({ onUseTemplate }) {
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [templates, setTemplates] = useState([]);
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useDebounce(search.trim(), 300);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-
   const [modal, setModal] = useState({ open: false, template: null });
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const loadTemplates = useCallback(async () => {
+  const load = useCallback(async () => {
+    setLoading(true);
+    setFailed(false);
     try {
-      setIsLoading(true);
-      setLoadError("");
-      const res = await getEmailTemplates({
-        page,
-        limit: PAGE_SIZE,
-        search: debouncedSearch,
-      });
+      const res = await getEmailTemplates({ page, limit: PAGE_SIZE, search: debouncedSearch });
       setTemplates(res?.doc || []);
       setTotal(res?.pagination?.total || 0);
-    } catch (error) {
-      console.error("Error loading templates:", error);
-      setLoadError("Could not load templates. Refresh to try again.");
+    } catch {
+      setFailed(true);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, [page, debouncedSearch]);
 
   useEffect(() => {
-    loadTemplates();
-  }, [loadTemplates]);
+    load();
+  }, [load]);
 
   const openCreate = () => setModal({ open: true, template: null });
-  const openEdit = (template) => setModal({ open: true, template });
-  const closeModal = () => setModal({ open: false, template: null });
 
-  const handleSaved = () => {
-    if (page !== 1) setPage(1);
-    else loadTemplates();
-  };
-
-  const handleDelete = async (template) => {
-    if (!window.confirm(`Delete "${template.name}"?`)) return;
-
+  const remove = async (template) => {
+    const confirmed = await confirm(`“${template.name}” will be deleted.`, { title: "Delete template" });
+    if (!confirmed) return;
+    setDeletingId(template._id);
     try {
-      setDeletingId(template._id);
       await deleteEmailTemplate(template._id);
-
+      showToast({ message: "Template deleted" });
       if (templates.length === 1 && page > 1) setPage((p) => p - 1);
-      else loadTemplates();
-    } catch (error) {
-      console.error("Failed to delete template:", error);
-      alert("Could not delete the template. Try again.");
+      else load();
+    } catch {
+      showToast({ message: "Could not delete the template.", type: "error" });
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
-      {/* MOBILE HEADER */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 md:hidden">
-        <div className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={onOpenMobileNav}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-            aria-label="Open navigation"
-          >
-            <FiMenu size={20} />
-          </button>
-          <span className="truncate text-sm font-semibold text-gray-800">
-            Templates
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-xs font-medium text-white"
-        >
-          <FiZap size={14} />
-          Create
-        </button>
-      </div>
-
-      {/* SEARCH + CREATE */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-gray-200 p-3 sm:p-4 md:px-5 md:py-3">
-        <div className="relative min-w-0 flex-1">
-          <FiSearch
-            size={18}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-48 flex-1 sm:max-w-sm">
+          <Icon icon={Search} size="sm" tone="faint" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
+          <Input
+            type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search templates by name or subject"
-            className="h-11 w-full rounded-lg border border-gray-200 bg-gray-100 pl-10 pr-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+            placeholder="Search templates"
+            className="pl-9"
           />
         </div>
-
-        <button
-          type="button"
-          onClick={openCreate}
-          className="hidden h-11 shrink-0 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 md:flex"
-        >
-          <FiZap size={16} />
+        <Button icon={Sparkles} onClick={openCreate} className="ml-auto">
           Create with AI
-        </button>
+        </Button>
       </div>
 
-      {/* TOOLBAR */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3 sm:px-4 md:h-14 md:px-5">
-        <button
-          type="button"
-          onClick={loadTemplates}
-          disabled={isLoading}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
-          aria-label="Refresh templates"
-        >
-          <FiRefreshCw size={17} className={isLoading ? "animate-spin" : ""} />
-        </button>
-
-        <div className="flex items-center gap-0.5">
-          <span className="mr-1 whitespace-nowrap text-xs text-gray-600 sm:mr-2 sm:text-sm">
-            {total === 0
-              ? "0–0 of 0"
-              : `${(page - 1) * PAGE_SIZE + 1}–${Math.min(
-                  page * PAGE_SIZE,
-                  total,
-                )} of ${total}`}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Previous page"
-          >
-            <FiChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-            aria-label="Next page"
-          >
-            <FiChevronRight size={18} />
-          </button>
+      {failed ? (
+        <ErrorState message="Could not load your templates." onRetry={load} />
+      ) : loading && !templates.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="h-72 rounded-xl" />
+          ))}
         </div>
-      </div>
-
-      {/* GRID */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 md:p-5">
-        {isLoading && templates.length === 0 ? (
-          <div className="flex h-52 items-center justify-center text-sm text-gray-400">
-            Loading templates...
-          </div>
-        ) : loadError ? (
-          <div className="flex h-52 items-center justify-center text-sm text-red-600">
-            {loadError}
-          </div>
-        ) : templates.length === 0 ? (
-          <div className="flex h-64 flex-col items-center justify-center px-5 text-center">
-            <FiLayout size={38} className="mb-3 text-gray-300" />
-            <p className="text-sm font-medium text-gray-700">
-              {debouncedSearch ? "No templates found" : "No templates yet"}
-            </p>
-            <p className="mt-1 max-w-xs text-xs text-gray-400">
-              {debouncedSearch
-                ? "Try another search."
-                : "Describe an email and AI will design it. Save it here to reuse in any broadcast."}
-            </p>
-            {/* {!debouncedSearch && (
+      ) : !templates.length ? (
+        <EmptyState
+          icon={LayoutTemplate}
+          title={debouncedSearch ? "No templates match" : "No templates yet"}
+          description={
+            debouncedSearch
+              ? "Try another name or subject."
+              : "Describe the email you want and AI designs it. Save it to reuse in any email."
+          }
+          action={
+            !debouncedSearch && (
+              <Button size="sm" icon={Sparkles} onClick={openCreate}>
+                Create your first template
+              </Button>
+            )
+          }
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {templates.map((template) => (
+            <div
+              key={template._id}
+              className="flex flex-col overflow-hidden rounded-xl border border-app-border! bg-app-surface transition hover:shadow-md"
+            >
               <button
                 type="button"
-                onClick={openCreate}
-                className="mt-4 flex h-10 items-center gap-2 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
+                onClick={() => setModal({ open: true, template })}
+                className="block border-b border-app-border! text-left"
+                aria-label={`Open ${template.name}`}
               >
-                <FiZap size={15} />
-                Create your first template
+                <EmailThumbnail html={template.html} />
               </button>
-            )} */}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {templates.map((template) => (
-              <div
-                key={template._id}
-                className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-gray-300 hover:shadow-md"
-              >
-                <button
-                  type="button"
-                  onClick={() => openEdit(template)}
-                  className="block border-b border-gray-100 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                  aria-label={`Open ${template.name}`}
-                >
-                  <EmailThumbnail html={template.html} />
-                </button>
-
-                <div className="flex flex-1 flex-col p-3">
-                  <p className="truncate text-sm font-medium text-gray-900">
-                    {template.name}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-gray-500">
-                    {template.subject || "No subject"}
-                  </p>
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    Updated {formatDate(template.updatedAt)}
-                  </p>
-
-                  <div className="mt-3 flex items-center gap-1.5">
-                    {/* <button
-                      type="button"
-                      onClick={() => onUseTemplate?.(template)}
-                      className="flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 text-xs font-medium text-white transition hover:bg-blue-700"
-                    >
-                      <FiSend size={13} />
+              <div className="flex flex-1 flex-col p-3">
+                <p className="truncate text-sm font-semibold text-app-text">{template.name}</p>
+                <p className="mt-0.5 truncate text-xs text-app-text-muted">{template.subject || "No subject"}</p>
+                <p className="mt-1 text-[11px] text-app-text-faint">Updated {formatDate(template.updatedAt)}</p>
+                <div className="mt-3 flex items-center gap-1">
+                  {onUseTemplate && (
+                    <Button size="sm" icon={Send} onClick={() => onUseTemplate(template)} className="flex-1">
                       Use in email
-                    </button> */}
-                    <button
-                      type="button"
-                      onClick={() => openEdit(template)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:bg-gray-50 hover:text-gray-800"
-                      aria-label={`Edit ${template.name}`}
-                      title="Edit"
-                    >
-                      <FiEdit3 size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(template)}
-                      disabled={deletingId === template._id}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                      aria-label={`Delete ${template.name}`}
-                      title="Delete"
-                    >
-                      <FiTrash2 size={14} />
-                    </button>
-                  </div>
+                    </Button>
+                  )}
+                  <IconButton icon={Pencil} label="Edit" onClick={() => setModal({ open: true, template })} />
+                  <IconButton
+                    icon={Trash2}
+                    label="Delete"
+                    tone="danger"
+                    onClick={() => remove(template)}
+                    disabled={deletingId === template._id}
+                  />
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-end gap-2 text-xs text-app-text-muted">
+          <Button size="sm" variant="ghost" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+            Previous
+          </Button>
+          {page} / {totalPages}
+          <Button size="sm" variant="ghost" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+            Next
+          </Button>
+        </div>
+      )}
 
       <AITemplateModal
         isOpen={modal.open}
         mode="manage"
         initialTemplate={modal.template}
-        onClose={closeModal}
-        onSaved={handleSaved}
+        onClose={() => setModal({ open: false, template: null })}
+        onSaved={() => (page !== 1 ? setPage(1) : load())}
       />
-    </section>
+    </div>
   );
 }

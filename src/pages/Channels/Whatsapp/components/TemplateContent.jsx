@@ -1,13 +1,21 @@
-import { useEffect } from "react";
+import { ImagePlus, Plus, X } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useFormContext } from "react-hook-form";
-import { FiUploadCloud, FiFileText, FiImage, FiVideo } from "react-icons/fi";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { Field, Input, Textarea } from "../../../../components/ui/Field";
+import Icon from "../../../../components/ui/Icon";
+import Segmented from "../../../../components/ui/Segmented";
+import { extractVariables, HEADER_TYPES } from "./templateUtils";
 import VariableSamples from "./VariableSample";
 
-const FIELD =
-  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-3)] py-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-const LABEL =
-  "block mb-2 text-[length:var(--fs-sm)] font-medium text-gray-700 dark:text-app-text-muted";
+const Counter = ({ value = "", max }) => (
+  <span className={value.length > max * 0.9 ? "text-amber-500" : ""}>
+    {value.length}/{max}
+  </span>
+);
 
+// The header, body and footer of the message.
 const TemplateContent = () => {
   const {
     register,
@@ -20,227 +28,144 @@ const TemplateContent = () => {
   const header = watch("header") || "";
   const body = watch("body") || "";
   const footer = watch("footer") || "";
-
   const headerImage = watch("headerImage");
-  const headerVideo = watch("headerVideo");
-  const headerDocument = watch("headerDocument");
 
+  // a header of another type is cleared
   useEffect(() => {
     if (headerType !== "TEXT") setValue("header", "");
-
     if (headerType !== "IMAGE") setValue("headerImage", null);
+  }, [headerType, setValue]);
 
-    if (headerType !== "VIDEO") setValue("headerVideo", null);
-
-    if (headerType !== "DOCUMENT") setValue("headerDocument", null);
-  }, [headerType]);
-
-  const getNextVariable = (text) => {
-    const matches = text.match(/{{\d+}}/g) || [];
-    return matches.length + 1;
+  const addVariable = (name, text, limit) => {
+    if (limit && extractVariables(text).length >= limit) return;
+    const next = extractVariables(text).length + 1;
+    const spacer = text && !text.endsWith(" ") ? " " : "";
+    setValue(name, `${text}${spacer}{{${next}}}`, { shouldValidate: true });
   };
 
-  const addHeaderVariable = () => {
-    if (header.match(/{{\d+}}/g)?.length > 0) return;
-
-    setValue("header", header + `{{${getNextVariable(header)}}}`);
-  };
-
-  const addBodyVariable = () => {
-    setValue("body", body + ` {{${getNextVariable(body)}}}`);
-  };
+  const imageUrl = useMemo(
+    () => (headerImage instanceof File ? URL.createObjectURL(headerImage) : headerImage),
+    [headerImage],
+  );
 
   return (
-    <div className="bg-app-surface rounded-[var(--r-lg)] border border-primary/30 p-[var(--sp-5)] space-y-[var(--sp-5)]">
-      <h2 className="text-[length:var(--fs-lg)] font-semibold text-app-text">
-        Template Content
-      </h2>
-
-      {/* Header Type */}
-
-      <div>
-        <label className={LABEL}>Header Type</label>
-
-        <select {...register("headerType")} className={`${FIELD} cursor-pointer`}>
-          <option value="NONE">None</option>
-          <option value="TEXT">Text</option>
-          <option value="IMAGE">Image</option>
-          {/* <option value="VIDEO">Video</option>
-          <option value="DOCUMENT">Document</option> */}
-        </select>
-      </div>
-
-      {/* TEXT */}
-
-      {headerType === "TEXT" && (
-        <div>
-          <div className="flex flex-wrap justify-between gap-2 mb-2">
-            <label className="text-[length:var(--fs-sm)] font-medium text-gray-700 dark:text-app-text-muted">
-              Header
-            </label>
-
-            <button
-              type="button"
-              onClick={addHeaderVariable}
-              className="text-primary dark:text-app-text-muted text-[length:var(--fs-sm)] hover:underline"
-            >
-              + Add Variable
-            </button>
-          </div>
-
-          <input
-            {...register("header")}
-            placeholder="Header Text"
-            maxLength={60}
-            className={FIELD}
+    <Card
+      title="Message"
+      description="Use variables like {{1}} for details that change, such as the guest's name."
+    >
+      <div className="space-y-5">
+        <Field as="div" label="Header (optional)">
+          <Segmented
+            label="Header type"
+            options={HEADER_TYPES}
+            value={headerType}
+            onChange={(value) => setValue("headerType", value)}
           />
+        </Field>
 
-          <div className="flex flex-wrap justify-between gap-2 text-[length:var(--fs-xs)] mt-1">
-            <span className="text-yellow-600 dark:text-yellow-400">
-              Only one variable allowed.
-            </span>
-
-            <span className="text-gray-500 dark:text-app-text-faint">
-              {header.length}/60
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* IMAGE */}
-
-      {headerType === "IMAGE" && (
-        <UploadCard
-          icon={<FiImage size={32} />}
-          accept="image/*"
-          file={headerImage}
-          onChange={(file) =>
-            setValue("headerImage", file, {
-              shouldDirty: true,
-              shouldTouch: true,
-              shouldValidate: true,
-            })
-          }
-        />
-      )}
-
-      {/* VIDEO */}
-
-      {headerType === "VIDEO" && (
-        <UploadCard
-          icon={<FiVideo size={32} />}
-          accept="video/*"
-          file={headerVideo}
-          onChange={(file) => setValue("headerVideo", file)}
-        />
-      )}
-
-      {/* DOCUMENT */}
-
-      {headerType === "DOCUMENT" && (
-        <UploadCard
-          icon={<FiFileText size={32} />}
-          accept=".pdf,.doc,.docx"
-          file={headerDocument}
-          onChange={(file) => setValue("headerDocument", file)}
-        />
-      )}
-
-      {/* BODY */}
-
-      <div>
-        <div className="flex flex-wrap justify-between gap-2 mb-2">
-          <label className="text-[length:var(--fs-sm)] font-medium text-gray-700 dark:text-app-text-muted">
-            Body
-          </label>
-
-          <button
-            type="button"
-            onClick={addBodyVariable}
-            className="text-primary dark:text-app-text-muted text-[length:var(--fs-sm)] hover:underline"
+        {headerType === "TEXT" && (
+          <Field
+            label={
+              <span className="flex items-center justify-between">
+                Header text
+                <Counter value={header} max={60} />
+              </span>
+            }
+            hint="Up to one variable."
           >
-            + Add Variable
-          </button>
-        </div>
+            <div className="flex gap-2">
+              <Input {...register("header")} maxLength={60} placeholder="e.g. Booking confirmed" />
+              <Button
+                variant="secondary"
+                icon={Plus}
+                onClick={() => addVariable("header", header, 1)}
+                disabled={extractVariables(header).length >= 1}
+              >
+                Variable
+              </Button>
+            </div>
+          </Field>
+        )}
 
-        <textarea
-          {...register("body")}
-          rows={7}
-          maxLength={1024}
-          className={`${FIELD} resize-y`}
-        />
+        {headerType === "IMAGE" && (
+          <Field as="div" label="Header image" hint="JPG or PNG, up to 5 MB.">
+            {imageUrl ? (
+              <div className="relative w-fit">
+                <img
+                  src={imageUrl}
+                  alt="Header"
+                  className="h-40 max-w-xs rounded-lg border border-app-border! object-cover"
+                />
+                <button
+                  type="button"
+                  aria-label="Remove image"
+                  onClick={() => setValue("headerImage", null)}
+                  className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+                >
+                  <Icon icon={X} size="sm" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-app-border! p-6 text-sm text-app-text-muted transition hover:border-blue-500! hover:text-blue-500">
+                <Icon icon={ImagePlus} size="2xl" />
+                Click to upload an image
+                <input
+                  hidden
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  onChange={(e) =>
+                    setValue("headerImage", e.target.files?.[0] || null, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+              </label>
+            )}
+          </Field>
+        )}
 
-        <div className="flex flex-wrap justify-between gap-2 text-[length:var(--fs-xs)] mt-1">
-          {errors.body && (
-            <span className="text-red-500">{errors.body.message}</span>
-          )}
+        <Field
+          label={
+            <span className="flex items-center justify-between">
+              Body
+              <Counter value={body} max={1024} />
+            </span>
+          }
+          error={errors.body?.message}
+        >
+          <Textarea
+            {...register("body")}
+            rows={6}
+            maxLength={1024}
+            placeholder="Hi {{1}}, your booking at {{2}} is confirmed."
+          />
+        </Field>
+        <Button
+          variant="dashed"
+          size="sm"
+          icon={Plus}
+          onClick={() => addVariable("body", body)}
+          className="-mt-3"
+        >
+          Add variable
+        </Button>
 
-          <span className="ml-auto text-gray-500 dark:text-app-text-faint">
-            {body.length}/1024
-          </span>
-        </div>
+        <Field
+          label={
+            <span className="flex items-center justify-between">
+              Footer (optional)
+              <Counter value={footer} max={60} />
+            </span>
+          }
+        >
+          <Input {...register("footer")} maxLength={60} placeholder="e.g. Reply STOP to opt out" />
+        </Field>
+
+        <VariableSamples />
       </div>
-
-      {/* FOOTER */}
-
-      <div>
-        <label className={LABEL}>Footer</label>
-
-        <input {...register("footer")} maxLength={60} className={FIELD} />
-
-        <div className="text-right text-[length:var(--fs-xs)] text-gray-500 dark:text-app-text-faint mt-1">
-          {footer.length}/60
-        </div>
-      </div>
-
-      <VariableSamples />
-    </div>
+    </Card>
   );
 };
 
 export default TemplateContent;
-
-const UploadCard = ({ icon, accept, file, onChange }) => {
-  return (
-    <div>
-      <label className={LABEL}>Upload Header Media</label>
-
-      <label className="border-2 border-dashed border-app-border rounded-[var(--r-md)] p-[var(--sp-6)] flex flex-col items-center justify-center cursor-pointer text-app-text hover:border-primary hover:text-primary transition-colors">
-        {icon}
-
-        <p className="mt-3 text-[length:var(--fs-sm)]">Click to upload</p>
-
-        <input
-          hidden
-          type="file"
-          accept={accept}
-          onChange={(e) => onChange(e.target.files?.[0])}
-        />
-      </label>
-
-      {file && (
-        <div className="mt-[var(--sp-4)]">
-          {file?.type?.startsWith("image") && (
-            <img
-              src={URL.createObjectURL(file)}
-              className="h-44 w-full max-w-xs rounded-[var(--r-md)] object-cover border border-app-border"
-            />
-          )}
-
-          {file?.type?.startsWith("video") && (
-            <video controls className="h-44 w-full max-w-xs rounded-[var(--r-md)]">
-              <source src={URL.createObjectURL(file)} />
-            </video>
-          )}
-
-          {!file?.type?.startsWith("image") &&
-            !file?.type?.startsWith("video") && (
-              <div className="rounded-[var(--r-md)] border border-app-border bg-app-surface-secondary p-[var(--sp-4)] text-[length:var(--fs-sm)] text-app-text break-words">
-                {file.name}
-              </div>
-            )}
-        </div>
-      )}
-    </div>
-  );
-};
