@@ -231,6 +231,17 @@ function Integration() {
       category: "Communication",
       color: "",
     },
+
+    {
+      id: "gmail-leads",
+      name: "Gmail Leads",
+      description:
+        "Automatically capture guest inquiries from Gmail and sync them to your CRM Leads dashboard.",
+      icon: <MailIcon />,
+      status: "not-connected",
+      category: "Communication",
+      color: "",
+    },
     {
       id: "gmb",
       name: "GMB",
@@ -392,6 +403,53 @@ function Integration() {
       };
       handleConnection();
       return;
+    } else if (id === "gmail-leads") {
+      const handleConnection = async () => {
+        try {
+          const hid = localStorage.getItem("hid");
+          const token = localStorage.getItem("token");
+
+          if (!hid) {
+            alert("Hotel ID not found. Please select a hotel first.");
+            return;
+          }
+
+          setCurrentIntegrationId("gmail-leads");
+
+          const response = await axios.get(
+            `${NEW_BASE_URL}/api/v1/gmail-leads/connect`,
+            {
+              params: { hid },
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          const authUrl = response?.data?.url;
+
+          if (!authUrl) {
+            throw new Error("Google authorization URL was not returned.");
+          }
+
+          window.location.href = authUrl;
+        } catch (error) {
+          console.error(
+            "Error connecting Gmail Leads:",
+            error?.response?.data || error,
+          );
+
+          alert(
+            error?.response?.data?.message ||
+              "Failed to connect Gmail. Please try again.",
+          );
+
+          setCurrentIntegrationId(null);
+        }
+      };
+
+      handleConnection();
+      return;
     } else if (id === "gmb") {
       const handleConnection = async () => {
         try {
@@ -504,6 +562,7 @@ function Integration() {
         navigate(`${BASE_PATH}/${handleLocalStorage("hid")}/calls-management`);
       }
     } catch (error) {
+      console.log(error);
     } finally {
       setIsCreateConnectLoading(false);
     }
@@ -563,7 +622,6 @@ function Integration() {
     }
   };
 
-  console.log("Subscription", subscription);
   useEffect(() => {
     checkIntegrationStatus();
     fetchForms();

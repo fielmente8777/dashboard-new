@@ -148,9 +148,14 @@ const WhatsApp = () => {
   }, [integrationStatus?.metaWhatsapp]);
 
   const handleWhatsappConnect = async () => {
+    // if (typeof window.launchWhatsAppSignup !== "function") {
+    //   console.error("WhatsApp signup function is not available");
+    //   return;
+    // }
+
+    // window.launchWhatsAppSignup();
     try {
       const response = await connectWhatsapp();
-
       if (response?.success && response?.responseStatusCode) {
         window.open(response?.result?.docs?.signupUrl, "_blank");
       }

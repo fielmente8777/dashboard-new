@@ -929,17 +929,17 @@ const AIConfigurationCard = ({ ai, phoneNumber }) => {
             </span>
             .
           </p>
-
-          {/* Save Button */}
-          <button
-            type="button"
-            onClick={handleSaveConfiguration}
-            className="mt-5 w-full sm:w-auto px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-medium transition-colors duration-200"
-          >
-            Save Configuration
-          </button>
         </div>
       )}
+
+      {/* Save Button */}
+      <button
+        type="button"
+        onClick={handleSaveConfiguration}
+        className="mt-5 w-full sm:w-auto px-6 py-2.5 rounded-lg bg-green-500 hover:bg-green-600 active:bg-green-700 text-white text-sm font-medium transition-colors duration-200"
+      >
+        Save Configuration
+      </button>
     </div>
   );
 };
