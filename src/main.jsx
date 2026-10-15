@@ -11,7 +11,7 @@ import Whatsapp from "./components/Contacts/WhtasApp.jsx";
 import ProfileDropDown from "./components/Popup/ProfileDropDown.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { ConfirmProvider } from "./context/ConfirmContext.jsx";
-
+import ChatbotWidget from "./components/chatbot/ChatbotWidget.jsx";
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <DataProvider>
@@ -25,6 +25,7 @@ createRoot(document.getElementById("root")).render(
         </ToastProvider>
         <ProfileDropDown />
       </BrowserRouter>
+      <ChatbotWidget />
     </DataProvider>
   </Provider>,
 );
