@@ -1,90 +1,84 @@
-import Loader from "../../../components/Loader";
+import { useState } from "react";
+import Button from "../../../components/ui/Button";
+import Card from "../../../components/ui/Card";
+import { useApiAction } from "../../../hooks/useApiAction";
+import { useChangePasswordMutation } from "../../../redux/api/profileApi";
 import PasswordField from "./PasswordField";
-import { CARD, SECTION_TITLE } from "../constants/styles";
-import useChangePassword from "../hooks/useChangePassword";
+
+const MIN_LENGTH = 8;
+const EMPTY = { current: "", next: "", confirm: "" };
 
 const ChangePassword = () => {
-  const {
-    oldPassword,
-    newPassword,
-    confirmPassword,
+  const run = useApiAction();
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+  const [form, setForm] = useState(EMPTY);
+  // field errors show only after the first attempt
+  const [submitted, setSubmitted] = useState(false);
 
-    setOldPassword,
-    setNewPassword,
-    setConfirmPassword,
+  const set = (name) => (value) => setForm({ ...form, [name]: value });
 
-    showCurrentPassword,
-    showNewPassword,
-    showConfirmPassword,
+  const errors = {
+    current: !form.current && "Enter your current password.",
+    next: !form.next
+      ? "Enter a new password."
+      : form.next.length < MIN_LENGTH
+        ? `Use at least ${MIN_LENGTH} characters.`
+        : form.next === form.current && "The new password must be different.",
+    confirm: !form.confirm
+      ? "Re-enter the new password."
+      : form.confirm !== form.next && "The passwords don't match.",
+  };
+  const show = (field) => (submitted ? errors[field] || undefined : undefined);
 
-    setShowCurrentPassword,
-    setShowNewPassword,
-    setShowConfirmPassword,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitted(true);
+    if (Object.values(errors).some(Boolean)) return;
 
-    isLoading,
-    handleSubmit,
-  } = useChangePassword();
+    // core answers { Status: false } when the current password is wrong
+    const changed = await run(
+      changePassword({ oldAccessId: form.current, newAccessId: form.next }),
+      {
+        success: "Password changed",
+        error: "Your current password is incorrect.",
+      },
+    );
+    if (changed) {
+      setForm(EMPTY);
+      setSubmitted(false);
+    }
+  };
 
   return (
-    <div className={CARD}>
-      <h3 className={SECTION_TITLE}>
-        🔑 Change Password
-      </h3>
-
-      <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-app-text-faint">
-        Set a new password for your account.
-      </p>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-5 max-w-xl space-y-4"
-      >
+    <Card title="Password" description="Use a password you don't use anywhere else.">
+      <form onSubmit={handleSubmit} noValidate className="max-w-md space-y-4">
         <PasswordField
-          id="currentPassword"
-          label="Current Password"
-          value={oldPassword}
-          onChange={setOldPassword}
-          visible={showCurrentPassword}
-          onToggle={() =>
-            setShowCurrentPassword((v) => !v)
-          }
+          label="Current password"
+          value={form.current}
+          onChange={set("current")}
+          error={show("current")}
+          autoComplete="current-password"
         />
-
         <PasswordField
-          id="newPassword"
-          label="New Password"
-          value={newPassword}
-          onChange={setNewPassword}
-          visible={showNewPassword}
-          onToggle={() =>
-            setShowNewPassword((v) => !v)
-          }
+          label="New password"
+          value={form.next}
+          onChange={set("next")}
+          error={show("next")}
+          hint={`At least ${MIN_LENGTH} characters.`}
+          autoComplete="new-password"
         />
-
         <PasswordField
-          id="confirmPassword"
-          label="Re-enter Password"
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          visible={showConfirmPassword}
-          onToggle={() =>
-            setShowConfirmPassword((v) => !v)
-          }
+          label="Confirm new password"
+          value={form.confirm}
+          onChange={set("confirm")}
+          error={show("confirm")}
+          autoComplete="new-password"
         />
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary/90 hover:bg-primary px-6 py-2.5 text-sm font-medium text-white disabled:opacity-60 sm:w-auto"
-        >
-          Confirm
-
-          {isLoading && (
-            <Loader size={16} color="white" />
-          )}
-        </button>
+        <Button type="submit" loading={isLoading}>
+          Update password
+        </Button>
       </form>
-    </div>
+    </Card>
   );
 };
 

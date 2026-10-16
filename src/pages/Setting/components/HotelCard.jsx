@@ -1,46 +1,44 @@
-import { BsPencil } from "react-icons/bs";
-import TrashBin from "../../../components/Icon/TrashBin";
+import { MapPin, Pencil, Trash2 } from "lucide-react";
+import Badge from "../../../components/ui/Badge";
+import Icon from "../../../components/ui/Icon";
+import IconButton from "../../../components/ui/IconButton";
 
-const HotelCard = ({
-  hotelId,
-  hotel,
-  onEdit,
-  onDelete,
-}) => {
+const HotelCard = ({ hotel, current, deleting, onEdit, onDelete }) => {
+  const place = [hotel.city, hotel.state, hotel.country].filter(Boolean).join(", ");
+
   return (
-    <div className="relative min-w-0 rounded-lg bg-gray-100 dark:bg-app-surface p-3 pr-20 transition-colors hover:bg-gray-200/70 dark:hover:bg-app-surface/70">
-      <p className="font-medium text-gray-800 dark:text-app-text truncate">
-        {hotel.local}
-      </p>
-
-      <p className="text-sm text-gray-600 dark:text-app-text-faint break-words">
-        {hotel.city}, {hotel.state}, {hotel.country}
-      </p>
-
-      <p className="text-xs text-gray-500 dark:text-app-text-faint">
-        Pin: {hotel.pinCode}
-      </p>
-
-      <div className="absolute right-2 top-2 flex items-center gap-1 z-10">
-        <button
-          type="button"
-          aria-label={`Edit ${hotel.local}`}
-          onClick={() => onEdit(hotelId, hotel)}
-          className="h-9 w-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-app-text-faint hover:bg-white dark:hover:bg-app-surface-secondary"
-        >
-          <BsPencil className="text-sm" />
-        </button>
-
-        <button
-          type="button"
-          aria-label={`Delete ${hotel.local}`}
-          onClick={() => onDelete(hotelId)}
-          className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-app-surface-secondary"
-        >
-          <TrashBin />
-        </button>
+    <li
+      className={`flex min-w-0 items-start gap-3 rounded-lg border p-3 transition ${
+        current ? "border-blue-500/40! bg-blue-500/5" : "border-app-border! hover:bg-app-surface-secondary"
+      } ${deleting ? "opacity-50" : ""}`}
+    >
+      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-app-surface-secondary text-app-text-muted">
+        <Icon icon={MapPin} size="sm" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="flex items-center gap-2">
+          <span className="truncate text-sm font-medium text-app-text" title={hotel.local}>
+            {hotel.local || "Unnamed location"}
+          </span>
+          {current && <Badge tone="blue">Current</Badge>}
+        </p>
+        <p className="truncate text-xs text-app-text-muted">{place || "No address yet"}</p>
+        {hotel.pinCode && <p className="text-xs text-app-text-faint">PIN {hotel.pinCode}</p>}
       </div>
-    </div>
+      {onEdit && (
+        <div className="flex shrink-0 gap-0.5">
+          <IconButton icon={Pencil} label={`Edit ${hotel.local}`} size="sm" onClick={onEdit} disabled={deleting} />
+          <IconButton
+            icon={Trash2}
+            label={current ? "You can't remove the location you're using" : `Remove ${hotel.local}`}
+            tone="danger"
+            size="sm"
+            onClick={onDelete}
+            disabled={deleting || current}
+          />
+        </div>
+      )}
+    </li>
   );
 };
 
