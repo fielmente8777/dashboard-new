@@ -24,8 +24,8 @@ createRoot(document.getElementById("root")).render(
           </ConfirmProvider>
         </ToastProvider>
         <ProfileDropDown />
+        <ChatbotWidget />
       </BrowserRouter>
-      <ChatbotWidget />
     </DataProvider>
   </Provider>,
 );
