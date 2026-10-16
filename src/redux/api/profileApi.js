@@ -1,11 +1,13 @@
 import { getToken } from "../../utils/session";
 import { baseApi } from "./baseApi";
 
-// The Profile page. These endpoints read the token from the body, not the
-// header. Both answer { Status: true } when the change was made.
+const NODE = { service: "node" };
+
+// The Profile page.
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    // { oldAccessId, newAccessId } - the current and the new password
+    // { oldAccessId, newAccessId } - the current and the new password.
+    // Core reads the token from the body and answers { Status: true } on success.
     changePassword: build.mutation({
       query: (body) => ({
         url: "/eazotel/edit/password",
@@ -24,7 +26,40 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       extraOptions: { skipAuth: true },
     }),
+
+    // Hotel locations (gian: /api/v1/profile/hotels). Each answers
+    // { result: { hotel, hotels } } with the profile's hotels after the change.
+
+    // { hotelId, local, city, state, country, pinCode } - the caller picks hotelId
+    createHotel: build.mutation({
+      query: (body) => ({ url: "/api/v1/profile/hotels", method: "POST", body }),
+      extraOptions: NODE,
+    }),
+
+    // { hotelId, local, city, state, country, pinCode }
+    updateHotel: build.mutation({
+      query: ({ hotelId, ...body }) => ({
+        url: `/api/v1/profile/hotels/${encodeURIComponent(hotelId)}`,
+        method: "PUT",
+        body,
+      }),
+      extraOptions: NODE,
+    }),
+
+    deleteHotel: build.mutation({
+      query: (hotelId) => ({
+        url: `/api/v1/profile/hotels/${encodeURIComponent(hotelId)}`,
+        method: "DELETE",
+      }),
+      extraOptions: NODE,
+    }),
   }),
 });
 
-export const { useChangePasswordMutation, useUpdateProfileUrlsMutation } = profileApi;
+export const {
+  useChangePasswordMutation,
+  useUpdateProfileUrlsMutation,
+  useCreateHotelMutation,
+  useUpdateHotelMutation,
+  useDeleteHotelMutation,
+} = profileApi;

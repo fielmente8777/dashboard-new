@@ -1,11 +1,10 @@
-import { BedDouble, CalendarDays, Check, Minus, Plus, User } from "lucide-react";
+import { BedDouble, CalendarDays, Check, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../components/ui/Button";
 import DatePicker from "../../../components/ui/DatePicker";
 import Dialog from "../../../components/ui/Dialog";
 import { Field, Input, Textarea } from "../../../components/ui/Field";
 import Icon from "../../../components/ui/Icon";
-import IconButton from "../../../components/ui/IconButton";
 import { Skeleton } from "../../../components/ui/States";
 import { useApiAction } from "../../../hooks/useApiAction";
 import { useTenant } from "../../../hooks/useTenant";
@@ -13,11 +12,11 @@ import {
   useCreateReservationMutation,
   useGetRoomsQuery,
 } from "../../../redux/api/bookingApi";
+import { Counter, Section } from "../components/formParts";
 
 const DAY = 24 * 60 * 60 * 1000;
 // CGST and SGST, each on the room charge
 const GST_RATE = 0.06;
-const MAX_COUNT = 99;
 
 const formatAmount = (amount) => `₹${amount.toLocaleString("en-IN")}`;
 
@@ -42,39 +41,6 @@ const toDateValue = (text) => {
   const [day, month, year] = text.split(/[-/]/);
   return year?.length === 4 ? `${year}-${month}-${day}` : "";
 };
-
-const Section = ({ icon, title, children }) => (
-  <section className="space-y-3">
-    <h3 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted">
-      <Icon icon={icon} size="sm" /> {title}
-    </h3>
-    {children}
-  </section>
-);
-
-// a number with - and + either side, never below 1
-const Counter = ({ label, value, onChange }) => (
-  <div>
-    <span className="mb-1.5 block text-xs font-medium text-app-text-muted">{label}</span>
-    <div className="flex items-center justify-between rounded-lg border border-app-border! bg-app-surface p-1">
-      <IconButton
-        icon={Minus}
-        label={`Fewer ${label.toLowerCase()}`}
-        disabled={value <= 1}
-        onClick={() => onChange(value - 1)}
-      />
-      <span className="text-sm font-semibold tabular-nums text-app-text" aria-live="polite">
-        {value}
-      </span>
-      <IconButton
-        icon={Plus}
-        label={`More ${label.toLowerCase()}`}
-        disabled={value >= MAX_COUNT}
-        onClick={() => onChange(value + 1)}
-      />
-    </div>
-  </div>
-);
 
 const RoomOption = ({ room, selected, onSelect }) => (
   <button

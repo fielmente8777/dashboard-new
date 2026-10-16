@@ -24,7 +24,6 @@ createRoot(document.getElementById("root")).render(
         </ToastProvider>
         <ChatbotWidget />
       </BrowserRouter>
-      
     </DataProvider>
   </Provider>,
 );

@@ -1,31 +1,17 @@
-const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1"
-).replace(/\/+$/, "");
+import { API_URLS } from "../config/env";
+import { getToken } from "../utils/session";
 
-let tokenProvider = () => {
-  try {
-    const key = import.meta.env.VITE_AUTH_TOKEN_KEY || "token";
-    return localStorage.getItem(key) || sessionStorage.getItem(key);
-  } catch {
-    return null;
-  }
-};
-
-export function setChatbotTokenProvider(fn) {
-  tokenProvider = fn;
-}
-
-let contextProvider = () => ({});
-export function setChatbotContextProvider(fn) { contextProvider = fn; }
+// "Ask Eazotel AI" is served by the Node API (gian: /api/v1/chatbot).
+const API_URL = `${API_URLS.node}/api/v1`;
 
 async function request(endpoint, options = {}) {
-  const token = tokenProvider?.();
+  const token = getToken();
   if (!token) {
     throw new Error("Login token missing. Please log in again.");
   }
   const headers = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    Authorization: `Bearer ${token}`,
     ...(options.headers || {}),
   };
 
@@ -56,8 +42,8 @@ async function request(endpoint, options = {}) {
   return payload;
 }
 
-export function sendChatMessage(message, conversationId, clientMessageId) {
-  const hid = contextProvider?.()?.hid;
+// hid: the hotel location the answer should be about.
+export function sendChatMessage({ message, conversationId, clientMessageId, hid }) {
   return request("/chatbot/chat", {
     method: "POST",
     body: JSON.stringify({
