@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import OnboardingForm from "../pages/Onboarding/OnboardingForm";
 import Login from "../pages/Login/Login";
+import ResetPassword from "../pages/Login/ResetPassword";
 import Plan from "../pages/Plans/Plan";
 import Signup from "../pages/Register/Signup";
 import ProtectedRoute from "../Protected/ProtecRoute";
@@ -14,6 +15,7 @@ const Navigation = () => {
       {/* Public Routes */}
       <Route path={ROUTES.LOGIN} element={<Login />} />
       <Route path={ROUTES.SIGNUP} element={<Signup />} />
+      <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
       <Route path={ROUTES.ONBOARDING_FORM} element={<OnboardingForm />} />
       <Route path={ROUTES.PLANS} element={<Plan />} />
 

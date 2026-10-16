@@ -3,30 +3,30 @@ import { useState } from "react";
 import { FaWhatsapp } from "react-icons/fa";
 import Button from "../../../../components/ui/Button";
 import { useToast } from "../../../../context/ToastContext";
-import { connectWhatsapp } from "../../../../services/api/Integration";
+import { useConnectWhatsAppMutation } from "../../../../redux/api/whatsappApi";
+import { getApiErrorMessage } from "../../../../redux/api/baseApi";
 
 // Shown until a WhatsApp Business account is connected. Meta's signup opens
 // in a new tab; `onRecheck` reloads the status once the user is back.
 const ConnectWhatsApp = ({ onRecheck, rechecking }) => {
   const { showToast } = useToast();
-  const [opening, setOpening] = useState(false);
+  const [connectWhatsapp, { isLoading: opening }] = useConnectWhatsAppMutation();
   const [opened, setOpened] = useState(false);
 
   const connect = async () => {
-    setOpening(true);
     try {
-      const response = await connectWhatsapp();
-      const url = response?.result?.docs?.signupUrl;
-      if (!response?.success || !url) throw new Error(response?.responseMessage);
+      const url = await connectWhatsapp({
+        hid: localStorage.getItem("hid"),
+        ndid: localStorage.getItem("ndid"),
+      }).unwrap();
+      if (!url) throw new Error();
       window.open(url, "_blank", "noopener");
       setOpened(true);
     } catch (error) {
       showToast({
-        message: error?.message || "Could not start the WhatsApp connection.",
+        message: getApiErrorMessage(error, error?.message || "Could not start the WhatsApp connection."),
         type: "error",
       });
-    } finally {
-      setOpening(false);
     }
   };
 

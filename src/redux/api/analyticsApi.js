@@ -75,5 +75,6 @@ export const {
   useGetGeoAnalyticsQuery,
   useGetAudienceQuery,
   useGetAnalyticsPropertiesQuery,
+  useLazyGetAnalyticsPropertiesQuery,
   useSaveAnalyticsPropertyMutation,
 } = analyticsApi;

@@ -1,24 +1,30 @@
+import { SiPaytm, SiPhonepe, SiRazorpay } from "react-icons/si";
+
 export const PAGE_SIZE = 10;
 
-// `available: false` shows the gateway as "Coming soon"
+// `available: false` shows the gateway as "Coming soon".
+// The logo is a bundled brand icon drawn in the brand colour, so it never
+// depends on an outside image host.
 export const GATEWAYS = [
   {
     id: "Razorpay",
     name: "Razorpay",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOTyQr77jTaet0ai9jeKErezXc7uqzGDKIhQ&s",
+    icon: SiRazorpay,
+    color: "#3395FF",
     available: true,
   },
   {
     id: "PhonePe",
     name: "PhonePe",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/PhonePe_Logo.svg/2560px-PhonePe_Logo.svg.png",
+    icon: SiPhonepe,
+    color: "#5F259F",
     available: false,
   },
   {
     id: "Paytm",
     name: "Paytm",
-    logo: "https://pwebassets.paytm.com/commonwebassets/ir/images/press-kit/brand.png",
-    logoBackground: "#00296F",
+    icon: SiPaytm,
+    color: "#00BAF2",
     available: false,
   },
 ];

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FiX } from "react-icons/fi";
 import { getWhatsAppFlowScreens } from "../../services/api/whatsApp";
 import CustomDropdown from "../ui/Dropdown";
+import { Select } from "../ui/Field";
 
 export default function FlowSettings({ onSave, onCancel, data }) {
   const [flowIds, setFlowIds] = useState([]);
@@ -159,15 +160,17 @@ export default function FlowSettings({ onSave, onCancel, data }) {
       <div className="mb-4 flex flex-col ">
         <label className="text-sm">Flow ID *</label>
 
-        <select
-          onChange={handleFlowChange}
-          className="border rounded w-full p-2 mt-1"
-        >
-          <option value="">Select a flow</option>
-          {flowIds?.map((flow) => (
-            <option value={flow?.value}>{flow?.label}</option>
-          ))}
-        </select>
+        <div className="mt-1">
+          <Select
+            aria-label="Flow"
+            value={flowId || ""}
+            onChange={handleFlowChange}
+            options={[
+              { value: "", label: "Select a flow" },
+              ...(flowIds || []).map((flow) => ({ value: flow?.value, label: flow?.label })),
+            ]}
+          />
+        </div>
       </div>
 
       {/* CTA */}

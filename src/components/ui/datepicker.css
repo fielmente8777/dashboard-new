@@ -1,12 +1,19 @@
 /* The look of ui/DatePicker: react-datepicker restyled with the app's theme
    variables, so it follows light and dark mode on its own. */
 
-.app-datepicker-popper {
+/* Above dialogs (z 9995) and menus (9996). Two classes so a global
+   `.react-datepicker-popper` rule can never pull it back underneath. */
+.react-datepicker-popper.app-datepicker-popper {
   z-index: 10000 !important;
 }
 
 .app-datepicker.react-datepicker {
   display: flex;
+  /* No stretching: react-datepicker sizes the time list from the calendar's
+     height and re-measures whenever that changes. Stretched to the time
+     column's height, the calendar grew, the list followed, and the two kept
+     growing each other until the popup ran off the screen. */
+  align-items: flex-start;
   overflow: hidden;
   border: 1px solid var(--app-border-strong, var(--app-border));
   border-radius: 0.75rem;
@@ -80,11 +87,40 @@
 }
 
 .app-datepicker .react-datepicker__day--selected,
-.app-datepicker .react-datepicker__day--selected:hover,
-.app-datepicker .react-datepicker__day--in-range {
+.app-datepicker .react-datepicker__day--selected:hover {
   background: var(--chart-1);
   color: #fff;
   box-shadow: none;
+}
+
+/* --- ranges (mode="range") --- */
+
+/* the nights between the two ends, and the preview while picking the end */
+.app-datepicker .react-datepicker__day--in-range,
+.app-datepicker .react-datepicker__day--in-selecting-range {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--chart-1) 18%, transparent);
+  color: var(--app-text);
+}
+
+.app-datepicker .react-datepicker__day--in-selecting-range:not(.react-datepicker__day--in-range) {
+  background: color-mix(in srgb, var(--chart-1) 10%, transparent);
+}
+
+.app-datepicker .react-datepicker__day--range-start,
+.app-datepicker .react-datepicker__day--range-end,
+.app-datepicker .react-datepicker__day--selecting-range-start,
+.app-datepicker .react-datepicker__day--selecting-range-end,
+.app-datepicker .react-datepicker__day--range-start:hover,
+.app-datepicker .react-datepicker__day--range-end:hover {
+  border-radius: 0.5rem;
+  background: var(--chart-1);
+  color: #fff;
+}
+
+/* the second month of a range, beside the first */
+.app-datepicker .react-datepicker__month-container + .react-datepicker__month-container {
+  border-left: 1px solid var(--app-border);
 }
 
 .app-datepicker .react-datepicker__day--disabled,

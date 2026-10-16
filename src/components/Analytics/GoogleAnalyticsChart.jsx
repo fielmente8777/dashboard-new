@@ -88,10 +88,11 @@ const GoogleAnalyticsChart = ({ showDatePicker = true }) => {
   // widgets outside this folder start on their own default range
   useEffect(announceAnalyticsRange, []);
 
-  // the Search Console widgets read the active property from localStorage
+  // the Search Console widgets read the active property from localStorage;
+  // they may already be mounted, so tell them when it is new
   useEffect(() => {
-    if (activePropertyId) {
-      localStorage.setItem("activePropertyId", activePropertyId);
+    if (activePropertyId && activePropertyId !== localStorage.getItem("activePropertyId")) {
+      announcePropertyChange(activePropertyId);
     }
   }, [activePropertyId]);
 

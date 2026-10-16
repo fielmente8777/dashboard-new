@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Select } from "../../../../components/ui/Field";
 
 const UPDATE_FIELDS = [
   {
@@ -114,8 +115,8 @@ export default function ImportRules({
             Choose how existing leads will be identified.
           </p>
 
-          <select
-            className="border rounded-lg px-4 py-3 w-full"
+          <Select
+            aria-label="Duplicate detection"
             value={importRules.duplicateBy}
             onChange={(e) =>
               setImportRules((prev) => ({
@@ -123,13 +124,12 @@ export default function ImportRules({
                 duplicateBy: e.target.value,
               }))
             }
-          >
-            <option value="phone">Phone Number</option>
-
-            <option value="email">Email Address</option>
-
-            <option value="phone_email">Phone OR Email</option>
-          </select>
+            options={[
+              { value: "phone", label: "Phone Number" },
+              { value: "email", label: "Email Address" },
+              { value: "phone_email", label: "Phone OR Email" },
+            ]}
+          />
         </section>
 
         {/* Import Mode */}
@@ -242,8 +242,8 @@ export default function ImportRules({
             <div>
               <label className="block font-medium mb-2">Excel Column</label>
 
-              <select
-                className="border rounded-lg px-4 py-3 w-full"
+              <Select
+                aria-label="Status column"
                 value={importRules.statusColumn}
                 onChange={(e) =>
                   setImportRules((prev) => ({
@@ -252,15 +252,11 @@ export default function ImportRules({
                     statusMappings: {},
                   }))
                 }
-              >
-                <option value="">Select Excel Column</option>
-
-                {headers.map((header) => (
-                  <option key={header} value={header}>
-                    {header}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Select Excel Column" },
+                  ...headers.map((header) => ({ value: header, label: header })),
+                ]}
+              />
             </div>
 
             {/* Empty */}
@@ -290,8 +286,8 @@ export default function ImportRules({
                         <div className="font-medium">{value}</div>
                       </div>
 
-                      <select
-                        className="border rounded-lg px-4 py-2"
+                      <Select
+                        aria-label={`CRM status for ${value}`}
                         value={importRules.statusMappings[value] || ""}
                         onChange={(e) =>
                           setImportRules((prev) => ({
@@ -303,15 +299,11 @@ export default function ImportRules({
                             },
                           }))
                         }
-                      >
-                        <option value="">Ignore</option>
-
-                        {CRM_STATUSES.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
+                        options={[
+                          { value: "", label: "Ignore" },
+                          ...CRM_STATUSES.map((status) => ({ value: status, label: status })),
+                        ]}
+                      />
                     </div>
                   ))}
                 </div>

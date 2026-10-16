@@ -10,7 +10,7 @@ import {
   Video as VideoIcon,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Badge from "../../../../components/ui/Badge";
 import Button from "../../../../components/ui/Button";
 import Dialog from "../../../../components/ui/Dialog";
@@ -20,7 +20,12 @@ import IconButton from "../../../../components/ui/IconButton";
 import { EmptyState, ErrorState, Skeleton } from "../../../../components/ui/States";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useToast } from "../../../../context/ToastContext";
-import { NEW_BASE_URL } from "../../../../data/constant";
+import {
+  useDeleteQuickReplyMutation,
+  useGetQuickRepliesQuery,
+  useSaveQuickReplyMutation,
+} from "../../../../redux/api/whatsappApi";
+import { getApiErrorMessage } from "../../../../redux/api/baseApi";
 
 const KINDS = {
   image: { key: "images", icon: ImageIcon, max: 5 * 1024 * 1024, accept: "image/jpeg,image/png", limit: "5 MB", tone: "purple" },
@@ -38,11 +43,8 @@ const formatBytes = (bytes = 0) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const api = (path = "", options = {}) =>
-  fetch(`${NEW_BASE_URL}/api/v1/quick-reply${path}?hid=${localStorage.getItem("hid")}`, {
-    ...options,
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  }).then((response) => response.json());
+// a thrown Error keeps its message; an API error shows what the server said
+const errorText = (error, fallback) => getApiErrorMessage(error, error?.message || fallback);
 
 // a saved reply as the form edits it
 const toForm = (reply) => {
@@ -197,30 +199,18 @@ const ReplyDialog = ({ form, setForm, open, onClose, onSave, saving }) => {
 const QuickReplies = () => {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
-  const [replies, setReplies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
+  const hid = localStorage.getItem("hid");
+  const list = useGetQuickRepliesQuery(hid, { refetchOnMountOrArgChange: true });
+  const [saveQuickReply, { isLoading: saving }] = useSaveQuickReplyMutation();
+  const [deleteQuickReply] = useDeleteQuickReplyMutation();
+  const replies = list.data || [];
+  const loading = list.isLoading;
+  const failed = list.isError;
+  const load = list.refetch;
+
   const [search, setSearch] = useState("");
   const [form, setForm] = useState(emptyForm());
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const load = useCallback(async () => {
-    setFailed(false);
-    try {
-      const data = await api();
-      if (!data?.success) throw new Error();
-      setReplies(data?.result?.docs || []);
-    } catch {
-      setFailed(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const openForm = (reply) => {
     setForm(reply ? toForm(reply) : emptyForm());
@@ -228,7 +218,6 @@ const QuickReplies = () => {
   };
 
   const save = async () => {
-    setSaving(true);
     try {
       const payload = new FormData();
       payload.append("title", form.title.trim());
@@ -244,19 +233,13 @@ const QuickReplies = () => {
       });
       payload.append("media", JSON.stringify(existing));
 
-      const data = await api(form.id ? `/${form.id}` : "", {
-        method: form.id ? "PUT" : "POST",
-        body: payload,
-      });
+      const data = await saveQuickReply({ hid, id: form.id, body: payload }).unwrap();
       if (!data?.success) throw new Error(data?.responseMessage);
 
       showToast({ message: form.id ? "Quick reply updated" : "Quick reply created" });
       setEditing(false);
-      load();
     } catch (error) {
-      showToast({ message: error?.message || "Could not save the quick reply.", type: "error" });
-    } finally {
-      setSaving(false);
+      showToast({ message: errorText(error, "Could not save the quick reply."), type: "error" });
     }
   };
 
@@ -264,12 +247,11 @@ const QuickReplies = () => {
     const confirmed = await confirm(`Delete “${reply.title}”?`, { title: "Delete quick reply" });
     if (!confirmed) return;
     try {
-      const data = await api(`/${reply._id}`, { method: "DELETE" });
+      const data = await deleteQuickReply({ hid, id: reply._id }).unwrap();
       if (!data?.success) throw new Error(data?.responseMessage);
-      setReplies((prev) => prev.filter((r) => r._id !== reply._id));
       showToast({ message: "Quick reply deleted" });
     } catch (error) {
-      showToast({ message: error?.message || "Could not delete the quick reply.", type: "error" });
+      showToast({ message: errorText(error, "Could not delete the quick reply."), type: "error" });
     }
   };
 

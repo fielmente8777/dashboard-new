@@ -22,6 +22,7 @@ import {
   getEmailTemplates,
   updateEmailTemplate,
 } from "../../../services/api/emailTemplate";
+import { Select } from "../../../components/ui/Field";
 
 /* ---------------------------------------------------------
    CONSTANTS
@@ -523,19 +524,13 @@ export default function AITemplateModal({
                       <label htmlFor="ai-template-tone" className={labelClass}>
                         Tone
                       </label>
-                      <select
-                        id="ai-template-tone"
+                      <Select
+                        aria-label="Tone"
                         value={tone}
                         onChange={(e) => setTone(e.target.value)}
                         disabled={isGenerating}
-                        className={inputClass}
-                      >
-                        {TONES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
+                        options={TONES}
+                      />
                     </div>
 
                     <div>

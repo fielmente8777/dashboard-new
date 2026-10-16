@@ -1,4 +1,5 @@
 import { leadFields } from "../constants/constants";
+import { Select } from "../../../../components/ui/Field";
 
 export default function ColumnMapping({
   file,
@@ -57,8 +58,8 @@ export default function ColumnMapping({
                 {field.required && <span className="text-red-500 ml-1">*</span>}
               </div>
 
-              <select
-                className="border rounded-lg px-4 py-2"
+              <Select
+                aria-label={`Column for ${field.key}`}
                 value={mapping[field.key] || ""}
                 onChange={(e) =>
                   setMapping((prev) => ({
@@ -66,15 +67,11 @@ export default function ColumnMapping({
                     [field.key]: e.target.value,
                   }))
                 }
-              >
-                <option value="">Ignore</option>
-
-                {headers.map((header) => (
-                  <option key={header} value={header}>
-                    {header}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Ignore" },
+                  ...headers.map((header) => ({ value: header, label: header })),
+                ]}
+              />
             </div>
           ))}
         </div>

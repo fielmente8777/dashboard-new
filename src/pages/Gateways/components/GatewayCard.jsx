@@ -3,15 +3,13 @@ import Button from "../../../components/ui/Button";
 
 const GatewayCard = ({ gateway, onConnect }) => (
   <div className="anim-lift flex flex-col overflow-hidden rounded-xl border border-app-border! bg-app-surface">
+    {/* brand colour at low opacity reads well in light and dark themes */}
     <div
-      style={{ backgroundColor: gateway.logoBackground || "#fff" }}
-      className="flex h-28 items-center justify-center p-5"
+      style={{ backgroundColor: `${gateway.color}1A`, color: gateway.color }}
+      className="flex h-28 items-center justify-center gap-3 p-5"
     >
-      <img
-        src={gateway.logo}
-        alt={gateway.name}
-        className="max-h-full max-w-full object-contain"
-      />
+      <gateway.icon size={40} aria-hidden="true" />
+      <span className="text-xl font-bold tracking-tight">{gateway.name}</span>
     </div>
 
     <div className="flex items-center justify-between gap-3 border-t border-app-border! p-3">

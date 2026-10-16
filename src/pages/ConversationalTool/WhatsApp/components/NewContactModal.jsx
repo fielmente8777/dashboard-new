@@ -8,11 +8,7 @@ import {
 } from "../../../../components/WhatsApp/templateValues";
 import Button from "../../../../components/ui/Button";
 import Dialog from "../../../../components/ui/Dialog";
-import {
-  Field,
-  Input,
-  inputClassName,
-} from "../../../../components/ui/Field";
+import { Field, Input, Select } from "../../../../components/ui/Field";
 import { useToast } from "../../../../context/ToastContext";
 import { countriesCode } from "../../../../data/constant";
 import { useTenant } from "../../../../hooks/useTenant";
@@ -90,18 +86,15 @@ const NewContactModal = ({ open, templates = [], loading, onClose }) => {
         {/* the wrappers set the widths: the field style itself is full width */}
         <div className="flex gap-2">
           <div className="w-32 shrink-0">
-            <select
+            <Select
               aria-label="Country code"
               value={countryCode}
               onChange={(e) => setCountryCode(e.target.value)}
-              className={inputClassName}
-            >
-              {countriesCode.map((country) => (
-                <option key={country.name} value={country.code}>
-                  {country.name} ({country.code})
-                </option>
-              ))}
-            </select>
+              options={countriesCode.map((country) => ({
+                value: country.code,
+                label: `${country.name} (${country.code})`,
+              }))}
+            />
           </div>
           <div className="min-w-0 flex-1">
             <Input

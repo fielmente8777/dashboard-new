@@ -30,6 +30,14 @@ const MODES = {
     parse: (value) => new Date(value),
     format: (date) => `${toDatePart(date)}T${toTimePart(date)}`,
   },
+  // check-in -> check-out and the like; the value is { start, end }
+  range: {
+    icon: Calendar,
+    display: "dd MMM yyyy",
+    placeholder: "Select dates",
+    parse: (value) => new Date(`${value}T00:00:00`),
+    format: toDatePart,
+  },
   time: {
     icon: Clock,
     display: "h:mm aa",
@@ -74,7 +82,9 @@ const PickerField = forwardRef(function PickerField(
 //   mode="date"      "2026-10-08"
 //   mode="datetime"  "2026-10-08T14:30"
 //   mode="time"      "14:30"
-// `min` / `max` take the same kind of string. onChange gets the new string.
+//   mode="range"     { start: "2026-10-08", end: "2026-10-11" } - one calendar,
+//                    the first click picks the start, the second the end
+// `min` / `max` take the same kind of string. onChange gets the new value.
 // With `inline` the calendar is shown in place instead of in a popup.
 const DatePicker = ({
   value,
@@ -91,7 +101,15 @@ const DatePicker = ({
   ...props
 }) => {
   const config = MODES[mode];
-  const selected = value ? config.parse(value) : null;
+  const isRange = mode === "range";
+  const toDate = (text) => {
+    const date = text ? config.parse(text) : null;
+    return date && !Number.isNaN(date.getTime()) ? date : null;
+  };
+  const selected = isRange ? toDate(value?.start) : toDate(value);
+  const rangeEnd = isRange ? toDate(value?.end) : null;
+  // two months side by side for a range, one on a phone
+  const monthsShown = isRange && window.innerWidth >= 640 ? 2 : 1;
   const minDate = min ? config.parse(min) : undefined;
   const maxDate = max ? config.parse(max) : undefined;
 
@@ -107,8 +125,20 @@ const DatePicker = ({
 
   return (
     <ReactDatePicker
-      selected={selected && !Number.isNaN(selected.getTime()) ? selected : null}
-      onChange={(date) => onChange(date ? config.format(date) : "")}
+      selected={selected}
+      {...(isRange
+        ? {
+            selectsRange: true,
+            startDate: selected,
+            endDate: rangeEnd,
+            monthsShown,
+            onChange: ([start, end]) =>
+              onChange({
+                start: start ? config.format(start) : "",
+                end: end ? config.format(end) : "",
+              }),
+          }
+        : { onChange: (date) => onChange(date ? config.format(date) : "") })}
       minDate={mode === "time" ? undefined : minDate}
       maxDate={mode === "time" ? undefined : maxDate}
       // on the first allowed day, earlier times are not allowed either
@@ -117,7 +147,7 @@ const DatePicker = ({
           ? (time) => time.getTime() >= minDate.getTime()
           : undefined
       }
-      showTimeSelect={mode !== "date"}
+      showTimeSelect={mode === "datetime" || mode === "time"}
       showTimeSelectOnly={mode === "time"}
       timeIntervals={timeStep}
       timeCaption="Time"
@@ -141,13 +171,31 @@ const DatePicker = ({
       }
       renderCustomHeader={({
         date,
+        monthDate,
+        customHeaderCount,
         changeMonth,
         changeYear,
         decreaseMonth,
         increaseMonth,
         prevMonthButtonDisabled,
         nextMonthButtonDisabled,
-      }) => (
+      }) =>
+        // with two months, the second one only names itself; the arrows sit
+        // on the outer edges
+        customHeaderCount > 0 ? (
+          <div className="flex h-8 items-center justify-between gap-1">
+            <span className="size-8" />
+            <span className="text-sm font-semibold text-app-text">
+              {monthDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+            </span>
+            <IconButton
+              icon={ChevronRight}
+              label="Next month"
+              disabled={nextMonthButtonDisabled}
+              onClick={increaseMonth}
+            />
+          </div>
+        ) : (
         <div className="flex items-center justify-between gap-1">
           <IconButton
             icon={ChevronLeft}
@@ -181,14 +229,19 @@ const DatePicker = ({
               ))}
             </select>
           </div>
-          <IconButton
-            icon={ChevronRight}
-            label="Next month"
-            disabled={nextMonthButtonDisabled}
-            onClick={increaseMonth}
-          />
+          {monthsShown > 1 && isRange ? (
+            <span className="size-8" />
+          ) : (
+            <IconButton
+              icon={ChevronRight}
+              label="Next month"
+              disabled={nextMonthButtonDisabled}
+              onClick={increaseMonth}
+            />
+          )}
         </div>
-      )}
+        )
+      }
       {...props}
     />
   );

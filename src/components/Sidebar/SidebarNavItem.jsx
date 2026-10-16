@@ -101,14 +101,16 @@ const SidebarNavItem = ({
               <NavLink
                 key={subLink.link}
                 item={subLink}
-                className={`flex min-h-9 items-center gap-2 rounded-md px-3 py-1.5 text-sm capitalize transition-colors ${
+                className={`flex min-h-9 items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors ${
                   isActive(subLink.link)
                     ? `${activeClassName} font-medium`
                     : "text-white/65 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {subLink.icon}
-                <span>{subLink.name}</span>
+                <span className="flex size-4 shrink-0 items-center justify-center">
+                  {subLink.icon}
+                </span>
+                <span className="truncate">{subLink.name}</span>
               </NavLink>
             ))}
           </div>

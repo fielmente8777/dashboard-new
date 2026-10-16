@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 import { AiOutlinePlus, AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
 import { BsPencil, BsBoxArrowUpRight } from "react-icons/bs";
 import { FaLink } from "react-icons/fa";
-import { BASE_URL } from "../../data/constant";
+import { useUpdateProfileUrlsMutation } from "../../redux/api/profileApi";
 import Loader from "../../components/Loader";
 import TrashBin from "../../components/Icon/TrashBin";
 
@@ -99,6 +98,7 @@ const snapshot = (data) =>
   );
 
 const UrlManager = ({ initialLinks, onSave }) => {
+  const [updateProfileUrls] = useUpdateProfileUrlsMutation();
   const { user: hotel } = useSelector((state) => state.userProfile);
   const profile = hotel?.Profile;
 
@@ -233,11 +233,8 @@ const UrlManager = ({ initialLinks, onSave }) => {
       if (onSave) {
         await onSave(payload);
       } else {
-        const response = await axios.post(`${BASE_URL}/eazotel/edit/urls`, {
-          token: localStorage.getItem("token"),
-          ...payload,
-        });
-        if (response.data?.Status !== true) throw new Error("Save rejected");
+        const response = await updateProfileUrls(payload).unwrap();
+        if (response?.Status !== true) throw new Error("Save rejected");
       }
       setSaved(snapshot(next));
       setStatus("saved");

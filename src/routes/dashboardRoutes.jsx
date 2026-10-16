@@ -33,9 +33,6 @@ import WebsiteSeo from "../pages/SEO/WebsiteSeo/WebsiteSeo";
 import GoogleAnalytics from "../pages/GoogleAnalytics/GoogleAnalytics";
 import AnalyticsReporting from "../pages/Analytics/AnalyticsReporting";
 import MetaPageInsights from "../pages/Meta/MetaPageInsights";
-import MetaMessages from "../pages/Meta/MetaMessage";
-import MetaConnections from "../pages/Meta/MetaConnection";
-import MetaSettings from "../pages/Meta/MetaSetting";
 import Overview from "../pages/Gmb/Overview";
 import Keywords from "../pages/Gmb/Keyword";
 import Ranks from "../pages/Gmb/Rank";
@@ -154,9 +151,6 @@ export const dashboardRoutes = [
   { path: PAGES.ANALYTICS_REPORTING, element: <AnalyticsReporting /> },
   { path: PAGES.META_INSIGHTS, element: <MetaPageInsights /> },
   { path: PAGES.META_LEADS, element: leadsList(LEAD_SOURCES.meta) },
-  { path: PAGES.META_MESSAGES, element: <MetaMessages /> },
-  { path: PAGES.META_CONNECTIONS, element: <MetaConnections /> },
-  { path: PAGES.META_SETTINGS, element: <MetaSettings /> },
   { path: PAGES.GMB_OVERVIEW, element: <Overview /> },
   { path: PAGES.GMB_KEYWORDS, element: <Keywords /> },
   { path: PAGES.GMB_RANK, element: <Ranks /> },

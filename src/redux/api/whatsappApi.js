@@ -3,7 +3,7 @@ import { baseApi } from "./baseApi";
 const NODE = { service: "node" };
 
 const api = baseApi.enhanceEndpoints({
-  addTagTypes: ["WhatsAppConversation", "WhatsAppMessage"],
+  addTagTypes: ["WhatsAppConversation", "WhatsAppMessage", "QuickReply"],
 });
 
 // The WhatsApp live chat. The conversation and message lists are also
@@ -166,6 +166,31 @@ export const whatsappApi = api.injectEndpoints({
     getQuickReplies: build.query({
       query: (hid) => ({ url: "/api/v1/quick-reply", params: { hid } }),
       transformResponse: (response) => response?.result?.docs || [],
+      providesTags: ["QuickReply"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, id?, body } - body is FormData (title, text, shortcut, media, file...);
+    // creates the reply, or updates it when `id` is set. -> { success, responseMessage }
+    saveQuickReply: build.mutation({
+      query: ({ hid, id, body }) => ({
+        url: id ? `/api/v1/quick-reply/${id}` : "/api/v1/quick-reply",
+        method: id ? "PUT" : "POST",
+        params: { hid },
+        body,
+      }),
+      invalidatesTags: ["QuickReply"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, id } -> { success, responseMessage }
+    deleteQuickReply: build.mutation({
+      query: ({ hid, id }) => ({
+        url: `/api/v1/quick-reply/${id}`,
+        method: "DELETE",
+        params: { hid },
+      }),
+      invalidatesTags: ["QuickReply"],
       extraOptions: NODE,
     }),
 
@@ -209,6 +234,8 @@ export const {
   useGetFlowSessionQuery,
   useUpdateFlowSessionMutation,
   useGetQuickRepliesQuery,
+  useSaveQuickReplyMutation,
+  useDeleteQuickReplyMutation,
   useGetCampaignAudienceQuery,
   useCreateWhatsAppLeadMutation,
 } = whatsappApi;

@@ -29,6 +29,17 @@ export const CAMPAIGN_TONE = {
   failed: "red",
 };
 
+export const campaignStatus = (status) => ({
+  tone: CAMPAIGN_TONE[status] || "gray",
+  label: status ? status[0].toUpperCase() + status.slice(1) : "Unknown",
+});
+
+// share of `part` in `whole`, as a whole percentage
+export const percent = (part, whole) =>
+  whole > 0 ? Math.round(((part || 0) / whole) * 100) : 0;
+
+export const formatNumber = (value) => (value || 0).toLocaleString("en-IN");
+
 export const RECIPIENT_TONE = {
   pending: "gray",
   sending: "blue",

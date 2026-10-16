@@ -33,9 +33,12 @@ const SidebarNav = ({ collapsed, onExpand }) => {
     if (collapsed) onExpand();
     setOpenGroup(isOpening ? index : -1);
 
-    // opening another section goes to its first page
-    if (isOpening && activeGroup !== index) {
-      navigate(dashboardPath(item.subLinks[0].link));
+    // opening another section goes to its first page inside the dashboard
+    const firstPage = item.subLinks.find(
+      (subLink) => !/^https?:\/\//.test(subLink.link),
+    );
+    if (isOpening && activeGroup !== index && firstPage) {
+      navigate(dashboardPath(firstPage.link));
     }
   };
 

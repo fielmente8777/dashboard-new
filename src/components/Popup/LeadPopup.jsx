@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Arrow } from "../../icons/icon";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { extractBookingInfo } from "../../pages/Enquiry/Leads";
+import { extractBookingInfo } from "../../utils/extractBookingInfo";
 import { MdMailOutline, MdOutlineClose } from "react-icons/md";
 import { MdMail } from "react-icons/md";
 import { FaPhoneFlip } from "react-icons/fa6";

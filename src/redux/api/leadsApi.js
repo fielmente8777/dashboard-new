@@ -49,6 +49,15 @@ export const leadsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // Home page lead stats: totals, today, converted, WhatsApp conversations,
+    // and the source / status breakdowns.
+    getLeadStats: build.query({
+      query: (hid) => ({ url: "/api/v1/analytics/", params: { hid } }),
+      transformResponse: (response) => response?.result?.docs || null,
+      providesTags: ["Lead"],
+      extraOptions: NODE,
+    }),
+
     // Every enquiry of a location, unpaged; the analytics page counts them.
     getAllEnquiries: build.query({
       query: (hid) => ({
@@ -147,6 +156,30 @@ export const leadsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- Import & Convert Leads (spreadsheet upload) ---
+    // file -> { importId, headers, totalRows, columnValues }
+    uploadLeadsImportFile: build.mutation({
+      query: (file) => {
+        const body = new FormData();
+        body.append("file", file);
+        return { url: "/api/v1/leads-import/upload", method: "POST", body };
+      },
+      transformResponse: (response) => response?.result?.doc || {},
+      extraOptions: NODE,
+    }),
+
+    // { hid, importId, mapping, rules } -> what the import would change
+    previewLeadsImport: build.mutation({
+      query: ({ hid, ...body }) => ({
+        url: "/api/v1/leads-import/preview",
+        method: "POST",
+        params: { hid },
+        body,
+      }),
+      transformResponse: (response) => response?.result,
+      extraOptions: NODE,
+    }),
+
     // pulls the latest leads from the connected Meta lead forms
     syncMetaLeads: build.mutation({
       query: (hid) => ({
@@ -190,6 +223,7 @@ export const leadsApi = api.injectEndpoints({
 
 export const {
   useGetLeadsQuery,
+  useGetLeadStatsQuery,
   useGetAllEnquiriesQuery,
   useGetLeadQuery,
   useGetLeadAtPositionQuery,
@@ -198,6 +232,8 @@ export const {
   useCreateLeadMutation,
   useDeleteLeadsMutation,
   useImportLeadsMutation,
+  useUploadLeadsImportFileMutation,
+  usePreviewLeadsImportMutation,
   useSyncMetaLeadsMutation,
   useSendExportOtpMutation,
   useVerifyExportOtpMutation,

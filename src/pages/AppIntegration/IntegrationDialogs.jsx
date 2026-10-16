@@ -1,4 +1,3 @@
-import axios from "axios";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -7,13 +6,13 @@ import Dialog from "../../components/ui/Dialog";
 import { Field, Input } from "../../components/ui/Field";
 import SelectMenu from "../../components/ui/SelectMenu";
 import { useToast } from "../../context/ToastContext";
-import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
 import { PAGES, dashboardPath } from "../../routes/paths";
+import { useSaveAnalyticsPropertyMutation } from "../../redux/api/analyticsApi";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
+import { useConnectExotelMutation, useConnectOtpLessMutation } from "../../redux/api/integrationsApi";
 
-const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
-const errorText = (error, fallback) =>
-  getApiErrorMessage({ data: error?.response?.data }, error?.message || fallback);
+// a thrown Error keeps its message; an API error shows what the server said
+const errorText = (error, fallback) => getApiErrorMessage(error, error?.message || fallback);
 
 const EXOTEL_FIELDS = [
   { name: "apiKey", label: "API key" },
@@ -26,6 +25,7 @@ const EXOTEL_FIELDS = [
 // API keys from Exotel's dashboard (Settings > API).
 export const ExotelDialog = ({ open, onClose, onConnected }) => {
   const { showToast } = useToast();
+  const [connectExotel] = useConnectExotelMutation();
   const [form, setForm] = useState(() => Object.fromEntries(EXOTEL_FIELDS.map((f) => [f.name, ""])));
   const [saving, setSaving] = useState(false);
   const complete = Object.values(form).every((v) => v.trim());
@@ -34,9 +34,7 @@ export const ExotelDialog = ({ open, onClose, onConnected }) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const { data } = await axios.post(`${NEW_BASE_URL}/api/v1/call/auth/connect`, form, {
-        headers: authHeader(),
-      });
+      const data = await connectExotel(form).unwrap();
       if (!data?.success) throw new Error(data?.responseMessage);
       showToast({ message: "Exotel connected" });
       onConnected();
@@ -84,6 +82,7 @@ export const ExotelDialog = ({ open, onClose, onConnected }) => {
 // Client ID and secret from the OTPless dashboard.
 export const OtpLessDialog = ({ open, onClose }) => {
   const { showToast } = useToast();
+  const [connectOtpLess] = useConnectOtpLessMutation();
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [saving, setSaving] = useState(false);
@@ -92,11 +91,10 @@ export const OtpLessDialog = ({ open, onClose }) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const { data } = await axios.post(
-        `${BASE_URL}/otp/connect`,
-        { client_id: clientId.trim(), client_secret: clientSecret.trim() },
-        { headers: authHeader() },
-      );
+      const data = await connectOtpLess({
+        client_id: clientId.trim(),
+        client_secret: clientSecret.trim(),
+      }).unwrap();
       if (data?.Status === false || data?.success === false) throw new Error(data?.Message || data?.message);
       showToast({ message: "OTPless connected" });
       onClose();
@@ -132,20 +130,21 @@ export const OtpLessDialog = ({ open, onClose }) => {
 // After Google sign-in: pick which Analytics property is the hotel's website.
 export const GaPropertyDialog = ({ open, email, properties, loading, onClose, onSaved }) => {
   const { showToast } = useToast();
+  const [saveProperty] = useSaveAnalyticsPropertyMutation();
   const [selected, setSelected] = useState("");
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
     setSaving(true);
     try {
-      await axios.post(`${BASE_URL}/google/save-property`, {
+      await saveProperty({
         hid: localStorage.getItem("hid"),
         email,
         property_id: selected,
-      });
+      }).unwrap();
       showToast({ message: "Google Analytics connected" });
       setSelected("");
-      onSaved();
+      onSaved(selected);
     } catch (error) {
       showToast({ message: errorText(error, "Could not save the property."), type: "error" });
     } finally {

@@ -1,3 +1,4 @@
+import { KeyRound, PhoneCall } from "lucide-react";
 import { FaMeta } from "react-icons/fa6";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { MdOutlineStorefront, MdOutlineTrackChanges } from "react-icons/md";
@@ -38,7 +39,7 @@ export const INTEGRATIONS = [
     id: "exotel",
     name: "Exotel",
     description: "Record and track guest calls made to your Exotel number.",
-    img: "/exotel.jpg",
+    icon: <PhoneCall className="size-6 text-[#2BB673]" />,
     category: "Messaging",
     statusKey: "exotel",
     access: "exotel",
@@ -48,7 +49,7 @@ export const INTEGRATIONS = [
     id: "otp-less",
     name: "OTPless",
     description: "Let guests sign in with WhatsApp or phone, without passwords.",
-    img: "/otp.png",
+    icon: <KeyRound className="size-6 text-[#6366F1]" />,
     category: "Messaging",
   },
   {

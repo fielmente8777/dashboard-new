@@ -30,7 +30,23 @@ const GscSettings = () => {
   const [isEditing, setIsEditing] = useState(false);       // form open / closed
 
   const loadSettings = useCallback(async () => {
-    const propertyId = localStorage.getItem("activePropertyId");
+    let propertyId = localStorage.getItem("activePropertyId");
+    // Only the Google Analytics page used to store the property, so ask the
+    // backend which one this hotel has connected.
+    const hid = localStorage.getItem("hid");
+    if (!propertyId && hid) {
+      try {
+        const { data } = await axios.get(`${BASE_URL}/google/analytics-data/${hid}`, {
+          params: { startDate: "today", endDate: "today" },
+        });
+        if (data?.activePropertyId) {
+          propertyId = String(data.activePropertyId);
+          localStorage.setItem("activePropertyId", propertyId);
+        }
+      } catch {
+        // not connected
+      }
+    }
     setHasProperty(Boolean(propertyId));
     if (!propertyId) {
       setIsConfigured(false);

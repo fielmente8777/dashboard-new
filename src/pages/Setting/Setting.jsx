@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import axios from "axios";
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 import { HiOutlineEyeOff } from "react-icons/hi";
 import { AiOutlineEye } from "react-icons/ai";
 import { BsPencil } from "react-icons/bs";
 import { FaHotel } from "react-icons/fa";
-import { BASE_URL } from "../../data/constant";
+import { useChangePasswordMutation } from "../../redux/api/profileApi";
 import Loader from "../../components/Loader";
 import TrashBin from "../../components/Icon/TrashBin";
 import UrlManager from "./UrlManager";
@@ -51,6 +50,7 @@ const PasswordField = ({ id, label, value, onChange, visible, onToggle }) => (
 );
 
 const Setting = () => {
+  const [changePassword] = useChangePasswordMutation();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -93,13 +93,12 @@ const Setting = () => {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`${BASE_URL}/eazotel/edit/password`, {
-        token: localStorage.getItem("token"),
+      const response = await changePassword({
         oldAccessId: oldPassword,
         newAccessId: newPassword,
-      });
+      }).unwrap();
 
-      if (response.data?.Status !== true) {
+      if (response?.Status !== true) {
         Swal.fire({
           icon: "error",
           title: "Couldn't update",

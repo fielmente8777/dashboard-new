@@ -161,9 +161,7 @@ const LeadDetails = () => {
 
   if (result.isLoading || result.isUninitialized) {
     return (
-      <div className="flex h-[70vh] items-center justify-center">
-        <LeadDetailsSkeleton />
-      </div>
+      <LeadDetailsSkeleton />
     );
   }
 

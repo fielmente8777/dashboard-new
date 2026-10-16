@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiStar, FiMessageSquare, FiFilter, FiSend } from "react-icons/fi";
+import { Select } from "../../components/ui/Field";
 
 export default function Reviews() {
   const [filter, setFilter] = useState("all");
@@ -55,18 +56,21 @@ export default function Reviews() {
       {/* Filters */}
       <div className="bg-white p-4 rounded-xl border flex items-center gap-4">
         <FiFilter className="text-gray-500" />
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm outline-none"
-        >
-          <option value="all">All Ratings</option>
-          <option value="5">5 Stars</option>
-          <option value="4">4 Stars</option>
-          <option value="3">3 Stars</option>
-          <option value="2">2 Stars</option>
-          <option value="1">1 Star</option>
-        </select>
+        <div className="w-40">
+          <Select
+            aria-label="Rating"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            options={[
+              { value: "all", label: "All Ratings" },
+              { value: "5", label: "5 Stars" },
+              { value: "4", label: "4 Stars" },
+              { value: "3", label: "3 Stars" },
+              { value: "2", label: "2 Stars" },
+              { value: "1", label: "1 Star" },
+            ]}
+          />
+        </div>
       </div>
 
       {/* Reviews List */}

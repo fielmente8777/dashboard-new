@@ -2,7 +2,8 @@ import { Bot } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
-import { Field, Input } from "../../../../components/ui/Field";
+import DatePicker from "../../../../components/ui/DatePicker";
+import { Field } from "../../../../components/ui/Field";
 import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
 import { updateAutoMessageConfig } from "../../../../services/api/whatsApp";
@@ -78,11 +79,11 @@ const AIConfigurationCard = ({ ai, phoneNumber }) => {
       {enabled ? (
         <div className="space-y-3">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="From">
-              <Input type="time" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <Field label="From" as="div">
+              <DatePicker mode="time" aria-label="From" value={from} onChange={setFrom} />
             </Field>
-            <Field label="To">
-              <Input type="time" value={to} onChange={(e) => setTo(e.target.value)} />
+            <Field label="To" as="div">
+              <DatePicker mode="time" aria-label="To" value={to} onChange={setTo} />
             </Field>
           </div>
           <p className="text-xs text-app-text-muted">

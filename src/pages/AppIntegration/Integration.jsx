@@ -1,4 +1,3 @@
-import axios from "axios";
 import { ArrowUpRight, Lock, Plug, Search } from "lucide-react";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -14,13 +13,19 @@ import Tabs from "../../components/ui/Tabs";
 import { useConfirm } from "../../context/ConfirmContext";
 import DataContext from "../../context/DataContext";
 import { useToast } from "../../context/ToastContext";
-import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
+import { BASE_URL } from "../../data/constant";
 import { PAGES, ROUTES, dashboardPath } from "../../routes/paths";
+import { useLazyGetAnalyticsPropertiesQuery } from "../../redux/api/analyticsApi";
+import { getApiErrorMessage } from "../../redux/api/baseApi";
 import {
-  connectMetaLead,
-  connectWhatsapp,
-  disconnectIntegration,
-} from "../../services/api/Integration";
+  useConnectMetaLeadMutation,
+  useDisconnectAnalyticsMutation,
+  useDisconnectIntegrationMutation,
+  useGetAnalyticsStatusMutation,
+  useStartGmailAuthMutation,
+  useStartGoogleAdsAuthMutation,
+} from "../../redux/api/integrationsApi";
+import { useConnectWhatsAppMutation } from "../../redux/api/whatsappApi";
 import {
   ExotelDialog,
   GaPropertyDialog,
@@ -28,6 +33,13 @@ import {
   WebsiteTrackingDialog,
 } from "./IntegrationDialogs";
 import { CATEGORIES, INTEGRATIONS, readPath } from "./integrationsData";
+import { announcePropertyChange } from "../../components/Analytics/analyticsRange";
+
+// a thrown Error keeps its message; an API error shows what the server said
+const errorText = (error, fallback) => getApiErrorMessage(error, error?.message || fallback);
+
+// the hotel and account the connect links are made for
+const tenant = () => ({ hid: localStorage.getItem("hid"), ndid: localStorage.getItem("ndid") });
 
 const openPopup = (url, name) => {
   const width = 500;
@@ -107,6 +119,15 @@ function Integration() {
   const { subscription } = useSelector((state) => state?.subscription);
   const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
 
+  const [getGaStatus] = useGetAnalyticsStatusMutation();
+  const [getGaProperties] = useLazyGetAnalyticsPropertiesQuery();
+  const [disconnectGa] = useDisconnectAnalyticsMutation();
+  const [connectWhatsapp] = useConnectWhatsAppMutation();
+  const [connectMetaLead] = useConnectMetaLeadMutation();
+  const [startGoogleAdsAuth] = useStartGoogleAdsAuthMutation();
+  const [startGmailAuth] = useStartGmailAuthMutation();
+  const [disconnectIntegration] = useDisconnectIntegrationMutation();
+
   const [loaded, setLoaded] = useState(false);
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
@@ -121,12 +142,12 @@ function Integration() {
     const hid = localStorage.getItem("hid");
     if (!hid) return;
     try {
-      const { data } = await axios.get(`${BASE_URL}/google/status/${hid}`);
-      setIsGaConnected(Boolean(data.connected));
+      const data = await getGaStatus(hid).unwrap();
+      setIsGaConnected(Boolean(data?.connected));
     } catch {
       // keeps the last known status
     }
-  }, []);
+  }, [getGaStatus]);
 
   const refresh = useCallback(async () => {
     await Promise.all([checkIntegrationStatus(), checkGaStatus()]);
@@ -152,8 +173,8 @@ function Integration() {
   const loadGaProperties = async (email) => {
     setGa({ open: true, email, properties: [], loading: true });
     try {
-      const { data } = await axios.get(`${BASE_URL}/google/properties`, { params: { email } });
-      setGa({ open: true, email, properties: data.properties || [], loading: false });
+      const properties = await getGaProperties(email).unwrap();
+      setGa({ open: true, email, properties, loading: false });
     } catch {
       setGa({ open: true, email, properties: [], loading: false });
     }
@@ -175,15 +196,25 @@ function Integration() {
     }
   };
 
+  // The tab is opened on the click itself and pointed at the sign-in page once
+  // the API answers; opening it after the await gets it eaten by popup blockers
+  // whenever the backend is slow to wake up.
   const openInNewTab = async (request, pickUrl, name) => {
+    const tab = window.open("", "_blank");
     try {
       const response = await request();
       const url = pickUrl(response);
       if (!url) throw new Error(response?.responseMessage);
       awaitingRef.current = true;
-      window.open(url, "_blank", "noopener");
+      if (tab && !tab.closed) {
+        tab.opener = null;
+        tab.location.href = url;
+      } else {
+        window.open(url, "_blank");
+      }
     } catch (error) {
-      showToast({ message: error?.message || `Could not start connecting ${name}.`, type: "error" });
+      tab?.close();
+      showToast({ message: errorText(error, `Could not start connecting ${name}.`), type: "error" });
     }
   };
 
@@ -192,22 +223,26 @@ function Integration() {
     try {
       switch (app.id) {
         case "metaWhatsapp":
-          return await openInNewTab(connectWhatsapp, (r) => r?.result?.docs?.signupUrl, app.name);
+          return await openInNewTab(
+            // resolves with the signup URL itself
+            () => connectWhatsapp(tenant()).unwrap(),
+            (url) => url,
+            app.name,
+          );
         case "meta":
-          return await openInNewTab(connectMetaLead, (r) => r?.result?.docs?.authUrl, app.name);
+          return await openInNewTab(
+            () => connectMetaLead(tenant()).unwrap(),
+            (r) => r?.result?.docs?.authUrl,
+            app.name,
+          );
         case "googleadsinsights":
           return await openInNewTab(
-            async () =>
-              (await axios.get(`${NEW_BASE_URL}/api/v1/google-ads/auth/google/start`, {
-                params: { ndid: localStorage.getItem("ndid") },
-              })).data,
+            () => startGoogleAdsAuth(tenant().ndid).unwrap(),
             (r) => r?.googleAuthUrl,
             app.name,
           );
         case "gmail": {
-          const { data } = await axios.get(`${NEW_BASE_URL}/api/v1/emails/google/login`, {
-            params: { ndid: localStorage.getItem("ndid") },
-          });
+          const data = await startGmailAuth(tenant().ndid).unwrap();
           if (!data?.auth_url) throw new Error();
           window.location.href = data.auth_url;
           return;
@@ -250,16 +285,21 @@ function Integration() {
     setBusyId(app.id);
     try {
       if (app.id === "google_analytics") {
-        await axios.post(`${BASE_URL}/google/disconnect`, { hid: localStorage.getItem("hid") });
+        await disconnectGa(tenant().hid).unwrap();
         setIsGaConnected(false);
+        localStorage.removeItem("activePropertyId");
+        window.dispatchEvent(new CustomEvent("dashboard_property_changed", { detail: {} }));
       } else {
-        const response = await disconnectIntegration(app.disconnectId || app.statusKey);
+        const response = await disconnectIntegration({
+          hid: tenant().hid,
+          id: app.disconnectId || app.statusKey,
+        }).unwrap();
         if (!response?.success) throw new Error(response?.responseMessage);
         await checkIntegrationStatus();
       }
       showToast({ message: `${app.name} disconnected` });
     } catch (error) {
-      showToast({ message: error?.message || `Could not disconnect ${app.name}.`, type: "error" });
+      showToast({ message: errorText(error, `Could not disconnect ${app.name}.`), type: "error" });
     } finally {
       setBusyId(null);
     }
@@ -350,7 +390,9 @@ function Integration() {
         properties={ga.properties}
         loading={ga.loading}
         onClose={closeGa}
-        onSaved={() => {
+        onSaved={(propertyId) => {
+          // Search Console below works off this property
+          announcePropertyChange(propertyId);
           closeGa();
           refresh();
         }}

@@ -11,6 +11,7 @@ export const ROUTES = {
   ROOT: "/",
   LOGIN: "/login",
   SIGNUP: "/signup",
+  RESET_PASSWORD: "/reset-password",
   PLANS: "/plans",
   ONBOARDING_FORM: "/onboarding/form",
 };
@@ -76,9 +77,6 @@ export const PAGES = {
   ANALYTICS_REPORTING: "analytics-and-reporting",
   META_INSIGHTS: "meta-insights",
   META_LEADS: "meta/leads",
-  META_MESSAGES: "meta/messages",
-  META_CONNECTIONS: "meta/connections",
-  META_SETTINGS: "meta/settings",
   GMB_OVERVIEW: "gmb/overview",
   GMB_KEYWORDS: "gmb/keywords",
   GMB_RANK: "gmb/rank",

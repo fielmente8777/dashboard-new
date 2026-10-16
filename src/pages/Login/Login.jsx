@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ONBOARDING_SIGNUP_URL } from "../../config/env";
+import { ROUTES } from "../../routes/paths";
 import AuthLayout from "./components/AuthLayout";
 import ForgotPasswordForm from "./components/ForgotPasswordForm";
 import { textLinkClassName } from "./components/formStyles";
@@ -29,6 +30,12 @@ const Login = () => {
           isSubmitting={isSendingReset}
           onBackToLogin={() => setIsForgotPassword(false)}
         />
+        <p className="text-sm text-center text-app-text-muted">
+          Already have a code?{" "}
+          <Link to={ROUTES.RESET_PASSWORD} className={textLinkClassName}>
+            Enter it here
+          </Link>
+        </p>
       </AuthLayout>
     );
   }

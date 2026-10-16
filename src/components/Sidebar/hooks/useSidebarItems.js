@@ -24,6 +24,8 @@ export const useSidebarItems = () => {
     };
 
     const canSeeSubLink = (subLink) => {
+      // pages grouped from the top level keep their top-level check
+      if (subLink.access && !canSeeItem({ key: subLink.access })) return false;
       if (!subLink.key) return true;
       if (isAdmin) {
         const appAccess = subscription?.appAccess;

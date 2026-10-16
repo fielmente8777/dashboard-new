@@ -7,6 +7,7 @@ import {
   uploadImageToServer,
 } from "../../services/api/s3Image.api";
 import { isS3Image } from "../../utils/isS3Image";
+import { Select } from "../ui/Field";
 
 const transformCardsFromAPI = (cards = []) => {
   return cards.map((card) => ({
@@ -252,14 +253,15 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
       <div className="mb-4">
         <label className="block text-sm mb-1 font-medium">Button Type</label>
 
-        <select
+        <Select
+          aria-label="Button type"
           value={globalType}
           onChange={(e) => setGlobalType(e.target.value)}
-          className="border w-full p-2 rounded"
-        >
-          <option value="cta_url">CTA URL</option>
-          <option value="quick_reply">Quick Reply</option>
-        </select>
+          options={[
+            { value: "cta_url", label: "CTA URL" },
+            { value: "quick_reply", label: "Quick Reply" },
+          ]}
+        />
       </div>
 
       {/* Cards */}
@@ -290,14 +292,17 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
             </select> */}
 
             {/* IMAGE SOURCE TYPE */}
-            <select
-              value={card.mediaType}
-              onChange={(e) => updateCard(index, "mediaType", e.target.value)}
-              className="border w-full p-2 mb-3 rounded"
-            >
-              <option value="upload">Upload Image</option>
-              <option value="link">Image Link</option>
-            </select>
+            <div className="mb-3">
+              <Select
+                aria-label="Image source"
+                value={card.mediaType}
+                onChange={(e) => updateCard(index, "mediaType", e.target.value)}
+                options={[
+                  { value: "upload", label: "Upload Image" },
+                  { value: "link", label: "Image Link" },
+                ]}
+              />
+            </div>
 
             {/* IMAGE INPUT */}
             {card.mediaType === "upload" ? (

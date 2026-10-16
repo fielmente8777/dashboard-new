@@ -1,7 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { FaWhatsapp, FaPhoneAlt, FaWpforms } from "react-icons/fa";
+import React, { useMemo, useState } from "react";
 import GscSettings from "../../components/GscSettings";
-import axios from "axios";
 import {
   BadgeCheck,
   MessageCircle,
@@ -15,14 +13,13 @@ import DonutChart from "../../components/Charts/DonutChart";
 import UiCard from "../../components/ui/Card";
 import ProgressList from "../../components/ui/ProgressList";
 import StatCard from "../../components/ui/StatCard";
-import { EmptyState } from "../../components/ui/States";
-import { getAnalyticsService } from "../../services/api/analytics.api";
+import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
+import { useGetLeadStatsQuery } from "../../redux/api/leadsApi";
 import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
 
 import AnalyticsCard from "../../components/Card/AnalyticsCard";
 import TemperatureCard from "../../components/Card/TemperatureCard";
 import { useSelector } from "react-redux";
-import Loading from "../../components/Loading";
 import AudienceInsights from "../../components/Analytics/AudienceInsights";
 
 // ===== GA COMPONENTS =====
@@ -38,7 +35,6 @@ import ConversionEvents from "../../components/Analytics/ConversionEvents";
 import DeviceAnalytics from "../../components/Analytics/DeviceAnalytics";
 import GeoAnalytics from "../../components/Analytics/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
-import { BASE_URL } from "../../data/constant";
 import CallsAnalytics from "../Calls/CallsAnalytics";
 // [{ name, count }] -> ProgressList items, biggest first. The colour follows
 // the name (its place in alphabetical order), so it doesn't change when the
@@ -55,97 +51,38 @@ const toListItems = (rows) => {
     }));
 };
 
+// Placeholder in the shape of the page: the KPI row and the two charts.
+const DashboardSkeleton = () => (
+  <div className="min-h-screen space-y-3 bg-app-bg p-3 md:space-y-6 md:p-6">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="space-y-2">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-64 max-w-full" />
+      </div>
+      <Skeleton className="h-9 w-56" />
+    </div>
+    <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
+      {Array.from({ length: 5 }, (_, i) => (
+        <Skeleton key={i} className="h-24" />
+      ))}
+    </div>
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <Skeleton className="h-72" />
+      <Skeleton className="h-72" />
+    </div>
+  </div>
+);
+
 const Dashboard = () => {
   const { hid } = useSelector((state) => state.userProfile);
   const analyticsRange = useAnalyticsRange();
-  const [data, setData] = useState(null);
+  // refetched on every visit, like before, so the counts are never stale
+  const stats = useGetLeadStatsQuery(hid, {
+    skip: !hid,
+    refetchOnMountOrArgChange: true,
+  });
+  const data = stats.data;
   const [currentAnalytics, setCurrentAnalytics] = useState("overview");
-
-  // 1. STATE FOR OUR CLEAN GA METRICS
-  const [gaMetrics, setGaMetrics] = useState({
-    whatsapp_clicks: 0,
-    call_clicks: 0,
-    form_submissions: 0,
-  });
-
-  // 2. NAYI STATE: Sirf GA (Website Actions) ki loading track karne ke liye
-  const [isGaLoading, setIsGaLoading] = useState(false);
-
-  const [dateRange, setDateRange] = useState({
-    startDate: "30daysAgo",
-    endDate: "today",
-  });
-
-  // CRM Fetcher (Isko humne bilkul touch nahi kiya)
-  const getAnalytics = async () => {
-    try {
-      const response = await getAnalyticsService();
-      setData(response?.result?.docs);
-    } catch (error) {
-      console.log("Error fetching CRM analytics:", error);
-    }
-  };
-
-  // Python GA API Fetcher (Isme loading ON/OFF lagaya hai)
-  const fetchGaTrackingData = async (currentHid, currentDates) => {
-    if (!currentHid) return;
-    try {
-      setIsGaLoading(true); // Data aane se pehle Loading ON
-
-      const timestamp = new Date().getTime(); // Cache buster
-      const response = await axios.get(
-        `${BASE_URL}/google/analytics-conversions/${currentHid}?startDate=${currentDates.startDate}&endDate=${currentDates.endDate}&t=${timestamp}`,
-      );
-
-      if (response.data && response.data.dashboardMetrics) {
-        setGaMetrics(response.data.dashboardMetrics);
-      }
-    } catch (error) {
-      console.log("Error fetching GA tracking data:", error);
-    } finally {
-      setIsGaLoading(false); // Data aane ke baad Loading OFF
-    }
-  };
-
-  // ==========================================
-  // MAGIC LISTENERS FOR DATE & PROPERTY CHANGE
-  // ==========================================
-  useEffect(() => {
-    const handleDateChange = (e) => {
-      if (e.detail) {
-        setDateRange({
-          startDate: e.detail.start || "30daysAgo",
-          endDate: e.detail.end || "today",
-        });
-      }
-    };
-
-    const handlePropertyChange = () => {
-      // Jab dropdown se property change ho, toh sirf GA data update karo
-      if (hid) {
-        fetchGaTrackingData(hid, dateRange);
-      }
-    };
-
-    window.addEventListener("dashboard_date_changed", handleDateChange);
-    window.addEventListener("dashboard_property_changed", handlePropertyChange);
-
-    return () => {
-      window.removeEventListener("dashboard_date_changed", handleDateChange);
-      window.removeEventListener(
-        "dashboard_property_changed",
-        handlePropertyChange,
-      );
-    };
-  }, [hid, dateRange]);
-
-  // Main Effect: Runs when Redux 'hid' or 'dateRange' state changes
-  useEffect(() => {
-    if (hid) {
-      getAnalytics();
-      fetchGaTrackingData(hid, dateRange);
-    }
-  }, [hid, dateRange]);
 
   // -----------------------
   // Derived Values (CRM)
@@ -185,7 +122,14 @@ const Dashboard = () => {
   const getStatusCount = (status) =>
     cleanedStatus.find((s) => s.name === status)?.count || 0;
 
-  if (!data) return <Loading />;
+  if (stats.isError && !data) {
+    return (
+      <div className="p-3 md:p-6">
+        <ErrorState message="Could not load your dashboard." onRetry={stats.refetch} />
+      </div>
+    );
+  }
+  if (!data) return <DashboardSkeleton />;
 
   if (currentAnalytics === "call-analytics") {
     return <CallsAnalytics />;
@@ -224,87 +168,6 @@ const Dashboard = () => {
           value={whatsapp.toLocaleString()}
         />
       </div>
-
-      {/* 3. NEW SECTION: PREMIUM WEBSITE TRACKING KPI CARDS */}
-      {/* <div className="mt-8 mb-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-app-text dark:text-app-text tracking-tight">
-            Website Actions{" "}
-            <span className="text-sm font-medium text-app-text ml-2">
-              (Google Analytics)
-            </span>
-          </h2>
-          
-          {isGaLoading && (
-            <span className="flex items-center gap-2 text-sm text-blue-600 font-medium animate-pulse">
-              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              Fetching live data...
-            </span>
-          )}
-        </div>
-
-        <div 
-          className={`grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 transition-all duration-500 ease-out ${
-            isGaLoading
-              ? "opacity-50 scale-[0.98] blur-[1px] pointer-events-none"
-              : "opacity-100 scale-100 blur-0"
-          }`}
-        >
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-green-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-green-600 shadow-sm border border-green-100">
-                <FaWhatsapp className="w-7 h-7" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-green-600 uppercase tracking-wider mb-1">
-                  WhatsApp
-                </p>
-                <h3 className="text-3xl font-black text-gray-400">
-                  {gaMetrics.whatsapp_clicks}
-                </h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-blue-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-blue-600 shadow-sm border border-blue-100">
-                <FaPhoneAlt className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">
-                  Call Clicks
-                </p>
-                <h3 className="text-3xl font-black text-gray-400">
-                  {gaMetrics.call_clicks}
-                </h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-purple-50 opacity-60 group-hover:scale-150 transition-transform duration-700 ease-in-out"></div>
-
-            <div className="flex items-center gap-5 relative z-10">
-              <div className="p-3.5 rounded-xl bg-app-surface dark:bg-app-surface text-purple-600 shadow-sm border border-purple-100">
-                <FaWpforms className="w-7 h-7" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-purple-600 uppercase tracking-wider mb-1">
-                  Form Fills
-                </p>
-                <h3 className="text-3xl font-black text-gray-400">
-                  {gaMetrics.form_submissions}
-                </h3>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
