@@ -1,56 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Loader2, MessageSquare, MoreHorizontal, Pencil, Pin, PinOff, Plus, Search, Trash2, X, type LucideIcon } from "lucide-react";
-
-type Conversation = {
-  _id: string;
-  title: string;
-  pinned: boolean;
-};
-
-type ChatHistory = {
-  pinned: Conversation[];
-  recents: Conversation[];
-  loading: boolean;
-  error: string | null;
-  search: string;
-  setSearch: (value: string) => void;
-  isSearching: boolean;
-  refresh: () => void;
-  togglePin: (conversation: Conversation) => void | Promise<void>;
-  rename: (conversation: Conversation, title: string) => void | Promise<void>;
-  remove: (conversation: Conversation) => void | Promise<void>;
-};
-
-type ChatHistorySidebarProps = {
-  history: ChatHistory;
-  activeId?: string | null;
-  onSelect: (conversation: Conversation) => void;
-  onNewChat: () => void;
-  onDeleted?: (conversation: Conversation) => void;
-  onOverlayChange?: (open: boolean) => void;
-  disabled?: boolean;
-  className?: string;
-  onClose?: () => void;
-};
-
-type HistoryItemProps = {
-  conversation: Conversation;
-  active: boolean;
-  menuOpen: boolean;
-  renaming: boolean;
-  onSelect: () => void;
-  onToggleMenu: () => void;
-  onCloseMenu: () => void;
-  onPin: () => void;
-  onStartRename: () => void;
-  onRename: (title: string) => void;
-  onCancelRename: () => void;
-  onDelete: () => void;
-};
+import { Loader2, MessageSquare, MoreHorizontal, Pencil, Pin, PinOff, Plus, Search, Trash2, X } from "lucide-react";
 
 /**
  * ChatGPT-style history panel: New chat, search, Pinned and Recents,
  * with a three-dot menu per conversation (pin / rename / delete).
+ *
+ * `history` is what useChatbotHistory returns: { pinned, recents, loading, error,
+ * search, setSearch, isSearching, refresh, togglePin, rename, remove }.
+ * A conversation is { _id, title, pinned }.
  */
 export default function ChatHistorySidebar({
   history,
@@ -62,13 +19,13 @@ export default function ChatHistorySidebar({
   disabled,
   className = "",
   onClose,
-}: ChatHistorySidebarProps) {
+}) {
   const { pinned, recents, loading, error, search, setSearch, isSearching, refresh, togglePin, rename, remove } = history;
-  const [menuId, setMenuId] = useState<string | null>(null);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<Conversation | null>(null);
+  const [menuId, setMenuId] = useState(null);
+  const [renamingId, setRenamingId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState(null);
 
   const overlayOpen = Boolean(menuId || renamingId || confirmDelete);
   useEffect(() => {
@@ -78,7 +35,7 @@ export default function ChatHistorySidebar({
   // Escape closes the innermost overlay instead of the whole chatbot window.
   useEffect(() => {
     if (!overlayOpen) return undefined;
-    const onKey = (event: { key: string; }) => {
+    const onKey = (event) => {
       if (event.key !== "Escape") return;
       if (confirmDelete && !deleting) setConfirmDelete(null);
       else if (renamingId) setRenamingId(null);
@@ -94,7 +51,7 @@ export default function ChatHistorySidebar({
     return () => clearTimeout(t);
   }, [actionError]);
 
-  async function handlePin(conversation: { _id: string; title: string; pinned: boolean; }) {
+  async function handlePin(conversation) {
     setMenuId(null);
     try {
       await togglePin(conversation);
@@ -103,7 +60,7 @@ export default function ChatHistorySidebar({
     }
   }
 
-  async function handleRename(conversation: { _id: string; title: string; pinned: boolean; }, title: string) {
+  async function handleRename(conversation, title) {
     setRenamingId(null);
     try {
       await rename(conversation, title);
@@ -129,7 +86,7 @@ export default function ChatHistorySidebar({
 
   const isEmpty = !loading && !error && pinned.length === 0 && recents.length === 0;
 
-  const renderItem = (conversation: Conversation) => (
+  const renderItem = (conversation) => (
     <HistoryItem
       key={conversation._id}
       conversation={conversation}
@@ -293,15 +250,15 @@ function HistoryItem({
   onRename,
   onCancelRename,
   onDelete,
-}: HistoryItemProps) {
-  const menuRef = useRef<HTMLLIElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+}) {
+  const menuRef = useRef(null);
+  const inputRef = useRef(null);
   const [draft, setDraft] = useState(conversation.title);
   const committedRef = useRef(false);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e) => {
       if (menuRef.current && e.target instanceof Node && !menuRef.current.contains(e.target)) onCloseMenu();
     };
     document.addEventListener("mousedown", onDown);
@@ -384,16 +341,17 @@ function HistoryItem({
 
       {menuOpen && (
         <div role="menu" className="absolute right-1 top-full z-20 mt-1 w-40 overflow-hidden rounded-xl border border-[var(--cb-border)] bg-[var(--cb-raised)] py-1 shadow-2xl">
-          <MenuButton icon={conversation.pinned ? PinOff : Pin} label={conversation.pinned ? "Unpin" : "Pin"} onClick={onPin} danger={undefined} />
-          <MenuButton icon={Pencil} label="Rename" onClick={onStartRename} danger={undefined} />
-          <MenuButton icon={Trash2} label="Delete" onClick={onDelete} danger={true} />
+          <MenuButton icon={conversation.pinned ? PinOff : Pin} label={conversation.pinned ? "Unpin" : "Pin"} onClick={onPin} />
+          <MenuButton icon={Pencil} label="Rename" onClick={onStartRename} />
+          <MenuButton icon={Trash2} label="Delete" onClick={onDelete} danger />
         </div>
       )}
     </li>
   );
 }
 
-function MenuButton({ icon: Icon, label, onClick, danger }: { icon: LucideIcon; label: string; onClick: () => void; danger?: boolean }) {
+function MenuButton({ icon, label, onClick, danger }) {
+  const Icon = icon;
   return (
     <button
       type="button"
