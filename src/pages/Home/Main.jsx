@@ -6,8 +6,6 @@ import DataContext from "../../context/DataContext.js";
 import { SidebarData } from "../../data/SideBarData.jsx";
 import DynamicPage from "../DynamicPage/DynamicPage.jsx";
 
-import ChatbotWidget from "../../components/chatbot/ChatbotWidget.jsx";
-
 const Main = () => {
   return (
     <div className="">
@@ -46,9 +44,6 @@ const Main = () => {
           </div>
         </div>
       </div>
-       <ChatbotBoundary>
-        <ChatbotWidget pages={pages} onNavigate={(path) => navigate(path)} />
-      </ChatbotBoundary>
     </div>
   );
 };

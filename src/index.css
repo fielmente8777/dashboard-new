@@ -650,3 +650,68 @@ html.dark select option {
     stroke 0.4s ease,
     box-shadow 0.4s ease !important;
 }
+
+/* "Ask Eazotel AI" chat colours. Light by default, the original dark look
+   under .dark (set on <html> by DataContext). */
+:root {
+  --cb-overlay: rgb(15 23 42 / 0.45);
+  --cb-bg: #ffffff;
+  --cb-sidebar: #f7f7fa;
+  --cb-raised: #ffffff;
+  --cb-bubble: #f4f3f8;
+  --cb-text: #1d1b26;
+  --cb-text-2: #3d3b4a;
+  --cb-muted: #64626f;
+  --cb-faint: #8b8996;
+  --cb-border: rgb(29 27 38 / 0.1);
+  --cb-hover: rgb(29 27 38 / 0.05);
+  --cb-active: rgb(124 58 237 / 0.1);
+  --cb-accent: #7c3aed;
+  --cb-danger: #b91c1c;
+  --cb-code-bg: rgb(29 27 38 / 0.06);
+}
+.dark {
+  --cb-overlay: rgb(0 0 0 / 0.65);
+  --cb-bg: #17161c;
+  --cb-sidebar: #131217;
+  --cb-raised: #1f1e26;
+  --cb-bubble: #211f28;
+  --cb-text: #ffffff;
+  --cb-text-2: #e5e7eb;
+  --cb-muted: #9ca3af;
+  --cb-faint: #6b7280;
+  --cb-border: rgb(255 255 255 / 0.08);
+  --cb-hover: rgb(255 255 255 / 0.06);
+  --cb-active: rgb(255 255 255 / 0.09);
+  --cb-accent: #c4b5fd;
+  --cb-danger: #fecaca;
+  --cb-code-bg: rgb(0 0 0 / 0.35);
+}
+
+/* Markdown answers in the "Ask Eazotel AI" chat. Tailwind's reset strips list
+   bullets, table borders and heading sizes, so put them back here. */
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p,
+.chat-markdown ul,
+.chat-markdown ol,
+.chat-markdown pre,
+.chat-markdown table { margin: 0.5rem 0; }
+.chat-markdown ul { list-style: disc; padding-left: 1.25rem; }
+.chat-markdown ol { list-style: decimal; padding-left: 1.25rem; }
+.chat-markdown li + li { margin-top: 0.2rem; }
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3 { margin: 0.75rem 0 0.35rem; font-weight: 600; color: var(--cb-text); }
+.chat-markdown h1 { font-size: 1.1rem; }
+.chat-markdown h2 { font-size: 1rem; }
+.chat-markdown h3 { font-size: 0.95rem; }
+.chat-markdown strong { color: var(--cb-text); font-weight: 600; }
+.chat-markdown code { border-radius: 4px; background: var(--cb-code-bg); padding: 0.1rem 0.3rem; font-size: 0.85em; }
+.chat-markdown pre { overflow-x: auto; border-radius: 8px; background: var(--cb-code-bg); padding: 0.75rem; }
+.chat-markdown pre code { background: none; padding: 0; }
+.chat-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 0.8rem; }
+.chat-markdown th,
+.chat-markdown td { border: 1px solid var(--cb-border); padding: 0.35rem 0.6rem; text-align: left; white-space: nowrap; }
+.chat-markdown th { background: var(--cb-hover); font-weight: 600; }
+.chat-markdown blockquote { border-left: 3px solid rgb(139 92 246 / 0.6); padding-left: 0.75rem; color: var(--cb-muted); }
