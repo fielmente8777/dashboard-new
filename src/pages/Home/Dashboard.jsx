@@ -36,19 +36,6 @@ import DeviceAnalytics from "../../components/Analytics/DeviceAnalytics";
 import GeoAnalytics from "../../components/Analytics/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import CallsAnalytics from "../Calls/CallsAnalytics";
-<<<<<<< HEAD
-import ChatbotWidget from "../../components/chatbot/ChatbotWidget.jsx";
-
-const COLORS = [
-  "#22c55e",
-  "#3b82f6",
-  "#f97316",
-  "#eab308",
-  "#a855f7",
-  "#ef4444",
-  "#14b8a6",
-];
-=======
 // [{ name, count }] -> ProgressList items, biggest first. The colour follows
 // the name (its place in alphabetical order), so it doesn't change when the
 // counts reorder the list.
@@ -85,9 +72,8 @@ const DashboardSkeleton = () => (
     </div>
   </div>
 );
->>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 
-const Dashboard = () => {
+function Dashboard() {
   const { hid } = useSelector((state) => state.userProfile);
   const analyticsRange = useAnalyticsRange();
   // refetched on every visit, like before, so the counts are never stale
@@ -133,8 +119,7 @@ const Dashboard = () => {
   const sourceItems = useMemo(() => toListItems(cleanedSource), [cleanedSource]);
   const stageItems = useMemo(() => toListItems(cleanedStatus), [cleanedStatus]);
 
-  const getStatusCount = (status) =>
-    cleanedStatus.find((s) => s.name === status)?.count || 0;
+  const getStatusCount = (status) => cleanedStatus.find((s) => s.name === status)?.count || 0;
 
   if (stats.isError && !data) {
     return (
@@ -150,7 +135,7 @@ const Dashboard = () => {
   }
 
   return (
-    
+
     <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -160,16 +145,16 @@ const Dashboard = () => {
           </p>
         </div>
         {/* drives the call and Google Analytics sections below */}
-        <DateRangePicker value={analyticsRange} onChange={setAnalyticsRange} />
+        {/* <DateRangePicker value={analyticsRange} onChange={setAnalyticsRange} /> */}
         {/* <select
-          name=""
-          id=""
-          onChange={(e) => setCurrentAnalytics(e.target.value)}
-          className="border! border-primary/10! outline-none px-3 py-1 rounded-md cursor-pointer"
-        >
-          <option value="overview">Overview</option>
-          <option value="call-analytics">Call Analytics</option>
-        </select> */}
+              name=""
+              id=""
+              onChange={(e) => setCurrentAnalytics(e.target.value)}
+              className="border! border-primary/10! outline-none px-3 py-1 rounded-md cursor-pointer"
+            >
+              <option value="overview">Overview</option>
+              <option value="call-analytics">Call Analytics</option>
+            </select> */}
       </div>
       {/* CRM KPI CARDS */}
       <div className="anim-stagger grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
@@ -180,8 +165,7 @@ const Dashboard = () => {
         <StatCard
           icon={MessageCircle}
           label="WhatsApp conversations"
-          value={whatsapp.toLocaleString()}
-        />
+          value={whatsapp.toLocaleString()} />
       </div>
 
       {/* CHARTS SECTION */}
@@ -202,14 +186,12 @@ const Dashboard = () => {
               <DonutChart
                 data={stageItems.map(({ label, value, color }) => ({ name: label, value, color }))}
                 centerLabel="Leads"
-                unit="leads"
-              />
+                unit="leads" />
               <div className="max-h-72 overflow-y-auto pr-1">
                 <ProgressList
                   showShare
                   total={stageItems.reduce((sum, item) => sum + item.value, 0)}
-                  items={stageItems}
-                />
+                  items={stageItems} />
               </div>
             </div>
           ) : (
@@ -230,23 +212,18 @@ const Dashboard = () => {
         <DeviceAnalytics />
         <GeoAnalytics />
         <AudienceInsights />
-<<<<<<< HEAD
-         <ChatbotWidget />
-        {/* <SeoIntelligenceDashboard /> */}
-=======
->>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
       </div>
 
       {/* <div className="w-full space-y-6 mt-6">
-        <LocalSeoModule />
-      </div> */}
+              <LocalSeoModule />
+            </div> */}
 
       {/* <div className="w-full space-y-6 mt-6">
-        <WebsiteSeoDashboard />
-      </div> */}
+              <WebsiteSeoDashboard />
+            </div> */}
     </div>
   );
-};
+}
 
 const Card = ({ title, value }) => (
   <div className="bg-app-surface dark:bg-app-surface rounded p-5">

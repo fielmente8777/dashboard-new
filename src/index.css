@@ -439,98 +439,6 @@ html.dark select option {
 }
 
 
-<<<<<<< HEAD
-.chat-markdown {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  line-height: 1.7;
-}
-
-.chat-markdown > :first-child {
-  margin-top: 0;
-}
-
-.chat-markdown > :last-child {
-  margin-bottom: 0;
-}
-
-.chat-markdown h1,
-.chat-markdown h2,
-.chat-markdown h3 {
-  color: #fff;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 16px 0 8px;
-}
-
-.chat-markdown h1 { font-size: 20px; }
-.chat-markdown h2 { font-size: 18px; }
-.chat-markdown h3 { font-size: 15px; }
-
-.chat-markdown p {
-  margin: 8px 0;
-}
-
-.chat-markdown strong {
-  color: #fff;
-  font-weight: 700;
-}
-
-.chat-markdown ul,
-.chat-markdown ol {
-  margin: 10px 0;
-  padding-left: 22px;
-}
-
-.chat-markdown ul { list-style: disc; }
-.chat-markdown ol { list-style: decimal; }
-
-.chat-markdown li {
-  margin: 5px 0;
-}
-
-.chat-markdown table {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  border-collapse: collapse;
-  margin: 12px 0;
-  font-size: 13px;
-}
-
-.chat-markdown th,
-.chat-markdown td {
-  border: 1px solid #45414f;
-  padding: 8px 10px;
-  text-align: left;
-}
-
-.chat-markdown th {
-  background: #302c3b;
-  color: #fff;
-  font-weight: 700;
-}
-
-.chat-markdown a {
-  color: #c4b5fd;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.chat-markdown code {
-  overflow-wrap: anywhere;
-  border-radius: 4px;
-  background: #302c3b;
-  padding: 2px 5px;
-}
-
-.chat-markdown pre {
-  overflow-x: auto;
-  border-radius: 8px;
-  background: #302c3b;
-  padding: 12px;
-=======
 /* ── Motion ──────────────────────────────────────────────────────────────
    Small, quick entrance animations for the pages built on components/ui.
    They only move things in; nothing loops except the loading shimmer.
@@ -741,5 +649,4 @@ html.dark select option {
     fill 0.4s ease,
     stroke 0.4s ease,
     box-shadow 0.4s ease !important;
->>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 }

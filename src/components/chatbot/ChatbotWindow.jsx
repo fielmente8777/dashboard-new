@@ -248,7 +248,7 @@ export default function ChatbotWindow({ onClose }) {
   }
 
   const showEmptyState = messages.length === 0 && !conversationLoading && !conversationError;
-
+  
   return (
     <div
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 p-3 backdrop-blur-[2px] sm:p-6"

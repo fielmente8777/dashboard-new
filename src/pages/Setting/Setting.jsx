@@ -17,31 +17,42 @@ import ChangePassword from "./components/ChangePassword";
 
 import useHotelManager from "./hooks/useHotelManager";
 
+const CARD =
+  "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-app-border dark:bg-app-surface";
+
 const Setting = () => {
+  const { hotel, authUser } = useSelector((state) => state.auth || {});
   const [changePassword] = useChangePasswordMutation();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const profile = hotel?.Profile;
 
   const {
-  hotels,
-  editingHotel,
-  showAddHotel,
-  hotelForm,
-  hotelLoading,
+    hotels,
+    editingHotel,
+    showAddHotel,
+    hotelForm,
+    hotelLoading,
+    handleHotelChange,
+    handleEditHotel,
+    handleAddHotel,
+    handleOpenAddHotel,
+    handleCloseAddHotel,
+    handleCloseHotelModal,
+    handleUpdateHotel,
+    handleDeleteHotel,
+  } = useHotelManager(profile);
 
-  handleHotelChange,
-  handleEditHotel,
-  handleAddHotel,
-  handleOpenAddHotel,
-  handleCloseAddHotel,
-  handleCloseHotelModal,
-  handleUpdateHotel,
-  handleDeleteHotel,
-} = useHotelManager(profile);
+  const resetPasswordFields = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
 
+  const handlePasswordSubmit = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
       Swal.fire({
         icon: "warning",
@@ -82,6 +93,7 @@ const Setting = () => {
           confirmButtonText: "OK",
         });
       }
+
       resetPasswordFields();
     } catch {
       Swal.fire({
@@ -98,9 +110,7 @@ const Setting = () => {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      {/* ── identity + org + contact ─────────────────────────── */}
       <div className={`${CARD} grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3`}>
-        {/* user */}
         <div className="flex items-center gap-4 min-w-0">
           <div className="shrink-0 h-14 w-14 rounded-full bg-orange-100 dark:bg-app-surface flex items-center justify-center">
             <span className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-app-text-muted">
@@ -120,32 +130,27 @@ const Setting = () => {
           </div>
         </div>
 
-      {/* Profile */}
-      <ProfileOverview
-        profile={profile}
-        authUser={authUser}
-      />
+        <ProfileOverview profile={profile} authUser={authUser} />
 
-      {/* Hotels */}
-      <HotelsSection
-        hotels={hotels}
-        onEdit={handleEditHotel}
-        onDelete={handleDeleteHotel}
-        onAdd={handleOpenAddHotel}
-      />
+        <HotelsSection
+          hotels={hotels}
+          onEdit={handleEditHotel}
+          onDelete={handleDeleteHotel}
+          onAdd={handleOpenAddHotel}
+        />
+      </div>
 
       {showAddHotel && (
-  <HotelModal
-    mode="add"
-    hotelForm={hotelForm}
-    hotelLoading={hotelLoading}
-    onChange={handleHotelChange}
-    onClose={handleCloseAddHotel}
-    onSave={handleAddHotel}
-  />
-)}
+        <HotelModal
+          mode="add"
+          hotelForm={hotelForm}
+          hotelLoading={hotelLoading}
+          onChange={handleHotelChange}
+          onClose={handleCloseAddHotel}
+          onSave={handleAddHotel}
+        />
+      )}
 
-      {/* Edit Hotel Modal */}
       {editingHotel && (
         <HotelModal
           hotelForm={hotelForm}
@@ -156,14 +161,9 @@ const Setting = () => {
         />
       )}
 
-      {/* URLs */}
-      <UrlManager
-        initialLinks={profile.urls}
-      />
+      <UrlManager initialLinks={profile.urls} />
 
-      {/* Password */}
       <ChangePassword />
-
     </div>
   );
 };
