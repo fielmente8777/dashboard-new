@@ -22,8 +22,9 @@ createRoot(document.getElementById("root")).render(
             <App />
           </ConfirmProvider>
         </ToastProvider>
+        <ChatbotWidget />
       </BrowserRouter>
-      <ChatbotWidget />
+      
     </DataProvider>
   </Provider>,
 );
