@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import VoiceRecorder from "../../../../components/VoiceRecorder";
 import Loader from "../../../../components/Loader";
+import { Select } from "../../../../components/ui/Field";
 
 /* <option> is drawn by the OS, so it needs its own explicit colors.
    Chrome/Edge/Firefox honour these; Safari falls back to color-scheme. */
-const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
 
 const activityOptions = [
   { value: "phone_call", label: "Phone Call", emoji: "📞" },
@@ -97,17 +97,14 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
           <div className="w-9 h-9 shrink-0 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-base">
             {selected?.emoji}
           </div>
-          <select
-            className="flex-1 min-w-0 outline-none text-sm sm:text-base text-app-text bg-app-surface cursor-pointer"
-            value={activitySource}
-            onChange={(e) => setActivitySource(e.target.value)}
-          >
-            {activityOptions.map((opt) => (
-              <option key={opt.value} value={opt.value} className={OPTION}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-0 flex-1">
+            <Select
+              aria-label="Activity"
+              value={activitySource}
+              onChange={(e) => setActivitySource(e.target.value)}
+              options={activityOptions}
+            />
+          </div>
         </div>
 
         {/* Textarea + voice bar in bottom-left */}

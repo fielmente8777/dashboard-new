@@ -1,406 +1,254 @@
-import { useContext, useEffect, useState, useRef } from "react";
-import JoditEditor from "jodit-react";
-import { FaPlus } from "react-icons/fa";
-import { BASE_URL } from "../../data/constant";
-import DataContext from "../../context/DataContext";
-import AdsPackage from "../../components/Card/AdsPackage";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import { Field, Input, Textarea } from "../../components/ui/Field";
+import ImageListPicker from "../../components/ui/ImageListPicker";
+import PageShell from "../../components/ui/PageShell";
+import RichTextEditor from "../../components/ui/RichTextEditor";
+import Tabs from "../../components/ui/Tabs";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useApiAction } from "../../hooks/useApiAction";
+import { useImageUpload } from "../../hooks/useImageUpload";
+import {
+  useCreateAdPackageMutation,
+  useDeleteAdPackageMutation,
+  useGetAdPackagesQuery,
+} from "../../redux/api/bookingEngineApi";
+import { selectHid } from "../../redux/slice/UserSlice";
+import PackageCard from "./components/PackageCard";
+import PackageList from "./components/PackageList";
+import DatePicker from "../../components/ui/DatePicker";
 
-/* ── styling only ───────────────────────────────────────────── */
-const LABEL =
-  "block text-sm font-medium text-app-text dark:text-app-text mb-1";
-const FIELD =
-  "w-full rounded-md border border-app-border bg-app-surface px-4 py-2 text-sm text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+const EMPTY_FORM = {
+  name: "",
+  description: "",
+  inclusion: "",
+  guests: "",
+  days: "",
+  nights: "",
+  price: "",
+  start: "",
+  end: "",
+};
 
-function PricePackage() {
-  const editor = useRef(null);
-  const { joditConfig } =
-    useContext(DataContext);
-  const [Adspackages, setAdspackages] = useState([])
+const AdsPackages = () => {
+  const hid = useSelector(selectHid);
+  const { confirm } = useConfirm();
+  const run = useApiAction();
+  const { uploadAll } = useImageUpload();
+  const packages = useGetAdPackagesQuery(hid, {
+    skip: !hid,
+    refetchOnMountOrArgChange: true,
+  });
+  const [createPackage] = useCreateAdPackageMutation();
+  const [deletePackage] = useDeleteAdPackageMutation();
 
+  const [tab, setTab] = useState("list");
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [itinerary, setItinerary] = useState("");
+  const [images, setImages] = useState([]);
+  const [saving, setSaving] = useState(false);
 
+  const list = packages.data || [];
+  const setField = (name) => (e) =>
+    setForm({ ...form, [name]: e.target.value });
+  const hasValidDates = form.start && form.end && form.start <= form.end;
 
-
-  const tab = ["Current Packages", "Add New Packages"]
-
-  const [activeTab, setActiveTab] = useState(tab[0])
-
-  const [package_name, setpackage_name] = useState();
-  const [package_description, setpackage_description] = useState();
-  const [package_Inclusion, setpackage_Inclusion] = useState();
-  const [package_Itinerary, setpackage_Itinerary] = useState();
-  const [package_guests, setpackage_guests] = useState();
-  const [package_days, setpackage_days] = useState();
-  const [package_night, setpackage_night] = useState();
-  const [package_price, setpackage_price] = useState();
-  const [plan_image, setplan_image] = useState();
-  const [plan_start, setplan_start] = useState();
-  const [plan_end, setplan_end] = useState();
-  const [roomType, setroomType] = useState();
-  const [Image, setImage] = useState([]);
-
-
-
-  function uploadImage(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const imageInput = document.getElementById("packageimges");
-    const files = imageInput.files;
+    setSaving(true);
 
-    if (files.length === 0) {
-      alert("Please select at least one image file.");
-      return;
-    }
+    const packageImage = await uploadAll(images);
+    const created =
+      packageImage &&
+      (await run(
+        createPackage({
+          hid,
+          packageName: form.name.trim(),
+          packageDesc: form.description.trim(),
+          packageInclusion: form.inclusion.trim(),
+          packageItinerary: itinerary,
+          packageguests: form.guests,
+          packagePrice: form.price,
+          NoofDays: form.days,
+          NoofNight: form.nights,
+          packageImage,
+          packageStart: form.start,
+          packageEnd: form.end,
+          roomTypeProvided: "1",
+        }),
+        { success: "Package added", error: "Could not add the package." },
+      ));
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-
-      const reader = new FileReader();
-      reader.onloadend = function () {
-        const base64String = reader.result.split(",")[1];
-        UploadingImageS3(base64String);
-      };
-
-      reader.readAsDataURL(file);
-    }
-  }
-
-  function UploadingImageS3(base64String) {
-    fetch(`${BASE_URL}/upload/file/image`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token: window.localStorage.getItem("Token"),
-        image: base64String,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setImage((prevImages) => prevImages.concat(data.Image));
-
-        document.getElementById("fileimg").value = null;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
-
-  const AddMealPackage = async () => {
-    if (
-      package_name === "" ||
-      package_description === "" ||
-      package_Inclusion === "" ||
-      package_Itinerary === "" ||
-      package_guests === "" ||
-      package_days === "" ||
-      package_night === "" ||
-      package_price === "" ||
-      plan_start === "" ||
-      plan_end === ""
-    ) {
-      alert("Please fill details");
-    } else {
-      try {
-        const response = await fetch(
-          `${BASE_URL}/rpackage/ad/packages/create`,
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json, text/plain, /",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              token: window.localStorage.getItem("token"),
-              hId: localStorage.getItem("hid"),
-              packageName: package_name,
-              packageDesc: package_description,
-              packageInclusion: package_Inclusion,
-              packageItinerary: package_Itinerary,
-              packageguests: package_guests,
-              packagePrice: package_price,
-              NoofDays: package_days,
-              NoofNight: package_night,
-              packageImage: Image,
-              packageStart: plan_start,
-              packageEnd: plan_end,
-              roomTypeProvided: "1",
-            }),
-          }
-        );
-
-        const json = await response.json();
-        // console.log(json);
-
-        if (json.Status === true) {
-          AdsPackagesAPI();
-          Referesh();
-        }
-      } catch {
-        alert("Some Problem");
-      }
+    setSaving(false);
+    if (created) {
+      // the form (and its editor) is unmounted with the tab, so it starts empty next time
+      setForm(EMPTY_FORM);
+      setItinerary("");
+      setImages([]);
+      setTab("list");
     }
   };
 
-  const DeleteMealPackage = async (planId) => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/rpackage/ad/packages/delete`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json, text/plain, /",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: window.localStorage.getItem("token"),
-            packageId: planId,
-            hId: localStorage.getItem("hid"),
-          }),
-        }
-      );
+  const handleDelete = async (pack) => {
+    const confirmed = await confirm(
+      `Delete the package "${pack.packageName}"? This cannot be undone.`,
+      { title: "Delete package" },
+    );
+    if (!confirmed) return;
 
-      const json = await response.json();
-      // console.log(json);
-
-      if (json.Status === true) {
-        AdsPackagesAPI();
-        Referesh();
-      }
-    } catch {
-      alert("Some Problem");
-    }
+    await run(deletePackage({ hid, packageId: pack.packageId }), {
+      success: "Package deleted",
+      error: "Could not delete the package.",
+    });
   };
-
-  const Referesh = () => {
-    setpackage_name();
-    setpackage_description();
-    setpackage_Inclusion();
-    setpackage_Itinerary();
-    setpackage_guests();
-    setpackage_days();
-    setpackage_night();
-    setpackage_price();
-    setplan_image([]);
-    setplan_start();
-    setplan_end();
-    setroomType();
-  };
-
-
-  const AdsPackagesAPI = async () => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/rpackage/ad/packages/${localStorage.getItem(
-          "token"
-        )}/${localStorage.getItem("hid")}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json, text/plain, /",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const json = await response.json();
-
-      if (json.Status === true) {
-        setAdspackages(json.Packages);
-      }
-    } catch {
-      // alert("Some Problem");
-    }
-  };
-  useEffect(() => {
-    AdsPackagesAPI();
-  }, []);
-
-  // console.log(Adspackages)
-
-
 
   return (
-    <div className="bg-app-surface p-4 [color-scheme:light] dark:[color-scheme:dark]">
-
-      <div className="flex flex-wrap">
-        {tab.map((item, index) => (
-          <button key={index} onClick={() => setActiveTab(item)} className={`active:scale-90 px-3 py-2 text-sm transition-colors ${activeTab === item ? "bg-primary text-white border border-primary" : "bg-app-surface-secondary text-app-text border border-app-border hover:bg-app-surface"}`}>{item}</button>
-        ))}
-      </div>
-
-
-      {activeTab === "Add New Packages" && <div className="flex flex-col gap-2 mt-4">
-        <div className="">
-          <label htmlFor="#" className={LABEL}>Package Name</label>
-          <input
-            type="text"
-            value={package_name}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_name(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Description</label>
-          <input
-            type="text"
-            value={package_description}
-            className={FIELD}
-
-            onChange={(e) => {
-              setpackage_description(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Inclusion</label>
-          <input
-            type="text"
-            value={package_Inclusion}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_Inclusion(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Itinerary</label>
-          <div className="rounded-md border border-app-border overflow-hidden bg-white">
-            <JoditEditor
-              id="jodit1"
-              ref={editor}
-              className="w-full text-sm outline-none "
-              value={package_Itinerary}
-              onChange={(content) => {
-                setpackage_Itinerary(content);
-                editor.current?.focus();
-              }}
-              config={joditConfig}
-            />
-          </div>
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Guests</label>
-          <input
-            type="text"
-            value={package_guests}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_guests(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Days</label>
-          <input
-            type="text"
-            value={package_days}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_days(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Night</label>
-          <input
-            type="text"
-            value={package_night}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_night(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Price</label>
-          <input
-            type="text"
-            value={package_price}
-            className={FIELD}
-            onChange={(e) => {
-              setpackage_price(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package Start</label>
-          <input
-            type="date"
-            value={plan_start}
-            className={FIELD}
-            onChange={(e) => {
-              setplan_start(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-        <div className="priceinput_div">
-          <label htmlFor="#" className={LABEL}>Package End</label>
-          <input
-            type="date"
-            value={plan_end}
-            className={FIELD}
-            onChange={(e) => {
-              setplan_end(e.target.value);
-            }}
-            placeholder="Enter Here"
-          />
-        </div>
-
-        <div className="cmsForm_div">
-          <div className="cmsForm_div cmsimgdiv">
-            <div className="CmsNearImglabel">
-              <label htmlFor="/" className={LABEL}>Image:</label>
-              <button type="button" className="upload flex items-center gap-2 rounded-md border border-app-border bg-app-surface px-4 py-2 text-sm text-app-text hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                <span className="cmsupldspn">Upload Image</span>
-                <FaPlus className="cmsplusicon" />
-                <input
-                  type="file"
-                  id="packageimges"
-                  onChange={uploadImage}
-                  multiple
+    <PageShell
+      title="Ads Packages"
+      description="Holiday packages promoted in your ads and on the booking engine."
+      actions={
+        <Tabs
+          value={tab}
+          onChange={setTab}
+          tabs={[
+            { value: "list", label: `Packages (${list.length})` },
+            { value: "add", label: "Add package" },
+          ]}
+        />
+      }
+    >
+      {tab === "add" ? (
+        <Card title="Add package">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Field label="Package name" className="lg:col-span-2">
+                <Input
+                  required
+                  value={form.name}
+                  onChange={setField("name")}
+                  placeholder="e.g. Goa Weekend Escape"
                 />
-              </button>
+              </Field>
+              <Field label="Price (₹)">
+                <Input
+                  required
+                  type="number"
+                  min="0"
+                  value={form.price}
+                  onChange={setField("price")}
+                  placeholder="0"
+                />
+              </Field>
+              <Field label="Guests">
+                <Input
+                  required
+                  type="number"
+                  min="1"
+                  value={form.guests}
+                  onChange={setField("guests")}
+                  placeholder="2"
+                />
+              </Field>
+              <Field label="Days">
+                <Input
+                  required
+                  type="number"
+                  min="1"
+                  value={form.days}
+                  onChange={setField("days")}
+                  placeholder="3"
+                />
+              </Field>
+              <Field label="Nights">
+                <Input
+                  required
+                  type="number"
+                  min="0"
+                  value={form.nights}
+                  onChange={setField("nights")}
+                  placeholder="2"
+                />
+              </Field>
+              <Field label="Start date">
+                <DatePicker
+                  value={form.start}
+                  max={form.end || undefined}
+                  onChange={(start) => setForm({ ...form, start })}
+                />
+              </Field>
+              <Field label="End date">
+                <DatePicker
+                  value={form.end}
+                  min={form.start || undefined}
+                  onChange={(end) => setForm({ ...form, end })}
+                />
+              </Field>
             </div>
-            <div className="upl_img mt-3 flex flex-wrap gap-3">
-              {Image.map((img) => {
-                return <img src={img} alt="" className="h-24 w-24 rounded-md object-cover border border-app-border" />;
-              })}
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Field label="Description">
+                <Textarea
+                  required
+                  value={form.description}
+                  onChange={setField("description")}
+                  placeholder="A short summary of the package"
+                />
+              </Field>
+              <Field label="Inclusions">
+                <Textarea
+                  required
+                  value={form.inclusion}
+                  onChange={setField("inclusion")}
+                  placeholder="e.g. Breakfast, airport pickup, sightseeing"
+                />
+              </Field>
             </div>
-          </div>
-        </div>
-        <button type="button" className="pricSubmitBtn mt-2 w-full sm:w-auto self-start rounded-md bg-primary hover:bg-primary/90 px-6 py-2 text-sm font-medium text-white transition-colors" onClick={AddMealPackage}>
-          Submit
-        </button>
 
-        {/* card start  */}
+            <Field label="Itinerary" as="div">
+              <RichTextEditor value="" onChange={setItinerary} height={300} />
+            </Field>
 
+            <Field label="Images" as="div">
+              <ImageListPicker files={images} onChange={setImages} />
+            </Field>
 
-      </div>}
-
-      {activeTab === "Current Packages" && <div className=" grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 mt-5">
-        {Adspackages && Adspackages?.map((pack) => (
-          <AdsPackage
-            packageImage={pack.packageImage}
-            packageName={pack.packageName}
-            packageDesc={pack.packageDesc}
-            packagePrice={pack.packagePrice}
-            packageId={pack.packageId}
-            DeleteMealPackage={DeleteMealPackage}
-          />
-        ))}
-      </div>}
-    </div>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                icon={Plus}
+                loading={saving}
+                disabled={!hasValidDates}
+              >
+                Add package
+              </Button>
+            </div>
+          </form>
+        </Card>
+      ) : (
+        <PackageList
+          query={packages}
+          isEmpty={list.length === 0}
+          emptyTitle="No ad packages yet"
+        >
+          {list.map((pack) => (
+            <PackageCard
+              key={pack.packageId}
+              title={pack.packageName}
+              images={pack.packageImage}
+              description={pack.packageDesc}
+              price={pack.packagePrice}
+              start={pack.packageStart}
+              end={pack.packageEnd}
+              onDelete={() => handleDelete(pack)}
+            />
+          ))}
+        </PackageList>
+      )}
+    </PageShell>
   );
-}
+};
 
-export default PricePackage;
+export default AdsPackages;

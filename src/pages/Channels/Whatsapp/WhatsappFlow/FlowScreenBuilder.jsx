@@ -1,79 +1,93 @@
+import { ArrowLeft, Plus, Rocket, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { FiX } from "react-icons/fi";
-import CustomDropdown from "../../../../components/ui/Dropdown";
+import Badge from "../../../../components/ui/Badge";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { Field, Input, inputClassName } from "../../../../components/ui/Field";
+import IconButton from "../../../../components/ui/IconButton";
+import SelectMenu from "../../../../components/ui/SelectMenu";
+import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
 import { createWhatAppFlow } from "../../../../services/api/whatsApp";
-import Loader from "../../../../components/Loader";
-const FLOW_INPUTS = [
-  {
-    label: "Short Answer",
-    value: "text",
-  },
-  {
-    label: "Long Text",
-    value: "textarea",
-  },
-  {
-    label: "Email",
-    value: "email",
-  },
-  {
-    label: "Number",
-    value: "number",
-  },
-  {
-    label: "Date",
-    value: "date",
-  },
-];
+import { FIELD_TYPES, flowProblem, newScreen } from "./flowUtils";
 
-const FlowScreenBuilder = ({ flowMeta }) => {
+// What a guest sees for one field in the preview.
+const PreviewField = ({ field }) => {
+  const label = `${field.label || "Untitled field"}${field.required ? " *" : ""}`;
+  if (field.type === "textarea") {
+    return <textarea disabled rows={2} placeholder={label} className={inputClassName} />;
+  }
+  return (
+    <input
+      disabled
+      type={field.type === "date" ? "text" : field.type}
+      placeholder={field.type === "date" ? `${label} (date)` : label}
+      className={inputClassName}
+    />
+  );
+};
+
+// Screens of a new flow (each a page of fields), with a live preview.
+const FlowScreenBuilder = ({ flowMeta, onBack, onPublished }) => {
   const { showToast } = useToast();
-  const [screens, setScreens] = useState([
-    { id: 1, title: "Sign up", fields: [] },
+  const [screens, setScreens] = useState(() => [
+    newScreen(flowMeta?.template?.screen || "Your details", flowMeta?.template?.fields || []),
   ]);
-
-  const [activeScreen, setActiveScreen] = useState(0);
+  const [active, setActive] = useState(0);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const addField = () => {
-    const updated = [...screens];
-    updated[activeScreen].fields.push({
-      label: "New Field",
-      type: "text",
-      required: false,
+  const screen = screens[active];
+  const isLast = active === screens.length - 1;
+
+  const updateScreen = (changes) =>
+    setScreens((prev) => prev.map((s, i) => (i === active ? { ...s, ...changes } : s)));
+
+  const updateField = (index, changes) =>
+    updateScreen({
+      fields: screen.fields.map((f, i) => (i === index ? { ...f, ...changes } : f)),
     });
-    setScreens(updated);
+
+  const addField = () =>
+    updateScreen({ fields: [...screen.fields, { label: "", type: "text", required: false }] });
+
+  const removeField = (index) =>
+    updateScreen({ fields: screen.fields.filter((_, i) => i !== index) });
+
+  const addScreen = () => {
+    setScreens((prev) => [...prev, newScreen()]);
+    setActive(screens.length);
   };
 
-  const handlePublishFlow = async () => {
+  const removeScreen = (index) => {
+    setScreens((prev) => prev.filter((_, i) => i !== index));
+    setActive((current) => Math.max(0, current >= index ? current - 1 : current));
+  };
+
+  const publish = async () => {
+    const problem = flowProblem(screens);
+    if (problem) {
+      showToast({ message: problem, type: "error" });
+      return;
+    }
+
     setIsPublishing(true);
-
     try {
-      const payload = {
+      const response = await createWhatAppFlow({
         flowName: flowMeta?.name,
-        screens, // 🔥 important
         category: flowMeta?.category,
-      };
-
-      const response = await createWhatAppFlow(payload);
-
-      if (response?.success) {
-        showToast({
-          message: "Flow created successfully",
-          type: "success",
-        });
-
-        return;
-      }
-      showToast({
-        message: response?.responseMessage,
-        type: "error",
+        screens: screens.map((s) => ({
+          ...s,
+          title: s.title.trim(),
+          fields: s.fields.map((f) => ({ ...f, label: f.label.trim() })),
+        })),
       });
+      if (!response?.success) throw new Error(response?.responseMessage);
+
+      showToast({ message: "Flow published" });
+      onPublished?.();
     } catch (error) {
-      console.log(error);
       showToast({
-        message: error?.message || "Failed to publish flow",
+        message: error?.message || "Could not publish the flow.",
         type: "error",
       });
     } finally {
@@ -82,184 +96,137 @@ const FlowScreenBuilder = ({ flowMeta }) => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      {/* HEADER */}
-      <div className="flex justify-between items-center p-3 border-b bg-white">
-        <h2 className="font-semibold text-gray-800">{flowMeta?.name}</h2>
-
-        <div className="flex gap-2">
-          {/* <button className="border px-3 py-1 rounded text-sm hover:bg-gray-100">
-            Save as draft
-          </button> */}
-          <button
-            disabled={isPublishing}
-            onClick={handlePublishFlow}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded text-sm flex items-center gap-2"
-          >
-            Publish {isPublishing && <Loader color="#fefefe" size={16} />}
-          </button>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <IconButton icon={ArrowLeft} label="Back to templates" onClick={onBack} />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-base font-semibold text-app-text">{flowMeta?.name}</h2>
+          <p className="text-xs text-app-text-muted">
+            {screens.length} {screens.length === 1 ? "screen" : "screens"}
+          </p>
         </div>
+        <Badge tone="green">{flowMeta?.template?.title || flowMeta?.category}</Badge>
+        <Button icon={Rocket} onClick={publish} loading={isPublishing}>
+          Publish flow
+        </Button>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* LEFT: SCREENS */}
-        <div className="max-w-72 w-full border-r bg-white p-3 space-y-2">
-          <p className="text-xs text-gray-500 mb-2">SCREENS</p>
-
-          {screens.map((screen, index) => (
-            <div
-              key={screen.id}
-              //   className={`group flex items-center justify-between p-2 rounded cursor-pointer ${
-              //     activeScreen === index
-              //       ? "bg-primary/90 text-white"
-              //       : "hover:bg-gray-100"
-              //   }`}
-              className={`group flex items-center justify-between p-2 rounded cursor-pointer transition ${
-                activeScreen === index
-                  ? "bg-primary text-white"
-                  : "hover:bg-gray-100 text-gray-700"
-              }`}
-              onClick={() => setActiveScreen(index)}
-            >
-              <span>{screen.title}</span>
-
-              {/* Delete button (only on hover) */}
-              {screens.length > 1 && (
+      <div className="grid items-start gap-4 lg:grid-cols-[13rem_1fr_18rem]">
+        {/* screens */}
+        <Card title="Screens">
+          <ol className="space-y-1">
+            {screens.map((s, index) => (
+              <li key={s.id} className="group flex items-center gap-1">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-
-                    const updated = screens.filter((_, i) => i !== index);
-                    setScreens(updated);
-
-                    if (activeScreen >= updated.length) {
-                      setActiveScreen(updated.length - 1);
-                    }
-                  }}
-                  className="size-4 rounded-full flex justify-center items-center bg-red-200 opacity-0 group-hover:opacity-100 text-red-500 text-xs"
+                  type="button"
+                  onClick={() => setActive(index)}
+                  className={`min-w-0 flex-1 truncate rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                    index === active
+                      ? "bg-primary font-medium text-white dark:bg-blue-600"
+                      : "text-app-text-muted hover:bg-app-surface-secondary hover:text-app-text"
+                  }`}
                 >
-                  <FiX size={12} />
+                  {index + 1}. {s.title || "Untitled"}
                 </button>
-              )}
-            </div>
-          ))}
-
-          <button
-            onClick={() =>
-              setScreens([
-                ...screens,
-                {
-                  id: Date.now(),
-                  title: "New Screen",
-                  fields: [],
-                },
-              ])
-            }
-            className="mt-3 text-xs border text-primary border-primary/40! hover:bg-primary hover:text-white p-2 rounded-md duration-300"
-          >
-            + Add Screen
-          </button>
-        </div>
-
-        <div className="flex flex-1 p-4 overflow-y-auto bg-gray-50">
-          {/* CENTER: CONTENT */}
-          <div className="flex-1 p-4 overflow-y-auto">
-            <p className="text-xs text-gray-500 mb-2">CONTENT</p>
-
-            {/* Screen Title */}
-            <input
-              value={screens[activeScreen].title}
-              onChange={(e) => {
-                const updated = [...screens];
-                updated[activeScreen].title = e.target.value;
-                setScreens(updated);
-              }}
-              className="border border-gray-300! focus:border-primary focus:ring-1 focus:ring-primary outline-none w-full p-2 mb-4 rounded"
-            />
-
-            {/* Fields */}
-            {screens[activeScreen].fields.map((field, i) => (
-              <div
-                key={i}
-                className="relative border border-gray-200 bg-white p-3 mb-3 rounded group hover:border-gray-300 transition space-y-2"
-              >
-                {/* Delete button */}
-                <button
-                  onClick={() => {
-                    const updated = [...screens];
-                    updated[activeScreen].fields.splice(i, 1);
-                    setScreens(updated);
-                  }}
-                  className="absolute -top-2 -right-1 bg-red-200 rounded-full size-4 flex justify-center items-center text-red-500 opacity-0 group-hover:opacity-100 text-xs"
-                >
-                  <FiX size={12} />
-                </button>
-
-                {/* Label */}
-                <input
-                  value={field.label}
-                  onChange={(e) => {
-                    const updated = [...screens];
-                    updated[activeScreen].fields[i].label = e.target.value;
-                    setScreens(updated);
-                  }}
-                  className="border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary outline-none w-full p-2 rounded"
-                />
-
-                {/* Field Type */}
-                <div className="w-full">
-                  <CustomDropdown
-                    options={FLOW_INPUTS}
-                    onChange={(value) => {
-                      const updated = [...screens];
-                      updated[activeScreen].fields[i].type = value;
-                      setScreens(updated);
-                    }}
+                {screens.length > 1 && (
+                  <IconButton
+                    icon={Trash2}
+                    label={`Remove ${s.title || "screen"}`}
+                    tone="danger"
+                    size="sm"
+                    onClick={() => removeScreen(index)}
                   />
-                </div>
-
-                {/* Required toggle (only on hover) */}
-                <div className="flex justify-end gap-2 mt-2 opacity-0 group-hover:opacity-100 transition duration-150">
-                  <span className="text-xs text-gray-500">Required</span>
-                  <input
-                    type="checkbox"
-                    checked={field.required}
-                    onChange={() => {
-                      const updated = [...screens];
-                      updated[activeScreen].fields[i].required =
-                        !field.required;
-                      setScreens(updated);
-                    }}
-                  />
-                </div>
-              </div>
+                )}
+              </li>
             ))}
+          </ol>
+          <Button variant="dashed" size="sm" icon={Plus} onClick={addScreen} className="mt-3 w-full">
+            Add screen
+          </Button>
+        </Card>
 
-            <button
-              onClick={addField}
-              className="mt-2 border border-primary/60! text-primary hover:bg-primary/90 hover:text-white p-2 rounded-md text-xs duration-300"
-            >
-              + Add Field
-            </button>
-          </div>
+        {/* fields of the selected screen */}
+        <Card title={`Screen ${active + 1}`} description="What this page of the form asks.">
+          <div className="space-y-4">
+            <Field label="Screen title">
+              <Input
+                value={screen.title}
+                onChange={(e) => updateScreen({ title: e.target.value })}
+                placeholder="e.g. Your details"
+              />
+            </Field>
 
-          {/* RIGHT: PREVIEW */}
-          <div className="max-w-96 w-full border-l p-2 flex justify-center items-start">
-            <div className="bg-app-surface border rounded-lg p-3 shadow w-full">
-              <h3 className="text-center font-semibold mb-3">
-                {screens[activeScreen].title}
-              </h3>
-
-              {screens[activeScreen].fields.map((field, i) => (
-                <input
-                  key={i}
-                  placeholder={field.label}
-                  className="border w-full p-2 mb-2 rounded"
-                />
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-app-text-muted">Fields</p>
+              {screen.fields.length === 0 && (
+                <p className="rounded-lg border border-dashed border-app-border! px-4 py-6 text-center text-sm text-app-text-muted">
+                  No fields yet. Add the first question guests should answer.
+                </p>
+              )}
+              {screen.fields.map((field, index) => (
+                <div
+                  key={index}
+                  className="grid gap-2 rounded-lg border border-app-border! p-3 sm:grid-cols-[1fr_10rem_auto]"
+                >
+                  <Input
+                    aria-label="Field label"
+                    value={field.label}
+                    onChange={(e) => updateField(index, { label: e.target.value })}
+                    placeholder="Question, e.g. Full name"
+                  />
+                  <SelectMenu
+                    label="Field type"
+                    options={FIELD_TYPES}
+                    value={field.type}
+                    onChange={(type) => updateField(index, { type })}
+                    className="w-full"
+                  />
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="text-xs text-app-text-muted">Required</span>
+                    <Switch
+                      label="Required"
+                      checked={field.required}
+                      onChange={(required) => updateField(index, { required })}
+                    />
+                    <IconButton
+                      icon={Trash2}
+                      label="Remove field"
+                      tone="danger"
+                      onClick={() => removeField(index)}
+                    />
+                  </div>
+                </div>
               ))}
+              <Button variant="dashed" size="sm" icon={Plus} onClick={addField}>
+                Add field
+              </Button>
+            </div>
+          </div>
+        </Card>
 
-              <button className="w-full bg-green-500 text-white py-2 rounded mt-2">
-                Submit
+        {/* preview */}
+        <div className="lg:sticky lg:top-2">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-app-text-muted">
+            Preview
+          </p>
+          <div className="overflow-hidden rounded-2xl border border-app-border! bg-app-surface shadow-sm">
+            <div className="bg-[#075E54] px-4 py-3 text-center text-sm font-semibold text-white">
+              {screen.title || "Untitled screen"}
+            </div>
+            <div className="space-y-2 p-4">
+              {screen.fields.length ? (
+                screen.fields.map((field, index) => <PreviewField key={index} field={field} />)
+              ) : (
+                <p className="py-4 text-center text-xs text-app-text-faint">
+                  Fields you add show up here.
+                </p>
+              )}
+              <button
+                type="button"
+                disabled
+                className="mt-2 w-full rounded-full bg-[#25D366] py-2 text-sm font-semibold text-white"
+              >
+                {isLast ? "Submit" : "Continue"}
               </button>
             </div>
           </div>

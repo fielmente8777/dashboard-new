@@ -1,3 +1,4 @@
+import { ROUTES } from "../../routes/paths";
 import { MdClose } from "react-icons/md";
 import { removeCookie } from "../../utils/handleCookies";
 import { useContext } from "react";
@@ -17,7 +18,7 @@ const ProfilePopup = ({ isProfileOpen, setIsProfileOpen, Color }) => {
     removeCookie("token");
     setAuth(false);
     dispatch(setHid(null));
-    navigate("/login");
+    navigate(ROUTES.LOGIN);
     selectedConversation(null);
   };
 

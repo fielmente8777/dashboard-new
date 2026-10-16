@@ -1,3 +1,4 @@
+import { Select } from "./ui/Field";
 const TablePaginationInfo = ({
   page,
   limit,
@@ -18,17 +19,13 @@ const TablePaginationInfo = ({
       </p>
 
       {/* Right Limit Selector */}
-      <select
+      <Select
+        aria-label="Rows per page"
         value={limit}
         onChange={(e) => onLimitChange(Number(e.target.value))}
-        className="border rounded px-3 py-1 text-sm bg-app-surface!"
-      >
-        {limitOptions.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
+        className="w-20!"
+        options={limitOptions.map((opt) => ({ value: opt, label: String(opt) }))}
+      />
     </div>
   );
 };

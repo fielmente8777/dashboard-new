@@ -1,6 +1,7 @@
 import { BASE_URL, NEW_BASE_URL } from "../../data/constant";
+import { API_URLS } from "../../config/env";
 
-const url = "https://nexon.eazotel.com/eazotel/addcontacts";
+const url = `${API_URLS.core}/eazotel/addcontacts`;
 
 export const bulkImportMetaLeads = async () => {
   const token = localStorage.getItem("token");

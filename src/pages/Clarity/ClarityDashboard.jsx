@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { API_URLS } from "../../config/env";
 
 function normalizeClarityData(raw) {
   const result = {
@@ -53,7 +54,7 @@ export default function ClarityDashboard() {
 
   useEffect(() => {
     fetch(
-      "http://localhost:8000/api/v1/clarity/overview?startDate=2025-01-01&endDate=2025-01-31"
+      `${API_URLS.node}/api/v1/clarity/overview?startDate=2025-01-01&endDate=2025-01-31`
     )
       .then((res) => res.json())
       .then((res) => {

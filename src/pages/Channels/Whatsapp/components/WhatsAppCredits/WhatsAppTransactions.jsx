@@ -95,12 +95,12 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <MdErrorOutline className="w-8 h-8 text-red-500" />
-        <p className="text-sm text-gray-600 dark:text-app-text-muted">
+        <p className="text-sm text-app-text-muted">
           {error}
         </p>
         <button
           onClick={() => load(page)}
-          className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-app-text-muted hover:bg-primary/10"
+          className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-lg border border-app-border! text-app-text-muted text-app-text hover:bg-app-surface-secondary"
         >
           <MdRefresh size={18} /> Try again
         </button>
@@ -110,9 +110,9 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="overflow-x-auto rounded-xl border border-app-border! bg-app-surface">
         <table className="w-full min-w-[640px] text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/40 text-xs uppercase text-gray-500 dark:text-app-text-faint">
+          <thead className="bg-app-surface-secondary text-xs uppercase tracking-wide text-app-text-muted">
             <tr>
               <th className="px-4 py-3 text-left font-medium">Date</th>
               <th className="px-4 py-3 text-left font-medium">Payment ID</th>
@@ -122,13 +122,13 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-app-border!">
             {loading &&
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   {Array.from({ length: 5 }).map((__, j) => (
                     <td key={j} className="px-4 py-3">
-                      <div className="h-4 rounded bg-gray-100 dark:bg-gray-800" />
+                      <div className="h-4 rounded bg-app-surface-secondary" />
                     </td>
                   ))}
                 </tr>
@@ -138,7 +138,7 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
               <tr>
                 <td
                   colSpan={5}
-                  className="px-4 py-10 text-center text-gray-500 dark:text-app-text-faint"
+                  className="px-4 py-10 text-center text-app-text-muted"
                 >
                   No transactions yet. Recharges will appear here.
                 </td>
@@ -148,13 +148,13 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
             {!loading &&
               items.map((t) => (
                 <tr key={t._id}>
-                  <td className="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-app-text-muted">
+                  <td className="px-4 py-3 whitespace-nowrap text-app-text">
                     {formatDateTime(t.paidAt || t.createdAt)}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-app-text-muted">
+                  <td className="px-4 py-3 font-mono text-xs text-app-text-muted">
                     {t.razorpayPaymentId || "—"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500 dark:text-app-text-faint">
+                  <td className="px-4 py-3 font-mono text-xs text-app-text-muted">
                     {t.razorpayOrderId}
                   </td>
                   <td className="px-4 py-3">
@@ -171,7 +171,7 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
 
       {/* Pagination */}
       {total > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500 dark:text-app-text-faint">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-app-text-muted">
           <span>
             Showing {from}–{to} of {total}
           </span>
@@ -180,7 +180,7 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
             <button
               onClick={() => setPage((p) => Math.max(p - 1, 1))}
               disabled={page <= 1 || loading}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-app-border! text-app-text hover:bg-app-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <MdChevronLeft size={18} /> Prev
             </button>
@@ -192,7 +192,7 @@ const WhatsAppTransactions = ({ refreshKey = 0, currency = "INR" }) => {
             <button
               onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
               disabled={page >= totalPages || loading}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-app-border! text-app-text hover:bg-app-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next <MdChevronRight size={18} />
             </button>

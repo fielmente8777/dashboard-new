@@ -1,227 +1,121 @@
+import { Send } from "lucide-react";
 import { useEffect, useState } from "react";
-import {
-  getCampaignUsers,
-  getWhatsAppMessageTemplates,
-} from "../../services/api/whatsApp";
-import TemplatePreview from "../../pages/Channels/Whatsapp/components/TemplatePreview";
 import { useToast } from "../../context/ToastContext";
-import { NEW_BASE_URL, Sources } from "../../data/constant";
+import { Sources } from "../../data/constant";
+import { useTenant } from "../../hooks/useTenant";
+import { useGetWhatsAppTemplatesQuery } from "../../redux/api/callsApi";
+import { useGetCampaignAudienceQuery } from "../../redux/api/whatsappApi";
+import TemplatePreview from "../../pages/Channels/Whatsapp/components/TemplatePreview";
+import Button from "../ui/Button";
+import Dialog from "../ui/Dialog";
+import { Field, Select } from "../ui/Field";
 
-const SendCampaignPopup = ({ open, setOpen, contacts, setContacts }) => {
+const SOURCE_OPTIONS = [{ value: "", label: "All sources" }, ...Sources];
+
+// Picks the WhatsApp template for a campaign and shows who it would reach:
+// the `contacts` selected on the page, or (when none are selected) everyone
+// from one lead source.
+const SendCampaignPopup = ({ open, setOpen, contacts }) => {
   const { showToast } = useToast();
-  const [templates, setTemplates] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
-  const [totalUser, setTotalUser] = useState(contacts?.length || 0);
-  const [selectedSource, setSelectedSource] = useState("");
+  const { hid } = useTenant();
 
-  const handleSend = async (source = null) => {
-    try {
-      setIsSending(true);
+  const [templateId, setTemplateId] = useState("");
+  const [source, setSource] = useState("");
+  const hasSelection = contacts.length > 0;
 
-      if (!selectedTemplate) {
-        showToast({
-          type: "error",
-          message: "Please select a template",
-        });
-        return;
-      }
+  const templates = useGetWhatsAppTemplatesQuery(hid, { skip: !hid || !open });
+  const audience = useGetCampaignAudienceQuery(
+    { hid, source },
+    { skip: !hid || !open || hasSelection },
+  );
 
-      if (!totalUser) {
-        showToast({
-          type: "error",
-          message: "Contact not selected",
-        });
-        return;
-      }
-
-      const selectTemplate = templates.find((t) => t.id === selectedTemplate);
-
-      const headerExample =
-        selectTemplate.components?.find((c) => c.type === "HEADER")?.example
-          ?.header_text?.[0] || [];
-
-      const bodyExample =
-        selectTemplate.components?.find((c) => c.type === "BODY")?.example
-          ?.body_text?.[0] || [];
-      const payload = {
-        template: {
-          templateName: selectTemplate.name,
-          templateLanguage: selectTemplate.language,
-          ...(bodyExample && { templateParams: bodyExample }),
-          ...(headerExample && { templateParamsHeader: headerExample }),
-        },
-        ...(contacts.length > 0 && { usersIds: contacts }),
-        ...(source && { source }),
-      };
-
-      console.log(payload);
-
-      // const response = await broadCastCampaign(payload);
-
-      // const data = await res.json();
-
-      // console.log("Campaign response:", data);
-      setOpen(false);
-      setContacts([]);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleSourceChange = async (source = null) => {
-    setSelectedSource(source);
-    setIsFetchingUsers(true);
-
-    try {
-      const params = {
-        ...(source && { source }),
-      };
-
-      const response = await getCampaignUsers(params);
-
-      if (response.result) {
-        setTotalUser(response.result.totalUsers);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsFetchingUsers(false);
-    }
-  };
-
-  const fetchTemplates = async () => {
-    try {
-      setLoading(true);
-      const response = await getWhatsAppMessageTemplates();
-      if (response.success) {
-        setTemplates(response?.result?.docs?.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 🔹 Fetch templates (mock for now)
   useEffect(() => {
     if (!open) return;
-
-    fetchTemplates();
+    setTemplateId("");
+    setSource("");
   }, [open]);
 
-  useEffect(() => {
-    if (contacts.length > 0) {
-      setTotalUser(contacts.length);
-    }
-  }, [contacts]);
+  const template = (templates.data || []).find((item) => item.id === templateId);
+  const recipients = hasSelection ? contacts.length : audience.data || 0;
 
-  useEffect(() => {
-    handleSourceChange();
-  }, []);
-
-  if (!open) return null;
+  const handleSend = () => {
+    // Sending was never connected for this popup: the previous version closed
+    // as if it had sent. Say so instead, until an endpoint exists for it.
+    showToast({
+      message:
+        "Campaigns cannot be sent from here yet. Use Marketing → WhatsApp to send one.",
+      type: "error",
+    });
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
-      />
-
-      {/* Modal */}
-      <div className="relative bg-app-surface-secondary rounded-xl shadow-xl max-w-96 w-full p-6 z-10 max-h-[80vh] hide-scrollbar overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">Send Campaign</h2>
-
-        {/* Dropdown */}
-        <label className="text-sm font-medium">Select Template</label>
-        <select
-          className="w-full mt-2 p-2 border rounded-md bg-app-surface-secondary"
-          value={selectedTemplate}
-          onChange={(e) => setSelectedTemplate(e.target.value)}
-        >
-          <option value="">-- Select Template --</option>
-          {loading ? (
-            <option>Loading templates...</option>
-          ) : templates?.length > 0 ? (
-            templates.map((template) => (
-              <option key={template.id} value={template?.id}>
-                {template.name}
-              </option>
-            ))
-          ) : (
-            <option>No templates found</option>
-          )}
-        </select>
-
-        {!contacts.length && (
-          <div>
-            <select
-              onChange={(e) => handleSourceChange(e.target.value)}
-              className="w-full mt-2 p-2 border rounded-md bg-app-surface-secondary"
-            >
-              <option value="" disabled>
-                Select Source
-              </option>
-              {Sources.map((source) => (
-                <option value={source.value}>{source.label}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Info */}
-        <div>
-          {isFetchingUsers && (
-            <p className="text-xs text-gray-500 mt-2">Fetching users…</p>
-          )}
-          <p className="text-xs text-gray-500 mt-2">
-            Total Contacts: {totalUser || contacts.length}
-          </p>
-        </div>
-
-        {/* Template Preview  */}
-        {selectedTemplate && (
-          <div className="mt-4">
-            <TemplatePreview
-              components={
-                templates.find((t) => t.id === selectedTemplate)?.components ||
-                []
-              }
-            />
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex justify-end gap-2 mt-5">
-          <button
-            onClick={() => {
-              setSelectedTemplate("");
-              setTotalUser(0);
-              setOpen(false);
-            }}
-            className="px-4 py-2 border rounded-md"
-          >
+    <Dialog
+      open={open}
+      onClose={() => setOpen(false)}
+      title="Send campaign"
+      description="Send one approved WhatsApp template to many contacts."
+      footer={
+        <>
+          <Button variant="secondary" onClick={() => setOpen(false)}>
             Cancel
-          </button>
-
-          <button
-            // disabled={isSendDisabled}
-            onClick={() => handleSend()}
-            // disabled={loading}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          </Button>
+          <Button
+            icon={Send}
+            disabled={!template || recipients === 0}
+            onClick={handleSend}
           >
-            {isSending ? "Sending..." : "Send"}
-          </button>
-        </div>
+            Send to {recipients.toLocaleString()}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Template">
+          <Select
+            value={templateId}
+            onChange={(e) => setTemplateId(e.target.value)}
+            options={[
+              {
+                value: "",
+                label: templates.isLoading
+                  ? "Loading templates..."
+                  : "Select a template",
+              },
+              ...(templates.data || []).map((item) => ({
+                value: item.id,
+                label: item.name,
+              })),
+            ]}
+          />
+        </Field>
+
+        {!hasSelection && (
+          <Field label="Send to contacts from">
+            <Select
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              options={SOURCE_OPTIONS}
+            />
+          </Field>
+        )}
+
+        <p className="rounded-lg bg-app-surface-secondary px-3 py-2 text-sm text-app-text-muted">
+          {audience.isFetching ? (
+            "Counting contacts..."
+          ) : (
+            <>
+              <span className="font-semibold text-app-text">
+                {recipients.toLocaleString()}
+              </span>{" "}
+              {recipients === 1 ? "contact" : "contacts"}{" "}
+              {hasSelection ? "selected" : "will receive it"}
+            </>
+          )}
+        </p>
+
+        {template && <TemplatePreview components={template.components || []} />}
       </div>
-    </div>
+    </Dialog>
   );
 };
 

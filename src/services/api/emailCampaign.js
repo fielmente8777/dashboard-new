@@ -125,9 +125,7 @@ export const createManualRecipientBatch = async ({ emails }) => {
       `${EMAIL_BASE_URL}${API_PREFIX}/recipient-batches/manual`,
       {
         method: "POST",
-        headers: getAuthHeaders({
-          multip,
-        }),
+        headers: getAuthHeaders(),
         body: JSON.stringify({ hid: getHid(), emails }),
       },
     );

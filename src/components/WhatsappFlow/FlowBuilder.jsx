@@ -12,7 +12,9 @@ import { v4 as uuidv4 } from "uuid";
 
 import { NEW_BASE_URL } from "../../data/constant";
 import { getWhatsAppFlows } from "../../services/api/whatsApp";
-import Loader from "../Loader";
+import { Rocket } from "lucide-react";
+import { useToast } from "../../context/ToastContext";
+import Button from "../ui/Button";
 import ButtonsNode from "./nodes/ButtonNodes";
 import CarouselNode from "./nodes/CarouselNode";
 import ListNode from "./nodes/ListNode";
@@ -67,6 +69,7 @@ export default function FlowBuilder() {
   const [filesMap, setFilesMap] = useState({});
   // const [filesMapCarousel, setFilesMapCarousel] = useState({});
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const [showPopup, setShowPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
@@ -311,7 +314,7 @@ export default function FlowBuilder() {
     });
 
     try {
-      await fetch(
+      const response = await fetch(
         `${NEW_BASE_URL}/api/v1/whatsapp/flow?hid=${localStorage.getItem("hid")}`,
         {
           method: "POST",
@@ -321,8 +324,16 @@ export default function FlowBuilder() {
           body: formData,
         },
       );
+      const data = await response.json().catch(() => null);
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.responseMessage);
+      }
+      showToast({ message: "Chatbot published" });
     } catch (error) {
-      console.error(error);
+      showToast({
+        message: error?.message || "Could not publish the chatbot.",
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -345,21 +356,24 @@ export default function FlowBuilder() {
   }, []);
 
   return (
-    <div className="bg-white relative w-full h-full">
-      <div className="flex h-full w-full">
+    <div className="relative flex h-[calc(100dvh-11rem)] min-h-[32rem] w-full flex-col overflow-hidden rounded-xl border border-app-border! bg-app-surface">
+      <div className="flex flex-wrap items-center gap-3 border-b border-app-border! px-4 py-2.5">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-sm font-semibold text-app-text">Chatbot builder</h2>
+          <p className="text-xs text-app-text-muted">
+            Drag blocks onto the canvas and connect them to build the replies your WhatsApp bot sends.
+          </p>
+        </div>
+        <Button icon={Rocket} onClick={handlePublish} loading={loading}>
+          Publish
+        </Button>
+      </div>
+
+      <div className="flex min-h-0 flex-1">
         <Sidebar addNode={addNode} addSendMessageNode={addSendMessageNode} />
 
-        <div className="flex-1 h-[78vh]">
-          <div className="flex bg-primary justify-end p-2">
-            <button
-              onClick={() => handlePublish()}
-              className="bg-[#FD5C01] px-4 py-1 text-white flex items-center gap-1 rounded-sm"
-            >
-              Publish {loading && <Loader color="#fefefe" />}
-            </button>
-          </div>
-
-          <div className="h-full w-full bg-linear-to-br from-gray-200 to-gray-300">
+        <div className="min-w-0 flex-1">
+          <div className="h-full w-full bg-app-bg">
             <ReactFlow
               nodes={nodes?.map((node) => ({
                 ...node,
@@ -402,24 +416,23 @@ export default function FlowBuilder() {
 
       {showPopup && (
         <div
-          className="absolute bg-white border shadow-xl rounded-lg w-56 z-50 overflow-hidden"
+          className="absolute z-50 w-56 overflow-hidden rounded-lg border border-app-border! bg-app-surface shadow-xl"
           style={{
             top: popupPosition.y,
             left: popupPosition.x,
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-2">
-            <div className="p-2 border-b font-semibold text-sm bg-gray-50">
-              Add Node
-            </div>
-
-            <div
+          <div className="flex items-center justify-between border-b border-app-border! px-3 py-2">
+            <span className="text-sm font-semibold text-app-text">Add a block</span>
+            <button
+              type="button"
+              aria-label="Close"
               onClick={() => setShowPopup(false)}
-              className="size-4 cursor-pointer bg-red-300 text-red-500 rounded-full text-xs flex items-center justify-center"
+              className="flex size-6 items-center justify-center rounded-md text-app-text-muted hover:bg-app-surface-secondary"
             >
-              <FiX size={12} />
-            </div>
+              <FiX size={14} />
+            </button>
           </div>
 
           {/* Options */}
@@ -428,7 +441,7 @@ export default function FlowBuilder() {
               <div
                 key={item.key}
                 onClick={() => handleAddNodeFromPopup(item.key)}
-                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
+                className="flex cursor-pointer items-center gap-2 px-3 py-2 text-app-text transition hover:bg-app-surface-secondary"
               >
                 <span>{item.icon}</span>
                 <span className="text-sm">{item.label}</span>

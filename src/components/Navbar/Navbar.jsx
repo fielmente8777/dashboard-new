@@ -1,301 +1,127 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { HiOutlineUserGroup } from "react-icons/hi";
-import { IoIosNotifications, IoMdHome } from "react-icons/io";
-import { MdOutlineSos, MdSettings, MdStore } from "react-icons/md";
-import { RiFeedbackFill } from "react-icons/ri";
-import { RxDashboard } from "react-icons/rx";
+import { Bell, Menu, Settings, Store } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import DataContext from "../../context/DataContext";
-import { fetchUserProfile, setHid } from "../../redux/slice/UserSlice";
+import { Link } from "react-router-dom";
+import { LOGO_URL } from "../../config/assets";
+import { open as openSidebar } from "../../redux/slice/SidebarToggle";
+import {
+  fetchUserProfile,
+  selectCurrentLocation,
+} from "../../redux/slice/UserSlice";
+import { PAGES, dashboardPath } from "../../routes/paths";
+import { getToken } from "../../utils/session";
+import GlobalSearch from "../GlobalSearch/GlobalSearch";
 import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
-import Logo from "../../assets/companylogo.b.png";
-import ChangePassword from "../Popup/ChangePassword";
-import ProfilePopup from "../Popup/ProfilePopup";
-import { toggleSideBar } from "../../redux/slice/SidebarToggle";
-import { FaAlignRight } from "react-icons/fa";
 import NotificationPopup from "../Popup/NotificationPopup";
+import { useNotifications } from "./hooks/useNotifications";
 import ThemeToggle from "./ThemeToggle";
-import { WS_BASE_URL } from "../../data/constant";
-import WebSocketClient from "../../config/websocketClient";
-import GlobalSearch from "../GlobalSearch/GlobalSearch";
+import UserMenu from "./UserMenu";
+import Icon from "../ui/Icon";
 
-const letterColorMap = {
-  a: "#e6194b",
-  b: "#3cb44b",
-  c: "#ffe119",
-  d: "#4363d8",
-  e: "#f58231",
-  f: "#911eb4",
-  g: "#46f0f0",
-  h: "#f032e6",
-  i: "#bcf60c",
-  j: "#fabebe",
-  k: "#008080",
-  l: "#e6beff",
-  m: "#9a6324",
-  n: "#fffac8",
-  o: "#800000",
-  p: "#aaffc3",
-  q: "#808000",
-  r: "#ffd8b1",
-  s: "#000075",
-  t: "#808080",
-  u: "#59b1ad",
-  v: "#000000",
-  w: "#d2691e",
-  x: "#ff69b4",
-  y: "#00ced1",
-  z: "#8a2be2",
-};
+const iconButtonClassName =
+  "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white";
 
 const Navbar = () => {
-  const wsRef = useRef(null);
   const dispatch = useDispatch();
-  const { user: hotel, authUser } = useSelector((state) => state.userProfile);
-  const token = localStorage.getItem("token");
-  const [isNotificationPopupOpen, setIsNotificationPopupOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const hotel = useSelector((state) => state.userProfile.user);
+  const currentLocation = useSelector(selectCurrentLocation);
+  const { notifications, unreadCount, markAllSeen } = useNotifications();
+  const [isAppsOpen, setIsAppsOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const token = getToken();
 
   useEffect(() => {
-    if (token) {
-      dispatch(fetchUserProfile(token));
-    }
+    if (token) dispatch(fetchUserProfile(token));
   }, [dispatch, token]);
 
-  // const navigate = useNavigate();
-
-  const { homeNotifications, emergencyNotifications } = useContext(DataContext);
-  const [open, setOpen] = useState(false);
-  // const [isChangePasswordPopupOpen, setIsChangePasswordPopupOpen] =
-  //   useState(false);
-  // const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { isOpenProfilePopup, setIsOpenProfilePopup } = useContext(DataContext);
-
-  const SidebarData = [
-    {
-      name: "Home",
-      link: "/",
-      icon: <IoMdHome size={24} />,
-      notification: homeNotifications.length,
-    },
-    {
-      name: "Emergency Request",
-      link: "/emergency-request",
-      icon: <MdOutlineSos size={26} />,
-      notification: emergencyNotifications.length,
-    },
-    {
-      name: "User Management",
-      link: "/user-management",
-      icon: <HiOutlineUserGroup />,
-      notification: 0,
-    },
-    {
-      name: "Feedback",
-      link: "/feedback",
-      icon: <RiFeedbackFill />,
-      notification: 0,
-    },
-  ];
-
-  // const handleLogout = () => {
-  //   localStorage.clear();
-  //   setAuth(false);
-  //   dispatch(setHid(null));
-  //   // setTimeout(() => {
-  //   navigate("/login");
-  //   // }, 1000)
-  // };
-
-  const onNotificationPopupClose = () => {
-    setIsNotificationPopupOpen(false);
+  const toggleNotifications = (isOpen) => {
+    markAllSeen();
+    setIsNotificationsOpen(isOpen);
   };
-  const hid = localStorage.getItem("hid");
-  const hotels = hotel?.Profile?.hotels || {};
-  const hotelName = hotels?.[hid]?.local || "";
-  const isLoadingProfile = !hotel || !hotel.Profile;
 
-  const firstLetter =
-    hotel?.Profile?.hotelName?.charAt(0)?.toLowerCase() || "a";
-
-  useEffect(() => {
-    wsRef.current = new WebSocketClient(WS_BASE_URL);
-
-    wsRef.current.connect((serverResponse) => {
-      const { data, event } = serverResponse;
-      console.log(serverResponse);
-      if (
-        event === "NOTIFICATION" &&
-        data?.ndid === localStorage.getItem("ndid")
-      ) {
-        setNotifications((prevNotifications) => [...prevNotifications, data]);
-      }
-    });
-
-    return () => wsRef.current?.close();
-  }, []);
+  // undefined while the profile is loading, so the greeting shows a placeholder
+  const greetingName = hotel?.Profile
+    ? currentLocation?.local || hotel.Profile.hotelName || ""
+    : undefined;
 
   return (
-    <div className="left-0 top-0">
-      <div className="py-2 z-10 bg-app-navbar sm:bg-primary dark:bg-app-navbar flex cardShadow px-4 items-center justify-between top-0 w-full transition-colors duration-200">
-        <div
-          onClick={() => dispatch(toggleSideBar())}
-          className="size-8 bg-white/20 dark:bg-white/10 rounded-sm items-center justify-center cursor-pointer duration-500 md:hidden flex"
+    <>
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-white/10! bg-primary px-3 transition-colors duration-200 sm:gap-3 sm:px-4 dark:bg-app-navbar">
+        <button
+          type="button"
+          aria-label="Open menu"
+          onClick={() => dispatch(openSidebar())}
+          className={`${iconButtonClassName} md:hidden`}
         >
-          <FaAlignRight className="text-white" />
-        </div>
+          <Icon icon={Menu} size="xl" />
+        </button>
 
-        <Greeting name={isLoadingProfile ? "Loading..." : hotelName} />
-        <div className="sm:hidden">
-          <div className="w-28 h-10 -ml-2">
-            <img
-              src={Logo}
-              alt="logo"
-              className="h-full w-full object-contain"
-            />
-          </div>
-
-          {/* <div className="flex-1 flex justify-end sm:justify-center px-2 sm:px-6">
-            <GlobalSearch />
-          </div> */}
-        </div>
-
-        {/* <div className="gap-5 !text-zinc-700 max-md:border-b-2 text-[18px] py-1 flex justify-center items-center font-medium">
-        <GiHamburgerMenu className="text-2xl md:text-[45px] text-[#0a3a75] " />
-        <img src={Logo} alt="logo" className="h-full w-full -ml-4" />
-      </div> */}
-
-        {/* <div className='grid grid-cols-4 w-full md:hidden  '>
-                {SidebarData.map((item, index) => (
-                    <div key={index} className='relative'>
-                        <Link to={item.link}
-                            className={` ${location.pathname === item.link ? "border-b-[6px]   border-[#0a3a75] text-[#0a3a75] bg-[#f5f4f9]" : "border-b-[6px] border-transparent"} py-4 flex justify-center items-center   text-xl rounded-sm capitalize text-center px-3 text-[14px] font-medium text-[#575757] transition-all duration-150`}>
-                            {item.icon}
-
-                        </Link>
-                        {item?.notification > 0 ? <p className='absolute bg-[#0a3a75] top-3 right-3 h-3 w-3 animate-bounce rounded-full'></p> : ''}
-                    </div>
-                ))}
-            </div> */}
-
-        <div className="flex gap-5 max-md:hidden">
-          {/* <button onClick={handleLogout}>Logout</button> */}
-          {/* <div className="flex items-center">
-          <Link
-            to={hotel?.Data?.websiteLink}
-            target="_blank"
-            className="  font-medium transition-all py-[6px] duration-150 bg-[#0a3a75] hover:bg-[#0a3a75]/90 text-white px-3 flex items-center rounded-md text-[14px]"
-          >
-            Visit Website
-          </Link>
-        </div> */}
-
-          {/* <div className="block sm:hidden text-white rounded-md transition-all duration-150  px-2 py-[6px] bg-[#0a3a75] hover:bg-[#0a3a75]/90">
-            <GiHamburgerMenu size={20} />
-          </div> */}
-
-          <div className="hidden sm:flex gap-3 text-zinc-700 items-center">
-            <div className="flex-1 flex justify-end sm:justify-center px-2 sm:px-6">
-              <GlobalSearch />
-            </div>
-
-            <ThemeToggle />
-            <button
-              onClick={() => setIsNotificationPopupOpen(true)}
-              className="group transition-transform duration-200 hover:scale-110 hover:shadow-md"
-            >
-              <IoIosNotifications
-                size={22}
-                className="text-white origin-top transition-transform duration-200 group-hover:animate-ring group-hover:scale-125"
-              />
-            </button>
-            {/* <Link to="settings">
-              <MdSettings size={22} color="white" />
-            </Link> */}
-            <Link to="settings" className="group">
-              <MdSettings
-                size={22}
-                className="text-white transition-transform duration-300 group-hover:rotate-180 group-hover:scale-110"
-              />
-            </Link>
-            <div
-              onClick={() => setOpen(true)}
-              className="flex gap-2 py-1.5 text-white bg-ternary justify-center items-center px-4 rounded-lg cursor-pointer shadow-md active:scale-95"
-            >
-              <MdStore size={18} />{" "}
-              <p className="text-sm font-semibold">EazStore</p>
-            </div>
-            {/* <div>
-              <MdSettings
-                onClick={() => setIsChangePasswordPopupOpen(true)}
-                className="text-white"
-                size={24}
-              />
-            </div> */}
-
-            {/* <FaUser onClick={() => setIsChangePasswordPopupOpen(true)} className="text-white" size={24} /> */}
-          </div>
-          <button
-            style={{
-              backgroundColor: letterColorMap[firstLetter],
-            }}
-            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
-            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
-          >
-            <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
-            </p>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2.5 sm:hidden">
-          <GlobalSearch />
-          <ThemeToggle />
-          <div
-            onClick={() => setOpen(true)}
-            className="bg-[#2e3b61] text-white sm:hidden p-1 rounded-md"
-          >
-            <RxDashboard size={22} />{" "}
-          </div>
-          <button
-            style={{
-              backgroundColor:
-                letterColorMap[
-                  hotel?.Profile?.hotelName?.charAt(0).toLowerCase()
-                ],
-            }}
-            onClick={() => setIsOpenProfilePopup(!isOpenProfilePopup)}
-            className="border bg-gray-300 rounded-full h-10 w-10 flex justify-center items-center text-white"
-          >
-            <p className="text-2xl font-semibold">
-              {hotel?.Profile?.hotelName?.charAt(0).toUpperCase()}
-            </p>
-          </button>
-        </div>
-
-        <AppsPopup open={open} setOpen={setOpen} authUser={authUser} />
-
-        {/* <ProfilePopup
-          isProfileOpen={isProfileOpen}
-          setIsProfileOpen={setIsProfileOpen}
-          Color={
-            letterColorMap[hotel?.Profile?.hotelName?.charAt(0).toLowerCase()]
-          }
-        /> */}
-
-        {/* <ChangePassword
-          isOpen={isChangePasswordPopupOpen}
-          onClose={() => setIsChangePasswordPopupOpen(false)}
-        /> */}
-        <NotificationPopup
-          isOpen={isNotificationPopupOpen}
-          onClose={onNotificationPopupClose}
-          data={notifications}
+        <img
+          src={LOGO_URL}
+          alt="Eazotel"
+          className="h-7 w-auto shrink-0 object-contain md:hidden"
         />
-      </div>
-    </div>
+
+        <Greeting name={greetingName} />
+
+        <div className="ml-auto flex min-w-0 items-center justify-end gap-1 sm:flex-1 sm:gap-2">
+          <div className="min-w-0 sm:max-w-md sm:flex-1">
+            <GlobalSearch />
+          </div>
+
+          <ThemeToggle />
+
+          <button
+            type="button"
+            aria-label={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} new`
+                : "Notifications"
+            }
+            onClick={() => toggleNotifications(true)}
+            className={`${iconButtonClassName} max-sm:hidden`}
+          >
+            <Icon icon={Bell} size="xl" />
+            {unreadCount > 0 && (
+              <span className="anim-pop absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          <Link
+            to={dashboardPath(PAGES.SETTINGS)}
+            aria-label="Settings"
+            title="Settings"
+            className={`${iconButtonClassName} max-sm:hidden`}
+          >
+            <Icon icon={Settings} size="xl" />
+          </Link>
+
+          <button
+            type="button"
+            aria-label="EazStore"
+            onClick={() => setIsAppsOpen(true)}
+            className="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2.5 text-sm font-semibold text-white transition hover:bg-ternary/90 active:scale-95 lg:px-3.5"
+          >
+            <Icon icon={Store} size="lg" />
+            <span className="hidden lg:inline">EazStore</span>
+          </button>
+
+          <div className="mx-1 hidden h-6 w-px bg-white/15 sm:block" />
+
+          <UserMenu />
+        </div>
+      </header>
+
+      <AppsPopup open={isAppsOpen} setOpen={setIsAppsOpen} />
+      <NotificationPopup
+        isOpen={isNotificationsOpen}
+        onClose={() => toggleNotifications(false)}
+        data={notifications}
+      />
+    </>
   );
 };
 

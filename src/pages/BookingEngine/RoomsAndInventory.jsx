@@ -1,672 +1,217 @@
-import { useContext, useEffect, useState } from "react";
-import { CiCirclePlus } from "react-icons/ci";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { GiBackwardTime } from "react-icons/gi";
-import { IoSync } from "react-icons/io5";
-import Loader from "../../components/Loader";
-import AuthContext from "../../context/DataContext";
-import { room_type_name } from "../../data/constant";
+import { ChevronLeft, ChevronRight, RotateCcw, Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import Button from "../../components/ui/Button";
+import PageShell from "../../components/ui/PageShell";
+import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
+import Tabs from "../../components/ui/Tabs";
+import { useApiAction } from "../../hooks/useApiAction";
 import {
-  bulkUpdateInventory,
-  bulkUpdatePrice,
-  dateRangeInventory,
-  dateRangePrice,
-  getPriceAndInventory,
-  inventoryManage,
-  priceManage,
-} from "../../services/api/bookingEngine";
+  useGetInventoryQuery,
+  useGetPricesQuery,
+  useSaveInventoryMutation,
+  useSavePricesMutation,
+} from "../../redux/api/bookingEngineApi";
+import { selectHid } from "../../redux/slice/UserSlice";
+import RateGrid from "./components/RateGrid";
+import Icon from "../../components/ui/Icon";
+import DatePicker from "../../components/ui/DatePicker";
 
-import handleLocalStorage from "../../utils/handleLocalStorage";
-import { formatDate } from "../../utils/formateDate";
+const VIEWS = {
+  inventory: { label: "Inventory", unit: "Rooms available" },
+  price: { label: "Price", unit: "Price per night (₹)" },
+};
 
-// import { inventoryGetApi, priceGetApi } from '../../Api-helpers/Api';
+const NO_EDITS = { inventory: {}, price: {} };
 
-/* ── styling only ───────────────────────────────────────────── */
-const TOOLBAR_BTN =
-  "px-4 py-2 text-sm font-medium rounded-lg bg-app-surface text-app-text border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors duration-300 flex items-center gap-1";
-const CELL_INPUT =
-  "w-[100%] py-1 text-center outline-none h-[100%] bg-app-surface text-app-text";
+const toIsoDate = (date) => date.toISOString().split("T")[0];
+
+// today in the user's own timezone, as "YYYY-MM-DD"
+const getToday = () => {
+  const now = new Date();
+  return toIsoDate(new Date(now.getTime() - now.getTimezoneOffset() * 60_000));
+};
+
+// The "prev" request is sent with a date one week before the `prev` date the
+// API reports. This is how the page has always asked for the previous week.
+const weekBefore = (date) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() - 7);
+  return toIsoDate(result);
+};
+
+const countCells = (edits) =>
+  Object.values(edits).reduce(
+    (total, room) => total + Object.keys(room).length,
+    0,
+  );
 
 const RoomsAndInventory = () => {
-  const { baseUrl } = useContext(AuthContext);
-  const [inventory, setInventory] = useState({});
-  const [price, setPrice] = useState([]);
-  const [showAll, setShowAll] = useState(false);
-  const [showInventory, setShowInventory] = useState(true);
-  const [showPrice, setShowPrice] = useState(false);
+  const hid = useSelector(selectHid);
+  const run = useApiAction();
+  const today = getToday();
 
-  const today = new Date().toISOString().split("T")[0];
-  const [date, setDate] = useState(today);
-  const [prevDate, setprevDate] = useState();
-  const [nextDate, setnextDate] = useState();
-  const [inventoryDatas, setinventoryDatas] = useState();
-  //   {
-  //   Inventory: {
-  //     1: {
-  //       "2024-05-10": 2,
-  //       "2024-05-11": 2,
-  //       "2024-05-12": 2,
-  //       "2024-05-13": 2,
-  //       "2024-05-14": 2,
-  //       "2024-05-15": 3,
-  //       "2024-05-16": 2,
-  //       "2024-05-17": 2,
-  //     },
-  //     2: {
-  //       "2024-05-10": 2,
-  //       "2024-05-11": 2,
-  //       "2024-05-12": 2,
-  //       "2024-05-13": 2,
-  //       "2024-05-14": 4,
-  //       "2024-05-15": 2,
-  //       "2024-05-16": 2,
-  //       "2024-05-17": 2,
-  //     },
-  //     3: {
-  //       "2024-05-10": 2,
-  //       "2024-05-11": 2,
-  //       "2024-05-12": 2,
-  //       "2024-05-13": 2,
-  //       "2024-05-14": 4,
-  //       "2024-05-15": 2,
-  //       "2024-05-16": 2,
-  //       "2024-05-17": 2,
-  //     },
-  //   },
-  //   Status: true,
-  //   next: "2024-05-17",
-  //   prev: "2024-05-10",
-  // }
+  const [view, setView] = useState("inventory");
+  // { date, operation } once the user leaves the current week
+  const [range, setRange] = useState(null);
+  // cells changed and not saved yet: { inventory | price: { roomId: { date: value } } }
+  const [edits, setEdits] = useState(NO_EDITS);
 
-  const [priceDatas, setpriceDatas] = useState({
-    Price: {
-      1: {
-        "2024-05-10": 2000,
-        "2024-05-11": 2008,
-        "2024-05-12": 2999,
-        "2024-05-13": 2999,
-        "2024-05-14": 2999,
-        "2024-05-15": 3999,
-        "2024-05-16": 2999,
-        "2024-05-17": 2999,
-      },
-      2: {
-        "2024-05-10": 2500,
-        "2024-05-11": 2500,
-        "2024-05-12": 2500,
-        "2024-05-13": 2500,
-        "2024-05-14": 4500,
-        "2024-05-15": 2500,
-        "2024-05-16": 2500,
-        "2024-05-17": 2500,
-      },
-      3: {
-        "2024-05-10": 2400,
-        "2024-05-11": 2400,
-        "2024-05-12": 2400,
-        "2024-05-13": 2400,
-        "2024-05-14": 4400,
-        "2024-05-15": 2400,
-        "2024-05-16": 2400,
-        "2024-05-17": 2400,
-      },
-    },
-    Status: true,
-    next: "2024-05-17",
-    prev: "2024-05-10",
-  });
+  const query = { hid, range: range || undefined };
+  const options = { skip: !hid, refetchOnMountOrArgChange: true };
+  const inventory = useGetInventoryQuery(query, options);
+  const prices = useGetPricesQuery(query, options);
+  const [saveInventory, inventorySave] = useSaveInventoryMutation();
+  const [savePrices, priceSave] = useSavePricesMutation();
 
-  const [priceData, setPriceData] = useState(priceDatas.Price);
-  const [PriceBulkupdate, setPriceBulkupdate] = useState({});
-
-  const [inventoryData, setInventoryData] = useState(inventoryDatas?.Inventory);
-  const [InventoryBulkupdate, setInventoryBulkupdate] = useState({});
-  const [isBulkUpdateLoading, setIsBulkUpdateLoading] = useState(false);
-
-  const x = inventoryData && Object.keys(inventoryData);
-  if (x?.length !== 0) {
-    var dates = inventoryData && Object.keys(inventoryData[x[0]]);
-  } else {
-    var dates = [];
-  }
-
-  const getDayFromDate = (dateString) => {
-    const dt = new Date(dateString);
-    return dt.getDate();
-  };
-
-  const getDayOfWeek = (date) => {
-    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const dayIndex = new Date(date).getDay();
-    return daysOfWeek[dayIndex];
-  };
-
-  const getMonthInWords = (dateString) => {
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const dt = new Date(dateString);
-    const monthIndex = dt.getMonth();
-    return monthNames[monthIndex];
-  };
-
-  const getYearFromDate = (dateString) => {
-    const yearIndex = new Date(dateString);
-    const year = yearIndex.getFullYear();
-
-    return year;
-  };
-
-  const handleAllClick = () => {
-    setShowAll(true);
-    setShowPrice(false);
-    setShowInventory(false);
-  };
-  const handleInventoryClick = () => {
-    setShowAll(false);
-    setShowPrice(false);
-    setShowInventory(true);
-  };
-  const handlePriceClick = () => {
-    setShowAll(false);
-    setShowInventory(false);
-    setShowPrice(true);
-  };
-
-  const PriceUpdate = (value, roomtype, date) => {
-    const updatedBulkPriceUpdate = { ...PriceBulkupdate };
-    const updatePriceData = { ...priceData };
-
-    if (!updatedBulkPriceUpdate[roomtype]) {
-      updatedBulkPriceUpdate[roomtype] = {};
-    }
-    if (!updatePriceData[roomtype]) {
-      updatePriceData[roomtype] = {};
-    }
-
-    updatedBulkPriceUpdate[roomtype][date] = value;
-    updatePriceData[roomtype][date] = value;
-
-    setPriceBulkupdate(updatedBulkPriceUpdate);
-    setPriceData(updatePriceData);
-    console.log(updatedBulkPriceUpdate)
-  };
-
-  const InventoryUpdate = (value, roomtype, date) => {
-    const updatedBulkPriceUpdate = { ...InventoryBulkupdate };
-    const updatePriceData = { ...inventoryData };
-
-    if (!updatedBulkPriceUpdate[roomtype]) {
-      updatedBulkPriceUpdate[roomtype] = {};
-    }
-    if (!updatePriceData[roomtype]) {
-      updatePriceData[roomtype] = {};
-    }
-
-    updatedBulkPriceUpdate[roomtype][date] = value;
-    updatePriceData[roomtype][date] = value;
-
-    setInventoryBulkupdate(updatedBulkPriceUpdate);
-    // setInventoryData(updatePriceData)
-  };
-
-  const GetDataForDate = (date, key) => {
-    if (key === "prev") {
-      const currentDate = new Date(date);
-      currentDate.setDate(currentDate.getDate() - 7); // go 7 days back
-      const formattedDate = formatDate(currentDate);
-      FetchDateRangePrice(formattedDate, key);
-      FetchDateRangeInventory(formattedDate, key);
-      setDate(formattedDate.toString());
-      return;
-    }
-
-    setDate(date);
-    FetchDateRangePrice(date, key);
-    FetchDateRangeInventory(date, key);
-  };
-
-  const bulkupdateFunction = () => {
-    if (showPrice) {
-      BulkUpdatePrice(PriceBulkupdate);
-    }
-    if (showInventory) {
-      BulkUpdateInventory(InventoryBulkupdate);
-    }
-  };
-
-  const FetchInventoryManage = async () => {
-    const token = handleLocalStorage("token");
-    const hid = String(handleLocalStorage("hid"));
-    const response = await inventoryManage(token, hid);
-    if (response?.Status) {
-      setinventoryDatas(response);
-      setInventoryData(response?.Inventory);
-      setnextDate(response?.next);
-      setprevDate(response?.prev);
-    }
-  };
-
-  const FetchPriceManage = async () => {
-    const token = handleLocalStorage("token");
-    const hid = String(handleLocalStorage("hid"));
-    const response = await priceManage(token, hid);
-
-    if (response?.Status) {
-      setpriceDatas(response);
-      setPriceData(response?.Prices);
-    }
-  };
-
-  const FetchDateRangePrice = async (date, operation) => {
-    const token = handleLocalStorage("token");
-    const hid = String(handleLocalStorage("hid"));
-    const dateRangePriceData = {
-      operation: operation,
-      hId: hid,
-      date: date,
-    };
-    const response = await dateRangePrice(token, dateRangePriceData);
-    // const response = await fetch(
-    //   `${baseUrl}/price/getprice/all/nextprev/${localStorage.getItem(
-    //     "engineUserToken"
-    //   )}`,
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //       Accept: "application/json, text/plain, /",
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       operation: operation,
-    //       hId: localStorage.getItem("locationid"),
-    //       date: date,
-    //     }),
-    //   }
-    // );
-    // const json1 = await response.json();
-    // console.log(json1);
-    if (response.Status) {
-      setpriceDatas(response);
-      setPriceData(response.Prices);
-      setnextDate(response.next);
-      setprevDate(response.prev);
-    }
-  };
-
-  const FetchDateRangeInventory = async (date, operation) => {
-    const token = handleLocalStorage("token");
-    const hid = String(handleLocalStorage("hid"));
-    const dateRangeInventoryData = {
-      date: date,
-      operation: operation,
-    };
-
-    const response = await dateRangeInventory(
-      token,
-      hid,
-      dateRangeInventoryData,
-    );
-    // const response = await fetch(
-    //   `${baseUrl}/inventory/getinventory/all/nextprev/${localStorage.getItem(
-    //     "engineUserToken"
-    //   )}/${localStorage.getItem("locationid")}`,
-    //   {
-    //     method: "POST",
-    //     headers: {
-    //       Accept: "application/json, text/plain, /",
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({
-    //       date: date,
-    //       operation: operation,
-    //     }),
-    //   }
-    // );
-    // const json1 = await response.json();
-    if (response.Status) {
-      setinventoryDatas(response);
-      setInventoryData(response.Inventory);
-    }
-  };
-
-  const BulkUpdatePrice = async (bulkupdateData) => {
-    setIsBulkUpdateLoading(true);
-    const updatedBulkPriceData = {
-      token: handleLocalStorage("token"),
-      hId: String(handleLocalStorage("hid")),
-      bulkprice: bulkupdateData,
-    };
-    const response = await bulkUpdatePrice(updatedBulkPriceData);
-    if (response.Status) {
-      FetchInventoryManage();
-      FetchPriceManage();
-    }
-    setIsBulkUpdateLoading(false);
-  };
-
-  const BulkUpdateInventory = async (bulkupdateData) => {
-    setIsBulkUpdateLoading(true);
-    const updatedBulkInventoryData = {
-      token: handleLocalStorage("token"),
-      hId: String(handleLocalStorage("hid")),
-      bulkinventory: bulkupdateData,
-    };
-    const response = await bulkUpdateInventory(updatedBulkInventoryData);
-
-    if (response.Status) {
-      FetchInventoryManage();
-      FetchPriceManage();
-    }
-    setIsBulkUpdateLoading(false);
-  };
-
-  const getInventoryApi = async () => {
-    const token = handleLocalStorage("token");
-    const hid = handleLocalStorage("hid");
-    const result = await getPriceAndInventory(token, hid);
-    setInventory(result);
-  };
-
-  const isPreviousDisabled =
-    prevDate ===
-    formatDate(
-      new Date().toLocaleDateString("en-GB", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }),
-    );
-
+  // edits and the chosen week belong to one hotel location
   useEffect(() => {
-    getInventoryApi();
-    FetchInventoryManage();
-    FetchPriceManage();
-  }, []);
+    setRange(null);
+    setEdits(NO_EDITS);
+  }, [hid]);
+
+  const active = view === "inventory" ? inventory : prices;
+  const values = active.data?.values || {};
+  const dates = Object.keys(Object.values(values)[0] || {}).sort();
+  const next = inventory.data?.next ?? prices.data?.next;
+  const prev = inventory.data?.prev ?? prices.data?.prev;
+
+  const editCount = countCells(edits.inventory) + countCells(edits.price);
+  const isSaving = inventorySave.isLoading || priceSave.isLoading;
+  const isFetching = inventory.isFetching || prices.isFetching;
+  // past days cannot be edited, so the calendar never goes before today
+  const isFirstWeek = !dates[0] || dates[0] <= today;
+
+  const handleCellChange = (roomId, date, value) =>
+    setEdits((current) => ({
+      ...current,
+      [view]: {
+        ...current[view],
+        [roomId]: { ...current[view][roomId], [date]: value },
+      },
+    }));
+
+  const handleSave = async () => {
+    const requests = [
+      countCells(edits.inventory) > 0 &&
+        saveInventory({ hid, bulkinventory: edits.inventory }),
+      countCells(edits.price) > 0 &&
+        savePrices({ hid, bulkprice: edits.price }),
+    ].filter(Boolean);
+
+    const saved = await run(requests, {
+      success: "Changes saved",
+      error: "Could not save the changes.",
+    });
+    if (saved) setEdits(NO_EDITS);
+  };
 
   return (
-    <div className="maxwidth mx-auto mt-4 bg-app-surface p-4 cardShadow mb-10 [color-scheme:light] dark:[color-scheme:dark]">
-      <div className="flex justify-between max-md:px-2">
-        <div className="inline-flex rounded-lg shadow-sm" role="group">
-          {/* <button onClick={handleAllClick} type="button" className={`px-4 py-2 text-sm font-medium  rounded-s-lg   ${showAll === true ? "border border-orange-600 bg-orange-600 text-white" : "text-gray-900 bg-white border border-gray-200 hover:text-orange-600 hover:bg-neutral-100"} `}>
-            All
-          </button> */}
-          <button
-            onClick={handleInventoryClick}
-            type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-s-lg transition-colors ${
-              showInventory === true
-                ? "border-t border-b border-primary bg-primary  text-white"
-                : "text-app-text bg-app-surface-secondary border-t border-b border-primary/60! dark:border-white/15! hover:bg-app-surface hover:text-orange-600"
-            }`}
+    <PageShell
+      title="Rooms & Inventory"
+      description="Set how many rooms are available and what they cost, day by day."
+      actions={
+        <>
+          {editCount > 0 && (
+            <Button
+              variant="ghost"
+              icon={RotateCcw}
+              disabled={isSaving}
+              onClick={() => setEdits(NO_EDITS)}
+            >
+              Discard
+            </Button>
+          )}
+          <Button
+            icon={Save}
+            loading={isSaving}
+            disabled={editCount === 0}
+            onClick={handleSave}
           >
-            Inventory
-          </button>
+            {editCount > 0
+              ? `Save ${editCount} change${editCount === 1 ? "" : "s"}`
+              : "Save changes"}
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Tabs
+          value={view}
+          onChange={setView}
+          tabs={Object.entries(VIEWS).map(([value, { label }]) => ({
+            value,
+            label,
+            count: countCells(edits[value]),
+          }))}
+        />
 
-          <button
-            onClick={handlePriceClick}
-            type="button"
-            className={`px-4 py-2 text-sm font-medium  rounded-e-lg transition-colors ${
-              showPrice
-                ? "border bg-primary border-primary text-white"
-                : "text-app-text bg-app-surface-secondary border border-primary/90! dark:border-white/15! hover:bg-app-surface hover:text-orange-600 "
-            } `}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            aria-label="Previous week"
+            disabled={isFirstWeek || !prev || isFetching}
+            onClick={() =>
+              setRange({ date: weekBefore(prev), operation: "prev" })
+            }
           >
-            Price
-          </button>
+            <Icon icon={ChevronLeft} />
+          </Button>
+          <div className="w-40">
+            <DatePicker
+              aria-label="Go to date"
+              min={today}
+              value={dates[0] || today}
+              onChange={(date) => date && setRange({ date, operation: "next" })}
+            />
+          </div>
+          <Button
+            variant="secondary"
+            aria-label="Next week"
+            disabled={!next || isFetching}
+            onClick={() => setRange({ date: next, operation: "next" })}
+          >
+            <Icon icon={ChevronRight} />
+          </Button>
         </div>
-        {/* <div>
-          <button className='px-4 py-1 text-sm font-medium text-zinc-700 bg-white border border-zinc-700 rounded-lg hover:bg-zinc-700 hover:text-white'><BsThreeDots size={22} /></button>
-        </div> */}
       </div>
 
-      <div className="relative overflow-x-auto mt-4">
-        <table className="w-full text-sm text-left rtl:text-right text-app-text border border-primary/90! dark:border-white/15!">
-          <thead className="text-xs uppercase text-app-text-muted">
-            <tr>
-              <th
-                scope="col"
-                className="flex justify-between  gap-4 h-[64px] px-4 py-4 bg-app-surface-secondary"
-              >
-                <button className="px-4 py-1.5 text-sm font-medium rounded-lg text-app-text bg-app-surface border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors flex items-center gap-1">
-                  <IoSync size={20} />
-                  Sync
-                </button>
-                <button className="px-4 py-1.5 text-sm font-medium rounded-lg text-app-text bg-app-surface border border-app-border hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-colors flex items-center gap-1">
-                  <GiBackwardTime size={20} />
-                  Logs
-                </button>
-              </th>
+      {active.isError && (
+        <ErrorState
+          message={`Could not load the ${VIEWS[view].label.toLowerCase()}.`}
+          onRetry={active.refetch}
+        />
+      )}
 
-              <th
-                scope="col"
-                className="px-4  py-3 bg-app-surface-secondary w-full mx-auto text-center border-t border-r border-b border-primary/90! dark:border-white/15!"
-              >
-                <div className="flex justify-between">
-                  <div className="w-[33.33%] max-md:hidden"></div>
-                  <div className="w-[33.33%] max-md:w-[66.66%] flex gap-4 md:justify-center items-center">
-                    <button
-                      disabled={isPreviousDisabled}
-                      onClick={(e) => {
-                        if (!isPreviousDisabled)
-                          GetDataForDate(prevDate, "prev");
-                      }}
-                      className={`${
-                        isPreviousDisabled
-                          ? "cursor-not-allowed opacity-65"
-                          : "cursor-pointer  text-primary duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white"
-                      } me-1 p-2 bg-app-surface text-app-text border border-app-border rounded-full `}
-                    >
-                      <FaArrowLeft />
-                    </button>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => {
-                        GetDataForDate(e.target.value, "next");
-                      }}
-                      className="border border-app-border py-2 px-4 bg-app-surface text-app-text rounded-md outline-none focus:border-primary transition-colors"
-                    />
+      {!active.isError && (active.isLoading || active.isUninitialized) && (
+        <Skeleton className="h-72" />
+      )}
 
-                    <button
-                      onClick={(e) => {
-                        GetDataForDate(nextDate, "next");
-                      }}
-                      className="ms-1 p-2 bg-app-surface border border-app-border text-app-text duration-300 hover:bg-gradient-to-r from-primary/80 to-green-600 hover:text-white rounded-full "
-                    >
-                      <FaArrowRight />
-                    </button>
-                  </div>
-                  <div className="w-[33.33%] flex justify-end items-center">
-                    <button
-                      onClick={() => {
-                        bulkupdateFunction();
-                      }}
-                      className={TOOLBAR_BTN}
-                    >
-                      Bulk Update{" "}
-                      {isBulkUpdateLoading && <Loader color="#262524" />}
-                    </button>
-                  </div>
-                </div>
-              </th>
-            </tr>
-          </thead>
+      {!active.isError && active.data && dates.length === 0 && (
+        <EmptyState
+          title="No rooms to show"
+          description="Add rooms in Rooms Setup first."
+        />
+      )}
 
-          <tbody>
-            <tr className="bg-app-surface-secondary border-b border-primary/90! dark:border-white/15! flex-grow">
-              <th
-                scope="row"
-                className="px-4 py-4 font-medium text-app-text bg-app-surface-secondary whitespace-nowrap w-[16rem]"
-              >
-                <span className="text-2xl font-bold text-app-text-muted">Rooms</span>
-              </th>
-
-              <td className="w-full flex justify-between">
-                {dates?.map((date, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col  w-full text-center text-app-text-muted border-r border-primary/90! dark:border-white/15!"
-                  >
-                    <span>{getMonthInWords(date)}</span>
-                    <span>{getYearFromDate(date)}</span>
-                    <span>{getDayOfWeek(date)}</span>
-                    <span className="bg-zinc-500 dark:bg-app-surface dark:text-app-text-muted text-white max-md:px-7 ">
-                      {getDayFromDate(date)}
-                    </span>
-                  </div>
-                ))}
-              </td>
-            </tr>
-
-            {showInventory && (
-              <>
-                {inventoryData &&
-                  Object.keys(inventoryData)?.length > 0 &&
-                  Object?.keys(inventoryData)?.map((item, itemIndex) => (
-                    <tr
-                      key={itemIndex}
-                      className="bg-app-surface-secondary border-t border-primary/90! dark:border-white/15!"
-                    >
-                      <th className="px-4 font-medium text-app-text bg-app-surface-secondary w-[16rem] py-2">
-                        <div className="gap-4 flex flex-col">
-                          <span className="font-bold text-md uppercase">
-                            {room_type_name[item]}
-                          </span>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <CiCirclePlus fontSize={20} fontWeight={500} />
-                              <span className="text-bold">Inventory</span>
-                            </div>
-                            <div className="ms-7">
-                              <span className="font-light border-b-2 border-primary/90! dark:border-white/40!">
-                                Multi Update
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </th>
-
-                      <td className="w-full flex">
-                        {dates?.map((date) => (
-                          <div
-                            key={date}
-                            className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90! dark:border-white/15!"
-                          >
-                            <span className="bg-gradient-to-r from-emerald-500 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                            <span className="border-2 border-app-border rounded-md text-center overflow-hidden block">
-                              <input
-                                type="text"
-                                value={inventoryData[item][date]}
-                                onChange={(e) =>
-                                  InventoryUpdate(e.target.value, item, date)
-                                }
-                                className={CELL_INPUT}
-                              />
-                            </span>
-                          </div>
-                        ))}
-                      </td>
-                    </tr>
-                  ))}
-              </>
-            )}
-
-            {showPrice && (
-              <>
-                {Object?.keys(priceData)?.map((item, itemIndex) => (
-                  <tr
-                    key={itemIndex}
-                    className="bg-app-surface-secondary border-t border-primary/90! dark:border-white/15!"
-                  >
-                    <th className="px-4 font-medium text-app-text bg-app-surface-secondary w-[16rem] py-2">
-                      <div className="gap-4 flex flex-col">
-                        <span className="font-extrabold text-1xl uppercase">
-                          {room_type_name[item]}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <CiCirclePlus fontSize={20} fontWeight={500} />
-                            <span className="text-bold">Price</span>
-                          </div>
-                          <div className="ms-7">
-                            <span className="font-light border-b-2 border-primary/90! dark:border-white/40!">
-                              Multi Update
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </th>
-
-                    <td className="w-full flex">
-                      {dates?.map((date) => (
-                        <div
-                          key={date}
-                          className="flex flex-col justify-end py-2 px-[10px] w-full h-full border-l-2 border-primary/90! dark:border-white/15!"
-                        >
-                          <span className="bg-gradient-to-r from-emerald-500 to-green-600 h-[8px] rounded-md mb-[3px] mt-6"></span>
-                          <span className="border-2 border-app-border rounded-md text-center overflow-hidden block">
-                            <input
-                              type="text"
-                              value={priceData[item][date]}
-                              onChange={(e) =>
-                                PriceUpdate(e.target.value, item, date)
-                              }
-                              className={CELL_INPUT}
-                            />
-                          </span>
-                        </div>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
-              </>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* {
-        showAll && <>
-          <InventoryTable />
-        </>
-      }
-      {
-        showInventory && <>
-          <InventoryTable />
-        </>
-      }
-      {
-        showPrice && <>
-          <PriceTable />
-        </>
-      } */}
-    </div>
+      {!active.isError && dates.length > 0 && (
+        <div className={`transition-opacity ${isFetching ? "opacity-60" : ""}`}>
+          <RateGrid
+            values={values}
+            edits={edits[view]}
+            dates={dates}
+            today={today}
+            unit={VIEWS[view].unit}
+            onChange={handleCellChange}
+          />
+          <p className="mt-2 text-xs text-app-text-muted">
+            Changed cells have a blue outline until you save. Weekends are
+            shaded.
+          </p>
+        </div>
+      )}
+    </PageShell>
   );
 };
 
 export default RoomsAndInventory;
-
-// const response = await fetch(
-//   `${BASE_URL}/price/getprice/all/${localStorage.getItem(
-//     "token"
-//   )}/${localStorage.getItem("hid")}`,
-//   {
-//     method: "GET",
-//     headers: {
-//       Accept: "application/json, text/plain, /",
-//       "Content-Type": "application/json",
-//     },
-//   }
-// );

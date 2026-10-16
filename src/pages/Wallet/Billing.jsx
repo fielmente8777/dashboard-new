@@ -1,177 +1,369 @@
 import axios from "axios";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  ArrowRight,
+  Bot,
+  Building2,
+  ChartColumn,
+  ChartLine,
+  Check,
+  ChevronDown,
+  CircleCheck,
+  Clock,
+  Contact,
+  Crown,
+  Headphones,
+  Hotel,
+  Layers,
+  LoaderCircle,
+  Lock,
+  Megaphone,
+  MessageCircle,
+  Minus,
+  PhoneCall,
+  Plug,
+  Plus,
+  Puzzle,
+  Receipt,
+  Rocket,
+  Share2,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TriangleAlert,
+  Users,
+  Webhook,
+  X,
+} from "lucide-react";
 import { NEW_BASE_URL } from "../../data/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { daysLeft } from "../../utils/daysLeft";
 import {
-  clearSubscription,
   clearSubscriptionApps,
+  fetchSubscriptionData,
 } from "../../redux/slice/subscriptionDataSlice";
-import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
+import { RAZORPAY_BILLING_KEY_ID, RAZORPAY_CHECKOUT_SCRIPT_URL } from "../../config/env";
+import { getCookie } from "../../utils/handleCookies";
 
-// Plan data
-const PLANS = [
-  { id: "Basic", planName: "BASIC", price: 999, popular: false },
-  { id: "Pro", planName: "PRO", price: 2999, popular: true },
-  { id: "Enterprise", planName: "ENTERPRISE", price: 9999, popular: false },
+const GST_PERCENT = 18;
+const TEAM_SEAT_PRICE = 500;
+const SALES_WHATSAPP_URL = "https://wa.me/+919501868775";
+
+// Billing cycles: months billed and discount applied for each.
+const CYCLES = [
+  { key: "month", label: "Monthly", months: 1, discount: 5 },
+  { key: "quarter", label: "Quarterly", months: 3, discount: 10 },
+  { key: "6month", label: "6 Months", months: 6, discount: 15 },
+  { key: "year", label: "Yearly", months: 12, discount: 40 },
 ];
 
-// Apps data
-const APPS_DATA = [
-  { name: "WhatsApp Automation", price: 1000, icon: "💬" },
-  { name: "Lead Management", price: 500, icon: "🎯" },
-  { name: "Exotel Integration", price: 1000, icon: "📞" },
-  { name: "CRM", price: 500, icon: "🗂️" },
-  { name: "Booking Engine + Reservations", price: 1500, icon: "🏨" },
-  { name: "Eazbot", price: 500, icon: "🤖" },
-];
+const PLAN_META = {
+  BASIC: {
+    icon: Rocket,
+    tagline:
+      "Perfect for small hotels starting their journey toward direct bookings and digital growth.",
+  },
+  PRO: {
+    icon: Crown,
+    tagline:
+      "Best value for growing hotels with multichannel automation and advanced tools.",
+  },
+  ENTERPRISE: {
+    icon: Building2,
+    tagline:
+      "Full-suite for large properties needing advanced integrations and dedicated support.",
+  },
+};
 
-const formatPrice = (num) => `₹${num.toLocaleString("en-IN")}`;
+const MODULE_LABELS = {
+  corePlatform: "Core Platform",
+  aiLayer: "AI Layer",
+  analytics: "Analytics",
+  automation: "Automation",
+  integrations: "Integrations",
+  unlimitedLocation: "Unlimited Location",
+};
+
+const APP_ICONS = {
+  "WhatsApp Chat": MessageCircle,
+  "Lead Management": Target,
+  "Exotel Integration": PhoneCall,
+  CRM: Contact,
+  "Booking Engine + Reservation Desk": Hotel,
+  Eazbot: Bot,
+  Webhook: Webhook,
+  "WordPress Webhook": Puzzle,
+  GRM: ChartColumn,
+  "Meta Leads": ChartLine,
+  "Google Ads Insights": Megaphone,
+  "Social Media": Share2,
+};
+
+// Theme-neutral tones: derived from the text colour so they work in light and dark.
+const BORDER = "border-app-text/10!";
+const MUTED = "text-app-text/60";
+const FAINT = "text-app-text/45";
+
+const formatPrice = (num) =>
+  `₹${Math.round(Number(num) || 0).toLocaleString("en-IN")}`;
+
+const formatLimit = (value) =>
+  value < 0 ? "Unlimited" : Number(value).toLocaleString("en-IN");
+
+const capitalize = (text = "") => text.charAt(0).toUpperCase() + text.slice(1);
+
+// Load the Razorpay checkout script once and reuse it on later clicks.
+function loadRazorpay() {
+  if (window.Razorpay) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = RAZORPAY_CHECKOUT_SCRIPT_URL;
+    script.onload = () => resolve(true);
+    script.onerror = () => {
+      script.remove();
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+}
+
+const SectionTitle = ({ icon, title, hint }) => {
+  const Icon = icon;
+  return (
+  <div className="flex items-center gap-2 mb-5">
+    <Icon className="w-4 h-4 text-ternary" />
+    <span className="text-[11px] font-bold tracking-wider uppercase text-app-text/70">
+      {title}
+    </span>
+    {hint && <span className={`text-[11px] ${FAINT}`}>· {hint}</span>}
+    <div className="flex-1 h-px bg-app-text/10"></div>
+  </div>
+  );
+};
 
 // Individual Plan Card Component
 const PlanCard = ({ plan, isSelected, onSelect, isPurchased }) => {
-  // console.log("Rendering PlanCard:", plan.planName, "Selected:", isSelected);
-  const priceFormatted = formatPrice(plan.price);
-  const formatModuleName = (key) => {
-    const map = {
-      corePlatform: "Core Platform",
-      aiLayer: "AI Layer",
-      analytics: "Analytics",
-      automation: "Automation",
-      integrations: "Integrations",
-      unlimitedLocation: "Unlimited Location",
-    };
+  const isEnterprise = plan.planName === "ENTERPRISE";
+  const isPopular = plan.planName === "PRO";
+  const canSelect = !isPurchased && !isEnterprise;
+  const meta = PLAN_META[plan.planName] || { icon: Layers };
+  const PlanIcon = meta.icon;
 
-    return map[key] || key;
-  };
+  const modules = Object.entries(plan.modules || {})
+    .filter(([, value]) => value)
+    .map(([key]) => ({ icon: Check, label: MODULE_LABELS[key] || key }));
 
-  const planName = plan.planName;
+  const limits = [
+    plan.limits?.teamMembers != null && {
+      icon: Users,
+      label: `${formatLimit(plan.limits.teamMembers)} team members`,
+    },
+    plan.limits?.aiCreditsMonthly != null && {
+      icon: Sparkles,
+      label: `${formatLimit(plan.limits.aiCreditsMonthly)} AI credits / mo`,
+    },
+    plan.limits?.maxLeadsPerMonth != null && {
+      icon: Target,
+      label: `${formatLimit(plan.limits.maxLeadsPerMonth)} leads / mo`,
+    },
+    plan.support &&
+      plan.support !== "none" && {
+        icon: Headphones,
+        label: `${capitalize(plan.support)} support`,
+      },
+  ].filter(Boolean);
 
   return (
     <div
-      className={`${isPurchased && "opacity-60 cursor-not-allowed"}  relative bg-app-surface-secondary border! rounded-xl p-5 cursor-pointer transition-all duration-200  hover:border-primary! hover:-translate-y-1 ${isSelected === plan._id ? "border-navy bg-navy shadow-lg -translate-y-1" : "border-gray-200"} ${plan.planName === "PRO" && isSelected !== plan._id ? "border-ternary!" : ""}`}
-      onClick={!isPurchased && onSelect}
+      role={canSelect ? "button" : undefined}
+      tabIndex={canSelect ? 0 : undefined}
+      aria-pressed={canSelect ? isSelected : undefined}
+      onClick={canSelect ? onSelect : undefined}
+      onKeyDown={(e) => {
+        if (canSelect && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`relative flex flex-col rounded-2xl border p-6 bg-app-surface-secondary transition-all duration-200 ${
+        isSelected
+          ? "border-ternary! ring-1 ring-ternary shadow-lg"
+          : isPopular && !isPurchased
+            ? "border-ternary/50!"
+            : BORDER
+      } ${canSelect ? "cursor-pointer hover:border-ternary/70! hover:-translate-y-0.5" : ""}`}
     >
-      {plan.planName === "PRO" && isSelected !== plan._id && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-ternary! text-white text-[11px] font-bold tracking-wide uppercase px-3.5 py-1 rounded-full whitespace-nowrap shadow-md z-99999">
-          Most popular
+      {(isPurchased || isPopular) && (
+        <div
+          className={`absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold tracking-wide uppercase px-3 py-0.5 rounded-full text-white ${
+            isPurchased ? "bg-green-600" : "bg-ternary"
+          }`}
+        >
+          {isPurchased ? "Current plan" : "Most popular"}
         </div>
       )}
-      <div
-        className={`text-[11px] font-bold tracking-wider uppercase mb-1.5 text-gray-400`}
-      >
-        {plan.planName}
-      </div>
-      <div className="flex items-baseline gap-0.5">
-        <span className={`text-3xl font-bold tracking-tight `}>
-          {planName === "ENTERPRISE" ? 0 : priceFormatted}
-        </span>
-        <span className={`text-xs font-medium text-gray-400`}>/mo</span>
-      </div>
-      <div className={`text-[12.5px] leading-snug mt-2 mb-4 text-app-text-faint`}>
-        {plan.planName === "BASIC" &&
-          "Perfect for small hotels starting their journey toward direct bookings and digital growth."}
-        {plan.planName === "PRO" &&
-          "Best value for growing hotels with multichannel automation and advanced tools."}
-        {plan.planName === "ENTERPRISE" &&
-          "Full-suite for large properties needing advanced integrations and dedicated support."}
-      </div>
-      <button
-        className={`w-full py-2.5 px-3 rounded-sm text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-all ${isSelected === plan._id ? "border border-white/35 bg-white/15 text-gray-600 hover:bg-white/25" : "border border-navy bg-transparent text-navy hover:bg-navy"}`}
-      >
-        <span
-          className={`check-icon ${isSelected === plan._id ? "inline-flex items-center justify-center w-3.5 h-3.5 bg-green-500 rounded-full" : "hidden"}`}
-        >
-          <svg
-            className="w-2 h-2 text-white"
-            viewBox="0 0 12 10"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="1.5 5.5 4.5 8.5 10.5 2"></polyline>
-          </svg>
-        </span>
 
-        {planName === "ENTERPRISE" ? (
-          <Link to={`https://wa.me/+919501868775`} target="_blank">
-            Contact Us
-          </Link>
-        ) : isPurchased ? (
-          "Purchased"
-        ) : (
-          <span className="text-app-text-faint">{isSelected === plan._id ? "Selected" : "Select plan"}</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="w-9 h-9 rounded-lg bg-ternary/10 text-ternary flex items-center justify-center">
+            <PlanIcon className="w-4.5 h-4.5" />
+          </span>
+          <span className="text-xs font-bold tracking-wider uppercase text-app-text/70">
+            {plan.planName}
+          </span>
+        </div>
+        {isSelected && (
+          <CircleCheck className="w-5 h-5 text-ternary shrink-0" aria-hidden />
         )}
-      </button>
-      <div>
-        {Object.values(plan.modules).some(Boolean) && (
-          <div className="mt-4">
-            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-              Includes
-            </div>
+      </div>
 
-            <ul className="text-sm text-app-text-faint space-y-1">
-              {Object.entries(plan.modules)
-                .filter(([_, value]) => value)
-                .map(([key]) => (
-                  <li key={key} className="flex items-center gap-2">
-                    <span className="text-green-500">✔</span>
-                    {formatModuleName(key)}
-                  </li>
-                ))}
-            </ul>
+      <div className="flex items-baseline gap-1 mt-4">
+        <span className="text-3xl font-bold tracking-tight text-app-text">
+          {isEnterprise ? "Custom" : formatPrice(plan.price)}
+        </span>
+        {!isEnterprise && <span className={`text-xs ${MUTED}`}>/mo</span>}
+      </div>
+      <p className={`text-[12.5px] leading-relaxed mt-1.5 ${MUTED}`}>
+        {meta.tagline}
+      </p>
+
+      <div className="mt-4">
+        {isEnterprise ? (
+          <a
+            href={SALES_WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-[13px] font-semibold border border-ternary! text-ternary hover:bg-ternary hover:text-white transition-colors"
+          >
+            Contact sales <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        ) : isPurchased ? (
+          <div className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-[13px] font-semibold bg-green-500/10 text-green-600">
+            <CircleCheck className="w-3.5 h-3.5" /> Active plan
+          </div>
+        ) : (
+          <div
+            className={`flex items-center justify-center gap-1.5 w-full py-2 rounded-lg text-[13px] font-semibold border transition-colors ${
+              isSelected
+                ? "bg-ternary border-ternary! text-white"
+                : `${BORDER} text-app-text`
+            }`}
+          >
+            {isSelected ? (
+              <>
+                <Check className="w-3.5 h-3.5" /> Selected
+              </>
+            ) : (
+              "Select plan"
+            )}
           </div>
         )}
       </div>
+
+      {(modules.length > 0 || limits.length > 0) && (
+        <div className={`mt-4 pt-4 border-t ${BORDER}`}>
+          <div className={`text-[10.5px] font-bold tracking-wider uppercase mb-2 ${FAINT}`}>
+            Includes
+          </div>
+          <ul className="space-y-1.5 text-[13px] text-app-text/85">
+            {[...modules, ...limits].map(({ icon: Icon, label }) => (
+              <li key={label} className="flex items-center gap-2">
+                <Icon
+                  className={`w-3.5 h-3.5 shrink-0 ${Icon === Check ? "text-green-500" : "text-ternary"}`}
+                />
+                {label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
 
 // App Card Component
 const AppCard = ({ app, isSelected, onToggle, locked, isPurchased }) => {
-  const IconMap = {
-    "WhatsApp Chat": "💬",
-    "Lead Management": "🎯",
-    "Exotel Integration": "📞",
-    CRM: "🗂️",
-    "Booking Engine + Reservation Desk": "🏨",
-    Eazbot: "🤖",
-    Webhook: "🔗",
-    "WordPress Webhook": "🧩",
-    GRM: "📊",
-    "Meta Leads": "📈",
-  };
+  const AppIcon = APP_ICONS[app.name] || Plug;
   return (
     <div
-      className={`bg-app-surface-secondary border rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-200 ${locked ? "opacity-50 pointer-events-none border-gray-200" : isSelected ? "border-ternary bg-app-surface " : "border-gray-200 hover:border-navy-muted hover:-translate-y-0.5"}`}
+      className={`rounded-xl border px-4 py-3.5 flex items-center gap-3 bg-app-surface-secondary transition-colors duration-200 ${
+        locked
+          ? `opacity-50 ${BORDER}`
+          : isSelected && !isPurchased
+            ? "border-ternary!"
+            : `${BORDER} hover:border-app-text/25!`
+      }`}
     >
-      <div
-        className={`w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-base shrink-0 ${isSelected ? "bg-ternary/10 dark:bg-ternary/50" : ""}`}
+      <span
+        className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+          isPurchased
+            ? "bg-green-500/10 text-green-600"
+            : isSelected
+              ? "bg-ternary/15 text-ternary"
+              : "bg-app-text/5 text-app-text/70"
+        }`}
       >
-        {/* {app.icon} */}
-        {IconMap[app.name] || "🔌"}
-      </div>
+        <AppIcon className="w-4.5 h-4.5" />
+      </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-semibold text-surface truncate">
+        <div className="text-[13px] font-semibold text-app-text truncate" title={app.name}>
           {app.name}
         </div>
-        <div className="text-xs text-gray-400 mt-0.5">
-          {formatPrice(app.price)}/month
-        </div>
+        <div className={`text-xs mt-0.5 ${MUTED}`}>{formatPrice(app.price)}/month</div>
       </div>
-      <button
-        onClick={() => !isPurchased && onToggle(app)}
-        disabled={locked}
-        className={`app-toggle shrink-0 w-20 py-1.5 px-2 rounded-full text-xs font-semibold border-2 transition-all text-center ${isSelected ? "bg-ternary border-ternary text-white hover:bg-ternary-light" : "border-gray-300 bg-transparent text-gray-600 hover:border-navy hover:text-navy"}`}
-      >
-        {isPurchased ? "Purchased" : isSelected ? "Remove" : "Add"}
-      </button>
+      {isPurchased ? (
+        <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-green-500/10 text-green-600">
+          <Check className="w-3 h-3" />
+          Active
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onToggle(app)}
+          disabled={locked}
+          aria-pressed={isSelected}
+          className={`shrink-0 inline-flex items-center justify-center gap-1 w-19 py-1.5 rounded-lg text-xs font-semibold border transition-colors disabled:cursor-not-allowed ${
+            isSelected
+              ? "bg-ternary border-ternary! text-white hover:opacity-90"
+              : `${BORDER} text-app-text hover:border-ternary! hover:text-ternary`
+          }`}
+        >
+          {isSelected ? (
+            <>
+              <X className="w-3 h-3" /> Remove
+            </>
+          ) : (
+            <>
+              <Plus className="w-3 h-3" /> Add
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 };
+
+const SummaryRow = ({ label, value, valueClass = "text-app-text", labelClass = "text-app-text/80" }) => (
+  <div className="flex justify-between items-center gap-3 py-1 text-[13px]">
+    <span className={`truncate ${labelClass}`}>{label}</span>
+    <span className={`font-semibold shrink-0 ${valueClass}`}>{value}</span>
+  </div>
+);
+
+const SummaryLabel = ({ children }) => (
+  <div className={`text-[10.5px] font-bold tracking-wider uppercase mt-5 mb-1.5 ${FAINT}`}>
+    {children}
+  </div>
+);
+
+const TrustNote = () => (
+  <div className={`flex items-center justify-center gap-1.5 text-[11.5px] mt-3 ${FAINT}`}>
+    <ShieldCheck className="w-3.5 h-3.5" />
+    Secure payment via Razorpay · No contracts
+  </div>
+);
 
 // Summary component
 const BillingSummary = ({
@@ -186,51 +378,18 @@ const BillingSummary = ({
 }) => {
   const monthLeft = Math.max(1, Math.floor(daysLeft / 30));
 
-  console.log("Days left", monthLeft);
   const [validFor, setValidFor] = useState(
     monthLeft === 1 ? "month" : monthLeft === 3 ? "quarter" : "6month",
   );
-  const totalRef = useRef(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showCurrentApps, setShowCurrentApps] = useState(false);
+  const dispatch = useDispatch();
 
-  // const appsTotal = selectedApps?.reduce((sum, p) => sum + p.price, 0);
-
-  const teamCost = teamCount * 500;
-  let multiplyBy =
-    validFor === "month"
-      ? 1
-      : validFor === "quarter"
-        ? 3
-        : validFor === "6month"
-          ? 6
-          : 12;
-
-  let discount =
-    validFor === "month"
-      ? 5
-      : validFor === "quarter"
-        ? 10
-        : validFor === "6month"
-          ? 15
-          : 40;
-
-  let gst=18
-
-  console.log(multiplyBy);
-
-  const handlePayment = () => {
-    console.log("selected Apps", selectedApps);
-    console.log("checkout done", selectedPlan);
-  };
-
-  function loadRazorpay() {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  }
+  const cycle = CYCLES.find((c) => c.key === validFor) || CYCLES[CYCLES.length - 1];
+  const teamCost = teamCount * TEAM_SEAT_PRICE;
+  const multiplyBy = cycle.months;
+  const discount = cycle.discount;
+  const gst = GST_PERCENT;
 
   const newApps = selectedApps?.filter(
     (app) =>
@@ -238,17 +397,16 @@ const BillingSummary = ({
   );
 
   const handleUpgrade = async () => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+
     const isLoaded = await loadRazorpay();
 
     if (!isLoaded) {
-      alert("Razorpay SDK failed to load");
+      setIsProcessing(false);
+      alert("Could not load the payment gateway. Please check your connection and try again.");
       return;
     }
-    // Implement upgrade logic here, e.g., redirect to checkout page
-    alert(
-      `Upgrading to ${selectedPlan.planName} plan with price ₹${selectedPlan.price} , plan id: ${selectedPlan._id}}`,
-    );
-    console.log("Selected App", selectedApps);
 
     const payload = {
       planId: selectedPlan?._id,
@@ -259,10 +417,6 @@ const BillingSummary = ({
       teamCost: teamCost,
       gst: gst,
     };
-
-    console.log("AppIds", payload);
-
-    // create order
 
     try {
       const response = await fetch(
@@ -276,45 +430,58 @@ const BillingSummary = ({
           body: JSON.stringify(payload),
         },
       );
-      const order = await response.json();
-      console.log("Order created:", order);
-      if (order.success === false) {
-        return "Already exist";
+      const order = await response.json().catch(() => null);
+      if (!response.ok || order?.success === false || !order?.result?.doc?.orderId) {
+        setIsProcessing(false);
+        alert(
+          order?.message || order?.error || "Could not create the order. Please try again.",
+        );
+        return;
       }
 
       // open razorpay checkout with order details
       const options = {
-        // key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
-        key: "rzp_test_UZ0V9jh3jMC0C9",
+        key: RAZORPAY_BILLING_KEY_ID,
         amount: order.result.doc.amount, // Amount in paise
-        // currency: order.currency,
         currency: "INR",
         name: "Eazotel Technologies Pvt Ltd",
-        description: selectedPlan.name,
+        description: `${selectedPlan.planName} plan`,
         order_id: order.result.doc.orderId,
 
         handler: async function (response) {
-          // Handle successful payment here, e.g., verify payment and update subscription status
-          await fetch(`${NEW_BASE_URL}/api/v1/subscription/verify-payment`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({
-              ...response,
-              validFor: multiplyBy,
-              planId: selectedPlan?._id,
-              appIds: newApps?.map((app) => app._id),
-            }),
-          });
+          try {
+            const verifyRes = await fetch(
+              `${NEW_BASE_URL}/api/v1/subscription/verify-payment`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                  ...response,
+                  validFor: multiplyBy,
+                  planId: selectedPlan?._id,
+                  appIds: newApps?.map((app) => app._id),
+                }),
+              },
+            );
+            if (!verifyRes.ok) throw new Error(`Verify failed: ${verifyRes.status}`);
 
-          alert("Payment successful");
-          console.log("'Payment successful:', response");
+            alert("Payment successful");
+            const token = getCookie("token");
+            if (token) dispatch(fetchSubscriptionData(token));
+          } catch (error) {
+            console.error("Error verifying payment:", error);
+            alert(
+              `Your payment went through but we could not confirm it yet. Please contact support with payment ID ${response?.razorpay_payment_id || ""}.`,
+            );
+          } finally {
+            setIsProcessing(false);
+          }
         },
-        prefill: {
-          name: "Customer Name",
-          email: "customer@email.com",
+        modal: {
+          ondismiss: () => setIsProcessing(false),
         },
         theme: {
           color: "#152547",
@@ -322,50 +489,46 @@ const BillingSummary = ({
       };
 
       const rzp1 = new window.Razorpay(options);
+      rzp1.on("payment.failed", () => setIsProcessing(false));
       rzp1.open();
     } catch (error) {
       console.error("Error creating order:", error);
+      setIsProcessing(false);
+      alert("Something went wrong while starting the payment. Please try again.");
     }
   };
 
-  const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0);
+  const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0) || 0;
+  const isCurrentPlan = selectedPlan && selectedPlan._id === activePlanId?._id;
 
   const subtotal = selectedPlan
-    ? ((selectedPlan?._id === activePlanId?._id ? 0 : selectedPlan.price) +
-        appsTotal +
-        teamCost) *
+    ? ((isCurrentPlan ? 0 : selectedPlan.price) + appsTotal + teamCost) *
       multiplyBy
     : 0;
 
-  const amountAfterDiscount = subtotal - (subtotal * discount) / 100;
-  const total = amountAfterDiscount + (amountAfterDiscount * 18) / 100;
+  const discountAmount = (subtotal * discount) / 100;
+  const amountAfterDiscount = subtotal - discountAmount;
+  const gstAmount = (amountAfterDiscount * gst) / 100;
+  const total = amountAfterDiscount + gstAmount;
 
-  // const total = subtotal - (subtotal * discount) / 100;
+  const prorateVisible = appInteracted && newApps?.length > 0;
+  const canPay = newApps?.length > 0 && !isProcessing;
 
-  // const appsTotal = newApps?.reduce((sum, p) => sum + p.price, 0);
-
-  const prorateVisible = appInteracted && appNames.length > 0;
-
-  useEffect(() => {
-    if (totalRef.current && selectedPlan) {
-      totalRef.current.classList.remove("total-bump");
-      void totalRef.current.offsetWidth;
-      totalRef.current.classList.add("total-bump");
-    }
-  }, [total, selectedPlan, validFor]);
+  const card = `bg-app-surface-secondary border ${BORDER} rounded-2xl p-6 lg:sticky lg:top-6`;
+  const header = (
+    <div className={`flex items-center gap-2 pb-4 border-b ${BORDER}`}>
+      <Receipt className="w-4 h-4 text-ternary" />
+      <span className="text-[15px] font-bold text-app-text">Billing summary</span>
+    </div>
+  );
 
   if (!selectedPlan) {
     return (
-      <div className="bg-app-surface border border-gray-200 rounded-xl p-6 sticky top-6">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
-          <div className="text-base font-bold text-navy">Billing summary</div>
-          <div className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full text-gray-600">
-            Monthly
-          </div>
-        </div>
-        <div className="text-center py-6">
-          <div className="text-3xl mb-2 opacity-35">📋</div>
-          <div className="text-xs text-gray-400 leading-relaxed">
+      <div className={card}>
+        {header}
+        <div className="text-center py-8">
+          <Receipt className={`w-8 h-8 mx-auto mb-2 ${FAINT}`} />
+          <div className={`text-[13px] leading-relaxed ${MUTED}`}>
             Select a plan to see
             <br />
             your billing summary
@@ -373,273 +536,225 @@ const BillingSummary = ({
         </div>
         <button
           disabled
-          className="w-full mt-5 py-3.5 rounded-md bg-gray-200 text-gray-400 font-bold text-sm cursor-not-allowed shadow-none"
+          className={`w-full py-3 rounded-lg bg-app-text/10 font-semibold text-sm cursor-not-allowed ${FAINT}`}
         >
-          Continue to payment →
+          Continue to payment
         </button>
-        <div className="flex items-center justify-center gap-1 text-[11.5px] text-gray-400 mt-3">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M6 1a5 5 0 100 10A5 5 0 006 1zm0 4a1 1 0 110 2 1 1 0 010-2z"
-              fill="currentColor"
-              opacity=".5"
-            />
-          </svg>
-          No contracts · Cancel anytime
-        </div>
+        <TrustNote />
       </div>
     );
   }
 
   return (
-    <div className="bg-app-surface border border-gray-200 rounded-xl p-6 sticky top-6">
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
-        <div className="text-base font-bold text-navy">Billing summary</div>
+    <div className={card}>
+      {header}
+
+      {/* Billing cycle */}
+      <SummaryLabel>Billing cycle</SummaryLabel>
+      <div className="grid grid-cols-4 gap-1 p-1 rounded-xl bg-app-text/5">
+        {CYCLES.map((c) => {
+          const active = c.key === validFor;
+          return (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => setValidFor(c.key)}
+              aria-pressed={active}
+              className={`rounded-lg py-2 text-center transition-colors ${
+                active ? "bg-ternary text-white shadow-sm" : "text-app-text/70 hover:text-app-text"
+              }`}
+            >
+              <div className="text-[11.5px] font-semibold leading-tight">{c.label}</div>
+              <div
+                className={`text-[10px] font-semibold leading-tight ${active ? "text-white/85" : "text-green-500"}`}
+              >
+                −{c.discount}%
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        <button
-          onClick={() => setValidFor("month")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
-      ${
-        validFor === "month"
-          ? "bg-blue-500 text-white shadow-md"
-          : "bg-gray-100 text-gray-600 hover:bg-blue-100"
-      }`}
-        >
-          Monthly
-        </button>
+      {/* Plan */}
+      <SummaryLabel>Plan</SummaryLabel>
+      <SummaryRow
+        label={`${selectedPlan.planName} plan`}
+        value={isCurrentPlan ? "Active" : `${formatPrice(selectedPlan.price)}/mo`}
+        valueClass={isCurrentPlan ? "text-green-600" : "text-app-text"}
+      />
 
-        <button
-          onClick={() => setValidFor("quarter")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
-      ${
-        validFor === "quarter"
-          ? "bg-purple-500 text-white shadow-md"
-          : "bg-gray-100 text-gray-600 hover:bg-purple-100"
-      }`}
-        >
-          Quarterly
-        </button>
-
-        <button
-          onClick={() => setValidFor("6month")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
-      ${
-        validFor === "6month"
-          ? "bg-orange-500 text-white shadow-md"
-          : "bg-gray-100 text-gray-600 hover:bg-orange-100"
-      }`}
-        >
-          6 Months
-        </button>
-
-        <button
-          onClick={() => setValidFor("year")}
-          className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all
-      ${
-        validFor === "year"
-          ? "bg-green-500 text-white shadow-md"
-          : "bg-gray-100 text-gray-600 hover:bg-green-100"
-      }`}
-        >
-          Yearly
-        </button>
-      </div>
-      <div>
-        {/* Plan Section */}
-        <div className="mb-4">
-          <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-            Plan
-          </div>
-          <div className="flex justify-between items-start gap-2">
-            <span className="text-sm text-gray-600 flex-1">
-              {selectedPlan.name} Plan
+      {/* Current apps, collapsed by default */}
+      {purchasedApps?.length > 0 && (
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={() => setShowCurrentApps((v) => !v)}
+            aria-expanded={showCurrentApps}
+            className="w-full flex justify-between items-center gap-3 py-1 text-[13px]"
+          >
+            <span className="text-app-text/80">
+              Current apps ({purchasedApps.length})
             </span>
-            <span className="text-sm font-semibold text-gray-800 shrink-0">
-              {formatPrice(selectedPlan.price)}/mo
+            <span className="inline-flex items-center gap-1 font-semibold text-green-600">
+              Active
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${showCurrentApps ? "rotate-180" : ""}`}
+              />
             </span>
-          </div>
-        </div>
-
-        {/* Apps Section */}
-        {/* {selectedApps?.length > 0 && (
-          <div className="mb-4">
-            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-              Add-on apps
-            </div>
-            <div className="space-y-1">
-              {selectedApps?.map((app) => {
-                return (
-                  <div
-                    key={app?._id}
-                    className="flex justify-between items-center py-1 text-[12.5px]"
-                  >
-                    <span className="text-gray-600">{app?.name}</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-gray-800">
-                        {formatPrice(app?.price)}
-                      </span>
-                      <button
-                        onClick={() => onRemoveApp(app)}
-                        className="text-gray-300 hover:text-ternary text-base leading-4 font-bold transition"
-                        title="Remove"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )} */}
-
-        {purchasedApps?.length > 0 && (
-          <div className="mb-4">
-            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-              Current apps
-            </div>
-
-            <div className="space-y-1">
+          </button>
+          {showCurrentApps && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5 mb-1">
               {purchasedApps.map((app) => (
-                <div
+                <span
                   key={app._id}
-                  className="flex justify-between items-center py-1 text-[12.5px]"
+                  className={`text-[11px] px-2 py-0.5 rounded-md bg-app-text/5 ${MUTED}`}
                 >
-                  <span className="text-gray-500">{app.appId?.name}</span>
-
-                  <span className="font-semibold text-gray-400">
-                    Already Active
-                  </span>
-                </div>
+                  {app.appId?.name}
+                </span>
               ))}
             </div>
-          </div>
-        )}
-
-        {newApps?.length > 0 && (
-          <div className="mb-4">
-            <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-              New add-on apps
-            </div>
-
-            <div className="space-y-1">
-              {newApps.map((app) => (
-                <div
-                  key={app._id}
-                  className="flex justify-between items-center py-1 text-[12.5px]"
-                >
-                  <span className="text-gray-600">{app.name}</span>
-
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-gray-800">
-                      {formatPrice(app.price)}
-                    </span>
-
-                    <button
-                      onClick={() => onRemoveApp(app)}
-                      className="text-gray-300 hover:text-ternary text-base leading-4 font-bold transition"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Team Section */}
-        <div className="mb-3">
-          <div className="text-[10.5px] font-bold tracking-wide uppercase text-gray-400 mb-1.5">
-            Team
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">{teamCount} × ₹500</span>
-            <span className="text-sm font-semibold text-gray-800">
-              {formatPrice(teamCost)}/mo
-            </span>
-          </div>
+          )}
         </div>
+      )}
 
-        <hr className="my-3 border-gray-200" />
-
-        <div className="flex justify-between items-baseline mb-2">
-          <div className="flex flex-col w-full">
-            <div>
-              <span className="text-[15px] font-bold text-navy">
-                Total Montly Price
-              </span>
-
-              <div className="flex flex-col items-end">
-                {discount > 0 && (
-                  <span className="text-md font-medium line-through text-navy tracking-tight transition-all">
-                    {formatPrice(subtotal / multiplyBy)}/mo
-                  </span>
-                )}
-
-                <span
-                  ref={totalRef}
-                  className="text-xl font-bold text-navy tracking-tight transition-all"
-                >
-                  {formatPrice(total / multiplyBy)}/mo
+      {newApps?.length > 0 && (
+        <>
+          <SummaryLabel>New add-on apps</SummaryLabel>
+          {newApps.map((app) => (
+            <div
+              key={app._id}
+              className="flex justify-between items-center gap-3 py-1 text-[13px]"
+            >
+              <span className="text-app-text/80 truncate">{app.name}</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="font-semibold text-app-text">
+                  {formatPrice(app.price)}/mo
                 </span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveApp(app)}
+                  aria-label={`Remove ${app.name}`}
+                  className={`p-0.5 rounded hover:bg-ternary/10 hover:text-ternary transition-colors ${FAINT}`}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
+          ))}
+        </>
+      )}
+
+      {teamCount > 0 && (
+        <SummaryRow
+          label={`Team seats (${teamCount} × ${formatPrice(TEAM_SEAT_PRICE)})`}
+          value={`${formatPrice(teamCost)}/mo`}
+        />
+      )}
+
+      {subtotal > 0 ? (
+        <>
+          <div className={`mt-4 pt-3 border-t border-dashed ${BORDER}`}>
+            <SummaryRow
+              label={`Subtotal · ${multiplyBy} ${multiplyBy === 1 ? "month" : "months"}`}
+              value={formatPrice(subtotal)}
+            />
+            <SummaryRow
+              label={`Discount (${discount}%)`}
+              value={`− ${formatPrice(discountAmount)}`}
+              valueClass="text-green-500"
+            />
+            <SummaryRow
+              label={`GST (${gst}%)`}
+              value={`+ ${formatPrice(gstAmount)}`}
+              labelClass={MUTED}
+              valueClass={MUTED}
+            />
+          </div>
+
+          <div className={`mt-3 pt-3 border-t ${BORDER} flex justify-between items-end gap-3`}>
             <div>
-              <span className="text-[15px] font-bold text-navy">
-                Total Price for {multiplyBy} months
-              </span>
-
-              <div className="flex flex-col items-end">
-                {discount > 0 && (
-                  <span className="text-md font-medium line-through text-navy tracking-tight transition-all">
-                    {formatPrice(subtotal)}
-                  </span>
-                )}
-
-                <span
-                  ref={totalRef}
-                  className="text-xl font-bold text-navy tracking-tight transition-all"
-                >
-                  {formatPrice(total)}
-                </span>
+              <div className="text-sm font-bold text-app-text">Total payable</div>
+              <div className={`text-[11.5px] ${MUTED}`}>
+                ≈ {formatPrice(total / multiplyBy)}/mo incl. GST
               </div>
             </div>
+            <div className="text-2xl font-bold text-app-text tracking-tight">
+              {formatPrice(total)}
+            </div>
           </div>
+        </>
+      ) : (
+        <div className={`mt-4 rounded-lg border border-dashed ${BORDER} p-3 text-center text-[12.5px] ${MUTED}`}>
+          Everything you have is already active.
+          <br />
+          Add an app to see your total.
         </div>
-        <p className="text-green-500 font-medium">
-          {discount}% Discount applied
-        </p>
+      )}
 
-        {prorateVisible && (
-          <div className="mt-2 p-2 bg-ternary-pale border border-ternary-border rounded-sm text-[11.5px] text-ternary leading-relaxed">
-            ⚡ Apps added mid-cycle are charged on a prorated basis.
-          </div>
-        )}
-      </div>
+      {prorateVisible && (
+        <div className="mt-3 p-2.5 bg-ternary/10 border border-ternary/30! rounded-lg text-[11.5px] text-ternary leading-relaxed">
+          Apps added mid-cycle are charged on a prorated basis.
+        </div>
+      )}
 
       <button
-        disabled={!newApps?.length}
+        type="button"
+        disabled={!canPay}
         onClick={handleUpgrade}
-        className="w-full mt-5 py-3.5 rounded-md bg-ternary text-white font-bold text-sm hover:bg-ternary-light transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed!"
+        className="w-full mt-5 py-3 rounded-lg bg-ternary text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        <span>Continue to payment</span>
-        <span className="text-lg transition-transform group-hover:translate-x-0.5">
-          →
-        </span>
+        {isProcessing ? (
+          <>
+            <LoaderCircle className="w-4 h-4 animate-spin" />
+            Processing…
+          </>
+        ) : (
+          <>
+            {canPay ? `Pay ${formatPrice(total)}` : "Continue to payment"}
+            <ArrowRight className="w-4 h-4" />
+          </>
+        )}
       </button>
-      <div className="flex items-center justify-center gap-1 text-[11.5px] text-gray-400 mt-3">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path
-            d="M6 1a5 5 0 100 10A5 5 0 006 1zm0 4a1 1 0 110 2 1 1 0 010-2z"
-            fill="currentColor"
-            opacity=".5"
-          />
-        </svg>
-        No contracts · Cancel anytime
-      </div>
+      {!newApps?.length && (
+        <p className={`text-[11.5px] text-center mt-2 ${FAINT}`}>
+          Add at least one new app to continue.
+        </p>
+      )}
+      <TrustNote />
+    </div>
+  );
+};
+
+const StatusChip = ({ subscription, remainingDays }) => {
+  const planName = subscription?.planId?.planName;
+  const endDate = new Date(subscription.endDate).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  const tone =
+    remainingDays === 0
+      ? { cls: "bg-red-500/10 border-red-500/30! text-red-500", Icon: TriangleAlert }
+      : remainingDays <= 7
+        ? { cls: "bg-amber-500/10 border-amber-500/30! text-amber-500", Icon: Clock }
+        : { cls: "bg-green-500/10 border-green-500/25! text-green-500", Icon: CircleCheck };
+
+  return (
+    <div
+      className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[12.5px] ${tone.cls}`}
+    >
+      <tone.Icon className="w-3.5 h-3.5 shrink-0" />
+      {remainingDays === 0 ? (
+        <span>
+          Your <b className="font-semibold">{planName}</b> plan has expired — renew to continue
+        </span>
+      ) : (
+        <span>
+          <b className="font-semibold">{planName}</b> plan · {remainingDays}{" "}
+          {remainingDays === 1 ? "day" : "days"} left · valid until {endDate}
+        </span>
+      )}
     </div>
   );
 };
@@ -652,9 +767,11 @@ const Billing = () => {
   const [activePlanId, setActivePlanId] = useState(null);
   const [selectedApps, setselectedApps] = useState([]);
   const [teamCount, setTeamCount] = useState(0);
-  const [appInteracted, setAppInteracted] = useState(false);
+  const [appInteracted] = useState(false);
   const [plans, setPlans] = useState([]);
   const [apps, setApps] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const handlePlanSelect = (plan) => {
     setselectedApps([]);
@@ -675,15 +792,8 @@ const Billing = () => {
     });
   };
 
-  const handleRemoveApp = (app) => {
-    // return null;
-    setselectedApps((prev) => {
-      prev?.filter((item) => item._id !== app._id);
-    });
-  };
-
   const handleTeamChange = (delta) => {
-    setTeamCount((prev) => Math.max(1, prev + delta));
+    setTeamCount((prev) => Math.max(0, prev + delta));
   };
 
   const isPlanSelected = (planId) => {
@@ -705,101 +815,119 @@ const Billing = () => {
   };
 
   const appsLocked = !selectedPlan;
+  const remainingDays = daysLeft(subscription?.endDate);
 
   const fetchPlans = async () => {
+    setIsLoading(true);
+    setLoadError(false);
     try {
       const response = await axios.get(
         `${NEW_BASE_URL}/api/v1/subscription/plans`,
       );
       const data = response.data;
 
-      setPlans(data?.result?.data.plans);
-      setApps(data?.result?.data.apps);
+      setPlans(data?.result?.data.plans || []);
+      setApps(data?.result?.data.apps || []);
       setSelectedPlan(subscription?.planId);
       setActivePlanId(subscription?.planId);
       setselectedApps(() => subscription?.apps?.map((app) => app.appId) || []);
-      // Assuming the API returns an object with a 'plans' array
     } catch (error) {
       console.error("Error fetching plans:", error);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
     }
   };
   useEffect(() => {
     fetchPlans();
   }, []);
 
+  const visiblePlans = plans?.filter((plan) => plan.price) || [];
+  const planGridCols =
+    visiblePlans.length >= 3 ? "md:grid-cols-2 xl:grid-cols-3" : "md:grid-cols-2";
+
   return (
-    <div className="bg-app-surface">
-      <div className="max-w-280 mx-auto px-4 sm:px-6 py-8 md:py-12 ">
-        <Navbar/>
+    <div className="bg-app-surface min-h-full">
+      <div className="max-w-280 mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <Navbar />
 
         {/* Header */}
-        <header className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 bg-ternary-pale text-ternary text-[11px] font-semibold tracking-wide uppercase px-3.5 py-1 rounded-full border border-ternary-border mb-4">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path
-                d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5 3.4 8.9l.5-2.9-2.1-2 2.9-.4L6 1z"
-                fill="currentColor"
-              />
-            </svg>
+        <header className="text-center mt-8 mb-12">
+          <div className="inline-flex items-center gap-1.5 bg-ternary/10 text-ternary text-[11px] font-semibold tracking-wide uppercase px-3 py-1 rounded-full border border-ternary/30! mb-4">
+            <Sparkles className="w-3 h-3" />
             Hotel Growth Platform
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-navy tracking-tight leading-tight mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-app-text tracking-tight leading-tight">
             Choose your plan &amp; customize your tools
           </h1>
-          <p className="text-base text-gray-600 max-w-md mx-auto leading-relaxed">
+          <p className={`text-[15px] max-w-md mx-auto leading-relaxed mt-2 ${MUTED}`}>
             Start with a base plan, then add only the tools you need.
             Transparent pricing, no surprises.
           </p>
+          {subscription?.endDate && (
+            <div className="mt-5">
+              <StatusChip subscription={subscription} remainingDays={remainingDays} />
+            </div>
+          )}
         </header>
 
         {/* Two column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
           {/* Left Column */}
-          <div className="space-y-8">
+          <div className="space-y-12 min-w-0">
             {/* Plans Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
-                  Base plan — required
-                </span>
-                <div className="flex-1 h-px bg-gray-200"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                {plans?.map((plan) => {
-                  if (!plan.price) return null;
-                  return (
+            <section>
+              <SectionTitle icon={Layers} title="Base plan" hint="Required" />
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[0, 1].map((i) => (
+                    <div
+                      key={i}
+                      className="h-80 rounded-2xl bg-app-text/5 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : loadError ? (
+                <div className={`rounded-xl border border-dashed ${BORDER} p-6 text-center`}>
+                  <div className="text-sm text-app-text mb-3">
+                    We couldn't load the plans right now.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fetchPlans}
+                    className="px-4 py-2 rounded-lg bg-ternary text-white text-sm font-semibold hover:opacity-90"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <div className={`grid grid-cols-1 ${planGridCols} gap-5 pt-2`}>
+                  {visiblePlans.map((plan) => (
                     <PlanCard
                       key={plan._id}
                       plan={plan}
-                      isSelected={isPlanSelected(plan._id)}
+                      isSelected={Boolean(isPlanSelected(plan._id))}
                       onSelect={() => handlePlanSelect(plan)}
                       isPurchased={isPurchasedPlan(plan._id)}
                     />
-                  );
-                })}
-              </div>
-            </div>
+                  ))}
+                </div>
+              )}
+            </section>
 
             {/* Apps Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
-                  Add apps to your plan
-                </span>
-                <div className="flex-1 h-px bg-gray-200"></div>
-              </div>
+            <section>
+              <SectionTitle icon={Puzzle} title="Add apps to your plan" hint="Optional" />
 
-              {/* Locked banner */}
-              {appsLocked && (
-                <div className="flex items-center gap-2.5 bg-gray-100 border border-dashed border-gray-400 rounded-xl p-3 mb-3 text-sm text-gray-600">
-                  <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-sm shrink-0">
-                    🔒
-                  </div>
+              {appsLocked && !isLoading && (
+                <div className={`flex items-center gap-2.5 bg-app-text/5 border border-dashed ${BORDER} rounded-xl px-3.5 py-3 mb-3 text-[13px] ${MUTED}`}>
+                  <Lock className="w-4 h-4 shrink-0" />
                   <span>Select a base plan above to enable add-on apps</span>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {apps.map((app) => (
                   <AppCard
                     key={app._id}
@@ -813,44 +941,49 @@ const Billing = () => {
                   />
                 ))}
               </div>
-            </div>
+            </section>
 
             {/* Team Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
-                  Team members
-                </span>
-                <div className="flex-1 h-px bg-gray-200"></div>
-              </div>
-              <div className="bg-app-surface border border-gray-200 rounded-md p-4 flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-sm font-semibold text-app-text-faint">
-                    Additional seats
-                  </div>
-                  <div className="text-xs text-gray-400 mt-0.5">
-                    ₹500 per member / month
+            <section>
+              <SectionTitle icon={Users} title="Team members" hint="Optional" />
+              <div className={`bg-app-surface-secondary border ${BORDER} rounded-2xl px-5 py-4 flex items-center justify-between gap-4`}>
+                <div className="flex items-center gap-3">
+                  <span className="w-9 h-9 rounded-lg bg-app-text/5 text-app-text/70 flex items-center justify-center shrink-0">
+                    <Users className="w-4.5 h-4.5" />
+                  </span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-app-text">
+                      Additional seats
+                    </div>
+                    <div className={`text-xs mt-0.5 ${MUTED}`}>
+                      {formatPrice(TEAM_SEAT_PRICE)} per member / month
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center bg-gray-100 border-2 border-gray-200 rounded-sm overflow-hidden">
+                <div className={`flex items-center rounded-lg border ${BORDER} overflow-hidden`}>
                   <button
+                    type="button"
                     onClick={() => handleTeamChange(-1)}
-                    className="w-9 h-9 flex items-center justify-center text-lg text-app-text-faint transition-all"
+                    disabled={teamCount === 0}
+                    aria-label="Remove a seat"
+                    className="w-8 h-8 flex items-center justify-center text-app-text hover:bg-app-text/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    −
+                    <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <div className="w-12 text-center text-sm font-bold text-app-text-faint border-l border-r border-gray-200">
+                  <div className={`w-10 text-center text-sm font-semibold text-app-text border-x ${BORDER} leading-8`}>
                     {teamCount}
                   </div>
                   <button
+                    type="button"
                     onClick={() => handleTeamChange(1)}
-                    className="w-9 h-9 flex items-center justify-center text-lg text-app-text-faint transition-all"
+                    aria-label="Add a seat"
+                    className="w-8 h-8 flex items-center justify-center text-app-text hover:bg-app-text/5 transition-colors"
                   >
-                    +
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
           {/* Right Column - Billing Summary */}
@@ -862,7 +995,7 @@ const Billing = () => {
             onRemoveApp={handleToggleApp}
             purchasedApps={subscription?.apps || []}
             activePlanId={activePlanId}
-            daysLeft={daysLeft(subscription?.endDate)}
+            daysLeft={remainingDays}
           />
         </div>
       </div>

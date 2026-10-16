@@ -1,98 +1,75 @@
-import { useEffect, useState, useCallback } from "react";
+import { RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  FiX,
-  FiRefreshCw,
-  FiChevronLeft,
-  FiChevronRight,
-} from "react-icons/fi";
-
+  CAMPAIGN_TONE,
+  formatDate,
+  rate,
+  RECIPIENT_TONE,
+} from "../../pages/EmailMarketing/emailUtils.js";
 import {
-  getEmailCampaign,
   getCampaignRecipients,
+  getEmailCampaign,
 } from "../../services/api/emailCampaign.js";
+import Badge from "../ui/Badge";
+import Button from "../ui/Button";
+import DataTable from "../ui/DataTable";
+import Dialog from "../ui/Dialog";
+import IconButton from "../ui/IconButton";
+import { Skeleton } from "../ui/States";
+import Tabs from "../ui/Tabs";
 
-const STATUS_TABS = [
-  { key: "", label: "All" },
-  { key: "pending", label: "Pending" },
-  { key: "sent", label: "Sent" },
-  { key: "failed", label: "Failed" },
-  { key: "opened", label: "Opened" },
-  { key: "clicked", label: "Clicked" },
+const FILTERS = [
+  { value: "", label: "All" },
+  { value: "sent", label: "Sent" },
+  { value: "opened", label: "Opened" },
+  { value: "clicked", label: "Clicked" },
+  { value: "failed", label: "Failed" },
+  { value: "pending", label: "Pending" },
 ];
 
-const STATUS_COLORS = {
-  pending: "bg-gray-100 text-gray-600",
-  sending: "bg-blue-100 text-blue-700",
-  sent: "bg-green-100 text-green-700",
-  delivered: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
-  opened: "bg-purple-100 text-purple-700",
-  clicked: "bg-indigo-100 text-indigo-700",
-  unsubscribed: "bg-yellow-100 text-yellow-700",
-};
-
-const StatusBadge = ({ status }) => (
-  <span
-    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-      STATUS_COLORS[status] || "bg-gray-100 text-gray-600"
-    }`}
-  >
-    {status}
-  </span>
-);
-
-const StatCard = ({ label, value, accent }) => (
-  <div className="flex-1 rounded-xl border border-gray-200 bg-white p-3">
-    <p className="text-xs font-medium text-gray-500">{label}</p>
-    <p className={`mt-1 text-xl font-semibold ${accent || "text-gray-900"}`}>
-      {value ?? 0}
-    </p>
-  </div>
-);
+const STATS = [
+  { key: "sent", label: "Sent" },
+  { key: "delivered", label: "Delivered" },
+  { key: "opened", label: "Opened", showRate: true },
+  { key: "clicked", label: "Clicked", showRate: true },
+  { key: "failed", label: "Failed", danger: true },
+  { key: "unsubscribed", label: "Unsubscribed" },
+];
 
 const PAGE_SIZE = 50;
 
+// One campaign: totals and how each recipient's email went.
 export default function CampaignDetail({ campaignId, onClose }) {
   const [campaign, setCampaign] = useState(null);
-  const [isLoadingCampaign, setIsLoadingCampaign] = useState(true);
-
   const [recipients, setRecipients] = useState([]);
-  const [recipientsTotal, setRecipientsTotal] = useState(0);
-  const [statusFilter, setStatusFilter] = useState("");
+  const [total, setTotal] = useState(0);
+  const [filter, setFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [isLoadingRecipients, setIsLoadingRecipients] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const totalPages = Math.max(1, Math.ceil(recipientsTotal / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const loadCampaign = useCallback(async () => {
     try {
-      setIsLoadingCampaign(true);
       const res = await getEmailCampaign({ campaignId });
       setCampaign(res?.doc || null);
-    } catch (error) {
-      console.error("Error loading campaign:", error);
-    } finally {
-      setIsLoadingCampaign(false);
+    } catch {
+      // the header falls back to "Campaign"
     }
   }, [campaignId]);
 
   const loadRecipients = useCallback(async () => {
+    setLoading(true);
     try {
-      setIsLoadingRecipients(true);
-      const res = await getCampaignRecipients({
-        campaignId,
-        status: statusFilter,
-        page,
-        limit: PAGE_SIZE,
-      });
+      const res = await getCampaignRecipients({ campaignId, status: filter, page, limit: PAGE_SIZE });
       setRecipients(res?.doc || []);
-      setRecipientsTotal(res?.pagination?.total || 0);
-    } catch (error) {
-      console.error("Error loading campaign recipients:", error);
+      setTotal(res?.pagination?.total || 0);
+    } catch {
+      setRecipients([]);
     } finally {
-      setIsLoadingRecipients(false);
+      setLoading(false);
     }
-  }, [campaignId, statusFilter, page]);
+  }, [campaignId, filter, page]);
 
   useEffect(() => {
     loadCampaign();
@@ -104,173 +81,104 @@ export default function CampaignDetail({ campaignId, onClose }) {
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter]);
-
-  const refreshAll = () => {
-    loadCampaign();
-    loadRecipients();
-  };
+  }, [filter]);
 
   const stats = campaign?.stats || {};
 
+  const columns = [
+    {
+      key: "who",
+      header: "Recipient",
+      render: (r) => (
+        <div className="max-w-xs">
+          <p className="truncate font-medium">{r.name || r.email}</p>
+          {r.name && <p className="truncate text-xs text-app-text-muted">{r.email}</p>}
+        </div>
+      ),
+    },
+    { key: "status", header: "Status", render: (r) => <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge> },
+    { key: "sentAt", header: "Sent", render: (r) => formatDate(r.sentAt, true) },
+    {
+      key: "error",
+      header: "Problem",
+      render: (r) =>
+        r.error ? (
+          <span className="block max-w-56 truncate text-red-500" title={r.error}>
+            {r.error}
+          </span>
+        ) : (
+          "—"
+        ),
+    },
+  ];
+
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-3 sm:p-5">
-      <div className="flex h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        {/* HEADER */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-4 sm:px-5">
-          <div className="min-w-0">
-            <h2 className="truncate text-base font-semibold text-gray-900">
-              {isLoadingCampaign
-                ? "Loading..."
-                : campaign?.subject || "Campaign"}
-            </h2>
-            <p className="mt-1 flex items-center gap-2 text-xs text-gray-500">
-              {campaign && <StatusBadge status={campaign.status} />}
-              <span>{campaign?.recipientCount ?? 0} recipients</span>
-              {campaign?.createdAt && (
-                <span>· {new Date(campaign.createdAt).toLocaleString()}</span>
-              )}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={refreshAll}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
-              aria-label="Refresh"
-            >
-              <FiRefreshCw size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
-              aria-label="Close"
-            >
-              <FiX size={19} />
-            </button>
-          </div>
-        </div>
-
-        {/* STATS */}
-        <div className="grid shrink-0 grid-cols-3 gap-2 border-b border-gray-200 p-3 sm:grid-cols-6 sm:p-4">
-          <StatCard label="Sent" value={stats.sent} accent="text-green-600" />
-          <StatCard
-            label="Delivered"
-            value={stats.delivered}
-            accent="text-green-600"
-          />
-          <StatCard label="Failed" value={stats.failed} accent="text-red-600" />
-          <StatCard
-            label="Opened"
-            value={stats.opened}
-            accent="text-purple-600"
-          />
-          <StatCard
-            label="Clicked"
-            value={stats.clicked}
-            accent="text-indigo-600"
-          />
-          <StatCard
-            label="Unsubscribed"
-            value={stats.unsubscribed}
-            accent="text-yellow-600"
+    <Dialog
+      open
+      onClose={onClose}
+      size="lg"
+      title={campaign?.subject || "Campaign"}
+      description={
+        campaign
+          ? `${(campaign.recipientCount ?? 0).toLocaleString("en-IN")} recipients · ${formatDate(campaign.createdAt, true)}`
+          : "Loading…"
+      }
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          {campaign ? (
+            <Badge tone={CAMPAIGN_TONE[campaign.status] || "gray"}>{campaign.status}</Badge>
+          ) : (
+            <Skeleton className="h-5 w-16" />
+          )}
+          <IconButton
+            icon={RefreshCw}
+            label="Refresh"
+            onClick={() => {
+              loadCampaign();
+              loadRecipients();
+            }}
           />
         </div>
 
-        {/* STATUS TABS */}
-        <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 px-3 py-2 sm:px-5">
-          {STATUS_TABS.map((tab) => (
-            <button
-              key={tab.key || "all"}
-              type="button"
-              onClick={() => setStatusFilter(tab.key)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                statusFilter === tab.key
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {tab.label}
-            </button>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {STATS.map(({ key, label, showRate, danger }) => (
+            <div key={key} className="rounded-lg border border-app-border! px-3 py-2.5">
+              <p className="text-xs text-app-text-muted">{label}</p>
+              <p className={`mt-0.5 text-lg font-semibold ${danger && stats[key] ? "text-red-500" : "text-app-text"}`}>
+                {(stats[key] ?? 0).toLocaleString("en-IN")}
+                {showRate && (
+                  <span className="ml-1.5 text-xs font-normal text-app-text-muted">
+                    {rate(stats[key], stats.sent)}
+                  </span>
+                )}
+              </p>
+            </div>
           ))}
         </div>
 
-        {/* RECIPIENT TABLE */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {isLoadingRecipients ? (
-            <div className="flex h-40 items-center justify-center text-sm text-gray-400">
-              Loading recipients...
-            </div>
-          ) : recipients.length === 0 ? (
-            <div className="flex h-40 items-center justify-center text-sm text-gray-400">
-              No recipients
-              {statusFilter ? ` with status "${statusFilter}"` : ""}.
-            </div>
-          ) : (
-            <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 bg-gray-50 text-xs font-medium text-gray-500">
-                <tr>
-                  <th className="px-4 py-2">Name</th>
-                  <th className="px-4 py-2">Email</th>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2">Sent at</th>
-                  <th className="px-4 py-2">Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recipients.map((r) => (
-                  <tr key={r._id} className="border-t border-gray-100">
-                    <td className="px-4 py-2 text-gray-800">{r.name || "—"}</td>
-                    <td className="px-4 py-2 text-gray-600">{r.email}</td>
-                    <td className="px-4 py-2">
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td className="px-4 py-2 text-gray-500">
-                      {r.sentAt ? new Date(r.sentAt).toLocaleString() : "—"}
-                    </td>
-                    <td className="max-w-[220px] truncate px-4 py-2 text-red-500">
-                      {r.error || "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <Tabs tabs={FILTERS} value={filter} onChange={setFilter} />
 
-        {/* PAGINATION */}
-        <div className="flex shrink-0 items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-5">
-          <span className="text-xs text-gray-500">
-            {recipientsTotal === 0
-              ? "0–0 of 0"
-              : `${(page - 1) * PAGE_SIZE + 1}–${Math.min(
-                  page * PAGE_SIZE,
-                  recipientsTotal,
-                )} of ${recipientsTotal}`}
-          </span>
+        <DataTable
+          columns={columns}
+          rows={recipients}
+          rowKey={(r) => r._id}
+          loading={loading}
+          emptyMessage={filter ? `No recipients are “${filter}”.` : "No recipients."}
+        />
 
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page <= 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              <FiChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              <FiChevronRight size={16} />
-            </button>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-end gap-2 text-xs text-app-text-muted">
+            <Button size="sm" variant="ghost" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+              Previous
+            </Button>
+            {page} / {totalPages}
+            <Button size="sm" variant="ghost" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+              Next
+            </Button>
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </Dialog>
   );
 }

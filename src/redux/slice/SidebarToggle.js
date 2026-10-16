@@ -1,9 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { DESKTOP_QUERY } from "../../hooks/useMediaQuery";
 
+// isOpen means: full width on desktop/tablet (closed = icon rail),
+// drawer visible on mobile (closed = hidden).
 const toggleSlice = createSlice({
   name: "toggle",
   initialState: {
-    isOpen: true,
+    // start open on desktop only; tablets start as a rail, phones start hidden
+    isOpen: window.matchMedia(DESKTOP_QUERY).matches,
   },
   reducers: {
     toggleSideBar: (state) => {

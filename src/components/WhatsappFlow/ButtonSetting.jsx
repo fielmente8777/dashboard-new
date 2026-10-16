@@ -85,7 +85,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
 
       {/* Header Text */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">
+        <label className="text-sm text-app-text-muted">
           Header Text (optional, max 60 chars)
         </label>
 
@@ -106,7 +106,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
 
       {/* Body Text */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">
+        <label className="text-sm text-app-text-muted">
           Body Text (required, max 1024 chars)
         </label>
 
@@ -127,7 +127,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
 
       {/* Footer */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">
+        <label className="text-sm text-app-text-muted">
           Footer Text (optional, max 60 chars)
         </label>
 
@@ -143,7 +143,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
       {/* Existing Buttons */}
       {buttons.map((btn, index) => (
         <div key={index} className="mb-3">
-          <label className="text-sm text-gray-600">
+          <label className="text-sm text-app-text-muted">
             Button {index + 1} (required, max 20 chars)
           </label>
 
@@ -159,7 +159,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
       {/* Add New Button */}
       {buttons.length < 3 && (
         <div className="mb-4">
-          <label className="text-sm text-gray-600">
+          <label className="text-sm text-app-text-muted">
             New Button (max 20 chars)
           </label>
 
@@ -189,7 +189,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
 
       {/* Variable */}
       {/* <div className="mb-5">
-        <label className="text-sm text-gray-600">
+        <label className="text-sm text-app-text-muted">
           Save Answers in a variable
         </label>
 
@@ -205,7 +205,7 @@ export default function ButtonsSettings({ onSave, onCancel, data }) {
       <div className="flex justify-end gap-3">
         <button
           onClick={onCancel}
-          className="border px-4 py-2 rounded text-gray-600"
+          className="border px-4 py-2 rounded text-app-text-muted"
         >
           Cancel
         </button>

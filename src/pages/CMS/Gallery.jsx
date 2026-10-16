@@ -1,157 +1,165 @@
-import React, { useEffect, useState } from "react";
-import { GetwebsiteDetails } from "../../services/api";
-import { MdDeleteOutline } from "react-icons/md";
-import { useSelector } from "react-redux";
-import handleLocalStorage from "../../utils/handleLocalStorage";
+import { Images, Trash2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import PageShell from "../../components/ui/PageShell";
+import { EmptyState, Skeleton } from "../../components/ui/States";
+import Tabs from "../../components/ui/Tabs";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useToast } from "../../context/ToastContext";
+import { useImageUpload } from "../../hooks/useImageUpload";
+import { useGalleryImageOperationMutation } from "../../redux/api/cmsApi";
+import { useCmsAction } from "./hooks/useCmsAction";
+import { useWebsiteData } from "./hooks/useWebsiteData";
+import Icon from "../../components/ui/Icon";
 
-const Analytics = () => {
-  const [openIndex, setOpenIndex] = useState(null);
-  const [websitedata, setWebsitedata] = useState({});
-  const [websitefaqdata, setWebsitefaqdata] = useState([]);
-  const [filtered, setfiltered] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("Events");
-  const [loading, setLoading] = useState(false);
+const Gallery = () => {
+  const fileInputRef = useRef(null);
+  const { data, isLoading } = useWebsiteData();
+  const { confirm } = useConfirm();
+  const { showToast } = useToast();
+  const runCmsAction = useCmsAction();
+  const { upload } = useImageUpload();
+  const [changeImage] = useGalleryImageOperationMutation();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { currentLoactionWebsiteData } = useSelector(
-    (state) => state?.hotelsWebsiteData
-  );
+  // stored as [{ Category, Images: [url] }]
+  const gallery = data?.Gallery || [];
+  const categories = [...new Set(gallery.map((group) => group.Category))];
+  // falls back to the first category until one is picked (or if it disappears)
+  const category = categories.includes(selectedCategory)
+    ? selectedCategory
+    : categories[0];
+  const images = gallery
+    .filter((group) => group.Category === category)
+    .flatMap((group) => group.Images || []);
 
-  // console.log(currentLoactionWebsiteData);
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (files.length === 0) return;
 
-  useEffect(() => {
-    if (currentLoactionWebsiteData?.Gallery) {
-      const filteredImages = currentLoactionWebsiteData?.Gallery.filter(
-        (item) => item.Category === selectedCategory
+    setIsUploading(true);
+    let added = 0;
+
+    // one at a time: every call rewrites the same category on the server
+    for (const file of files) {
+      const imageurl = await upload(file);
+      if (!imageurl) break;
+
+      const saved = await runCmsAction(
+        changeImage({ operation: "append", category, imageurl }),
+        { error: "Could not add the image to the gallery." },
       );
-      setfiltered(filteredImages);
-    }
-  }, [selectedCategory, currentLoactionWebsiteData]);
-
-  const toggleAccordion = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
-  const handleDeleteImage = (category, url, operation) => {
-    fetch(`https://nexon.eazotel.com/cms/edit/Gallery/Images`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token: localStorage.getItem("token"),
-        operation: operation,
-        category: category,
-        imageurl: url,
-        hid: String(handleLocalStorage("hid")),
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => { })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  const uploadImage = (e) => {
-    e.preventDefault();
-    const imageInput = document.getElementById("file");
-    const file = imageInput.files[0];
-    if (!file) {
-      alert("Please select an image file.");
-      return;
+      if (!saved) break;
+      added += 1;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = function () {
-      const base64String = reader.result.split(",")[1];
-
-      UploadingImageS3(base64String);
-    };
-    reader.readAsDataURL(file);
+    setIsUploading(false);
+    // failures already showed their own message
+    if (added > 0) {
+      showToast({
+        message: added === 1 ? "Image added" : `${added} images added`,
+      });
+    }
   };
 
-  const UploadingImageS3 = (base64String) => {
-    // Replace 'YOUR_BACKEND_API_URL' with the actual URL of your backend API
-    fetch(`https://nexon.eazotel.com/upload/file/image`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        token: window.localStorage.getItem("token"),
-        image: base64String,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log("Response from backend:", data);
-        handleDeleteImage(selectedCategory, data.Image, "append");
-        // Handle the backend response as needed
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+  const handleDelete = async (imageurl) => {
+    const confirmed = await confirm(
+      "Delete this image from the gallery? This cannot be undone.",
+      { title: "Delete image" },
+    );
+    if (!confirmed) return;
+
+    await runCmsAction(changeImage({ operation: "remove", category, imageurl }), {
+      success: "Image deleted",
+      error: "Could not delete the image.",
+    });
   };
 
   return (
-    <div className="bg-white p-4">
-      <div className="">
-        <h2 className="text-sm font-semibold text-[#575757]">Gallery</h2>
-      </div>
+    <PageShell
+      title="Gallery"
+      description="Photos shown on your website, grouped by category."
+      actions={
+        <>
+          <Button
+            icon={Upload}
+            loading={isUploading}
+            disabled={!category}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Upload images
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleUpload}
+          />
+        </>
+      }
+    >
+      <Card>
+        {isLoading && <Skeleton className="h-72" />}
 
-      <div>
-        <div className="flex gap-4 ">
-          {currentLoactionWebsiteData &&
-            currentLoactionWebsiteData?.Gallery?.map((item, index) => (
-              <button
-                onClick={() => setSelectedCategory(item.Category)}
-                key={index}
-                className={`text-[14px] ${selectedCategory === item.Category
-                  ? "border-b-2 border-[#575757]"
-                  : "border-b-2 border-transparent"
-                  } px-4 py-3 bg-white font-medium text-[#575757]`}
-              >
-                {item.Category}
-              </button>
-            ))}
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
-            {[1, 2, 3, 4].map((item, index) => (
-              <div
-                key={index}
-                className="h-[200px] animate-pulse bg-gray-100 rounded"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-5">
-            {filtered.map((item, idx) =>
-              item.Images.map((img, i) => (
-                <div key={i} className="relative h-[200px]">
-                  <img
-                    src={img}
-                    alt={item.Category}
-                    className="w-full h-auto rounded object-cover"
-                  />
-
-                  <MdDeleteOutline
-                    size={28}
-                    onClick={() =>
-                      handleDeleteImage(item.Category, img, "remove")
-                    }
-                    className="absolute top-1 right-1 cursor-pointer bg-white p-1 text-red-600 rounded-full text-md"
-                  />
-                </div>
-              ))
-            )}
-          </div>
+        {!isLoading && categories.length === 0 && (
+          <EmptyState
+            icon={Images}
+            title="No gallery categories yet"
+            description="Categories are created with your website. Contact support to add one."
+          />
         )}
-        <input type="file" id="file" onChange={uploadImage} />
-      </div>
-    </div>
+
+        {!isLoading && categories.length > 0 && (
+          <>
+            <Tabs
+              className="mb-4"
+              value={category}
+              onChange={setSelectedCategory}
+              tabs={categories.map((name) => ({ value: name, label: name }))}
+            />
+
+            {images.length === 0 ? (
+              <EmptyState
+                icon={Images}
+                title={`No images in ${category}`}
+                description="Use Upload images to add some."
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+                {images.map((url) => (
+                  <figure
+                    key={url}
+                    className="group relative aspect-4/3 overflow-hidden rounded-lg bg-app-surface-secondary"
+                  >
+                    <img
+                      src={url}
+                      alt={category}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label="Delete image"
+                      title="Delete image"
+                      onClick={() => handleDelete(url)}
+                      className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 sm:opacity-0 sm:focus:opacity-100 sm:group-hover:opacity-100"
+                    >
+                      <Icon icon={Trash2} />
+                    </button>
+                  </figure>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </Card>
+    </PageShell>
   );
 };
 
-export default Analytics;
+export default Gallery;

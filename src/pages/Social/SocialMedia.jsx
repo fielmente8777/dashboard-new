@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import CommanHeader from "../../components/Navbar/CommanHeader";
+import { SOCIAL_PORTAL_LOGIN_URL } from "../../config/env";
 
 const SocialMedia = () => {
   return (
     <div className="bg-white cardShadow p-4">
       {/* <iframe
         title="Social Media Management"
-        src="https://social.eazotel.com/client/eazotel/clientlogin.do"
+        src={SOCIAL_PORTAL_LOGIN_URL}
         width="100%"
         height="600px"
       /> */}
@@ -25,7 +26,7 @@ const SocialMedia = () => {
       <div className="mt-4">
         <Link
           target="_blank"
-          to="https://social.eazotel.com/client/eazotel/clientlogin.do"
+          to={SOCIAL_PORTAL_LOGIN_URL}
           className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded mt-4"
           rel="noopener noreferrer"
         >

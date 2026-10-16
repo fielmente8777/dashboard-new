@@ -23,7 +23,7 @@ export default function ButtonsNode({ id, data }) {
   };
 
   return (
-    <div className="w-64 bg-white rounded-lg shadow border overflow-hidden">
+    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
       {/* Header */}
       <div className="bg-orange-400 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
         <div className="flex items-center gap-2">
@@ -43,25 +43,25 @@ export default function ButtonsNode({ id, data }) {
       </div>
 
       {headerText && (
-        <div className="px-3 text-sm text-gray-700 font-medium border-b mb-2 py-1.5">
+        <div className="px-3 text-sm text-app-text font-medium border-b mb-2 py-1.5">
           {headerText}
         </div>
       )}
 
       {/* Question */}
-      <div className="px-3 text-sm text-gray-700 border-b mb-2 py-1.5">
+      <div className="px-3 text-sm text-app-text border-b mb-2 py-1.5">
         {bodyText}
       </div>
 
       {footerText && (
-        <div className="px-3 text-sm text-gray-700 py-1.5">{footerText}</div>
+        <div className="px-3 text-sm text-app-text py-1.5">{footerText}</div>
       )}
 
       <div className="space-y-2 px-3 pb-3">
         {buttons.map((btn) => (
           <div
             key={btn.reply.id}
-            className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center"
+            className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center"
           >
             {btn.reply.title}
 
@@ -76,7 +76,7 @@ export default function ButtonsNode({ id, data }) {
         ))}
 
         {/* Default Path */}
-        {/* <div className="relative bg-gray-100 rounded-md px-3 py-2 text-sm text-gray-700 flex justify-between items-center">
+        {/* <div className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center">
           Default
           <Handle
             type="source"

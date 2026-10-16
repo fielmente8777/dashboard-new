@@ -28,5 +28,5 @@ export const getCookie = (name) => {
 
 // Remove a cookie
 export const removeCookie = (name) => {
-  setCookie(name, "", -1); // expires in the past
+  setCookie(name, "", { seconds: -1 }); // expires in the past
 };

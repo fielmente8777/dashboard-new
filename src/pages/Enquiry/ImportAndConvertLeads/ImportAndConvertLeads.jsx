@@ -3,31 +3,28 @@ import PageHeader from "./components/PageHeader";
 import ImportStepper from "./components/ImportStepper";
 import UploadCard from "./components/UploadCard";
 import FileInfoCard from "./components/FileInfoCard";
-import axios from "axios";
-import { NEW_BASE_URL } from "../../../data/constant";
 import ColumnMapping from "./components/ColumnMapping";
+import ImportRules from "./components/ImportRules";
+import { useTenant } from "../../../hooks/useTenant";
+import {
+  usePreviewLeadsImportMutation,
+  useUploadLeadsImportFileMutation,
+} from "../../../redux/api/leadsApi";
 
 export default function ImportAndConvertLeads() {
+  const { hid } = useTenant();
+  const [uploadFile] = useUploadLeadsImportFileMutation();
+  const [previewImport] = usePreviewLeadsImportMutation();
+
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [headers, setHeaders] = useState([]);
   const [importId, setImportId] = useState("");
   const [totalRows, setTotalRows] = useState(0);
   const [mapping, setMapping] = useState({});
-  const [loading, setLoading] = useState(false);
   const [columnValues, setColumnValues] = useState({});
-
-  // const [importRules, setImportRules] = useState({
-  //   duplicateBy: "phone",
-  //   importMode: "upsert",
-
-  //   statusRule: {
-  //     column: "",
-  //     mappings: {},
-  //   },
-
-  //   updateFields: [],
-  // });
+  // eslint-disable-next-line no-unused-vars -- step 4 (preview) screen is not built yet
+  const [preview, setPreview] = useState(null);
 
   const [importRules, setImportRules] = useState({
     duplicateBy: "phone",
@@ -39,76 +36,39 @@ export default function ImportAndConvertLeads() {
 
   const handleFileSelect = async (file) => {
     try {
-      setLoading(true);
-
       setFile(file);
 
-      const formData = new FormData();
-      formData.append("file", file);
+      const doc = await uploadFile(file).unwrap();
 
-      const { data } = await axios.post(
-        `${NEW_BASE_URL}/api/v1/leads-import/upload`,
-        formData,
-      );
-
-      console.log("data", data);
-
-      setImportId(data.result?.doc?.importId);
-      setHeaders(data.result?.doc?.headers);
-      setTotalRows(data.result?.doc?.totalRows);
-      setColumnValues(data.result?.doc?.columnValues);
+      setImportId(doc.importId);
+      setHeaders(doc.headers);
+      setTotalRows(doc.totalRows);
+      setColumnValues(doc.columnValues);
 
       setStep(2);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handlePreview = async () => {
-    console.log("aaya");
     try {
       if (!importRules.duplicateBy) {
         return alert("Please select duplicate detection.");
       }
 
-      // if (shouldShowStatusMapping && !importRules.statusColumn) {
-      //   return alert("Please select status column.");
-      // }
-
-      setLoading(true);
-
-      const payload = {
+      const result = await previewImport({
+        hid,
         importId,
-
         mapping,
-
         rules: importRules,
-      };
+      }).unwrap();
 
-      const { data } = await axios.post(
-        `${NEW_BASE_URL}/api/v1/leads-import/preview?hid=${localStorage.getItem(
-          "hid",
-        )}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      console.log(data);
-
-      setPreview(data.result);
+      setPreview(result);
 
       setStep(4);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -120,11 +80,7 @@ export default function ImportAndConvertLeads() {
       {step === 1 && (
         <div>
           {!file ? (
-            <UploadCard
-              file={file}
-              //   setFile={setFile}
-              onFileSelect={handleFileSelect}
-            />
+            <UploadCard file={file} onFileSelect={handleFileSelect} />
           ) : (
             <FileInfoCard file={file} setFile={setFile} />
           )}

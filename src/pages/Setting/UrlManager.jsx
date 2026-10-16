@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
+=======
+import React, { useMemo, useState } from "react";
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 import Swal from "sweetalert2";
 import { useSelector } from "react-redux";
 import {
@@ -9,8 +13,12 @@ import {
 } from "react-icons/ai";
 import { BsPencil, BsBoxArrowUpRight } from "react-icons/bs";
 import { FaLink } from "react-icons/fa";
+<<<<<<< HEAD
 
 import { NEW_BASE_URL } from "../../data/constant";
+=======
+import { useUpdateProfileUrlsMutation } from "../../redux/api/profileApi";
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 import Loader from "../../components/Loader";
 import TrashBin from "../../components/Icon/TrashBin";
 
@@ -133,10 +141,15 @@ const snapshot = (data) =>
   );
 
 const UrlManager = ({ initialLinks, onSave }) => {
+<<<<<<< HEAD
   const { user: hotel } = useSelector(
     (state) => state.userProfile
   );
 
+=======
+  const [updateProfileUrls] = useUpdateProfileUrlsMutation();
+  const { user: hotel } = useSelector((state) => state.userProfile);
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
   const profile = hotel?.Profile;
 
   const seed = useMemo(
@@ -477,6 +490,7 @@ const UrlManager = ({ initialLinks, onSave }) => {
       if (onSave) {
         await onSave(payload);
       } else {
+<<<<<<< HEAD
         // -----------------------------
         // Direct backend API
         // -----------------------------
@@ -507,6 +521,10 @@ const UrlManager = ({ initialLinks, onSave }) => {
               "Save rejected"
           );
         }
+=======
+        const response = await updateProfileUrls(payload).unwrap();
+        if (response?.Status !== true) throw new Error("Save rejected");
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
       }
 
       // -----------------------------

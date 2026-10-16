@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // import React, { useState } from "react";
 // import axios from "axios";
 // import Swal from "sweetalert2";
@@ -283,6 +284,18 @@
 
 import { useSelector } from "react-redux";
 
+=======
+import React, { useState } from "react";
+import Swal from "sweetalert2";
+import { useSelector } from "react-redux";
+import { HiOutlineEyeOff } from "react-icons/hi";
+import { AiOutlineEye } from "react-icons/ai";
+import { BsPencil } from "react-icons/bs";
+import { FaHotel } from "react-icons/fa";
+import { useChangePasswordMutation } from "../../redux/api/profileApi";
+import Loader from "../../components/Loader";
+import TrashBin from "../../components/Icon/TrashBin";
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 import UrlManager from "./UrlManager";
 
 import ProfileOverview from "./components/ProfileOverview";
@@ -293,9 +306,16 @@ import ChangePassword from "./components/ChangePassword";
 import useHotelManager from "./hooks/useHotelManager";
 
 const Setting = () => {
+<<<<<<< HEAD
   const { user: hotel, authUser } = useSelector(
     (state) => state.userProfile
   );
+=======
+  const [changePassword] = useChangePasswordMutation();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 
   const profile = hotel?.Profile;
 
@@ -316,12 +336,92 @@ const Setting = () => {
   handleDeleteHotel,
 } = useHotelManager(profile);
 
+<<<<<<< HEAD
   if (!profile) {
     return null;
   }
 
   return (
     <div className="bg-app-surface p-3 sm:p-5 space-y-4 sm:space-y-5">
+=======
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing details",
+        text: "Fill in all three password fields.",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Swal.fire({
+        icon: "warning",
+        title: "Passwords don't match",
+        text: "Your new password and confirmation are different.",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const response = await changePassword({
+        oldAccessId: oldPassword,
+        newAccessId: newPassword,
+      }).unwrap();
+
+      if (response?.Status !== true) {
+        Swal.fire({
+          icon: "error",
+          title: "Couldn't update",
+          text: "Your current password is incorrect.",
+          confirmButtonText: "OK",
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Password changed",
+          confirmButtonText: "OK",
+        });
+      }
+      resetPasswordFields();
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong. Try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!profile) return null;
+
+  return (
+    <div className="space-y-4 sm:space-y-5">
+      {/* ── identity + org + contact ─────────────────────────── */}
+      <div className={`${CARD} grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3`}>
+        {/* user */}
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="shrink-0 h-14 w-14 rounded-full bg-orange-100 dark:bg-app-surface flex items-center justify-center">
+            <span className="text-xl sm:text-2xl font-bold text-orange-600 dark:text-app-text-muted">
+              {profile?.hotelName?.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-base sm:text-lg capitalize text-gray-800 dark:text-app-text truncate">
+              {authUser?.userName}
+            </p>
+            <p className="text-sm capitalize text-gray-500 dark:text-app-text-faint">
+              Role: {authUser?.role}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-app-text-faint break-words">
+              {authUser?.emailId}
+            </p>
+          </div>
+        </div>
+>>>>>>> 3f66bc18d24ccb8d13b65a7c3e2d243172490a88
 
       {/* Profile */}
       <ProfileOverview

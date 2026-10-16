@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import axios from "axios";
+import { API_URLS } from "../../../config/env";
 
 const Instagram = () => {
 
@@ -28,7 +29,7 @@ const Instagram = () => {
 
       console.log("SDP Offer created:", offer.sdp);
       // 📡 Send SDP to backend
-      const res = await axios.post(`http://localhost:8000/api/v1/whatsapp/make-call?ndid=${localStorage.getItem("ndid")}&hid=${localStorage.getItem("hid")}`,
+      const res = await axios.post(`${API_URLS.node}/api/v1/whatsapp/make-call?ndid=${localStorage.getItem("ndid")}&hid=${localStorage.getItem("hid")}`,
         
         {
           to: number,

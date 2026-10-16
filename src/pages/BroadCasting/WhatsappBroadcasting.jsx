@@ -1,312 +1,131 @@
-import { useEffect, useState } from "react";
-import { IoMdRefresh } from "react-icons/io";
+import { Megaphone, Plus, RefreshCw, Search } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  getCampaign,
-  getWhatsAppMessageTemplates,
-} from "../../services/api/whatsApp";
-import { formatDateTime } from "../../utils/formateDate";
-import { getStatusStyle } from "../../utils/getStatusStyle";
-import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
-
-const campaignHeaders = [
-  { key: "name", label: "Campaign Name" },
-  { key: "templateName", label: "Template" },
-  { key: "audience", label: "Audience" },
-  { key: "sent", label: "Sent" },
-  { key: "failedCount", label: "Failed" },
-  { key: "deliveredCount", label: "Delivered" },
-  { key: "readCount", label: "Read" },
-  { key: "date", label: "Date" },
-  { key: "status", label: "Status" },
-];
+import Button from "../../components/ui/Button";
+import { Input } from "../../components/ui/Field";
+import Icon from "../../components/ui/Icon";
+import PageShell from "../../components/ui/PageShell";
+import { EmptyState, ErrorState } from "../../components/ui/States";
+import Tabs from "../../components/ui/Tabs";
+import { hasTenant, useTenant } from "../../hooks/useTenant";
+import { useGetCampaignsQuery } from "../../redux/api/broadcastApi";
+import { getApiErrorMessage } from "../../redux/api/baseApi";
+import { broadcastPath } from "../../routes/paths";
+import { campaignStatus } from "./broadcastUtils";
+import CampaignSummary from "./components/CampaignSummary";
+import CampaignTable from "./components/CampaignTable";
+import CreateCampaignDialog from "./components/CreateCampaignDialog";
 
 const WhatsappBroadcasting = () => {
   const navigate = useNavigate();
-  const [campaignsData, setCampaignsData] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [templates, setTemplates] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [isRefresh, setIsRefresh] = useState(false);
-  const [isLoadingCampaign, setIsLoadingCampaign] = useState(false);
+  const tenant = useTenant();
+  const [creating, setCreating] = useState(false);
+  const [status, setStatus] = useState("all");
+  const [search, setSearch] = useState("");
 
-  // const filteredCampaigns =
-  //   filter === "all"
-  //     ? campaignsData
-  //     : campaignsData.filter((c) => c.status === filter);
+  const { data: campaigns = [], isLoading, isFetching, error, refetch } =
+    useGetCampaignsQuery(tenant.hid, { skip: !hasTenant(tenant) });
 
-  const fetchTemplates = async () => {
-    try {
-      // setIsTemplateLoading(true);
-      const response = await getWhatsAppMessageTemplates();
-      if (response.success) {
-        setTemplates(response?.result?.docs?.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      // setIsTemplateLoading(false);
-    }
-  };
+  // one tab per status the campaigns actually have
+  const tabs = useMemo(() => {
+    const counts = campaigns.reduce((acc, c) => {
+      acc[c.status] = (acc[c.status] || 0) + 1;
+      return acc;
+    }, {});
+    return [
+      { value: "all", label: "All" },
+      ...Object.keys(counts).map((value) => ({
+        value,
+        label: campaignStatus(value).label,
+        count: counts[value],
+      })),
+    ];
+  }, [campaigns]);
 
-  const fetchCampaigns = async () => {
-    setIsLoadingCampaign(true);
-    try {
-      const response = await getCampaign();
-      if (response.success) {
-        setCampaignsData(response?.result?.docs?.campaigns || []);
-        // setTemplates(response?.result?.docs?.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoadingCampaign(false);
-      setIsRefresh(false);
-    }
-  };
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return campaigns.filter(
+      (c) =>
+        (status === "all" || c.status === status) &&
+        (!term ||
+          c.name?.toLowerCase().includes(term) ||
+          c.templateName?.toLowerCase().includes(term)),
+    );
+  }, [campaigns, status, search]);
 
-  useEffect(() => {
-    fetchCampaigns();
-    fetchTemplates();
-  }, []);
+  const newCampaignButton = (
+    <Button icon={Plus} onClick={() => setCreating(true)}>
+      New campaign
+    </Button>
+  );
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-app-text dark:text-app-text">
-          Campaign Management
-        </h1>
-
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-[#0a3a75] text-white px-4 py-2 rounded-md"
-        >
-          Create New Campaign
-        </button>
-      </div>
-
-      <hr className="mt-4" />
-
-      <div className="py-4 bg-app-surface min-h-screen">
-        {/* Filters */}
-        <div className="flex justify-between items-center">
-          <div className="flex mb-2">
-            {["all", "sent", "scheduled", "inprogress"].map((item) => (
-              <button
-                key={item}
-                onClick={() => setFilter(item)}
-                className={`px-4 py-2 font-medium text-sm capitalize ${
-                  filter === item
-                    ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
-                    : "bg-app-surface-secondary text-app-text-faint"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
-          <button
-            disabled={isRefresh}
-            onClick={() => {
-              fetchCampaigns();
-              setIsRefresh(!isRefresh);
-            }}
-            className="border px-4 py-2 bg-primary text-white rounded-md text-sm flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed!"
+    <PageShell
+      title="WhatsApp Campaigns"
+      description="Broadcast approved templates to your contacts and follow delivery and reads."
+      actions={
+        <>
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            loading={isFetching && !isLoading}
+            onClick={refetch}
           >
-            <span className={`${isRefresh && "animate-spin"}`}>
-              <IoMdRefresh size={20} />
-            </span>{" "}
             Refresh
-          </button>
-        </div>
+          </Button>
+          {newCampaignButton}
+        </>
+      }
+    >
+      {error ? (
+        <ErrorState
+          message={getApiErrorMessage(error, "Could not load campaigns.")}
+          onRetry={refetch}
+        />
+      ) : !isLoading && campaigns.length === 0 ? (
+        <EmptyState
+          icon={Megaphone}
+          title="No campaigns yet"
+          description="Pick an approved template and an audience to send your first broadcast."
+          action={newCampaignButton}
+        />
+      ) : (
+        <>
+          <CampaignSummary campaigns={campaigns} />
 
-        {/* Campaign Table */}
-        <div className="border rounded-lg overflow-x-auto hide-scrollba mt-6">
-          <table className="min-w-full text-sm">
-            <thead className="bg-primary sticky top-0 z-10">
-              <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
-                  #
-                </th>
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Tabs tabs={tabs} value={status} onChange={setStatus} />
+              <div className="relative w-full sm:w-64">
+                <Icon
+                  icon={Search}
+                  size="sm"
+                  tone="faint"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+                />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search campaign or template"
+                  aria-label="Search campaigns"
+                  className="pl-9"
+                />
+              </div>
+            </div>
 
-                {campaignHeaders.map((h) => (
-                  <th
-                    key={h.key}
-                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
-                  >
-                    {h.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+            <CampaignTable
+              campaigns={visible}
+              loading={isLoading}
+              onOpen={(campaign) => navigate(broadcastPath(campaign._id))}
+              emptyMessage="No campaigns match these filters"
+            />
+          </section>
+        </>
+      )}
 
-            <tbody>
-              {isLoadingCampaign ? (
-                <tr>
-                  <td
-                    colSpan={campaignHeaders.length + 1}
-                    className="py-3 px-3 text-center"
-                  >
-                    Loading...
-                  </td>
-                </tr>
-              ) : campaignsData?.length > 0 ? (
-                campaignsData.map((campaign, i) => {
-                  const percent =
-                    campaign.totalRecipients > 0
-                      ? Math.round(
-                          (campaign.sentCount / campaign.totalRecipients) * 100,
-                        )
-                      : 0;
-
-                  return (
-                    <tr
-                      key={campaign._id}
-                      className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
-                      onClick={() =>
-                        navigate(
-                          `/dashboard/client/${localStorage.getItem("hid")}/marketing/whatsapp-marketing/broadcast/${campaign._id}`,
-                        )
-                      }
-                    >
-                      {/* Index */}
-                      <td className="px-3 py-2">
-                        {(i + 1).toString().padStart(2, "0")}
-                      </td>
-
-                      {/* Campaign Name */}
-                      <td className="px-3 py-2 font-medium text-blue-900">
-                        {campaign.name}
-                      </td>
-
-                      {/* Template */}
-                      <td className="px-3 py-2">
-                        {campaign.templateName || "-"}
-                      </td>
-
-                      {/* Audience */}
-                      <td className="px-3 py-2">{campaign.totalRecipients}</td>
-
-                      {/* Sent */}
-                      <td className="px-3 py-2">
-                        {campaign.sentCount}/{campaign.totalRecipients}
-                        <span className="text-xs text-gray-600 ml-1">
-                          ({percent}%)
-                        </span>
-                      </td>
-
-                      {/* Failed */}
-                      <td className="px-3 py-2 text-red-600">
-                        {campaign.failedCount || 0}
-                      </td>
-
-                      {/* Delivered */}
-                      <td className="px-3 py-2 text-green-600">
-                        {campaign.deliveredCount || 0}
-                      </td>
-
-                      {/* Read */}
-                      <td className="px-3 py-2 text-green-600">
-                        {campaign.readCount || 0}
-                      </td>
-
-                      {/* Date */}
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {formatDateTime(campaign.createdAt)}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-3 py-1 rounded-full capitalize ${getStatusStyle(
-                            campaign.status,
-                          )}`}
-                        >
-                          {campaign.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={campaignHeaders.length + 1} className="py-3">
-                    <div className="flex flex-col items-center justify-center text-gray-500">
-                      {/* Title */}
-                      <p className="text-base font-semibold text-gray-400">
-                        No Campaigns Yet
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <CreateWhatsAppCampaign
-        templates={templates}
-        onClose={() => setIsOpen(false)}
-        open={isOpen}
-      />
-    </div>
+      <CreateCampaignDialog open={creating} onClose={() => setCreating(false)} />
+    </PageShell>
   );
 };
 
 export default WhatsappBroadcasting;
-
-{
-  /* Template Type */
-}
-// <div className="mb-4">
-//   <label className="block text-sm font-medium mb-1">
-//     Template Type
-//   </label>
-//   <select
-//     value={templateType}
-//     onChange={(e) => setTemplateType(e.target.value)}
-//     className="w-full border rounded-md p-2"
-//   >
-//     <option value="utility">Utility</option>
-//     <option value="marketing">Marketing</option>
-//   </select>
-// </div>
-
-{
-  /* Template */
-}
-//           <div className="mb-4">
-//             <label className="text-sm font-medium text-gray-700">
-//               Select Template
-//             </label>
-
-//             <select
-//               value={templateName}
-//               onChange={(e) => setTemplateName(e.target.value)}
-//               className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-//             >
-//               <option value="">Select template</option>
-
-//               {templates?.map((tpl) => (
-//                 <option key={tpl.name} value={tpl.name}>
-//                   {tpl.name}
-//                 </option>
-//               ))}
-//             </select>
-//           </div>
-// useEffect(()=>{
-//   fetchTemplate();
-// },[])
-// const [templates, setTemplates] = useState([]);
-// const fetchTemplate = async () => {
-//     try {
-//       const response = await getWhatsAppMessageTemplates();
-//       if (response.success) {
-//         setTemplates(response?.result?.docs?.data || []);
-//       }
-//     } catch (error) {
-//       console.log("Error", error);
-//     }
-// };

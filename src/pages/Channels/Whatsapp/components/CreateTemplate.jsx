@@ -1,299 +1,183 @@
-import React, { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import TemplateHeader from "./TemplateHeader";
+import { ArrowLeft, Send } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import Button from "../../../../components/ui/Button";
+import IconButton from "../../../../components/ui/IconButton";
+import { useToast } from "../../../../context/ToastContext";
 import { templateSchema } from "../../../../schema/templateSchema";
-import TemplateContent from "./TemplateContent";
-import TemplateButtons from "./TemplateButtons";
-import VariableSamples from "./VariableSample";
-import TemplatePreview from "./TemplatePreview";
 import {
   createWhatsAppMessageTemplate,
   updateWhatsAppMessageTemplate,
 } from "../../../../services/api/whatsApp";
-import { useToast } from "../../../../context/ToastContext";
-import Loader from "../../../../components/Loader";
+import TemplateButtons from "./TemplateButtons";
+import TemplateContent from "./TemplateContent";
+import TemplateHeader from "./TemplateHeader";
+import TemplatePreview from "./TemplatePreview";
+import {
+  buttonsProblem,
+  extractVariables,
+  normalizeTemplate,
+  toMetaButtons,
+} from "./templateUtils";
 
-const extractVariables = (text = "") => {
-  const matches = text.match(/{{(\d+)}}/g) || [];
+const toDefaults = (template) => ({
+  name: template?.name || "",
+  language: template?.language || "en_US",
+  category: template?.category || "UTILITY",
+  headerType: template?.headerType || "NONE",
+  header: template?.header || "",
+  headerImage: template?.headerImage || null,
+  body: template?.body || "",
+  footer: template?.footer || "",
+  headerVariables: template?.headerVariables || [],
+  bodyVariables: template?.bodyVariables || [],
+  buttons: template?.buttons || [],
+});
 
-  return matches.map((v) => ({
-    key: v,
-    sample: "",
-  }));
-};
+// Meta's error for a rejected template, in words a user can act on
+const metaMessage = (response, fallback) =>
+  response?.error?.error?.error_user_msg ||
+  response?.metaError?.error?.error_user_msg ||
+  response?.error?.error?.message ||
+  response?.responseMessage ||
+  fallback;
 
-const normalizeTemplate = (template) => {
-  if (!template) return null;
-
-  const header = template.components?.find((c) => c.type === "HEADER");
-  const body = template.components?.find((c) => c.type === "BODY");
-  const footer = template.components?.find((c) => c.type === "FOOTER");
-  const buttons = template.components?.find((c) => c.type === "BUTTONS");
-
-  console.log("header", header);
-
-  return {
-    id: template.id,
-    name: template.name,
-    language: template.language,
-    category: template.category,
-
-    headerType: header?.format || "NONE",
-
-    // TEXT header only
-    header: header?.text || "",
-
-    // Existing media (for preview only)
-    headerImage:
-      header?.format === "IMAGE"
-        ? header?.example?.header_handle?.[0] || null
-        : null,
-
-    headerVideo:
-      header?.format === "VIDEO"
-        ? header?.example?.header_handle?.[0] || null
-        : null,
-
-    headerDocument:
-      header?.format === "DOCUMENT"
-        ? header?.example?.header_handle?.[0] || null
-        : null,
-
-    body: body?.text || "",
-    footer: footer?.text || "",
-    buttons: buttons?.buttons || [],
-
-    headerVariables: header?.example?.header_text || [],
-    bodyVariables: body?.example?.body_text[0] || [],
-  };
-};
-
-const SUBMIT_BTN =
-  "outline-none border border-app-border text-gray-600 dark:text-app-text px-[var(--sp-4)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] hover:bg-slate-700 hover:text-white hover:border-slate-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto";
-
-const CreateTemplate = ({ initialData = null, onClose, mode = "create" }) => {
-  const [loading, setLoading] = React.useState(false);
+// Create a template (blank, or from the library) or edit one, with a live
+// preview. Templates go to Meta for approval when submitted.
+const CreateTemplate = ({ initialData = null, mode = "create", onClose, onSaved }) => {
   const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const isEdit = mode === "edit";
 
-  const formData = React.useMemo(
-    () => normalizeTemplate(initialData),
-    [initialData],
-  );
-
+  const template = useMemo(() => normalizeTemplate(initialData), [initialData]);
   const methods = useForm({
     resolver: zodResolver(templateSchema),
-    defaultValues: {
-      name: formData?.name || "",
-      language: formData?.language || "en_US",
-      category: formData?.category || "UTILITY",
-
-      header: formData?.header || "",
-      headerType: formData?.headerType || "NONE",
-
-      headerImage: formData?.headerImage,
-      headerVideo: formData?.headerVideo,
-      headerDocument: formData?.headerDocument,
-
-      body: formData?.body || "",
-      footer: formData?.footer || "",
-
-      headerVariables: formData?.headerVariables || [],
-      bodyVariables: formData?.bodyVariables || [],
-      buttons: formData?.buttons || [],
-    },
+    defaultValues: toDefaults(template),
   });
+  const { handleSubmit, watch, setValue, getValues, reset } = methods;
 
-  const {
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = methods;
-
-  console.log("errors", errors);
+  // a new template picked from the library refills the form
+  useEffect(() => reset(toDefaults(template)), [template, reset]);
 
   const header = watch("header");
   const body = watch("body");
-  const footer = watch("footer");
-  const buttons = watch("buttons");
-
   const headerType = watch("headerType");
-  const headerImage = watch("headerImage");
-  const headerVideo = watch("headerVideo");
-  const headerDocument = watch("headerDocument");
 
-  const headerComponent =
-    headerType === "TEXT"
-      ? {
-          type: "HEADER",
-          format: "TEXT",
-          text: header,
-        }
-      : headerType === "IMAGE"
-        ? {
-            type: "HEADER",
-            format: "IMAGE",
-            file: headerImage,
-          }
-        : headerType === "VIDEO"
-          ? {
-              type: "HEADER",
-              format: "VIDEO",
-              file: headerVideo,
-            }
-          : headerType === "DOCUMENT"
-            ? {
-                type: "HEADER",
-                format: "DOCUMENT",
-                file: headerDocument,
-              }
-            : null;
+  // one example per variable, keeping the ones already typed
+  useEffect(() => {
+    const fit = (name, text) => {
+      const current = getValues(name) || [];
+      setValue(name, extractVariables(text).map((_, i) => current[i] || ""));
+    };
+    fit("headerVariables", header);
+    fit("bodyVariables", body);
+  }, [header, body, getValues, setValue]);
 
   const components = [
-    ...(headerComponent ? [headerComponent] : []),
-    {
-      type: "BODY",
-      text: body,
-    },
-    {
-      type: "FOOTER",
-      text: footer,
-    },
-    {
-      type: "BUTTONS",
-      buttons: buttons || [],
-    },
-  ];
+    headerType === "TEXT" && { type: "HEADER", format: "TEXT", text: header },
+    headerType === "IMAGE" && { type: "HEADER", format: "IMAGE", file: watch("headerImage") },
+    { type: "BODY", text: body },
+    { type: "FOOTER", text: watch("footer") },
+    { type: "BUTTONS", buttons: watch("buttons") || [] },
+  ].filter(Boolean);
 
   const onSubmit = async (data) => {
-    console.log("data", data);
+    const problem =
+      buttonsProblem(data.buttons) ||
+      (data.headerType === "IMAGE" && !data.headerImage && "Add a header image or choose another header.") ||
+      ([...data.headerVariables, ...data.bodyVariables].some((v) => !v?.trim()) &&
+        "Add an example for every variable.");
+    if (problem) {
+      showToast({ message: problem, type: "error" });
+      return;
+    }
 
     setLoading(true);
-
     try {
       const formData = new FormData();
-
       formData.append("name", data.name);
       formData.append("language", data.language);
       formData.append("category", data.category || "UTILITY");
-
       formData.append("headerType", data.headerType);
       formData.append("header", data.header || "");
-
       formData.append("body", data.body);
       formData.append("footer", data.footer || "");
-
-      formData.append(
-        "headerVariables",
-        JSON.stringify(data.headerVariables || []),
-      );
-
-      formData.append(
-        "bodyVariables",
-        JSON.stringify(data.bodyVariables || []),
-      );
-
-      formData.append("buttons", JSON.stringify(data.buttons || []));
-
-      if (data.headerType === "IMAGE" && data.headerImage) {
-        console.log("data.headerImage  ke andar aag agay");
+      formData.append("headerVariables", JSON.stringify(data.headerVariables || []));
+      formData.append("bodyVariables", JSON.stringify(data.bodyVariables || []));
+      formData.append("buttons", JSON.stringify(toMetaButtons(data.buttons)));
+      if (data.headerType === "IMAGE" && data.headerImage instanceof File) {
         formData.append("file", data.headerImage);
       }
 
-      if (data.headerType === "VIDEO" && data.headerVideo) {
-        formData.append("file", data.headerVideo);
-      }
+      const response = isEdit
+        ? await updateWhatsAppMessageTemplate(formData, initialData?.id)
+        : await createWhatsAppMessageTemplate(formData);
 
-      if (data.headerType === "DOCUMENT" && data.headerDocument) {
-        formData.append("file", data.headerDocument);
-      }
-
-      const response =
-        mode === "create"
-          ? await createWhatsAppMessageTemplate(formData)
-          : await updateWhatsAppMessageTemplate(formData, initialData?.id);
-
-      console.log("response", response);
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        showToast({
-          message: response?.responseMessage || "Template created successfully",
-          type: "success",
-        });
-        return;
+      if (!response?.success) {
+        throw new Error(metaMessage(response, "Meta did not accept this template."));
       }
 
       showToast({
-        message:
-          response?.error?.error?.error_user_msg || "Failed to create template",
-        type: "error",
+        message: isEdit
+          ? "Changes sent to Meta for review"
+          : "Template sent to Meta for approval",
       });
+      reset(toDefaults(null));
+      onSaved?.();
     } catch (error) {
-      console.error(error);
+      showToast({ message: error?.message || "Could not save the template.", type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const headerVars = extractVariables(header);
-    const bodyVars = extractVariables(body);
-
-    const currentHeaderSamples = methods.getValues("headerVariables") || [];
-    const currentBodySamples = methods.getValues("bodyVariables") || [];
-
-    const newHeaderSamples = headerVars.map(
-      (_, i) => currentHeaderSamples[i] || "",
-    );
-
-    const newBodySamples = bodyVars.map((_, i) => currentBodySamples[i] || "");
-
-    setValue("headerVariables", newHeaderSamples);
-    setValue("bodyVariables", newBodySamples);
-  }, [header, body, setValue]);
-
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex flex-col lg:flex-row gap-[var(--sp-5)] p-[var(--sp-2)] bg-app-surface"
-      >
-        {/* LEFT FORM */}
-
-        <div className="flex-1 min-w-0 space-y-[var(--sp-5)]">
-          <TemplateHeader
-            onCancel={onClose}
-            showCancelButton={initialData}
-            mode={mode}
-          />
-          <TemplateContent />
-          <TemplateButtons />
-
-          <div className="flex justify-end">
-            {mode === "edit" ? (
-              <button type="submit" className={SUBMIT_BTN}>
-                Publish Changes {loading && <Loader color="#378863" />}
-              </button>
-            ) : (
-              <button type="submit" className={SUBMIT_BTN}>
-                + Create Template {loading && <Loader color="#378863" />}
-              </button>
-            )}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {onClose && (isEdit || initialData) && (
+            <IconButton icon={ArrowLeft} label="Back" onClick={onClose} />
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-semibold text-app-text">
+              {isEdit ? `Edit ${initialData?.name}` : "Create a message template"}
+            </h2>
+            <p className="text-xs text-app-text-muted">
+              Templates start conversations with guests. Meta usually reviews them within
+              a few minutes.
+            </p>
           </div>
         </div>
 
-        {/* PREVIEW */}
-        <div className="w-full lg:w-auto lg:shrink-0 lg:sticky lg:top-[var(--sp-4)] lg:self-start">
-          <h2 className="mb-2 text-[length:var(--fs-base)] font-medium text-app-text">
-            Template Preview
-          </h2>
-          <TemplatePreview
-            components={components}
-            headerVariables={watch("headerVariables")}
-            bodyVariables={watch("bodyVariables")}
-          />
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_22rem]">
+          <div className="min-w-0 space-y-4">
+            <TemplateHeader mode={mode} />
+            <TemplateContent />
+            <TemplateButtons />
+
+            <div className="flex justify-end gap-2">
+              {onClose && (isEdit || initialData) && (
+                <Button variant="secondary" onClick={onClose} disabled={loading}>
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" icon={Send} loading={loading}>
+                {isEdit ? "Submit changes" : "Submit for approval"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="lg:sticky lg:top-2">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-app-text-muted">
+              Preview
+            </p>
+            <TemplatePreview
+              components={components}
+              headerVariables={watch("headerVariables")}
+              bodyVariables={watch("bodyVariables")}
+            />
+          </div>
         </div>
       </form>
     </FormProvider>

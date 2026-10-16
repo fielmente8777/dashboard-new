@@ -1,4 +1,5 @@
 import { BASE_URL } from "../data/constant";
+import { API_URLS } from "../config/env";
 
 // const BASE_URL = "https://nexon.eazotel.com";
 
@@ -121,7 +122,7 @@ export const DeleteImage = async (selectedCategory, Image, token) => {
 export const UploadingImageS3 = async (base64String) => {
   try {
     const response = await fetch(
-      `https://nexon.eazotel.com/upload/file/image`,
+      `${API_URLS.core}/upload/file/image`,
       {
         method: "POST",
         headers: {

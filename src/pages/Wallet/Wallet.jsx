@@ -5,16 +5,16 @@ import UsageChart from "./components/UsageChart";
 import CreditBreakdown from "./components/CreditBreakdown";
 import ActivityRow from "./components/ActivityRow";
 import ActivityTable from "./components/ActivityTable";
+import { Skeleton } from "../../components/ui/States";
 const Wallet = () => {
   const [data, setData] = useState();
 
   const fetchWalletData = async () => {
     try {
       const data = await getWallet();
-      console.log("Data", data);
       setData(data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       setData({});
     }
   };
@@ -30,7 +30,18 @@ const Wallet = () => {
   useEffect(() => {
     fetchWalletData();
   }, []);
-  if (!data) return <div>Loading...</div>;
+  if (!data) {
+    return (
+      <div className="space-y-4 p-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
 
   const cards = [
     {

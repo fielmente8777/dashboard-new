@@ -1,10 +1,11 @@
 import { NEW_BASE_URL } from "../../../data/constant";
+import { RAZORPAY_CHECKOUT_SCRIPT_URL, RAZORPAY_KEY_ID } from "../../../config/env";
 
 const PricingCard = ({ plan }) => {
   function loadRazorpay() {
     return new Promise((resolve) => {
       const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.src = RAZORPAY_CHECKOUT_SCRIPT_URL;
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
@@ -41,7 +42,7 @@ const PricingCard = ({ plan }) => {
 
       // open razorpay checkout with order details
       const options = {
-        key: "rzp_live_ShEPN150XB1irg", // Replace with your Razorpay API key
+        key: RAZORPAY_KEY_ID,
         amount: order?.result?.doc?.amount, // Amount in paise
         // currency: order.currency,
         currency: "INR",

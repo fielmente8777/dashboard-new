@@ -1,254 +1,236 @@
-import { useEffect, useState } from "react";
-import { MdDelete } from "react-icons/md";
-import AddContactPopup from "../../components/Popup/AddContactPopup";
+import { Plus, Send, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import Pagination from "../../components/Pagination";
 import SendCampaignPopup from "../../components/Popup/SendCampaignPopup";
-import { BASE_URL } from "../../data/constant";
-import { getContacts } from "../../services/api/contact.api";
+import Button from "../../components/ui/Button";
+import DataTable from "../../components/ui/DataTable";
+import { Input } from "../../components/ui/Field";
+import IconButton from "../../components/ui/IconButton";
+import PageShell from "../../components/ui/PageShell";
+import { ErrorState } from "../../components/ui/States";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useApiAction } from "../../hooks/useApiAction";
+import { getApiErrorMessage } from "../../redux/api/baseApi";
+import {
+  useDeleteContactMutation,
+  useGetContactsQuery,
+} from "../../redux/api/contactsApi";
 import { formatDateTime } from "../../utils/formateDate";
+import ContactFormDialog from "./components/ContactFormDialog";
+import { PAGE_SIZE, getSourceLabel } from "./constants";
+
+// checkbox cells must not open the row
+const stopRowClick = (e) => e.stopPropagation();
 
 const Contacts = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const { confirm } = useConfirm();
+  const run = useApiAction();
+  const contacts = useGetContactsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
+  const [deleteContact] = useDeleteContactMutation();
 
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [campaignOpen, setCampaignOpen] = useState(false);
-  const [selectedUsersIds, setSelectedUsersIds] = useState([]);
+  // { contact } while the add / edit dialog is open (contact: null = new)
+  const [editing, setEditing] = useState(null);
 
-  const [contacts, setContacts] = useState([]);
-  const [selectedContact, setSelectedContact] = useState({});
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const all = contacts.data || [];
+    if (!term) return all;
 
-  const [isEdit, setIsEdit] = useState(false);
+    return all.filter((contact) =>
+      [contact.name, contact.phone, contact.email].some((value) =>
+        String(value || "").toLowerCase().includes(term),
+      ),
+    );
+  }, [contacts.data, search]);
 
-  const handleSelectContact = (id) => {
-    setSelectedUsersIds((prev) => {
-      const exists = prev.includes(id);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // stays in range when a search or a delete shortens the list
+  const currentPage = Math.min(page, totalPages);
+  const firstIndex = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = filtered.slice(firstIndex, firstIndex + PAGE_SIZE);
+  const pageIds = pageRows.map((contact) => contact._id);
+  const isPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
 
-      if (exists) {
-        return prev.filter((c) => c !== id);
-      } else {
-        return [...prev, id];
-      }
+  const toggleOne = (id) =>
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+
+  const togglePage = (checked) =>
+    setSelectedIds((prev) => {
+      const others = prev.filter((id) => !pageIds.includes(id));
+      return checked ? [...others, ...pageIds] : others;
     });
-  };
 
-  const handleSelectAll = (checked) => {
-    // if (checked) {
-    //   setSelectedContacts((prev) => {
-    //     const newContacts = currentItems.filter(
-    //       (c) => !prev.find((p) => p._id === c._id),
-    //     );
-    //     return [...prev, ...newContacts];
-    //   });
-    // } else {
-    //   setSelectedContacts((prev) =>
-    //     prev.filter((c) => !currentItems.find((ci) => ci._id === c._id)),
-    //   );
-    // }
-  };
+  const handleDelete = async (contact) => {
+    const confirmed = await confirm(
+      `Delete ${contact.name || "this contact"}? This cannot be undone.`,
+      { title: "Delete contact" },
+    );
+    if (!confirmed) return;
 
-  const getContactsData = async () => {
-    // API call to fetch contacts will be here
-    try {
-      const token = localStorage.getItem("token");
-      const res = await getContacts(token);
-
-      // console.log(res);
-      setContacts(res);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
+    const deleted = await run(deleteContact(contact._id), {
+      success: "Contact deleted",
+      error: "Could not delete the contact.",
+    });
+    if (deleted) {
+      setSelectedIds((prev) => prev.filter((id) => id !== contact._id));
     }
   };
 
-  useEffect(() => {
-    getContactsData();
-  }, []);
-
-  const lastIndex = currentPage * itemsPerPage;
-  const firstIndex = lastIndex - itemsPerPage;
-  const currentItems = contacts.slice(firstIndex, lastIndex);
-  const totalPages = Math.ceil(contacts.length / itemsPerPage);
-
-  const [open, setOpen] = useState(false);
-  const handlePopup = (contact) => {
-    setIsEdit(true);
-    setSelectedContact(contact);
-    setOpen(true);
-  };
-  const handleAddPopup = () => {
-    setIsEdit(false);
-    setOpen(true);
-  };
-
-  const [loading, setLoading] = useState(false);
-
-  const handleDeleteContact = async (id) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/contact/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (result.Status === true) {
-        getContactsData();
-      }
-    } catch (error) {
-      // console.log("Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const columns = [
+    {
+      key: "select",
+      className: "w-10",
+      header: (
+        <input
+          type="checkbox"
+          aria-label="Select all on this page"
+          checked={isPageSelected}
+          onChange={(e) => togglePage(e.target.checked)}
+        />
+      ),
+      render: (contact) => (
+        <input
+          type="checkbox"
+          aria-label={`Select ${contact.name}`}
+          checked={selectedIds.includes(contact._id)}
+          onClick={stopRowClick}
+          onChange={() => toggleOne(contact._id)}
+        />
+      ),
+    },
+    { key: "index", header: "#", render: (_, index) => firstIndex + index + 1 },
+    {
+      key: "name",
+      header: "Name",
+      className: "font-medium",
+      render: (contact) => (
+        <span className="block max-w-56 truncate" title={contact.name}>
+          {contact.name || "—"}
+        </span>
+      ),
+    },
+    { key: "phone", header: "Contact" },
+    { key: "email", header: "Email" },
+    {
+      key: "added_from",
+      header: "Source",
+      className: "capitalize",
+      render: (contact) => getSourceLabel(contact.added_from),
+    },
+    {
+      key: "created_at",
+      header: "Created",
+      className: "whitespace-nowrap",
+      render: (contact) =>
+        contact.created_at ? formatDateTime(contact.created_at) : "—",
+    },
+    {
+      key: "action",
+      header: "",
+      className: "w-12",
+      render: (contact) => (
+        <IconButton
+          icon={Trash2}
+          label="Delete contact"
+          tone="danger"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(contact);
+          }}
+        />
+      ),
+    },
+  ];
 
   return (
-    <div className="p-2">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-semibold mb-4">Contacts</h2>
-
-        <div className="flex gap-2">
-          <button
-            className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
-            onClick={handleAddPopup}
-          >
-            Add new Contact
-          </button>
-
-          <button
+    <PageShell
+      title="Contacts"
+      description={
+        selectedIds.length > 0
+          ? `${selectedIds.length} selected for the campaign`
+          : `${filtered.length} contacts`
+      }
+      actions={
+        <>
+          <div className="w-56">
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Search name, phone or email"
+              aria-label="Search contacts"
+            />
+          </div>
+          <Button
+            variant="secondary"
+            icon={Send}
             onClick={() => setCampaignOpen(true)}
-            className="bg-blue-500 hover:bg-blue-600 py-2 px-5 text-white rounded-lg font-semibold shadow-md transition"
           >
-            Send Campaign
-          </button>
-        </div>
-
-        <SendCampaignPopup
-          open={campaignOpen}
-          setOpen={setCampaignOpen}
-          contacts={selectedUsersIds}
-          setContacts={setSelectedUsersIds}
-        />
-      </div>
-
-      <table className="w-full  text-left bg-primary text-white/90 rounded-sm shadow-sm">
-        <thead>
-          <tr className="border-b">
-            {/* <th className="py-3 px-2 text-[14px] font-medium">Select</th> */}
-
-            <th className="py-3 px-2 text-[14px] font-medium">
-              <input
-                type="checkbox"
-                onChange={(e) => handleSelectAll(e.target.checked)}
-                checked={
-                  currentItems.length > 0 &&
-                  currentItems.every((c) => selectedUsersIds.includes(c.id))
-                }
-              />
-            </th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">#</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Created Time</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Name</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Contact</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Email</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Source</th>
-            <th className="py-3 px-2 text-[14px] font-medium text-white dark:text-app-text-muted">Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {currentItems.length > 0 ? (
-            currentItems.map((row, index) => (
-              <tr
-                key={row.id}
-                onClick={() => handlePopup(row)}
-                className="py-1 border-b odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint   hover:bg-blue-50 transition-colors "
-              >
-                <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={selectedUsersIds.includes(row._id)}
-                    onChange={() => handleSelectContact(row?._id)}
-                  />
-                </td>
-
-                <td className=" flex-1 py-3 px-2">{index + 1}</td>
-
-                <td className=" flex-1 py-3 px-2">
-                  {formatDateTime(row.created_at)}
-                </td>
-
-                <td className="  flex-1 py-3 px-2 whitespace-nowrap">
-                  {row?.name.slice(0, 30)}
-                </td>
-                <td className=" flex-1 py-3 px-2">{row.phone}</td>
-                <td className=" flex-1 py-3 px-2">{row.email}</td>
-
-                <td className=" flex-1 py-3 px-2 capitalize">
-                  {row.added_from}
-                  {/* {row.added_from?.toLowerCase() === "eazobot"
-                    ? "Eazbot"
-                    : row.added_from} */}
-                </td>
-
-                <td>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteContact(row._id);
-                    }}
-                    className={`border hover:bg-red-600 hover:text-white flex justify-center text-lg  text-red-600 cursor-pointer flex-1 py-2 px-2`}
-                  >
-                    <MdDelete />
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr className="bg-white text-gray-600 text-center border">
-              <td colSpan={9} className="py-2">
-                Data not found!
-              </td>
-            </tr>
+            Send campaign
+          </Button>
+          <Button icon={Plus} onClick={() => setEditing({ contact: null })}>
+            Add contact
+          </Button>
+        </>
+      }
+    >
+      {contacts.isError ? (
+        <ErrorState
+          message={getApiErrorMessage(
+            contacts.error,
+            "Could not load the contacts.",
           )}
-        </tbody>
-      </table>
+          onRetry={contacts.refetch}
+        />
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={pageRows}
+          rowKey={(contact) => contact._id}
+          onRowClick={(contact) => setEditing({ contact })}
+          loading={contacts.isLoading}
+          skeletonRows={PAGE_SIZE}
+          emptyMessage={
+            search ? "No contact matches your search." : "No contacts yet."
+          }
+        />
+      )}
 
-      {/* Pagination */}
-      <div className="flex justify-end gap-3 mt-3">
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-          className="bg-app-text-muted px-3 py-1 rounded disabled:opacity-50"
-        >
-          Prev
-        </button>
-
-        <span className="font-medium text-[14px]">
-          Page {currentPage} / {totalPages}
-        </span>
-
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-          className="bg-app-text-muted px-3 py-1 rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
-
-      <div>
-        <AddContactPopup
-          open={open}
-          setOpen={setOpen}
-          isEdit={isEdit}
-          contact={selectedContact}
-          setSelectedContact={setSelectedContact}
-          getContacts={getContacts}
+      <div className="flex justify-end">
+        <Pagination
+          page={currentPage}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPrev={() => setPage(currentPage - 1)}
+          onNext={() => setPage(currentPage + 1)}
         />
       </div>
-    </div>
+
+      <ContactFormDialog
+        open={Boolean(editing)}
+        contact={editing?.contact || null}
+        onClose={() => setEditing(null)}
+      />
+
+      <SendCampaignPopup
+        open={campaignOpen}
+        setOpen={setCampaignOpen}
+        contacts={selectedIds}
+        setContacts={setSelectedIds}
+      />
+    </PageShell>
   );
 };
 

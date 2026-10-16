@@ -1,23 +1,22 @@
-import React from "react";
+import Dialog from "../../../../components/ui/Dialog";
 import TemplatePreview from "./TemplatePreview";
-import { IoMdClose } from "react-icons/io";
 
+// Shows how a template looks in WhatsApp, with Meta's example values filled in.
+// `components` is the template's components.
 const TemplatePreviewModal = ({ components = [], onClose }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex justify-center items-center backdrop-blur-sm bg-black/40 p-[var(--sp-5)]">
-      <div className="relative w-full max-w-[21.25rem] max-h-[90dvh] overflow-y-auto">
-        <TemplatePreview components={components} />
+  const header = components.find((c) => c.type === "HEADER");
+  const body = components.find((c) => c.type === "BODY");
 
-        <button
-          type="button"
-          aria-label="Close preview"
-          onClick={onClose}
-          className="absolute -right-2 -top-2 bg-red-600 hover:bg-red-700 size-7 rounded-full flex justify-center items-center transition-colors"
-        >
-          <IoMdClose size={16} color="#fefefe" />
-        </button>
+  return (
+    <Dialog open onClose={onClose} title="Template preview">
+      <div className="flex justify-center">
+        <TemplatePreview
+          components={components}
+          headerVariables={header?.example?.header_text || []}
+          bodyVariables={body?.example?.body_text?.[0] || []}
+        />
       </div>
-    </div>
+    </Dialog>
   );
 };
 

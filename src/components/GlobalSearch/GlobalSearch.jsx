@@ -5,6 +5,7 @@ import { IoIosSearch, IoMdClose } from "react-icons/io";
 import { IoArrowBack } from "react-icons/io5";
 import { getGlobalSearch } from "../../services/api/globalSearch.api";
 import { buildLink } from "../../utils/buildLink";
+import Icon from "../ui/Icon";
 
 const DROPDOWN_WIDTH = 440;
 
@@ -249,14 +250,12 @@ const GlobalSearch = () => {
             aria-label="Close search"
             className="shrink-0 size-9 flex items-center justify-center rounded-full text-white"
           >
-            <IoArrowBack size={20} />
+            <Icon icon={IoArrowBack} size="xl" />
           </button>
 
           <div className="relative flex-1">
-            <IoIosSearch
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80"
-            />
+            <Icon icon={IoIosSearch} size="lg"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80" />
             <input
               ref={mobileInputRef}
               value={query}
@@ -271,7 +270,7 @@ const GlobalSearch = () => {
                 aria-label="Clear"
                 className="absolute right-2 top-1/2 -translate-y-1/2 text-white/80"
               >
-                <IoMdClose size={18} />
+                <Icon icon={IoMdClose} size="lg" />
               </button>
             )}
           </div>
@@ -313,19 +312,17 @@ const GlobalSearch = () => {
           setMobileOpen(true);
           setOpen(true);
         }}
-        className="sm:hidden bg-[#2e3b61] text-white p-1 rounded-md"
+        className="sm:hidden flex size-9 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         aria-label="Search"
       >
-        <IoIosSearch size={22} />
+        <Icon icon={IoIosSearch} size="2xl" />
       </button>
 
       {/* Desktop: inline input */}
       <div className="hidden sm:flex items-center gap-2">
-        <div ref={inputBoxRef} className="relative sm:w-72 lg:w-96">
-          <IoIosSearch
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80"
-          />
+        <div ref={inputBoxRef} className="relative w-full">
+          <Icon icon={IoIosSearch} size="lg"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80" />
           <input
             ref={inputRef}
             value={query}
@@ -335,7 +332,7 @@ const GlobalSearch = () => {
             }}
             onFocus={() => setOpen(true)}
             placeholder="Search phone, email or name…"
-            className="w-full bg-white/15 dark:bg-white/10 text-white placeholder-white/70 text-sm rounded-lg pl-9 pr-16 py-2 outline-none focus:bg-white/25 focus:ring-2 focus:ring-white/40 transition"
+            className="h-9 w-full bg-white/10 text-white placeholder-white/50 text-sm rounded-lg pl-9 pr-16 outline-none focus:bg-white/15 focus:ring-1 focus:ring-white/40 transition"
           />
           {query ? (
             <button
@@ -343,7 +340,7 @@ const GlobalSearch = () => {
               aria-label="Clear"
               className="absolute right-2 top-1/2 -translate-y-1/2 text-white/80 hover:text-white"
             >
-              <IoMdClose size={16} />
+              <Icon icon={IoMdClose} />
             </button>
           ) : (
             <span className="hidden lg:block absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-white/70 border border-white/30 rounded px-1.5 py-0.5">
@@ -545,14 +542,13 @@ export default GlobalSearch;
 //             aria-label="Close search"
 //             className="shrink-0 size-9 flex items-center justify-center rounded-full text-white"
 //           >
-//             <IoArrowBack size={20} />
+//             <Icon icon={IoArrowBack} size="xl" />
 //           </button>
 
 //           <div className="relative flex-1">
-//             <IoIosSearch
-//               size={18}
+//             <Icon icon={IoIosSearch} //               size="lg"
 //               className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80"
-//             />
+// />
 //             <input
 //               ref={inputRef}
 //               value={query}
@@ -567,7 +563,7 @@ export default GlobalSearch;
 //                 aria-label="Clear"
 //                 className="absolute right-2 top-1/2 -translate-y-1/2 text-white/80"
 //               >
-//                 <IoMdClose size={18} />
+//                 <Icon icon={IoMdClose} size="lg" />
 //               </button>
 //             )}
 //           </div>
@@ -717,7 +713,7 @@ export default GlobalSearch;
 //         className="sm:hidden bg-[#2e3b61] text-white p-1 rounded-md"
 //         aria-label="Search"
 //       >
-//         <IoIosSearch size={22} />
+//         <Icon icon={IoIosSearch} size="2xl" />
 //       </button>
 
 //       {/* Input (inline on desktop, full-width bar on mobile) */}
@@ -729,10 +725,9 @@ export default GlobalSearch;
 //         } sm:static sm:flex sm:p-0 sm:bg-transparent sm:dark:bg-transparent items-center gap-2`}
 //       >
 //         <div ref={inputBoxRef} className="relative flex-1 sm:w-72 lg:w-96">
-//           <IoIosSearch
-//             size={18}
+//           <Icon icon={IoIosSearch} //             size="lg"
 //             className="absolute left-3 top-1/2 -translate-y-1/2 text-white/80"
-//           />
+// />
 //           <input
 //             ref={inputRef}
 //             value={query}
@@ -750,7 +745,7 @@ export default GlobalSearch;
 //               className="absolute right-2 top-1/2 -translate-y-1/2 text-white/80 hover:text-white"
 //               aria-label="Clear"
 //             >
-//               <IoMdClose size={16} />
+//               <Icon icon={IoMdClose} />
 //             </button>
 //           ) : (
 //             <span className="hidden lg:block absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-white/70 border border-white/30 rounded px-1.5 py-0.5">

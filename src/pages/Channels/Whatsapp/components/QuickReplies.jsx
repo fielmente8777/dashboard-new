@@ -1,740 +1,351 @@
-import React, { useState, useRef, useEffect } from "react";
 import {
+  FileText,
+  Image as ImageIcon,
+  MessageSquareText,
+  Paperclip,
+  Pencil,
   Plus,
   Search,
-  Image as ImageIcon,
-  Video as VideoIcon,
-  FileText,
-  MessageSquare,
-  Upload,
-  Edit,
   Trash2,
+  Video as VideoIcon,
   X,
-  Paperclip,
 } from "lucide-react";
-import { NEW_BASE_URL } from "../../../../data/constant";
-import { useToast } from "../../../../context/ToastContext";
-import Loader from "../../../../components/Loader";
+import { useRef, useState } from "react";
+import Badge from "../../../../components/ui/Badge";
+import Button from "../../../../components/ui/Button";
+import Dialog from "../../../../components/ui/Dialog";
+import { Field, Input, Textarea } from "../../../../components/ui/Field";
+import Icon from "../../../../components/ui/Icon";
+import IconButton from "../../../../components/ui/IconButton";
+import { EmptyState, ErrorState, Skeleton } from "../../../../components/ui/States";
 import { useConfirm } from "../../../../context/ConfirmContext";
+import { useToast } from "../../../../context/ToastContext";
+import {
+  useDeleteQuickReplyMutation,
+  useGetQuickRepliesQuery,
+  useSaveQuickReplyMutation,
+} from "../../../../redux/api/whatsappApi";
+import { getApiErrorMessage } from "../../../../redux/api/baseApi";
 
-/* ── shared presentation tokens ─────────────────────────────── */
-const FIELD =
-  "w-full min-w-0 rounded-[var(--r-md)] border border-app-border bg-app-surface p-[var(--sp-3)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-const LABEL = "font-medium text-[length:var(--fs-sm)] text-app-text";
-const PILL =
-  "flex items-center gap-1 text-[length:var(--fs-xs)] px-[var(--sp-2)] py-1 rounded-full whitespace-nowrap";
-
-const LIMITS = {
-  image: {
-    max: 5 * 1024 * 1024,
-    accept: "image/jpeg,image/png,image/PNG, image/jpg",
-    label: "5MB per image",
-  },
-  video: { max: 10 * 1024 * 1024, accept: "video/*", label: "10MB per video" },
-  document: {
-    max: 10 * 1024 * 1024,
-    accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx",
-    label: "10MB per document",
-  },
+const KINDS = {
+  image: { key: "images", icon: ImageIcon, max: 5 * 1024 * 1024, accept: "image/jpeg,image/png", limit: "5 MB", tone: "purple" },
+  video: { key: "videos", icon: VideoIcon, max: 10 * 1024 * 1024, accept: "video/*", limit: "10 MB", tone: "amber" },
+  document: { key: "documents", icon: FileText, max: 10 * 1024 * 1024, accept: ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx", limit: "10 MB", tone: "green" },
 };
 
-const emptyForm = () => ({
-  id: null,
-  title: "",
-  text: "",
-  images: [],
-  videos: [],
-  documents: [],
-});
-
+const emptyForm = () => ({ id: null, title: "", text: "", shortcut: "", images: [], videos: [], documents: [] });
 const fileId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const attachmentCount = (form) => form.images.length + form.videos.length + form.documents.length;
 
-const formatBytes = (bytes) => {
+const formatBytes = (bytes = 0) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const seedReplies = [
-  {
-    id: 1,
-    title: "Welcome",
-    text: "Hello 👋 Welcome to Eazotel! Here's a quick look at our property.",
-    images: [
-      { id: "seed-1", name: "lobby.jpg", size: 812000, url: null },
-      { id: "seed-2", name: "room-101.jpg", size: 640000, url: null },
-    ],
-    videos: [],
-    documents: [{ id: "seed-3", name: "brochure.pdf", size: 2_400_000 }],
-  },
-  {
-    id: 2,
-    title: "Booking Confirmation",
-    text: "Your booking is confirmed. See attached voucher and directions video.",
-    images: [],
-    videos: [{ id: "seed-4", name: "directions.mp4", size: 9_400_000 }],
-    documents: [{ id: "seed-5", name: "voucher.pdf", size: 340000 }],
-  },
-];
+// a thrown Error keeps its message; an API error shows what the server said
+const errorText = (error, fallback) => getApiErrorMessage(error, error?.message || fallback);
 
-const AttachmentThumb = ({ file, kind, onRemove }) => (
-  <div className="relative group flex items-center gap-2 border border-app-border rounded-[var(--r-md)] p-2 pr-3 bg-app-surface">
-    <div className="w-9 h-9 rounded-[var(--r-sm)] bg-app-surface-secondary flex items-center justify-center shrink-0 overflow-hidden">
+// a saved reply as the form edits it
+const toForm = (reply) => {
+  const form = { ...emptyForm(), id: reply._id, title: reply.title, shortcut: reply.shortcut || "" };
+  reply.items?.forEach((item) => {
+    if (item.type === "text") form.text = item.text;
+    const kind = KINDS[item.type];
+    if (kind) {
+      form[kind.key] = item.media.map((m, index) => ({
+        id: `${item.type}-${index}`,
+        name: m.fileName,
+        size: m.size || 0,
+        url: m.url,
+        mimeType: m.mimeType,
+        existing: true,
+      }));
+    }
+  });
+  return form;
+};
+
+const AttachmentChip = ({ file, kind, onRemove }) => (
+  <div className="flex items-center gap-2 rounded-lg border border-app-border! p-1.5 pr-2">
+    <span className="flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-app-surface-secondary text-app-text-faint">
       {kind === "image" && file.url ? (
-        <img
-          src={file.url}
-          alt={file.name}
-          className="w-full h-full object-cover"
-        />
-      ) : kind === "image" ? (
-        <ImageIcon
-          size={16}
-          className="text-gray-400 dark:text-app-text-faint"
-        />
-      ) : kind === "video" ? (
-        <VideoIcon
-          size={16}
-          className="text-gray-400 dark:text-app-text-faint"
-        />
+        <img src={file.url} alt="" className="size-full object-cover" />
       ) : (
-        <FileText
-          size={16}
-          className="text-gray-400 dark:text-app-text-faint"
-        />
+        <Icon icon={KINDS[kind].icon} size="sm" />
       )}
-    </div>
+    </span>
     <div className="min-w-0">
-      <p className="text-[length:var(--fs-sm)] font-medium truncate max-w-[8.75rem] text-app-text">
-        {file.name}
-      </p>
-      <p className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
-        {formatBytes(file.size)}
-      </p>
+      <p className="max-w-36 truncate text-xs font-medium text-app-text">{file.name}</p>
+      <p className="text-[11px] text-app-text-faint">{formatBytes(file.size)}</p>
     </div>
-    {onRemove && (
-      <button
-        onClick={onRemove}
-        aria-label={`Remove ${file.name}`}
-        className="absolute -top-2 -right-2 bg-app-surface border border-app-border rounded-full p-1 opacity-0 group-hover:opacity-100 focus:opacity-100 max-sm:opacity-100 transition-opacity"
-        title="Remove"
-      >
-        <X size={14} className="text-red-500" />
-      </button>
-    )}
+    <IconButton icon={X} label={`Remove ${file.name}`} size="sm" onClick={onRemove} className="size-6" />
   </div>
 );
 
-const UploadZone = ({ kind, onFiles }) => {
-  const inputRef = useRef(null);
-  const { accept, label } = LIMITS[kind];
-  const icon =
-    kind === "image" ? (
-      <ImageIcon size={18} />
-    ) : kind === "video" ? (
-      <VideoIcon size={18} />
-    ) : (
-      <FileText size={18} />
-    );
+// Create or edit one quick reply.
+const ReplyDialog = ({ form, setForm, open, onClose, onSave, saving }) => {
+  const { showToast } = useToast();
+  const inputs = { image: useRef(null), video: useRef(null), document: useRef(null) };
 
-  const handleChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    onFiles(files);
-    e.target.value = "";
+  const addFiles = (kind, files) => {
+    const { key, max, limit } = KINDS[kind];
+    const tooBig = files.filter((f) => f.size > max);
+    if (tooBig.length) {
+      showToast({ message: `${tooBig.map((f) => f.name).join(", ")} is over ${limit} and was skipped.`, type: "error" });
+    }
+    const added = files
+      .filter((f) => f.size <= max)
+      .map((f) => ({
+        id: fileId(),
+        name: f.name,
+        size: f.size,
+        file: f,
+        url: kind === "image" ? URL.createObjectURL(f) : undefined,
+      }));
+    setForm((prev) => ({ ...prev, [key]: [...prev[key], ...added] }));
   };
 
+  const removeFile = (kind, id) =>
+    setForm((prev) => ({ ...prev, [KINDS[kind].key]: prev[KINDS[kind].key].filter((f) => f.id !== id) }));
+
+  const count = attachmentCount(form);
+  const canSave = form.title.trim() && (form.text.trim() || count > 0);
+
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        className="w-full border-2 border-dashed border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] flex flex-wrap items-center justify-center gap-2 text-gray-500 dark:text-app-text-faint hover:border-primary hover:text-primary transition-colors"
-      >
-        {icon}
-        <span className="text-[length:var(--fs-sm)] font-medium">
-          Add {kind}
-        </span>
-        <span className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
-          ({label})
-        </span>
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        hidden
-        accept={accept}
-        onChange={handleChange}
-      />
-    </div>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      size="lg"
+      title={form.id ? "Edit quick reply" : "New quick reply"}
+      description="Your team can send this in a chat with one click."
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={onSave} loading={saving} disabled={!canSave}>
+            Save reply
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Name" hint="Only your team sees this.">
+          <Input
+            autoFocus
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            placeholder="e.g. Directions to the hotel"
+          />
+        </Field>
+
+        <Field label="Message" hint={count ? "Sent as the caption of the attachments." : undefined}>
+          <Textarea
+            rows={4}
+            value={form.text}
+            onChange={(e) => setForm({ ...form, text: e.target.value })}
+            placeholder="Type the message your team will send…"
+          />
+        </Field>
+
+        <Field as="div" label="Attachments (optional)">
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(KINDS).map(([kind, { icon, accept, limit }]) => (
+              <span key={kind}>
+                <Button
+                  variant="dashed"
+                  size="sm"
+                  icon={icon}
+                  onClick={() => inputs[kind].current?.click()}
+                >
+                  Add {kind} <span className="text-app-text-faint">(≤ {limit})</span>
+                </Button>
+                <input
+                  ref={inputs[kind]}
+                  type="file"
+                  multiple
+                  hidden
+                  accept={accept}
+                  onChange={(e) => {
+                    addFiles(kind, Array.from(e.target.files || []));
+                    e.target.value = "";
+                  }}
+                />
+              </span>
+            ))}
+          </div>
+          {count > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {Object.keys(KINDS).flatMap((kind) =>
+                form[KINDS[kind].key].map((file) => (
+                  <AttachmentChip key={file.id} file={file} kind={kind} onRemove={() => removeFile(kind, file.id)} />
+                )),
+              )}
+            </div>
+          )}
+          {count > 1 && (
+            <p className="mt-2 flex items-center gap-1 text-xs text-app-text-muted">
+              <Icon icon={Paperclip} size="xs" /> Sends as {count} WhatsApp messages.
+            </p>
+          )}
+        </Field>
+      </div>
+    </Dialog>
   );
 };
 
+// Saved replies (text and attachments) the team sends from the chat.
 const QuickReplies = () => {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState("list");
-  const [replies, setReplies] = useState([]);
-  const [form, setForm] = useState(emptyForm());
+  const hid = localStorage.getItem("hid");
+  const list = useGetQuickRepliesQuery(hid, { refetchOnMountOrArgChange: true });
+  const [saveQuickReply, { isLoading: saving }] = useSaveQuickReplyMutation();
+  const [deleteQuickReply] = useDeleteQuickReplyMutation();
+  const replies = list.data || [];
+  const loading = list.isLoading;
+  const failed = list.isError;
+  const load = list.refetch;
+
   const [search, setSearch] = useState("");
-  const [fileError, setFileError] = useState("");
+  const [form, setForm] = useState(emptyForm());
+  const [editing, setEditing] = useState(false);
 
-  const [creating, setCreating] = useState(false);
-
-  const totalAttachments = (r) =>
-    r?.images?.length + r?.videos?.length + r?.documents?.length;
-
-  const startCreate = () => {
-    setForm(emptyForm());
-    setFileError("");
-    setActiveTab("create");
+  const openForm = (reply) => {
+    setForm(reply ? toForm(reply) : emptyForm());
+    setEditing(true);
   };
 
-  const startEdit = (reply) => {
-    console.log("reply", reply);
-
-    const editForm = {
-      id: reply._id,
-      title: reply.title,
-      text: "",
-      shortcut: reply.shortcut || "",
-      images: [],
-      videos: [],
-      documents: [],
-    };
-
-    reply.items.forEach((item) => {
-      if (item.type === "text") {
-        editForm.text = item.text;
-      }
-
-      if (item.type === "image") {
-        editForm.images = item.media.map((m, index) => ({
-          id: `img-${index}`,
-          name: m.fileName,
-          size: m.size || 0,
-          url: m.url,
-          mimeType: m.mimeType,
-          existing: true,
-        }));
-      }
-
-      if (item.type === "video") {
-        editForm.videos = item.media.map((m, index) => ({
-          id: `vid-${index}`,
-          name: m.fileName,
-          size: m.size || 0,
-          url: m.url,
-          mimeType: m.mimeType,
-          existing: true,
-        }));
-      }
-
-      if (item.type === "document") {
-        editForm.documents = item.media.map((m, index) => ({
-          id: `doc-${index}`,
-          name: m.fileName,
-          size: m.size || 0,
-          url: m.url,
-          mimeType: m.mimeType,
-          existing: true,
-        }));
-      }
-    });
-
-    setForm(editForm);
-    setFileError("");
-    setActiveTab("create");
-  };
-
-  const removeReply = async (id) => {
-    const isConfirmed = await confirm(
-      `Are you sure you want to delete this quick reply`,
-    );
-
-    if (!isConfirmed) return;
-
+  const save = async () => {
     try {
-      const response = await fetch(
-        `${NEW_BASE_URL}/api/v1/quick-reply/${id}?hid=${localStorage.getItem("hid")}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        },
-      );
-
-      const data = await response.json();
-
-      if (data?.success) {
-        showToast({
-          message: data?.responseMessage || "Quick reply deleted successfully",
-          type: "success",
-        });
-
-        // setReplies((prev) => prev.filter((r) => r._id !== id));
-        return;
-      }
-
-      showToast({
-        message: data?.responseMessage || "Failed to delete quick reply",
-        type: "error",
-      });
-    } catch (error) {
-      showToast({
-        message: error?.message || "Failed to delete quick reply",
-        type: "error",
-      });
-    }
-  };
-
-  const addFiles = (kind, incoming) => {
-    const { max } = LIMITS[kind];
-    const key =
-      kind === "image" ? "images" : kind === "video" ? "videos" : "documents";
-    const tooBig = incoming.filter((f) => f.size > max);
-    const ok = incoming.filter((f) => f.size <= max);
-
-    if (tooBig.length) {
-      setFileError(
-        `${tooBig.map((f) => f.name).join(", ")} exceed${tooBig.length === 1 ? "s" : ""} the ${LIMITS[kind].label} limit and was skipped.`,
-      );
-    } else {
-      setFileError("");
-    }
-
-    const mapped = ok.map((f) => ({
-      id: fileId(),
-      name: f.name,
-      size: f.size,
-      file: f,
-      url: kind === "image" ? URL.createObjectURL(f) : undefined,
-    }));
-
-    setForm((prev) => ({ ...prev, [key]: [...prev[key], ...mapped] }));
-  };
-
-  const removeFile = (kind, id) => {
-    const key =
-      kind === "image" ? "images" : kind === "video" ? "videos" : "documents";
-    setForm((prev) => ({
-      ...prev,
-      [key]: prev[key].filter((f) => f.id !== id),
-    }));
-  };
-
-  // const charLimit =
-  //   form?.images?.length + form?.videos?.length + form?.documents?.length > 0
-  //     ? 1024
-  //     : 4096;
-
-  const canSave =
-    form?.title?.trim().length > 0 &&
-    (form?.text?.trim().length > 0 || totalAttachments(form) > 0);
-
-  const handleSave = async () => {
-    if (!canSave) return;
-
-    setCreating(true);
-
-    try {
-      const isEdit = !!form.id;
-
       const payload = new FormData();
-
-      payload.append("title", form.title);
+      payload.append("title", form.title.trim());
       payload.append("text", form.text);
       payload.append("shortcut", form.shortcut || "");
-
-      // Existing media
-      const existingMedia = [];
-
-      // New files + existing files
+      const existing = [];
       [...form.images, ...form.videos, ...form.documents].forEach((item) => {
         if (item.existing) {
-          existingMedia.push({
-            url: item.url,
-            fileName: item.name,
-            mimeType: item.mimeType,
-            size: item.size,
-          });
+          existing.push({ url: item.url, fileName: item.name, mimeType: item.mimeType, size: item.size });
         } else {
           payload.append("file", item.file);
         }
       });
+      payload.append("media", JSON.stringify(existing));
 
-      payload.append("media", JSON.stringify(existingMedia));
+      const data = await saveQuickReply({ hid, id: form.id, body: payload }).unwrap();
+      if (!data?.success) throw new Error(data?.responseMessage);
 
-      const response = await fetch(
-        isEdit
-          ? `${NEW_BASE_URL}/api/v1/quick-reply/${form.id}?hid=${localStorage.getItem("hid")}`
-          : `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
-        {
-          method: isEdit ? "PUT" : "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: payload,
-        },
-      );
-
-      const data = await response.json();
-
-      if (data?.success) {
-        showToast({
-          message:
-            data?.responseMessage ||
-            (isEdit
-              ? "Quick reply updated successfully"
-              : "Quick reply created successfully"),
-          type: "success",
-        });
-
-        fetchReplies();
-
-        setForm(emptyForm());
-
-        setActiveTab("list");
-
-        return;
-      }
-
-      showToast({
-        message:
-          data?.responseMessage ||
-          (isEdit
-            ? "Failed to update quick reply"
-            : "Failed to create quick reply"),
-        type: "error",
-      });
+      showToast({ message: form.id ? "Quick reply updated" : "Quick reply created" });
+      setEditing(false);
     } catch (error) {
-      console.log(error);
-
-      showToast({
-        message: error?.message || "Something went wrong",
-        type: "error",
-      });
-    } finally {
-      setCreating(false);
+      showToast({ message: errorText(error, "Could not save the quick reply."), type: "error" });
     }
   };
 
-  const fetchReplies = async () => {
-    const response = await fetch(
-      `${NEW_BASE_URL}/api/v1/quick-reply?hid=${localStorage.getItem("hid")}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      },
-    );
-    const data = await response.json();
-
-    if (data?.success) {
-      setReplies(data?.result?.docs);
+  const remove = async (reply) => {
+    const confirmed = await confirm(`Delete “${reply.title}”?`, { title: "Delete quick reply" });
+    if (!confirmed) return;
+    try {
+      const data = await deleteQuickReply({ hid, id: reply._id }).unwrap();
+      if (!data?.success) throw new Error(data?.responseMessage);
+      showToast({ message: "Quick reply deleted" });
+    } catch (error) {
+      showToast({ message: errorText(error, "Could not delete the quick reply."), type: "error" });
     }
   };
 
-  useEffect(() => {
-    fetchReplies();
-  }, []);
-
-  // const filteredReplies = replies.filter((r) =>
-  //   r.title.toLowerCase().includes(search.toLowerCase()),
-  // );
+  const term = search.trim().toLowerCase();
+  const shown = term
+    ? replies.filter((r) =>
+        [r.title, r.items?.find((i) => i.type === "text")?.text].some((v) =>
+          v?.toLowerCase().includes(term),
+        ),
+      )
+    : replies;
 
   return (
-    <div className="py-[var(--sp-4)]">
-      <div className="bg-app-surface">
-        {/* Header */}
-        <div className="flex flex-wrap justify-between items-center gap-[var(--sp-3)] border-b border-app-border p-[var(--sp-5)]">
-          <div className="min-w-0">
-            <h2 className="text-[length:var(--fs-xl)] font-bold text-app-text">
-              Quick Replies
-            </h2>
-            <p className="text-gray-500 dark:text-app-text-faint text-[length:var(--fs-sm)]">
-              Build reusable templates with text, images, videos and documents
-            </p>
-          </div>
-
-          <button
-            onClick={startCreate}
-            className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-[var(--sp-5)] py-[var(--sp-2)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium transition-colors whitespace-nowrap w-full sm:w-auto"
-          >
-            <Plus size={18} />
-            New Reply
-          </button>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-app-text">Quick replies</h2>
+          <p className="text-xs text-app-text-muted">
+            Saved answers with text, photos, videos or documents, ready to send from any chat.
+          </p>
         </div>
+        <Button icon={Plus} onClick={() => openForm(null)}>
+          New reply
+        </Button>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-app-border overflow-x-auto hide-scrollbar">
-          <button
-            onClick={() => setActiveTab("list")}
-            className={`px-[var(--sp-5)] py-[var(--sp-3)] text-[length:var(--fs-sm)] whitespace-nowrap border-b-2 -mb-px transition-colors ${
-              activeTab === "list"
-                ? "border-primary font-semibold text-primary dark:text-app-text"
-                : "border-transparent text-gray-500 dark:text-app-text-faint hover:text-app-text"
-            }`}
-          >
-            Existing Replies
-          </button>
-          <button
-            onClick={() => setActiveTab("create")}
-            className={`px-[var(--sp-5)] py-[var(--sp-3)] text-[length:var(--fs-sm)] whitespace-nowrap border-b-2 -mb-px transition-colors ${
-              activeTab === "create"
-                ? "border-primary font-semibold text-primary dark:text-app-text"
-                : "border-transparent text-gray-500 dark:text-app-text-faint hover:text-app-text"
-            }`}
-          >
-            {form.id ? "Edit Reply" : "Create Reply"}
-          </button>
+      {replies.length > 0 && (
+        <div className="relative sm:w-80">
+          <Icon icon={Search} size="sm" tone="faint" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
+          <Input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search replies"
+            className="pl-9"
+          />
         </div>
+      )}
 
-        {/* Existing Replies */}
-        {activeTab === "list" && (
-          <div className="p-[var(--sp-5)]">
-            <div className="relative mb-[var(--sp-5)]">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-app-text-faint pointer-events-none"
-                size={18}
-              />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search replies..."
-                className={`${FIELD} pl-10`}
-              />
-            </div>
-
-            {replies.length === 0 ? (
-              <div className="text-center py-[var(--sp-6)] text-[length:var(--fs-sm)] text-gray-400 dark:text-app-text-faint">
-                No quick replies yet. Create one to get started.
-              </div>
-            ) : (
-              <div className="space-y-[var(--sp-4)]">
-                {replies &&
-                  replies.length > 0 &&
-                  replies?.map((item) => {
-                    const textItem = item.items?.find((i) => i.type === "text");
-
-                    const mediaItem = item.items.find((i) =>
-                      ["image", "video", "document"].includes(i.type),
-                    );
-
-                    const mediaCount = mediaItem?.media?.length || 0;
-
-                    return (
-                      <div
-                        key={item._id}
-                        className="border border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] bg-app-surface hover:border-primary/40 transition-colors"
-                      >
-                        <div className="flex justify-between items-start gap-[var(--sp-4)]">
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-semibold text-[length:var(--fs-base)] text-app-text break-words">
-                              {item.title}
-                            </h3>
-
-                            {textItem?.text && (
-                              <p className="text-[length:var(--fs-sm)] text-gray-600 dark:text-app-text-faint mt-1 line-clamp-2 break-words">
-                                {textItem.text}
-                              </p>
-                            )}
-
-                            {mediaItem && (
-                              <div className="flex flex-wrap gap-2 mt-3">
-                                {mediaItem.type === "image" && (
-                                  <span
-                                    className={`${PILL} bg-purple-50 dark:bg-purple-500/15 text-purple-700 dark:text-purple-300`}
-                                  >
-                                    <ImageIcon size={12} />
-                                    {mediaCount} Image
-                                    {mediaCount > 1 ? "s" : ""}
-                                  </span>
-                                )}
-
-                                {mediaItem.type === "video" && (
-                                  <span
-                                    className={`${PILL} bg-orange-50 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300`}
-                                  >
-                                    <VideoIcon size={12} />
-                                    {mediaCount} Video
-                                    {mediaCount > 1 ? "s" : ""}
-                                  </span>
-                                )}
-
-                                {mediaItem.type === "document" && (
-                                  <span
-                                    className={`${PILL} bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300`}
-                                  >
-                                    <FileText size={12} />
-                                    {mediaCount} Document
-                                    {mediaCount > 1 ? "s" : ""}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex gap-2 shrink-0">
-                            <button
-                              onClick={() => startEdit(item)}
-                              aria-label="Edit quick reply"
-                              className="p-2 rounded-[var(--r-md)] bg-app-surface-secondary text-app-text hover:bg-app-surface border border-app-border transition-colors"
-                              title="Edit"
-                            >
-                              <Edit size={16} />
-                            </button>
-
-                            <button
-                              onClick={() => removeReply(item._id)}
-                              aria-label="Delete quick reply"
-                              className="p-2 rounded-[var(--r-md)] bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/25 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Create / Edit */}
-        {activeTab === "create" && (
-          <div className="p-[var(--sp-5)] space-y-[var(--sp-5)]">
-            <div>
-              <label className={`${LABEL} block mb-2`}>Reply Name</label>
-              <input
-                className={FIELD}
-                placeholder="Welcome Message"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center gap-2 mb-2">
-                <label className={LABEL}>Message text</label>
-                {/* <span
-                  className={`text-[length:var(--fs-xs)] shrink-0 ${
-                    form?.text?.length > charLimit
-                      ? "text-red-500"
-                      : "text-gray-400 dark:text-app-text-faint"
-                  }`}
-                >
-                  {form?.text?.length}/{charLimit} 
-                </span> */}
-              </div>
-              <textarea
-                rows={4}
-                // maxLength={charLimit}
-                className={`${FIELD} resize-y`}
-                placeholder="Type your quick reply... (sent as a caption if attachments are included)"
-                value={form.text}
-                onChange={(e) => setForm({ ...form, text: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <Paperclip
-                  size={16}
-                  className="shrink-0 text-gray-400 dark:text-app-text-faint"
-                />
-                <label className={LABEL}>Attachments</label>
-                <span className="text-[length:var(--fs-xs)] text-gray-400 dark:text-app-text-faint">
-                  Mix and match — this reply will send as{" "}
-                  {Math.max(1, totalAttachments(form))} message
-                  {totalAttachments(form) > 1 ? "s" : ""} on WhatsApp
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[var(--sp-3)] mb-[var(--sp-4)]">
-                <UploadZone
-                  kind="image"
-                  onFiles={(f) => addFiles("image", f)}
-                />
-                <UploadZone
-                  kind="video"
-                  onFiles={(f) => addFiles("video", f)}
-                />
-                <UploadZone
-                  kind="document"
-                  onFiles={(f) => addFiles("document", f)}
-                />
-              </div>
-
-              {fileError && (
-                <p className="text-[length:var(--fs-sm)] text-red-500 mb-3">
-                  {fileError}
-                </p>
-              )}
-
-              {totalAttachments(form) > 0 && (
-                <div className="space-y-[var(--sp-3)]">
-                  {form.images.length > 0 && (
-                    <div className="flex flex-wrap gap-[var(--sp-3)]">
-                      {form.images.map((f) => (
-                        <AttachmentThumb
-                          key={f.id}
-                          file={f}
-                          kind="image"
-                          onRemove={() => removeFile("image", f.id)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {form.videos.length > 0 && (
-                    <div className="flex flex-wrap gap-[var(--sp-3)]">
-                      {form.videos.map((f) => (
-                        <AttachmentThumb
-                          key={f.id}
-                          file={f}
-                          kind="video"
-                          onRemove={() => removeFile("video", f.id)}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {form.documents.length > 0 && (
-                    <div className="flex flex-wrap gap-[var(--sp-3)]">
-                      {form.documents.map((f) => (
-                        <AttachmentThumb
-                          key={f.id}
-                          file={f}
-                          kind="document"
-                          onRemove={() => removeFile("document", f.id)}
-                        />
+      {loading ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+        </div>
+      ) : failed ? (
+        <ErrorState message="Could not load your quick replies." onRetry={load} />
+      ) : replies.length === 0 ? (
+        <EmptyState
+          icon={MessageSquareText}
+          title="No quick replies yet"
+          description="Save answers you send often, like directions, check-in times or your brochure."
+          action={<Button size="sm" icon={Plus} onClick={() => openForm(null)}>Create a reply</Button>}
+        />
+      ) : shown.length === 0 ? (
+        <p className="py-8 text-center text-sm text-app-text-muted">No replies match “{search}”.</p>
+      ) : (
+        <div className="grid gap-3 md:grid-cols-2">
+          {shown.map((reply) => {
+            const text = reply.items?.find((i) => i.type === "text")?.text;
+            const media = reply.items?.filter((i) => KINDS[i.type]) || [];
+            return (
+              <div key={reply._id} className="flex gap-3 rounded-xl border border-app-border! bg-app-surface p-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-semibold text-app-text">{reply.title}</h3>
+                  {text && <p className="mt-1 line-clamp-2 text-sm text-app-text-muted">{text}</p>}
+                  {media.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {media.map((item) => (
+                        <Badge key={item.type} tone={KINDS[item.type].tone}>
+                          {item.media.length} {item.type}
+                          {item.media.length > 1 ? "s" : ""}
+                        </Badge>
                       ))}
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+                <div className="flex shrink-0 gap-1">
+                  <IconButton icon={Pencil} label="Edit" onClick={() => openForm(reply)} />
+                  <IconButton icon={Trash2} label="Delete" tone="danger" onClick={() => remove(reply)} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-[var(--sp-3)] pt-[var(--sp-4)] border-t border-app-border">
-              <button
-                onClick={() => setActiveTab("list")}
-                className="px-[var(--sp-5)] py-[var(--sp-3)] border border-app-border text-app-text rounded-[var(--r-md)] text-[length:var(--fs-sm)] hover:bg-app-surface-secondary transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!canSave || creating}
-                className="bg-primary/80 hover:bg-primary text-white px-[var(--sp-5)] py-[var(--sp-3)] rounded-[var(--r-md)] text-[length:var(--fs-sm)] font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 transition-colors"
-              >
-                Save Reply {creating && <Loader size={22} color="#fefefe" />}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <ReplyDialog
+        open={editing}
+        form={form}
+        setForm={setForm}
+        onClose={() => setEditing(false)}
+        onSave={save}
+        saving={saving}
+      />
     </div>
   );
 };

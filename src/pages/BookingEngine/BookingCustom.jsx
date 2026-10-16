@@ -1,200 +1,164 @@
-import React, { useContext, useEffect } from "react";
+import { Save } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import { inputClassName } from "../../components/ui/Field";
+import PageShell from "../../components/ui/PageShell";
+import { ErrorState, Skeleton } from "../../components/ui/States";
+import { useApiAction } from "../../hooks/useApiAction";
+import {
+  useGetEngineDetailsQuery,
+  useSaveEngineColorsMutation,
+} from "../../redux/api/bookingEngineApi";
+import { selectHid } from "../../redux/slice/UserSlice";
 
-import DataContext from "../../context/DataContext";
-import { BASE_URL } from "../../data/constant";
+// `key` is the field name in the engine's Colors
+const COLOR_FIELDS = [
+  { key: "BackgroundColor", label: "Page colour", fallback: "#ffffff" },
+  { key: "BoardColor", label: "Reservation card colour", fallback: "#f3f4f6" },
+  {
+    key: "ButtonColor",
+    label: "Check-in / check-out button colour",
+    fallback: "#152547",
+  },
+];
 
-/* ── styling only — legacy class names are kept alongside ───── */
-const SECTION_TITLE =
-  "text-sm font-semibold text-app-text dark:text-app-text-muted mb-2";
-const HEX_FIELD =
-  "min-w-0 flex-1 rounded-md border border-app-border bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-const SWATCH =
-  "h-10 w-12 shrink-0 cursor-pointer rounded-md border border-app-border bg-app-surface p-1";
+const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+
+const toColors = (saved) =>
+  Object.fromEntries(
+    COLOR_FIELDS.map(({ key, fallback }) => [
+      key,
+      HEX_COLOR.test(saved?.[key]) ? saved[key] : fallback,
+    ]),
+  );
 
 const BookingCustom = () => {
-  const {
-    BackgroundColor,
-    setBackgroundColor,
-    BoardColor,
-    setBoardColor,
-    ButtonColor,
-    setButtonColor,
-    BackgroundImage,
-    setBackgroundImage,
-    baseUrl,
-    EngineNewUrl,
-  } = useContext(DataContext);
+  const hid = useSelector(selectHid);
+  const run = useApiAction();
+  const engine = useGetEngineDetailsQuery(hid, {
+    skip: !hid,
+    refetchOnMountOrArgChange: true,
+  });
+  const [saveColors, { isLoading: isSaving }] = useSaveEngineColorsMutation();
+  const [colors, setColors] = useState(() => toColors());
 
-  const fetchBookingDatatData = async () => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/booking/getengine/${localStorage.getItem(
-          "token"
-        )}/${localStorage.getItem("hid")}`,
-        {
-          method: "GET", // Use 'GET' method
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const json = await response.json();
-      if (json.Status) {
-        // console.log(json)
-        // setgateway(json.Details.Gateway);
-        // setAboutusEngine(json.Details.AboutUs);
-        // setCancellationPolicyEngine(json.Details.CancellationPolicy);
-        // setPrivacyPolicyEngine(json.Details.PrivacyPolicy);
-        // setTermsConditionsEngine(json.Details.TermsConditions);
-        // setConfirmButton(json.Details.Labels.ConfirmButton);
-        // setPayButton(json.Details.Labels.PayButton);
-        // setReserveBoard(json.Details.Labels.ReserveBoard);
-        // setReserveButton(json.Details.Labels.ReserveButton);
-        // setBackgroundColor(json.Details.Colors.BackgroundColor);
-        // setBoardColor(json.Details.Colors.BoardColor);
-        // setButtonColor(json.Details.Colors.ButtonColor);
-        // setBackgroundImage(json.Details.BgImage);
-        // fetchRazorpayData("0");
-      }
-    } catch (error) {
-      // console.log('Error fetching data:', error);
-    }
-  };
-
-  const UpdateLabelEngine = async () => {
-    try {
-      const response = await fetch(`${EngineNewUrl}/cms/edit/engine/colors`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          Token: localStorage.getItem("Token"),
-          BackgroundColor: BackgroundColor,
-          BoardColor: BoardColor,
-          ButtonColor: ButtonColor,
-          hId: localStorage.getItem("hotelLocationId"),
-        }),
-      });
-
-      const json = await response.json();
-
-      alert("Updated");
-    } catch (error) {
-      console.error("Error sending POST request:", error);
-    }
-  };
-
+  // start from what is saved (again after a save or a location switch)
   useEffect(() => {
-    fetchBookingDatatData()
-  }, [])
-  return (
-    <div className="bCustom bg-app-surface p-4 [color-scheme:light] dark:[color-scheme:dark]">
-      <div className="b-desc">
-        <h6 className="text-base font-semibold text-app-text">Step 2</h6>
-        {/* <p>Customize your Booking Engine using options below. There's no need to insert anything to your site, just click on the "Preview & Save" button, and your changes will be automatically applied to your site.</p> */}
-      </div>
-      <div className="b-templt py-3">
-        <h6 className={SECTION_TITLE}>Background Image</h6>
-        {BackgroundImage ? (
-          <img
-            className="h-[120px] w-[150px] rounded-md border border-app-border object-cover"
-            src={BackgroundImage}
-            alt="Booking engine background"
-          />
-        ) : (
-          <div className="flex h-[120px] w-[150px] items-center justify-center rounded-md border border-dashed border-app-border bg-app-surface-secondary text-xs text-app-text-faint">
-            No image
-          </div>
-        )}
-      </div>
-      <div className="c-color py-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        <div className="c-div min-w-0">
-          <h6 className={SECTION_TITLE}>Page Color</h6>
-          <div className="choose-clr flex items-center gap-2">
-            <input
-              type="color"
-              name=""
-              id="Bg_color"
-              className={SWATCH}
-              value={BackgroundColor}
-              onChange={(e) => {
-                setBackgroundColor(e.target.value);
-              }}
-            />
-            <input
-              type="text"
-              name=""
-              id=""
-              readOnly
-              className={HEX_FIELD}
-              value={BackgroundColor}
-            />
-          </div>
-        </div>
-        <div className="c-div min-w-0">
-          <h6 className={SECTION_TITLE}>Reservation Card Color</h6>
-          <div className="choose-clr flex items-center gap-2">
-            <input
-              type="color"
-              name=""
-              id="Box_color"
-              className={SWATCH}
-              value={BoardColor}
-              onChange={(e) => {
-                setBoardColor(e.target.value);
-              }}
-            />
-            <input
-              type="text"
-              name=""
-              id=""
-              readOnly
-              className={HEX_FIELD}
-              value={BoardColor}
-            />
-          </div>
-        </div>
-        <div className="c-div min-w-0">
-          <h6 className={SECTION_TITLE}>Check-in/Check-out Button color</h6>
-          <div className="choose-clr flex items-center gap-2">
-            <input
-              type="color"
-              name=""
-              id="Button_color"
-              className={SWATCH}
-              value={ButtonColor}
-              onChange={(e) => {
-                setButtonColor(e.target.value);
-              }}
-            />
-            <input
-              type="text"
-              name=""
-              id=""
-              readOnly
-              className={HEX_FIELD}
-              value={ButtonColor}
-            />
-            {/* <input type="color" name="" id="Button_color"  value={props.isbutton_color} />
-            <input type="text" name="" id="" value={props.isbutton_color} /> */}
-          </div>
-        </div>
-      </div>
+    setColors(toColors(engine.data?.Colors));
+  }, [engine.data]);
 
-      <div className="Save_div flex justify-end">
-        <button
-          type="button"
-          onClick={UpdateLabelEngine}
-          className="addBtn w-full sm:w-auto rounded-md bg-primary hover:bg-primary/90 px-6 py-2 text-sm font-medium text-white transition-colors"
+  const saved = toColors(engine.data?.Colors);
+  const hasChanges = COLOR_FIELDS.some(({ key }) => colors[key] !== saved[key]);
+  const backgroundImage = engine.data?.BgImage;
+
+  const handleSave = () =>
+    run(saveColors({ hid, ...colors }), {
+      success: "Colours updated",
+      error: "Could not update the colours.",
+    });
+
+  return (
+    <PageShell
+      title="Customization"
+      description="Colours of the booking engine your guests see."
+      actions={
+        <Button
+          icon={Save}
+          loading={isSaving}
+          disabled={!hasChanges || engine.isLoading}
+          onClick={handleSave}
         >
-          Save
-        </button>
-      </div>
-    </div>
+          Save changes
+        </Button>
+      }
+    >
+      {engine.isError && (
+        <ErrorState
+          message="Could not load the booking engine settings."
+          onRetry={engine.refetch}
+        />
+      )}
+
+      {(engine.isLoading || engine.isUninitialized) && (
+        <Skeleton className="h-72" />
+      )}
+
+      {engine.isSuccess && (
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          <Card title="Colours">
+            <div className="space-y-4">
+              {COLOR_FIELDS.map(({ key, label }) => (
+                <label key={key} className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-app-text-muted">
+                    {label}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={colors[key]}
+                      onChange={(e) =>
+                        setColors({ ...colors, [key]: e.target.value })
+                      }
+                      className="h-9 w-12 shrink-0 cursor-pointer rounded-lg border border-app-border! bg-app-surface p-1"
+                    />
+                    <input
+                      readOnly
+                      tabIndex={-1}
+                      aria-hidden="true"
+                      value={colors[key].toUpperCase()}
+                      className={`${inputClassName} font-mono`}
+                    />
+                  </span>
+                </label>
+              ))}
+            </div>
+          </Card>
+
+          <Card
+            title="Preview"
+            description="A rough idea of how the colours look together."
+          >
+            <div
+              style={{
+                backgroundColor: colors.BackgroundColor,
+                backgroundImage: backgroundImage
+                  ? `url(${backgroundImage})`
+                  : undefined,
+              }}
+              className="flex min-h-64 items-center justify-center rounded-xl border border-app-border! bg-cover bg-center p-6"
+            >
+              <div
+                style={{ backgroundColor: colors.BoardColor }}
+                className="w-full max-w-xs space-y-3 rounded-xl p-4 shadow-lg"
+              >
+                <p className="text-sm font-semibold text-gray-900">
+                  Reserve your stay
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {["Check-in", "Check-out"].map((text) => (
+                    <span
+                      key={text}
+                      style={{ backgroundColor: colors.ButtonColor }}
+                      className="rounded-lg px-3 py-2 text-center text-xs font-medium text-white"
+                    >
+                      {text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-app-text-muted">
+              {backgroundImage
+                ? "Your background image is shown behind the card."
+                : "No background image is set."}
+            </p>
+          </Card>
+        </div>
+      )}
+    </PageShell>
   );
-}
+};
 
 export default BookingCustom;

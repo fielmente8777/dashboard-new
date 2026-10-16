@@ -111,7 +111,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
   };
 
   return (
-    <div className="bg-white w-full rounded-xl shadow-xl p-6">
+    <div className="bg-app-surface w-full rounded-xl shadow-xl p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="font-semibold text-lg">List Settings</h2>
@@ -119,7 +119,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
 
       {/* Header */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">Header Text</label>
+        <label className="text-sm text-app-text-muted">Header Text</label>
         <input
           value={header}
           maxLength={MAX_MESSAGE_HEADER_TEXT}
@@ -128,14 +128,14 @@ export default function ListSetting({ data, onSave, onCancel }) {
           placeholder="Optional header"
         />
 
-        <span className="text-end text-xs text-gray-400 block mt-1">
+        <span className="text-end text-xs text-app-text-faint block mt-1">
           Max {MAX_MESSAGE_HEADER_TEXT}
         </span>
       </div>
 
       {/* Body */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">Body Text</label>
+        <label className="text-sm text-app-text-muted">Body Text</label>
         <textarea
           value={body}
           maxLength={MAX_MESSAGE_BODY_TEXT}
@@ -143,14 +143,14 @@ export default function ListSetting({ data, onSave, onCancel }) {
           rows={4}
           className="border rounded-lg w-full p-2 mt-1"
         />
-        <span className="text-end text-xs text-gray-400 block mt-1">
+        <span className="text-end text-xs text-app-text-faint block mt-1">
           Max {MAX_MESSAGE_BODY_TEXT}
         </span>
       </div>
 
       {/* Footer */}
       <div className="mb-4">
-        <label className="text-sm text-gray-600">Footer Text</label>
+        <label className="text-sm text-app-text-muted">Footer Text</label>
         <input
           value={footer}
           maxLength={MAX_MESSAGE_FOOTER_TEXT}
@@ -159,21 +159,21 @@ export default function ListSetting({ data, onSave, onCancel }) {
           placeholder="Optional footer"
         />
 
-        <span className="text-end text-xs text-gray-400 block mt-1">
+        <span className="text-end text-xs text-app-text-faint block mt-1">
           Max {MAX_MESSAGE_FOOTER_TEXT}
         </span>
       </div>
 
       {/* Button Text */}
       <div className="mb-6">
-        <label className="text-sm text-gray-600">List Button Text</label>
+        <label className="text-sm text-app-text-muted">List Button Text</label>
         <input
           value={buttonText}
           maxLength={MAX_BUTTON_TEXT}
           onChange={(e) => setButtonText(e.target.value)}
           className="border rounded-lg w-full p-2 mt-1"
         />
-        <span className="text-end text-xs text-gray-400 block mt-1">
+        <span className="text-end text-xs text-app-text-faint block mt-1">
           Max {MAX_BUTTON_TEXT}
         </span>
       </div>
@@ -183,13 +183,13 @@ export default function ListSetting({ data, onSave, onCancel }) {
         {sections.map((section, sIndex) => (
           <div
             key={sIndex}
-            className="border rounded-lg p-4 bg-gray-50 relative"
+            className="border rounded-lg p-4 bg-app-surface-secondary relative"
           >
             {/* Remove Section */}
             {sections.length > 1 && (
               <FiTrash2
                 onClick={() => removeSection(sIndex)}
-                className="absolute right-3 top-3 text-gray-400 cursor-pointer hover:text-red-500"
+                className="absolute right-3 top-3 text-app-text-faint cursor-pointer hover:text-red-500"
               />
             )}
 
@@ -202,7 +202,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
               maxLength={MAX_SECTION_TITLE_TEXT}
             />
 
-            <span className="text-end text-xs text-gray-400 block mb-3">
+            <span className="text-end text-xs text-app-text-faint block mb-3">
               Max {MAX_SECTION_TITLE_TEXT}
             </span>
 
@@ -220,7 +220,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
                   {section.rows.length > 1 && (
                     <FiTrash2
                       onClick={() => removeRow(sIndex, rIndex)}
-                      className="text-gray-400 cursor-pointer hover:text-red-500"
+                      className="text-app-text-faint cursor-pointer hover:text-red-500"
                     />
                   )}
                 </div>
@@ -248,7 +248,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
 
       {/* Variable */}
       {/* <div className="mb-6">
-        <label className="text-sm text-gray-600">Save answer in variable</label>
+        <label className="text-sm text-app-text-muted">Save answer in variable</label>
         <input
           value={variable}
           onChange={(e) => setVariable(e.target.value)}
@@ -261,7 +261,7 @@ export default function ListSetting({ data, onSave, onCancel }) {
       <div className="flex justify-end gap-3">
         <button
           onClick={onCancel}
-          className="border px-4 py-2 rounded-lg text-gray-600"
+          className="border px-4 py-2 rounded-lg text-app-text-muted"
         >
           Cancel
         </button>

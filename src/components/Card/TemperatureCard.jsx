@@ -4,6 +4,7 @@ import axios from "axios";
 import CouldVideo from "../../assets/173330-849202512_tiny.mp4";
 import RainVideo from "../../assets/174773-852018365_tiny.mp4";
 import SummerVideo from "../../assets/15922-267503898_tiny.mp4";
+import { WEATHER_API_KEY, WEATHER_API_URL } from "../../config/env";
 const TemperatureCard = () => {
   const [weatherData, setWeatherData] = useState(null);
   const [hour, setHour] = useState([]);
@@ -31,10 +32,8 @@ const TemperatureCard = () => {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            const apiKey = "8611baa95180437492f54121230505";
-
             const response = await axios.get(
-              `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${latitude},${longitude}`
+              `${WEATHER_API_URL}/forecast.json?key=${WEATHER_API_KEY}&q=${latitude},${longitude}`
             );
             setWeatherData(response.data);
             setHour(response.data.forecast.forecastday[0].hour);

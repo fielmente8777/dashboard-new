@@ -1,14 +1,16 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 import handleLocalStorage from "../../utils/handleLocalStorage";
 import {
   getAuthUserProfile,
   getUserProfile,
 } from "../../services/api/profile.api";
+import { getAllowedHids } from "../../utils/resolveLocation";
 
 const initialState = {
   user: null,
   authUser: null,
-  hid: handleLocalStorage("hid") || null,
+  // the hotel location selected last time (survives closing the browser)
+  hid: localStorage.getItem("hid") || null,
   loading: false,
   isAuthLoading: false,
   error: null,
@@ -57,6 +59,34 @@ export const {
 } = userProfileSlice.actions;
 
 export default userProfileSlice.reducer;
+
+// Selectors for the selected hotel location
+export const selectHid = (state) => state.userProfile.hid;
+const selectHotels = (state) => state.userProfile.user?.Profile?.hotels;
+const selectAuthUser = (state) => state.userProfile.authUser;
+
+export const selectCurrentLocation = createSelector(
+  [selectHotels, selectHid],
+  (hotels, hid) => hotels?.[hid] ?? null,
+);
+
+// true once the profile has loaded and the account has no hotel yet: the
+// user has to finish onboarding before the dashboard can be used.
+// null while it is not known (profile still loading or the request failed).
+export const selectNeedsOnboarding = (state) => {
+  const { user } = state.userProfile;
+  if (!user) return null;
+  return user.Status === false || !Object.keys(user.Profile?.hotels ?? {}).length;
+};
+
+// Locations the signed-in user may switch to
+export const selectAvailableLocations = createSelector(
+  [selectHotels, selectAuthUser],
+  (hotels, authUser) =>
+    getAllowedHids(hotels, authUser)
+      .filter((hid) => hotels?.[hid])
+      .map((hid) => ({ hid, ...hotels[hid] })),
+);
 
 // Thunk function to fetch user profile
 export const fetchUserProfile = (token) => async (dispatch) => {

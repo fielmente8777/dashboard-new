@@ -1,86 +1,46 @@
 import { useFormContext } from "react-hook-form";
+import { Input } from "../../../../components/ui/Field";
+import { extractVariables } from "./templateUtils";
 
-const extractVariables = (text) => {
-  const matches = text?.match(/{{\d+}}/g);
-  return matches ? [...new Set(matches)] : [];
-};
+const SampleRows = ({ title, variables, name, register }) => (
+  <div className="space-y-2">
+    <p className="text-xs font-medium text-app-text-muted">{title}</p>
+    {variables.map((variable, index) => (
+      <div key={variable} className="flex items-center gap-2">
+        <span className="w-12 shrink-0 rounded-md bg-blue-500/10 py-2 text-center font-mono text-xs text-blue-600 dark:text-blue-400">
+          {variable}
+        </span>
+        <Input
+          {...register(`${name}.${index}`)}
+          placeholder={`Example for ${variable}, e.g. ${index === 0 ? "Rahul" : "Hotel Lotus"}`}
+        />
+      </div>
+    ))}
+  </div>
+);
 
-const FIELD =
-  "min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface px-[var(--sp-3)] py-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
-
+// Example values for each variable. Meta needs them to review the template;
+// they also fill the preview.
 const VariableSamples = () => {
   const { register, watch } = useFormContext();
-
-  const header = watch("header");
-  const body = watch("body");
-
-  const headerVars = extractVariables(header);
-  const bodyVars = extractVariables(body);
+  const headerVars = extractVariables(watch("header"));
+  const bodyVars = extractVariables(watch("body"));
 
   if (!headerVars.length && !bodyVars.length) return null;
 
   return (
-    <div className="bg-app-surface p-[var(--sp-5)] rounded-[var(--r-md)] border border-app-border">
-      <h2 className="text-[length:var(--fs-lg)] font-semibold mb-[var(--sp-4)] text-app-text">
-        Variable Samples
-      </h2>
-
-      <p className="text-[length:var(--fs-sm)] text-gray-500 dark:text-app-text-faint mb-[var(--sp-5)]">
-        Include samples of all variables to help Meta review your template.
-      </p>
-
-      {/* HEADER VARIABLES */}
+    <div className="space-y-4 rounded-lg border border-app-border! bg-app-surface-secondary/50 p-4">
+      <div>
+        <p className="text-sm font-medium text-app-text">Variable examples</p>
+        <p className="text-xs text-app-text-muted">
+          Meta uses these to review your template. Guests see the real values.
+        </p>
+      </div>
       {headerVars.length > 0 && (
-        <div className="mb-[var(--sp-5)]">
-          <h3 className="text-[length:var(--fs-sm)] font-semibold text-gray-700 dark:text-app-text-muted mb-2">
-            Header
-          </h3>
-
-          <div className="space-y-2">
-            {headerVars.map((v, index) => (
-              <div key={v} className="flex gap-[var(--sp-3)]">
-                <input
-                  value={v}
-                  disabled
-                  className={`${FIELD} w-16 sm:w-20 shrink-0 bg-app-surface-secondary text-center opacity-80 cursor-not-allowed`}
-                />
-
-                <input
-                  {...register(`headerVariables.${index}`)}
-                  placeholder={`Enter content for ${v}`}
-                  className={`${FIELD} flex-1`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+        <SampleRows title="Header" variables={headerVars} name="headerVariables" register={register} />
       )}
-
-      {/* BODY VARIABLES */}
       {bodyVars.length > 0 && (
-        <div>
-          <h3 className="text-[length:var(--fs-sm)] font-semibold text-gray-700 dark:text-app-text-muted mb-2">
-            Body
-          </h3>
-
-          <div className="space-y-2">
-            {bodyVars.map((v, index) => (
-              <div key={v} className="flex gap-[var(--sp-3)]">
-                <input
-                  value={v}
-                  disabled
-                  className={`${FIELD} w-16 sm:w-20 shrink-0 bg-app-surface-secondary text-center opacity-80 cursor-not-allowed`}
-                />
-
-                <input
-                  {...register(`bodyVariables.${index}`)}
-                  placeholder={`Enter content for ${v}`}
-                  className={`${FIELD} flex-1`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+        <SampleRows title="Body" variables={bodyVars} name="bodyVariables" register={register} />
       )}
     </div>
   );

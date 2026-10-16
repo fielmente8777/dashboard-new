@@ -1,321 +1,262 @@
-import { useEffect, useState } from "react";
+import { Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { Field, Textarea } from "../../../../components/ui/Field";
+import Segmented from "../../../../components/ui/Segmented";
+import SelectMenu from "../../../../components/ui/SelectMenu";
+import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
 import { updateAutoMessageConfig } from "../../../../services/api/whatsApp";
-import ChannelToggle from "./ChannelToggle";
-import TemplatePreview from "../components/TemplatePreview";
+import TemplatePreview from "./TemplatePreview";
 
+// Where a new lead can come from; each can get its own automatic message.
 const MODULES = [
-  { key: "eazbot", label: "Eazbot Leads" },
-  { key: "webform", label: "Webform Leads" },
-  { key: "metaLead", label: "Meta Leads" },
-  { key: "googleLead", label: "Google Leads" },
-  { key: "whatsapp", label: "WhatsApp" },
+  { key: "eazbot", label: "Eazbot leads", description: "Visitors who chat with your website bot" },
+  { key: "webform", label: "Website form leads", description: "Enquiries from forms on your website" },
+  { key: "metaLead", label: "Meta leads", description: "Facebook and Instagram lead ads" },
+  { key: "googleLead", label: "Google leads", description: "Google Ads lead forms" },
+  { key: "whatsapp", label: "WhatsApp", description: "New guests who message you first" },
 ];
 
-const defaultConfig = {
-  enabled: false,
-  type: "template",
-  templateName: "",
-  message: "",
-  flowId: "",
-};
+const defaultConfig = { enabled: false, type: "template", templateName: "", message: "", flowId: "" };
 
-const FIELD =
-  "w-full min-w-0 rounded-[var(--r-sm)] border border-app-border bg-app-surface-secondary px-[var(--sp-3)] py-[var(--sp-2)] text-[length:var(--fs-sm)] text-app-text placeholder:text-app-text-faint outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30";
+const toConfigs = (autoMessage) =>
+  Object.fromEntries(
+    MODULES.map(({ key }) => [key, { ...defaultConfig, ...(autoMessage?.[key] || {}) }]),
+  );
 
-const AutoMessageCard = ({
-  autoMessage = {},
-  templates = [],
-  phoneNumberId,
-  notification,
-  flows,
-}) => {
-  const flow = [{ ...flows }];
+// Messages sent automatically to new leads, per lead source.
+const AutoMessageCard = ({ autoMessage, templates = [], phoneNumberId, notification, flows }) => {
   const { showToast } = useToast();
-
-  const [configs, setConfigs] = useState({});
+  const [saved, setSaved] = useState(() => toConfigs(autoMessage));
+  const [configs, setConfigs] = useState(saved);
   const [applyToAll, setApplyToAll] = useState(false);
-  const [backupConfigs, setBackupConfigs] = useState(null);
-  const [whatsappNotification, setWhatsappNotification] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ---------------- INIT ----------------
   useEffect(() => {
-    const initial = {};
-    MODULES.forEach(({ key }) => {
-      initial[key] = autoMessage?.[key] || defaultConfig;
-    });
-
+    const initial = toConfigs(autoMessage);
+    setSaved(initial);
     setConfigs(initial);
-    setWhatsappNotification(notification?.enable ?? false);
-  }, [autoMessage, notification]);
+  }, [autoMessage]);
 
-  // ---------------- HELPERS ----------------
-  const isAnyEnabled = Object.values(configs).some((c) => c?.enabled);
+  // the account has one flow; older data sends it as a single object
+  const flowOptions = useMemo(() => {
+    const list = Array.isArray(flows) ? flows : flows?._id ? [flows] : [];
+    return list.map((f) => ({ value: f._id, label: f.flowName || f.name || f._id }));
+  }, [flows]);
 
-  // ---------------- APPLY TO ALL TOGGLE ----------------
-  const handleApplyToAllToggle = () => {
-    setApplyToAll((prev) => {
-      const next = !prev;
+  const approved = templates.filter((t) => !t.status || t.status === "APPROVED");
+  const templateOptions = approved.map((t) => ({ value: t.name, label: t.name }));
 
-      // 👉 Turning ON
-      if (next) {
-        setBackupConfigs(configs);
+  const isDirty = JSON.stringify(configs) !== JSON.stringify(saved);
+  const anyEnabled = Object.values(configs).some((c) => c.enabled);
 
-        const source =
-          Object.values(configs).find((c) => c.enabled) || defaultConfig;
+  const update = (module, changes) =>
+    setConfigs((prev) =>
+      applyToAll
+        ? Object.fromEntries(MODULES.map(({ key }) => [key, { ...prev[key], ...changes }]))
+        : { ...prev, [module]: { ...prev[module], ...changes } },
+    );
 
-        const synced = {};
-        MODULES.forEach(({ key }) => {
-          synced[key] = { ...source, enabled: true };
-        });
-
-        setConfigs(synced);
-      }
-
-      // 👉 Turning OFF
-      else if (backupConfigs) {
-        setConfigs(backupConfigs);
-        setBackupConfigs(null);
-      }
-
-      return next;
-    });
+  // copies the first enabled source's message to every source
+  const toggleApplyToAll = (on) => {
+    setApplyToAll(on);
+    if (!on) return;
+    const source = Object.values(configs).find((c) => c.enabled) || defaultConfig;
+    setConfigs(Object.fromEntries(MODULES.map(({ key }) => [key, { ...source, enabled: true }])));
   };
 
-  // ---------------- AUTO RESET APPLY-ALL ----------------
-  useEffect(() => {
-    if (!isAnyEnabled && applyToAll) {
-      setApplyToAll(false);
-      setBackupConfigs(null);
-    }
-  }, [configs]);
-
-  // ---------------- UPDATE ----------------
-  const updateConfig = (module, key, value) => {
-    setConfigs((prev) => {
-      // ✅ Sync only if apply-all is ON
-      if (applyToAll) {
-        const updated = {};
-        MODULES.forEach(({ key: m }) => {
-          updated[m] = {
-            ...prev[m],
-            [key]: value,
-          };
-        });
-        return updated;
-      }
-
-      // ✅ Normal update
-      return {
-        ...prev,
-        [module]: {
-          ...prev[module],
-          [key]: value,
-        },
-      };
-    });
-  };
-
-  // ---------------- TEMPLATE META ----------------
-  const getTemplateMeta = (name) => {
+  const templateMeta = (name) => {
     const tpl = templates.find((t) => t.name === name);
     if (!tpl) return null;
-
     const get = (type) => tpl.components?.find((c) => c.type === type);
-
-    const body = get("BODY");
-    const header = get("HEADER");
-    const buttons = get("BUTTONS");
-
     return {
       name: tpl.name,
       language: tpl.language || "en",
-      bodyText: body?.text || "",
-      variables: body?.example?.body_text?.[0] || [],
-      headerVariables: header?.example?.header_text || [],
-      // variables: (body?.text?.match(/{{\d+}}/g) || []).length,
-      // headerVariables: header?.text?.match(/{{\d+}}/g) || [],
-      headerType: header?.format || null,
-      buttons: buttons?.buttons || [],
+      bodyText: get("BODY")?.text || "",
+      variables: get("BODY")?.example?.body_text?.[0] || [],
+      headerVariables: get("HEADER")?.example?.header_text || [],
+      headerType: get("HEADER")?.format || null,
+      buttons: get("BUTTONS")?.buttons || [],
     };
   };
 
-  // ---------------- SAVE ----------------
-  const handleSave = async () => {
+  const problem = () => {
+    for (const { key, label } of MODULES) {
+      const c = configs[key];
+      if (!c.enabled) continue;
+      if (c.type === "template" && !c.templateName) return `Choose a template for ${label}.`;
+      if (c.type === "text" && !c.message.trim()) return `Write the message for ${label}.`;
+      if (c.type === "flow" && !c.flowId) return `Choose a flow for ${label}.`;
+    }
+    return null;
+  };
+
+  const save = async () => {
+    const issue = problem();
+    if (issue) {
+      showToast({ message: issue, type: "error" });
+      return;
+    }
+
+    setLoading(true);
     try {
-      setLoading(true);
+      const formatted = Object.fromEntries(
+        MODULES.map(({ key }) => {
+          const c = configs[key];
+          if (!c.enabled) return [key, { enabled: false }];
+          return [
+            key,
+            {
+              enabled: true,
+              type: c.type,
+              templateName: c.templateName || null,
+              message: c.type === "text" ? c.message : null,
+              flowId: c.type === "flow" ? c.flowId : null,
+              templateMeta: c.type === "template" ? templateMeta(c.templateName) : null,
+            },
+          ];
+        }),
+      );
 
-      const formatted = {};
-
-      MODULES.forEach(({ key }) => {
-        const c = configs[key];
-
-        if (!c.enabled) {
-          formatted[key] = { enabled: false };
-          return;
-        }
-
-        formatted[key] = {
-          enabled: true,
-          type: c.type,
-          templateName: c.templateName || null,
-          message: c.type === "text" ? c.message : null,
-          flowId: c.type === "flow" ? c.flowId : null,
-          templateMeta:
-            c.type === "template" ? getTemplateMeta(c.templateName) : null,
-        };
-      });
-
-      const payload = {
+      const res = await updateAutoMessageConfig({
         phoneNumberId,
         autoMessage: formatted,
-        notification: { enable: whatsappNotification },
-      };
+        notification: { enable: notification?.enable ?? false },
+      });
+      if (!res?.success) throw new Error(res?.responseMessage);
 
-      console.log("payload", payload);
-
-      const res = await updateAutoMessageConfig(payload);
-
-      if (res?.success) {
-        showToast({
-          message: "Auto message updated successfully",
-          type: "success",
-        });
-      }
-    } catch (err) {
-      console.error(err);
+      setSaved(configs);
+      showToast({ message: "Auto replies saved" });
+    } catch (error) {
+      showToast({ message: error?.message || "Could not save auto replies.", type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------------- UI ----------------
-  const renderModule = ({ key, label }) => {
-    const c = configs[key] || defaultConfig;
-    const tpl = templates.find((t) => t.name === c.templateName);
+  return (
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <Zap className="size-4 text-app-text-muted" />
+          Auto replies to new leads
+        </span>
+      }
+      description="Send a WhatsApp message the moment a new lead comes in."
+    >
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-app-surface-secondary px-3 py-2.5">
+          <div>
+            <p className="text-sm font-medium text-app-text">Same message for every source</p>
+            <p className="text-xs text-app-text-muted">Edit once, apply to all lead sources.</p>
+          </div>
+          <Switch
+            label="Same message for every source"
+            checked={applyToAll}
+            onChange={toggleApplyToAll}
+            disabled={!anyEnabled && !applyToAll}
+          />
+        </div>
 
-    return (
-      <div
-        key={key}
-        className="border border-app-border rounded-[var(--r-md)] p-[var(--sp-4)] bg-app-surface space-y-[var(--sp-3)]"
-      >
-        <ChannelToggle
-          label={label}
-          value={c.enabled}
-          onChange={() => updateConfig(key, "enabled", !c.enabled)}
-        />
+        <ul className="divide-y divide-app-border! rounded-lg border border-app-border!">
+          {MODULES.map(({ key, label, description }) => {
+            const c = configs[key];
+            const tpl = templates.find((t) => t.name === c.templateName);
+            const types = [
+              { value: "template", label: "Template" },
+              { value: "text", label: "Text" },
+              ...(key === "whatsapp" ? [{ value: "flow", label: "Flow" }] : []),
+            ];
 
-        {c.enabled && (
-          <>
-            <select
-              value={c.type}
-              onChange={(e) => updateConfig(key, "type", e.target.value)}
-              className={`${FIELD} cursor-pointer`}
-            >
-              <option value="template">Template</option>
-              <option value="text">Text</option>
-              {label.toLowerCase() === "whatsapp" && (
-                <option value="flow">Flow</option>
-              )}
-            </select>
+            return (
+              <li key={key} className="space-y-3 p-3">
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-app-text">{label}</p>
+                    <p className="text-xs text-app-text-muted">{description}</p>
+                  </div>
+                  <Switch
+                    label={`Auto reply to ${label}`}
+                    checked={c.enabled}
+                    onChange={(enabled) => update(key, { enabled })}
+                  />
+                </div>
 
-            {c.type === "template" && (
-              <>
-                <select
-                  value={c.templateName}
-                  onChange={(e) =>
-                    updateConfig(key, "templateName", e.target.value)
-                  }
-                  className={`${FIELD} cursor-pointer`}
-                >
-                  <option value="">Select template</option>
-                  {templates.map((t) => (
-                    <option key={t.name}>{t.name}</option>
-                  ))}
-                </select>
+                {c.enabled && (
+                  <div className="space-y-3 rounded-lg bg-app-surface-secondary/50 p-3">
+                    <Segmented
+                      label="Message type"
+                      options={types}
+                      value={c.type}
+                      onChange={(type) => update(key, { type })}
+                    />
 
-                {tpl && <TemplatePreview components={tpl.components || []} />}
-              </>
-            )}
+                    {c.type === "template" && (
+                      <>
+                        <Field
+                          as="div"
+                          label="Template"
+                          hint={approved.length ? undefined : "No approved templates yet."}
+                        >
+                          <SelectMenu
+                            label="Template"
+                            options={templateOptions}
+                            value={c.templateName}
+                            onChange={(templateName) => update(key, { templateName })}
+                            placeholder="Choose an approved template"
+                            disabled={!approved.length}
+                            className="w-full"
+                          />
+                        </Field>
+                        {tpl && <TemplatePreview components={tpl.components || []} />}
+                      </>
+                    )}
 
-            {c.type === "text" && (
-              <textarea
-                value={c.message}
-                onChange={(e) => updateConfig(key, "message", e.target.value)}
-                rows={3}
-                className={`${FIELD} resize-y`}
-              />
-            )}
+                    {c.type === "text" && (
+                      <Field label="Message">
+                        <Textarea
+                          rows={3}
+                          value={c.message}
+                          onChange={(e) => update(key, { message: e.target.value })}
+                          placeholder="Hi! Thanks for your enquiry. Our team will reply shortly."
+                        />
+                      </Field>
+                    )}
 
-            {c.type === "flow" && label.toLowerCase() === "whatsapp" && (
-              <select
-                onChange={(e) => updateConfig(key, "flowId", e.target.value)}
-                className={`${FIELD} cursor-pointer`}
-                value={c.flowId}
-              >
-                <option value="">Select flow</option>
-                {flow?.map((f) => (
-                  <option key={f._id}>{f._id}</option>
-                ))}
-              </select>
-              // <input
-              //   value={c.flowId}
-              //   onChange={(e) => updateConfig(key, "flowId", e.target.value)}
-              //   placeholder="Flow ID"
-              //   className="w-full border px-3 py-2 rounded-md text-sm"
-              // />
-            )}
-          </>
+                    {c.type === "flow" && (
+                      <Field as="div" label="Flow" hint={flowOptions.length ? undefined : "Create a flow first."}>
+                        <SelectMenu
+                          label="Flow"
+                          options={flowOptions}
+                          value={c.flowId}
+                          onChange={(flowId) => update(key, { flowId })}
+                          placeholder="Choose a flow"
+                          disabled={!flowOptions.length}
+                          className="w-full"
+                        />
+                      </Field>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {isDirty && (
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" onClick={() => setConfigs(saved)} disabled={loading}>
+              Discard
+            </Button>
+            <Button onClick={save} loading={loading}>
+              Save auto replies
+            </Button>
+          </div>
         )}
       </div>
-    );
-  };
-
-  const hasChanges = JSON.stringify(configs) !== JSON.stringify(autoMessage);
-
-  // ---------------- RETURN ----------------
-  return (
-    <div className="bg-app-surface px-[var(--sp-5)] py-[var(--sp-5)] space-y-[var(--sp-5)]">
-      <h3 className="text-[length:var(--fs-lg)] font-medium text-gray-600 dark:text-app-text-muted">
-        Auto Messaging Configuration
-      </h3>
-
-      {/* Apply to all */}
-      <label
-        className={`flex items-center justify-between gap-[var(--sp-3)] p-[var(--sp-3)] rounded-[var(--r-sm)] bg-app-surface-secondary ${
-          !isAnyEnabled ? "opacity-50" : "cursor-pointer"
-        }`}
-      >
-        <span className="text-[length:var(--fs-sm)] text-gray-700 dark:text-app-text">
-          Apply same config to all modules
-        </span>
-
-        <input
-          type="checkbox"
-          disabled={!isAnyEnabled}
-          checked={applyToAll}
-          onChange={handleApplyToAllToggle}
-          className="h-4 w-4 shrink-0 accent-primary cursor-pointer disabled:cursor-not-allowed"
-        />
-      </label>
-
-      {/* Modules */}
-      <div className="space-y-[var(--sp-4)]">{MODULES.map(renderModule)}</div>
-
-      {/* Save */}
-      {hasChanges && (
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-[var(--sp-5)] py-[var(--sp-2)] rounded-[var(--r-sm)] text-[length:var(--fs-sm)] font-medium transition-colors disabled:opacity-60"
-          >
-            {loading ? "Saving..." : "Save Configuration"}
-          </button>
-        </div>
-      )}
-    </div>
+    </Card>
   );
 };
 

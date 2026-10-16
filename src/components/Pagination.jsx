@@ -1,3 +1,6 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Icon from "./ui/Icon";
+
 const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
   if (!totalPages || totalPages <= 1) return null;
 
@@ -72,7 +75,7 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
         aria-label="Previous page"
         className={`${CELL} leading-none hover:bg-app-surface-secondary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
       >
-        ‹
+        <Icon icon={ChevronLeft} />
       </button>
 
       {/* Page Buttons */}
@@ -112,7 +115,7 @@ const Pagination = ({ page, totalPages, onPageChange, onNext, onPrev }) => {
         aria-label="Next page"
         className={`${CELL} leading-none hover:bg-app-surface-secondary disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent`}
       >
-        ›
+        <Icon icon={ChevronRight} />
       </button>
     </div>
   );
