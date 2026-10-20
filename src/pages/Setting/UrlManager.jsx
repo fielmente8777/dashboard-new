@@ -179,7 +179,7 @@ const UrlManager = ({ urls, onSaved }) => {
       title="Websites & landing pages"
       description="Links added here are used for SEO tracking and ad reporting."
     >
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {COLUMNS.map((column) => (
           <LinkColumn
             key={column.key}

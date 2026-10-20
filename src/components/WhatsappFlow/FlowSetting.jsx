@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { FiX } from "react-icons/fi";
-import { getWhatsAppFlowScreens } from "../../services/api/whatsApp";
+import { getWhatsAppFlowScreens } from "../../redux/api/whatsappBusinessApi";
 import CustomDropdown from "../ui/Dropdown";
-import { Select } from "../ui/Field";
+import { Field, Input, Select, Textarea } from "../ui/Field";
+import { charHint } from "./blockStyles";
+import { SettingsFooter, SettingsSection } from "./SettingsParts";
 
 export default function FlowSettings({ onSave, onCancel, data }) {
   const [flowIds, setFlowIds] = useState([]);
@@ -115,52 +116,36 @@ export default function FlowSettings({ onSave, onCancel, data }) {
   }, []);
 
   return (
-    <div className="bg-app-surface w-full rounded-lg shadow-lg p-5">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="font-semibold text-lg">Set Flow</h2>
-        <FiX className="cursor-pointer" onClick={onCancel} />
-      </div>
+    <div className="space-y-4">
+      <SettingsSection title="Message">
+        <Field label="Header (optional)" hint={charHint(header, 60)}>
+          <Input
+            value={header}
+            maxLength={60}
+            onChange={(e) => setHeader(e.target.value)}
+          />
+        </Field>
 
-      {/* Header */}
-      <div className="mb-4">
-        <label className="text-sm">Header</label>
-        <input
-          value={header}
-          maxLength={60}
-          onChange={(e) => setHeader(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </div>
+        <Field label="Body" hint={charHint(body, 1024)}>
+          <Textarea
+            value={body}
+            maxLength={1024}
+            onChange={(e) => setBody(e.target.value)}
+            rows={4}
+          />
+        </Field>
 
-      {/* Body */}
-      <div className="mb-4">
-        <label className="text-sm">Body *</label>
-        <textarea
-          value={body}
-          maxLength={1024}
-          onChange={(e) => setBody(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-          rows={4}
-        />
-      </div>
+        <Field label="Footer (optional)" hint={charHint(footer, 60)}>
+          <Input
+            value={footer}
+            maxLength={60}
+            onChange={(e) => setFooter(e.target.value)}
+          />
+        </Field>
+      </SettingsSection>
 
-      {/* Footer */}
-      <div className="mb-4">
-        <label className="text-sm">Footer</label>
-        <input
-          value={footer}
-          maxLength={60}
-          onChange={(e) => setFooter(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </div>
-
-      {/* Flow ID */}
-      <div className="mb-4 flex flex-col ">
-        <label className="text-sm">Flow ID *</label>
-
-        <div className="mt-1">
+      <SettingsSection title="Form to open" description="One of the flows under My flows.">
+        <Field as="div" label="Flow">
           <Select
             aria-label="Flow"
             value={flowId || ""}
@@ -170,43 +155,18 @@ export default function FlowSettings({ onSave, onCancel, data }) {
               ...(flowIds || []).map((flow) => ({ value: flow?.value, label: flow?.label })),
             ]}
           />
-        </div>
-      </div>
+        </Field>
 
-      {/* CTA */}
-      <div className="mb-4">
-        <label className="text-sm">CTA Button Text</label>
-        <input
-          value={cta}
-          maxLength={30}
-          onChange={(e) => setCta(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </div>
+        <Field label="Button text" hint={charHint(cta, 30)}>
+          <Input
+            value={cta}
+            maxLength={30}
+            onChange={(e) => setCta(e.target.value)}
+          />
+        </Field>
+      </SettingsSection>
 
-      {/* Screen */}
-      {/* <div className="mb-5">
-        <label className="text-sm">Start Screen</label>
-        <input
-          value={screen}
-          onChange={(e) => setScreen(e.target.value)}
-          className="border rounded w-full p-2 mt-1"
-        />
-      </div> */}
-
-      {/* Actions */}
-      <div className="flex justify-end gap-3">
-        <button onClick={onCancel} className="border px-4 py-2 rounded">
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSave}
-          className="bg-green-500 text-white px-5 py-2 rounded"
-        >
-          Save
-        </button>
-      </div>
+      <SettingsFooter onCancel={onCancel} onSave={handleSave} />
     </div>
   );
 }

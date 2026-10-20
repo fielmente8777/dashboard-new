@@ -1,57 +1,41 @@
-import React, { useContext, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom';
-import useSound from 'use-sound';
-import notificationSound from "../../assets/mixkit-guitar-notification-alert-2320.mp3"
-import DataContext from '../../context/DataContext';
-import DataCard from '../../components/Card/DataCard';
+import { useMemo } from "react";
+import DataCard from "../../components/Card/DataCard";
+import { hasTenant, useTenant } from "../../hooks/useTenant";
+import { useGetGuestRequestsQuery } from "../../redux/api/grmApi";
+
+const countByStatus = (requests, status) =>
+  requests.filter((request) => request.status === status).length;
+
 const Analytics = () => {
+  const tenant = useTenant();
+  const { data: requests = [] } = useGetGuestRequestsQuery(tenant, {
+    skip: !hasTenant(tenant),
+  });
 
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { totalRequests, pendingRequests,
-        inProgressRequests,
-        completedRequests, setHomeNotifications, editButton, setEditButton, cancelledRequests } = useContext(DataContext);
+  const counts = useMemo(
+    () => ({
+      total: requests.length,
+      pending: countByStatus(requests, "Pending"),
+      inProgress: countByStatus(requests, "In Progress"),
+      completed: countByStatus(requests, "Completed"),
+      cancelled: countByStatus(requests, "Cancelled"),
+    }),
+    [requests],
+  );
 
+  return (
+    <div className="bg-app-surface p-4 mb-10 cardShadow">
+      <h2 className="text-sm font-semibold text-[#575757]">Request Analytics</h2>
 
+      <div className="grid grid-cols-2 gap-4 mt-4 sm:grid-cols-3 lg:grid-cols-5">
+        <DataCard count={String(counts.total)} heading={"Total Requests"} />
+        <DataCard count={String(counts.pending)} heading={"Pending"} />
+        <DataCard count={String(counts.inProgress)} heading={"In Progress"} />
+        <DataCard count={String(counts.completed)} heading={"Completed"} />
+        <DataCard count={String(counts.cancelled)} heading={"Cancelled"} />
+      </div>
+    </div>
+  );
+};
 
-    useEffect(() => {
-        // if (localStorage.getItem('authPassword') && localStorage.getItem('authUsername')) {
-        //     navigate('/')
-        // }
-
-        if (location.pathname === "/") {
-            setHomeNotifications([]);
-        }
-    }, [])
-
-    const [play] = useSound(notificationSound);
-
-
-
-
-
-    useEffect(() => {
-        if (editButton) {
-            play();
-            setEditButton(false);
-        }
-    }, [editButton]);
-
-    return (
-
-        <div className='bg-app-surface p-4 mb-10 cardShadow'>
-            <h2 className="text-sm font-semibold text-[#575757]">Request Analytics</h2>
-
-            <button onClick={play} className='hidden'>Boop!</button>
-            <div className='grid grid-cols-5 gap-4 mt-4 '>
-                <DataCard count={totalRequests ? totalRequests : "0"} heading={"Total Requests"} />
-                <DataCard count={pendingRequests ? pendingRequests : "0"} heading={"Pending"} />
-                <DataCard count={inProgressRequests ? inProgressRequests : "0"} heading={"In Progress"} />
-                <DataCard count={completedRequests ? completedRequests : "0"} heading={"Completed"} />
-                <DataCard count={cancelledRequests ? cancelledRequests : "0"} heading={"Cancelled"} />
-            </div>
-        </div>
-    )
-}
-
-export default Analytics
+export default Analytics;

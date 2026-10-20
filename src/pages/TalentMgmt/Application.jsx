@@ -82,7 +82,8 @@ const Application = () => {
             ))}
           </div>
         ) : (
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="border-b">
                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">
@@ -129,6 +130,7 @@ const Application = () => {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

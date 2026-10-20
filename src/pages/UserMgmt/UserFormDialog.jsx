@@ -172,7 +172,7 @@ const UserFormDialog = ({ open, user, accessScope, onClose, onSaved }) => {
               Locations and access
             </h3>
             {locationOptions.length > 1 && (
-              <div className="w-56">
+              <div className="w-56 max-w-full">
                 <Select
                   aria-label="Add a location"
                   value=""

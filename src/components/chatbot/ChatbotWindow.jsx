@@ -348,7 +348,7 @@ export default function ChatbotWindow({ hid, onClose }) {
               >
                 <PanelLeft size={20} />
               </button>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-violet-600 text-white shadow-lg">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 dark:from-blue-600 dark:to-indigo-500 text-white shadow-lg">
                 <Sparkles size={20} />
               </div>
               <div>
@@ -410,7 +410,7 @@ export default function ChatbotWindow({ hid, onClose }) {
               </div>
             ) : showEmptyState ? (
               <div className="flex min-h-full flex-col items-center justify-center px-4 py-8 sm:px-10">
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-violet-600 text-white shadow-lg">
+                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-blue-600 dark:from-blue-600 dark:to-indigo-500 text-white shadow-lg">
                   <Sparkles size={32} />
                 </div>
                 <h1 className="text-center text-xl font-semibold sm:text-2xl">Ask anything about your dashboard</h1>
@@ -425,7 +425,7 @@ export default function ChatbotWindow({ hid, onClose }) {
                       type="button"
                       disabled={loading || conversationLoading}
                       onClick={() => handleSubmit(null, suggestion)}
-                      className="flex min-h-[66px] items-start gap-3 rounded-xl border border-[var(--cb-border)] bg-[var(--cb-hover)] px-4 py-4 text-left text-sm leading-5 text-[var(--cb-text-2)] transition hover:border-violet-400/40 hover:bg-[var(--cb-hover)] hover:text-[var(--cb-text)] disabled:opacity-50"
+                      className="flex min-h-[66px] items-start gap-3 rounded-xl border border-[var(--cb-border)] bg-[var(--cb-hover)] px-4 py-4 text-left text-sm leading-5 text-[var(--cb-text-2)] transition hover:border-blue-400/40 hover:bg-[var(--cb-hover)] hover:text-[var(--cb-text)] disabled:opacity-50"
                     >
                       <Sparkles size={16} className="mt-0.5 shrink-0 text-[var(--cb-accent)]" />
                       <span>{suggestion}</span>
@@ -443,7 +443,7 @@ export default function ChatbotWindow({ hid, onClose }) {
                     <div
                       className={`max-w-[90%] break-words rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[85%] ${
                         message.role === "user"
-                          ? "whitespace-pre-wrap rounded-br-md bg-violet-600 text-white"
+                          ? "whitespace-pre-wrap rounded-br-md bg-primary text-white dark:bg-blue-600"
                           : message.isError
                             ? "whitespace-pre-wrap border border-red-500/30 bg-red-500/10 text-[var(--cb-danger)]"
                             : "border border-[var(--cb-border)] bg-[var(--cb-bubble)] text-[var(--cb-text-2)]"
@@ -474,7 +474,7 @@ export default function ChatbotWindow({ hid, onClose }) {
                       )}
 
                       {message.role === "user" && message.status === "failed" && (
-                        <div className="mt-1 text-[11px] text-violet-100/80">No reply yet — use Retry below</div>
+                        <div className="mt-1 text-[11px] text-white/70">No reply yet — use Retry below</div>
                       )}
 
                       {message.isError && message.errorFor && (
@@ -506,7 +506,7 @@ export default function ChatbotWindow({ hid, onClose }) {
                     {[0, 1, 2].map((number) => (
                       <span
                         key={number}
-                        className="h-2 w-2 animate-bounce rounded-full bg-violet-400"
+                        className="h-2 w-2 animate-bounce rounded-full bg-blue-400"
                         style={{ animationDelay: `${number * 120}ms` }}
                       />
                     ))}
@@ -521,7 +521,7 @@ export default function ChatbotWindow({ hid, onClose }) {
           <footer className="shrink-0 border-t border-[var(--cb-border)] bg-[var(--cb-bg)] px-3 pb-4 pt-3 sm:px-4 sm:pb-5">
             <form
               onSubmit={(event) => handleSubmit(event)}
-              className="mx-auto flex w-full max-w-[710px] items-end gap-2 rounded-2xl border border-[#6259ff] bg-[var(--cb-raised)] p-1.5 focus-within:ring-2 focus-within:ring-violet-500/20 transition sm:p-2"
+              className="mx-auto flex w-full max-w-[710px] items-end gap-2 rounded-2xl border border-blue-500/50 bg-[var(--cb-raised)] p-1.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition sm:p-2"
             >
               <textarea
                 ref={inputRef}
@@ -544,7 +544,7 @@ export default function ChatbotWindow({ hid, onClose }) {
                 type="submit"
                 disabled={loading || conversationLoading || !input.trim()}
                 aria-label="Send message"
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white disabled:opacity-40"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 dark:from-blue-600 dark:to-indigo-500 text-white disabled:opacity-40"
               >
                 <SendHorizontal size={18} />
               </button>

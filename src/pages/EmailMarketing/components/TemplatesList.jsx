@@ -8,7 +8,7 @@ import { EmptyState, ErrorState, Skeleton } from "../../../components/ui/States"
 import { useConfirm } from "../../../context/ConfirmContext";
 import { useToast } from "../../../context/ToastContext";
 import useDebounce from "../../../hooks/useDebounce";
-import { deleteEmailTemplate, getEmailTemplates } from "../../../services/api/emailTemplate";
+import { deleteEmailTemplate, getEmailTemplates } from "../../../redux/api/emailMarketingApi";
 import { formatDate } from "../emailUtils";
 import AITemplateModal from "./AITemplateModal";
 import { EmailThumbnail } from "./EmailPreviewFrame";

@@ -1,6 +1,7 @@
 import { Handle, Position, useReactFlow } from "reactflow";
+import NodeShell, { NodeOption } from "../NodeShell";
 
-export default function ListNode({ data, id }) {
+export default function ListNode({ data, id, selected }) {
   const { getNodes, setNodes, getEdges, setEdges } = useReactFlow();
   const nodes = getNodes();
   const interactive = data?.interactive;
@@ -22,95 +23,44 @@ export default function ListNode({ data, id }) {
   };
 
   return (
-    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
-      {/* Header */}
-      <div className="bg-purple-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">📋</span>
-          List
-        </div>
-
-        <div
-          className="cursor-pointer text-lg"
-          onClick={(e) => {
-            e.stopPropagation();
-            removeNode();
-          }}
-        >
-          X
-        </div>
+    <NodeShell type="list" selected={selected} onRemove={removeNode} hint="Click to edit">
+      <div className="space-y-1 px-3 pt-3 text-sm text-app-text">
+        {headerText && <p className="font-semibold">{headerText}</p>}
+        <p className="whitespace-pre-line">{bodyText}</p>
+        {footerText && <p className="text-xs text-app-text-faint">{footerText}</p>}
       </div>
 
-      {/* Header Text */}
-      {headerText && (
-        <div className="px-3 text-sm text-app-text font-medium border-b mb-2 py-1.5">
-          {headerText}
-        </div>
-      )}
-
-      {/* Body */}
-      <div className="px-3 text-sm text-app-text border-b mb-2 py-1.5">
-        {bodyText}
-      </div>
-
-      {/* Footer */}
-      {footerText && (
-        <div className="px-3 text-sm text-app-text border-b py-1.5">
-          {footerText}
-        </div>
-      )}
-
-      {/* Sections */}
-      <div className="px-3 pb-3 space-y-3 mt-2">
+      <div className="space-y-3 p-3">
         {sections.map((section, sIndex) => (
           <div key={sIndex}>
-            {/* Section Title */}
             {section.title && (
-              <div className="text-xs text-app-text-muted mb-1 font-semibold">
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-app-text-faint">
                 {section.title}
-              </div>
+              </p>
             )}
 
-            {/* Rows */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {section.rows?.map((row) => (
-                <div
+                <NodeOption
                   key={row.id}
-                  className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center"
+                  handle={
+                    <Handle
+                      type="source"
+                      position={Position.Right}
+                      id={row.id}
+                      className="eaz-handle-out"
+                    />
+                  }
                 >
                   {row.title}
-
-                  {/* Output Handle */}
-                  <Handle
-                    type="source"
-                    position={Position.Right}
-                    id={row.id}
-                    className="bg-green-500! w-3! h-3!"
-                  />
-                </div>
+                </NodeOption>
               ))}
             </div>
           </div>
         ))}
-
-        {/* Default Path */}
-        {/* <div className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center">
-          Default
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="default"
-            className="bg-green-500 w-3! h-3!"
-          />
-        </div> */}
       </div>
 
-      {/* Input Handle */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="bg-primary! w-3! h-3!"
-      />
-    </div>
+      <Handle type="target" position={Position.Left} className="eaz-handle-in" />
+    </NodeShell>
   );
 }

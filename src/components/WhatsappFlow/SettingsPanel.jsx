@@ -1,9 +1,19 @@
-import { FiX } from "react-icons/fi";
+import Drawer from "../ui/Drawer";
 import ButtonsSettings from "./ButtonSetting";
 import CarouselSettings from "./CarouselSettings";
 import ListSetting from "./ListSetting";
 import QuestionSettings from "./QuestionSetting";
 import FlowSettings from "./FlowSetting";
+import { blockStyle } from "./blockStyles";
+
+// what the drawer says under the block's name
+const DESCRIPTIONS = {
+  button: "The message and up to 3 reply buttons the guest can tap.",
+  list: "The message and the menu of options the guest picks from.",
+  question: "The question and where the guest's answer is saved.",
+  flow: "The message and which of your WhatsApp forms it opens.",
+  carousel: "The message and the cards the guest can swipe through.",
+};
 
 export default function SettingsPanel({ node, setNode, setSelectedNode }) {
   const handleButtonCancel = () => {
@@ -25,35 +35,15 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
     setSelectedNode(null);
   };
 
-  if (!node)
-    return (
-      <div className="w-64 border-l p-4">
-        <p>Select a node</p>
-      </div>
-    );
+  if (!node) return null;
 
   return (
-    <div className="fixed w-110 h-[95vh] bg-app-surface top-16 border-l p-4 right-0 overflow-y-auto z-50">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="font-bold mb-2">Node Settings</h3>
-          <p>Type: {node.type}</p>
-        </div>
-
-        <FiX
-          size={20}
-          className="cursor-pointer text-app-text-muted hover:text-app-text"
-          onClick={handleButtonCancel}
-        />
-      </div>
-
-      {node.type === "message" && (
-        <textarea
-          placeholder="Enter message"
-          className="border w-full p-2 mt-2"
-        />
-      )}
-
+    <Drawer
+      open
+      title={`Edit ${blockStyle(node.type).label.toLowerCase()} block`}
+      description={DESCRIPTIONS[node.type]}
+      onClose={handleButtonCancel}
+    >
       {node.type === "button" && (
         <ButtonsSettings
           onSave={(data) => handleDataSave(data)}
@@ -95,6 +85,6 @@ export default function SettingsPanel({ node, setNode, setSelectedNode }) {
           data={node.data}
         />
       )}
-    </div>
+    </Drawer>
   );
 }

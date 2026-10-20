@@ -8,7 +8,7 @@ import IconButton from "../../../../components/ui/IconButton";
 import SelectMenu from "../../../../components/ui/SelectMenu";
 import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
-import { createWhatAppFlow } from "../../../../services/api/whatsApp";
+import { createWhatAppFlow } from "../../../../redux/api/whatsappBusinessApi";
 import { FIELD_TYPES, flowProblem, newScreen } from "./flowUtils";
 
 // What a guest sees for one field in the preview.

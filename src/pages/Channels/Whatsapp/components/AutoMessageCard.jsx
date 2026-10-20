@@ -7,7 +7,7 @@ import Segmented from "../../../../components/ui/Segmented";
 import SelectMenu from "../../../../components/ui/SelectMenu";
 import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
-import { updateAutoMessageConfig } from "../../../../services/api/whatsApp";
+import { updateAutoMessageConfig } from "../../../../redux/api/whatsappBusinessApi";
 import TemplatePreview from "./TemplatePreview";
 
 // Where a new lead can come from; each can get its own automatic message.

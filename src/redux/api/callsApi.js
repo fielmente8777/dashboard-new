@@ -46,12 +46,13 @@ export const callsApi = api.injectEndpoints({
     }),
 
     // { hid, sid, ...fields to change } e.g. stage, priority, followUpDate
+    // Notes with voice recordings go as { hid, sid, form } (FormData).
     updateCall: build.mutation({
-      query: ({ hid, ...body }) => ({
+      query: ({ hid, form, ...body }) => ({
         url: `/api/v1/call/update-call/${body.sid}`,
         method: "PUT",
         params: { hid },
-        body,
+        body: form ?? body,
       }),
       invalidatesTags: ["Call"],
       extraOptions: NODE,

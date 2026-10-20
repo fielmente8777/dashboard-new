@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { addSubscription, getWallet } from "../../services/api/wallet.api";
+import { addSubscription, getWallet } from "../../redux/api/walletApi";
 import CreditUsage from "./components/CreditUsage";
 import UsageChart from "./components/UsageChart";
 import CreditBreakdown from "./components/CreditBreakdown";

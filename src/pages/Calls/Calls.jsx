@@ -158,7 +158,7 @@ const Calls = () => {
       {view === "calls" && isConnected && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="w-72">
+            <div className="w-full max-w-72">
               <Input
                 type="search"
                 value={searchText}

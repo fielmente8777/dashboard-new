@@ -161,7 +161,7 @@ const Contacts = () => {
       }
       actions={
         <>
-          <div className="w-56">
+          <div className="w-full max-w-56">
             <Input
               type="search"
               value={search}

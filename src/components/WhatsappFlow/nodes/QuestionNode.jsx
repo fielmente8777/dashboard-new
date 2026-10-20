@@ -1,44 +1,23 @@
 import { Handle, Position } from "reactflow";
-import { FiMoreVertical } from "react-icons/fi";
+import NodeShell from "../NodeShell";
 
-export default function QuestionNode({ data }) {
+export default function QuestionNode({ data, selected }) {
   const question = data?.question || "Ask a question here";
   const variable = data?.variable || "@answer";
 
   return (
-    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
-      {/* Header */}
-      <div className="bg-orange-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">❓</span>
-          Question
-        </div>
+    <NodeShell type="question" selected={selected} hint="Click to edit">
+      <p className="whitespace-pre-line px-3 pt-3 text-sm text-app-text">{question}</p>
 
-        <FiMoreVertical className="cursor-pointer" />
+      <div className="p-3">
+        <p className="flex items-center gap-1.5 rounded-lg bg-app-surface-secondary px-3 py-2 text-xs text-app-text-muted">
+          Saves the answer in
+          <span className="font-semibold text-app-text">{variable}</span>
+        </p>
       </div>
 
-      {/* Question Text */}
-      <div className="px-3 py-3 text-sm text-app-text border-b">{question}</div>
-
-      {/* Variable */}
-      <div className="px-3 py-2 text-xs text-app-text-muted">
-        Save answer → <span className="font-semibold">{variable}</span>
-      </div>
-
-      {/* Output */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="next"
-        className="!bg-green-500 !w-3 !h-3"
-      />
-
-      {/* Input */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-gray-400 !w-3 !h-3"
-      />
-    </div>
+      <Handle type="source" position={Position.Right} id="next" className="eaz-handle-out" />
+      <Handle type="target" position={Position.Left} className="eaz-handle-in" />
+    </NodeShell>
   );
 }

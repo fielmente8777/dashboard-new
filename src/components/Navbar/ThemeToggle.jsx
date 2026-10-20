@@ -1,10 +1,9 @@
-import { useContext } from "react";
 import { LuMoon, LuSun } from "react-icons/lu";
-import DataContext from "../../context/DataContext";
+import { useColorMode } from "../../hooks/useColorMode";
 import Icon from "../ui/Icon";
 
 const ThemeToggle = ({ className = "" }) => {
-  const { isDarkMode, toggleColorMode } = useContext(DataContext);
+  const { isDarkMode, toggleColorMode } = useColorMode();
 
   return (
     <button

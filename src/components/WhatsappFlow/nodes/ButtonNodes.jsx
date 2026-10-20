@@ -1,6 +1,7 @@
 import { Handle, Position, useReactFlow } from "reactflow";
+import NodeShell, { NodeOption } from "../NodeShell";
 
-export default function ButtonsNode({ id, data }) {
+export default function ButtonsNode({ id, data, selected }) {
   const { getNodes, setNodes, setEdges, getEdges } = useReactFlow();
   const nodes = getNodes();
 
@@ -23,77 +24,32 @@ export default function ButtonsNode({ id, data }) {
   };
 
   return (
-    <div className="w-64 bg-app-surface rounded-lg shadow border overflow-hidden">
-      {/* Header */}
-      <div className="bg-orange-400 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">⭕</span>
-          Buttons
-        </div>
-
-        <div
-          className="cursor-pointer text-lg"
-          onClick={(e) => {
-            e.stopPropagation();
-            removeNode();
-          }}
-        >
-          X
-        </div>
+    <NodeShell type="button" selected={selected} onRemove={removeNode} hint="Click to edit">
+      <div className="space-y-1 px-3 pt-3 text-sm text-app-text">
+        {headerText && <p className="font-semibold">{headerText}</p>}
+        <p className="whitespace-pre-line">{bodyText}</p>
+        {footerText && <p className="text-xs text-app-text-faint">{footerText}</p>}
       </div>
 
-      {headerText && (
-        <div className="px-3 text-sm text-app-text font-medium border-b mb-2 py-1.5">
-          {headerText}
-        </div>
-      )}
-
-      {/* Question */}
-      <div className="px-3 text-sm text-app-text border-b mb-2 py-1.5">
-        {bodyText}
-      </div>
-
-      {footerText && (
-        <div className="px-3 text-sm text-app-text py-1.5">{footerText}</div>
-      )}
-
-      <div className="space-y-2 px-3 pb-3">
+      <div className="space-y-1.5 p-3">
         {buttons.map((btn) => (
-          <div
+          <NodeOption
             key={btn.reply.id}
-            className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center"
+            handle={
+              <Handle
+                type="source"
+                position={Position.Right}
+                id={btn.reply.id}
+                className="eaz-handle-out"
+              />
+            }
           >
             {btn.reply.title}
-
-            {/* Output Handle */}
-            <Handle
-              type="source"
-              position={Position.Right}
-              id={btn.reply.id}
-              className="!bg-green-500 !w-3 !h-3"
-            />
-          </div>
+          </NodeOption>
         ))}
-
-        {/* Default Path */}
-        {/* <div className="relative bg-app-surface-secondary rounded-md px-3 py-2 text-sm text-app-text flex justify-between items-center">
-          Default
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="default"
-            className="!bg-green-500 !w-3 !h-3"
-          />
-        </div> */}
       </div>
 
-      {/* Input Handle */}
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-gray-400 !w-3 !h-3"
-      />
-    </div>
+      <Handle type="target" position={Position.Left} className="eaz-handle-in" />
+    </NodeShell>
   );
 }

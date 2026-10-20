@@ -11,16 +11,19 @@ export const useForgotPassword = ({ onSuccess } = {}) => {
   const sendResetEmail = async (values) => {
     try {
       const data = await forgotPassword(values).unwrap();
-      if (data?.Status !== true) {
-        showToast({ message: data?.Message || RESET_FAILED, type: "error" });
+      if (data?.success !== true) {
+        showToast({
+          message: data?.responseMessage || RESET_FAILED,
+          type: "error",
+        });
         return;
       }
 
       showToast({
-        message: "Please check your email to reset your password.",
+        message: "Please check your email for the reset code.",
         type: "success",
       });
-      onSuccess?.();
+      onSuccess?.(values);
     } catch (error) {
       showToast({
         message: getApiErrorMessage(error, RESET_FAILED),

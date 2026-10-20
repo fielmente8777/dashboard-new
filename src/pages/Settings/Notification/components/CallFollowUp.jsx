@@ -38,7 +38,7 @@ const CallFollowUp = ({ callConfig, templates, disabled, onToggle, onChange }) =
       </div>
 
       {callConfig.enabled && !disabled && (
-        <div className="grid gap-3 border-t border-app-border! p-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 border-t border-app-border! p-4 md:grid-cols-3">
           {CALL_STATUSES.map((status) => {
             const config = callConfig.configs[status.key];
             const template = templates.find((item) => item.name === config.templateName);

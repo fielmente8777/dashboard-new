@@ -1,6 +1,7 @@
-import { DayPilot, DayPilotScheduler } from "daypilot-pro-react";
+// DayPilot Lite (Apache-2.0): the free Scheduler, so no "DEMO" label.
+import { DayPilot, DayPilotScheduler } from "@daypilot/daypilot-lite-react";
 import { BedDouble } from "lucide-react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -26,6 +27,7 @@ import {
   EVENT_KINDS,
   buildEvents,
   buildResources,
+  isGroupRow,
   toDateString,
   toNextDayString,
 } from "./frontDeskData";
@@ -46,16 +48,33 @@ const QUERY_OPTIONS = { refetchOnMountOrArgChange: true };
 
 // kept outside the component so the calendar is not reconfigured on every render
 const TIME_HEADERS = [{ groupBy: "Month" }, { groupBy: "Day", format: "d" }];
-const ROW_HEADER_COLUMNS = [{ name: "Room" }];
+const ROW_HEADER_WIDTH = 140;
+const FIXED_CELL_WIDTH = 50;
+const MIN_CELL_WIDTH = 32;
+// room for the calendar's own vertical scrollbar
+const SCROLLBAR_WIDTH = 18;
+
 const styleEvent = (args) => {
-  args.data.borderColor = "darker";
-  args.data.fontColor = "white";
+  args.data.borderColor = args.data.backColor;
+  args.data.fontColor = "#ffffff";
+};
+
+// room-type header rows are labels, not rooms
+const styleCell = (args) => {
+  if (isGroupRow(args.cell.resource)) args.cell.properties.cssClass = "fd-group-cell";
+};
+const blockGroupSelection = (args) => {
+  if (isGroupRow(args.resource)) args.preventDefault();
+};
+const blockGroupMove = (args) => {
+  if (isGroupRow(args.newResource)) args.preventDefault();
 };
 
 // Room calendar: bookings and maintenance blocks per room. Drag across empty
 // days to block a room, drag a bar to move it, click a block to delete it.
 const FrontDesk = () => {
   const schedulerRef = useRef(null);
+  const frameRef = useRef(null);
   const hid = useSelector(selectHid);
   const { confirm } = useConfirm();
   const { showToast } = useToast();
@@ -72,9 +91,47 @@ const FrontDesk = () => {
   const [autoWidth, setAutoWidth] = useState(true);
   // { start, end, resource, message } while the "block room" dialog is open
   const [newBlock, setNewBlock] = useState(null);
+  // ids of the room types folded to their header row
+  const [collapsed, setCollapsed] = useState(() => new Set());
+  const [frameWidth, setFrameWidth] = useState(0);
 
   const zoomRange = useMemo(() => getZoomRange(zoom), [zoom]);
-  const resources = useMemo(() => buildResources(rooms.data || []), [rooms.data]);
+  const resources = useMemo(
+    () => buildResources(rooms.data || [], collapsed),
+    [rooms.data, collapsed],
+  );
+
+  // "Fit to screen": Lite has no auto cell width, so it is worked out from
+  // the space the calendar gets. The frame exists once there are rooms.
+  const hasRooms = resources.length > 0;
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return undefined;
+    const observer = new ResizeObserver(([entry]) =>
+      setFrameWidth(Math.floor(entry.contentRect.width)),
+    );
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [hasRooms]);
+
+  const cellWidth =
+    autoWidth && frameWidth
+      ? Math.max(
+          MIN_CELL_WIDTH,
+          Math.floor((frameWidth - ROW_HEADER_WIDTH - SCROLLBAR_WIDTH) / zoomRange.days),
+        )
+      : FIXED_CELL_WIDTH;
+
+  const toggleGroup = useCallback((args) => {
+    const id = args.row.id;
+    if (!isGroupRow(id)) return;
+    setCollapsed((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
   const events = useMemo(
     () => buildEvents(rooms.data || [], bookings.data || []),
     [rooms.data, bookings.data],
@@ -219,23 +276,31 @@ const FrontDesk = () => {
             ))}
           </ul>
 
-          <DayPilotScheduler
-            ref={schedulerRef}
-            {...zoomRange}
-            scale="Day"
-            timeHeaders={TIME_HEADERS}
-            cellWidthSpec={autoWidth ? "Auto" : "Fixed"}
-            cellWidth={50}
-            durationBarVisible={false}
-            treeEnabled
-            rowHeaderColumns={ROW_HEADER_COLUMNS}
-            resources={resources}
-            events={events}
-            onTimeRangeSelected={handleRangeSelected}
-            onEventMoved={handleEventMoved}
-            onEventClick={handleEventClick}
-            onBeforeEventRender={styleEvent}
-          />
+          <div ref={frameRef} className="fd-calendar min-w-0">
+            <DayPilotScheduler
+              ref={schedulerRef}
+              {...zoomRange}
+              scale="Day"
+              timeHeaders={TIME_HEADERS}
+              cellWidth={cellWidth}
+              rowHeaderWidth={ROW_HEADER_WIDTH}
+              eventHeight={34}
+              eventBorderRadius={6}
+              durationBarVisible={false}
+              heightSpec="Max"
+              height={640}
+              resources={resources}
+              events={events}
+              onRowClick={toggleGroup}
+              onBeforeCellRender={styleCell}
+              onTimeRangeSelect={blockGroupSelection}
+              onTimeRangeSelected={handleRangeSelected}
+              onEventMove={blockGroupMove}
+              onEventMoved={handleEventMoved}
+              onEventClick={handleEventClick}
+              onBeforeEventRender={styleEvent}
+            />
+          </div>
         </Card>
       )}
 

@@ -19,12 +19,22 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
   const { authUser, loading } = useSelector((state) => state.userProfile);
   const { hid, locations, currentLocation, switchLocation } =
     useLocationSwitcher();
-  const { isOwner, clients, currentClient, search, setSearch, switchClient } =
-    useClientAccounts();
+  const {
+    isOwner,
+    clients,
+    isCurrentClient,
+    switchingTo,
+    search,
+    setSearch,
+    switchClient,
+  } = useClientAccounts();
+  const accountName = useSelector(
+    (state) => state.userProfile.user?.Profile?.hotelName,
+  );
 
   const canAddLocation = authUser?.isAdmin && !isOwner;
   const title =
-    currentLocation?.local || currentClient?.hotelName || "Select location";
+    currentLocation?.local || accountName || "Select location";
 
   const handleSelect = (location) => {
     switchLocation(location.hid);
@@ -108,15 +118,16 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
             {isOwner &&
               clients.map((client) => {
                 const hotel = Object.values(client?.hotels || {})[0];
-                const isCurrent =
-                  currentClient?.hotelName === client?.hotelName;
+                const isCurrent = isCurrentClient(client);
+                const isSwitching = switchingTo === client?.hotelName;
 
                 return (
                   <button
                     key={client?.ndid || client?.hotelName}
                     type="button"
                     onClick={() => switchClient(client)}
-                    className={`${optionClassName} ${isCurrent ? "bg-white/10" : "hover:bg-white/10"}`}
+                    disabled={Boolean(switchingTo)}
+                    className={`${optionClassName} ${isCurrent ? "bg-white/10" : "hover:bg-white/10"} ${switchingTo && !isSwitching ? "opacity-50" : ""}`}
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-white">
@@ -126,8 +137,12 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
                         {formatAddress(hotel)}
                       </span>
                     </span>
-                    {isCurrent && (
-                      <Check size={16} className="mt-0.5 text-ternary" />
+                    {isSwitching ? (
+                      <span className="mt-0.5 size-4 shrink-0 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    ) : (
+                      isCurrent && (
+                        <Check size={16} className="mt-0.5 text-ternary" />
+                      )
                     )}
                   </button>
                 );

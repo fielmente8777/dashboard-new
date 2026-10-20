@@ -3,16 +3,21 @@ import Timeline from "../../ConversationalTool/WhatsApp/components/Timeline";
 import ActivityModal from "../../ConversationalTool/WhatsApp/components/ActivityModal";
 import Loader from "../../../components/Loader";
 import { FaPlus } from "react-icons/fa";
-import { updateLead } from "../../../services/api/leads.api";
 import Swal from "sweetalert2";
 import { GrNotes } from "react-icons/gr";
 import { useToast } from "../../../context/ToastContext";
 import { useConfirm } from "../../../context/ConfirmContext";
-import { updateCall } from "../../../services/api/call.api";
+import { useTenant } from "../../../hooks/useTenant";
+import { getApiErrorMessage } from "../../../redux/api/baseApi";
+import { useUpdateCallMutation } from "../../../redux/api/callsApi";
+import { useUpdateLeadMutation } from "../../../redux/api/leadsApi";
 
 const NotesCard = ({ lead, setLead, callManagement = false }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const tenant = useTenant();
+  const [updateLead] = useUpdateLeadMutation();
+  const [updateCall] = useUpdateCallMutation();
 
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -20,7 +25,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
 
   const buildPayload = (notes) => {
     const baseFields = callManagement
-      ? { sid: lead?.sid }
+      ? { sid: lead?.sid, hid: tenant.hid }
       : {
           leadId: lead._id,
           hid: lead?.hId,
@@ -51,14 +56,8 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
       form.append(field, new File([blob], `${field}.${ext}`, { type }));
     });
 
-    // updateLead reads leadId/hid to build the URL — expose them on the FormData too
-    if (!callManagement) {
-      form.leadId = lead._id;
-      form.hid = lead?.hId;
-    } else {
-      form.sid = lead?.sid;
-    }
-    return form;
+    // the ids build the url; the form is the body
+    return { ...baseFields, form };
   };
 
   // Returns true/false so the modal knows whether to close
@@ -67,8 +66,8 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
     try {
       const payload = buildPayload(notes);
       const response = callManagement
-        ? await updateCall(payload)
-        : await updateLead(payload);
+        ? await updateCall(payload).unwrap()
+        : await updateLead(payload).unwrap();
 
       // Controller returns the saved notes (with S3 URLs) as data.notes
       const savedNotes = response?.data?.notes;
@@ -89,7 +88,7 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
       console.error("Error updating note:", error);
       setLead((prev) => ({ ...prev, notes: prevNotes })); // rollback
       showToast({
-        message: error?.message || "Failed to update notes",
+        message: error?.message || getApiErrorMessage(error, "Failed to update notes"),
         type: "error",
       });
       return false;

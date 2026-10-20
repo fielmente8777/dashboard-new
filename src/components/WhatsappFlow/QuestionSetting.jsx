@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Select } from "../ui/Field";
+import { Field, Input, Select } from "../ui/Field";
+import Switch from "../ui/Switch";
+import { SettingsFooter, SettingsSection } from "./SettingsParts";
 
 export default function QuestionSettings({ data, onSave, onCancel }) {
   const [question, setQuestion] = useState(data?.question || "");
@@ -17,74 +19,48 @@ export default function QuestionSettings({ data, onSave, onCancel }) {
   };
 
   return (
-    <div className="bg-app-surface border rounded-xl shadow p-4 space-y-4 mt-4">
-      <h3 className="text-sm font-semibold text-app-text">Question Settings</h3>
+    <div className="space-y-4">
+      <SettingsSection title="Question">
+        <Field label="What to ask">
+          <Input
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="e.g. What is your name?"
+          />
+        </Field>
 
-      {/* Question */}
-      <div>
-        <label className="text-xs text-app-text-muted">Question</label>
-        <input
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask something..."
-          className="w-full border rounded-md p-2 text-sm"
-        />
-      </div>
+        <Field label="Save the answer in" hint="A name to use the answer later, e.g. user_name">
+          <Input
+            value={variable}
+            onChange={(e) => setVariable(e.target.value)}
+            placeholder="example: user_name"
+          />
+        </Field>
 
-      {/* Variable */}
-      <div>
-        <label className="text-xs text-app-text-muted">Save Answer To Variable</label>
-        <input
-          value={variable}
-          onChange={(e) => setVariable(e.target.value)}
-          placeholder="example: user_name"
-          className="w-full border rounded-md p-2 text-sm"
-        />
-      </div>
+        <Field as="div" label="Answer type">
+          <Select
+            aria-label="Answer type"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            options={[
+              { value: "text", label: "Text" },
+              { value: "number", label: "Number" },
+              { value: "email", label: "Email" },
+              { value: "phone", label: "Phone" },
+            ]}
+          />
+        </Field>
 
-      {/* Input Type */}
-      <div>
-        <label className="text-xs text-app-text-muted">Answer Type</label>
-        <Select
-          aria-label="Answer type"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          options={[
-            { value: "text", label: "Text" },
-            { value: "number", label: "Number" },
-            { value: "email", label: "Email" },
-            { value: "phone", label: "Phone" },
-          ]}
-        />
-      </div>
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-app-surface-secondary px-3 py-2.5">
+          <div>
+            <p className="text-sm font-medium text-app-text">Required</p>
+            <p className="text-xs text-app-text-muted">The guest has to answer before moving on.</p>
+          </div>
+          <Switch checked={required} onChange={setRequired} label="Required" />
+        </div>
+      </SettingsSection>
 
-      {/* Required */}
-      <div className="flex items-center justify-between">
-        <span className="text-sm text-app-text-muted">Required</span>
-
-        <input
-          type="checkbox"
-          checked={required}
-          onChange={(e) => setRequired(e.target.checked)}
-        />
-      </div>
-
-      {/* Buttons */}
-      <div className="flex justify-end gap-2 pt-2">
-        <button
-          onClick={onCancel}
-          className="text-sm px-3 py-1 border rounded-md"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSave}
-          className="text-sm px-3 py-1 bg-green-500 text-white rounded-md"
-        >
-          Save
-        </button>
-      </div>
+      <SettingsFooter onCancel={onCancel} onSave={handleSave} />
     </div>
   );
 }

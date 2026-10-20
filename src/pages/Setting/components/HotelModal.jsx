@@ -22,7 +22,7 @@ const HotelModal = ({ open, adding, initial, saving, onClose, onSave }) => {
   }, [open, initial]);
 
   const set = (name) => (e) => setForm({ ...form, [name]: e.target.value });
-  const nameError = submitted && !form.local.trim() ? "Enter the area or locality." : undefined;
+  const nameError = submitted && !form.local.trim() ? "Enter the property name." : undefined;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,19 +44,19 @@ const HotelModal = ({ open, adding, initial, saving, onClose, onSave }) => {
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <Field
-          label="Area / locality *"
+          label="Property name *"
           error={nameError}
-          hint="Shown in the location switcher, e.g. Salt Lake, Kolkata."
+          hint="The name of this hotel or property. Shown in the location switcher."
         >
           <Input
             autoFocus
             value={form.local}
             onChange={set("local")}
-            placeholder="e.g. Salt Lake, Kolkata"
+            placeholder="e.g. Sea View Resort, Goa"
             aria-invalid={Boolean(nameError)}
           />
         </Field>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {FIELDS.map(({ name, label, placeholder, autoComplete }) => (
             <Field key={name} label={label}>
               <Input

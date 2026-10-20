@@ -1,5 +1,5 @@
 import { ArrowUpRight, Lock, Plug, Search } from "lucide-react";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import GscSettings from "../../components/GscSettings";
@@ -11,7 +11,7 @@ import Icon from "../../components/ui/Icon";
 import { EmptyState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 import { useConfirm } from "../../context/ConfirmContext";
-import DataContext from "../../context/DataContext";
+import { useIntegrationStatus } from "../../hooks/useIntegrationStatus";
 import { useToast } from "../../context/ToastContext";
 import { BASE_URL } from "../../data/constant";
 import { PAGES, ROUTES, dashboardPath } from "../../routes/paths";
@@ -117,7 +117,7 @@ function Integration() {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const { subscription } = useSelector((state) => state?.subscription);
-  const { integrationStatus, checkIntegrationStatus } = useContext(DataContext);
+  const { integrationStatus, checkIntegrationStatus } = useIntegrationStatus();
 
   const [getGaStatus] = useGetAnalyticsStatusMutation();
   const [getGaProperties] = useLazyGetAnalyticsPropertiesQuery();
@@ -242,9 +242,9 @@ function Integration() {
             app.name,
           );
         case "gmail": {
-          const data = await startGmailAuth(tenant().ndid).unwrap();
-          if (!data?.auth_url) throw new Error();
-          window.location.href = data.auth_url;
+          const data = await startGmailAuth(tenant().hid).unwrap();
+          if (!data?.url) throw new Error();
+          window.location.href = data.url;
           return;
         }
         case "google_analytics": {

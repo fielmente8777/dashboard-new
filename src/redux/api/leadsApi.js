@@ -117,12 +117,13 @@ export const leadsApi = api.injectEndpoints({
 
     // { hid, leadId, ...fields to change } e.g. status, followUpDate,
     // turnAwayCode, assignee. WhatsApp leads are addressed by conversationId.
+    // Notes with voice recordings go as { hid, leadId, form } (FormData).
     updateLead: build.mutation({
-      query: ({ hid, ...body }) => ({
+      query: ({ hid, form, ...body }) => ({
         url: `/api/v1/leads/${body.leadId || body.conversationId}/update`,
         method: "PUT",
         params: { hid },
-        body,
+        body: form ?? body,
       }),
       invalidatesTags: ["Lead"],
       extraOptions: NODE,

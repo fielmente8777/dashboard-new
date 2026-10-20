@@ -68,7 +68,7 @@ const Instagram = () => {
         placeholder="+919528295631"
         value={number}
         onChange={(e) => setNumber(e.target.value)}
-        style={{ padding: "10px", width: "250px", marginRight: "10px" }}
+        style={{ padding: "10px", width: "250px", maxWidth: "100%", marginRight: "10px" }}
       />
 
       <button onClick={startCall} disabled={loading}>

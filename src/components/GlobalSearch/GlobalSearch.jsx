@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { IoIosSearch, IoMdClose } from "react-icons/io";
 import { IoArrowBack } from "react-icons/io5";
-import { getGlobalSearch } from "../../services/api/globalSearch.api";
+import { getGlobalSearch } from "../../redux/api/searchApi";
 import { buildLink } from "../../utils/buildLink";
 import Icon from "../ui/Icon";
 

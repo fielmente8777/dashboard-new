@@ -1,15 +1,11 @@
 import { Bell, Menu, Settings, Store } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { LOGO_URL } from "../../config/assets";
 import { open as openSidebar } from "../../redux/slice/SidebarToggle";
-import {
-  fetchUserProfile,
-  selectCurrentLocation,
-} from "../../redux/slice/UserSlice";
+import { selectCurrentLocation } from "../../redux/slice/UserSlice";
 import { PAGES, dashboardPath } from "../../routes/paths";
-import { getToken } from "../../utils/session";
 import GlobalSearch from "../GlobalSearch/GlobalSearch";
 import Greeting from "../Greeting";
 import AppsPopup from "../Popup/AppsPopup";
@@ -29,11 +25,6 @@ const Navbar = () => {
   const { notifications, unreadCount, markAllSeen } = useNotifications();
   const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const token = getToken();
-
-  useEffect(() => {
-    if (token) dispatch(fetchUserProfile(token));
-  }, [dispatch, token]);
 
   const toggleNotifications = (isOpen) => {
     markAllSeen();
@@ -65,12 +56,12 @@ const Navbar = () => {
 
         <Greeting name={greetingName} />
 
-        <div className="ml-auto flex min-w-0 items-center justify-end gap-1 sm:flex-1 sm:gap-2">
+        <div className="ml-auto flex min-w-0 items-center justify-end gap-0.5 sm:flex-1 sm:gap-2">
           <div className="min-w-0 sm:max-w-md sm:flex-1">
             <GlobalSearch />
           </div>
 
-          <ThemeToggle />
+          <ThemeToggle className="max-sm:hidden" />
 
           <button
             type="button"
@@ -103,7 +94,7 @@ const Navbar = () => {
             type="button"
             aria-label="EazStore"
             onClick={() => setIsAppsOpen(true)}
-            className="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2.5 text-sm font-semibold text-white transition hover:bg-ternary/90 active:scale-95 lg:px-3.5"
+            className="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2 text-sm sm:px-2.5 font-semibold text-white transition hover:bg-ternary/90 active:scale-95 lg:px-3.5"
           >
             <Icon icon={Store} size="lg" />
             <span className="hidden lg:inline">EazStore</span>
@@ -111,7 +102,10 @@ const Navbar = () => {
 
           <div className="mx-1 hidden h-6 w-px bg-white/15 sm:block" />
 
-          <UserMenu />
+          <UserMenu
+            unreadCount={unreadCount}
+            onOpenNotifications={() => toggleNotifications(true)}
+          />
         </div>
       </header>
 

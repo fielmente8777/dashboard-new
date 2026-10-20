@@ -11,7 +11,7 @@ import {
   createLeadRecipientBatch,
   createLeadRecipientBatchFromFilter,
   getEmailRecipients,
-} from "../../../services/api/emailCampaign.js";
+} from "../../../redux/api/emailMarketingApi";
 import { formatNumber } from "../emailUtils";
 
 const PAGE_SIZE = 50;

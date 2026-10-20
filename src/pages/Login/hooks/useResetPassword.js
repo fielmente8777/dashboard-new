@@ -1,36 +1,29 @@
-import { useState } from "react";
 import { useToast } from "../../../context/ToastContext";
+import { useResetPasswordMutation } from "../../../redux/api/authApi";
+import { getApiErrorMessage } from "../../../redux/api/baseApi";
 
-// UI only for now: the backend has no reset-password endpoint yet.
-// To connect it:
-//   1. add a `resetPassword` mutation to redux/api/authApi.js
-//      (body: { email, otp, password }),
-//   2. call it in `resetPassword` below and call `options.onSuccess()` when
-//      the server confirms, which shows the "Password updated" screen.
-export const useResetPassword = (options = {}) => {
+const RESET_FAILED = "Could not reset your password. Please try again.";
+
+export const useResetPassword = ({ onSuccess } = {}) => {
   const { showToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [resetPasswordMutation, { isLoading }] = useResetPasswordMutation();
 
-  const resetPassword = async (values) => {
-    setIsLoading(true);
+  const resetPassword = async ({ email, otp, password }) => {
     try {
-      // TODO: replace with the API call, for example:
-      // const data = await resetPasswordMutation(values).unwrap();
-      // if (data?.Status !== true) {
-      //   showToast({ message: data?.Message || "Could not reset password.", type: "error" });
-      //   return;
-      // }
-      // options.onSuccess?.();
-      console.info("Reset password submitted (not connected yet)", {
-        email: values.email,
-        hasCallback: Boolean(options.onSuccess),
-      });
+      const data = await resetPasswordMutation({ email, otp, password }).unwrap();
+      if (data?.success !== true) {
+        showToast({
+          message: data?.responseMessage || RESET_FAILED,
+          type: "error",
+        });
+        return;
+      }
+      onSuccess?.();
+    } catch (error) {
       showToast({
-        message: "Password reset is not connected to the server yet.",
-        type: "info",
+        message: getApiErrorMessage(error, RESET_FAILED),
+        type: "error",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

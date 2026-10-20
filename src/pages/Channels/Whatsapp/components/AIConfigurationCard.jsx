@@ -6,7 +6,7 @@ import DatePicker from "../../../../components/ui/DatePicker";
 import { Field } from "../../../../components/ui/Field";
 import Switch from "../../../../components/ui/Switch";
 import { useToast } from "../../../../context/ToastContext";
-import { updateAutoMessageConfig } from "../../../../services/api/whatsApp";
+import { updateAutoMessageConfig } from "../../../../redux/api/whatsappBusinessApi";
 
 // "HH:mm" -> "9:30 AM"
 const formatTime = (time) => {

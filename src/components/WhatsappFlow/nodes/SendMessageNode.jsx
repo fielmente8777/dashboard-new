@@ -1,17 +1,23 @@
 import { useState } from "react";
-import {
-  FaImage,
-  FaVideo,
-  FaMusic,
-  FaFileAlt,
-  FaTrash,
-  FaEllipsisV,
-  FaCommentDots,
-} from "react-icons/fa";
+import { FileText, Image, Music, Trash2, Type, Upload, Video } from "lucide-react";
 import { Handle, Position, useReactFlow } from "reactflow";
 import { NEW_BASE_URL } from "../../../data/constant";
+import Icon from "../../ui/Icon";
+import NodeShell from "../NodeShell";
 
-export default function SendMessageNode({ id, data }) {
+// the pieces a message can be made of, in the order of the add buttons
+const PARTS = [
+  { type: "text", label: "Text", icon: Type },
+  { type: "image", label: "Image", icon: Image },
+  { type: "video", label: "Video", icon: Video },
+  { type: "audio", label: "Audio", icon: Music },
+  { type: "document", label: "Document", icon: FileText },
+];
+
+const fieldClass =
+  "nodrag w-full resize-y rounded-lg border border-app-border! bg-app-surface px-2.5 py-2 text-sm text-app-text outline-none placeholder:text-app-text-faint focus:border-blue-500! focus:ring-1 focus:ring-blue-500";
+
+export default function SendMessageNode({ id, data, selected }) {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
   const nodes = getNodes();
   const [blocks, setBlocks] = useState(data?.blocks || []);
@@ -61,16 +67,16 @@ export default function SendMessageNode({ id, data }) {
 
     const url = URL.createObjectURL(file);
 
-    // ✅ store file separately
+    // the file itself is kept apart from the node (sent on publish)
     setFilesMap((prev) => ({
       ...prev,
       [blockId]: file,
     }));
 
-    // ❌ DO NOT store file in node
+    // the node only keeps a flag and the preview url
     const updated = blocks.map((b) =>
       b.id === blockId
-        ? { ...b, file: true, url } // just flag
+        ? { ...b, file: true, url }
         : b,
     );
 
@@ -92,12 +98,7 @@ export default function SendMessageNode({ id, data }) {
     return ".pdf,.doc,.docx,.txt";
   };
 
-  const getIcon = (type) => {
-    if (type === "image") return <FaImage />;
-    if (type === "video") return <FaVideo />;
-    if (type === "audio") return <FaMusic />;
-    return <FaFileAlt />;
-  };
+  const partOf = (type) => PARTS.find((p) => p.type === type) ?? PARTS[4];
 
   const removeNode = () => {
     const updatedNodes = nodes.filter((node) => node.id !== id);
@@ -111,64 +112,66 @@ export default function SendMessageNode({ id, data }) {
   };
 
   return (
-    <div className="w-[320px] rounded-xl shadow-lg bg-app-surface border relative">
-      {/* Header */}
-      <div className="bg-primary/90 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
-        <div className="flex items-center gap-2 font-semibold">
-          <FaCommentDots />
-          Send Message
-        </div>
-
-        <div
-          className="cursor-pointer text-lg"
-          onClick={(e) => {
-            e.stopPropagation();
-            removeNode();
-          }}
-        >
-          X
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4">
-        {/* BLOCKS */}
+    <NodeShell type="sendMessage" width="w-80" selected={selected} onRemove={removeNode}>
+      <div className="space-y-2.5 p-3">
+        {blocks.length === 0 && (
+          <p className="rounded-lg border border-dashed border-app-border! px-3 py-4 text-center text-xs text-app-text-faint">
+            Add text or media below. Each piece is sent as its own message.
+          </p>
+        )}
 
         {blocks.map((block) => {
           const mediaId = block.media ? block?.media?.mediaId : null;
+          const part = partOf(block.type);
 
           return (
             <div
               key={block.id}
-              className="border rounded-lg p-3 space-y-3 relative"
+              className="space-y-2 rounded-lg border border-app-border! bg-app-surface-secondary p-2.5"
             >
-              {/* Caption input for supported types */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-app-text-faint">
+                  <Icon icon={part.icon} size="xs" />
+                  {part.label}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${part.label.toLowerCase()}`}
+                  title="Remove"
+                  onClick={() => removeBlock(block.id)}
+                  className="nodrag flex size-6 items-center justify-center rounded-md text-app-text-faint transition hover:bg-red-500/10 hover:text-red-500"
+                >
+                  <Icon icon={Trash2} size="xs" />
+                </button>
+              </div>
+
+              {/* text, or the caption of an image */}
               {(block.type === "text" || block.type === "image") && (
                 <textarea
                   value={block.title}
                   onChange={(e) => updateTitle(block.id, e.target.value)}
                   placeholder={
                     block.type === "text"
-                      ? "Enter message..."
-                      : "Enter caption..."
+                      ? "Type your message..."
+                      : "Caption (optional)"
                   }
-                  className="w-full border rounded-md p-2 text-sm"
+                  rows={block.type === "text" ? 3 : 2}
+                  className={fieldClass}
                 />
               )}
 
-              {/* Upload */}
+              {/* upload */}
               {block.type !== "text" && !block.file && (
                 <label
                   htmlFor={`file-${block.id}`}
-                  className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 cursor-pointer"
+                  className="nodrag flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border-2 border-dashed border-app-border! bg-app-surface px-3 py-4 text-app-text-muted transition hover:border-blue-500! hover:text-blue-500"
                 >
-                  {getIcon(block.type)}
-                  <span className="text-sm text-green-600">
-                    Upload {block.type}
-                  </span>
+                  <Icon icon={Upload} size="md" />
+                  <span className="text-xs font-medium">Upload {part.label.toLowerCase()}</span>
                 </label>
               )}
 
-              {/* Preview */}
+              {/* preview */}
               {block.file && block.type === "image" && (
                 <img
                   src={
@@ -176,30 +179,29 @@ export default function SendMessageNode({ id, data }) {
                       ? `${NEW_BASE_URL}/api/v1/whatsapp/media/${mediaId}?ndid=${localStorage.getItem("ndid")}`
                       : block.url
                   }
-                  className="w-full rounded-md"
+                  alt=""
+                  className="w-full rounded-lg border border-app-border!"
                 />
               )}
 
               {block.file && block.type === "video" && (
-                <video controls className="w-full rounded-md">
+                <video controls className="nodrag w-full rounded-lg">
                   <source src={block.url} />
                 </video>
               )}
 
               {block.file && block.type === "audio" && (
-                <audio controls className="w-full">
+                <audio controls className="nodrag w-full">
                   <source src={block.url} />
                 </audio>
               )}
 
               {block.file && block.type === "document" && (
-                <div className="flex items-center gap-2 text-sm">
-                  <FaFileAlt />
-                  {block.file.name}
+                <div className="flex items-center gap-2 rounded-lg bg-app-surface px-2.5 py-2 text-sm text-app-text">
+                  <Icon icon={FileText} size="sm" tone="muted" />
+                  <span className="truncate">{block.file.name}</span>
                 </div>
               )}
-
-              {/* Hidden file input */}
 
               {block.type !== "text" && (
                 <input
@@ -210,344 +212,30 @@ export default function SendMessageNode({ id, data }) {
                   onChange={(e) => handleFile(e, block.id)}
                 />
               )}
-
-              {/* Delete */}
-
-              <button
-                onClick={() => removeBlock(block.id)}
-                className="absolute top-2 right-2 text-red-500"
-              >
-                <FaTrash size={14} />
-              </button>
             </div>
           );
         })}
 
-        {/* SMALL ACTION BUTTONS */}
-
-        <div className="flex flex-wrap gap-2 pt-2">
-          <SmallButton label="Message" onClick={() => addBlock("text")} />
-          <SmallButton label="Image" onClick={() => addBlock("image")} />
-          <SmallButton label="Video" onClick={() => addBlock("video")} />
-          <SmallButton label="Audio" onClick={() => addBlock("audio")} />
-          <SmallButton label="Document" onClick={() => addBlock("document")} />
+        <div>
+          <p className="mb-1.5 text-[11px] font-medium text-app-text-faint">Add to this message</p>
+          <div className="flex flex-wrap gap-1.5">
+            {PARTS.map((part) => (
+              <button
+                key={part.type}
+                type="button"
+                onClick={() => addBlock(part.type)}
+                className="nodrag inline-flex items-center gap-1 rounded-md border border-app-border! bg-app-surface px-2 py-1 text-xs font-medium text-app-text-muted transition hover:border-emerald-500! hover:text-emerald-600 dark:hover:text-emerald-400"
+              >
+                <Icon icon={part.icon} size="xs" />
+                {part.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* React Flow Handles */}
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        // className=" rounded-full top-1/2"
-        className="bg-primary! w-3! h-3!"
-      />
-
-      <Handle
-        type="source"
-        position={Position.Right}
-        // className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
-        className="bg-green-500! w-3! h-3!"
-      />
-    </div>
+      <Handle type="target" position={Position.Left} className="eaz-handle-in" />
+      <Handle type="source" position={Position.Right} className="eaz-handle-out" />
+    </NodeShell>
   );
 }
-
-function SmallButton({ label, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="border border-green-400 text-green-600 px-3 py-1 rounded-md text-sm hover:bg-green-50"
-    >
-      {label}
-    </button>
-  );
-}
-
-// import { useState } from "react";
-// import {
-//   FaImage,
-//   FaVideo,
-//   FaMusic,
-//   FaFileAlt,
-//   FaTrash,
-//   FaEllipsisV,
-//   FaCommentDots,
-// } from "react-icons/fa";
-// import { Handle, Position, useReactFlow } from "reactflow";
-
-// export default function SendMessageNode({ id, data }) {
-//   const { setNodes } = useReactFlow();
-
-//   const [message, setMessage] = useState("");
-//   const [blocks, setBlocks] = useState(data?.blocks || []);
-
-//   /* ---------------- UPDATE NODE DATA ---------------- */
-
-//   const updateNodeData = (updatedBlocks) => {
-//     setNodes((nodes) =>
-//       nodes.map((node) =>
-//         node.id === id
-//           ? {
-//               ...node,
-//               data: {
-//                 ...node.data,
-//                 blocks: updatedBlocks,
-//               },
-//             }
-//           : node,
-//       ),
-//     );
-//   };
-
-//   /* ---------------- MESSAGE INPUT ---------------- */
-
-//   const handleMessageChange = (e) => {
-//     setMessage(e.target.value);
-
-//     if (blocks.length === 0) {
-//       const firstBlock = {
-//         id: Date.now(),
-//         title: e.target.value,
-//         type: "text",
-//         url: null,
-//         file: null,
-//       };
-
-//       setBlocks([firstBlock]);
-//       updateNodeData([firstBlock]);
-//     } else {
-//       const updated = blocks.map((b, i) =>
-//         i === 0 ? { ...b, title: e.target.value } : b,
-//       );
-
-//       setBlocks(updated);
-//       updateNodeData(updated);
-//     }
-//   };
-
-//   /* ---------------- ADD MEDIA ---------------- */
-
-//   const addMediaBlock = (type) => {
-//     // FIRST MEDIA
-//     if (blocks.length === 0) {
-//       const firstBlock = {
-//         id: Date.now(),
-//         title: message,
-//         type,
-//         url: null,
-//         file: null,
-//       };
-
-//       setBlocks([firstBlock]);
-//       updateNodeData([firstBlock]);
-//       return;
-//     }
-
-//     // NEXT MEDIA
-//     const newBlock = {
-//       id: Date.now(),
-//       title: "",
-//       type,
-//       url: null,
-//       file: null,
-//     };
-
-//     const updated = [...blocks, newBlock];
-
-//     setBlocks(updated);
-//     updateNodeData(updated);
-//   };
-
-//   /* ---------------- TITLE CHANGE ---------------- */
-
-//   const handleTitleChange = (blockId, value) => {
-//     const updated = blocks.map((b) =>
-//       b.id === blockId ? { ...b, title: value } : b,
-//     );
-
-//     setBlocks(updated);
-//     updateNodeData(updated);
-//   };
-
-//   /* ---------------- FILE UPLOAD ---------------- */
-
-//   const handleFile = (e, blockId) => {
-//     const file = e.target.files[0];
-//     if (!file) return;
-
-//     const url = URL.createObjectURL(file);
-
-//     const updated = blocks.map((b) =>
-//       b.id === blockId ? { ...b, file, url } : b,
-//     );
-
-//     setBlocks(updated);
-//     updateNodeData(updated);
-//   };
-
-//   /* ---------------- DELETE BLOCK ---------------- */
-
-//   const removeBlock = (blockId) => {
-//     const updated = blocks.filter((b) => b.id !== blockId);
-
-//     setBlocks(updated);
-//     updateNodeData(updated);
-//   };
-
-//   /* ---------------- HELPERS ---------------- */
-
-//   const getAccept = (type) => {
-//     if (type === "image") return "image/*";
-//     if (type === "video") return "video/*";
-//     if (type === "audio") return "audio/*";
-//     return ".pdf,.doc,.docx,.txt";
-//   };
-
-//   const getIcon = (type) => {
-//     if (type === "image") return <FaImage />;
-//     if (type === "video") return <FaVideo />;
-//     if (type === "audio") return <FaMusic />;
-//     return <FaFileAlt />;
-//   };
-
-//   /* ---------------- UI ---------------- */
-
-//   return (
-//     <div className="w-[320px] rounded-xl shadow-lg bg-app-surface border relative">
-//       {/* Header */}
-//       <div className="bg-red-500 text-white flex items-center justify-between px-4 py-3 rounded-t-xl">
-//         <div className="flex items-center gap-2 font-semibold">
-//           <FaCommentDots />
-//           Send a message
-//         </div>
-
-//         <FaEllipsisV className="cursor-pointer" />
-//       </div>
-
-//       <div className="p-4 space-y-4">
-//         {/* MESSAGE INPUT */}
-//         <input
-//           value={message}
-//           onChange={handleMessageChange}
-//           placeholder="Type message..."
-//           className="w-full border rounded-md p-2 text-sm outline-none focus:ring-2 focus:ring-green-400"
-//         />
-
-//         {/* MEDIA BLOCKS */}
-//         {blocks.map((block, index) => (
-//           <div
-//             key={block.id}
-//             className="border rounded-lg p-3 space-y-3 relative"
-//           >
-//             {/* Title input only for second block onwards */}
-//             {index !== 0 && (
-//               <input
-//                 value={block.title}
-//                 onChange={(e) => handleTitleChange(block.id, e.target.value)}
-//                 placeholder="Enter title..."
-//                 className="w-full border rounded-md p-2 text-sm"
-//               />
-//             )}
-
-//             {/* Upload block */}
-//             {!block.file && (
-//               <label
-//                 htmlFor={`file-${block.id}`}
-//                 className="border-2 border-green-400 rounded-md p-4 flex flex-col items-center gap-2 text-app-text-muted hover:bg-gray-50 cursor-pointer"
-//               >
-//                 <div className="text-xl">{getIcon(block.type)}</div>
-
-//                 <span className="text-sm text-green-600 font-medium">
-//                   Upload {block.type}
-//                 </span>
-//               </label>
-//             )}
-
-//             {/* Preview */}
-
-//             {block.file && block.type === "image" && (
-//               <img src={block.url} className="w-full rounded-md" />
-//             )}
-
-//             {block.file && block.type === "video" && (
-//               <video controls className="w-full rounded-md">
-//                 <source src={block.url} />
-//               </video>
-//             )}
-
-//             {block.file && block.type === "audio" && (
-//               <audio controls className="w-full">
-//                 <source src={block.url} />
-//               </audio>
-//             )}
-
-//             {block.file && block.type === "document" && (
-//               <div className="flex items-center gap-2 text-sm">
-//                 <FaFileAlt />
-//                 {block.file.name}
-//               </div>
-//             )}
-
-//             {/* Hidden file input */}
-//             <input
-//               id={`file-${block.id}`}
-//               type="file"
-//               className="hidden"
-//               accept={getAccept(block.type)}
-//               onChange={(e) => handleFile(e, block.id)}
-//             />
-
-//             {/* Delete */}
-//             <button
-//               onClick={() => removeBlock(block.id)}
-//               className="absolute top-2 right-2 text-red-500"
-//             >
-//               <FaTrash size={14} />
-//             </button>
-//           </div>
-//         ))}
-
-//         {/* MEDIA BUTTONS */}
-//         <div className="flex flex-wrap gap-2 pt-2">
-//           <SmallButton
-//             label="Message"
-//             onClick={() => addMediaBlock("message")}
-//           />
-//           <SmallButton label="Image" onClick={() => addMediaBlock("image")} />
-//           <SmallButton label="Video" onClick={() => addMediaBlock("video")} />
-//           <SmallButton label="Audio" onClick={() => addMediaBlock("audio")} />
-//           <SmallButton
-//             label="Document"
-//             onClick={() => addMediaBlock("document")}
-//           />
-//         </div>
-//       </div>
-
-//       {/* React Flow Handles */}
-
-//       <Handle
-//         type="target"
-//         position={Position.Left}
-//         className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
-//       />
-
-//       <Handle
-//         type="source"
-//         position={Position.Right}
-//         className="bg-slate-800 w-3 h-3 rounded-full top-1/2"
-//       />
-//     </div>
-//   );
-// }
-
-// function SmallButton({ label, onClick }) {
-//   return (
-//     <button
-//       onClick={onClick}
-//       className="border border-green-400 text-green-600 px-3 py-1 rounded-md text-sm hover:bg-green-50"
-//     >
-//       {label}
-//     </button>
-//   );
-// }

@@ -11,7 +11,7 @@ import {
   createWhatsAppCreditOrder,
   getWhatsAppBilling,
   verifyWhatsAppCreditPayment,
-} from "../../../../../services/api/whatsApp";
+} from "../../../../../redux/api/whatsappBusinessApi";
 import AddCreditsModal from "./AddCreditsModal";
 import ProgressBar from "./ProgressBar";
 import UsageBreakdown from "./UsageBreakdown";

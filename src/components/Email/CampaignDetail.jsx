@@ -9,7 +9,7 @@ import {
 import {
   getCampaignRecipients,
   getEmailCampaign,
-} from "../../services/api/emailCampaign.js";
+} from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import DataTable from "../ui/DataTable";

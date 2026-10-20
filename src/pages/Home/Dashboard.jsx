@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from "react";
-import GscSettings from "../../components/GscSettings";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
+import { Link, useSearchParams } from "react-router-dom";
 import {
+  ArrowRight,
   BadgeCheck,
+  BarChart3,
   MessageCircle,
-  Percent,
+  Phone,
   PieChart as PieChartIcon,
   UserPlus,
   Users,
@@ -11,24 +14,19 @@ import {
 import { CHART_COLORS } from "../../components/Charts/chartTheme";
 import DonutChart from "../../components/Charts/DonutChart";
 import UiCard from "../../components/ui/Card";
+import Icon from "../../components/ui/Icon";
 import ProgressList from "../../components/ui/ProgressList";
-import StatCard from "../../components/ui/StatCard";
+import Tabs from "../../components/ui/Tabs";
+// import DateRangePicker from "../../components/ui/DateRangePicker";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import { useGetLeadStatsQuery } from "../../redux/api/leadsApi";
-import LocalSeoModule from "../../components/LocalSEO/LocalSeoModule";
-
-import AnalyticsCard from "../../components/Card/AnalyticsCard";
-import TemperatureCard from "../../components/Card/TemperatureCard";
-import { useSelector } from "react-redux";
-import AudienceInsights from "../../components/Analytics/AudienceInsights";
-
-// ===== GA COMPONENTS =====
-import GoogleAnalyticsChart from "../../components/Analytics/GoogleAnalyticsChart";
+import { selectCurrentLocation } from "../../redux/slice/UserSlice";
+import { PAGES, dashboardPath } from "../../routes/paths";
 import {
-  setAnalyticsRange,
+  // setAnalyticsRange,
   useAnalyticsRange,
 } from "../../components/Analytics/analyticsRange";
-import DateRangePicker from "../../components/ui/DateRangePicker";
+import GoogleAnalyticsChart from "../../components/Analytics/GoogleAnalyticsChart";
 import TrafficSources from "../../components/Analytics/TrafficSources";
 import TopPagesTable from "../../components/Analytics/TopPagesTable";
 import ConversionEvents from "../../components/Analytics/ConversionEvents";
@@ -36,6 +34,38 @@ import DeviceAnalytics from "../../components/Analytics/DeviceAnalytics";
 import GeoAnalytics from "../../components/Analytics/GeoAnalytics";
 import SearchConsoleQueries from "../../components/SearchConsoleQueries";
 import CallsAnalytics from "../Calls/CallsAnalytics";
+import RecentLeads from "./RecentLeads";
+
+// Only the open tab is mounted, so a tab's requests run when it is opened.
+// The tab lives in ?view= so it survives a reload and the back button.
+const VIEWS = [
+  { value: "leads", label: "Leads" },
+  { value: "calls", label: "Calls" },
+  { value: "website", label: "Website" },
+];
+
+const SHORTCUTS = [
+  { label: "All leads", icon: Users, page: PAGES.LEADS_ALL },
+  { label: "WhatsApp chat", icon: MessageCircle, page: PAGES.CHAT_WHATSAPP },
+  { label: "Calls", icon: Phone, page: PAGES.CALLS },
+  { label: "Website analytics", icon: BarChart3, page: PAGES.INSIGHTS_GOOGLE_ANALYTICS },
+];
+
+// icon chip colour per headline number
+const ACCENTS = {
+  blue: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  green: "bg-green-500/10 text-green-600 dark:text-green-400",
+};
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 17) return "Good afternoon";
+  return "Good evening";
+};
+
 // [{ name, count }] -> ProgressList items, biggest first. The colour follows
 // the name (its place in alphabetical order), so it doesn't change when the
 // counts reorder the list.
@@ -51,204 +81,238 @@ const toListItems = (rows) => {
     }));
 };
 
-// Placeholder in the shape of the page: the KPI row and the two charts.
-const DashboardSkeleton = () => (
-  <div className="min-h-screen space-y-3 bg-app-bg p-3 md:space-y-6 md:p-6">
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-48" />
-        <Skeleton className="h-4 w-64 max-w-full" />
-      </div>
-      <Skeleton className="h-9 w-56" />
+const Kpi = ({ icon, label, value, caption, accent }) => (
+  <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-app-border! bg-app-surface p-3.5 sm:p-4">
+    <span className={`flex size-9 items-center justify-center rounded-lg ${ACCENTS[accent]}`}>
+      <Icon icon={icon} />
+    </span>
+    <div className="min-w-0">
+      <p className="text-2xl font-semibold tabular-nums leading-tight text-app-text sm:text-[1.75rem]">
+        {value}
+      </p>
+      <p className="mt-0.5 truncate text-xs font-medium text-app-text-muted sm:text-sm">
+        {label}
+      </p>
+      {caption && (
+        <p className="mt-1 truncate text-xs text-app-text-faint">{caption}</p>
+      )}
     </div>
-    <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
-      {Array.from({ length: 5 }, (_, i) => (
-        <Skeleton key={i} className="h-24" />
+  </div>
+);
+
+const HomeSkeleton = () => (
+  <div className="space-y-4 p-3 sm:space-y-6 sm:p-6">
+    <div className="space-y-2">
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-7 w-64 max-w-full" />
+    </div>
+    <div className="flex gap-2 overflow-hidden">
+      {Array.from({ length: 4 }, (_, i) => (
+        <Skeleton key={i} className="h-9 w-36 shrink-0" />
       ))}
     </div>
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {Array.from({ length: 4 }, (_, i) => (
+        <Skeleton key={i} className="h-32" />
+      ))}
+    </div>
+    <Skeleton className="h-10 w-64 max-w-full" />
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Skeleton className="h-72" />
       <Skeleton className="h-72" />
     </div>
   </div>
 );
 
+const LeadsView = ({ sourceItems, stageItems }) => (
+  <div className="anim-stagger grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <UiCard
+      title="Where leads come from"
+      description="All time, by source"
+      actions={
+        <Link
+          to={dashboardPath(PAGES.LEADS_ALL)}
+          className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
+        >
+          View leads <Icon icon={ArrowRight} size="sm" />
+        </Link>
+      }
+    >
+      {sourceItems.length ? (
+        <div className="max-h-80 overflow-y-auto pr-1">
+          <ProgressList showShare items={sourceItems} />
+        </div>
+      ) : (
+        <EmptyState icon={PieChartIcon} title="No leads yet" />
+      )}
+    </UiCard>
+
+    <UiCard title="Pipeline stages" description="Leads in each stage">
+      {stageItems.length ? (
+        <div className="grid grid-cols-1 items-center gap-5 sm:grid-cols-2">
+          <DonutChart
+            data={stageItems.map(({ label, value, color }) => ({ name: label, value, color }))}
+            centerLabel="Leads"
+            unit="leads"
+          />
+          <div className="max-h-72 overflow-y-auto pr-1">
+            <ProgressList
+              showShare
+              total={stageItems.reduce((sum, item) => sum + item.value, 0)}
+              items={stageItems}
+            />
+          </div>
+        </div>
+      ) : (
+        <EmptyState icon={PieChartIcon} title="No leads yet" />
+      )}
+    </UiCard>
+  </div>
+);
+
+const WebsiteView = () => (
+  <div className="space-y-4">
+    <GoogleAnalyticsChart showDatePicker={false} />
+    <TrafficSources />
+    <TopPagesTable />
+    <SearchConsoleQueries />
+    <ConversionEvents />
+    <DeviceAnalytics />
+    <GeoAnalytics />
+  </div>
+);
+
 function Dashboard() {
-  const { hid } = useSelector((state) => state.userProfile);
+  const { hid, user: hotel } = useSelector((state) => state.userProfile);
+  const currentLocation = useSelector(selectCurrentLocation);
   const analyticsRange = useAnalyticsRange();
-  // refetched on every visit, like before, so the counts are never stale
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = VIEWS.some((v) => v.value === searchParams.get("view"))
+    ? searchParams.get("view")
+    : VIEWS[0].value;
+
+  // refetched on every visit so the counts are never stale
   const stats = useGetLeadStatsQuery(hid, {
     skip: !hid,
     refetchOnMountOrArgChange: true,
   });
   const data = stats.data;
-  const [currentAnalytics, setCurrentAnalytics] = useState("overview");
 
-  // -----------------------
-  // Derived Values (CRM)
-  // -----------------------
   const total = data?.totalLeads?.[0]?.count || 0;
   const converted = data?.convertedLeads?.[0]?.count || 0;
   const whatsapp = data?.totalWhatsappConversations || 0;
   const today = data?.todayLeads || 0;
-
   const conversionRate = total ? ((converted / total) * 100).toFixed(1) : 0;
 
-  const cleanedSource = useMemo(() => {
-    return (
-      data?.sourceBreakdown
-        ?.map((item) => ({
-          name: item._id,
-          count: item.count,
-        }))
-        .sort((a, b) => b.count - a.count) || []
+  const sourceItems = useMemo(
+    () =>
+      toListItems(
+        data?.sourceBreakdown?.map((item) => ({ name: item._id, count: item.count })) || [],
+      ),
+    [data],
+  );
+  const stageItems = useMemo(
+    () =>
+      toListItems(
+        data?.statusBreakdown
+          ?.filter((item) => item._id)
+          .map((item) => ({ name: item._id, count: item.count })) || [],
+      ),
+    [data],
+  );
+
+  const setView = (value) =>
+    setSearchParams(
+      (params) => {
+        params.set("view", value);
+        return params;
+      },
+      { replace: true },
     );
-  }, [data]);
-
-  const cleanedStatus = useMemo(() => {
-    return (
-      data?.statusBreakdown
-        ?.filter((item) => item._id && item._id !== "")
-        .map((item) => ({
-          name: item._id,
-          count: item.count,
-        })) || []
-    );
-  }, [data]);
-
-  const sourceItems = useMemo(() => toListItems(cleanedSource), [cleanedSource]);
-  const stageItems = useMemo(() => toListItems(cleanedStatus), [cleanedStatus]);
-
-  const getStatusCount = (status) => cleanedStatus.find((s) => s.name === status)?.count || 0;
 
   if (stats.isError && !data) {
     return (
-      <div className="p-3 md:p-6">
+      <div className="p-3 sm:p-6">
         <ErrorState message="Could not load your dashboard." onRetry={stats.refetch} />
       </div>
     );
   }
-  if (!data) return <DashboardSkeleton />;
+  if (!data) return <HomeSkeleton />;
 
-  if (currentAnalytics === "call-analytics") {
-    return <CallsAnalytics />;
-  }
+  const name = currentLocation?.local || hotel?.Profile?.hotelName || "";
+  const todayLabel = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 
   return (
-
-    <div className="p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 bg-app-bg transition-colors duration-200">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold">Analytics Overview</h1>
-          <p className="mt-1 text-sm text-app-text-muted">
-            Monitor leads, performance and trends.
-          </p>
+    <div className="mx-auto w-full max-w-7xl space-y-4 p-3 transition-colors duration-200 sm:space-y-6 sm:p-6">
+      {/* Greeting */}
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-app-text-muted">{todayLabel}</p>
+          <h1 className="mt-0.5 truncate text-xl font-semibold text-app-text sm:text-2xl">
+            {getGreeting()}
+            {name && <span className="capitalize">, {name}</span>}
+          </h1>
         </div>
-        {/* drives the call and Google Analytics sections below */}
+        {/* off until the lead, call and website APIs take a date range;
+            would drive every tab below */}
         {/* <DateRangePicker value={analyticsRange} onChange={setAnalyticsRange} /> */}
-        {/* <select
-              name=""
-              id=""
-              onChange={(e) => setCurrentAnalytics(e.target.value)}
-              className="border! border-primary/10! outline-none px-3 py-1 rounded-md cursor-pointer"
-            >
-              <option value="overview">Overview</option>
-              <option value="call-analytics">Call Analytics</option>
-            </select> */}
-      </div>
-      {/* CRM KPI CARDS */}
-      <div className="anim-stagger grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-5">
-        <StatCard icon={Users} label="Total leads" value={total.toLocaleString()} />
-        <StatCard icon={UserPlus} label="Today's leads" value={today.toLocaleString()} />
-        <StatCard icon={BadgeCheck} label="Converted leads" value={converted.toLocaleString()} />
-        <StatCard icon={Percent} label="Conversion rate" value={`${conversionRate}%`} />
-        <StatCard
+      </header>
+
+      {/* Shortcuts: one swipeable row on phones */}
+      <nav
+        aria-label="Shortcuts"
+        className="-mx-3 flex gap-2 overflow-x-auto px-3 scrollbar-hidden sm:mx-0 sm:flex-wrap sm:px-0"
+      >
+        {SHORTCUTS.map(({ label, icon, page }) => (
+          <Link
+            key={page}
+            to={dashboardPath(page)}
+            className="flex shrink-0 items-center gap-2 rounded-full border border-app-border! bg-app-surface px-3.5 py-2 text-sm font-medium text-app-text transition-colors hover:border-blue-500! hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            <Icon icon={icon} size="sm" className="text-app-text-muted" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+
+      {/* Headline numbers */}
+      <section aria-label="Lead summary" className="anim-stagger grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Kpi icon={UserPlus} accent="blue" label="Today's leads" value={today.toLocaleString()} />
+        <Kpi icon={Users} accent="amber" label="Total leads" value={total.toLocaleString()} />
+        <Kpi
+          icon={BadgeCheck}
+          accent="emerald"
+          label="Converted"
+          value={converted.toLocaleString()}
+          caption={`${conversionRate}% conversion rate`}
+        />
+        <Kpi
           icon={MessageCircle}
-          label="WhatsApp conversations"
-          value={whatsapp.toLocaleString()} />
+          accent="green"
+          label="WhatsApp chats"
+          value={whatsapp.toLocaleString()}
+        />
+      </section>
+
+      {/* only shown when leads came in during the last 24 hours */}
+      <RecentLeads />
+
+      {/* Sections */}
+      <div className="-mx-3 overflow-x-auto border-b border-app-border! px-3 pb-3 scrollbar-hidden sm:mx-0 sm:px-0">
+        <Tabs tabs={VIEWS} value={view} onChange={setView} className="flex-nowrap!" />
       </div>
 
-      {/* CHARTS SECTION */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <UiCard title="Source distribution" description="Where your leads come from">
-          {sourceItems.length ? (
-            <div className="max-h-80 overflow-y-auto pr-1">
-              <ProgressList showShare items={sourceItems} />
-            </div>
-          ) : (
-            <EmptyState icon={PieChartIcon} title="No leads yet" />
-          )}
-        </UiCard>
-
-        <UiCard title="Stages breakdown" description="Leads in each pipeline stage">
-          {stageItems.length ? (
-            <div className="grid items-center gap-5 sm:grid-cols-2">
-              <DonutChart
-                data={stageItems.map(({ label, value, color }) => ({ name: label, value, color }))}
-                centerLabel="Leads"
-                unit="leads" />
-              <div className="max-h-72 overflow-y-auto pr-1">
-                <ProgressList
-                  showShare
-                  total={stageItems.reduce((sum, item) => sum + item.value, 0)}
-                  items={stageItems} />
-              </div>
-            </div>
-          ) : (
-            <EmptyState icon={PieChartIcon} title="No leads yet" />
-          )}
-        </UiCard>
+      <div key={view} className="anim-enter">
+        {view === "leads" && <LeadsView sourceItems={sourceItems} stageItems={stageItems} />}
+        {view === "calls" && <CallsAnalytics dateRange={analyticsRange} />}
+        {view === "website" && <WebsiteView />}
       </div>
-      <CallsAnalytics dateRange={analyticsRange} />
-
-      {/* ===== GOOGLE ANALYTICS SECTION ===== */}
-      <div className="w-full space-y-4">
-        <GoogleAnalyticsChart showDatePicker={false} />
-        <TrafficSources />
-        <TopPagesTable />
-        {/* <GscSettings /> */}
-        <SearchConsoleQueries />
-        <ConversionEvents />
-        <DeviceAnalytics />
-        <GeoAnalytics />
-        <AudienceInsights />
-      </div>
-
-      {/* <div className="w-full space-y-6 mt-6">
-              <LocalSeoModule />
-            </div> */}
-
-      {/* <div className="w-full space-y-6 mt-6">
-              <WebsiteSeoDashboard />
-            </div> */}
     </div>
   );
 }
-
-const Card = ({ title, value }) => (
-  <div className="bg-app-surface dark:bg-app-surface rounded p-5">
-    <p className="text-gray-500 text-sm">{title}</p>
-    <h3 className="text-3xl font-bold mt-2">{value}</h3>
-  </div>
-);
-
-const FunnelBar = ({ label, value, total }) => {
-  const percentage = total ? (value / total) * 100 : 0;
-
-  return (
-    <div className="mb-4">
-      <div className="flex justify-between mb-1">
-        <span className="font-medium">{label}</span>
-        <span>{value}</span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
-        <div
-          className="bg-green-500 h-3 rounded-full transition-all duration-500"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-    </div>
-  );
-};
 
 export default Dashboard;

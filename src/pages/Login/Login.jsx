@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ONBOARDING_SIGNUP_URL } from "../../config/env";
 import { ROUTES } from "../../routes/paths";
 import AuthLayout from "./components/AuthLayout";
@@ -11,19 +11,24 @@ import { useForgotPassword } from "./hooks/useForgotPassword";
 import { useLogin } from "./hooks/useLogin";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   const { loginWithPassword, loginWithGoogle, handleGoogleError, isLoggingIn } =
     useLogin();
+  // Once the code is emailed, go straight to the screen where it is entered.
   const { sendResetEmail, isLoading: isSendingReset } = useForgotPassword({
-    onSuccess: () => setIsForgotPassword(false),
+    onSuccess: ({ email }) =>
+      navigate(
+        `${ROUTES.RESET_PASSWORD}?email=${encodeURIComponent(email.trim())}`,
+      ),
   });
 
   if (isForgotPassword) {
     return (
       <AuthLayout
         title="Forgot password?"
-        subtitle="Enter your email and we will send you a reset link."
+        subtitle="Enter your email and we will send you a reset code."
       >
         <ForgotPasswordForm
           onSubmit={sendResetEmail}

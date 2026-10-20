@@ -117,7 +117,7 @@ export default function ChatHistorySidebar({
           type="button"
           onClick={onNewChat}
           disabled={disabled}
-          className="flex flex-1 items-center gap-2 rounded-xl border border-[var(--cb-border)] px-3 py-2.5 text-sm text-[var(--cb-text-2)] transition hover:border-violet-400/40 hover:bg-[var(--cb-hover)] disabled:opacity-40"
+          className="flex flex-1 items-center gap-2 rounded-xl border border-[var(--cb-border)] px-3 py-2.5 text-sm text-[var(--cb-text-2)] transition hover:border-blue-400/40 hover:bg-[var(--cb-hover)] disabled:opacity-40"
         >
           <Plus size={16} className="text-[var(--cb-accent)]" />
           New chat
@@ -130,7 +130,7 @@ export default function ChatHistorySidebar({
       </div>
 
       <div className="shrink-0 px-3 pb-2">
-        <label className="flex items-center gap-2 rounded-lg border border-[var(--cb-border)] bg-[var(--cb-hover)] px-2.5 py-2 focus-within:border-violet-400/40">
+        <label className="flex items-center gap-2 rounded-lg border border-[var(--cb-border)] bg-[var(--cb-hover)] px-2.5 py-2 focus-within:border-blue-400/40">
           <Search size={14} className="shrink-0 text-[var(--cb-faint)]" />
           <input
             value={search}
@@ -302,7 +302,7 @@ function HistoryItem({
             }
           }}
           aria-label="Conversation title"
-          className="w-full rounded-lg border border-violet-500/60 bg-[var(--cb-raised)] px-2.5 py-1.5 text-sm text-[var(--cb-text)] outline-none"
+          className="w-full rounded-lg border border-blue-500/60 bg-[var(--cb-raised)] px-2.5 py-1.5 text-sm text-[var(--cb-text)] outline-none"
         />
       </li>
     );

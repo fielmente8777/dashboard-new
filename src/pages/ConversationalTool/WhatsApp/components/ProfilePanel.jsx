@@ -8,7 +8,8 @@ import IconButton from "../../../../components/ui/IconButton";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useToast } from "../../../../context/ToastContext";
 import { Stages } from "../../../../data/constant";
-import { formatDayLabel, formatTime, getAvatarColor } from "../chatUtils";
+import { formatDayLabel, formatTime } from "../chatUtils";
+import ContactAvatar from "./ContactAvatar";
 import { useConversationLead } from "../hooks/useConversationLead";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
@@ -88,11 +89,7 @@ const ProfilePanel = ({
       </div>
 
       <div className="flex flex-col items-center gap-1 border-b border-app-border! px-4 py-5 text-center">
-        <span
-          className={`mb-1 flex size-16 items-center justify-center rounded-full text-xl font-semibold text-white ${getAvatarColor(conversation.name)}`}
-        >
-          {conversation.name?.charAt(0)?.toUpperCase() || "?"}
-        </span>
+        <ContactAvatar name={conversation.name} size="lg" className="mb-1" />
         <p className="max-w-full truncate text-base font-semibold capitalize text-app-text">
           {conversation.name || "Unknown guest"}
         </p>

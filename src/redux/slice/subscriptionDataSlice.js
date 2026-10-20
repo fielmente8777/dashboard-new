@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getMySubscription } from "../../services/api/subscription";
+import { sessionApi } from "../api/sessionApi";
 
 const initialState = {
   loading: false,
@@ -7,25 +7,15 @@ const initialState = {
   error: null,
 };
 
+const { getSubscription } = sessionApi.endpoints;
+
+// Filled by the getSubscription query (loadSession / refreshSubscription in
+// redux/session.js); a request skipped because the answer is cached comes
+// back as a "condition" rejection.
 const subscriptionSlice = createSlice({
   name: "subscription",
   initialState,
   reducers: {
-    getSubscriptionRequest: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-
-    getSubscriptionSuccess: (state, action) => {
-      state.loading = false;
-      state.subscription = action.payload;
-    },
-
-    getSubscriptionFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-
     clearSubscription: (state) => {
       state.subscription = null;
       state.error = null;
@@ -41,39 +31,27 @@ const subscriptionSlice = createSlice({
       state.loading = false;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addMatcher(getSubscription.matchPending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addMatcher(getSubscription.matchFulfilled, (state, action) => {
+        state.loading = false;
+        state.subscription = action.payload;
+      })
+      .addMatcher(getSubscription.matchRejected, (state, action) => {
+        if (action.meta.condition) return;
+        // pages treat a failed load as "no plan yet", as before
+        state.loading = false;
+        state.subscription = [];
+        state.error = action.error?.message ?? "Failed to fetch subscription";
+      });
+  },
 });
 
-export const {
-  getSubscriptionRequest,
-  getSubscriptionSuccess,
-  getSubscriptionFailure,
-  clearSubscription,
-  clearSubscriptionApps,
-} = subscriptionSlice.actions;
+export const { clearSubscription, clearSubscriptionApps } =
+  subscriptionSlice.actions;
 
 export default subscriptionSlice.reducer;
-
-// THUNK
-export const fetchSubscriptionData = (token) => async (dispatch) => {
-  dispatch(getSubscriptionRequest());
-
-  try {
-    const data = await getMySubscription(token);
-
-    dispatch(getSubscriptionSuccess(data?.result?.docs || []));
-
-    return {
-      success: true,
-      data,
-    };
-  } catch (error) {
-    dispatch(
-      getSubscriptionFailure(error?.message || "Failed to fetch subscription"),
-    );
-
-    return {
-      success: false,
-      error: error?.message,
-    };
-  }
-};

@@ -146,7 +146,7 @@ const CallDetails = () => {
           <span className="mb-1.5 block text-xs font-medium text-app-text-muted">
             Follow up on
           </span>
-          <span className="block w-64">
+          <span className="block w-64 max-w-full">
             <DatePicker
               mode="datetime"
               timeStep={5}

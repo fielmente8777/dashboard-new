@@ -1,6 +1,7 @@
 import { Handle, Position, useReactFlow } from "reactflow";
+import NodeShell, { NodeOption } from "../NodeShell";
 
-export default function CarouselNode({ id, data }) {
+export default function CarouselNode({ id, data, selected }) {
   const { getNodes, setNodes, getEdges, setEdges } = useReactFlow();
   const nodes = getNodes();
 
@@ -20,93 +21,67 @@ export default function CarouselNode({ id, data }) {
   };
 
   return (
-    <div className="w-72 bg-app-surface rounded-lg shadow border overflow-hidden">
-      {/* Header */}
-      <div className="bg-blue-500 text-white flex justify-between items-center px-3 py-2 text-sm font-semibold">
-        <div className="flex items-center gap-2">
-          <span>🎠</span>
-          Carousel
-        </div>
+    <NodeShell type="carousel" width="w-72" selected={selected} onRemove={removeNode} hint="Click to edit">
+      <p className="whitespace-pre-line px-3 pt-3 text-sm text-app-text">{bodyText}</p>
 
-        <div
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            removeNode();
-          }}
-        >
-          X
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="px-3 text-sm text-app-text border-b py-2">{bodyText}</div>
-
-      {/* Cards */}
-      <div className="px-3 py-2 space-y-3">
+      <div className="space-y-2.5 p-3">
         {cards.map((card, cardIndex) => {
           const header = card.header;
           const description = card.body?.text;
           const buttons = card.action?.buttons || [];
 
           return (
-            <div key={cardIndex} className="border rounded-md p-2 bg-app-surface-secondary">
-              {/* HEADER */}
+            <div
+              key={cardIndex}
+              className="rounded-lg border border-app-border! bg-app-surface-secondary p-2"
+            >
               {header?.type === "image" && header?.image?.link && (
                 <img
                   src={header.image.link}
-                  alt="card"
-                  className="w-full h-28 object-cover rounded mb-2"
+                  alt=""
+                  className="mb-2 h-28 w-full rounded-md object-cover"
                 />
               )}
 
               {header?.type === "text" && (
-                <div className="text-sm font-semibold mb-1">
+                <p className="mb-1 text-sm font-semibold text-app-text">
                   {header.text || `Card ${cardIndex + 1}`}
-                </div>
+                </p>
               )}
 
-              {/* BODY */}
-              <div className="text-xs text-app-text-muted mb-2">{description}</div>
+              {description && <p className="mb-2 text-xs text-app-text-muted">{description}</p>}
 
-              {/* BUTTONS */}
-              {buttons.map((btn, idx) => (
-                <div
-                  key={btn.quick_reply?.id || idx}
-                  className="relative bg-app-surface-secondary rounded px-2 py-1 text-xs mb-1 flex justify-between items-center"
-                >
-                  {btn.quick_reply?.title}
-
-                  <Handle
-                    type="source"
-                    position={Position.Right}
-                    id={btn.quick_reply?.id}
-                    className="!bg-green-500 !w-2 !h-2"
-                  />
-                </div>
-              ))}
+              <div className="space-y-1">
+                {buttons.map((btn, idx) => (
+                  <NodeOption
+                    key={btn.quick_reply?.id || idx}
+                    className="bg-app-surface! px-2! py-1! text-xs!"
+                    handle={
+                      <Handle
+                        type="source"
+                        position={Position.Right}
+                        id={btn.quick_reply?.id}
+                        className="eaz-handle-out"
+                      />
+                    }
+                  >
+                    {btn.quick_reply?.title}
+                  </NodeOption>
+                ))}
+              </div>
             </div>
           );
         })}
 
-        {/* Default Path */}
-        <div className="relative bg-app-surface-secondary rounded px-2 py-1 text-xs flex justify-between items-center">
+        <NodeOption
+          className="text-xs! text-app-text-muted!"
+          handle={<Handle type="source" position={Position.Right} id="default" className="eaz-handle-out" />}
+        >
           Default
-          <Handle
-            type="source"
-            position={Position.Right}
-            id="default"
-            className="!bg-green-500 !w-3 !h-3"
-          />
-        </div>
+        </NodeOption>
       </div>
 
-      {/* Input */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-gray-400 !w-3 !h-3"
-      />
-    </div>
+      <Handle type="target" position={Position.Left} className="eaz-handle-in" />
+    </NodeShell>
   );
 }

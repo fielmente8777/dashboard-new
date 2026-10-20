@@ -14,14 +14,8 @@ import {
   useCompleteOnboardingMutation,
   useCreateWebsiteMutation,
 } from "../../redux/api/onboardingApi";
-import { fetchSubscriptionData } from "../../redux/slice/subscriptionDataSlice";
-import {
-  fetchAuthUserProfile,
-  fetchUserProfile,
-  selectNeedsOnboarding,
-  setHid,
-} from "../../redux/slice/UserSlice";
-import { fetchWebsiteData } from "../../redux/slice/websiteDataSlice";
+import { loadSession } from "../../redux/session";
+import { selectNeedsOnboarding, setHid } from "../../redux/slice/UserSlice";
 import { ROUTES } from "../../routes/paths";
 import { getCookie } from "../../utils/handleCookies";
 import { clearSession, getToken } from "../../utils/session";
@@ -197,8 +191,6 @@ const OnboardingForm = () => {
   };
 
   const finish = async () => {
-    const token = getToken();
-
     if (!localStorage.getItem(WEBSITE_CREATED_KEY)) {
       setSubmitting("Creating your website...");
       const website = await createWebsite(form).unwrap();
@@ -223,15 +215,9 @@ const OnboardingForm = () => {
 
     // load the new hotel before entering, so the dashboard does not send
     // the user back here
-    await Promise.all([
-      dispatch(fetchUserProfile(token)),
-      dispatch(fetchAuthUserProfile(token)),
-      dispatch(fetchSubscriptionData(token)),
-    ]);
-    if (hid && hid !== "true") {
-      dispatch(setHid(hid));
-      dispatch(fetchWebsiteData(token, hid));
-    }
+    await dispatch(loadSession({ force: true }));
+    // the dashboard loads this hotel's website data on the way in
+    if (hid && hid !== "true") dispatch(setHid(hid));
 
     showToast({ message: "Welcome to Eazotel! Your property is ready." });
     navigate(ROUTES.ROOT, { replace: true });

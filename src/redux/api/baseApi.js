@@ -40,6 +40,17 @@ export const baseApi = createApi({
   endpoints: () => ({}),
 });
 
+// The answer's body, also for a 4xx/5xx - what the old fetch helpers in
+// services/api returned, so pages that read `success` / `responseMessage`
+// from it keep working:
+//   const response = responseBody(await getTemplates(hid));
+// Throws when no answer came back at all (offline, not JSON), as fetch did.
+export const responseBody = (result) => {
+  if (!result.error) return result.data;
+  if (typeof result.error.status === "number") return result.error.data;
+  throw result.error;
+};
+
 export const getApiErrorMessage = (error, fallback = "Something went wrong") => {
   if (error?.status === "FETCH_ERROR") {
     return "Unable to reach the server. Please check your connection.";

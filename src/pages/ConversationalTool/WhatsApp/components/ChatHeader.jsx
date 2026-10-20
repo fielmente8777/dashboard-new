@@ -2,7 +2,7 @@ import { ArrowLeft, PanelRight, Phone, Trash2, X } from "lucide-react";
 import Button from "../../../../components/ui/Button";
 import CustomDropdown from "../../../../components/ui/Dropdown";
 import IconButton from "../../../../components/ui/IconButton";
-import { getAvatarColor } from "../chatUtils";
+import ContactAvatar from "./ContactAvatar";
 
 // The bar above the messages: who the chat is with, and the actions on it.
 // While messages are selected it turns into the bar for deleting them.
@@ -51,11 +51,7 @@ const ChatHeader = ({
         onClick={onShowProfile}
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
-        <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${getAvatarColor(conversation.name)}`}
-        >
-          {conversation.name?.charAt(0)?.toUpperCase() || "?"}
-        </span>
+        <ContactAvatar name={conversation.name} />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold capitalize text-app-text">
             {conversation.name || conversation.phone}

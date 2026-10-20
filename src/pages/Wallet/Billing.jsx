@@ -38,13 +38,10 @@ import {
 import { NEW_BASE_URL } from "../../data/constant";
 import { useDispatch, useSelector } from "react-redux";
 import { daysLeft } from "../../utils/daysLeft";
-import {
-  clearSubscriptionApps,
-  fetchSubscriptionData,
-} from "../../redux/slice/subscriptionDataSlice";
+import { clearSubscriptionApps } from "../../redux/slice/subscriptionDataSlice";
+import { refreshSubscription } from "../../redux/session";
 import Navbar from "../../components/Navbar/Navbar";
 import { RAZORPAY_BILLING_KEY_ID, RAZORPAY_CHECKOUT_SCRIPT_URL } from "../../config/env";
-import { getCookie } from "../../utils/handleCookies";
 
 const GST_PERCENT = 18;
 const TEAM_SEAT_PRICE = 500;
@@ -469,8 +466,7 @@ const BillingSummary = ({
             if (!verifyRes.ok) throw new Error(`Verify failed: ${verifyRes.status}`);
 
             alert("Payment successful");
-            const token = getCookie("token");
-            if (token) dispatch(fetchSubscriptionData(token));
+            dispatch(refreshSubscription());
           } catch (error) {
             console.error("Error verifying payment:", error);
             alert(

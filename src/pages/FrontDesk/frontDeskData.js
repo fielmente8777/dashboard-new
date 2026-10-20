@@ -13,17 +13,30 @@ const getBookingKind = (booking) => {
   return "booking";
 };
 
-// Room types become collapsible groups, with one row per room number.
-export const buildResources = (rooms) =>
-  rooms.map((room, index) => ({
-    id: `room-type-${index}`,
-    name: room.roomName,
-    expanded: true,
-    children: (room.roomNumbers || []).map((number) => ({
-      id: String(number),
-      name: String(number),
-    })),
-  }));
+// Calendar rows: a header row per room type, then one row per room number.
+// Room types in `collapsed` show their header only. Header rows hold no
+// bookings; isGroupRow() tells them apart.
+const GROUP_PREFIX = "room-type-";
+export const isGroupRow = (resourceId) => String(resourceId).startsWith(GROUP_PREFIX);
+
+export const buildResources = (rooms, collapsed = new Set()) =>
+  rooms.flatMap((room, index) => {
+    const id = `${GROUP_PREFIX}${index}`;
+    const isCollapsed = collapsed.has(id);
+    const header = {
+      id,
+      name: `${isCollapsed ? "▸" : "▾"} ${room.roomName}`,
+      cssClass: "fd-group-row",
+    };
+    if (isCollapsed) return [header];
+    return [
+      header,
+      ...(room.roomNumbers || []).map((number) => ({
+        id: String(number),
+        name: String(number),
+      })),
+    ];
+  });
 
 // Maintenance blocks (type "rooms") and bookings (type "bookings") as
 // calendar events. `resource` is the room number the bar sits on.

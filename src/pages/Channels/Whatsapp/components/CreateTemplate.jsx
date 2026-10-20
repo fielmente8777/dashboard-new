@@ -9,7 +9,7 @@ import { templateSchema } from "../../../../schema/templateSchema";
 import {
   createWhatsAppMessageTemplate,
   updateWhatsAppMessageTemplate,
-} from "../../../../services/api/whatsApp";
+} from "../../../../redux/api/whatsappBusinessApi";
 import TemplateButtons from "./TemplateButtons";
 import TemplateContent from "./TemplateContent";
 import TemplateHeader from "./TemplateHeader";

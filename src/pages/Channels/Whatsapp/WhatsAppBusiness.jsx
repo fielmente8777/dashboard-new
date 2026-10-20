@@ -9,12 +9,12 @@ import {
   Workflow,
   ListTree,
 } from "lucide-react";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ReactFlowProvider } from "reactflow";
 import WhatsappBusinessSkelton from "../../../components/Skeltons/WhatsappBusinessSkelton";
 import { ErrorState } from "../../../components/ui/States";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
-import DataContext from "../../../context/DataContext";
+import { useIntegrationStatus } from "../../../hooks/useIntegrationStatus";
 import { useToast } from "../../../context/ToastContext";
 import {
   getWhatsappAccountDetails,
@@ -22,7 +22,7 @@ import {
   getWhatsAppMessageTemplates,
   getWhatsAppProfile,
   updateWhatsAppProfile,
-} from "../../../services/api/whatsApp";
+} from "../../../redux/api/whatsappBusinessApi";
 import AccountCard from "./components/AccountCard";
 import AIConfigurationCard from "./components/AIConfigurationCard";
 import AutoMessageCard from "./components/AutoMessageCard";
@@ -79,7 +79,7 @@ const toSection = (section, template) => {
 const WhatsAppBusiness = ({ template = false, section = null }) => {
   const { showToast } = useToast();
   const { integrationStatus, checkIntegrationStatus, isLoadingIntegrationStatus } =
-    useContext(DataContext);
+    useIntegrationStatus();
 
   const [active, setActive] = useState(() => toSection(section, template));
   const [statusChecked, setStatusChecked] = useState(false);

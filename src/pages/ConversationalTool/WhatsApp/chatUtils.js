@@ -52,9 +52,13 @@ export const byLatestActivity = (a, b) =>
 export const matchesSearch = (conversation, search) => {
   const text = search.trim().toLowerCase();
   if (!text) return true;
+  // "+91 96672-09878" finds 919667209878: numbers compare digits only
+  const digits = text.replace(/\D/g, "");
+  const isNumber = digits.length > 0 && /^[\d\s+()-]+$/.test(text);
   return (
     conversation.name?.toLowerCase().includes(text) ||
     String(conversation.phone || "").includes(text) ||
+    (isNumber && String(conversation.phone || "").replace(/\D/g, "").includes(digits)) ||
     conversation.last_message?.text?.toLowerCase().includes(text)
   );
 };

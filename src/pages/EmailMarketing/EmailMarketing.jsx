@@ -14,7 +14,7 @@ import {
   createManualRecipientBatch,
   getEmailCampaigns,
   sendEmailCampaign,
-} from "../../services/api/emailCampaign.js";
+} from "../../redux/api/emailMarketingApi";
 import EmailCampaignSummary from "./components/EmailCampaignSummary.jsx";
 import ExcelRecipientsDialog from "./components/ExcelRecipientsDialog.jsx";
 import RecipientsPanel from "./components/RecipientsPanel.jsx";

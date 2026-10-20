@@ -1,29 +1,20 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.jsx";
-import { DataProvider } from "./context/DataContext.jsx";
-import { BrowserRouter } from "react-router-dom";
-import GlobalDataProvider from "./context/GlobalDataProvider.jsx";
+import "./App.css";
+import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./redux/Store.js";
-import Whatsapp from "./components/Contacts/WhtasApp.jsx";
-import { ToastProvider } from "./context/ToastContext.jsx";
-import { ConfirmProvider } from "./context/ConfirmContext.jsx";
-import ChatbotWidget from "./components/chatbot/ChatbotWidget.jsx";
+import { applyColorMode, selectColorMode } from "./redux/slice/themeSlice.js";
+import router from "./Navigation/router.jsx";
+
+// index.html already set the class before paint; this also saves the choice
+// and sets the browser's theme colour.
+applyColorMode(selectColorMode(store.getState()));
+
+// Providers that need the router (toasts, confirm, chatbot, global data)
+// live in Navigation/RootLayout.jsx.
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <DataProvider>
-      <BrowserRouter>
-        <GlobalDataProvider />
-        <ToastProvider>
-          <ConfirmProvider>
-            {/* <Whatsapp whatsAppNumber={"+919501868775"} /> */}
-            <App />
-          </ConfirmProvider>
-        </ToastProvider>
-        <ChatbotWidget />
-      </BrowserRouter>
-    </DataProvider>
+    <RouterProvider router={router} />
   </Provider>,
 );

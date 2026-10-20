@@ -5,10 +5,26 @@ const NODE = { service: "node" };
 const NODE_OPEN = { service: "node", skipAuth: true };
 const CORE_OPEN = { skipAuth: true };
 
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["Integration"] });
+
 // Connecting and disconnecting apps on the Integrations page.
 // Each answer is passed through as the API sends it.
-export const integrationsApi = baseApi.injectEndpoints({
+export const integrationsApi = api.injectEndpoints({
   endpoints: (build) => ({
+    // hid -> which apps are connected: { meta, exotel, metaWhatsapp,
+    // googleAdsInsight: { status, lastSyncTime }, ... }
+    // Read it with hooks/useIntegrationStatus.
+    getIntegrationStatus: build.query({
+      query: (hid) => ({
+        url: "/api/v1/integration/get",
+        params: { hid },
+        headers: { "ngrok-skip-browser-warning": "true" },
+      }),
+      transformResponse: (response) => response?.result?.docs,
+      providesTags: ["Integration"],
+      extraOptions: NODE,
+    }),
+
     // { ndid, hid } -> { result: { docs: { authUrl } } }
     connectMetaLead: build.mutation({
       query: ({ ndid, hid }) => ({
@@ -28,13 +44,11 @@ export const integrationsApi = baseApi.injectEndpoints({
       extraOptions: NODE_OPEN,
     }),
 
-    // ndid -> { auth_url }
+    // hid -> { url } - Google's consent page; afterwards gian sends the user
+    // back to /integrations?gmail=connected|cancelled
     startGmailAuth: build.mutation({
-      query: (ndid) => ({
-        url: "/api/v1/emails/google/login",
-        params: { ndid },
-      }),
-      extraOptions: NODE_OPEN,
+      query: (hid) => ({ url: "/api/v1/gmail-leads/connect", params: { hid } }),
+      extraOptions: NODE,
     }),
 
     // { hid, id } - id is the app's status key -> { success, responseMessage }
@@ -73,6 +87,7 @@ export const integrationsApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetIntegrationStatusQuery,
   useConnectMetaLeadMutation,
   useStartGoogleAdsAuthMutation,
   useStartGmailAuthMutation,

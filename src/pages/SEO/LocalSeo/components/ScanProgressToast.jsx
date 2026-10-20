@@ -16,7 +16,7 @@ const ScanProgressToast = ({ progress, onDismiss }) => {
   return (
     <div
       role="status"
-      className="anim-enter fixed bottom-6 right-6 z-50 w-80 rounded-xl border border-app-border! bg-app-surface p-4 shadow-xl"
+      className="anim-enter fixed bottom-4 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] sm:bottom-6 sm:right-6 rounded-xl border border-app-border! bg-app-surface p-4 shadow-xl"
     >
       <div className="flex items-start gap-2.5">
         <Icon

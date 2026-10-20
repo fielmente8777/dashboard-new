@@ -1,17 +1,16 @@
-import { MessagesSquare, Plus, Trash2, User } from "lucide-react";
+import { MessagesSquare, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import Badge from "../../../../components/ui/Badge";
 import Button from "../../../../components/ui/Button";
 import { Input } from "../../../../components/ui/Field";
-import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import { EmptyState } from "../../../../components/ui/States";
 import Tabs from "../../../../components/ui/Tabs";
+import ContactAvatar from "./ContactAvatar";
 import {
   CHAT_TABS,
   byLatestActivity,
   formatListTime,
-  getAvatarColor,
   getLastActivity,
   isInTab,
   matchesSearch,
@@ -36,13 +35,10 @@ const ConversationRow = ({
     >
       {/* the checkbox takes the avatar's place on hover, or while selecting */}
       <div className="relative size-10 shrink-0">
-        <span
-          className={`flex size-10 items-center justify-center rounded-full text-sm font-semibold text-white ${getAvatarColor(conversation.name)} ${
-            showCheckbox ? "invisible" : "lg:group-hover:invisible"
-          }`}
-        >
-          {conversation.name?.charAt(0)?.toUpperCase() || <Icon icon={User} />}
-        </span>
+        <ContactAvatar
+          name={conversation.name}
+          className={showCheckbox ? "invisible" : "lg:group-hover:invisible"}
+        />
         <span
           className={`absolute inset-0 items-center justify-center ${
             showCheckbox ? "flex" : "hidden lg:group-hover:flex"
@@ -118,16 +114,35 @@ const ConversationList = ({
   const [search, setSearch] = useState("");
   const [checkedIds, setCheckedIds] = useState([]);
 
+  // per tab: every conversation, or only the matches while searching
   const counts = useMemo(
     () =>
       Object.fromEntries(
         CHAT_TABS.map(({ value }) => [
           value,
-          conversations.filter((item) => isInTab(item, value)).length,
+          conversations.filter(
+            (item) => isInTab(item, value) && matchesSearch(item, search),
+          ).length,
         ]),
       ),
-    [conversations],
+    [conversations, search],
   );
+
+  // Searching jumps to the tab that has the conversation: the open tab stays
+  // when it has a match, otherwise the first tab that does (Active, Inactive,
+  // Converted). Clicking another tab afterwards is left alone.
+  const handleSearch = (value) => {
+    setSearch(value);
+    if (!value.trim()) return;
+
+    const hasMatch = (tabValue) =>
+      conversations.some(
+        (item) => isInTab(item, tabValue) && matchesSearch(item, value),
+      );
+    if (hasMatch(tab)) return;
+    const next = CHAT_TABS.find((item) => hasMatch(item.value));
+    if (next) onTabChange(next.value);
+  };
 
   const visible = useMemo(
     () =>
@@ -160,7 +175,7 @@ const ConversationList = ({
         <Input
           type="search"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           placeholder="Search name, number or message"
           aria-label="Search conversations"
         />
@@ -206,7 +221,7 @@ const ConversationList = ({
             title={search ? "No conversations match" : "No conversations here"}
             description={
               search
-                ? "Try a different name or number, or look in another tab."
+                ? "Nothing in any tab matches. Try a different name or number."
                 : "WhatsApp messages from your guests will appear here."
             }
           />

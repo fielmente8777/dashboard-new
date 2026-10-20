@@ -1,8 +1,8 @@
-import { CreditCard, LogOut, QrCode } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { Bell, CreditCard, LogOut, Moon, QrCode, Settings, Sun } from "lucide-react";
+import { useColorMode } from "../../hooks/useColorMode";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import DataContext from "../../context/DataContext";
 import { setHid } from "../../redux/slice/UserSlice";
 import { PAGES, ROUTES, dashboardPath } from "../../routes/paths";
 import { clearSession } from "../../utils/session";
@@ -13,13 +13,15 @@ const itemClassName =
   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-app-text transition-colors hover:bg-app-surface-secondary";
 
 // The avatar in the navbar and the account menu it opens.
-const UserMenu = () => {
+// On phones the navbar hides its Notifications, Settings and theme buttons,
+// so the menu lists them instead.
+const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const { user: hotel, authUser } = useSelector((state) => state.userProfile);
-  const { setAuth, setSelectedConversation } = useContext(DataContext);
+  const { isDarkMode, toggleColorMode } = useColorMode();
 
   const name = authUser?.userName || hotel?.Profile?.hotelName || "";
   const initial = name.charAt(0).toUpperCase();
@@ -45,9 +47,7 @@ const UserMenu = () => {
   const handleLogout = () => {
     setIsOpen(false);
     clearSession();
-    setAuth(false);
     dispatch(setHid(null));
-    setSelectedConversation(null);
     navigate(ROUTES.LOGIN);
   };
 
@@ -87,6 +87,41 @@ const UserMenu = () => {
 
           <div className="my-1 h-px bg-app-border" />
 
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              onOpenNotifications?.();
+            }}
+            className={`${itemClassName} sm:hidden`}
+          >
+            <Icon icon={Bell} className="text-app-text-muted" />
+            Notifications
+            {unreadCount > 0 && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-ternary px-1.5 text-[11px] font-semibold leading-none text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+          <Link
+            role="menuitem"
+            to={dashboardPath(PAGES.SETTINGS)}
+            onClick={() => setIsOpen(false)}
+            className={`${itemClassName} sm:hidden`}
+          >
+            <Icon icon={Settings} className="text-app-text-muted" />
+            Settings
+          </Link>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={toggleColorMode}
+            className={`${itemClassName} sm:hidden`}
+          >
+            <Icon icon={isDarkMode ? Sun : Moon} className="text-app-text-muted" />
+            {isDarkMode ? "Light mode" : "Dark mode"}
+          </button>
           <a
             role="menuitem"
             href={BILLING_PORTAL_URL}

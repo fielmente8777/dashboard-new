@@ -1,5 +1,5 @@
 import { ArrowDown, X } from "lucide-react";
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
@@ -90,6 +90,25 @@ const MessageList = ({
   const selecting = selectedKeys.length > 0;
   const lastMessage = messages[messages.length - 1];
 
+  // [{ key, date, messages: [{ message, index }] }], one entry per day
+  const days = useMemo(
+    () =>
+      messages.reduce((groups, message, index) => {
+        const current = groups[groups.length - 1];
+        if (current && isSameDay(current.date, message.createdAt)) {
+          current.messages.push({ message, index });
+        } else {
+          groups.push({
+            key: `${message.createdAt}-${index}`,
+            date: message.createdAt,
+            messages: [{ message, index }],
+          });
+        }
+        return groups;
+      }, []),
+    [messages],
+  );
+
   const scrollToEnd = (behavior = "auto") => {
     const element = scrollRef.current;
     element?.scrollTo({ top: element.scrollHeight, behavior });
@@ -145,24 +164,20 @@ const MessageList = ({
               </p>
             )}
 
-            <div className="space-y-1">
-              {messages.map((message, index) => {
-                const key = message.messageId || message._id;
-                const previous = messages[index - 1];
-                const startsDay =
-                  !previous ||
-                  !isSameDay(previous.createdAt, message.createdAt);
+            {days.map((day) => (
+              <section key={day.key} className="space-y-1">
+                {/* sticky inside its own day only */}
+                <p className="pointer-events-none sticky top-0 z-[5] py-2 text-center">
+                  <span className="rounded-full border border-app-border! bg-app-surface/95 px-3 py-1 text-[11px] font-medium text-app-text-muted shadow-sm backdrop-blur">
+                    {formatDayLabel(day.date)}
+                  </span>
+                </p>
+                {day.messages.map(({ message, index }) => {
+                  const key = message.messageId || message._id;
 
-                return (
-                  <Fragment key={message._id || key || index}>
-                    {startsDay && (
-                      <p className="sticky top-0 z-[5] py-2 text-center">
-                        <span className="rounded-full bg-app-surface px-3 py-1 text-[11px] font-medium text-app-text-muted shadow-sm">
-                          {formatDayLabel(message.createdAt)}
-                        </span>
-                      </p>
-                    )}
+                  return (
                     <MessageBubble
+                      key={message._id || key || index}
                       message={message}
                       ndid={ndid}
                       selecting={selecting}
@@ -171,10 +186,10 @@ const MessageList = ({
                       onResend={onResend}
                       onImageClick={setImageUrl}
                     />
-                  </Fragment>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </section>
+            ))}
           </>
         )}
       </div>

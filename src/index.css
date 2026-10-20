@@ -715,3 +715,87 @@ html.dark select option {
 .chat-markdown td { border: 1px solid var(--cb-border); padding: 0.35rem 0.6rem; text-align: left; white-space: nowrap; }
 .chat-markdown th { background: var(--cb-hover); font-weight: 600; }
 .chat-markdown blockquote { border-left: 3px solid rgb(139 92 246 / 0.6); padding-left: 0.75rem; color: var(--cb-muted); }
+
+/* Rich text editor (Jodit). Its own "dark" theme is a flat grey that ignores
+   the dashboard, so the editor always runs the default theme and takes its
+   colours from the app tokens, which already switch with light / dark mode.
+   :root:root outranks Jodit's own :root block, which loads later. Popups and
+   dropdowns are attached to <body>, so the variables must live this high up. */
+:root:root {
+  --jd-font-default: inherit;
+  --jd-border-radius-default: 0.5rem;
+  --jd-color-text: var(--app-text);
+  --jd-color-default: var(--app-text);
+  --jd-color-dark: var(--app-text);
+  --jd-color-label: var(--app-text-muted);
+  --jd-color-placeholder: var(--app-text-faint);
+  --jd-color-icon: var(--app-text-muted);
+  --jd-color-text-icons: var(--app-text-muted);
+  --jd-color-folder-title: var(--app-text-muted);
+  --jd-color-border: var(--app-border);
+  --jd-color-separator: var(--app-border);
+  --jd-color-border-active: var(--app-text-faint);
+  --jd-color-border-selected: #3b82f6;
+  --jd-color-panel: var(--app-surface-secondary);
+  --jd-color-background-default: var(--app-surface);
+  --jd-color-background-light-gray: var(--app-surface);
+  --jd-color-background-gray: var(--app-surface-secondary);
+  --jd-color-background-gray-hover: var(--app-surface-secondary);
+  --jd-color-background-button-hover: color-mix(in srgb, var(--app-text) 10%, transparent);
+  --jd-color-button-background-hover: color-mix(in srgb, var(--app-text) 10%, transparent);
+  --jd-color-button-background-hover-opacity40: color-mix(in srgb, var(--app-text) 6%, transparent);
+  --jd-color-button-background-hover-opacity60: color-mix(in srgb, var(--app-text) 8%, transparent);
+  --jd-color-background-button-hover-opacity30: color-mix(in srgb, var(--app-text) 5%, transparent);
+  --jd-color-background-active: #3b82f6;
+  --jd-color-background-selection: color-mix(in srgb, #3b82f6 30%, transparent);
+  --jd-color-source-area: #0f172a;
+}
+
+/* the toolbar keeps a little air and its separators follow the border colour */
+.jodit-toolbar__box:not(:empty) {
+  padding: 2px 4px;
+}
+.jodit-wysiwyg {
+  color: var(--app-text);
+}
+.jodit-wysiwyg a {
+  color: #3b82f6;
+}
+
+/* Front desk calendar (DayPilot Lite). Its theme is a set of CSS variables
+   on .scheduler_default_main, injected at runtime; the wrapper class outranks
+   it and points every colour at the app tokens, so it follows light / dark. */
+.fd-calendar .scheduler_default_main {
+  --dp-scheduler-font-family: inherit;
+  --dp-scheduler-font-size: 13px;
+  --dp-scheduler-border-color: var(--app-border);
+  --dp-scheduler-border-inner-color: var(--app-border);
+  --dp-scheduler-grid-line-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+  --dp-scheduler-grid-line-break-color: color-mix(in srgb, var(--app-text) 18%, transparent);
+  --dp-scheduler-cell-bg-color: var(--app-surface);
+  --dp-scheduler-cell-business-bg-color: var(--app-surface);
+  --dp-scheduler-header-bg-color: var(--app-surface-secondary);
+  --dp-scheduler-header-color: var(--app-text);
+  --dp-scheduler-event-color: #ffffff;
+  --dp-scheduler-event-border-radius: 6px;
+  --dp-scheduler-event-box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  --dp-scheduler-event-selected-bg-color: color-mix(in srgb, #3b82f6 35%, transparent);
+  --dp-scheduler-selectionrectangle-color: #3b82f6;
+  --dp-scheduler-focus-outline-color: #3b82f6;
+  --dp-scheduler-shadow-color: color-mix(in srgb, #3b82f6 25%, transparent);
+  --dp-scheduler-shadow-border-color: #3b82f6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+/* room-type header rows: a band across the grid, clickable to fold */
+.fd-calendar .fd-group-row {
+  cursor: pointer;
+  font-weight: 600;
+}
+.fd-calendar .fd-group-row,
+.fd-calendar .fd-group-cell {
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface-secondary)) !important;
+}
+.fd-calendar .fd-group-cell {
+  pointer-events: none;
+}

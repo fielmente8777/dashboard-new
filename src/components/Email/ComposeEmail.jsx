@@ -11,8 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useContext, useEffect, useMemo, useState } from "react";
-import DataContext from "../../context/DataContext";
+import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import AITemplateModal from "../../pages/EmailMarketing/components/AITemplateModal";
 import EmailPreviewFrame from "../../pages/EmailMarketing/components/EmailPreviewFrame";
@@ -46,7 +45,6 @@ function ComposeEmail({
   initialTemplate = null,
 }) {
   const { showToast } = useToast();
-  const { isDarkMode } = useContext(DataContext);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(recipients.join(", "));
   const [subject, setSubject] = useState(initialTemplate?.subject || "");
@@ -64,7 +62,6 @@ function ComposeEmail({
   const editorConfig = useMemo(
     () => ({
       readonly: false,
-      theme: isDarkMode ? "dark" : "default",
       height: 240,
       minHeight: 160,
       placeholder: "Write your message…",
@@ -73,12 +70,13 @@ function ComposeEmail({
       showCharsCounter: false,
       showWordsCounter: false,
       showXPathInStatusbar: false,
+      hidePoweredByJodit: true,
       buttons: ["bold", "italic", "underline", "|", "fontsize", "brush", "|", "ul", "ol", "|", "align", "link", "|", "undo", "redo"],
       uploader: { insertImageAsBase64URI: true },
       // keeps template table cells intact when edited as text
       cleanHTML: { removeEmptyElements: false },
     }),
-    [isDarkMode],
+    [],
   );
 
   const typedEmails = parseEmails(to);
@@ -224,7 +222,7 @@ function ComposeEmail({
                 </div>
               ) : (
                 <JoditEditor
-                  key={`${editorKey}-${isDarkMode}`}
+                  key={editorKey}
                   value={body}
                   config={{ ...editorConfig, disabled: isSubmitting }}
                   onBlur={setBody}

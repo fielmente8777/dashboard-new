@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useContext } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -16,12 +16,20 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import DataContext from "../../context/DataContext";
 import DashboardCard from "../../components/Card/DashboardCard";
+import { useTenant } from "../../hooks/useTenant";
+import { useGetMetaLeadsTotalQuery } from "../../redux/api/metaApi";
+
+// the sheet rows the charts below are built from; nothing supplies them yet
+const NO_SHEET_ROWS = [];
 
 const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
-  const { Leads, setLeads } = useContext(DataContext);
-  const { leadsList, setLeadsLists,metaLeads } = useContext(DataContext);
+  const [Leads, setLeads] = useState(NO_SHEET_ROWS);
+  const leadsList = NO_SHEET_ROWS;
+  const { hid } = useTenant();
+  const { data: metaLeadsTotal = 0 } = useGetMetaLeadsTotalQuery(hid, {
+    skip: !hid,
+  });
 
   // console.log(leadsList);
 
@@ -329,7 +337,7 @@ const AdLeadsAnalytics = ({ showTitle = true, rangeDate }) => {
             )} */}
 
           <DashboardCard
-            amount={metaLeads.length || 0}
+            amount={metaLeadsTotal}
             label={"Total Meta Leads"}
             progress={"100"}
           />

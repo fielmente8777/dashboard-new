@@ -68,8 +68,8 @@ export default function Keywords() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-xl border overflow-x-auto">
+        <table className="w-full min-w-[560px]">
           <thead className="bg-gray-100 text-sm">
             <tr>
               <th className="px-6 py-3 text-left">Keyword</th>

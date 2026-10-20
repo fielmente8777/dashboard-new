@@ -5,7 +5,7 @@ import {
   MdErrorOutline,
   MdRefresh,
 } from "react-icons/md";
-import { getWhatsAppTransactions } from "../../../../../services/api/whatsApp";
+import { getWhatsAppTransactions } from "../../../../../redux/api/whatsappBusinessApi";
 import { formatMoney } from "./utils";
 
 const PAGE_SIZE = 10;

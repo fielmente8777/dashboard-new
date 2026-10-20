@@ -1,5 +1,5 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import DataContext from "../../../context/DataContext";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useIntegrationStatus } from "../../../hooks/useIntegrationStatus";
 import { useApiAction } from "../../../hooks/useApiAction";
 import {
   useGetAdsAccountsQuery,
@@ -27,7 +27,7 @@ export const useGoogleAds = () => {
     integrationStatus,
     checkIntegrationStatus,
     isLoadingIntegrationStatus,
-  } = useContext(DataContext);
+  } = useIntegrationStatus();
   const connected = Boolean(integrationStatus?.googleAdsInsight?.status);
   const run = useApiAction();
 

@@ -1,0 +1,94 @@
+/* React Flow (v11) in the dashboard's colours, light and dark.
+   Everything is scoped to .eaz-flow, the chatbot builder's canvas. */
+
+.eaz-flow {
+  --eaz-flow-line: var(--app-border-strong, var(--app-border));
+}
+
+/* the dotted canvas */
+.eaz-flow .react-flow__background circle,
+.eaz-flow .react-flow__background-pattern {
+  fill: var(--eaz-flow-line);
+}
+
+/* connections */
+.eaz-flow .react-flow__edge-path,
+.eaz-flow .react-flow__connection-path {
+  stroke: var(--eaz-flow-line);
+  stroke-width: 2;
+}
+.eaz-flow .react-flow__edge:hover .react-flow__edge-path {
+  stroke: #ef4444; /* a click removes the connection */
+  cursor: pointer;
+}
+.eaz-flow .react-flow__edge.selected .react-flow__edge-path {
+  stroke: #3b82f6;
+}
+
+/* connection points */
+.eaz-flow .react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--app-surface);
+  box-shadow: 0 0 0 1px var(--eaz-flow-line);
+}
+.eaz-flow .react-flow__handle.eaz-handle-in {
+  background: #64748b;
+}
+.eaz-flow .react-flow__handle.eaz-handle-out {
+  background: #10b981;
+}
+.eaz-flow .react-flow__handle-left {
+  left: -7px;
+}
+.eaz-flow .react-flow__handle-right {
+  right: -7px;
+}
+.eaz-flow .react-flow__handle-left:hover,
+.eaz-flow .react-flow__handle-right:hover {
+  transform: translate(0, -50%) scale(1.25);
+}
+
+/* zoom buttons */
+.eaz-flow .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px var(--app-shadow);
+}
+.eaz-flow .react-flow__controls-button {
+  width: 30px;
+  height: 30px;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  color: var(--app-text-muted);
+}
+.eaz-flow .react-flow__controls-button:last-child {
+  border-bottom: 0;
+}
+.eaz-flow .react-flow__controls-button:hover {
+  background: var(--app-surface-secondary);
+  color: var(--app-text);
+}
+.eaz-flow .react-flow__controls-button svg {
+  fill: currentColor;
+  max-width: 13px;
+  max-height: 13px;
+}
+
+/* minimap */
+.eaz-flow .react-flow__minimap {
+  overflow: hidden;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px var(--app-shadow);
+}
+
+/* the small "React Flow" credit */
+.eaz-flow .react-flow__attribution {
+  background: transparent;
+}
+.eaz-flow .react-flow__attribution a {
+  color: var(--app-text-faint);
+}

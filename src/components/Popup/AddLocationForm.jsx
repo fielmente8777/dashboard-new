@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useApiAction } from "../../hooks/useApiAction";
 import { useAddLocationMutation } from "../../redux/api/locationsApi";
-import { fetchUserProfile } from "../../redux/slice/UserSlice";
-import { getToken } from "../../utils/session";
+import { refreshProfile } from "../../redux/session";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
 import { Field, Input, Select } from "../ui/Field";
@@ -104,7 +103,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
     if (!added) return;
 
     // the new location shows up in the switcher
-    dispatch(fetchUserProfile(getToken()));
+    dispatch(refreshProfile());
     handleClose();
   };
 
@@ -116,7 +115,7 @@ const AddLocationForm = ({ isOpen, handleClose }) => {
       description="Add another hotel to manage from this account."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Field label="Hotel name">
+        <Field label="Property name">
           <Input autoFocus value={form.name} onChange={setField("name")} />
         </Field>
 

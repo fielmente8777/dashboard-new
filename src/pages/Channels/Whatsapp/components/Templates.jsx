@@ -13,7 +13,7 @@ import { useToast } from "../../../../context/ToastContext";
 import {
   deleteWhatsAppMessageTemplate,
   getWhatsAppMessageTemplates,
-} from "../../../../services/api/whatsApp";
+} from "../../../../redux/api/whatsappBusinessApi";
 import TemplatePreviewModal from "./TemplatePreviewModal";
 import { CATEGORY_TONE, STATUS_TONE } from "./templateUtils";
 

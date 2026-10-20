@@ -116,7 +116,11 @@ const TeamTable = ({
       key: "role",
       header: "Role",
       render: (user) =>
-        user.isAdmin ? (
+        // "owner" is the account holder; team members are created with
+        // role "admin" too, so isAdmin is what tells an admin apart
+        user.role === "owner" ? (
+          <Badge tone="amber">Owner</Badge>
+        ) : user.isAdmin ? (
           <Badge tone="purple">Admin</Badge>
         ) : (
           <Badge>Member</Badge>

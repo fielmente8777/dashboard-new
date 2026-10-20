@@ -53,7 +53,13 @@ const BookingSetup = () => {
         />
       }
     >
-      {tab === "add" && <RoomForm hid={hid} onAdded={() => setTab("rooms")} />}
+      {tab === "add" && (
+        <RoomForm
+          hid={hid}
+          takenTypeIds={list.map((room) => Number(room.roomType))}
+          onAdded={() => setTab("rooms")}
+        />
+      )}
 
       {tab === "rooms" && rooms.isError && (
         <ErrorState

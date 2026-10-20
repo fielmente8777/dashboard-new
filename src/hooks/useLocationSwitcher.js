@@ -6,9 +6,7 @@ import {
   selectHid,
   setHid,
 } from "../redux/slice/UserSlice";
-import { fetchWebsiteData } from "../redux/slice/websiteDataSlice";
 import { dashboardPath } from "../routes/paths";
-import { getToken } from "../utils/session";
 
 // Everything a component needs to show and change the selected hotel location.
 // The selection lives in the Redux store (userProfile.hid) and is saved in
@@ -26,7 +24,6 @@ export const useLocationSwitcher = () => {
     if (!nextHid || String(nextHid) === String(hid)) return;
 
     dispatch(setHid(String(nextHid)));
-    dispatch(fetchWebsiteData(getToken(), nextHid));
 
     // stay on the same page, in the newly selected hotel
     const page = pathname.split("/").filter(Boolean).slice(3).join("/");

@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { FiX, FiTrash2, FiPlus } from "react-icons/fi";
+import { Plus, Trash2 } from "lucide-react";
+import Button from "../ui/Button";
+import { Field, Input, Textarea } from "../ui/Field";
+import IconButton from "../ui/IconButton";
+import { charHint } from "./blockStyles";
+import { SettingsFooter, SettingsSection } from "./SettingsParts";
 import { v4 as uuidv4 } from "uuid";
 
 const MAX_MESSAGE_BODY_TEXT = 4096;
@@ -111,168 +116,105 @@ export default function ListSetting({ data, onSave, onCancel }) {
   };
 
   return (
-    <div className="bg-app-surface w-full rounded-xl shadow-xl p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="font-semibold text-lg">List Settings</h2>
-      </div>
+    <div className="space-y-4">
+      <SettingsSection title="Message">
+        <Field label="Header (optional)" hint={charHint(header, MAX_MESSAGE_HEADER_TEXT)}>
+          <Input
+            value={header}
+            maxLength={MAX_MESSAGE_HEADER_TEXT}
+            onChange={(e) => setHeader(e.target.value)}
+            placeholder="Optional header"
+          />
+        </Field>
 
-      {/* Header */}
-      <div className="mb-4">
-        <label className="text-sm text-app-text-muted">Header Text</label>
-        <input
-          value={header}
-          maxLength={MAX_MESSAGE_HEADER_TEXT}
-          onChange={(e) => setHeader(e.target.value)}
-          className="border rounded-lg w-full p-2 mt-1"
-          placeholder="Optional header"
-        />
+        <Field label="Body" hint={charHint(body, MAX_MESSAGE_BODY_TEXT)}>
+          <Textarea
+            value={body}
+            maxLength={MAX_MESSAGE_BODY_TEXT}
+            onChange={(e) => setBody(e.target.value)}
+            rows={4}
+          />
+        </Field>
 
-        <span className="text-end text-xs text-app-text-faint block mt-1">
-          Max {MAX_MESSAGE_HEADER_TEXT}
-        </span>
-      </div>
+        <Field label="Footer (optional)" hint={charHint(footer, MAX_MESSAGE_FOOTER_TEXT)}>
+          <Input
+            value={footer}
+            maxLength={MAX_MESSAGE_FOOTER_TEXT}
+            onChange={(e) => setFooter(e.target.value)}
+            placeholder="Optional footer"
+          />
+        </Field>
 
-      {/* Body */}
-      <div className="mb-4">
-        <label className="text-sm text-app-text-muted">Body Text</label>
-        <textarea
-          value={body}
-          maxLength={MAX_MESSAGE_BODY_TEXT}
-          onChange={(e) => setBody(e.target.value)}
-          rows={4}
-          className="border rounded-lg w-full p-2 mt-1"
-        />
-        <span className="text-end text-xs text-app-text-faint block mt-1">
-          Max {MAX_MESSAGE_BODY_TEXT}
-        </span>
-      </div>
+        <Field
+          label="Menu button"
+          hint={`The button that opens the list - ${charHint(buttonText, MAX_BUTTON_TEXT)}`}
+        >
+          <Input
+            value={buttonText}
+            maxLength={MAX_BUTTON_TEXT}
+            onChange={(e) => setButtonText(e.target.value)}
+          />
+        </Field>
+      </SettingsSection>
 
-      {/* Footer */}
-      <div className="mb-4">
-        <label className="text-sm text-app-text-muted">Footer Text</label>
-        <input
-          value={footer}
-          maxLength={MAX_MESSAGE_FOOTER_TEXT}
-          onChange={(e) => setFooter(e.target.value)}
-          className="border rounded-lg w-full p-2 mt-1"
-          placeholder="Optional footer"
-        />
-
-        <span className="text-end text-xs text-app-text-faint block mt-1">
-          Max {MAX_MESSAGE_FOOTER_TEXT}
-        </span>
-      </div>
-
-      {/* Button Text */}
-      <div className="mb-6">
-        <label className="text-sm text-app-text-muted">List Button Text</label>
-        <input
-          value={buttonText}
-          maxLength={MAX_BUTTON_TEXT}
-          onChange={(e) => setButtonText(e.target.value)}
-          className="border rounded-lg w-full p-2 mt-1"
-        />
-        <span className="text-end text-xs text-app-text-faint block mt-1">
-          Max {MAX_BUTTON_TEXT}
-        </span>
-      </div>
-
-      {/* Sections */}
-      <div className="space-y-4 mb-4">
-        {sections.map((section, sIndex) => (
-          <div
-            key={sIndex}
-            className="border rounded-lg p-4 bg-app-surface-secondary relative"
-          >
-            {/* Remove Section */}
-            {sections.length > 1 && (
-              <FiTrash2
+      {sections.map((section, sIndex) => (
+        <SettingsSection
+          key={sIndex}
+          title={`Section ${sIndex + 1}`}
+          actions={
+            sections.length > 1 && (
+              <IconButton
+                icon={Trash2}
+                label="Remove section"
+                tone="danger"
                 onClick={() => removeSection(sIndex)}
-                className="absolute right-3 top-3 text-app-text-faint cursor-pointer hover:text-red-500"
               />
-            )}
-
-            {/* Section Title */}
-            <input
+            )
+          }
+        >
+          <Field label="Section title" hint={charHint(section.title, MAX_SECTION_TITLE_TEXT)}>
+            <Input
               value={section.title}
               onChange={(e) => updateSectionTitle(sIndex, e.target.value)}
-              className="border rounded-md w-full p-2 mb-3"
               placeholder="Section title"
               maxLength={MAX_SECTION_TITLE_TEXT}
             />
+          </Field>
 
-            <span className="text-end text-xs text-app-text-faint block mb-3">
-              Max {MAX_SECTION_TITLE_TEXT}
-            </span>
+          <div className="space-y-2">
+            <span className="block text-xs font-medium text-app-text-muted">Options</span>
+            {section.rows.map((row, rIndex) => (
+              <div key={rIndex} className="flex items-center gap-2">
+                <Input
+                  value={row?.title}
+                  maxLength={24}
+                  onChange={(e) => updateRow(sIndex, rIndex, e.target.value)}
+                  aria-label={`Option ${rIndex + 1}`}
+                />
 
-            {/* Rows */}
-            <div className="space-y-2">
-              {section.rows.map((row, rIndex) => (
-                <div key={rIndex} className="flex items-center gap-2">
-                  <input
-                    value={row?.title}
-                    maxLength={24}
-                    onChange={(e) => updateRow(sIndex, rIndex, e.target.value)}
-                    className="border rounded-md w-full p-2"
+                {section.rows.length > 1 && (
+                  <IconButton
+                    icon={Trash2}
+                    label="Remove option"
+                    tone="danger"
+                    onClick={() => removeRow(sIndex, rIndex)}
                   />
-
-                  {section.rows.length > 1 && (
-                    <FiTrash2
-                      onClick={() => removeRow(sIndex, rIndex)}
-                      className="text-app-text-faint cursor-pointer hover:text-red-500"
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Add Row */}
-            <button
-              onClick={() => addRow(sIndex)}
-              className="flex items-center gap-1 text-sm text-green-600 mt-3"
-            >
-              <FiPlus size={16} /> Add Option
-            </button>
+                )}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      {/* Add Section */}
-      <button
-        onClick={addSection}
-        className="flex items-center gap-1 text-green-600 text-sm mb-6"
-      >
-        <FiPlus size={16} /> Add Section
-      </button>
+          <Button variant="dashed" size="sm" icon={Plus} className="w-full" onClick={() => addRow(sIndex)}>
+            Add option
+          </Button>
+        </SettingsSection>
+      ))}
 
-      {/* Variable */}
-      {/* <div className="mb-6">
-        <label className="text-sm text-app-text-muted">Save answer in variable</label>
-        <input
-          value={variable}
-          onChange={(e) => setVariable(e.target.value)}
-          className="border rounded-lg w-full p-2 mt-1"
-          placeholder="@value"
-        />
-      </div> */}
+      <Button variant="dashed" icon={Plus} className="w-full" onClick={addSection}>
+        Add section
+      </Button>
 
-      {/* Footer Buttons */}
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={onCancel}
-          className="border px-4 py-2 rounded-lg text-app-text-muted"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleSave}
-          className="bg-green-500 text-white px-5 py-2 rounded-lg"
-        >
-          Save
-        </button>
-      </div>
+      <SettingsFooter onCancel={onCancel} onSave={handleSave} />
     </div>
   );
 }

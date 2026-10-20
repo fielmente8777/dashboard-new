@@ -11,7 +11,7 @@ export default function DashboardLayout({ children }) {
           <Navbar />
         </div>
 
-        <div className="flex-1 h-full overflow-y-auto scrollbar-hidden">
+        <div className="flex-1 h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
           {children}
         </div>
       </div>

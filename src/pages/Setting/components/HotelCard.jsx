@@ -6,13 +6,12 @@ import IconButton from "../../../components/ui/IconButton";
 // "test on bording" -> "Test On Bording"
 const titleCase = (text) => String(text || "").replace(/\b\w/g, (c) => c.toUpperCase());
 
-// One location: the hotel's name, then where it is. `hotel.local` is the
-// area name (what the location switcher shows), not the hotel's name.
+// One location: its own property name (`hotel.local`, the name the location
+// switcher shows), then where it is. The account name is only a fallback for
+// a location saved without a name.
 const HotelCard = ({ hotel, hotelName, current, deleting, onEdit, onDelete }) => {
-  const parts = [hotel.city, hotel.state, hotel.country].filter(Boolean);
-  // skip the area when it only repeats the city / state ("Kolkata, West Bengal")
-  const area = hotel.local && !parts.join(", ").startsWith(hotel.local) ? hotel.local : null;
-  const place = [area, ...parts].filter(Boolean).join(", ");
+  const place = [hotel.city, hotel.state, hotel.country].filter(Boolean).join(", ");
+  const name = titleCase(hotel.local) || titleCase(hotelName) || hotel.city || "Unnamed property";
   const label = hotel.local || hotel.city || "this location";
 
   return (
@@ -26,8 +25,8 @@ const HotelCard = ({ hotel, hotelName, current, deleting, onEdit, onDelete }) =>
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-app-text" title={hotelName}>
-            {titleCase(hotelName) || label}
+          <span className="truncate text-sm font-medium text-app-text" title={name}>
+            {name}
           </span>
           {current && <Badge tone="blue">Current</Badge>}
         </p>

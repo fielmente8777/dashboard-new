@@ -82,11 +82,11 @@ const LeadWebhooks = ({ domain }) => {
                 )}
               </div>
             </div>
-            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-1 min-w-0 flex-1 gap-2 sm:grid-cols-2">
               {fields
                 .filter((field) => field.value)
                 .map((field) => (
-                  <div key={field.label} className={field.label.startsWith("Webhook URL") || field.label.startsWith("Endpoint") ? "sm:col-span-2" : ""}>
+                  <div key={field.label} className={`min-w-0 ${field.label.startsWith("Webhook URL") || field.label.startsWith("Endpoint") ? "sm:col-span-2" : ""}`}>
                     <CopyField label={field.label} value={field.value} />
                   </div>
                 ))}

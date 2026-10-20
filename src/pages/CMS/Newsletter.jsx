@@ -58,7 +58,7 @@ const Newsletter = () => {
       description="People who subscribed to the newsletter on your website."
       actions={
         <>
-          <div className="w-56">
+          <div className="w-full max-w-56">
             <Input
               type="search"
               value={search}

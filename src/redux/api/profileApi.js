@@ -17,14 +17,12 @@ export const profileApi = baseApi.injectEndpoints({
       extraOptions: { skipAuth: true },
     }),
 
-    // { [column]: [url, ...] } - the hotel's links, one list per column
+    // { websites, landingPages } - the hotel's links, one list per column
+    // (gian: PUT /api/v1/profile/urls; core has no such endpoint)
+    // -> { result: { urls } }
     updateProfileUrls: build.mutation({
-      query: (urls) => ({
-        url: "/eazotel/edit/urls",
-        method: "POST",
-        body: { token: getToken(), ...urls },
-      }),
-      extraOptions: { skipAuth: true },
+      query: (urls) => ({ url: "/api/v1/profile/urls", method: "PUT", body: urls }),
+      extraOptions: NODE,
     }),
 
     // Hotel locations (gian: /api/v1/profile/hotels). Each answers

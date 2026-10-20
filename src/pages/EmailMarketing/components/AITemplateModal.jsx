@@ -21,7 +21,7 @@ import {
   generateEmailTemplate,
   getEmailTemplates,
   updateEmailTemplate,
-} from "../../../services/api/emailTemplate";
+} from "../../../redux/api/emailMarketingApi";
 import { Select } from "../../../components/ui/Field";
 
 /* ---------------------------------------------------------

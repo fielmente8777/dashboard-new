@@ -4,9 +4,8 @@ import userProfileReducer from "./slice/UserSlice.js";
 import applicantsReducer from "./slice/TalentSlice.js";
 import websiteDataReducer from "./slice/websiteDataSlice.js";
 import toggleReducer from "./slice/SidebarToggle.js";
-import bookingEngineReducer from "./slice/bookingEngine.js";
-import engineDetailsReducer from "./slice/bookingEngineDetails.js";
 import subscriptionReducer from "./slice/subscriptionDataSlice.js";
+import themeReducer from "./slice/themeSlice.js";
 import { baseApi } from "./api/baseApi.js";
 
 const store = configureStore({
@@ -17,8 +16,7 @@ const store = configureStore({
     applicants: applicantsReducer, // Add applicants slice to the store
     hotelsWebsiteData: websiteDataReducer,
     toggle: toggleReducer,
-    bookingEngine: bookingEngineReducer,
-    engineDetails: engineDetailsReducer,
+    theme: themeReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

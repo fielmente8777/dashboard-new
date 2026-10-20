@@ -42,7 +42,7 @@ const ForgotPasswordForm = ({ onSubmit, isSubmitting, onBackToLogin }) => {
         disabled={isSubmitting}
         className={primaryButtonClassName}
       >
-        {isSubmitting ? "Sending..." : "Send reset link"}
+        {isSubmitting ? "Sending..." : "Send reset code"}
         {isSubmitting && <Loader size={18} color="white" />}
       </button>
 

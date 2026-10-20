@@ -5,7 +5,8 @@ const ActivityTable = ({ data }) => {
     <div className="bg-white p-5 rounded-xl shadow-sm">
       <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
 
-      <table className="w-full text-left">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[480px] text-left">
         <thead>
           <tr>
             <th>Date</th>
@@ -22,6 +23,7 @@ const ActivityTable = ({ data }) => {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

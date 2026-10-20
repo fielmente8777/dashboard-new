@@ -1,227 +1,167 @@
-import Dashboard from "../pages/Home/Dashboard";
-import Setting from "../pages/Setting/Setting";
-import Settings from "../pages/Settings/Settings";
-import Integration from "../pages/AppIntegration/Integration";
-import GrmSettings from "../pages/Grm/Settings";
-import Usermanagement from "../pages/UserMgmt/Usermanagement";
-import Contacts from "../pages/Contacts/Contacts";
-import WhatsApp from "../pages/ConversationalTool/WhatsApp/WhatsApp";
-import Instagram from "../pages/ConversationalTool/Instagram/Instagram";
-import Facebook from "../pages/ConversationalTool/Facebook/Facebook";
-import EazbotChat from "../pages/ConversationalTool/Eazbot/EazbotChat";
-import ConversationalTool from "../pages/ConversationalTool/ConversationalTool";
-import LeadsList from "../pages/Leads/LeadsList";
 import { LEAD_SOURCES } from "../pages/Leads/leadSources";
-import ImportAndConvertLeads from "../pages/Enquiry/ImportAndConvertLeads/ImportAndConvertLeads";
-import LeadGenFormTable from "../pages/MetaLeads/LeadGenFormTable";
-import LeadsAnalytics from "../pages/Leads/LeadsAnalytics";
-import AdLeadsAnalytics from "../pages/Enquiry/AdLeadsAnalytics";
-import Feedback from "../pages/Feedback/Feedback";
-import LeadDetails from "../pages/Leads/LeadDetails/LeadDetails";
-import LeadForms from "../pages/Leads/LeadForms/LeadForms";
-import Calls from "../pages/Calls/Calls";
-import CallDetails from "../pages/Calls/CallDetails/CallDetails";
-import WhatsappBroadcasting from "../pages/BroadCasting/WhatsappBroadcasting";
-import BroadcastDetails from "../pages/BroadCasting/BroadcastDetails";
-import { EmailMarketingManagement } from "../pages/EmailMarketing/EmailMarketing";
-import EmailMarketing from "../pages/Marketing/EmailMarketing";
-import GoogleAdsInsights from "../pages/GoogleAdsInsights/GoogleAdsInsights";
-import ChannelManager from "../pages/Manager/ChannelManager";
-import Seo from "../pages/SEO/Seo";
-import LocalSeo from "../pages/SEO/LocalSeo/LocalSeo";
-import WebsiteSeo from "../pages/SEO/WebsiteSeo/WebsiteSeo";
-import GoogleAnalytics from "../pages/GoogleAnalytics/GoogleAnalytics";
-import AnalyticsReporting from "../pages/Analytics/AnalyticsReporting";
-import MetaPageInsights from "../pages/Meta/MetaPageInsights";
-import Overview from "../pages/Gmb/Overview";
-import Keywords from "../pages/Gmb/Keyword";
-import Ranks from "../pages/Gmb/Rank";
-import Reviews from "../pages/Gmb/Review";
-import WebsiteTracker from "../pages/WebsiteTracker/WebsiteTracker";
-import VisitorActivity from "../pages/WebsiteTracker/VisitorActivity";
-import BookingEngine from "../pages/BookingEngine/BookingEngine";
-import BookingSetup from "../pages/BookingEngine/BookingSetup";
-import RoomsAndInventory from "../pages/BookingEngine/RoomsAndInventory";
-import PricePackage from "../pages/BookingEngine/PricePackage";
-import AdsPackages from "../pages/BookingEngine/AdsPackages";
-import BookingCustom from "../pages/BookingEngine/BookingCustom";
-import ReservationDesk from "../pages/ReservationDesk/ReservationDesk";
-import FrontDesk from "../pages/FrontDesk/FrontDesk";
-import PaymentGateway from "../pages/Gateways/PaymentGateway";
-import AllRequest from "../pages/Grm/AllRequest";
-import EmergencyRequest from "../pages/Grm/EmergencyRequest";
-import GrmAnalytics from "../pages/Grm/Analytics";
-import GrmFeedback from "../pages/Grm/Feedback";
-import Profile from "../pages/CMS/Profile";
-import Gallery from "../pages/CMS/Gallery";
-import Offers from "../pages/CMS/Offers";
-import Events from "../pages/CMS/Events";
-import Blogs from "../pages/CMS/Blogs";
-import Faq from "../pages/CMS/Faq";
-import Privacy from "../pages/CMS/Privacy";
-import Tandc from "../pages/CMS/Tandc";
-import Cancellationrefund from "../pages/CMS/Cancellationrefund";
-import Newsletter from "../pages/CMS/Newsletter";
-import KnowledgeBase from "../pages/KnowledgeBase/KnowledgeBase";
-import AiTrainingPage from "../pages/AiTraining/AiTrainingPage";
-import Eazbot from "../pages/Eazobot/Eazobot";
-import TalentAnalytics from "../pages/TalentMgmt/Analytics";
-import Application from "../pages/TalentMgmt/Application";
-import WhatsappMarketing from "../pages/Marketing/WhatsappMarketing";
-import SocialMedia from "../pages/Social/SocialMedia";
-import InfluencerMarketing from "../pages/Social/InfluencerMarketing";
-import PublicRelation from "../pages/Social/PublicRelation";
-import PerformanceMarketing from "../pages/PerformanceMarketing/PerformanceMarketing";
-import OTAListing from "../pages/OTA/OTAListing";
-import OTAOptimization from "../pages/OTA/OTAOptimization";
-import Accounting from "../pages/Accounting/Accounting";
-import GSTFiling from "../pages/Accounting/GSTFiling";
-import Linktree from "../pages/Linktree/Linktree";
-import GMBProfile from "../pages/GoogleListing/GMBProfile";
-import GoogleMapItiration from "../pages/GoogleListing/GoogleMapItiration";
-import Website from "../pages/CustomWebsite/Website";
-import ThemesManager from "../pages/Manager/ThemesManager";
 import { PAGES } from "./paths";
 
 // Every page inside the dashboard. To add a page: add its path to PAGES in
 // paths.js, then add one line here.
+// Each page is its own chunk, downloaded the first time it is opened.
+
+// `load` imports the page module; `render` turns its component into the element.
+const page =
+  (load, render = (Page) => <Page />) =>
+  async () => ({ element: render((await load()).default) });
+
 // The leads lists are one page with a different source each; the key gives
 // every route its own state.
-const leadsList = (source) => <LeadsList key={source.key} source={source} />;
+const leadsList = (source) =>
+  page(
+    () => import("../pages/Leads/LeadsList"),
+    (LeadsList) => <LeadsList key={source.key} source={source} />,
+  );
+// The EazStore service pages share one layout; the content is in
+// pages/Services/serviceCatalog.js.
+const servicePage = (id) =>
+  page(
+    () => import("../pages/Services/ServicePage"),
+    (ServicePage) => <ServicePage key={id} service={id} />,
+  );
 // Settings sections also open on their own; Settings gives them this gutter.
-const padded = (page) => <div className="px-3 py-4 sm:px-5 sm:py-5">{page}</div>;
+const padded = (Page) => (
+  <div className="px-3 py-4 sm:px-5 sm:py-5">
+    <Page />
+  </div>
+);
 
 export const dashboardRoutes = [
   // Home & account
-  { path: PAGES.HOME, element: <Dashboard /> },
-  { path: PAGES.PROFILE, element: padded(<Setting />) },
-  { path: PAGES.SETTINGS, element: <Settings /> },
-  { path: PAGES.INTEGRATION, element: padded(<Integration />) },
-  { path: PAGES.QR_CODE, element: <GrmSettings /> },
-  { path: PAGES.USER_MANAGEMENT_ALL_USERS, element: padded(<Usermanagement />) },
-  { path: PAGES.USER_MANAGEMENT_SETTINGS, element: padded(<Usermanagement />) },
-  { path: PAGES.CONTACTS, element: <Contacts /> },
+  { path: PAGES.HOME, lazy: page(() => import("../pages/Home/Dashboard")) },
+  { path: PAGES.PROFILE, lazy: page(() => import("../pages/Setting/Setting"), padded) },
+  { path: PAGES.SETTINGS, lazy: page(() => import("../pages/Settings/Settings")) },
+  { path: PAGES.INTEGRATION, lazy: page(() => import("../pages/AppIntegration/Integration"), padded) },
+  { path: PAGES.QR_CODE, lazy: page(() => import("../pages/Grm/Settings")) },
+  { path: PAGES.USER_MANAGEMENT_ALL_USERS, lazy: page(() => import("../pages/UserMgmt/Usermanagement"), padded) },
+  { path: PAGES.USER_MANAGEMENT_SETTINGS, lazy: page(() => import("../pages/UserMgmt/Usermanagement"), padded) },
+  { path: PAGES.CONTACTS, lazy: page(() => import("../pages/Contacts/Contacts")) },
 
   // Live chat
-  { path: PAGES.CHAT_WHATSAPP, element: <WhatsApp /> },
-  { path: PAGES.CHAT_INSTAGRAM, element: <Instagram /> },
-  { path: PAGES.CHAT_FACEBOOK, element: <Facebook /> },
-  { path: PAGES.CHAT_EAZBOT, element: <EazbotChat /> },
-  { path: PAGES.CONVERSATIONAL_TOOL, element: <ConversationalTool /> },
+  { path: PAGES.CHAT_WHATSAPP, lazy: page(() => import("../pages/ConversationalTool/WhatsApp/WhatsApp")) },
+  { path: PAGES.CHAT_INSTAGRAM, lazy: page(() => import("../pages/ConversationalTool/Instagram/Instagram")) },
+  { path: PAGES.CHAT_FACEBOOK, lazy: page(() => import("../pages/ConversationalTool/Facebook/Facebook")) },
+  { path: PAGES.CHAT_EAZBOT, lazy: page(() => import("../pages/ConversationalTool/Eazbot/EazbotChat")) },
+  { path: PAGES.CONVERSATIONAL_TOOL, lazy: page(() => import("../pages/ConversationalTool/ConversationalTool")) },
 
   // Leads management
-  { path: PAGES.LEADS_ALL, element: leadsList(LEAD_SOURCES.all) },
-  { path: PAGES.LEADS_META, element: leadsList(LEAD_SOURCES.meta) },
-  { path: PAGES.LEADS_WHATSAPP, element: leadsList(LEAD_SOURCES.whatsapp) },
-  { path: PAGES.LEADS_GOOGLE_ADS, element: leadsList(LEAD_SOURCES.googleAds) },
-  { path: PAGES.LEADS_WEBFORM, element: leadsList(LEAD_SOURCES.webform) },
-  { path: PAGES.LEADS_EAZBOT, element: leadsList(LEAD_SOURCES.eazbot) },
-  { path: PAGES.LEADS_VISITORS, element: leadsList(LEAD_SOURCES.visitors) },
-  { path: PAGES.LEADS_IMPORT, element: <ImportAndConvertLeads /> },
-  { path: PAGES.LEADS_GEN_FORM_TABLE, element: <LeadGenFormTable /> },
-  { path: PAGES.LEADS_ANALYTICS, element: <LeadsAnalytics /> },
-  { path: PAGES.LEADS_META_ANALYTICS, element: <AdLeadsAnalytics /> },
-  { path: PAGES.LEADS_SETTINGS, element: <Feedback /> },
-  { path: PAGES.LEAD_VIEW, element: <LeadDetails /> },
-  { path: PAGES.LEAD_GEN_FORM, element: <LeadForms /> },
+  { path: PAGES.LEADS_ALL, lazy: leadsList(LEAD_SOURCES.all) },
+  { path: PAGES.LEADS_META, lazy: leadsList(LEAD_SOURCES.meta) },
+  { path: PAGES.LEADS_WHATSAPP, lazy: leadsList(LEAD_SOURCES.whatsapp) },
+  { path: PAGES.LEADS_GOOGLE_ADS, lazy: leadsList(LEAD_SOURCES.googleAds) },
+  { path: PAGES.LEADS_WEBFORM, lazy: leadsList(LEAD_SOURCES.webform) },
+  { path: PAGES.LEADS_EAZBOT, lazy: leadsList(LEAD_SOURCES.eazbot) },
+  { path: PAGES.LEADS_VISITORS, lazy: leadsList(LEAD_SOURCES.visitors) },
+  { path: PAGES.LEADS_IMPORT, lazy: page(() => import("../pages/Enquiry/ImportAndConvertLeads/ImportAndConvertLeads")) },
+  { path: PAGES.LEADS_GEN_FORM_TABLE, lazy: page(() => import("../pages/MetaLeads/LeadGenFormTable")) },
+  { path: PAGES.LEADS_ANALYTICS, lazy: page(() => import("../pages/Leads/LeadsAnalytics")) },
+  { path: PAGES.LEADS_META_ANALYTICS, lazy: page(() => import("../pages/Enquiry/AdLeadsAnalytics")) },
+  { path: PAGES.LEADS_SETTINGS, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.LEAD_VIEW, lazy: page(() => import("../pages/Leads/LeadDetails/LeadDetails")) },
+  { path: PAGES.LEAD_GEN_FORM, lazy: page(() => import("../pages/Leads/LeadForms/LeadForms")) },
 
   // Calls
-  { path: PAGES.CALLS, element: <Calls /> },
-  { path: PAGES.CALL_VIEW, element: <CallDetails /> },
+  { path: PAGES.CALLS, lazy: page(() => import("../pages/Calls/Calls")) },
+  { path: PAGES.CALL_VIEW, lazy: page(() => import("../pages/Calls/CallDetails/CallDetails")) },
 
   // Marketing
-  { path: PAGES.MARKETING_WHATSAPP, element: <WhatsappBroadcasting /> },
-  { path: PAGES.BROADCAST_DETAILS, element: <BroadcastDetails /> },
-  { path: PAGES.MARKETING_EMAIL, element: <EmailMarketingManagement /> },
-  { path: PAGES.MARKETING_SMS, element: <EmailMarketing /> },
-  { path: PAGES.EAZMAIL, element: <EmailMarketingManagement /> },
+  { path: PAGES.MARKETING_WHATSAPP, lazy: page(() => import("../pages/BroadCasting/WhatsappBroadcasting")) },
+  { path: PAGES.BROADCAST_DETAILS, lazy: page(() => import("../pages/BroadCasting/BroadcastDetails")) },
+  { path: PAGES.MARKETING_EMAIL, lazy: page(() => import("../pages/EmailMarketing/EmailMarketing").then((m) => ({ default: m.EmailMarketingManagement }))) },
+  { path: PAGES.MARKETING_SMS, lazy: servicePage("smsMarketing") },
+  { path: PAGES.EAZMAIL, lazy: page(() => import("../pages/EmailMarketing/EmailMarketing").then((m) => ({ default: m.EmailMarketingManagement }))) },
 
   // Insights, SEO & Meta
-  { path: PAGES.GOOGLE_ADS_INSIGHTS, element: <GoogleAdsInsights /> },
-  { path: PAGES.SEO, element: <Seo /> },
-  { path: PAGES.SEO_LOCAL, element: <LocalSeo /> },
-  { path: PAGES.SEO_WEBSITE, element: <WebsiteSeo /> },
-  { path: PAGES.INSIGHTS_GOOGLE_ANALYTICS, element: <GoogleAnalytics /> },
-  { path: PAGES.INSIGHTS_META_ADS, element: <Feedback /> },
-  { path: PAGES.INSIGHTS_GOOGLE_CONSOLE, element: <Feedback /> },
-  { path: PAGES.INSIGHTS_GMB, element: <Feedback /> },
-  { path: PAGES.INSIGHTS_SOCIAL_MEDIA, element: <Feedback /> },
-  { path: PAGES.INSIGHTS_WEBSITE, element: <Feedback /> },
-  { path: PAGES.INSIGHTS_LEADS, element: <Feedback /> },
-  { path: PAGES.ANALYTICS_REPORTING, element: <AnalyticsReporting /> },
-  { path: PAGES.META_INSIGHTS, element: <MetaPageInsights /> },
-  { path: PAGES.META_LEADS, element: leadsList(LEAD_SOURCES.meta) },
-  { path: PAGES.GMB_OVERVIEW, element: <Overview /> },
-  { path: PAGES.GMB_KEYWORDS, element: <Keywords /> },
-  { path: PAGES.GMB_RANK, element: <Ranks /> },
-  { path: PAGES.GMB_REVIEWS, element: <Reviews /> },
-  { path: PAGES.WEBSITE_VISITORS, element: <WebsiteTracker /> },
-  { path: PAGES.WEBSITE_ACTIVITIES, element: <VisitorActivity /> },
+  { path: PAGES.GOOGLE_ADS_INSIGHTS, lazy: page(() => import("../pages/GoogleAdsInsights/GoogleAdsInsights")) },
+  { path: PAGES.SEO, lazy: page(() => import("../pages/SEO/Seo")) },
+  { path: PAGES.SEO_LOCAL, lazy: page(() => import("../pages/SEO/LocalSeo/LocalSeo")) },
+  { path: PAGES.SEO_WEBSITE, lazy: page(() => import("../pages/SEO/WebsiteSeo/WebsiteSeo")) },
+  { path: PAGES.INSIGHTS_GOOGLE_ANALYTICS, lazy: page(() => import("../pages/GoogleAnalytics/GoogleAnalytics")) },
+  { path: PAGES.INSIGHTS_META_ADS, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.INSIGHTS_GOOGLE_CONSOLE, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.INSIGHTS_GMB, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.INSIGHTS_SOCIAL_MEDIA, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.INSIGHTS_WEBSITE, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.INSIGHTS_LEADS, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.ANALYTICS_REPORTING, lazy: page(() => import("../pages/Analytics/AnalyticsReporting")) },
+  { path: PAGES.META_INSIGHTS, lazy: page(() => import("../pages/Meta/MetaPageInsights")) },
+  { path: PAGES.META_LEADS, lazy: leadsList(LEAD_SOURCES.meta) },
+  { path: PAGES.GMB_OVERVIEW, lazy: page(() => import("../pages/Gmb/Overview")) },
+  { path: PAGES.GMB_KEYWORDS, lazy: page(() => import("../pages/Gmb/Keyword")) },
+  { path: PAGES.GMB_RANK, lazy: page(() => import("../pages/Gmb/Rank")) },
+  { path: PAGES.GMB_REVIEWS, lazy: page(() => import("../pages/Gmb/Review")) },
+  { path: PAGES.WEBSITE_VISITORS, lazy: page(() => import("../pages/WebsiteTracker/WebsiteTracker")) },
+  { path: PAGES.WEBSITE_ACTIVITIES, lazy: page(() => import("../pages/WebsiteTracker/VisitorActivity")) },
 
   // Booking engine & reservations
-  { path: PAGES.BOOKING_ENGINE, element: <BookingEngine /> },
-  { path: PAGES.BOOKING_ALL, element: <BookingEngine /> },
-  { path: PAGES.BOOKING_ROOMS_SETUP, element: <BookingSetup /> },
-  { path: PAGES.BOOKING_ROOMS_INVENTORY, element: <RoomsAndInventory /> },
-  { path: PAGES.BOOKING_PRICE_PACKAGES, element: <PricePackage /> },
-  { path: PAGES.BOOKING_ADS_PACKAGES, element: <AdsPackages /> },
-  { path: PAGES.BOOKING_CUSTOMIZATION, element: <BookingCustom /> },
-  { path: PAGES.RESERVATION_DESK, element: <ReservationDesk /> },
-  { path: PAGES.FRONT_DESK, element: <FrontDesk /> },
-  { path: PAGES.PAYMENT_GATEWAY, element: <PaymentGateway /> },
+  { path: PAGES.BOOKING_ENGINE, lazy: page(() => import("../pages/BookingEngine/BookingEngine")) },
+  { path: PAGES.BOOKING_ALL, lazy: page(() => import("../pages/BookingEngine/BookingEngine")) },
+  { path: PAGES.BOOKING_ROOMS_SETUP, lazy: page(() => import("../pages/BookingEngine/BookingSetup")) },
+  { path: PAGES.BOOKING_ROOMS_INVENTORY, lazy: page(() => import("../pages/BookingEngine/RoomsAndInventory")) },
+  { path: PAGES.BOOKING_PRICE_PACKAGES, lazy: page(() => import("../pages/BookingEngine/PricePackage")) },
+  { path: PAGES.BOOKING_ADS_PACKAGES, lazy: page(() => import("../pages/BookingEngine/AdsPackages")) },
+  { path: PAGES.BOOKING_CUSTOMIZATION, lazy: page(() => import("../pages/BookingEngine/BookingCustom")) },
+  { path: PAGES.RESERVATION_DESK, lazy: page(() => import("../pages/ReservationDesk/ReservationDesk")) },
+  { path: PAGES.FRONT_DESK, lazy: page(() => import("../pages/FrontDesk/FrontDesk")) },
+  { path: PAGES.PAYMENT_GATEWAY, lazy: page(() => import("../pages/Gateways/PaymentGateway")) },
 
   // Guest request management
-  { path: PAGES.GRM_ALL_REQUESTS, element: <AllRequest /> },
-  { path: PAGES.GRM_EMERGENCY, element: <EmergencyRequest /> },
-  { path: PAGES.GRM_SETTINGS, element: <GrmSettings /> },
-  { path: PAGES.GRM_ANALYTICS, element: <GrmAnalytics /> },
-  { path: PAGES.GRM_FEEDBACK, element: <GrmFeedback /> },
+  { path: PAGES.GRM_ALL_REQUESTS, lazy: page(() => import("../pages/Grm/AllRequest")) },
+  { path: PAGES.GRM_EMERGENCY, lazy: page(() => import("../pages/Grm/EmergencyRequest")) },
+  { path: PAGES.GRM_SETTINGS, lazy: page(() => import("../pages/Grm/Settings")) },
+  { path: PAGES.GRM_ANALYTICS, lazy: page(() => import("../pages/Grm/Analytics")) },
+  { path: PAGES.GRM_FEEDBACK, lazy: page(() => import("../pages/Grm/Feedback")) },
 
   // Content management
-  { path: PAGES.CMS_PROFILE, element: <Profile /> },
-  { path: PAGES.CMS_GALLERY, element: <Gallery /> },
-  { path: PAGES.CMS_OFFERS, element: <Offers /> },
-  { path: PAGES.CMS_EVENTS, element: <Events /> },
-  { path: PAGES.CMS_BLOGS, element: <Blogs /> },
-  { path: PAGES.CMS_FAQ, element: <Faq /> },
-  { path: PAGES.CMS_PRIVACY, element: <Privacy /> },
-  { path: PAGES.CMS_TERMS, element: <Tandc /> },
-  { path: PAGES.CMS_CANCELLATION, element: <Cancellationrefund /> },
-  { path: PAGES.NEWSLETTER, element: <Newsletter /> },
+  { path: PAGES.CMS_PROFILE, lazy: page(() => import("../pages/CMS/Profile")) },
+  { path: PAGES.CMS_GALLERY, lazy: page(() => import("../pages/CMS/Gallery")) },
+  { path: PAGES.CMS_OFFERS, lazy: page(() => import("../pages/CMS/Offers")) },
+  { path: PAGES.CMS_EVENTS, lazy: page(() => import("../pages/CMS/Events")) },
+  { path: PAGES.CMS_BLOGS, lazy: page(() => import("../pages/CMS/Blogs")) },
+  { path: PAGES.CMS_FAQ, lazy: page(() => import("../pages/CMS/Faq")) },
+  { path: PAGES.CMS_PRIVACY, lazy: page(() => import("../pages/CMS/Privacy")) },
+  { path: PAGES.CMS_TERMS, lazy: page(() => import("../pages/CMS/Tandc")) },
+  { path: PAGES.CMS_CANCELLATION, lazy: page(() => import("../pages/CMS/Cancellationrefund")) },
+  { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/CMS/Newsletter")) },
 
   // AI
-  { path: PAGES.KNOWLEDGE_BASE, element: <KnowledgeBase /> },
-  { path: PAGES.AI_TRAINING, element: <AiTrainingPage /> },
-  { path: PAGES.EAZBOT, element: <Eazbot /> },
+  { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },
+  { path: PAGES.AI_TRAINING, lazy: page(() => import("../pages/AiTraining/AiTrainingPage")) },
+  { path: PAGES.EAZBOT, lazy: page(() => import("../pages/Eazobot/Eazobot")) },
 
   // Human resources
-  { path: PAGES.HR_ANALYTICS, element: <TalentAnalytics /> },
-  { path: PAGES.HR_APPLICATIONS, element: <Application /> },
+  { path: PAGES.HR_ANALYTICS, lazy: page(() => import("../pages/TalentMgmt/Analytics")) },
+  { path: PAGES.HR_APPLICATIONS, lazy: page(() => import("../pages/TalentMgmt/Application")) },
 
   // Marketplace services
-  { path: PAGES.WHATSAPP_MARKETING_SERVICE, element: <WhatsappMarketing /> },
-  { path: PAGES.SMS_MARKETING_SERVICE, element: <EmailMarketing /> },
-  { path: PAGES.SOCIAL_MEDIA, element: <SocialMedia /> },
-  { path: PAGES.INFLUENCER_MARKETING, element: <InfluencerMarketing /> },
-  { path: PAGES.PR, element: <PublicRelation /> },
-  { path: PAGES.PERFORMANCE_MARKETING, element: <PerformanceMarketing /> },
-  { path: PAGES.OTA_LISTING, element: <OTAListing /> },
-  { path: PAGES.OTA_OPTIMIZATION, element: <OTAOptimization /> },
-  { path: PAGES.OTA_MANAGEMENT, element: <OTAOptimization /> },
-  { path: PAGES.ACCOUNTING, element: <Accounting /> },
-  { path: PAGES.GST_FILING, element: <GSTFiling /> },
-  { path: PAGES.LINKTREE_SETUP, element: <Linktree /> },
-  { path: PAGES.GOOGLE_LISTING, element: <GMBProfile /> },
-  { path: PAGES.GOOGLE_MAP_ITERATIONS, element: <GoogleMapItiration /> },
-  { path: PAGES.GOOGLE_MAP_ITRATIONS, element: <GoogleMapItiration /> },
-  { path: PAGES.CUSTOM_WEBSITE, element: <Website /> },
-  { path: PAGES.CHANNEL_MANAGER, element: <ChannelManager /> },
-  { path: PAGES.PMS_SOFTWARE, element: <ChannelManager /> },
-  { path: PAGES.THEMES_MANAGER, element: <ThemesManager /> },
+  { path: PAGES.WHATSAPP_MARKETING_SERVICE, lazy: servicePage("whatsappMarketing") },
+  { path: PAGES.SMS_MARKETING_SERVICE, lazy: servicePage("smsMarketing") },
+  { path: PAGES.SOCIAL_MEDIA, lazy: servicePage("socialMedia") },
+  { path: PAGES.INFLUENCER_MARKETING, lazy: servicePage("influencerMarketing") },
+  { path: PAGES.PR, lazy: servicePage("publicRelations") },
+  { path: PAGES.PERFORMANCE_MARKETING, lazy: servicePage("performanceMarketing") },
+  { path: PAGES.OTA_LISTING, lazy: servicePage("otaListing") },
+  { path: PAGES.OTA_OPTIMIZATION, lazy: servicePage("otaOptimization") },
+  { path: PAGES.OTA_MANAGEMENT, lazy: servicePage("otaManagement") },
+  { path: PAGES.ACCOUNTING, lazy: servicePage("accounting") },
+  { path: PAGES.GST_FILING, lazy: servicePage("gstFiling") },
+  { path: PAGES.LINKTREE_SETUP, lazy: servicePage("linktree") },
+  { path: PAGES.GOOGLE_LISTING, lazy: servicePage("googleListing") },
+  { path: PAGES.GOOGLE_MAP_ITERATIONS, lazy: servicePage("googleMapIterations") },
+  { path: PAGES.GOOGLE_MAP_ITRATIONS, lazy: servicePage("googleMapIterations") },
+  { path: PAGES.CUSTOM_WEBSITE, lazy: servicePage("customWebsite") },
+  { path: PAGES.CHANNEL_MANAGER, lazy: servicePage("channelManager") },
+  { path: PAGES.PMS_SOFTWARE, lazy: servicePage("pmsSoftware") },
+  { path: PAGES.THEMES_MANAGER, lazy: servicePage("themesManager") },
 
   // Placeholders
-  { path: PAGES.FEEDBACK, element: <Feedback /> },
-  { path: PAGES.REPORTS, element: <Feedback /> },
-  { path: PAGES.ANALYTICS, element: <Feedback /> },
-  { path: PAGES.HELP, element: <Feedback /> },
+  { path: PAGES.FEEDBACK, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.REPORTS, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.ANALYTICS, lazy: page(() => import("../pages/Feedback/Feedback")) },
+  { path: PAGES.HELP, lazy: page(() => import("../pages/Feedback/Feedback")) },
 ];

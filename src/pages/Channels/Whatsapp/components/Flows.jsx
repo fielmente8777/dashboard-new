@@ -6,7 +6,7 @@ import DataTable from "../../../../components/ui/DataTable";
 import Dialog from "../../../../components/ui/Dialog";
 import IconButton from "../../../../components/ui/IconButton";
 import { EmptyState, ErrorState } from "../../../../components/ui/States";
-import { getWhatsAppFlowScreens } from "../../../../services/api/whatsApp";
+import { getWhatsAppFlowScreens } from "../../../../redux/api/whatsappBusinessApi";
 import { fieldTypeLabel } from "../WhatsappFlow/flowUtils";
 
 const formatDate = (value) =>
