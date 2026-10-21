@@ -1,5 +1,79 @@
-// Suggested location: src/pages/AiTraining/AiTrainingPage.jsx
+// // Suggested location: src/pages/AiTraining/AiTrainingPage.jsx
+// import { useState } from "react";
+// import CustomRulesTab from "./CustomRulesTab";
+// import FlaggedRepliesTab from "./FlaggedRepliesTab";
+
+// function TopTabs({ active, onChange, pendingCount }) {
+//   return (
+//     <div className="mb-6 flex items-center gap-1 border-b border-[#1f242e] pb-1">
+//       <button
+//         type="button"
+//         onClick={() => onChange("rules")}
+//         className={`rounded-md px-3.5 py-2 text-sm transition-colors ${
+//           active === "rules"
+//             ? "bg-blue-700 text-white"
+//             : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+//         }`}
+//       >
+//         Custom Rules
+//       </button>
+//       <button
+//         type="button"
+//         onClick={() => onChange("feedback")}
+//         className={`flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm transition-colors ${
+//           active === "feedback"
+//             ? "bg-blue-700 text-white"
+//             : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+//         }`}
+//       >
+//         Flagged Replies
+//         {pendingCount > 0 && (
+//           <span
+//             className={`rounded-full px-1.5 text-[11px] font-medium ${
+//               active === "feedback"
+//                 ? "bg-white/20 text-white"
+//                 : "bg-amber-500/15 text-amber-400"
+//             }`}
+//           >
+//             {pendingCount}
+//           </span>
+//         )}
+//       </button>
+//     </div>
+//   );
+// }
+
+// export default function AiTrainingPage() {
+//   const [tab, setTab] = useState("rules");
+//   const [pendingCount, setPendingCount] = useState(0);
+
+//   return (
+//     <div className="min-h-screen bg-[#0a0c10] px-4 py-10 text-gray-200 sm:px-8">
+//       <div className="mx-auto max-w-3xl">
+//         <div className="mb-6">
+//           <h1 className="text-2xl font-bold text-white">Train Your AI</h1>
+//           <p className="mt-1 text-sm text-gray-500">
+//             Set rules for how your AI should behave, or review corrections
+//             flagged from real conversations.
+//           </p>
+//         </div>
+
+//         <TopTabs active={tab} onChange={setTab} pendingCount={pendingCount} />
+
+//         {tab === "rules" ? (
+//           <CustomRulesTab />
+//         ) : (
+//           <FlaggedRepliesTab onQueueChange={setPendingCount} />
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
 import { useState } from "react";
+import { MessageCircle, Mic } from "lucide-react";
 import CustomRulesTab from "./CustomRulesTab";
 import FlaggedRepliesTab from "./FlaggedRepliesTab";
 
@@ -9,32 +83,27 @@ function TopTabs({ active, onChange, pendingCount }) {
       <button
         type="button"
         onClick={() => onChange("rules")}
-        className={`rounded-md px-3.5 py-2 text-sm transition-colors ${
+        className={`rounded-md px-3.5 py-2 text-sm ${
           active === "rules"
             ? "bg-blue-700 text-white"
-            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+            : "text-gray-400 hover:bg-white/5"
         }`}
       >
         Custom Rules
       </button>
+
       <button
         type="button"
         onClick={() => onChange("feedback")}
-        className={`flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm transition-colors ${
+        className={`flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm ${
           active === "feedback"
             ? "bg-blue-700 text-white"
-            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
+            : "text-gray-400 hover:bg-white/5"
         }`}
       >
         Flagged Replies
         {pendingCount > 0 && (
-          <span
-            className={`rounded-full px-1.5 text-[11px] font-medium ${
-              active === "feedback"
-                ? "bg-white/20 text-white"
-                : "bg-amber-500/15 text-amber-400"
-            }`}
-          >
+          <span className="rounded-full bg-amber-500/15 px-1.5 text-xs text-amber-400">
             {pendingCount}
           </span>
         )}
@@ -45,25 +114,66 @@ function TopTabs({ active, onChange, pendingCount }) {
 
 export default function AiTrainingPage() {
   const [tab, setTab] = useState("rules");
+  const [channel, setChannel] = useState("whatsapp");
   const [pendingCount, setPendingCount] = useState(0);
 
   return (
     <div className="min-h-screen bg-[#0a0c10] px-4 py-10 text-gray-200 sm:px-8">
       <div className="mx-auto max-w-3xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Train Your AI</h1>
+          <h1 className="text-2xl font-bold text-white">
+            Train Your AI
+          </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Set rules for how your AI should behave, or review corrections
-            flagged from real conversations.
+            Set rules for how your AI should behave, or review
+            corrections flagged from real conversations.
           </p>
         </div>
 
-        <TopTabs active={tab} onChange={setTab} pendingCount={pendingCount} />
+        {/* Channel selector */}
+        <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#1f242e] bg-[#0d1017] p-1.5">
+          <button
+            type="button"
+            onClick={() => setChannel("whatsapp")}
+            aria-pressed={channel === "whatsapp"}
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+              channel === "whatsapp"
+                ? "bg-blue-700 text-white"
+                : "text-gray-400 hover:bg-white/5"
+            }`}
+          >
+            <MessageCircle size={16} />
+            WhatsApp
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setChannel("voice")}
+            aria-pressed={channel === "voice"}
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+              channel === "voice"
+                ? "bg-blue-700 text-white"
+                : "text-gray-400 hover:bg-white/5"
+            }`}
+          >
+            <Mic size={16} />
+            Voice AI
+          </button>
+        </div>
+
+        <TopTabs
+          active={tab}
+          onChange={setTab}
+          pendingCount={pendingCount}
+        />
 
         {tab === "rules" ? (
-          <CustomRulesTab />
+          <CustomRulesTab channel={channel} />
         ) : (
-          <FlaggedRepliesTab onQueueChange={setPendingCount} />
+          <FlaggedRepliesTab
+            channel={channel}
+            onQueueChange={setPendingCount}
+          />
         )}
       </div>
     </div>
