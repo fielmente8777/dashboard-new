@@ -2,10 +2,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { v4 as uuidv4 } from "uuid";
-import { Check, Copy, Loader2, PanelLeft, Plus, RotateCcw, SendHorizontal, Sparkles, X } from "lucide-react";
-import { getConversation, sendChatMessage } from "../../services/chatbot.service";
+import { Check, Copy, Loader2, Mic, PanelLeft, Plus, RotateCcw, SendHorizontal, Sparkles, Square, X } from "lucide-react";
+import { getConversation, sendChatMessage, transcribeAudio } from "../../services/chatbot.service";
 import useChatbotHistory from "../../hooks/useChatbotHistory";
+import useVoiceRecorder from "../../hooks/useVoiceRecorder";
 import ChatHistorySidebar from "./ChatHistorySidebar";
+
+// Sarvam's synchronous speech-to-text accepts up to 30s of audio per request.
+const MAX_VOICE_SECONDS = 29;
+const MIN_AUDIO_BYTES = 1024;
+
+const formatSeconds = (s = 0) =>
+  `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 const suggestions = [
   "Show today's leads",
@@ -105,6 +113,102 @@ export default function ChatbotWindow({ hid, onClose }) {
     overlayRef.current = open;
   }, []);
 
+  // ---- Voice input (Sarvam Saaras v4 via POST /chatbot/transcribe) ----
+  const voice = useVoiceRecorder({ maxSeconds: MAX_VOICE_SECONDS });
+  const [transcribing, setTranscribing] = useState(false);
+  const [voiceNotice, setVoiceNotice] = useState(null); // { type: "error" | "success", text }
+  const transcribingRef = useRef(false);
+  const startingRef = useRef(false);
+  const handledBlobRef = useRef(null);
+  const transcribeAbortRef = useRef(null);
+  const isRecording = voice.status === "recording";
+  const { reset: resetRecorder } = voice;
+
+  // Surface microphone errors (permission denied, no device, unsupported).
+  useEffect(() => {
+    if (voice.error) setVoiceNotice({ type: "error", text: voice.error });
+  }, [voice.error]);
+
+  // Recording finished (user tapped stop, or hit the time limit): transcribe it once.
+  useEffect(() => {
+    const blob = voice.blob;
+    if (voice.status !== "stopped" || !blob || handledBlobRef.current === blob) return;
+    handledBlobRef.current = blob;
+
+    if (blob.size < MIN_AUDIO_BYTES) {
+      setVoiceNotice({ type: "error", text: "The recording was empty. Please try again." });
+      resetRecorder();
+      return;
+    }
+
+    const controller = new AbortController();
+    transcribeAbortRef.current = controller;
+    transcribingRef.current = true;
+    setTranscribing(true);
+    setVoiceNotice(null);
+
+    transcribeAudio(blob, { signal: controller.signal })
+      .then((response) => {
+        const text = String(response?.text ?? response?.data?.text ?? "").trim();
+        if (!text) throw new Error("We didn't catch any speech. Please try again.");
+        // Fill the input for review; never auto-send.
+        setInput((previous) => (previous.trim() ? `${previous.trim()} ${text}` : text));
+        setVoiceNotice({ type: "success", text: "Transcribed. Review or edit, then press send." });
+        requestAnimationFrame(() => {
+          const el = inputRef.current;
+          if (!el || el.disabled) return;
+          el.focus();
+          el.setSelectionRange(el.value.length, el.value.length);
+        });
+      })
+      .catch((error) => {
+        if (controller.signal.aborted && error?.name === "AbortError") return; // closed / unmounted
+        console.error("Voice transcription failed:", error);
+        setVoiceNotice({
+          type: "error",
+          text: error?.message || "Could not transcribe audio. Please try again.",
+        });
+      })
+      .finally(() => {
+        if (transcribeAbortRef.current === controller) transcribeAbortRef.current = null;
+        transcribingRef.current = false;
+        setTranscribing(false);
+        resetRecorder();
+      });
+  }, [voice.status, voice.blob, resetRecorder]);
+
+  // Abort an in-flight transcription if the chat closes. The hook releases the mic itself.
+  useEffect(() => () => transcribeAbortRef.current?.abort(), []);
+
+  // Auto-hide the success hint.
+  useEffect(() => {
+    if (voiceNotice?.type !== "success") return undefined;
+    const timer = setTimeout(() => setVoiceNotice(null), 4000);
+    return () => clearTimeout(timer);
+  }, [voiceNotice]);
+
+  async function toggleRecording() {
+    if (transcribingRef.current) return;
+    if (isRecording) {
+      voice.stop(); // onstop -> blob -> effect above transcribes it
+      return;
+    }
+    if (startingRef.current) return; // permission prompt already open
+    startingRef.current = true;
+    setVoiceNotice(null);
+    try {
+      await voice.start();
+    } finally {
+      startingRef.current = false;
+    }
+  }
+
+  // Discard a recording in progress: stops the mic, nothing is transcribed or sent.
+  const cancelRecording = useCallback(() => {
+    resetRecorder();
+    setVoiceNotice(null);
+  }, [resetRecorder]);
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -125,12 +229,13 @@ export default function ChatbotWindow({ hid, onClose }) {
     const handleKeyDown = (event) => {
       if (event.key !== "Escape") return;
       if (overlayRef.current) return; // menu / rename / delete dialog handles its own Escape
+      if (isRecording) return cancelRecording(); // Esc cancels a recording before anything else
       if (historyOpen) return setHistoryOpen(false);
       closeChat();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeChat, historyOpen]);
+  }, [closeChat, historyOpen, isRecording, cancelRecording]);
 
   const openConversation = useCallback(
     async (id) => {
@@ -174,6 +279,7 @@ export default function ChatbotWindow({ hid, onClose }) {
   }, [hid, openConversation]);
 
   function newChat() {
+    if (isRecording) cancelRecording();
     viewRef.current += 1;
     setMessages([]);
     setConversationId(null);
@@ -189,6 +295,7 @@ export default function ChatbotWindow({ hid, onClose }) {
       setHistoryOpen(false);
       return;
     }
+    if (isRecording) cancelRecording();
     openConversation(conversation._id);
   }
 
@@ -519,6 +626,33 @@ export default function ChatbotWindow({ hid, onClose }) {
           </main>
 
           <footer className="shrink-0 border-t border-[var(--cb-border)] bg-[var(--cb-bg)] px-3 pb-4 pt-3 sm:px-4 sm:pb-5">
+            {(isRecording || transcribing || voiceNotice) && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="mx-auto mb-2 flex w-full max-w-[710px] flex-wrap items-center gap-x-2 gap-y-1 px-2 text-xs"
+              >
+                {isRecording ? (
+                  <>
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                    <span className="text-[var(--cb-danger)]">
+                      Listening... {formatSeconds(voice.seconds)} / {formatSeconds(MAX_VOICE_SECONDS)}
+                    </span>
+                    <span className="text-[var(--cb-faint)]">Tap the mic to stop · Esc to cancel</span>
+                  </>
+                ) : transcribing ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin text-[var(--cb-accent)]" aria-hidden="true" />
+                    <span className="text-[var(--cb-text-2)]">Transcribing audio...</span>
+                  </>
+                ) : (
+                  <span className={voiceNotice.type === "error" ? "text-[var(--cb-danger)]" : "text-emerald-500"}>
+                    {voiceNotice.text}
+                  </span>
+                )}
+              </div>
+            )}
+
             <form
               onSubmit={(event) => handleSubmit(event)}
               className="mx-auto flex w-full max-w-[710px] items-end gap-2 rounded-2xl border border-[#6259ff] bg-[var(--cb-raised)] p-1.5 focus-within:ring-2 focus-within:ring-violet-500/20 transition sm:p-2"
@@ -540,6 +674,58 @@ export default function ChatbotWindow({ hid, onClose }) {
                 aria-label="Ask Eazotel AI a question"
                 className="min-w-0 flex-1 resize-none bg-transparent px-2 py-3 text-sm leading-5 text-[var(--cb-text)] outline-none placeholder:text-[var(--cb-faint)] sm:px-3"
               />
+
+              {isRecording && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    cancelRecording();
+                    inputRef.current?.focus();
+                  }}
+                  aria-label="Cancel recording"
+                  title="Cancel recording"
+                  className="flex h-11 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--cb-muted)] hover:bg-[var(--cb-hover)] hover:text-[var(--cb-text)]"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={toggleRecording}
+                disabled={transcribing || !voice.isSupported}
+                aria-pressed={isRecording}
+                aria-label={
+                  !voice.isSupported
+                    ? "Voice input is not supported in this browser"
+                    : transcribing
+                      ? "Transcribing audio"
+                      : isRecording
+                        ? "Stop recording and transcribe"
+                        : "Start voice input"
+                }
+                title={
+                  !voice.isSupported
+                    ? "Voice input isn't supported in this browser"
+                    : isRecording
+                      ? "Stop and transcribe"
+                      : "Speak your question"
+                }
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                  isRecording
+                    ? "border-red-500/50 bg-red-500/15 text-red-500 ring-2 ring-red-500/25 hover:bg-red-500/25"
+                    : "border-[var(--cb-border)] text-[var(--cb-muted)] hover:border-violet-400/40 hover:bg-[var(--cb-hover)] hover:text-[var(--cb-text)]"
+                }`}
+              >
+                {transcribing ? (
+                  <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                ) : isRecording ? (
+                  <Square size={14} className="fill-current" aria-hidden="true" />
+                ) : (
+                  <Mic size={18} aria-hidden="true" />
+                )}
+              </button>
+
               <button
                 type="submit"
                 disabled={loading || conversationLoading || !input.trim()}
@@ -550,7 +736,7 @@ export default function ChatbotWindow({ hid, onClose }) {
               </button>
             </form>
             <p className="mx-auto mt-2 hidden max-w-[710px] px-2 text-[11px] text-[var(--cb-faint)] sm:block">
-              Enter to send · Shift+Enter for a new line · AI answers can be wrong, so check important numbers.
+              Enter to send · Shift+Enter for a new line · Mic for voice (up to 29s) · AI answers can be wrong, so check important numbers.
             </p>
           </footer>
         </div>

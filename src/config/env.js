@@ -11,7 +11,8 @@ const trimSlash = (url) => url.replace(/\/+$/, "");
 
 export const API_URLS = {
   core: trimSlash(env.VITE_CORE_API_URL || "https://nexon.eazotel.com"),
-  node: trimSlash(env.VITE_NODE_API_URL || "https://gian-1eve.onrender.com"),
+  // node: trimSlash(env.VITE_NODE_API_URL || "https://gian-1eve.onrender.com"),
+  node: trimSlash(env.VITE_NODE_API_URL || "localhost:8000"),
   salesAgent: trimSlash(
     env.VITE_SALES_AGENT_API_URL || "https://ai-sales-agent-o4wi.onrender.com",
   ),

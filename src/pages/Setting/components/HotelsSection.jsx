@@ -8,7 +8,7 @@ import HotelCard from "./HotelCard";
 import HotelModal from "./HotelModal";
 
 // The account's hotel locations. Only admins can add, edit or remove them.
-const HotelsSection = ({ hotels, canManage, onHotelsChange }) => {
+const HotelsSection = ({ hotels, hotelName, canManage, onHotelsChange }) => {
   const { hid } = useTenant();
   const manager = useHotelManager(hotels, onHotelsChange);
   const entries = Object.entries(hotels);
@@ -36,6 +36,7 @@ const HotelsSection = ({ hotels, canManage, onHotelsChange }) => {
             <HotelCard
               key={hotelId}
               hotel={hotel}
+              hotelName={hotelName}
               current={hotelId === hid}
               deleting={manager.deletingId === hotelId}
               onEdit={canManage ? () => manager.openEdit(hotelId) : undefined}

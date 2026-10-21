@@ -27,6 +27,7 @@ const Setting = () => {
 
       <HotelsSection
         hotels={profile.hotels ?? {}}
+        hotelName={profile.hotelName}
         canManage={Boolean(authUser?.isAdmin)}
         onHotelsChange={(hotels) => patchProfile({ hotels })}
       />
