@@ -83,10 +83,10 @@ function TopTabs({ active, onChange, pendingCount }) {
       <button
         type="button"
         onClick={() => onChange("rules")}
-        className={`rounded-md px-3.5 py-2 text-sm ${
+        className={`rounded-md px-3.5 py-2 text-sm transition-colors ${
           active === "rules"
             ? "bg-blue-700 text-white"
-            : "text-gray-400 hover:bg-white/5"
+            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
         }`}
       >
         Custom Rules
@@ -95,15 +95,22 @@ function TopTabs({ active, onChange, pendingCount }) {
       <button
         type="button"
         onClick={() => onChange("feedback")}
-        className={`flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm ${
+        className={`flex items-center gap-1.5 rounded-md px-3.5 py-2 text-sm transition-colors ${
           active === "feedback"
             ? "bg-blue-700 text-white"
-            : "text-gray-400 hover:bg-white/5"
+            : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
         }`}
       >
         Flagged Replies
+
         {pendingCount > 0 && (
-          <span className="rounded-full bg-amber-500/15 px-1.5 text-xs text-amber-400">
+          <span
+            className={`rounded-full px-1.5 text-xs ${
+              active === "feedback"
+                ? "bg-white/20 text-white"
+                : "bg-amber-500/15 text-amber-400"
+            }`}
+          >
             {pendingCount}
           </span>
         )}
@@ -117,6 +124,10 @@ export default function AiTrainingPage() {
   const [channel, setChannel] = useState("whatsapp");
   const [pendingCount, setPendingCount] = useState(0);
 
+  const handleChannelChange = (nextChannel) => {
+    setChannel(nextChannel);
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0c10] px-4 py-10 text-gray-200 sm:px-8">
       <div className="mx-auto max-w-3xl">
@@ -124,9 +135,10 @@ export default function AiTrainingPage() {
           <h1 className="text-2xl font-bold text-white">
             Train Your AI
           </h1>
+
           <p className="mt-1 text-sm text-gray-500">
-            Set rules for how your AI should behave, or review
-            corrections flagged from real conversations.
+            Configure separate rules for WhatsApp and Voice AI,
+            or review corrections flagged from conversations.
           </p>
         </div>
 
@@ -134,12 +146,12 @@ export default function AiTrainingPage() {
         <div className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-[#1f242e] bg-[#0d1017] p-1.5">
           <button
             type="button"
-            onClick={() => setChannel("whatsapp")}
+            onClick={() => handleChannelChange("whatsapp")}
             aria-pressed={channel === "whatsapp"}
-            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
               channel === "whatsapp"
                 ? "bg-blue-700 text-white"
-                : "text-gray-400 hover:bg-white/5"
+                : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
             }`}
           >
             <MessageCircle size={16} />
@@ -148,12 +160,12 @@ export default function AiTrainingPage() {
 
           <button
             type="button"
-            onClick={() => setChannel("voice")}
+            onClick={() => handleChannelChange("voice")}
             aria-pressed={channel === "voice"}
-            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
               channel === "voice"
                 ? "bg-blue-700 text-white"
-                : "text-gray-400 hover:bg-white/5"
+                : "text-gray-400 hover:bg-white/5 hover:text-gray-200"
             }`}
           >
             <Mic size={16} />
@@ -168,9 +180,13 @@ export default function AiTrainingPage() {
         />
 
         {tab === "rules" ? (
-          <CustomRulesTab channel={channel} />
+          <CustomRulesTab
+            key={`rules-${channel}`}
+            channel={channel}
+          />
         ) : (
           <FlaggedRepliesTab
+            key={`feedback-${channel}`}
             channel={channel}
             onQueueChange={setPendingCount}
           />
