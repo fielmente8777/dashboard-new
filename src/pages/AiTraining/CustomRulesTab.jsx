@@ -336,6 +336,7 @@ import {
   CategoryBadge,
   Toggle,
 } from "./shared";
+import RuleFileManager from "./RuleFileManager";
 
 const DEFAULT_VOICE_MESSAGE =
   "Our assistant is currently unavailable. Please contact us later.";
@@ -916,6 +917,7 @@ function VoiceSettingsPanel({
   );
 }
 
+
 /* -------------------------------------------------------
    MAIN COMPONENT
 ------------------------------------------------------- */
@@ -1227,6 +1229,11 @@ export default function CustomRulesTab({ channel = "whatsapp" }) {
           onSaveMessage={handleSaveDefaultMessage}
         />
       )}
+       <RuleFileManager
+  rules={rules}
+  channel={channel}
+  onImport={handleAdd}
+/>
 
       <section className="space-y-3">
         <div>
