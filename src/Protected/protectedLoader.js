@@ -1,7 +1,11 @@
 import { redirect } from "react-router-dom";
 import store from "../redux/Store";
 import { loadSession, loadWebsiteData } from "../redux/session";
-import { selectNeedsOnboarding, setHid } from "../redux/slice/UserSlice";
+import {
+  getUserNdid,
+  selectNeedsOnboarding,
+  setHid,
+} from "../redux/slice/UserSlice";
 import { PAGES, ROUTES, dashboardPath } from "../routes/paths";
 import handleLocalStorage from "../utils/handleLocalStorage";
 import { getCookie, removeCookie } from "../utils/handleCookies";
@@ -35,7 +39,8 @@ export const protectedLoader = async ({ request, params }) => {
   // A new account has no hotel yet: send it to onboarding first.
   if (selectNeedsOnboarding(state)) throw redirect(ROUTES.ONBOARDING_FORM);
 
-  if (user?.Data?.ndid) localStorage.setItem("ndid", user.Data.ndid);
+  const ndid = getUserNdid(user);
+  if (ndid) localStorage.setItem("ndid", ndid);
 
   // keep the location selected last time, or fall back to the default one
   const nextHid =

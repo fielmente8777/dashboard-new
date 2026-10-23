@@ -79,14 +79,29 @@ export const selectCurrentLocation = createSelector(
   (hotels, hid) => hotels?.[hid] ?? null,
 );
 
+// A profile saved without any property details (no hotel name and no
+// website data): the hotel still has to fill in the onboarding form.
+// An account with no profile at all gets `Profile: {}` (no ndid) from nexon;
+// that one still needs /createwebsite, so it is not "blank".
+export const hasBlankProfile = (user) =>
+  Boolean(user?.Profile?.ndid) && !user.Profile.hotelName && !user.Data;
+
 // true once the profile has loaded and the account has no hotel yet: the
 // user has to finish onboarding before the dashboard can be used.
 // null while it is not known (profile still loading or the request failed).
 export const selectNeedsOnboarding = (state) => {
   const { user } = state.userProfile;
   if (!user) return null;
-  return user.Status === false || !Object.keys(user.Profile?.hotels ?? {}).length;
+  return (
+    user.Status === false ||
+    !Object.keys(user.Profile?.hotels ?? {}).length ||
+    hasBlankProfile(user)
+  );
 };
+
+// The account id. Data is null for an account whose website was never
+// created, but the profile carries the same ndid.
+export const getUserNdid = (user) => user?.Data?.ndid || user?.Profile?.ndid || null;
 
 // Locations the signed-in user may switch to
 export const selectAvailableLocations = createSelector(

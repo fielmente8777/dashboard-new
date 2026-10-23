@@ -15,7 +15,11 @@ import {
   useCreateWebsiteMutation,
 } from "../../redux/api/onboardingApi";
 import { loadSession } from "../../redux/session";
-import { selectNeedsOnboarding, setHid } from "../../redux/slice/UserSlice";
+import {
+  hasBlankProfile,
+  selectNeedsOnboarding,
+  setHid,
+} from "../../redux/slice/UserSlice";
 import { ROUTES } from "../../routes/paths";
 import { getCookie } from "../../utils/handleCookies";
 import { clearSession, getToken } from "../../utils/session";
@@ -149,6 +153,7 @@ const OnboardingForm = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const needsOnboarding = useSelector(selectNeedsOnboarding);
+  const user = useSelector((state) => state.userProfile.user);
   const [createWebsite] = useCreateWebsiteMutation();
   const [completeOnboarding] = useCompleteOnboardingMutation();
 
@@ -191,6 +196,13 @@ const OnboardingForm = () => {
   };
 
   const finish = async () => {
+    // the profile exists but was saved blank: nexon /createwebsite refuses
+    // an existing profile, so the trial step below fills it in (gian)
+    if (!localStorage.getItem(WEBSITE_CREATED_KEY) && hasBlankProfile(user)) {
+      const [existingHid] = Object.keys(user.Profile.hotels ?? {});
+      localStorage.setItem(WEBSITE_CREATED_KEY, existingHid || "true");
+    }
+
     if (!localStorage.getItem(WEBSITE_CREATED_KEY)) {
       setSubmitting("Creating your website...");
       const website = await createWebsite(form).unwrap();
@@ -215,7 +227,10 @@ const OnboardingForm = () => {
 
     // load the new hotel before entering, so the dashboard does not send
     // the user back here
-    await dispatch(loadSession({ force: true }));
+    const [profile] = await dispatch(loadSession({ force: true }));
+    if (hasBlankProfile(profile?.data)) {
+      throw new Error("Your property details could not be saved. Please try again.");
+    }
     // the dashboard loads this hotel's website data on the way in
     if (hid && hid !== "true") dispatch(setHid(hid));
 

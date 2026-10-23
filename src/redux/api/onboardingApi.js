@@ -18,7 +18,10 @@ const buildWebsitePayload = (p) => ({
   template: "1",
   hotelName: p.hotelName,
   hotelPhone: p.hotelPhone,
-  hotelAddress: [p.address, p.locality].filter(Boolean).join(", "),
+  // nexon copies hotelAddress into the first location's `local`, which the
+  // dashboard shows as the property name; the form has no address field, so
+  // it gets the hotel name (as the website and on-boarding apps send it)
+  hotelAddress: p.hotelName,
   hotelState: p.state,
   hotelCity: p.city,
   hotelCountry: p.country,
