@@ -15,8 +15,7 @@ import { normalizePhoneWithSameFormat } from "../../../utils/normalizePhoneNumbe
 import {
   CALL_STAGES,
   formatCallDuration,
-  getCallStatusLabel,
-  getCallStatusTone,
+  getCallOutcome,
   isOutgoing,
 } from "../callUtils";
 
@@ -101,11 +100,10 @@ const CallsTable = ({
       {
         key: "status",
         header: "Status",
-        render: (call) => (
-          <Badge tone={getCallStatusTone(call.status)}>
-            {getCallStatusLabel(call.status, call.direction)}
-          </Badge>
-        ),
+        render: (call) => {
+          const outcome = getCallOutcome(call);
+          return <Badge tone={outcome.tone}>{outcome.label}</Badge>;
+        },
       },
       {
         key: "startTime",
