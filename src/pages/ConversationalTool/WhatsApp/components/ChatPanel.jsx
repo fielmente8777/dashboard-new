@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import CallLeadDialog from "../../../../components/CallLeadDialog";
 import Button from "../../../../components/ui/Button";
 import { ErrorState } from "../../../../components/ui/States";
@@ -11,6 +10,7 @@ import {
   useGetWhatsAppTemplatesQuery,
   useMakeCallMutation,
 } from "../../../../redux/api/callsApi";
+import { useUpdateLeadMutation } from "../../../../redux/api/leadsApi";
 import {
   useDeleteMessagesMutation,
   useGetFlowSessionQuery,
@@ -21,10 +21,14 @@ import {
   useSetConversationHandlingMutation,
   useUpdateFlowSessionMutation,
 } from "../../../../redux/api/whatsappApi";
-import { leadViewPath } from "../../../../routes/paths";
-import { getHandling, isWindowClosed } from "../chatUtils";
+import {
+  getConversationAssignee,
+  getHandling,
+  isWindowClosed,
+} from "../chatUtils";
 import { useChatCache } from "../hooks/useChatCache";
 import { useConversationLead } from "../hooks/useConversationLead";
+import { useOpenConversationLead } from "../hooks/useOpenConversationLead";
 import { useSendMessage } from "../hooks/useSendMessage";
 import ChatHeader from "./ChatHeader";
 import Composer from "./Composer";
@@ -42,18 +46,19 @@ const HandlingBar = ({ children, action }) => (
 
 // The open conversation: header, messages and the message box.
 // Give it `key={conversation._id}` so each conversation starts clean.
-//   canCall   - the calling provider is connected
+//   canCall     - the calling provider is connected
+//   knownLeadId - the lead the chat was opened from, if any
 //   onBack()  onShowProfile()  onSend()
 const ChatPanel = ({
   conversation,
   hid,
   ndid,
   canCall,
+  knownLeadId,
   onBack,
   onShowProfile,
   onSend,
 }) => {
-  const navigate = useNavigate();
   const { confirm } = useConfirm();
   const run = useApiAction();
   const cache = useChatCache(hid);
@@ -81,9 +86,16 @@ const ChatPanel = ({
   const [updateFlowSession, { isLoading: isStoppingFlow }] =
     useUpdateFlowSessionMutation();
   const [makeCall, { isLoading: isCalling }] = useMakeCallMutation();
+  const [updateLead] = useUpdateLeadMutation();
 
   const send = useSendMessage(hid, conversation, onSend);
   const saveLead = useConversationLead(hid, conversation);
+  const lead = useOpenConversationLead({
+    hid,
+    conversation,
+    knownLeadId,
+    saveLead,
+  });
 
   const messageList = messages.data || NO_MESSAGES;
   const windowClosed = isWindowClosed(conversation.last_message?.created_at);
@@ -105,8 +117,11 @@ const ChatPanel = ({
 
   // the fields the call dialog reads; stable so the dialog keeps what is typed
   const callTarget = useMemo(
-    () => ({ Contact: conversation.phone, assignee: conversation.assignee }),
-    [conversation.phone, conversation.assignee],
+    () => ({
+      Contact: conversation.phone,
+      assignee: getConversationAssignee(conversation),
+    }),
+    [conversation],
   );
 
   const handleToggleSelect = useCallback((message) => {
@@ -192,6 +207,24 @@ const ChatPanel = ({
     if (stopped) flowSession.refetch();
   };
 
+  // Assigns the chat, and the same guest's lead in All Leads when that lead
+  // is a separate one (a webform or Meta lead with the same number), so both
+  // pages show the same person.
+  const handleAssign = async (user) => {
+    const fields = {
+      assignee: user.userName,
+      assigneeNumber: user.phone || null,
+      assigneeEmail: user.emailId || null,
+    };
+    const saved = await saveLead(fields, `Assigned to ${user.userName}`);
+    if (!saved) return;
+
+    const linked = await lead.findLead();
+    if (linked && String(linked.conversationId) !== String(conversation._id)) {
+      updateLead({ hid: linked.hId || hid, leadId: linked._id, ...fields });
+    }
+  };
+
   const handleCallClick = () => {
     // without the calling provider, hand the number to the device instead
     if (canCall) setIsCallOpen(true);
@@ -272,20 +305,10 @@ const ChatPanel = ({
         selectedCount={selectedKeys.length}
         onBack={onBack}
         onShowProfile={onShowProfile}
-        onOpenLead={() =>
-          navigate(leadViewPath(conversation.leadId, { hid, query: { hid } }))
-        }
+        findingLead={lead.finding}
+        onOpenLead={lead.openLead}
         onCall={handleCallClick}
-        onAssign={(user) =>
-          saveLead(
-            {
-              assignee: user.userName,
-              assigneeNumber: user.phone || null,
-              assigneeEmail: user.emailId || null,
-            },
-            `Assigned to ${user.userName}`,
-          )
-        }
+        onAssign={handleAssign}
         onDeleteSelected={handleDeleteSelected}
         onClearSelection={() => setSelectedKeys([])}
       />

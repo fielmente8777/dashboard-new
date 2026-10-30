@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import Pagination from "../../../../components/Pagination";
+import TablePagination from "../../../../components/ui/TablePagination";
 import Badge from "../../../../components/ui/Badge";
 import Card from "../../../../components/ui/Card";
 import DataTable from "../../../../components/ui/DataTable";
@@ -107,13 +107,13 @@ const RecipientsTable = ({
       emptyMessage="No recipients match these filters"
     />
 
-    <div className="mt-3 flex justify-end">
-      <Pagination
+    <div className="mt-3">
+      <TablePagination
         page={page}
+        total={total}
         totalPages={totalPages}
+        itemLabel="recipients"
         onPageChange={onPageChange}
-        onPrev={() => onPageChange(page - 1)}
-        onNext={() => onPageChange(page + 1)}
       />
     </div>
   </Card>

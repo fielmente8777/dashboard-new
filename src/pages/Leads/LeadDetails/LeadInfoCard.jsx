@@ -1,126 +1,112 @@
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { Check, Copy, Mail, Phone } from "lucide-react";
+import { useState } from "react";
 import Card from "../../../components/ui/Card";
 import Detail from "../../../components/ui/Detail";
-import CustomDropdown from "../../../components/ui/Dropdown";
-import { Field } from "../../../components/ui/Field";
 import Icon from "../../../components/ui/Icon";
 import IconButton from "../../../components/ui/IconButton";
-import { Stages, TurnAwayCode } from "../../../data/constant";
+import { formatDateTime, timeAgo } from "../../../utils/formateDate";
 import { normalizePhoneNumber } from "../../../utils/normalizePhoneNumber";
-import {
-  getLeadSourceLabel,
-  getLeadSourceUrl,
-  getSourceUrlParams,
-} from "../leadUtils";
+import { getLeadCreatedAt, getLeadEmail, getLeadPhone } from "../leadUtils";
 
-// Who the lead is, where it came from, and the controls to work it.
-// Actions are passed in:
-//   onWhatsApp()  onCall()  onStageChange(stage)  onTurnAway(code)  onAssign(user)
-const LeadInfoCard = ({
-  lead,
-  users,
-  onWhatsApp,
-  onCall,
-  onStageChange,
-  onTurnAway,
-  onAssign,
-}) => {
-  const sourceUrl = getLeadSourceUrl(lead);
-  const urlParams = getSourceUrlParams(lead);
+// A value with a button that copies it.
+const CopyButton = ({ text, label }) => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <IconButton
+      icon={copied ? Check : Copy}
+      label={copied ? "Copied" : label}
+      size="sm"
+      tone={copied ? "success" : "default"}
+      className="size-7!"
+      onClick={() =>
+        navigator.clipboard?.writeText(text).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }, () => {})
+      }
+    />
+  );
+};
+
+const ContactRow = ({ icon, href, text, copyLabel }) => (
+  <div className="flex min-w-0 items-center gap-3 rounded-lg bg-app-surface-secondary/60 px-3 py-2">
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-app-surface text-app-text-muted">
+      <Icon icon={icon} size="sm" />
+    </span>
+    <a
+      href={href}
+      className="min-w-0 flex-1 truncate text-sm font-medium text-app-text hover:text-blue-500"
+      title={text}
+    >
+      {text}
+    </a>
+    <CopyButton text={text} label={copyLabel} />
+  </div>
+);
+
+// How to reach the lead, and the facts about it at a glance.
+const LeadInfoCard = ({ lead }) => {
+  const phone = getLeadPhone(lead);
+  const email = getLeadEmail(lead);
+  const createdAt = getLeadCreatedAt(lead);
+  const updatedAt = lead.updatedAt || lead.updated_at;
+  const followUpAt = lead.followUpDate || lead.followUp;
+  const notes = Array.isArray(lead.notes) ? lead.notes : [];
+  const lastNoteAt = notes.at(-1)?.createdAt;
 
   return (
-    <Card
-      title="Customer information"
-      description={`Created from ${getLeadSourceLabel(lead)}`}
-    >
-      <dl className="grid gap-4 sm:grid-cols-2">
-        <Detail label="Mobile number">
-          {lead.Contact && (
-            <span className="flex items-center gap-1">
-              {normalizePhoneNumber(lead.Contact)}
-              <IconButton
-                icon={MessageCircle}
-                label="Send a WhatsApp message"
-                tone="success"
-                onClick={onWhatsApp}
-              />
-              <IconButton icon={Phone} label="Call" onClick={onCall} />
-            </span>
-          )}
-        </Detail>
-        <Detail label="Email address">
-          {lead.Email && (
-            <a
-              href={`mailto:${lead.Email}`}
-              className="inline-flex items-center gap-1.5 hover:text-blue-500"
-            >
-              <Icon icon={Mail} size="sm" />
-              {lead.Email}
-            </a>
-          )}
-        </Detail>
-        {lead.check_in && <Detail label="Check in">{lead.check_in}</Detail>}
-        {lead.check_out && <Detail label="Check out">{lead.check_out}</Detail>}
-        {lead.number_of_guest && (
-          <Detail label="Guests">{lead.number_of_guest}</Detail>
+    <Card title="Contact & overview">
+      <div className="space-y-2">
+        {phone && (
+          <ContactRow
+            icon={Phone}
+            href={`tel:${phone}`}
+            text={normalizePhoneNumber(phone)}
+            copyLabel="Copy number"
+          />
         )}
-      </dl>
-
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        <Field label="Attempted by" as="div">
-          <CustomDropdown
-            key={`assignee-${lead._id}-${lead.assignee}`}
-            label={lead.assignee || "Select user"}
-            options={users.map((user) => ({
-              value: user.userName,
-              label: user.userName,
-            }))}
-            onChange={(userName) =>
-              onAssign(users.find((user) => user.userName === userName))
-            }
+        {email && (
+          <ContactRow
+            icon={Mail}
+            href={`mailto:${email}`}
+            text={email}
+            copyLabel="Copy email"
           />
-        </Field>
-        <Field label="Stage" as="div">
-          <CustomDropdown
-            key={`stage-${lead._id}-${lead.status}`}
-            label={lead.status}
-            options={Stages}
-            onChange={onStageChange}
-          />
-        </Field>
-        <Field label="Turn away code" as="div">
-          <CustomDropdown
-            key={`code-${lead._id}-${lead.turnAwayCode}`}
-            label={lead.turnAwayCode || "Select code"}
-            options={TurnAwayCode}
-            onChange={onTurnAway}
-          />
-        </Field>
+        )}
+        {!phone && !email && (
+          <p className="text-sm text-app-text-muted">
+            No contact details were left.
+          </p>
+        )}
       </div>
 
-      {sourceUrl && (
-        <div className="mt-5 border-t border-app-border! pt-4">
-          <p className="text-xs text-app-text-muted">Source page</p>
-          <a
-            href={sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-0.5 block break-all text-sm text-blue-500 hover:underline"
-          >
-            {sourceUrl}
-          </a>
-
-          {urlParams.length > 0 && (
-            <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-              {urlParams.map((param) => (
-                <Detail key={param.label} label={param.label}>
-                  {param.value}
-                </Detail>
-              ))}
-            </dl>
-          )}
-        </div>
-      )}
+      <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-app-border! pt-4">
+        <Detail label="Lead age">{timeAgo(createdAt)}</Detail>
+        <Detail label="Last updated">
+          {updatedAt ? timeAgo(updatedAt) : "—"}
+        </Detail>
+        <Detail label="Attempted by">{lead.assignee}</Detail>
+        <Detail label="Follow up">
+          {followUpAt ? formatDateTime(followUpAt) : "Not set"}
+        </Detail>
+        <Detail label="Notes">
+          {notes.length
+            ? `${notes.length}${lastNoteAt ? ` · last ${timeAgo(lastNoteAt)}` : ""}`
+            : "None yet"}
+        </Detail>
+        <Detail label="Converted">
+          {lead.is_converted ? "Yes" : "No"}
+        </Detail>
+        {lead._id && (
+          <div className="col-span-2 min-w-0">
+            <dt className="text-xs text-app-text-muted">Lead ID</dt>
+            <dd className="mt-0.5 flex items-center gap-1 text-xs font-medium text-app-text-muted">
+              <span className="truncate font-mono">{lead._id}</span>
+              <CopyButton text={lead._id} label="Copy lead ID" />
+            </dd>
+          </div>
+        )}
+      </dl>
     </Card>
   );
 };

@@ -71,6 +71,8 @@ const WhatsApp = () => {
   const [tab, setTab] = useState("active");
   const [pane, setPane] = useState("list"); // "list" | "chat" | "profile"
   const [isNewOpen, setIsNewOpen] = useState(false);
+  // conversation id -> the lead it was opened from (the lead's WhatsApp button)
+  const [leadLinks, setLeadLinks] = useState({});
 
   const integration = useGetIntegrationStatusQuery(hid, { skip: !hid });
   const isConnected = Boolean(integration.data?.metaWhatsapp);
@@ -113,6 +115,7 @@ const WhatsApp = () => {
   useEffect(() => {
     const conversationId = searchParams.get("conversationId");
     const phone = searchParams.get("phone") || searchParams.get("number");
+    const leadId = searchParams.get("leadId");
     if ((!conversationId && !phone) || conversations.length === 0) return;
 
     const match =
@@ -122,11 +125,14 @@ const WhatsApp = () => {
     if (match) {
       setTab(getConversationTab(match));
       handleOpen(match);
+      if (leadId) {
+        setLeadLinks((links) => ({ ...links, [match._id]: leadId }));
+      }
     }
 
     // done with them: a reload must not reopen the conversation
     const next = new URLSearchParams(searchParams);
-    ["conversationId", "phone", "number", "status"].forEach((name) =>
+    ["conversationId", "phone", "number", "status", "leadId"].forEach((name) =>
       next.delete(name),
     );
     setSearchParams(next, { replace: true });
@@ -208,7 +214,7 @@ const WhatsApp = () => {
     return <ChatSkeleton />;
   }
 
-  const frameClassName = "flex h-[calc(100dvh-8vh)] bg-app-surface";
+  const frameClassName = "flex h-[calc(100dvh-8vh)] overflow-hidden bg-app-surface";
 
   if (integration.isError || conversationsQuery.isError) {
     const failed = integration.isError ? integration : conversationsQuery;
@@ -263,6 +269,7 @@ const WhatsApp = () => {
               hid={hid}
               ndid={ndid}
               canCall={Boolean(integration.data?.exotel)}
+              knownLeadId={leadLinks[openConversation._id]}
               onBack={() => setPane("list")}
               onShowProfile={() => setPane("profile")}
               onSend={handleSend}
@@ -276,6 +283,7 @@ const WhatsApp = () => {
               key={openConversation._id}
               conversation={openConversation}
               hid={hid}
+              knownLeadId={leadLinks[openConversation._id]}
               lastActive={
                 openMessages.data?.at(-1)?.createdAt ||
                 openConversation.last_message?.created_at
@@ -288,11 +296,18 @@ const WhatsApp = () => {
         </>
       ) : (
         <div className="chat-backdrop hidden min-w-0 flex-1 items-center justify-center p-6 lg:flex">
-          <EmptyState
-            icon={MessagesSquare}
-            title="Select a conversation"
-            description="Choose a conversation on the left to read and reply to it."
-          />
+          <div className="max-w-sm rounded-2xl border border-app-border! bg-app-surface/95 p-8 text-center shadow-sm backdrop-blur">
+            <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <Icon icon={MessagesSquare} size={28} />
+            </span>
+            <h2 className="mt-4 text-base font-semibold text-app-text">
+              Select a conversation
+            </h2>
+            <p className="mt-1 text-sm text-app-text-muted">
+              Pick a chat on the left to read and reply. Click a guest's name
+              at the top of a chat to open their lead.
+            </p>
+          </div>
         </div>
       )}
 

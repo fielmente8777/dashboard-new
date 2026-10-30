@@ -14,6 +14,10 @@ export const isOutgoing = (call) => OUTGOING.includes(call?.direction);
 export const getGuestNumber = (call) =>
   isOutgoing(call) ? call?.to : call?.from;
 
+// the team member's number: who made the call, or who it was put through to
+export const getStaffNumber = (call) =>
+  isOutgoing(call) ? call?.from : call?.dialWhomNumber || "";
+
 // the provider's status in plain words; depends on who made the call
 export const getCallStatusLabel = (status, direction) => {
   const outgoing = OUTGOING.includes(direction);

@@ -51,7 +51,7 @@ export default function VoiceRecorder({
             type="button"
             onClick={handleDiscard}
             aria-label="Cancel recording"
-            className="size-8 rounded-full bg-app-surface-secondary hover:bg-gray-200 dark:hover:bg-white/10 text-app-text-faint flex items-center justify-center transition-colors"
+            className="size-8 rounded-full bg-app-surface-secondary hover:bg-gray-200 dark:hover:bg-white/10 text-app-text-muted dark:text-app-text flex items-center justify-center transition-colors"
           >
             <FaTrash size={11} />
           </button>
@@ -105,7 +105,7 @@ export default function VoiceRecorder({
             ? "Record voice note"
             : "Recording not supported in this browser"
         }
-        className="size-8 rounded-full bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        className="size-8 rounded-full bg-primary/10 hover:bg-primary/20 text-primary dark:bg-blue-500/20 dark:hover:bg-blue-500/30 dark:text-blue-300 flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <FaMicrophone size={13} />
       </button>

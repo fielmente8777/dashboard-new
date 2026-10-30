@@ -243,12 +243,16 @@ const AddLeadDialog = ({ open, onClose }) => {
           }
         >
           {/* the editor is drawn in place, not as a popup */}
-          <ActivityModal
-            open={Boolean(noteEditor)}
-            initialData={noteEditor?.index != null ? form.notes[noteEditor.index] : null}
-            onClose={() => setNoteEditor(null)}
-            onSave={saveNote}
-          />
+          {noteEditor && (
+            <div className="mb-4">
+              <ActivityModal
+                open
+                initialData={noteEditor.index != null ? form.notes[noteEditor.index] : null}
+                onClose={() => setNoteEditor(null)}
+                onSave={saveNote}
+              />
+            </div>
+          )}
           {form.notes.length === 0 && !noteEditor ? (
             <p className="rounded-lg border border-dashed border-app-border! p-4 text-center text-sm text-app-text-muted">
               No notes yet. Add what the guest asked for, or a follow-up reminder.

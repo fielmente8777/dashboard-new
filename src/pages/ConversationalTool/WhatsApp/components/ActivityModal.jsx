@@ -1,20 +1,13 @@
 // src/components/Notes/ActivityModal.jsx
+import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import VoiceRecorder from "../../../../components/VoiceRecorder";
-import Loader from "../../../../components/Loader";
-import { Select } from "../../../../components/ui/Field";
+import Button from "../../../../components/ui/Button";
+import Icon from "../../../../components/ui/Icon";
+import { NOTE_ACTIVITIES } from "./noteActivities";
 
-/* <option> is drawn by the OS, so it needs its own explicit colors.
-   Chrome/Edge/Firefox honour these; Safari falls back to color-scheme. */
-
-const activityOptions = [
-  { value: "phone_call", label: "Phone Call", emoji: "📞" },
-  { value: "message", label: "Message", emoji: "💬" },
-  { value: "note", label: "Note", emoji: "📝" },
-  { value: "email", label: "Email", emoji: "✉️" },
-  { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
-];
-
+// The form to add or edit one note: its kind, the text and / or a voice
+// recording. Shown inline (not as a pop-up) while `open`.
 export default function ActivityModal({ open, onClose, onSave, initialData }) {
   const [activitySource, setActivitySource] = useState("phone_call");
   const [message, setMessage] = useState("");
@@ -87,81 +80,90 @@ export default function ActivityModal({ open, onClose, onSave, initialData }) {
     }
   };
 
-  const selected = activityOptions.find((a) => a.value === activitySource);
-
   return (
-    <div className="bg-app-surface scheme:light dark:scheme-dark bg-transparent">
-      <div className="space-y-4">
-        {/* Activity type */}
-        <div className="flex items-center gap-3 border border-app-border rounded-lg px-3 py-2 bg-app-surface focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-colors">
-          <div className="w-9 h-9 shrink-0 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-base">
-            {selected?.emoji}
-          </div>
-          <div className="min-w-0 flex-1">
-            <Select
-              aria-label="Activity"
-              value={activitySource}
-              onChange={(e) => setActivitySource(e.target.value)}
-              options={activityOptions}
-            />
-          </div>
-        </div>
+    <div className="rounded-xl border border-app-border! bg-app-surface-secondary/40 p-3 sm:p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-text-faint">
+        {initialData ? "Edit note" : "New note"}
+      </p>
 
-        {/* Textarea + voice bar in bottom-left */}
-        <div className="relative border border-app-border rounded-lg bg-app-surface focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-colors">
-          <textarea
-            rows={5}
-            placeholder="Add details... or tap the mic to record"
-            value={message}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              if (error) setError("");
-            }}
-            className="w-full rounded-lg p-3 pb-14 text-sm outline-none resize-none bg-transparent text-app-text placeholder:text-app-text-faint"
-          />
-          <div className="absolute left-2 right-2 bottom-2 flex items-center">
-            <VoiceRecorder
-              existingAudio={audio?.url ? audio : null}
-              onChange={(rec) => {
-                setAudio(rec);
-                if (error) setError("");
-              }}
-              onRecordingChange={setIsRecording}
-              disabled={saving}
-            />
-          </div>
-        </div>
-
-        {error && <p className="text-xs text-red-500">{error}</p>}
+      {/* the kind of note */}
+      <div
+        role="radiogroup"
+        aria-label="Activity"
+        className="flex flex-wrap gap-1.5"
+      >
+        {NOTE_ACTIVITIES.map((activity) => {
+          const active = activity.value === activitySource;
+          return (
+            <button
+              key={activity.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setActivitySource(activity.value)}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition ${
+                active
+                  ? `border-transparent! ${activity.tone} ring-1 ring-current/30`
+                  : "border-app-border! bg-app-surface text-app-text-muted hover:text-app-text"
+              }`}
+            >
+              <Icon icon={activity.icon} size="sm" />
+              {activity.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Footer */}
-      <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        {initialData && (
-          <button
-            type="button"
-            onClick={onClose}
+      {/* text, with the voice recorder along the bottom */}
+      <div className="relative mt-3 rounded-lg border border-app-border! bg-app-surface transition-colors focus-within:border-blue-500! focus-within:ring-2 focus-within:ring-blue-500/20">
+        <textarea
+          rows={4}
+          placeholder="Add details... or tap the mic to record"
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            if (error) setError("");
+          }}
+          className="w-full resize-none rounded-lg bg-transparent p-3 pb-14 text-sm text-app-text outline-none placeholder:text-app-text-faint"
+        />
+        <div className="absolute bottom-2 left-2 right-2 flex items-center">
+          <VoiceRecorder
+            existingAudio={audio?.url ? audio : null}
+            onChange={(rec) => {
+              setAudio(rec);
+              if (error) setError("");
+            }}
+            onRecordingChange={setIsRecording}
             disabled={saving}
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
-          >
-            Cancel
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!canSave}
-          className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          />
+        </div>
+      </div>
+
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+
+      <div className="mt-3 flex justify-end gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={X}
+          disabled={saving}
+          onClick={onClose}
         >
-          {saving
-            ? "Saving"
-            : isRecording
-              ? "Stop recording to save"
-              : initialData
-                ? "Update"
-                : "Save"}
-          {saving && <Loader size={12} color="#fefefe" />}
-        </button>
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          icon={Check}
+          loading={saving}
+          disabled={!canSave}
+          onClick={handleSave}
+        >
+          {isRecording
+            ? "Stop recording to save"
+            : initialData
+              ? "Update note"
+              : "Save note"}
+        </Button>
       </div>
     </div>
   );

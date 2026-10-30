@@ -1,7 +1,7 @@
 import CustomDropdown from "./Dropdown";
 
 const dropdownClassName =
-  "border-primary/60! w-40! p-1! rounded-md! bg-app-surface-secondary! z-9!";
+  "border-primary/60! dark:border-blue-400/40! w-40! p-1! rounded-md! bg-app-surface-secondary! dark:text-app-text! z-9!";
 
 // A dropdown that sits in a table cell: shows `value` and reports the option
 // picked. `id` is the row's id; with it the cell goes back to the saved value

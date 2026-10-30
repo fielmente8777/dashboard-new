@@ -302,7 +302,7 @@ code {
 .chat-backdrop {
   background-color: var(--app-bg);
   background-image: radial-gradient(
-    color-mix(in srgb, var(--app-text-faint) 28%, transparent) 1px,
+    color-mix(in srgb, var(--app-text-faint) 16%, transparent) 1px,
     transparent 1px
   );
   background-size: 18px 18px;

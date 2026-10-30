@@ -223,6 +223,7 @@ export const {
   useConnectWhatsAppMutation,
   useGetWhatsAppAccountQuery,
   useGetConversationsQuery,
+  useLazyGetConversationsQuery,
   useGetMessagesQuery,
   useSendMessageMutation,
   useDeleteMessagesMutation,

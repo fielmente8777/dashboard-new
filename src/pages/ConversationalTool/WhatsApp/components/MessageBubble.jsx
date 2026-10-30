@@ -328,8 +328,8 @@ const MessageBubble = ({
         <div
           className={`group relative min-w-24 max-w-[85%] rounded-2xl border px-3 pb-1.5 pt-2.5 shadow-sm sm:max-w-md ${
             mine
-              ? "rounded-br-md border-emerald-500/25! bg-emerald-500/10"
-              : "rounded-bl-md border-app-border! bg-app-surface"
+              ? "rounded-br-md border-emerald-200! bg-emerald-50 dark:border-emerald-800! dark:bg-[#0f3d2e]"
+              : "rounded-bl-md border-app-border! bg-app-surface dark:border-white/10! dark:bg-[#1f2633]"
           } ${message.status === "failed" ? "border-red-500/50!" : ""}`}
         >
           <MessageContent

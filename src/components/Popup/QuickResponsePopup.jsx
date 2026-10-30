@@ -24,8 +24,17 @@ const NO_VALUES = { body: [], header: [] };
 
 // Sends a WhatsApp message to a lead or caller: free text, or an approved
 // template. `lead` needs { Contact, Name? }; `templates` are the account's
-// approved templates.
-const QuickResponsePopup = ({ open, setOpen, lead, templates = [] }) => {
+// approved templates. Pass `templateOnly` for a guest who has no chat with
+// you yet: WhatsApp only lets a business start a conversation with an
+// approved template. `onSent` is called after a message goes out.
+const QuickResponsePopup = ({
+  open,
+  setOpen,
+  lead,
+  templates = [],
+  templateOnly = false,
+  onSent,
+}) => {
   const { showToast } = useToast();
   const { hid } = useTenant();
   const [sendMessage, { isLoading }] = useSendMessageMutation();
@@ -37,11 +46,11 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates = [] }) => {
 
   useEffect(() => {
     if (!open) return;
-    setMode("text");
+    setMode(templateOnly ? "template" : "text");
     setText("");
     setTemplate(null);
     setValues(NO_VALUES);
-  }, [open]);
+  }, [open, templateOnly]);
 
   const close = () => setOpen(false);
 
@@ -60,6 +69,7 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates = [] }) => {
     const result = await sendMessage({ hid, payload });
     if (result.data?.success) {
       showToast({ message: "Message sent" });
+      onSent?.();
       close();
       return;
     }
@@ -74,8 +84,16 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates = [] }) => {
       open={open}
       onClose={close}
       size="lg"
-      title={`Send a WhatsApp message${lead?.Name ? ` to ${lead.Name}` : ""}`}
-      description={lead?.Contact}
+      title={
+        templateOnly
+          ? `Start a WhatsApp chat${lead?.Name ? ` with ${lead.Name}` : ""}`
+          : `Send a WhatsApp message${lead?.Name ? ` to ${lead.Name}` : ""}`
+      }
+      description={
+        templateOnly
+          ? `${lead?.Contact || ""} has no chat with you yet. Pick an approved template to start one.`
+          : lead?.Contact
+      }
       footer={
         <>
           <Button variant="secondary" onClick={close}>
@@ -92,7 +110,9 @@ const QuickResponsePopup = ({ open, setOpen, lead, templates = [] }) => {
         </>
       }
     >
-      <Tabs tabs={MODES} value={mode} onChange={setMode} className="mb-4" />
+      {!templateOnly && (
+        <Tabs tabs={MODES} value={mode} onChange={setMode} className="mb-4" />
+      )}
 
       {mode === "text" && (
         <Textarea

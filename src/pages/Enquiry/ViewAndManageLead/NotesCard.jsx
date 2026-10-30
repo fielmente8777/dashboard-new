@@ -2,9 +2,10 @@ import { useState } from "react";
 import Timeline from "../../ConversationalTool/WhatsApp/components/Timeline";
 import ActivityModal from "../../ConversationalTool/WhatsApp/components/ActivityModal";
 import Loader from "../../../components/Loader";
-import { FaPlus } from "react-icons/fa";
+import { NotebookPen, Plus } from "lucide-react";
+import Button from "../../../components/ui/Button";
+import Icon from "../../../components/ui/Icon";
 import Swal from "sweetalert2";
-import { GrNotes } from "react-icons/gr";
 import { useToast } from "../../../context/ToastContext";
 import { useConfirm } from "../../../context/ConfirmContext";
 import { useTenant } from "../../../hooks/useTenant";
@@ -125,27 +126,34 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
     await persistNotes(notes, prevNotes);
   };
 
+  const notes = lead?.notes || [];
+  const hasNotes = notes.length > 0;
+
   return (
-    <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-5">
-        <div className="flex gap-2 items-center bg-app-surface px-3 sm:px-4 py-1.5 w-fit rounded-full">
-          <h3 className="text-sm font-medium text-app-text">Notes</h3>
-          {lead?.notes?.length > 0 && (
-            <button
-              onClick={handleOnAdd}
-              aria-label="Add note"
-              className="rounded-full size-8 shrink-0 bg-primary hover:bg-primary/90 text-white flex items-center justify-center transition-colors"
-            >
-              <FaPlus size={10} />
-            </button>
+    <section className="rounded-xl border border-app-border! bg-app-surface p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300">
+            <Icon icon={NotebookPen} size="sm" />
+          </span>
+          <h3 className="text-sm font-semibold text-app-text">Notes & activity</h3>
+          {hasNotes && (
+            <span className="rounded-full bg-app-surface-secondary px-2 py-0.5 text-xs font-medium tabular-nums text-app-text-muted">
+              {notes.length}
+            </span>
           )}
         </div>
+        {hasNotes && !isAddActivityOpen && (
+          <Button size="sm" icon={Plus} onClick={handleOnAdd}>
+            Add note
+          </Button>
+        )}
       </div>
 
-      {lead?.notes?.length ? (
-        <div className="max-h-72 overflow-auto pr-1 sm:pr-2">
+      {hasNotes ? (
+        <div className="max-h-[28rem] overflow-y-auto pr-1 pt-1">
           <Timeline
-            items={lead.notes}
+            items={notes}
             onEdit={(item, index) => {
               setEditingIndex(index);
               setEditingNote(item);
@@ -155,36 +163,41 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center text-center px-2 py-6 sm:py-8">
-          <GrNotes
-            size={26}
-            className="text-gray-300 dark:text-app-text-faint"
-          />
-          <h3 className="mt-4 text-sm font-semibold text-gray-700 dark:text-app-text">
-            No notes yet
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-app-text-faint mt-1 max-w-xs">
-            Keep track of conversations, follow-ups, and important details by
-            adding a note or a voice message.
-          </p>
-          <button
-            onClick={handleOnAdd}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/90 hover:bg-primary text-white transition-colors"
-          >
-            <FaPlus size={10} />
-            Add note
-          </button>
-        </div>
+        !isAddActivityOpen && (
+          <div className="flex flex-col items-center justify-center px-2 py-8 text-center">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-app-surface-secondary text-app-text-faint">
+              <Icon icon={NotebookPen} size="xl" />
+            </span>
+            <h4 className="mt-4 text-sm font-semibold text-app-text">
+              No notes yet
+            </h4>
+            <p className="mt-1 max-w-xs text-sm text-app-text-muted">
+              Keep track of calls, follow-ups and important details by adding
+              a note or a voice message.
+            </p>
+            <Button icon={Plus} className="mt-4" onClick={handleOnAdd}>
+              Add note
+            </Button>
+          </div>
+        )
       )}
 
-      <ActivityModal
-        open={isAddActivityOpen}
-        initialData={editingNote}
-        hid={lead?.hId}
-        onClose={handleCloseModal}
-        onSave={handleNotesSave}
-      />
-    </div>
+      {isAddActivityOpen && (
+        <div
+          className={
+            hasNotes ? "mt-5 border-t border-app-border! pt-5" : undefined
+          }
+        >
+          <ActivityModal
+            open={isAddActivityOpen}
+            initialData={editingNote}
+            hid={lead?.hId}
+            onClose={handleCloseModal}
+            onSave={handleNotesSave}
+          />
+        </div>
+      )}
+    </section>
   );
 };
 

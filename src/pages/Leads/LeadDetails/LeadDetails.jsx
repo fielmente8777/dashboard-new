@@ -1,29 +1,28 @@
 import {
   ArrowLeft,
-  CalendarCheck,
+  BedDouble,
   ChevronLeft,
   ChevronRight,
   Inbox,
-  X,
+  MessageSquareQuote,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import CallLeadDialog from "../../../components/CallLeadDialog";
 import FollowUpDialog from "../../../components/FollowUpDialog";
 import QuickResponsePopup from "../../../components/Popup/QuickResponsePopup";
-import { LeadDetailsSkeleton } from "../../../components/Skeltons/LeadDetailsSkelton";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import DatePicker from "../../../components/ui/DatePicker";
 import Detail from "../../../components/ui/Detail";
 import Icon from "../../../components/ui/Icon";
+import IconButton from "../../../components/ui/IconButton";
 import PageShell from "../../../components/ui/PageShell";
-import { EmptyState, ErrorState } from "../../../components/ui/States";
+import { EmptyState, ErrorState, Skeleton } from "../../../components/ui/States";
 import { useApiAction } from "../../../hooks/useApiAction";
 import { useTenant } from "../../../hooks/useTenant";
 import {
   useGetCallConnectionQuery,
   useGetTeamUsersQuery,
-  useGetWhatsAppTemplatesQuery,
   useMakeCallMutation,
 } from "../../../redux/api/callsApi";
 import {
@@ -31,26 +30,57 @@ import {
   useGetLeadQuery,
   useUpdateLeadMutation,
 } from "../../../redux/api/leadsApi";
-import { formatDateTime } from "../../../utils/formateDate";
 import NotesCard from "../../Enquiry/ViewAndManageLead/NotesCard";
+import { useAssigneeChatSync } from "../hooks/useAssigneeChatSync";
+import { useLeadWhatsApp } from "../hooks/useLeadWhatsApp";
 import {
-  getLeadCreatedAt,
-  getLeadName,
-  getRequestDetails,
+  cleanValue,
+  getStayDetails,
+  parseMessageFields,
   toLabel,
 } from "../leadUtils";
-import CallLeadDialog from "../../../components/CallLeadDialog";
 import ConvertToBookingDialog from "./ConvertToBookingDialog";
+import LeadHeader from "./LeadHeader";
 import LeadInfoCard from "./LeadInfoCard";
+import LeadManageCard from "./LeadManageCard";
+import LeadSourceCard from "./LeadSourceCard";
+import LeadStageTrack from "./LeadStageTrack";
+import { toInputValue } from "./leadDetailsUtils";
 
-// Date -> "YYYY-MM-DDTHH:mm" in local time, the value the date picker uses
-const toInputValue = (value) => {
-  if (!value) return "";
-  const date = new Date(value);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16);
-};
+// Placeholder in the shape of the page below
+const LeadDetailsLoading = () => (
+  <div className="min-h-full space-y-5 p-4 sm:p-6">
+    <div className="flex justify-between gap-3">
+      <Skeleton className="h-9 w-24" />
+      <Skeleton className="h-9 w-48" />
+    </div>
+    <div className="flex items-center gap-4 rounded-xl border border-app-border! bg-app-surface p-5">
+      <Skeleton className="size-16 rounded-2xl" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-72 max-w-full" />
+      </div>
+    </div>
+    <Skeleton className="h-24 w-full rounded-xl" />
+    <div className="grid gap-5 lg:grid-cols-3">
+      <div className="space-y-5 lg:col-span-2">
+        <Skeleton className="h-40 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-xl" />
+      </div>
+      <div className="space-y-5">
+        <Skeleton className="h-72 w-full rounded-xl" />
+        <Skeleton className="h-56 w-full rounded-xl" />
+      </div>
+    </div>
+  </div>
+);
+
+const StayFact = ({ label, value }) => (
+  <div className="rounded-lg bg-app-surface-secondary/60 px-3 py-2.5">
+    <p className="text-xs text-app-text-muted">{label}</p>
+    <p className="mt-0.5 text-sm font-semibold text-app-text">{value || "—"}</p>
+  </div>
+);
 
 // One lead, with its details, notes and follow-up date.
 // Opened from a leads list, the URL carries `lead` (the position of the lead
@@ -91,22 +121,18 @@ const LeadDetails = () => {
 
   // NotesCard edits the lead in place, so it needs its own copy
   const [lead, setLead] = useState(null);
-  const [followUp, setFollowUp] = useState("");
   // one piece of state per dialog
-  const [dialog, setDialog] = useState(null); // "whatsapp" | "call" | "stageFollowUp" | "convert"
+  const [dialog, setDialog] = useState(null); // "call" | "stageFollowUp" | "convert"
 
   const users = useGetTeamUsersQuery();
   const callConnection = useGetCallConnectionQuery();
-  // only needed once the WhatsApp popup has been opened
-  const templates = useGetWhatsAppTemplatesQuery(hid, {
-    skip: !hid || dialog !== "whatsapp",
-  });
+  const whatsApp = useLeadWhatsApp(hid);
+  const syncAssignee = useAssigneeChatSync(hid);
   const [updateLead, { isLoading: isSaving }] = useUpdateLeadMutation();
   const [makeCall, { isLoading: isCalling }] = useMakeCallMutation();
 
   useEffect(() => {
     setLead(loadedLead);
-    setFollowUp(toInputValue(loadedLead?.followUpDate || loadedLead?.followUp));
   }, [loadedLead]);
 
   const savedFollowUp = toInputValue(lead?.followUpDate || lead?.followUp);
@@ -122,6 +148,7 @@ const LeadDetails = () => {
       { success, error: "Could not update the lead." },
     );
     if (saved) setLead((current) => ({ ...current, ...changes }));
+    return saved;
   };
 
   const saveFollowUp = (value) =>
@@ -160,9 +187,7 @@ const LeadDetails = () => {
   );
 
   if (result.isLoading || result.isUninitialized) {
-    return (
-      <LeadDetailsSkeleton />
-    );
+    return <LeadDetailsLoading />;
   }
 
   if (result.isError || !lead) {
@@ -180,142 +205,167 @@ const LeadDetails = () => {
     );
   }
 
-  const requestDetails = getRequestDetails(lead);
-  const otherDetails = Object.entries(lead.other_details || {});
+  const otherDetails = Object.entries(lead.other_details || {}).filter(
+    ([, value]) => typeof value === "object" || cleanValue(value),
+  );
+  const stay = getStayDetails(lead);
+  const hasStay = Boolean(stay.checkIn || stay.checkOut || stay.guests);
+  const message = cleanValue(lead.Message);
+  // a form message ("check-in: ..., guests: ...") reads better as fields
+  const messageFields = parseMessageFields(message);
 
   return (
-    <PageShell
-      title={getLeadName(lead)}
-      description={[
-        formatDateTime(getLeadCreatedAt(lead)),
-        !isSingleLead && `Lead ${position} of ${total.toLocaleString()}`,
-      ]
-        .filter(Boolean)
-        .join(" · ")}
-      actions={
-        <>
+    <div className="min-h-full p-4 sm:p-6">
+      <div className="anim-stagger mx-auto space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           {backButton}
           {!isSingleLead && (
-            <>
-              <Button
-                variant="secondary"
+            <div className="flex items-center gap-1 rounded-lg border border-app-border! bg-app-surface p-1">
+              <IconButton
                 icon={ChevronLeft}
+                label="Previous lead"
                 disabled={position <= 1 || result.isFetching}
                 onClick={() => setPosition(position - 1)}
-              >
-                Prev
-              </Button>
-              <Button
-                variant="secondary"
+              />
+              <span className="px-2 text-sm tabular-nums text-app-text-muted">
+                Lead{" "}
+                <span className="font-semibold text-app-text">{position}</span>{" "}
+                of {total.toLocaleString()}
+              </span>
+              <IconButton
+                icon={ChevronRight}
+                label="Next lead"
                 disabled={position >= total || result.isFetching}
                 onClick={() => setPosition(position + 1)}
-              >
-                Next <Icon icon={ChevronRight} />
-              </Button>
-            </>
+              />
+            </div>
           )}
-          <Button icon={CalendarCheck} onClick={() => setDialog("convert")}>
-            Convert to booking
-          </Button>
-        </>
-      }
-    >
-      <div className="flex flex-wrap items-end gap-2 rounded-xl border border-app-border! bg-app-surface p-4">
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-app-text-muted">
-            Follow up on
-          </span>
-          <span className="block w-64 max-w-full">
-            <DatePicker
-              mode="datetime"
-              timeStep={5}
-              value={followUp}
-              min={toInputValue(new Date())}
-              onChange={setFollowUp}
-            />
-          </span>
-        </label>
-        <Button
-          loading={isSaving}
-          disabled={!followUp || followUp === savedFollowUp}
-          onClick={() => saveFollowUp(followUp)}
-        >
-          Save follow-up
-        </Button>
-        {savedFollowUp && (
-          <Button
-            variant="ghost"
-            icon={X}
-            disabled={isSaving}
-            onClick={() => saveFollowUp(null)}
-          >
-            Remove
-          </Button>
-        )}
-      </div>
+        </div>
 
-      <div
-        className={`grid items-start gap-5 md:grid-cols-2 ${result.isFetching ? "opacity-60" : ""}`}
-      >
-        <div className="space-y-5">
-          <LeadInfoCard
+        <div className={`space-y-5 transition-opacity ${result.isFetching ? "opacity-60" : ""}`}>
+          <LeadHeader
             lead={lead}
-            users={users.data || []}
-            onWhatsApp={() => setDialog("whatsapp")}
+            checkingWhatsApp={whatsApp.checkingId === lead._id}
+            onWhatsApp={() => whatsApp.openWhatsApp(lead)}
             onCall={handleCallClick}
-            onStageChange={handleStageChange}
-            onTurnAway={(turnAwayCode) =>
-              handleUpdate({
-                status: "Turn Away",
-                followUpDate: null,
-                turnAwayCode,
-              })
-            }
-            onAssign={(user) =>
-              handleUpdate({
-                assignee: user.userName,
-                assigneeNumber: user.phone || null,
-                assigneeEmail: user.emailId || null,
-              })
-            }
+            onConvert={() => setDialog("convert")}
           />
 
-          {otherDetails.length > 0 && (
-            <Card title="Other details">
-              <dl className="grid gap-4 sm:grid-cols-2">
-                {otherDetails.map(([key, value]) => (
-                  <Detail key={key} label={toLabel(key)}>
-                    {String(value ?? "")}
-                  </Detail>
-                ))}
-              </dl>
-            </Card>
-          )}
+          <LeadStageTrack
+            stage={lead.status}
+            disabled={isSaving}
+            onStageChange={handleStageChange}
+          />
+
+          {/* Phone and tablet: contact, manage, then the details, with the
+              source & tracking card last. Desktop: details on the left,
+              manage and contact on the right. */}
+          <div className="flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:items-start">
+            <div className="order-2 min-w-0 space-y-5 lg:order-none lg:col-span-2">
+              {hasStay && (
+                <Card
+                  title="Stay request"
+                  actions={<Icon icon={BedDouble} tone="faint" size="lg" />}
+                >
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <StayFact label="Check in" value={stay.checkIn} />
+                    <StayFact label="Check out" value={stay.checkOut} />
+                    <StayFact
+                      label="Nights"
+                      value={stay.nights ? String(stay.nights) : ""}
+                    />
+                    <StayFact label="Guests" value={stay.guests} />
+                  </div>
+                </Card>
+              )}
+
+              {message && (
+                <Card
+                  title="Message"
+                  actions={
+                    <Icon icon={MessageSquareQuote} tone="faint" size="lg" />
+                  }
+                >
+                  {messageFields.length > 0 ? (
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                      {messageFields.map((field, index) => (
+                        <div
+                          key={`${field.label}-${index}`}
+                          className="rounded-lg bg-app-surface-secondary/60 px-3 py-2.5"
+                        >
+                          <dt className="text-xs text-app-text-muted">
+                            {field.label}
+                          </dt>
+                          <dd className="mt-0.5 break-words text-sm font-medium text-app-text">
+                            {field.value || "—"}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : (
+                    <p className="whitespace-pre-wrap break-words rounded-lg border-l-4 border-l-blue-500! bg-app-surface-secondary/60 px-4 py-3 text-sm leading-relaxed text-app-text">
+                      {message}
+                    </p>
+                  )}
+                </Card>
+              )}
+
+              <NotesCard lead={lead} setLead={setLead} />
+
+              {otherDetails.length > 0 && (
+                <Card
+                  title="Form answers"
+                  description="Everything the lead filled in"
+                >
+                  <dl className="grid gap-4 sm:grid-cols-2">
+                    {otherDetails.map(([key, value]) => (
+                      <Detail key={key} label={toLabel(key)}>
+                        {typeof value === "object"
+                          ? JSON.stringify(value)
+                          : String(value)}
+                      </Detail>
+                    ))}
+                  </dl>
+                </Card>
+              )}
+
+              <LeadSourceCard lead={lead} />
+            </div>
+
+            <div className="order-1 flex min-w-0 flex-col gap-5 lg:order-none">
+              <LeadManageCard
+                key={`${lead._id}-${savedFollowUp}`}
+                lead={lead}
+                users={users.data || []}
+                savedFollowUp={savedFollowUp}
+                saving={isSaving}
+                onSaveFollowUp={saveFollowUp}
+                onStageChange={handleStageChange}
+                onTurnAway={(turnAwayCode) =>
+                  handleUpdate({
+                    status: "Turn Away",
+                    followUpDate: null,
+                    turnAwayCode,
+                  })
+                }
+                onAssign={async (user) => {
+                  const fields = {
+                    assignee: user.userName,
+                    assigneeNumber: user.phone || null,
+                    assigneeEmail: user.emailId || null,
+                  };
+                  // the guest's WhatsApp chat gets the same assignee
+                  if (await handleUpdate(fields)) syncAssignee(lead, fields);
+                }}
+              />
+              <div className="order-first lg:order-none">
+                <LeadInfoCard lead={lead} />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="min-w-0 space-y-5">
-          {lead.Message && (
-            <Card title="Message">
-              <p className="whitespace-pre-wrap break-words text-sm text-app-text-muted">
-                {lead.Message}
-              </p>
-            </Card>
-          )}
-
-          <NotesCard lead={lead} setLead={setLead} />
-
-          {requestDetails.length > 0 && (
-            <Card title="Request details">
-              <dl className="grid gap-4 sm:grid-cols-2">
-                {requestDetails.map((detail) => (
-                  <Detail key={detail.label} label={detail.label}>
-                    {detail.value}
-                  </Detail>
-                ))}
-              </dl>
-            </Card>
-          )}
-        </div>
+        {/* room for the floating assistant button below the last card */}
+        <div className="h-14" aria-hidden="true" />
       </div>
 
       <FollowUpDialog
@@ -340,19 +390,14 @@ const LeadDetails = () => {
         onClose={() => setDialog(null)}
       />
 
-      <QuickResponsePopup
-        open={dialog === "whatsapp"}
-        setOpen={() => setDialog(null)}
-        lead={lead}
-        templates={templates.data || []}
-      />
+      <QuickResponsePopup {...whatsApp.popupProps} />
 
       <ConvertToBookingDialog
         open={dialog === "convert"}
         lead={lead}
         onClose={() => setDialog(null)}
       />
-    </PageShell>
+    </div>
   );
 };
 

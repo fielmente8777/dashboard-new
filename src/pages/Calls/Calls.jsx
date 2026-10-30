@@ -1,10 +1,15 @@
-import { PhoneCall, PhoneIncoming, PhoneOff, RefreshCw } from "lucide-react";
+import {
+  PhoneCall,
+  PhoneIncoming,
+  PhoneOff,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import Pagination from "../../components/Pagination";
 import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
-import TablePaginationInfo from "../../components/TablePaginationInfo";
+import TablePagination from "../../components/ui/TablePagination";
 import Button from "../../components/ui/Button";
 import Dialog from "../../components/ui/Dialog";
 import { Input } from "../../components/ui/Field";
@@ -18,15 +23,16 @@ import {
   useGetCallConnectionQuery,
   useGetCallsQuery,
   useGetTeamUsersQuery,
-  useGetWhatsAppTemplatesQuery,
   useImportCallsMutation,
   useMakeCallMutation,
   useUpdateCallMutation,
 } from "../../redux/api/callsApi";
 import { selectHid } from "../../redux/slice/UserSlice";
 import { PAGES, callViewPath, dashboardPath } from "../../routes/paths";
+import { useLeadWhatsApp } from "../Leads/hooks/useLeadWhatsApp";
 import CallsAnalytics from "./CallsAnalytics";
 import { getGuestNumber, isOutgoing } from "./callUtils";
+import CallStats from "./components/CallStats";
 import CallsTable from "./components/CallsTable";
 import FollowUpDialog from "../../components/FollowUpDialog";
 import MakeCallDialog from "./components/MakeCallDialog";
@@ -59,7 +65,6 @@ const Calls = () => {
   const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
   const [recordingCall, setRecordingCall] = useState(null);
   const [followUpCall, setFollowUpCall] = useState(null);
-  const [whatsAppLead, setWhatsAppLead] = useState(null);
   const [incomingCall, dismissIncomingCall] = useIncomingCall();
 
   const connection = useGetCallConnectionQuery();
@@ -69,16 +74,13 @@ const Calls = () => {
     { skip: !hid || !isConnected, refetchOnMountOrArgChange: true },
   );
   const users = useGetTeamUsersQuery();
-  // only needed once the WhatsApp popup has been opened
-  const templates = useGetWhatsAppTemplatesQuery(hid, {
-    skip: !hid || !whatsAppLead,
-  });
+  // the guest's chat when there is one, otherwise a template to start one
+  const whatsApp = useLeadWhatsApp(hid);
   const [importCalls, { isLoading: isImporting }] = useImportCallsMutation();
   const [makeCall, { isLoading: isCalling }] = useMakeCallMutation();
   const [updateCall] = useUpdateCallMutation();
 
   const total = calls.data?.total || 0;
-  const totalPages = Math.ceil(total / limit);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value);
@@ -157,17 +159,37 @@ const Calls = () => {
 
       {view === "calls" && isConnected && (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="w-full max-w-72">
+          <CallStats hid={hid} />
+
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-app-border! bg-app-surface p-3">
+            <div className="relative w-full sm:w-72">
+              <Icon
+                icon={Search}
+                tone="faint"
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+              />
               <Input
                 type="search"
                 value={searchText}
                 onChange={handleSearch}
-                placeholder="Search calls..."
+                placeholder="Search number or name..."
                 aria-label="Search calls"
+                className="pl-9!"
               />
             </div>
-            <div className="flex gap-2">
+            <span className="text-sm text-app-text-muted">
+              {calls.data ? (
+                <>
+                  <span className="font-semibold tabular-nums text-app-text">
+                    {total.toLocaleString()}
+                  </span>{" "}
+                  {total === 1 ? "call" : "calls"}
+                </>
+              ) : (
+                "Loading..."
+              )}
+            </span>
+            <div className="ml-auto flex gap-2">
               <Button
                 variant="secondary"
                 icon={RefreshCw}
@@ -206,31 +228,35 @@ const Calls = () => {
               onUpdate={handleUpdate}
               onFollowUp={setFollowUpCall}
               onCallBack={handleCallBack}
+              whatsAppCheckingId={whatsApp.checkingId}
               onWhatsApp={(call) =>
-                setWhatsAppLead({ Contact: getGuestNumber(call) })
+                whatsApp.openWhatsApp(
+                  {
+                    _id: call.sid,
+                    hId: call.hid,
+                    Name: call.callerName,
+                    Contact: getGuestNumber(call),
+                  },
+                  { linkLead: false },
+                )
               }
               onPlay={setRecordingCall}
             />
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-              onPrev={() => setPage(page - 1)}
-              onNext={() => setPage(page + 1)}
-            />
-            <TablePaginationInfo
-              page={page}
-              limit={limit}
-              total={total}
-              onLimitChange={(value) => {
-                setLimit(value);
-                setPage(1);
-              }}
-            />
-          </div>
+          <TablePagination
+            page={page}
+            limit={limit}
+            total={total}
+            itemLabel="calls"
+            onPageChange={setPage}
+            onLimitChange={(value) => {
+              setLimit(value);
+              setPage(1);
+            }}
+          />
+          {/* room under the last row for the floating assistant button */}
+          <div className="h-14" aria-hidden="true" />
         </>
       )}
 
@@ -265,12 +291,7 @@ const Calls = () => {
         }}
       />
 
-      <QuickResponsePopup
-        open={Boolean(whatsAppLead)}
-        setOpen={() => setWhatsAppLead(null)}
-        lead={whatsAppLead}
-        templates={templates.data || []}
-      />
+      <QuickResponsePopup {...whatsApp.popupProps} />
 
       <Dialog
         open={Boolean(incomingCall)}

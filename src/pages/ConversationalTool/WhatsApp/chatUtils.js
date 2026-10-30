@@ -29,6 +29,11 @@ export const isWindowClosed = (date) => {
   return Number.isNaN(time) || Date.now() - time >= DAY;
 };
 
+// Who the conversation is assigned to. The server saves it as `assigneTo`
+// (sic); a change made here is patched in as `assignee`.
+export const getConversationAssignee = (conversation) =>
+  conversation.assignee || conversation.assigneTo || conversation.assignedTo || "";
+
 export const isConverted = (conversation) =>
   conversation.status?.toLowerCase() === "converted";
 

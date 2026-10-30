@@ -224,6 +224,7 @@ export const leadsApi = api.injectEndpoints({
 
 export const {
   useGetLeadsQuery,
+  useLazyGetLeadsQuery,
   useGetLeadStatsQuery,
   useGetAllEnquiriesQuery,
   useGetLeadQuery,

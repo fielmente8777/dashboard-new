@@ -1,6 +1,5 @@
 import { Plus, Send, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
-import Pagination from "../../components/Pagination";
 import SendCampaignPopup from "../../components/Popup/SendCampaignPopup";
 import Button from "../../components/ui/Button";
 import DataTable from "../../components/ui/DataTable";
@@ -8,6 +7,7 @@ import { Input } from "../../components/ui/Field";
 import IconButton from "../../components/ui/IconButton";
 import PageShell from "../../components/ui/PageShell";
 import { ErrorState } from "../../components/ui/States";
+import TablePagination from "../../components/ui/TablePagination";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useApiAction } from "../../hooks/useApiAction";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
@@ -208,15 +208,13 @@ const Contacts = () => {
         />
       )}
 
-      <div className="flex justify-end">
-        <Pagination
-          page={currentPage}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          onPrev={() => setPage(currentPage - 1)}
-          onNext={() => setPage(currentPage + 1)}
-        />
-      </div>
+      <TablePagination
+        page={currentPage}
+        limit={PAGE_SIZE}
+        total={filtered.length}
+        itemLabel="contacts"
+        onPageChange={setPage}
+      />
 
       <ContactFormDialog
         open={Boolean(editing)}

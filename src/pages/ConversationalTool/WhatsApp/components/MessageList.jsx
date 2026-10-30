@@ -168,7 +168,7 @@ const MessageList = ({
               <section key={day.key} className="space-y-1">
                 {/* sticky inside its own day only */}
                 <p className="pointer-events-none sticky top-0 z-[5] py-2 text-center">
-                  <span className="rounded-full border border-app-border! bg-app-surface/95 px-3 py-1 text-[11px] font-medium text-app-text-muted shadow-sm backdrop-blur">
+                  <span className="rounded-full border border-app-border! bg-app-surface px-3 py-1 text-[11px] font-medium text-app-text shadow-sm dark:border-white/10! dark:bg-[#1f2633]">
                     {formatDayLabel(day.date)}
                   </span>
                 </p>

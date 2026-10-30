@@ -1,12 +1,22 @@
-import { Download, Plus, RefreshCw, Trash2, Upload } from "lucide-react";
+import {
+  Download,
+  FilterX,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FollowUpDialog from "../../components/FollowUpDialog";
-import Pagination from "../../components/Pagination";
-import TablePaginationInfo from "../../components/TablePaginationInfo";
+import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import Button from "../../components/ui/Button";
 import DateRange from "../../components/ui/DateRange";
 import CustomDropdown from "../../components/ui/Dropdown";
+import Icon from "../../components/ui/Icon";
+import TablePagination from "../../components/ui/TablePagination";
 import { Input } from "../../components/ui/Field";
 import PageShell from "../../components/ui/PageShell";
 import { ErrorState } from "../../components/ui/States";
@@ -29,8 +39,11 @@ import { leadViewPath } from "../../routes/paths";
 import AddLeadDialog from "./components/AddLeadDialog";
 import ExportLeadsDialog from "./components/ExportLeadsDialog";
 import ImportLeadsDialog from "./components/ImportLeadsDialog";
+import LeadStats from "./components/LeadStats";
 import LeadsTable from "./components/LeadsTable";
+import { useAssigneeChatSync } from "./hooks/useAssigneeChatSync";
 import { useLeadFilters } from "./hooks/useLeadFilters";
+import { useLeadWhatsApp } from "./hooks/useLeadWhatsApp";
 import { useNewLeadRefresh } from "./hooks/useNewLeadRefresh";
 import { MAX_SELECTED_LEADS, NOTES_FILTERS } from "./leadSources";
 import { exportLeadsToCsv, toApiDate } from "./leadUtils";
@@ -78,13 +91,24 @@ const LeadsList = ({ source }) => {
   const [deleteLeads, { isLoading: isDeleting }] = useDeleteLeadsMutation();
   const [exportLeads, { isLoading: isExporting }] = useExportLeadsMutation();
   const [syncMetaLeads, { isLoading: isSyncing }] = useSyncMetaLeadsMutation();
+  const whatsApp = useLeadWhatsApp(hid);
+  const syncAssignee = useAssigneeChatSync(hid);
 
   useNewLeadRefresh(tenant, Boolean(source.live));
 
   const rows = leads.currentData?.leads || [];
   const total = leads.currentData?.total || 0;
   const campaigns = leads.data?.campaigns || [];
-  const totalPages = Math.ceil(total / limit);
+  const hasFilters = Boolean(
+    filters.search ||
+      filters.stage ||
+      filters.source.length ||
+      filters.notes ||
+      filters.from ||
+      filters.to,
+  );
+  // the stat cards count with every filter except the stage
+  const { stage: _stage, page: _page, limit: _limit, ...statFilters } = query;
 
   // the typed search reaches the URL (and so the request) once typing pauses
   useEffect(() => {
@@ -133,13 +157,16 @@ const LeadsList = ({ source }) => {
   );
 
   const handleAssign = useCallback(
-    (lead, user) =>
-      handleUpdate(lead, {
+    async (lead, user) => {
+      const fields = {
         assignee: user.userName,
         assigneeNumber: user.phone || null,
         assigneeEmail: user.emailId || null,
-      }),
-    [handleUpdate],
+      };
+      // the guest's WhatsApp chat gets the same assignee
+      if (await handleUpdate(lead, fields)) syncAssignee(lead, fields);
+    },
+    [handleUpdate, syncAssignee],
   );
 
   const handleToggleSelect = useCallback(
@@ -195,6 +222,18 @@ const LeadsList = ({ source }) => {
       return;
     }
     exportLeadsToCsv(exported, source.title);
+  };
+
+  const clearFilters = () => {
+    setSearchText("");
+    setFilters({
+      search: "",
+      stage: "",
+      source: [],
+      notes: "",
+      from: "",
+      to: "",
+    });
   };
 
   const handleOpen = (lead, position) => {
@@ -263,14 +302,26 @@ const LeadsList = ({ source }) => {
         </>
       }
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="w-full sm:w-64">
+      <LeadStats
+        filters={statFilters}
+        stage={filters.stage}
+        onStageChange={(stage) => setFilters({ stage })}
+      />
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-app-border! bg-app-surface p-3">
+        <div className="relative w-full sm:w-64">
+          <Icon
+            icon={Search}
+            tone="faint"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+          />
           <Input
             type="search"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search leads..."
+            placeholder="Search name, phone, email..."
             aria-label="Search leads"
+            className="pl-9!"
           />
         </div>
         <DateRange
@@ -315,10 +366,30 @@ const LeadsList = ({ source }) => {
           value={filters.notes}
           onChange={(notes) => setFilters({ notes })}
         />
+        {hasFilters && (
+          <Button variant="ghost" size="sm" icon={FilterX} onClick={clearFilters}>
+            Clear filters
+          </Button>
+        )}
+        <span className="ml-auto text-sm text-app-text-muted">
+          {leads.currentData ? (
+            <>
+              <span className="font-semibold tabular-nums text-app-text">
+                {total.toLocaleString()}
+              </span>{" "}
+              {total === 1 ? "lead" : "leads"}
+            </>
+          ) : (
+            "Loading..."
+          )}
+        </span>
       </div>
 
       {selectedIds.length > 0 && (
-        <div>
+        <div className="anim-fade flex flex-wrap items-center gap-3 rounded-xl border border-red-500/30! bg-red-500/5 px-4 py-2.5">
+          <span className="text-sm font-medium text-app-text">
+            {selectedIds.length} selected
+          </span>
           <Button
             variant="danger"
             size="sm"
@@ -326,7 +397,15 @@ const LeadsList = ({ source }) => {
             loading={isDeleting}
             onClick={handleDelete}
           >
-            Delete {selectedIds.length} selected
+            Delete
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon={X}
+            onClick={() => setSelectedIds([])}
+          >
+            Clear selection
           </Button>
         </div>
       )}
@@ -350,24 +429,21 @@ const LeadsList = ({ source }) => {
           onTurnAway={handleTurnAway}
           onAssign={handleAssign}
           onToggleSelect={handleToggleSelect}
+          onWhatsApp={whatsApp.openWhatsApp}
+          whatsAppCheckingId={whatsApp.checkingId}
         />
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          onPageChange={(value) => setFilters({ page: value })}
-          onPrev={() => setFilters({ page: page - 1 })}
-          onNext={() => setFilters({ page: page + 1 })}
-        />
-        <TablePaginationInfo
-          page={page}
-          limit={limit}
-          total={total}
-          onLimitChange={(value) => setFilters({ limit: value })}
-        />
-      </div>
+      <TablePagination
+        page={page}
+        limit={limit}
+        total={total}
+        itemLabel={total === 1 ? "lead" : "leads"}
+        onPageChange={(value) => setFilters({ page: value })}
+        onLimitChange={(value) => setFilters({ limit: value })}
+      />
+      {/* room under the last row for the floating assistant button */}
+      <div className="h-14" aria-hidden="true" />
 
       <FollowUpDialog
         open={Boolean(followUpLead)}
@@ -381,6 +457,7 @@ const LeadsList = ({ source }) => {
           setFollowUpLead(null);
         }}
       />
+      <QuickResponsePopup {...whatsApp.popupProps} />
       <AddLeadDialog open={dialog === "add"} onClose={() => setDialog(null)} />
       <ImportLeadsDialog
         open={dialog === "import"}
