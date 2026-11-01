@@ -6,18 +6,32 @@ const getGreeting = () => {
   return "Good evening";
 };
 
+// "Saturday, 1 November"
+const today = () =>
+  new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
 // `name` is undefined while the profile is still loading
 const Greeting = ({ name }) => {
   return (
-    <div className="hidden min-w-0 shrink-0 xl:block">
-      <p className="text-xs leading-tight text-white/60">{getGreeting()}</p>
-      {name === undefined ? (
-        <div className="mt-1 h-4 w-32 animate-pulse rounded bg-white/10" />
-      ) : (
-        <h1 className="max-w-64 truncate text-sm font-semibold capitalize leading-tight text-white">
-          {name}
-        </h1>
-      )}
+    <div className="min-w-0">
+      <h1 className="flex min-w-0 items-baseline text-base font-semibold leading-snug text-app-text sm:text-[17px]">
+        <span className="shrink-0">
+          {getGreeting()}
+          {name !== "" && ","}
+        </span>
+        {name === undefined ? (
+          <span className="ml-2 inline-block h-4 w-28 animate-pulse self-center rounded bg-app-surface-secondary" />
+        ) : (
+          <span className="ml-1.5 truncate capitalize text-ternary">{name}</span>
+        )}
+      </h1>
+      <p className="hidden text-xs leading-tight text-app-text-muted sm:block">
+        {today()}
+      </p>
     </div>
   );
 };

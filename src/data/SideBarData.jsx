@@ -51,6 +51,7 @@ const brand = (icon) => createElement(icon, { size: 14 });
 //   key    - on a top-level entry: the access area that shows it
 //            (see accessScopeMap in pages/UserMgmt/userAccess.js)
 //            on a sub-link: the subscription app that shows it
+//   section - heading the entry is listed under (consecutive entries share it)
 //   access - on a sub-link: the same check as a top-level `key`, for pages
 //            that were top-level before being grouped
 // A group with no visible sub-link is hidden.
@@ -62,6 +63,7 @@ export const SidebarData = [
   },
   {
     name: "Live Chat",
+    section: "Engage",
     link: `channel`,
     key: "WhatsApp",
     icon: top(MessagesSquare),
@@ -71,6 +73,7 @@ export const SidebarData = [
   },
   {
     name: "Leads",
+    section: "Engage",
     link: `leads-management`,
     key: "Leads Management",
     icon: top(Users),
@@ -85,11 +88,13 @@ export const SidebarData = [
   },
   {
     name: "Contacts",
+    section: "Engage",
     link: `contacts`,
     icon: top(Contact),
   },
   {
     name: "Marketing",
+    section: "Engage",
     link: `marketing`,
     icon: top(Megaphone),
     subLinks: [
@@ -116,12 +121,14 @@ export const SidebarData = [
   },
   {
     name: "Calls",
+    section: "Engage",
     key: "Exotel",
     link: `calls-management`,
     icon: top(PhoneCall),
   },
   {
     name: "Insights",
+    section: "Grow",
     link: `insights`,
     icon: top(ChartNoAxesCombined),
     subLinks: [
@@ -147,6 +154,7 @@ export const SidebarData = [
   },
   {
     name: "SEO",
+    section: "Grow",
     key: "SEO",
     link: `seo`,
     icon: top(Search),
@@ -157,6 +165,7 @@ export const SidebarData = [
   },
   {
     name: "Booking Engine",
+    section: "Operations",
     key: "Booking Engine",
     link: `booking-engine`,
     icon: top(CalendarCheck),
@@ -170,6 +179,7 @@ export const SidebarData = [
   },
   {
     name: "Front Office",
+    section: "Operations",
     link: `front-office`,
     icon: top(Hotel),
     subLinks: [
@@ -201,6 +211,7 @@ export const SidebarData = [
   },
   {
     name: "Website Content",
+    section: "Setup",
     link: `cms`,
     key: "CMS",
     icon: top(Globe),
@@ -222,6 +233,7 @@ export const SidebarData = [
   },
   {
     name: "AI Assistant",
+    section: "Setup",
     link: `ai`,
     icon: top(BrainCircuit),
     subLinks: [
@@ -231,6 +243,7 @@ export const SidebarData = [
   },
   {
     name: "Payment Gateway",
+    section: "Setup",
     link: `payment-gateway`,
     icon: top(CreditCard),
   },

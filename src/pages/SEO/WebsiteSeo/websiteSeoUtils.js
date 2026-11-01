@@ -45,3 +45,14 @@ export const findOpportunities = (keywords, limit = 5) =>
     .filter((k) => k.liveOrganicRank > 3 && k.liveOrganicRank <= 20)
     .sort((a, b) => (b.searchVolume ?? 0) - (a.searchVolume ?? 0))
     .slice(0, limit);
+
+// On page 1, best position first (ties: more searches first).
+export const findTopPerformers = (keywords, limit = 5) =>
+  keywords
+    .filter((k) => k.liveOrganicRank != null && k.liveOrganicRank <= 10)
+    .sort(
+      (a, b) =>
+        a.liveOrganicRank - b.liveOrganicRank ||
+        (b.searchVolume ?? 0) - (a.searchVolume ?? 0),
+    )
+    .slice(0, limit);

@@ -91,6 +91,7 @@ export const buildInsights = (keywords) => {
   if (missing) {
     insights.push({
       icon: MapPinned,
+      tone: "amber",
       chip: "Local opportunity",
       title: "You're missing the Map Pack",
       parts: [
@@ -108,6 +109,7 @@ export const buildInsights = (keywords) => {
   if (close) {
     insights.push({
       icon: Rocket,
+      tone: "blue",
       chip: "Almost there",
       title: "One push from the top 3",
       parts: [
@@ -126,6 +128,7 @@ export const buildInsights = (keywords) => {
   if (defend) {
     insights.push({
       icon: Shield,
+      tone: "green",
       chip: "Defend",
       title: "Protect your Map Pack spot",
       parts: [

@@ -1,4 +1,11 @@
-import { Bell, CreditCard, LogOut, Moon, QrCode, Settings, Sun } from "lucide-react";
+import {
+  CreditCard,
+  LogOut,
+  Moon,
+  QrCode,
+  Settings,
+  Sun,
+} from "lucide-react";
 import { useColorMode } from "../../hooks/useColorMode";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,9 +20,8 @@ const itemClassName =
   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-app-text transition-colors hover:bg-app-surface-secondary";
 
 // The avatar in the navbar and the account menu it opens.
-// On phones the navbar hides its Notifications, Settings and theme buttons,
-// so the menu lists them instead.
-const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
+// On phones the navbar hides its theme button, so the menu lists it instead.
+const UserMenu = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const menuRef = useRef(null);
@@ -25,6 +31,12 @@ const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
 
   const name = authUser?.userName || hotel?.Profile?.hotelName || "";
   const initial = name.charAt(0).toUpperCase();
+  const role =
+    authUser?.role === "owner"
+      ? "Owner"
+      : authUser?.isAdmin
+        ? "Admin"
+        : "Team member";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,7 +71,8 @@ const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex size-9 items-center justify-center rounded-full bg-white/15 text-sm font-semibold text-white ring-1 transition hover:bg-white/25 ${isOpen ? "ring-ternary" : "ring-white/25"}`}
+        title="Account"
+        className={`flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white ring-2 transition hover:brightness-125 dark:bg-white/10 ${isOpen ? "ring-ternary/60" : "ring-transparent"}`}
       >
         {initial}
       </button>
@@ -67,7 +80,7 @@ const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
       {isOpen && (
         <div
           role="menu"
-          className="anim-menu fixed right-3 top-[3.75rem] z-[9970] w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-app-border! bg-app-surface p-1.5 text-app-text shadow-xl sm:right-4"
+          className="anim-menu fixed right-3 top-17 z-[9970] w-64 max-w-[calc(100vw-1.5rem)] rounded-xl border border-app-border! bg-app-surface p-1.5 text-app-text shadow-xl sm:right-5"
         >
           <div className="flex items-center gap-3 px-3 py-2.5">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
@@ -82,33 +95,19 @@ const UserMenu = ({ unreadCount = 0, onOpenNotifications }) => {
                   {authUser.emailId}
                 </span>
               )}
+              <span className="mt-1 inline-block rounded-full bg-app-surface-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-app-text-muted">
+                {role}
+              </span>
             </span>
           </div>
 
           <div className="my-1 h-px bg-app-border" />
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setIsOpen(false);
-              onOpenNotifications?.();
-            }}
-            className={`${itemClassName} sm:hidden`}
-          >
-            <Icon icon={Bell} className="text-app-text-muted" />
-            Notifications
-            {unreadCount > 0 && (
-              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-ternary px-1.5 text-[11px] font-semibold leading-none text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
           <Link
             role="menuitem"
             to={dashboardPath(PAGES.SETTINGS)}
             onClick={() => setIsOpen(false)}
-            className={`${itemClassName} sm:hidden`}
+            className={itemClassName}
           >
             <Icon icon={Settings} className="text-app-text-muted" />
             Settings

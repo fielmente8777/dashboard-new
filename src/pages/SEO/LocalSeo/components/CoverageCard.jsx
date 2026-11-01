@@ -58,7 +58,10 @@ const Legend = () => (
   <ul className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-app-text-muted">
     {[...RANK_BANDS, UNRANKED].map((band) => (
       <li key={band.label} className="flex items-center gap-1.5">
-        <span className="size-2.5 rounded-full" style={{ backgroundColor: band.color }} />
+        <span
+          className="size-2.5 rounded-full ring-2 ring-app-surface"
+          style={{ backgroundColor: band.color }}
+        />
         {band.label}
       </li>
     ))}
@@ -106,9 +109,9 @@ const CoverageCard = ({
         </div>
       }
     >
-      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-app-border! bg-app-surface-secondary/50 px-3 py-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-app-text-muted">Radius</span>
+          <span className="text-xs font-medium text-app-text-muted">Radius</span>
           <Segmented
             label="Scan radius"
             options={RADIUS_CHOICES}
@@ -118,7 +121,7 @@ const CoverageCard = ({
           />
         </div>
         <div className="flex min-w-0 items-center gap-2">
-          <span className="shrink-0 text-xs text-app-text-muted">Keyword</span>
+          <span className="shrink-0 text-xs font-medium text-app-text-muted">Keyword</span>
           <SelectMenu
             label="Map keyword"
             options={keywordOptions}
@@ -131,7 +134,7 @@ const CoverageCard = ({
         </div>
       </div>
 
-      <div className="local-seo-map relative min-h-[420px] flex-1 overflow-hidden rounded-lg border border-app-border! bg-app-surface-secondary">
+      <div className="local-seo-map relative min-h-110 flex-1 overflow-hidden rounded-xl border border-app-border! bg-app-surface-secondary">
         {!hasLocation ? (
           <Skeleton className="absolute inset-0 rounded-none" />
         ) : hasPoints ? (

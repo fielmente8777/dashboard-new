@@ -1,8 +1,9 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Loader2, Sparkles } from "lucide-react";
 import { BASE_PATH } from "../../routes/paths";
 import { useTenant } from "../../hooks/useTenant";
+import { ASK_ASSISTANT_EVENT } from "./askAssistant";
 
 // Loaded on first open, so react-markdown etc. stay out of the main bundle.
 const ChatbotWindow = lazy(() => import("./ChatbotWindow"));
@@ -13,8 +14,26 @@ const launcherClass =
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  // a question sent from elsewhere (see askAssistant), asked once in a new chat
+  const [question, setQuestion] = useState(null);
   const { pathname } = useLocation();
   const { hid } = useTenant();
+
+  useEffect(() => {
+    const onAsk = (event) => {
+      const text = String(event.detail?.question ?? "").trim();
+      if (!text) return;
+      setQuestion({ text, id: Date.now() });
+      setIsOpen(true);
+    };
+    window.addEventListener(ASK_ASSISTANT_EVENT, onAsk);
+    return () => window.removeEventListener(ASK_ASSISTANT_EVENT, onAsk);
+  }, []);
+
+  const close = () => {
+    setIsOpen(false);
+    setQuestion(null);
+  };
 
   // only show inside the dashboard (hidden on login, signup, onboarding, plans, etc.)
   if (!pathname.startsWith(BASE_PATH)) return null;
@@ -36,7 +55,7 @@ export default function ChatbotWidget() {
       }
     >
       {/* keyed by hotel: switching location starts that hotel's chat instead of showing the previous one */}
-      <ChatbotWindow key={hid || "none"} hid={hid} onClose={() => setIsOpen(false)} />
+      <ChatbotWindow key={hid || "none"} hid={hid} question={question} onClose={close} />
     </Suspense>
   );
 }

@@ -1,6 +1,5 @@
 import { jwtDecode } from "jwt-decode";
 import { Rocket } from "lucide-react";
-import ThemeToggle from "../../components/Navbar/ThemeToggle";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -335,9 +334,6 @@ const OnboardingForm = () => {
       compact
       title="Onboard your property"
       subtitle="Just the basics. You can add everything else later."
-      action={
-        <ThemeToggle className="text-app-text-muted! hover:bg-app-surface-secondary! hover:text-app-text!" />
-      }
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2">

@@ -1,4 +1,4 @@
-import { Check, ChevronDown, MapPin, Plus, Search } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useToast } from "../../context/ToastContext";
@@ -35,6 +35,9 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
   const canAddLocation = authUser?.isAdmin && !isOwner;
   const title =
     currentLocation?.local || accountName || "Select location";
+  const initial = (currentLocation?.local || accountName || "?")
+    .charAt(0)
+    .toUpperCase();
 
   const handleSelect = (location) => {
     switchLocation(location.hid);
@@ -43,7 +46,7 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
   };
 
   if (loading) {
-    return <div className="mb-3 h-14 animate-pulse rounded-xl bg-white/10" />;
+    return <div className="h-14 animate-pulse rounded-lg bg-white/[0.06]" />;
   }
 
   // icon rail: one button that opens the full sidebar with the list showing
@@ -57,45 +60,42 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
           onExpand();
           setIsOpen(true);
         }}
-        className="mx-auto mb-3 flex size-10 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20"
+        className="mx-auto flex size-10 items-center justify-center rounded-lg bg-ternary text-sm font-semibold text-white ring-1 ring-white/10 transition hover:brightness-110"
       >
-        <MapPin size={18} />
+        {initial}
       </button>
     );
   }
 
   return (
-    <div className="mb-3 rounded-xl bg-white/10">
+    <div className="rounded-lg border border-white/10! bg-white/[0.04]">
       <button
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-white/5"
+        className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-white/[0.06]"
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-ternary text-white">
-          <MapPin size={18} />
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-ternary text-sm font-semibold text-white">
+          {initial}
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold capitalize text-white">
+          <span className="block truncate text-sm font-semibold capitalize leading-snug text-white">
             {title}
           </span>
           {formatAddress(currentLocation) && (
-            <span className="block truncate text-xs text-white/60">
+            <span className="block truncate text-xs leading-snug text-white/50">
               {formatAddress(currentLocation)}
             </span>
           )}
         </span>
 
-        <ChevronDown
-          size={16}
-          className={`shrink-0 text-white/60 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
+        <ChevronsUpDown size={15} className="shrink-0 text-white/45" />
       </button>
 
       {isOpen && (
         <div className="space-y-1 px-2 pb-2">
-          <div className="mb-2 h-px bg-white/10" />
+          <div className="-mx-2 mb-2 h-px bg-white/10" />
 
           {isOwner && (
             <div className="relative mb-1">
@@ -179,9 +179,9 @@ const LocationSwitcher = ({ collapsed, onExpand, onAddLocation }) => {
             <button
               type="button"
               onClick={onAddLocation}
-              className="mt-1 flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-white text-sm font-semibold text-primary transition-colors hover:bg-white/90"
+              className="mt-1 flex h-9 w-full items-center justify-center gap-2 rounded-md border border-dashed border-white/25! text-sm font-medium text-white/80 transition-colors hover:border-white/40! hover:bg-white/[0.06] hover:text-white"
             >
-              <Plus size={16} /> Add New Location
+              <Plus size={15} /> Add new location
             </button>
           )}
         </div>

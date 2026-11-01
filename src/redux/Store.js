@@ -6,6 +6,7 @@ import websiteDataReducer from "./slice/websiteDataSlice.js";
 import toggleReducer from "./slice/SidebarToggle.js";
 import subscriptionReducer from "./slice/subscriptionDataSlice.js";
 import themeReducer from "./slice/themeSlice.js";
+import notificationsReducer from "./slice/notificationsSlice.js";
 import { baseApi } from "./api/baseApi.js";
 
 const store = configureStore({
@@ -17,6 +18,7 @@ const store = configureStore({
     hotelsWebsiteData: websiteDataReducer,
     toggle: toggleReducer,
     theme: themeReducer,
+    notifications: notificationsReducer,
     [baseApi.reducerPath]: baseApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

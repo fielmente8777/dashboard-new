@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import AITemplateModal from "../../pages/EmailMarketing/components/AITemplateModal";
 import EmailPreviewFrame from "../../pages/EmailMarketing/components/EmailPreviewFrame";
@@ -45,6 +46,7 @@ function ComposeEmail({
   initialTemplate = null,
 }) {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(recipients.join(", "));
   const [subject, setSubject] = useState(initialTemplate?.subject || "");
@@ -54,6 +56,22 @@ function ComposeEmail({
   const [template, setTemplate] = useState(initialTemplate?.html ? initialTemplate : null);
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
+
+  // a draft with something written in it is only thrown away after asking
+  const handleDiscard = async () => {
+    const hasDraft =
+      body.replace(/<[^>]*>|&nbsp;/g, "").trim() ||
+      (subject.trim() && subject !== (initialTemplate?.subject || "")) ||
+      attachments.length > 0;
+    if (hasDraft) {
+      const confirmed = await confirm("Your message, subject and attachments will be lost.", {
+        title: "Discard this email?",
+        confirmText: "Discard",
+      });
+      if (!confirmed) return;
+    }
+    onClose();
+  };
 
   useEffect(() => {
     if (defaultFrom) setFrom((current) => current || defaultFrom);
@@ -279,7 +297,7 @@ function ComposeEmail({
                 }}
               />
             </label>
-            <IconButton icon={Trash2} label="Discard" tone="danger" onClick={onClose} disabled={isSubmitting} className="ml-auto" />
+            <IconButton icon={Trash2} label="Discard" tone="danger" onClick={handleDiscard} disabled={isSubmitting} className="ml-auto" />
           </div>
         </>
       )}

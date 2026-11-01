@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import { useConfirm } from "../../context/ConfirmContext";
 import Icon from "../ui/Icon";
 import { blockStyle } from "./blockStyles";
 
@@ -6,6 +7,7 @@ import { blockStyle } from "./blockStyles";
 // a delete button, then the block's content. `onRemove` is optional.
 export default function NodeShell({ type, selected, onRemove, width = "w-64", hint, children }) {
   const style = blockStyle(type);
+  const { confirm } = useConfirm();
 
   return (
     <div
@@ -26,9 +28,13 @@ export default function NodeShell({ type, selected, onRemove, width = "w-64", hi
             type="button"
             aria-label={`Delete ${style.label} block`}
             title="Delete block"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              onRemove();
+              const confirmed = await confirm(
+                `Delete this ${style.label} block? Its connections to other blocks go with it.`,
+                { title: "Delete block" },
+              );
+              if (confirmed) onRemove();
             }}
             className="nodrag flex size-7 shrink-0 items-center justify-center rounded-lg text-app-text-faint transition hover:bg-red-500/10 hover:text-red-500"
           >

@@ -52,7 +52,11 @@ export const useLocalSeo = () => {
     useUpdateGridKeywordMutation();
 
   const data = query.data;
-  const keywords = useMemo(() => data?.keywords || [], [data]);
+  // keywords tracked for a specific URL belong to Website SEO
+  const keywords = useMemo(
+    () => (data?.keywords || []).filter((k) => !k.targetUrl),
+    [data],
+  );
   const stats = useMemo(() => summarizeKeywords(keywords), [keywords]);
   const insights = useMemo(() => buildInsights(keywords), [keywords]);
 

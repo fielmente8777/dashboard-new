@@ -95,8 +95,9 @@ const ArrayField = ({ value, path, onChange, onDelete }) => {
       return next;
     });
 
-  const deleteItem = (index) => {
-    onDelete([...path, index]);
+  const deleteItem = async (index) => {
+    // onDelete asks first; nothing moves if the user cancels
+    if (!(await onDelete([...path, index]))) return;
     // everything after the deleted item moves up by one
     setExpanded((prev) => {
       const next = new Set();

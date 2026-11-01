@@ -23,9 +23,9 @@ const WebsiteSetup = ({ onLock, saving }) => {
   };
 
   return (
-    <Card>
-      <form onSubmit={submit} className="flex flex-col items-center gap-4 py-6 text-center">
-        <span className="flex size-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
+    <Card className="seo-hero rounded-2xl">
+      <form onSubmit={submit} className="flex flex-col items-center gap-4 py-8 text-center">
+        <span className="flex size-12 items-center justify-center rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-300">
           <Icon icon={Globe} size="2xl" />
         </span>
         <div>
@@ -50,7 +50,7 @@ const WebsiteSetup = ({ onLock, saving }) => {
           </Field>
         </div>
 
-        <p className="flex max-w-md items-start gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-left text-xs text-amber-700 dark:text-amber-300">
+        <p className="flex max-w-md items-start gap-2 rounded-lg border border-amber-500/30! bg-amber-500/10 px-3 py-2 text-left text-xs text-amber-800 dark:text-amber-200">
           <Icon icon={AlertTriangle} size="sm" className="mt-px" />
           The website is locked once saved and can't be changed later, so
           double-check it.

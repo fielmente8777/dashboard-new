@@ -41,10 +41,6 @@ export const analyticsApi = api.injectEndpoints({
       countries: r?.countries || [],
       cities: r?.cities || [],
     })),
-    getAudience: report(build, "analytics-audience", (r) => ({
-      devices: r?.devices || [],
-      countries: r?.countries || [],
-    })),
 
     // the Google Analytics properties the connected Google account can read
     getAnalyticsProperties: build.query({
@@ -73,7 +69,6 @@ export const {
   useGetConversionsQuery,
   useGetDeviceAnalyticsQuery,
   useGetGeoAnalyticsQuery,
-  useGetAudienceQuery,
   useGetAnalyticsPropertiesQuery,
   useLazyGetAnalyticsPropertiesQuery,
   useSaveAnalyticsPropertyMutation,

@@ -1,34 +1,40 @@
-import { Bell, Menu, Settings, Store } from "lucide-react";
-import { useState } from "react";
+import { Bell, Menu, Store } from "lucide-react";
+import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { LOGO_URL } from "../../config/assets";
+import { useNavigate } from "react-router-dom";
+import useMediaQuery from "../../hooks/useMediaQuery";
+import { selectUnreadCount } from "../../redux/slice/notificationsSlice";
 import { open as openSidebar } from "../../redux/slice/SidebarToggle";
 import { selectCurrentLocation } from "../../redux/slice/UserSlice";
-import { PAGES, dashboardPath } from "../../routes/paths";
 import GlobalSearch from "../GlobalSearch/GlobalSearch";
 import Greeting from "../Greeting";
+import { PAGES, dashboardPath } from "../../routes/paths";
+import NotificationPanel from "../Notifications/NotificationPanel";
 import AppsPopup from "../Popup/AppsPopup";
-import NotificationPopup from "../Popup/NotificationPopup";
 import { useNotifications } from "./hooks/useNotifications";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
 import Icon from "../ui/Icon";
 
-const iconButtonClassName =
-  "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white";
+export const iconButtonClassName =
+  "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-app-text-muted transition-colors hover:bg-app-surface-secondary hover:text-app-text";
 
 const Navbar = () => {
   const dispatch = useDispatch();
   const hotel = useSelector((state) => state.userProfile.user);
   const currentLocation = useSelector(selectCurrentLocation);
-  const { notifications, unreadCount, markAllSeen } = useNotifications();
+  const navigate = useNavigate();
+  // phones get the full Notifications page instead of the slide-over panel
+  const isPhone = useMediaQuery("(max-width: 639px)");
+  useNotifications();
+  const unreadCount = useSelector(selectUnreadCount);
   const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const closeNotifications = useCallback(() => setIsNotificationsOpen(false), []);
 
-  const toggleNotifications = (isOpen) => {
-    markAllSeen();
-    setIsNotificationsOpen(isOpen);
+  const openNotifications = () => {
+    if (isPhone) navigate(dashboardPath(PAGES.NOTIFICATIONS));
+    else setIsNotificationsOpen(true);
   };
 
   // undefined while the profile is loading, so the greeting shows a placeholder
@@ -38,26 +44,22 @@ const Navbar = () => {
 
   return (
     <>
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-white/10! bg-primary px-3 transition-colors duration-200 sm:gap-3 sm:px-4 dark:bg-app-navbar">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b border-app-border! bg-app-surface px-3 transition-colors duration-200 sm:gap-3 sm:px-5">
         <button
           type="button"
           aria-label="Open menu"
           onClick={() => dispatch(openSidebar())}
-          className={`${iconButtonClassName} md:hidden`}
+          className={`${iconButtonClassName} -ml-1 md:hidden`}
         >
           <Icon icon={Menu} size="xl" />
         </button>
 
-        <img
-          src={LOGO_URL}
-          alt="Eazotel"
-          className="h-7 w-auto shrink-0 object-contain md:hidden"
-        />
+        <div className="min-w-0 flex-1">
+          <Greeting name={greetingName} />
+        </div>
 
-        <Greeting name={greetingName} />
-
-        <div className="ml-auto flex min-w-0 items-center justify-end gap-0.5 sm:flex-1 sm:gap-2">
-          <div className="min-w-0 sm:max-w-md sm:flex-1">
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
+          <div className="sm:w-56 lg:w-72">
             <GlobalSearch />
           </div>
 
@@ -70,51 +72,37 @@ const Navbar = () => {
                 ? `Notifications, ${unreadCount} new`
                 : "Notifications"
             }
-            onClick={() => toggleNotifications(true)}
-            className={`${iconButtonClassName} max-sm:hidden`}
+            title="Notifications"
+            onClick={openNotifications}
+            className={iconButtonClassName}
           >
-            <Icon icon={Bell} size="xl" />
+            <Icon icon={Bell} size="lg" />
             {unreadCount > 0 && (
-              <span className="anim-pop absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white">
+              <span className="anim-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-app-surface">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </button>
 
-          <Link
-            to={dashboardPath(PAGES.SETTINGS)}
-            aria-label="Settings"
-            title="Settings"
-            className={`${iconButtonClassName} max-sm:hidden`}
-          >
-            <Icon icon={Settings} size="xl" />
-          </Link>
-
           <button
             type="button"
             aria-label="EazStore"
+            title="EazStore"
             onClick={() => setIsAppsOpen(true)}
-            className="flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2 text-sm sm:px-2.5 font-semibold text-white transition hover:bg-ternary/90 active:scale-95 lg:px-3.5"
+            className="ml-1 flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] lg:px-3"
           >
-            <Icon icon={Store} size="lg" />
+            <Icon icon={Store} size="md" />
             <span className="hidden lg:inline">EazStore</span>
           </button>
 
-          <div className="mx-1 hidden h-6 w-px bg-white/15 sm:block" />
+          <div className="mx-1.5 hidden h-7 w-px bg-app-border sm:block" />
 
-          <UserMenu
-            unreadCount={unreadCount}
-            onOpenNotifications={() => toggleNotifications(true)}
-          />
+          <UserMenu />
         </div>
       </header>
 
       <AppsPopup open={isAppsOpen} setOpen={setIsAppsOpen} />
-      <NotificationPopup
-        isOpen={isNotificationsOpen}
-        onClose={() => toggleNotifications(false)}
-        data={notifications}
-      />
+      <NotificationPanel open={isNotificationsOpen} onClose={closeNotifications} />
     </>
   );
 };

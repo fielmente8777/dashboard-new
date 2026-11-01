@@ -1,9 +1,26 @@
-import { useEffect, useState } from "react";
+import { Settings } from "lucide-react";
+import { createElement, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { dashboardPath } from "../../routes/paths";
+import { PAGES, dashboardPath } from "../../routes/paths";
 import { useSidebarItems } from "./hooks/useSidebarItems";
 import SidebarNavItem from "./SidebarNavItem";
+
+// pinned below the scrolling menu
+const settingsItem = {
+  name: "Settings",
+  link: PAGES.SETTINGS,
+  icon: createElement(Settings, { size: 18, strokeWidth: 1.75 }),
+};
+
+const SectionHeading = ({ collapsed, children }) =>
+  collapsed ? (
+    <div aria-hidden="true" className="mx-3 my-3 h-px bg-white/10" />
+  ) : (
+    <p className="px-3 pb-1.5 pt-5 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40">
+      {children}
+    </p>
+  );
 
 const SidebarNav = ({ collapsed, onExpand }) => {
   const items = useSidebarItems();
@@ -44,11 +61,11 @@ const SidebarNav = ({ collapsed, onExpand }) => {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-2 overflow-hidden">
+      <div className="flex-1 space-y-2 overflow-hidden px-3 pt-2">
         {Array.from({ length: 9 }).map((_, index) => (
           <div
             key={index}
-            className="h-10 animate-pulse rounded-lg bg-white/10"
+            className="h-9 animate-pulse rounded-lg bg-white/[0.06]"
           />
         ))}
       </div>
@@ -56,21 +73,31 @@ const SidebarNav = ({ collapsed, onExpand }) => {
   }
 
   return (
-    <nav
-      aria-label="Main"
-      className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-hidden"
-    >
-      {items.map((item, index) => (
-        <SidebarNavItem
-          key={`${item.name}-${index}`}
-          item={item}
-          collapsed={collapsed}
-          isActive={isActive}
-          isGroupOpen={openGroup === index}
-          onGroupClick={() => handleGroupClick(item, index)}
-        />
-      ))}
-    </nav>
+    <>
+      <nav
+        aria-label="Main"
+        className="flex-1 space-y-0.5 overflow-y-auto overflow-x-hidden px-3 pb-3 scrollbar-hidden"
+      >
+        {items.map((item, index) => (
+          <div key={`${item.name}-${index}`}>
+            {item.section && item.section !== items[index - 1]?.section && (
+              <SectionHeading collapsed={collapsed}>{item.section}</SectionHeading>
+            )}
+            <SidebarNavItem
+              item={item}
+              collapsed={collapsed}
+              isActive={isActive}
+              isGroupOpen={openGroup === index}
+              onGroupClick={() => handleGroupClick(item, index)}
+            />
+          </div>
+        ))}
+      </nav>
+
+      <div className="shrink-0 border-t border-white/10! px-3 py-3">
+        <SidebarNavItem item={settingsItem} collapsed={collapsed} isActive={isActive} />
+      </div>
+    </>
   );
 };
 

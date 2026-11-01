@@ -30,3 +30,11 @@ export const seoErrorMessage = (error, fallback) => {
 // bands: [{ max, label, tone, color }], lowest max first -> rank => its band
 export const bandOf = (bands, unranked) => (rank) =>
   rank == null ? unranked : bands.find((band) => rank <= band.max);
+
+// bands -> [{ ...band, count }]: how many keywords sit in each.
+// getBand(keyword) returns the band the keyword belongs to.
+export const countByBand = (keywords, bands, getBand) =>
+  bands.map((band) => ({
+    ...band,
+    count: keywords.filter((keyword) => getBand(keyword) === band).length,
+  }));

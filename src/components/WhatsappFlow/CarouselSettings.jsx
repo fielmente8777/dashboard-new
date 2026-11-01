@@ -4,6 +4,7 @@ import Button from "../ui/Button";
 import Icon from "../ui/Icon";
 import IconButton from "../ui/IconButton";
 import { v4 as uuidv4 } from "uuid";
+import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import {
   deleteImageFromServer,
@@ -41,6 +42,7 @@ const transformCardsFromAPI = (cards = []) => {
 
 export default function CarouselSettings({ onSave, onCancel, data }) {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const initialType = data?.interactive?.action?.cards?.[0]?.action?.buttons
     ?.length
     ? "quick_reply"
@@ -124,6 +126,12 @@ export default function CarouselSettings({ onSave, onCancel, data }) {
   };
 
   const removeCard = async (cardId) => {
+    const confirmed = await confirm(
+      "Remove this card with its image, text and buttons?",
+      { title: "Remove card", confirmText: "Remove" },
+    );
+    if (!confirmed) return;
+
     // const card = cards.find((c) => c.id === cardId);
 
     // const isBucketImage = isS3Image(card?.imageLink);

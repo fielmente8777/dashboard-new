@@ -24,6 +24,7 @@ export const PAGES = {
   SETTINGS: "settings",
   INTEGRATION: "integration",
   QR_CODE: "qr-code",
+  NOTIFICATIONS: "notifications",
   USER_MANAGEMENT_ALL_USERS: "user-management/all-users",
   USER_MANAGEMENT_SETTINGS: "user-management/settings",
   CONTACTS: "contacts",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { useConfirm } from "../../context/ConfirmContext";
 import Button from "../ui/Button";
 import { Field, Input, Textarea } from "../ui/Field";
 import IconButton from "../ui/IconButton";
@@ -15,6 +16,7 @@ const MAX_ROW_TITLE_TEXT = 24;
 const MAX_BUTTON_TEXT = 20;
 
 export default function ListSetting({ data, onSave, onCancel }) {
+  const { confirm } = useConfirm();
   const [header, setHeader] = useState(data?.interactive?.header?.text || "");
   const [body, setBody] = useState(
     data?.interactive?.body?.text || "Select an option",
@@ -53,7 +55,13 @@ export default function ListSetting({ data, onSave, onCancel }) {
     ]);
   };
 
-  const removeSection = (index) => {
+  const removeSection = async (index) => {
+    const confirmed = await confirm(
+      `Remove ${sections[index]?.title || `Section ${index + 1}`} and all its options?`,
+      { title: "Remove section", confirmText: "Remove" },
+    );
+    if (!confirmed) return;
+
     const updated = sections.filter((_, i) => i !== index);
     setSections(updated);
   };

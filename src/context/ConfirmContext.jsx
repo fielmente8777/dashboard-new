@@ -1,10 +1,21 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { CircleHelp, Trash2, TriangleAlert } from "lucide-react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import Button from "../components/ui/Button";
-import Dialog from "../components/ui/Dialog";
+import Icon from "../components/ui/Icon";
 
 const ConfirmContext = createContext();
 
 export const useConfirm = () => useContext(ConfirmContext);
+
+const DESTRUCTIVE_WORDS = /delete|remove|discard|clear/i;
 
 // Asks "are you sure?" from anywhere:
 //
@@ -35,40 +46,98 @@ export const ConfirmProvider = ({ children }) => {
     [],
   );
 
-  const answer = (confirmed) => {
-    confirmState?.resolve(confirmed);
-    setConfirmState(null);
-  };
+  const answer = useCallback(
+    (confirmed) => {
+      confirmState?.resolve(confirmed);
+      setConfirmState(null);
+    },
+    [confirmState],
+  );
+
+  useEffect(() => {
+    if (!confirmState) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") answer(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [confirmState, answer]);
 
   const value = useMemo(() => ({ confirm }), [confirm]);
+
+  const isDanger = confirmState?.variant === "danger";
+  const icon = !isDanger
+    ? CircleHelp
+    : DESTRUCTIVE_WORDS.test(`${confirmState?.title} ${confirmState?.confirmText}`)
+      ? Trash2
+      : TriangleAlert;
 
   return (
     <ConfirmContext.Provider value={value}>
       {children}
 
-      <Dialog
-        open={Boolean(confirmState)}
-        title={confirmState?.title}
-        onClose={() => answer(false)}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => answer(false)}>
-              {confirmState?.cancelText}
-            </Button>
-            <Button
-              autoFocus
-              variant={confirmState?.variant}
-              onClick={() => answer(true)}
+      {confirmState &&
+        createPortal(
+          <div
+            onMouseDown={() => answer(false)}
+            className="anim-fade fixed inset-0 z-[9996] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-[2px]"
+          >
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="confirm-title"
+              aria-describedby="confirm-message"
+              onMouseDown={(e) => e.stopPropagation()}
+              className="anim-pop w-full max-w-[420px] overflow-hidden rounded-2xl border border-app-border! bg-app-surface text-app-text shadow-2xl"
             >
-              {confirmState?.confirmText}
-            </Button>
-          </>
-        }
-      >
-        <p className="whitespace-pre-line text-sm text-app-text-muted">
-          {confirmState?.message}
-        </p>
-      </Dialog>
+              <div className="flex gap-4 p-5 sm:p-6">
+                <span
+                  className={`flex size-11 shrink-0 items-center justify-center rounded-full ring-8 ${
+                    isDanger
+                      ? "bg-red-500/12 text-red-600 ring-red-500/5 dark:text-red-400"
+                      : "bg-blue-500/12 text-blue-600 ring-blue-500/5 dark:text-blue-400"
+                  }`}
+                >
+                  <Icon icon={icon} size="xl" />
+                </span>
+
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <h2 id="confirm-title" className="text-base font-semibold leading-snug">
+                    {confirmState.title}
+                  </h2>
+                  <p
+                    id="confirm-message"
+                    className="mt-1.5 whitespace-pre-line break-words text-sm leading-relaxed text-app-text-muted"
+                  >
+                    {confirmState.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 border-t border-app-border! bg-app-bg/50 px-5 py-3.5 sm:flex-row sm:justify-end sm:px-6">
+                {/* a destructive action never fires on a stray Enter: Cancel has focus */}
+                <Button
+                  variant="secondary"
+                  autoFocus={isDanger}
+                  onClick={() => answer(false)}
+                  className="max-sm:w-full"
+                >
+                  {confirmState.cancelText}
+                </Button>
+                <Button
+                  variant={confirmState.variant}
+                  icon={isDanger && icon === Trash2 ? Trash2 : undefined}
+                  autoFocus={!isDanger}
+                  onClick={() => answer(true)}
+                  className="max-sm:w-full"
+                >
+                  {confirmState.confirmText}
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </ConfirmContext.Provider>
   );
 };

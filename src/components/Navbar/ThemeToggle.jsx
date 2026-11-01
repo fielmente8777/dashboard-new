@@ -11,12 +11,12 @@ const ThemeToggle = ({ className = "" }) => {
       onClick={toggleColorMode}
       aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
       title={isDarkMode ? "Light mode" : "Dark mode"}
-      className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white ${className}`}
+      className={`flex size-9 shrink-0 items-center justify-center rounded-lg text-app-text-muted transition-colors hover:bg-app-surface-secondary hover:text-app-text ${className}`}
     >
       {isDarkMode ? (
-        <Icon icon={LuSun} size="xl" />
+        <Icon icon={LuSun} size="lg" />
       ) : (
-        <Icon icon={LuMoon} size="xl" />
+        <Icon icon={LuMoon} size="lg" />
       )}
     </button>
   );

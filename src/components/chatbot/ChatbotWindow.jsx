@@ -74,7 +74,7 @@ const fromServer = (m) => ({
   status: "sent",
 });
 
-export default function ChatbotWindow({ hid, onClose }) {
+export default function ChatbotWindow({ hid, question, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -93,6 +93,9 @@ export default function ChatbotWindow({ hid, onClose }) {
   // Bumped whenever the visible chat changes, so late responses never land in the wrong chat.
   const viewRef = useRef(0);
   const overlayRef = useRef(false);
+  // opened to ask something: don't restore the last chat over it
+  const openedWithQuestionRef = useRef(Boolean(question));
+  const askedQuestionIdRef = useRef(null);
 
   const setConversationId = useCallback((id) => {
     conversationIdRef.current = id;
@@ -169,6 +172,7 @@ export default function ChatbotWindow({ hid, onClose }) {
 
   // Restore the last open chat when the widget is reopened.
   useEffect(() => {
+    if (openedWithQuestionRef.current) return;
     const saved = readActive(hid);
     if (saved) openConversation(saved);
   }, [hid, openConversation]);
@@ -183,6 +187,16 @@ export default function ChatbotWindow({ hid, onClose }) {
     setInput("");
     inputRef.current?.focus();
   }
+
+  // A question from outside the chat (the navbar search) starts a new chat with it.
+  // The id guard stops it being asked twice (React re-runs effects in dev).
+  useEffect(() => {
+    if (!question?.text || askedQuestionIdRef.current === question.id) return;
+    askedQuestionIdRef.current = question.id;
+    newChat();
+    handleSubmit(null, question.text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [question]);
 
   function handleSelectConversation(conversation) {
     if (conversation._id === conversationIdRef.current && !conversationError) {

@@ -1,8 +1,10 @@
 import { Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import BandFilter from "../../../../components/Seo/BandFilter";
+import { bandFilterOptions } from "../../../../components/Seo/seoTheme";
 import DifficultyBar from "../../../../components/Seo/DifficultyBar";
 import RankBadge from "../../../../components/Seo/RankBadge";
-import { fmt, fmtCurrency } from "../../../../components/Seo/seoUtils";
+import { countByBand, fmt, fmtCurrency } from "../../../../components/Seo/seoUtils";
 import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
 import DataTable from "../../../../components/ui/DataTable";
@@ -10,7 +12,10 @@ import { Input } from "../../../../components/ui/Field";
 import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import { EmptyState } from "../../../../components/ui/States";
-import { organicBand } from "../websiteSeoUtils";
+import { NOT_RANKED, ORGANIC_BANDS, organicBand } from "../websiteSeoUtils";
+
+const BANDS = [...ORGANIC_BANDS, NOT_RANKED];
+const bandOfKeyword = (k) => organicBand(k.liveOrganicRank);
 
 // best position first, unranked last
 const byRank = (a, b) => (a.liveOrganicRank ?? Infinity) - (b.liveOrganicRank ?? Infinity);
@@ -24,12 +29,23 @@ const WebsiteKeywordTable = ({
   onUntrack,
 }) => {
   const [search, setSearch] = useState("");
+  const [band, setBand] = useState("all");
+
+  const filterOptions = useMemo(
+    () => bandFilterOptions(countByBand(keywords, BANDS, bandOfKeyword)),
+    [keywords],
+  );
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const list = term ? keywords.filter((k) => k.keyword.toLowerCase().includes(term)) : keywords;
-    return [...list].sort(byRank);
-  }, [keywords, search]);
+    return keywords
+      .filter(
+        (k) =>
+          (band === "all" || bandOfKeyword(k).label === band) &&
+          (!term || k.keyword.toLowerCase().includes(term)),
+      )
+      .sort(byRank);
+  }, [keywords, search, band]);
 
   const columns = [
     {
@@ -99,7 +115,7 @@ const WebsiteKeywordTable = ({
       description="Best position first"
       actions={
         keywords.length > 0 && (
-          <div className="relative w-full sm:w-60">
+          <div className="relative w-full sm:w-64">
             <Icon
               icon={Search}
               tone="faint"
@@ -127,12 +143,15 @@ const WebsiteKeywordTable = ({
           }
         />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(row) => row._id || row.keyword}
-          emptyMessage="No keyword matches your search"
-        />
+        <div className="space-y-3">
+          <BandFilter options={filterOptions} value={band} onChange={setBand} />
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row._id || row.keyword}
+            emptyMessage="No keyword matches these filters"
+          />
+        </div>
       )}
     </Card>
   );

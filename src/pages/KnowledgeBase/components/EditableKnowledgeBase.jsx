@@ -2,6 +2,7 @@ import { ArrowLeft, RefreshCw, Save } from "lucide-react";
 import { useCallback, useState } from "react";
 import Button from "../../../components/ui/Button";
 import PageShell from "../../../components/ui/PageShell";
+import { useConfirm } from "../../../context/ConfirmContext";
 import { useToast } from "../../../context/ToastContext";
 import {
   HIDDEN_FIELDS,
@@ -34,9 +35,20 @@ const EditableKnowledgeBase = ({
     (path, value) => setKb((prev) => setValueAtPath(prev, path, value)),
     [setKb],
   );
+  const { confirm } = useConfirm();
+  // stable as well; asks first, since a field can hold a whole list of entries
   const handleDelete = useCallback(
-    (path) => setKb((prev) => deleteValueAtPath(prev, path)),
-    [setKb],
+    async (path) => {
+      const name = String(path[path.length - 1]);
+      const label = /^\d+$/.test(name) ? "this entry" : `"${name.replace(/_/g, " ")}"`;
+      const confirmed = await confirm(
+        `Remove ${label} from the knowledge base? It is gone once you save.`,
+        { title: "Remove from knowledge base", confirmText: "Remove" },
+      );
+      if (confirmed) setKb((prev) => deleteValueAtPath(prev, path));
+      return confirmed;
+    },
+    [setKb, confirm],
   );
 
   const sectionEntries = Object.entries(kb).filter(

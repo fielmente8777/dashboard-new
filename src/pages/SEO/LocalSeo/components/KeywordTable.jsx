@@ -1,5 +1,7 @@
 import { Plus, RefreshCw, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import BandFilter from "../../../../components/Seo/BandFilter";
+import { bandFilterOptions } from "../../../../components/Seo/seoTheme";
 import Badge from "../../../../components/ui/Badge";
 import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
@@ -8,9 +10,28 @@ import { Input } from "../../../../components/ui/Field";
 import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import { EmptyState } from "../../../../components/ui/States";
-import { actionFor, fmt, fmtCurrency, rankBand } from "../localSeoUtils";
+import {
+  RANK_BANDS,
+  UNRANKED,
+  actionFor,
+  countByBand,
+  fmt,
+  fmtCurrency,
+  rankBand,
+} from "../localSeoUtils";
 import DifficultyBar from "../../../../components/Seo/DifficultyBar";
 import RankBadge from "../../../../components/Seo/RankBadge";
+import RankSparkline from "../../../../components/Seo/RankSparkline";
+
+const BANDS = [...RANK_BANDS, UNRANKED];
+const bandOfKeyword = (k) => rankBand(k.liveGmbRank);
+
+// the last two weeks of daily checks, oldest first
+const recentRanks = (keyword) =>
+  (keyword.rankHistory || [])
+    .filter((snapshot) => snapshot?.rank != null)
+    .slice(-14)
+    .map((snapshot) => snapshot.rank);
 
 // stop a click on a row's buttons from also opening the row
 const stop = (handler) => (e) => {
@@ -29,13 +50,21 @@ const KeywordTable = ({
   onUntrack,
 }) => {
   const [search, setSearch] = useState("");
+  const [band, setBand] = useState("all");
+
+  const filterOptions = useMemo(
+    () => bandFilterOptions(countByBand(keywords, BANDS, bandOfKeyword)),
+    [keywords],
+  );
 
   const rows = useMemo(() => {
     const term = search.trim().toLowerCase();
-    // keywords tracked for a specific URL belong to Website SEO
-    const local = keywords.filter((k) => !k.targetUrl);
-    return term ? local.filter((k) => k.keyword.toLowerCase().includes(term)) : local;
-  }, [keywords, search]);
+    return keywords.filter(
+      (k) =>
+        (band === "all" || bandOfKeyword(k).label === band) &&
+        (!term || k.keyword.toLowerCase().includes(term)),
+    );
+  }, [keywords, search, band]);
 
   const columns = [
     {
@@ -51,6 +80,11 @@ const KeywordTable = ({
       key: "liveGmbRank",
       header: "Maps rank",
       render: (row) => <RankBadge rank={row.liveGmbRank} tone={rankBand(row.liveGmbRank).tone} />,
+    },
+    {
+      key: "trend",
+      header: "14-day trend",
+      render: (row) => <RankSparkline ranks={recentRanks(row)} />,
     },
     {
       key: "searchVolume",
@@ -107,8 +141,6 @@ const KeywordTable = ({
     },
   ];
 
-  const total = keywords.filter((k) => !k.targetUrl).length;
-
   return (
     <Card
       title="Tracked keywords"
@@ -118,8 +150,8 @@ const KeywordTable = ({
           : "Click a keyword for its rank history."
       }
       actions={
-        total > 0 && (
-          <div className="relative w-full sm:w-60">
+        keywords.length > 0 && (
+          <div className="relative w-full sm:w-64">
             <Icon
               icon={Search}
               tone="faint"
@@ -135,7 +167,7 @@ const KeywordTable = ({
         )
       }
     >
-      {total === 0 ? (
+      {keywords.length === 0 ? (
         <EmptyState
           icon={Search}
           title="No keywords tracked yet"
@@ -147,13 +179,16 @@ const KeywordTable = ({
           }
         />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(row) => row._id || row.keyword}
-          onRowClick={onOpen}
-          emptyMessage="No keyword matches your search"
-        />
+        <div className="space-y-3">
+          <BandFilter options={filterOptions} value={band} onChange={setBand} />
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row._id || row.keyword}
+            onRowClick={onOpen}
+            emptyMessage="No keyword matches these filters"
+          />
+        </div>
       )}
     </Card>
   );

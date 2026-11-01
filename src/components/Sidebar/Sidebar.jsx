@@ -74,40 +74,44 @@ const Sidebar = () => {
 
       <aside
         inert={isMobile && !isOpen}
-        className={`fixed inset-y-0 left-0 flex w-72 max-w-[85vw] shrink-0 flex-col bg-primary p-3 text-white transition-[translate,width] duration-300 md:max-w-none md:translate-x-0 lg:static lg:z-auto lg:shadow-none dark:bg-[#0a1020] ${
+        className={`fixed inset-y-0 left-0 flex w-72 max-w-[85vw] shrink-0 flex-col overflow-hidden bg-primary text-white transition-[translate,width] duration-300 md:max-w-none md:translate-x-0 lg:static lg:z-auto lg:shadow-none dark:border-r dark:border-white/[0.06]! dark:bg-[#0a1020] ${
           isOpen
             ? "z-[9990] translate-x-0 shadow-xl md:w-64"
             : "z-30 -translate-x-full md:w-[72px]"
         }`}
       >
+        {/* same height as the navbar, so the two read as one frame */}
         <div
-          className={`mb-3 flex h-10 shrink-0 items-center ${collapsed ? "justify-center" : "justify-between"}`}
+          className={`flex h-16 shrink-0 items-center border-b border-white/10! px-3 ${collapsed ? "justify-center" : "justify-between pl-4"}`}
         >
           {!collapsed && (
-            <img src={LOGO_URL} alt="Eazotel" className="h-7 w-auto object-contain" />
+            <img src={LOGO_URL} alt="Eazotel" className="h-6 w-auto object-contain" />
           )}
 
           <button
             type="button"
             onClick={() => dispatch(toggleSideBar())}
             aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
-            className="flex size-9 items-center justify-center rounded-lg text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            title={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+            className="flex size-8 items-center justify-center rounded-lg text-white/55 transition-colors hover:bg-white/10 hover:text-white"
           >
             {isMobile ? (
-              <X size={20} />
+              <X size={18} />
             ) : isOpen ? (
-              <PanelLeftClose size={20} />
+              <PanelLeftClose size={18} />
             ) : (
-              <PanelLeftOpen size={20} />
+              <PanelLeftOpen size={18} />
             )}
           </button>
         </div>
 
-        <LocationSwitcher
-          collapsed={collapsed}
-          onExpand={() => dispatch(open())}
-          onAddLocation={handleAddLocation}
-        />
+        <div className="shrink-0 px-3 pb-4 pt-3">
+          <LocationSwitcher
+            collapsed={collapsed}
+            onExpand={() => dispatch(open())}
+            onAddLocation={handleAddLocation}
+          />
+        </div>
 
         <SidebarNav collapsed={collapsed} onExpand={() => dispatch(open())} />
       </aside>
