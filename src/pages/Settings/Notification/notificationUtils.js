@@ -7,6 +7,12 @@ export const SOURCES = [
   { key: "google", label: "Google", description: "Google Ads leads" },
 ];
 
+// where each channel keeps its switch and recipients on a source's settings
+export const CHANNELS = {
+  phone: { list: "phone", allowed: "isPhoneAllowed", label: "WhatsApp", noun: "WhatsApp" },
+  email: { list: "email", allowed: "isEmailAllowed", label: "Email", noun: "email" },
+};
+
 // the call outcomes a follow-up WhatsApp message can be set for
 export const CALL_STATUSES = [
   { key: "notAnswered", label: "Not answered" },

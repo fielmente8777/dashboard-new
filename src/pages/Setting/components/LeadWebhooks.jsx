@@ -1,7 +1,7 @@
 import { FileCode2, Globe, Megaphone, Webhook } from "lucide-react";
 import Badge from "../../../components/ui/Badge";
-import Card from "../../../components/ui/Card";
 import Icon from "../../../components/ui/Icon";
+import SettingsCard from "../../../components/ui/SettingsCard";
 import { API_URLS } from "../../../config/env";
 import { useTenant } from "../../../hooks/useTenant";
 import CopyField from "./CopyField";
@@ -54,21 +54,25 @@ const buildWebhooks = ({ domain, ndid, hid }) => [
   },
 ];
 
-const LeadWebhooks = ({ domain }) => {
+const LeadWebhooks = ({ id, domain }) => {
   const { hid, ndid } = useTenant();
 
   if (!ndid) return null;
   const webhooks = buildWebhooks({ domain, ndid, hid });
 
   return (
-    <Card
+    <SettingsCard
+      id={id}
+      icon={Webhook}
       title="Lead webhooks"
       description="Connect your forms and ads so new enquiries arrive in Leads automatically."
+      bodyClassName="px-0! py-0!"
+      footer={<span>Keep these values private: anyone with them can send leads to your account.</span>}
     >
-      <ul className="divide-y divide-app-border">
+      <ul className="divide-y divide-app-border!">
         {webhooks.map(({ key, icon, title, description, note, fields }) => (
-          <li key={key} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 lg:flex-row lg:gap-6">
-            <div className="flex min-w-0 gap-3 lg:w-72 lg:shrink-0">
+          <li key={key} className="flex flex-col gap-3 px-4 py-5 sm:px-6 xl:flex-row xl:gap-6">
+            <div className="flex min-w-0 gap-3 xl:w-72 xl:shrink-0">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-app-surface-secondary text-app-text-muted">
                 <Icon icon={icon} size="sm" />
               </span>
@@ -94,7 +98,7 @@ const LeadWebhooks = ({ domain }) => {
           </li>
         ))}
       </ul>
-    </Card>
+    </SettingsCard>
   );
 };
 

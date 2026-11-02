@@ -1,15 +1,19 @@
 import { Mail, Pencil } from "lucide-react";
 import { useState } from "react";
+import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
-import Card from "../../../components/ui/Card";
 import { Field, Input } from "../../../components/ui/Field";
+import Icon from "../../../components/ui/Icon";
+import SettingsCard from "../../../components/ui/SettingsCard";
 import { useApiAction } from "../../../hooks/useApiAction";
 import { useUpdateMarketingEmailMutation } from "../../../redux/api/profileApi";
 import { EMAIL_REGEX } from "../../EmailMarketing/emailUtils";
 
+const FORM_ID = "marketing-email-form";
+
 // The address email campaigns go out under (guests' replies land there).
 // Not set = campaigns use the hotel email from the profile.
-const MarketingEmail = ({ profile, onSaved }) => {
+const MarketingEmail = ({ id, profile, onSaved }) => {
   const run = useApiAction();
   const [save, { isLoading }] = useUpdateMarketingEmailMutation();
   const saved = profile.marketingEmail || "";
@@ -39,20 +43,42 @@ const MarketingEmail = ({ profile, onSaved }) => {
   };
 
   return (
-    <Card
+    <SettingsCard
+      id={id}
+      icon={Mail}
       title="Marketing email"
       description="Email campaigns are sent under this address, and guests' replies come to it."
-      actions={
-        !editing && (
-          <Button variant="secondary" size="sm" icon={Pencil} onClick={start}>
-            {saved ? "Change" : "Add"}
-          </Button>
+      footer={
+        editing ? (
+          <>
+            <span>Guests see this address as the sender.</span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditing(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" form={FORM_ID} size="sm" loading={isLoading}>
+              Save
+            </Button>
+          </>
+        ) : (
+          <>
+            <span>
+              {saved ? "Replies to campaigns arrive here." : "Not set: campaigns use your hotel email."}
+            </span>
+            <Button variant="secondary" size="sm" icon={Pencil} onClick={start}>
+              {saved ? "Change" : "Add address"}
+            </Button>
+          </>
         )
       }
     >
       {editing ? (
-        <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:items-start">
-          <Field error={error} className="min-w-0 flex-1">
+        <form id={FORM_ID} onSubmit={submit} className="max-w-md">
+          <Field error={error}>
             <Input
               type="email"
               autoFocus
@@ -65,29 +91,23 @@ const MarketingEmail = ({ profile, onSaved }) => {
               disabled={isLoading}
             />
           </Field>
-          <div className="flex gap-2">
-            <Button type="submit" loading={isLoading}>
-              Save
-            </Button>
-            <Button variant="secondary" onClick={() => setEditing(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-          </div>
         </form>
       ) : (
-        <p className="flex min-w-0 items-center gap-2 text-sm">
-          <Mail className="size-4 shrink-0 text-app-text-muted" />
+        <div className="flex min-w-0 items-center gap-3 rounded-lg border border-app-border! px-3 py-2.5">
+          <Icon icon={Mail} size="sm" tone="muted" />
+          <span className="min-w-0 flex-1 truncate text-sm text-app-text">
+            {saved || profile.hotelEmail || (
+              <span className="text-app-text-faint">No email address yet</span>
+            )}
+          </span>
           {saved ? (
-            <span className="truncate text-app-text">{saved}</span>
+            <Badge tone="green">Custom</Badge>
           ) : (
-            <span className="min-w-0 text-app-text-muted">
-              Not set. Campaigns use your hotel email
-              {profile.hotelEmail && <span className="text-app-text"> {profile.hotelEmail}</span>}.
-            </span>
+            profile.hotelEmail && <Badge>Hotel email</Badge>
           )}
-        </p>
+        </div>
       )}
-    </Card>
+    </SettingsCard>
   );
 };
 

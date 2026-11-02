@@ -1,6 +1,6 @@
 import { PhoneMissed } from "lucide-react";
-import Icon from "../../../../components/ui/Icon";
 import SelectMenu from "../../../../components/ui/SelectMenu";
+import SettingsCard from "../../../../components/ui/SettingsCard";
 import Switch from "../../../../components/ui/Switch";
 import TemplatePreview from "../../../Channels/Whatsapp/components/TemplatePreview";
 import { CALL_STATUSES, templateMeta } from "../notificationUtils";
@@ -19,33 +19,44 @@ const CallFollowUp = ({ callConfig, templates, disabled, onToggle, onChange }) =
     onChange(status, { type: "template", templateName: name, templateMeta: templateMeta(template) });
   };
 
+  const open = callConfig.enabled && !disabled;
+
   return (
-    <div className="rounded-lg border border-app-border! bg-app-surface-secondary/40">
-      <div className="flex items-center gap-3 px-4 py-3">
-        <Icon icon={PhoneMissed} tone="muted" />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-app-text">Follow up on calls</p>
-          <p className="text-xs text-app-text-muted">
-            Message the caller on WhatsApp when you could not take their call.
-          </p>
-        </div>
+    <SettingsCard
+      icon={PhoneMissed}
+      title="Missed-call follow-up"
+      description="Message the caller on WhatsApp when you could not take their call."
+      actions={
         <Switch
           label="Follow up on calls"
           checked={callConfig.enabled}
           disabled={disabled}
           onChange={onToggle}
         />
-      </div>
-
-      {callConfig.enabled && !disabled && (
-        <div className="grid grid-cols-1 gap-3 border-t border-app-border! p-4 md:grid-cols-3">
-          {CALL_STATUSES.map((status) => {
+      }
+      footer={
+        <span>
+          {options.length
+            ? "Choose one WhatsApp template for each call outcome."
+            : "No WhatsApp templates yet. Create one under Settings → WhatsApp."}
+        </span>
+      }
+    >
+      {open ? (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {CALL_STATUSES.map((status, index) => {
             const config = callConfig.configs[status.key];
             const template = templates.find((item) => item.name === config.templateName);
 
             return (
-              <div key={status.key} className="space-y-2 rounded-lg border border-app-border! bg-app-surface p-3">
-                <p className="text-xs font-medium uppercase tracking-wide text-app-text-muted">
+              <div
+                key={status.key}
+                className="flex min-w-0 flex-col gap-3 rounded-lg border border-app-border! bg-app-surface-secondary/30 p-3"
+              >
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-app-text-muted">
+                  <span className="flex size-5 items-center justify-center rounded-full bg-app-surface-secondary text-[11px] text-app-text">
+                    {index + 1}
+                  </span>
                   {status.label}
                 </p>
                 <SelectMenu
@@ -59,19 +70,27 @@ const CallFollowUp = ({ callConfig, templates, disabled, onToggle, onChange }) =
                 />
                 {template ? (
                   <TemplatePreview components={template.components || []} />
+                ) : config.templateName ? (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    “{config.templateName}” is no longer available. Choose another template.
+                  </p>
                 ) : (
-                  config.templateName && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
-                      “{config.templateName}” is no longer available. Choose another template.
-                    </p>
-                  )
+                  <p className="rounded-md border border-dashed border-app-border! px-3 py-6 text-center text-xs text-app-text-faint">
+                    The message preview appears here.
+                  </p>
                 )}
               </div>
             );
           })}
         </div>
+      ) : (
+        <p className="rounded-lg bg-app-surface-secondary/60 px-3 py-2.5 text-sm text-app-text-muted">
+          {disabled
+            ? "Turn on WhatsApp alerts above to send follow-up messages."
+            : "Off. Turn it on to choose the message sent for each call outcome."}
+        </p>
       )}
-    </div>
+    </SettingsCard>
   );
 };
 

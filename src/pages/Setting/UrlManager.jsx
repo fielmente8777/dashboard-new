@@ -1,10 +1,10 @@
-import { Check, ExternalLink, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, ExternalLink, Link2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Button from "../../components/ui/Button";
-import Card from "../../components/ui/Card";
 import Icon from "../../components/ui/Icon";
 import IconButton from "../../components/ui/IconButton";
 import { Input } from "../../components/ui/Field";
+import SettingsCard from "../../components/ui/SettingsCard";
 import { useApiAction } from "../../hooks/useApiAction";
 import { useUpdateProfileUrlsMutation } from "../../redux/api/profileApi";
 
@@ -156,7 +156,7 @@ const LinkColumn = ({ column, links, onChange }) => {
 };
 
 // The hotel's websites and landing pages, used by SEO tracking and ad reporting.
-const UrlManager = ({ urls, onSaved }) => {
+const UrlManager = ({ id, urls, onSaved }) => {
   const run = useApiAction();
   const [updateProfileUrls, { isLoading }] = useUpdateProfileUrlsMutation();
 
@@ -175,9 +175,28 @@ const UrlManager = ({ urls, onSaved }) => {
   };
 
   return (
-    <Card
+    <SettingsCard
+      id={id}
+      icon={Link2}
       title="Websites & landing pages"
       description="Links added here are used for SEO tracking and ad reporting."
+      footer={
+        <>
+          {dirty ? (
+            <span className="text-amber-600 dark:text-amber-400">Unsaved changes</span>
+          ) : (
+            <span>Changes are saved together.</span>
+          )}
+          {dirty && (
+            <Button variant="ghost" size="sm" onClick={() => setLinks(saved)} disabled={isLoading}>
+              Discard
+            </Button>
+          )}
+          <Button size="sm" onClick={handleSave} disabled={!dirty} loading={isLoading}>
+            Save links
+          </Button>
+        </>
+      }
     >
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {COLUMNS.map((column) => (
@@ -189,19 +208,7 @@ const UrlManager = ({ urls, onSaved }) => {
           />
         ))}
       </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-app-border! pt-4">
-        {dirty && <span className="mr-auto text-xs text-amber-600 dark:text-amber-400">Unsaved changes</span>}
-        {dirty && (
-          <Button variant="ghost" onClick={() => setLinks(saved)} disabled={isLoading}>
-            Discard
-          </Button>
-        )}
-        <Button onClick={handleSave} disabled={!dirty} loading={isLoading}>
-          Save links
-        </Button>
-      </div>
-    </Card>
+    </SettingsCard>
   );
 };
 

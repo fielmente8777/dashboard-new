@@ -1,14 +1,16 @@
+import { KeyRound } from "lucide-react";
 import { useState } from "react";
 import Button from "../../../components/ui/Button";
-import Card from "../../../components/ui/Card";
+import SettingsCard from "../../../components/ui/SettingsCard";
 import { useApiAction } from "../../../hooks/useApiAction";
 import { useChangePasswordMutation } from "../../../redux/api/profileApi";
 import PasswordField from "./PasswordField";
 
 const MIN_LENGTH = 8;
 const EMPTY = { current: "", next: "", confirm: "" };
+const FORM_ID = "change-password-form";
 
-const ChangePassword = () => {
+const ChangePassword = ({ id }) => {
   const run = useApiAction();
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const [form, setForm] = useState(EMPTY);
@@ -50,21 +52,40 @@ const ChangePassword = () => {
   };
 
   return (
-    <Card title="Password" description="Use a password you don't use anywhere else.">
-      <form onSubmit={handleSubmit} noValidate className="max-w-md space-y-4">
-        <PasswordField
-          label="Current password"
-          value={form.current}
-          onChange={set("current")}
-          error={show("current")}
-          autoComplete="current-password"
-        />
+    <SettingsCard
+      id={id}
+      icon={KeyRound}
+      title="Password"
+      description="Use a password you don't use anywhere else."
+      footer={
+        <>
+          <span>Passwords need at least {MIN_LENGTH} characters.</span>
+          <Button type="submit" form={FORM_ID} size="sm" loading={isLoading}>
+            Update password
+          </Button>
+        </>
+      }
+    >
+      <form
+        id={FORM_ID}
+        onSubmit={handleSubmit}
+        noValidate
+        className="grid max-w-3xl grid-cols-1 gap-4 md:grid-cols-2"
+      >
+        <div className="md:col-span-2 md:max-w-[calc(50%-0.5rem)]">
+          <PasswordField
+            label="Current password"
+            value={form.current}
+            onChange={set("current")}
+            error={show("current")}
+            autoComplete="current-password"
+          />
+        </div>
         <PasswordField
           label="New password"
           value={form.next}
           onChange={set("next")}
           error={show("next")}
-          hint={`At least ${MIN_LENGTH} characters.`}
           autoComplete="new-password"
         />
         <PasswordField
@@ -74,11 +95,8 @@ const ChangePassword = () => {
           error={show("confirm")}
           autoComplete="new-password"
         />
-        <Button type="submit" loading={isLoading}>
-          Update password
-        </Button>
       </form>
-    </Card>
+    </SettingsCard>
   );
 };
 

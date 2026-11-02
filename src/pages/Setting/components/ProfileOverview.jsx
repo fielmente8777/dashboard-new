@@ -1,7 +1,6 @@
-import { Building2, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { Building2, Hotel, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { useSelector } from "react-redux";
 import Badge from "../../../components/ui/Badge";
-import Card from "../../../components/ui/Card";
 import Icon from "../../../components/ui/Icon";
 import { useTenant } from "../../../hooks/useTenant";
 import { whatsappBusinessApi } from "../../../redux/api/whatsappBusinessApi";
@@ -20,23 +19,35 @@ const initials = (text) =>
 const titleCase = (text) =>
   String(text || "").replace(/\b\w/g, (c) => c.toUpperCase());
 
-// one way to reach the property: label above, value as a link
-const ContactLink = ({ icon, label, href, external, children }) => (
-  <a
-    href={href}
-    target={external ? "_blank" : undefined}
-    rel={external ? "noreferrer" : undefined}
-    className="group flex min-w-0 items-center gap-3 rounded-lg bg-app-surface-secondary px-3 py-2 transition"
-  >
-    <Icon icon={icon} size="sm" className="shrink-0 text-app-text-muted" />
-    <span className="min-w-0">
-      <span className="block text-[11px] text-app-text-muted">{label}</span>
-      <span className="block truncate text-sm text-app-text group-hover:text-blue-500">
-        {children}
+// One fact about the account: icon, label, value (a link when href is given).
+const Detail = ({ icon, label, href, external, children }) => {
+  const value = children || <span className="text-app-text-faint">Not set</span>;
+
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-app-surface-secondary text-app-text-muted">
+        <Icon icon={icon} size="sm" />
       </span>
-    </span>
-  </a>
-);
+      <div className="min-w-0">
+        <dt className="text-xs text-app-text-muted">{label}</dt>
+        <dd className="truncate text-sm font-medium text-app-text">
+          {href && children ? (
+            <a
+              href={href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noreferrer" : undefined}
+              className="hover:text-blue-500"
+            >
+              {children}
+            </a>
+          ) : (
+            value
+          )}
+        </dd>
+      </div>
+    </div>
+  );
+};
 
 // The WhatsApp number of the connected WhatsApp Business account, when the
 // plan includes WhatsApp. Same request as Settings → WhatsApp, so it is cached.
@@ -51,111 +62,96 @@ const useWhatsAppNumber = (hid) => {
   return currentData?.result?.docs?.phoneNumber?.displayPhoneNumber || "";
 };
 
-// Who is signed in, the organisation they belong to, and the ids support
-// and integrations ask for.
+// The page header: who is signed in, the organisation and location being
+// managed, how guests reach it, and the ids support and integrations ask for.
 const ProfileOverview = ({ profile, authUser }) => {
   const { hid, ndid } = useTenant();
   const location = useSelector(selectCurrentLocation);
   const whatsappNumber = useWhatsAppNumber(hid);
 
+  const name = authUser?.userName || titleCase(profile.hotelName) || "—";
+  const organisation = titleCase(profile.hotelName);
   // each location has its own name; the organisation name is the fallback
-  const locationName = titleCase(location?.local) || titleCase(profile.hotelName) || "—";
+  const locationName = titleCase(location?.local) || organisation;
   const address = [location?.city, location?.state, location?.country]
     .filter(Boolean)
     .join(", ");
-  const hasContacts = profile.hotelEmail || profile.hotelPhone || whatsappNumber;
 
   return (
-    <Card>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-        {/* the signed-in person */}
-        <div className="flex min-w-0 items-center gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-400 to-orange-600 text-lg font-semibold text-white">
-            {initials(authUser?.userName || profile.hotelName)}
-          </span>
+    <section className="overflow-hidden rounded-xl border border-app-border! bg-app-surface">
+      <div className="h-20 bg-linear-to-r from-blue-600/20 via-purple-500/10 to-orange-400/15 sm:h-24" />
+
+      <div className="relative px-4 pb-5 sm:px-6">
+        <span className="absolute -top-8 left-4 flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-orange-400 to-orange-600 text-xl font-semibold text-white shadow-sm ring-4 ring-app-surface sm:left-6">
+          {initials(authUser?.userName || profile.hotelName)}
+        </span>
+
+        <div className="flex flex-wrap items-start justify-between gap-3 pt-11">
           <div className="min-w-0">
-            <p className="truncate text-base font-semibold capitalize text-app-text">
-              {authUser?.userName || "—"}
-            </p>
-            <p className="truncate text-sm text-app-text-muted">
-              {authUser?.emailId}
-            </p>
-            {authUser?.role && (
-              <Badge
-                tone={authUser.isAdmin ? "purple" : "gray"}
-                className="mt-1.5 capitalize"
-              >
-                {authUser.role}
-              </Badge>
-            )}
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <h1 className="truncate text-lg font-semibold capitalize text-app-text">{name}</h1>
+              {authUser?.role && (
+                <Badge tone={authUser.isAdmin ? "purple" : "gray"} className="capitalize">
+                  {authUser.role}
+                </Badge>
+              )}
+            </div>
+            <p className="truncate text-sm text-app-text-muted">{authUser?.emailId}</p>
           </div>
+
+          {location && (
+            <Badge tone="blue" className="gap-1.5 py-1">
+              <Icon icon={MapPin} size="xs" />
+              Managing {locationName}
+            </Badge>
+          )}
         </div>
 
-        {/* the organisation and the location being managed */}
-        <div className="grid min-w-0 grid-cols-1 gap-4 border-app-border! lg:border-l lg:pl-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,18rem)]">
-          <div className="min-w-0">
-            <p className="truncate text-xs font-semibold uppercase tracking-wide text-app-text-muted">
-              Organisation · {titleCase(profile.hotelName) || "—"}
-            </p>
-            <div className="mt-2 flex min-w-0 items-center gap-2">
-              <Icon icon={Building2} size="sm" className="shrink-0 text-app-text-muted" />
-              <h2 className="truncate text-base font-semibold text-app-text" title={locationName}>
-                {locationName}
-              </h2>
-              {location && <Badge tone="blue">Current location</Badge>}
-            </div>
-            <p className="mt-1.5 flex min-w-0 items-start gap-2 text-sm text-app-text-muted">
-              <Icon icon={MapPin} size="sm" className="mt-0.5 shrink-0" />
-              <span className="min-w-0">
-                {address || "No address yet. Add it under Locations below."}
+        {profile.hotelDescription && (
+          <p className="mt-3 line-clamp-2 max-w-3xl text-sm text-app-text-muted">
+            {profile.hotelDescription}
+          </p>
+        )}
+
+        <dl className="mt-5 grid grid-cols-1 gap-x-6 gap-y-4 border-t border-app-border! pt-5 sm:grid-cols-2 xl:grid-cols-3">
+          <Detail icon={Building2} label="Organisation">{organisation}</Detail>
+          <Detail icon={Hotel} label="Current location">{locationName}</Detail>
+          <Detail icon={MapPin} label="Address">
+            {address && (
+              <span title={address}>
+                {address}
                 {location?.pinCode && (
-                  <span className="text-app-text-faint"> · PIN {location.pinCode}</span>
+                  <span className="font-normal text-app-text-faint"> · {location.pinCode}</span>
                 )}
               </span>
-            </p>
-            {profile.hotelDescription && (
-              <p className="mt-2 line-clamp-2 text-sm text-app-text-muted">
-                {profile.hotelDescription}
-              </p>
             )}
+          </Detail>
+          <Detail icon={Mail} label="Email" href={`mailto:${profile.hotelEmail}`}>
+            {profile.hotelEmail}
+          </Detail>
+          <Detail icon={Phone} label="Phone" href={`tel:${profile.hotelPhone}`}>
+            {profile.hotelPhone}
+          </Detail>
+          {whatsappNumber && (
+            <Detail
+              icon={MessageCircle}
+              label="WhatsApp"
+              href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
+              external
+            >
+              {whatsappNumber}
+            </Detail>
+          )}
+        </dl>
+
+        {(hid || ndid) && (
+          <div className="mt-5 grid grid-cols-1 gap-3 rounded-lg bg-app-surface-secondary/60 p-3 sm:grid-cols-2">
+            {hid && <CopyField label="Hotel ID (hid) · current location" value={hid} />}
+            {ndid && <CopyField label="Account ID (ndid)" value={ndid} />}
           </div>
-
-          {hasContacts && (
-            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-1">
-              {profile.hotelEmail && (
-                <ContactLink icon={Mail} label="Email" href={`mailto:${profile.hotelEmail}`}>
-                  {profile.hotelEmail}
-                </ContactLink>
-              )}
-              {profile.hotelPhone && (
-                <ContactLink icon={Phone} label="Phone" href={`tel:${profile.hotelPhone}`}>
-                  {profile.hotelPhone}
-                </ContactLink>
-              )}
-              {whatsappNumber && (
-                <ContactLink
-                  icon={MessageCircle}
-                  label="WhatsApp"
-                  href={`https://wa.me/${whatsappNumber.replace(/\D/g, "")}`}
-                  external
-                >
-                  {whatsappNumber}
-                </ContactLink>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
-
-      {(hid || ndid) && (
-        <div className="mt-5 grid grid-cols-1 gap-3 border-t border-app-border! pt-4 sm:grid-cols-2">
-          {hid && (
-            <CopyField label="Hotel ID (hid) · current location" value={hid} />
-          )}
-          {ndid && <CopyField label="Account ID (ndid)" value={ndid} />}
-        </div>
-      )}
-    </Card>
+    </section>
   );
 };
 

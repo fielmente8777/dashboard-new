@@ -1,21 +1,28 @@
 import { Building2, Plus } from "lucide-react";
 import Button from "../../../components/ui/Button";
-import Card from "../../../components/ui/Card";
+import Badge from "../../../components/ui/Badge";
 import Icon from "../../../components/ui/Icon";
+import SettingsCard from "../../../components/ui/SettingsCard";
 import { useTenant } from "../../../hooks/useTenant";
 import useHotelManager, { EMPTY_HOTEL } from "../hooks/useHotelManager";
 import HotelCard from "./HotelCard";
 import HotelModal from "./HotelModal";
 
 // The account's hotel locations. Only admins can add, edit or remove them.
-const HotelsSection = ({ hotels, hotelName, canManage, onHotelsChange }) => {
+const HotelsSection = ({ id, hotels, hotelName, canManage, onHotelsChange }) => {
   const { hid } = useTenant();
   const manager = useHotelManager(hotels, onHotelsChange);
   const entries = Object.entries(hotels);
 
   return (
-    <Card
-      title={`Locations · ${entries.length}`}
+    <SettingsCard
+      id={id}
+      icon={Building2}
+      title={
+        <span className="flex items-center gap-2">
+          Locations <Badge>{entries.length}</Badge>
+        </span>
+      }
       description="Each location has its own website, bookings and leads."
       actions={
         canManage && (
@@ -24,14 +31,20 @@ const HotelsSection = ({ hotels, hotelName, canManage, onHotelsChange }) => {
           </Button>
         )
       }
+      footer={
+        !canManage && <span>Only admins can add, edit or remove locations.</span>
+      }
     >
       {entries.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-app-border! p-6 text-center text-sm text-app-text-muted">
-          <Icon icon={Building2} size="lg" />
-          No locations yet.
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-app-border! px-6 py-10 text-center text-sm text-app-text-muted">
+          <span className="flex size-10 items-center justify-center rounded-full bg-app-surface-secondary">
+            <Icon icon={Building2} size="lg" />
+          </span>
+          <span className="font-medium text-app-text">No locations yet</span>
+          {canManage && <span>Add your first property to start taking bookings and leads.</span>}
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {entries.map(([hotelId, hotel]) => (
             <HotelCard
               key={hotelId}
@@ -54,7 +67,7 @@ const HotelsSection = ({ hotels, hotelName, canManage, onHotelsChange }) => {
         onClose={manager.close}
         onSave={manager.save}
       />
-    </Card>
+    </SettingsCard>
   );
 };
 
