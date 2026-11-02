@@ -6,7 +6,7 @@ import Icon from "../../../components/ui/Icon";
 import { PAYMENT_FILTERS } from "../constants";
 
 const pillClassName = (active) =>
-  `inline-flex h-8 items-center rounded-full border px-3 text-xs font-medium transition-colors ${
+  `inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full border px-3 text-xs font-medium transition-colors ${
     active
       ? "border-primary! bg-primary text-white dark:border-blue-600! dark:bg-blue-600"
       : "border-app-border! bg-app-surface text-app-text-muted hover:text-app-text"
@@ -40,7 +40,7 @@ const BookingFilters = ({ search, onSearchChange, filter, onChange }) => {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 lg:ml-auto">
         <DateRange
           from={dates.from}
           to={dates.to}
@@ -51,10 +51,11 @@ const BookingFilters = ({ search, onSearchChange, filter, onChange }) => {
           }
         />
 
+        {/* one row that scrolls sideways on phones */}
         <div
           role="group"
           aria-label="Payment status"
-          className="flex flex-wrap items-center gap-1.5"
+          className="-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-1.5 overflow-x-auto px-3 scrollbar-hidden sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0"
         >
           <button
             type="button"

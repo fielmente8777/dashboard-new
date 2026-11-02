@@ -77,13 +77,18 @@ export const DEFAULT_CHAT_FLOW = [
   },
 ];
 
-// fills an empty bot name, email, phone, messages and questions, so a
-// new bot is ready to publish and the user only edits what they want
+// fills an empty bot name, email, phone, description, messages and questions,
+// so a new bot is ready to publish and the user only edits what they want
 export const withDefaults = (form, { name, email, phone }) => ({
   ...form,
   bot_name: form.bot_name || name || "",
   email: form.email || email || "",
   contact: form.contact || (phone ? String(phone) : ""),
+  description:
+    form.description ||
+    (name
+      ? `Hello! I'm the virtual assistant for ${name}. How can I help you today?`
+      : "Hello! I'm your virtual assistant. How can I help you today?"),
   welcome_message:
     form.welcome_message ||
     `Welcome to ${name || "our hotel"}! How can I help you today?`,

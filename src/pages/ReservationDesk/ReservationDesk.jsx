@@ -18,10 +18,10 @@ import TablePagination from "../../components/ui/TablePagination";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
 import { useGetBookingsQuery } from "../../redux/api/bookingApi";
 import { selectHid } from "../../redux/slice/UserSlice";
+import BookingCardList from "./components/BookingCardList";
 import BookingDetailsDrawer from "./components/BookingDetailsDrawer";
 import BookingFilters from "./components/BookingFilters";
 import {
-  formatDay,
   formatPaymentStatus,
   formatPrice,
   getPaymentTone,
@@ -31,12 +31,9 @@ import {
   isCheckedOut,
   isSameDay,
   nightsBetween,
+  plural,
+  shortDay,
 } from "./constants";
-
-const plural = (count, word) => `${count} ${word}${Number(count) === 1 ? "" : "s"}`;
-
-// "12 Nov" for the table, where the year is usually obvious
-const shortDay = (value) => formatDay(value).replace(/ \d{4}$/, "");
 
 const SummaryTile = ({ icon, label, value, caption, tone, loading }) => (
   <div className="rounded-xl border border-app-border! bg-app-surface p-4">
@@ -224,6 +221,18 @@ const ReservationDesk = () => {
 
   const pageRows = rows.slice((page - 1) * limit, page * limit);
   const scope = filter || search ? "in this view" : "across all bookings";
+  const emptyMessage =
+    filter || search ? (
+      "No booking matches this search or filter."
+    ) : (
+      <span className="flex flex-col items-center gap-2">
+        <Icon icon={CalendarCheck} size={28} className="text-app-text-faint" />
+        <span className="font-medium text-app-text">No bookings yet</span>
+        <span className="text-xs">
+          Bookings made on your booking engine will appear here.
+        </span>
+      </span>
+    );
 
   return (
     <PageShell
@@ -302,27 +311,26 @@ const ReservationDesk = () => {
               </p>
             )}
 
-            <DataTable
-              columns={COLUMNS}
-              rows={pageRows}
-              rowKey={(booking, index) => booking.bookingId || index}
-              onRowClick={setOpenBooking}
-              loading={loading}
-              skeletonRows={7}
-              emptyMessage={
-                filter || search ? (
-                  "No booking matches this search or filter."
-                ) : (
-                  <span className="flex flex-col items-center gap-2">
-                    <Icon icon={CalendarCheck} size={28} className="text-app-text-faint" />
-                    <span className="font-medium text-app-text">No bookings yet</span>
-                    <span className="text-xs">
-                      Bookings made on your booking engine will appear here.
-                    </span>
-                  </span>
-                )
-              }
-            />
+            {/* the table on desktops, one card per booking on phones and tablets */}
+            <div className="hidden lg:block">
+              <DataTable
+                columns={COLUMNS}
+                rows={pageRows}
+                rowKey={(booking, index) => booking.bookingId || index}
+                onRowClick={setOpenBooking}
+                loading={loading}
+                skeletonRows={7}
+                emptyMessage={emptyMessage}
+              />
+            </div>
+            <div className="lg:hidden">
+              <BookingCardList
+                bookings={pageRows}
+                loading={loading}
+                emptyMessage={emptyMessage}
+                onOpen={setOpenBooking}
+              />
+            </div>
 
             {rows.length > limit && (
               <TablePagination

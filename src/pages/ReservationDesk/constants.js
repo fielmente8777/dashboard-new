@@ -93,3 +93,8 @@ export const isSameDay = (value, date = new Date()) => {
   const day = parseDay(value);
   return Boolean(day) && day.toDateString() === date.toDateString();
 };
+
+export const plural = (count, word) => `${count} ${word}${Number(count) === 1 ? "" : "s"}`;
+
+// "12 Nov" for lists, where the year is usually obvious
+export const shortDay = (value) => formatDay(value).replace(/ \d{4}$/, "");

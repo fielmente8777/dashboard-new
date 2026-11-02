@@ -28,11 +28,11 @@ const stop = (e) => e.stopPropagation();
 const ActionButton = ({ icon, label, className = "", ...props }) => (
   <button
     type="button"
-    className={`inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition active:scale-95 disabled:opacity-60 ${className}`}
+    className={`inline-flex h-9 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition active:scale-95 disabled:opacity-60 ${className}`}
     {...props}
   >
     <Icon icon={icon} size="sm" />
-    {label}
+    <span className="truncate">{label}</span>
   </button>
 );
 
@@ -54,7 +54,7 @@ const CallCardList = ({
 }) => {
   if (loading) {
     return (
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {Array.from({ length: Math.min(pageSize, 6) }, (_, index) => (
           <Skeleton key={index} className="h-48 rounded-xl" />
         ))}
@@ -72,7 +72,7 @@ const CallCardList = ({
   }
 
   return (
-    <div className="grid gap-3 md:grid-cols-2">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
       {calls.map((call, index) => {
         const position = firstIndex + index + 1;
         const outcome = getCallOutcome(call);
@@ -81,7 +81,7 @@ const CallCardList = ({
           <article
             key={call.sid || call._id || index}
             onClick={() => onOpen(call, position)}
-            className="anim-fade cursor-pointer rounded-xl border border-app-border! bg-app-surface p-4 transition hover:shadow-md active:scale-[0.99]"
+            className="anim-fade min-w-0 cursor-pointer rounded-xl border border-app-border! bg-app-surface p-4 transition hover:shadow-md active:scale-[0.99]"
           >
             <div className="flex items-start gap-3">
               <DirectionTile call={call} size="size-10" />
@@ -99,22 +99,24 @@ const CallCardList = ({
               </Badge>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-app-text-muted">
-              <span className="flex items-center gap-1.5">
+            <div className="mt-3 flex items-center gap-x-4 gap-y-1 text-xs text-app-text-muted">
+              <span className="flex min-w-0 items-center gap-1.5">
                 <Icon icon={Clock} size="xs" tone="faint" />
-                {timeAgo(call.startTime)}
+                <span className="truncate">{timeAgo(call.startTime)}</span>
               </span>
-              <span className="flex items-center gap-1.5 tabular-nums">
+              <span className="flex shrink-0 items-center gap-1.5 tabular-nums">
                 <Icon icon={Timer} size="xs" tone="faint" />
                 {formatCallDuration(call.duration)}
               </span>
+              {/* the whole card opens the call */}
+              <Icon icon={ChevronRight} size="sm" tone="faint" className="ml-auto" />
             </div>
 
             <div
               className="mt-3 flex items-center justify-between gap-2 border-t border-app-border! pt-3"
               onClick={stop}
             >
-              <span className="text-xs text-app-text-faint">Stage</span>
+              <span className="shrink-0 text-xs text-app-text-faint">Stage</span>
               <CellSelect
                 id={call.sid}
                 value={call.stage}
@@ -149,12 +151,6 @@ const CallCardList = ({
                   onClick={() => onPlay(call)}
                 />
               )}
-              <ActionButton
-                icon={ChevronRight}
-                label="Open"
-                className="bg-blue-500/10 text-blue-700 hover:bg-blue-500/20 dark:text-blue-300"
-                onClick={() => onOpen(call, position)}
-              />
             </div>
           </article>
         );

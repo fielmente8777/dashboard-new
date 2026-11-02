@@ -92,7 +92,11 @@ export const ProfileSection = ({ form, setField, onAvatar, isUploading, errors =
           <Input type="email" placeholder="reservations@yourhotel.com" {...text("email")} />
         </Field>
         <Field label="Description" className="sm:col-span-2" hint="A line about what the bot can help with.">
-          <Textarea rows={3} {...text("description")} />
+          <Textarea
+            rows={3}
+            placeholder="Hello! I'm your virtual assistant. How can I help you today?"
+            {...text("description")}
+          />
         </Field>
       </div>
     </div>
