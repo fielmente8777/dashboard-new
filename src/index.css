@@ -3,18 +3,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* :root {
-  --app-bg: #f8f8fb;
-  --app-surface: #ffffff;
-  --app-surface-secondary: #f3f4f6;
-  --app-text: #363636;
-  --app-text-muted: #747474;
-  --app-text-faint: #ababab;
-  --app-border: #e5e7eb;
-  --app-navbar: #152547;
-  --app-navbar-mobile: #dbeafe;
-  --app-shadow: rgba(0, 0, 0, 0.08);
-} */
+
 :root {
   /* Light theme. Kept soft on purpose: nothing is pure white or pure black.
      A cool grey page sits behind light grey cards, with ink-blue text.
