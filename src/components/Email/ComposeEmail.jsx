@@ -11,7 +11,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import AITemplateModal from "../../pages/EmailMarketing/components/AITemplateModal";
@@ -51,6 +51,9 @@ function ComposeEmail({
   const [to, setTo] = useState(recipients.join(", "));
   const [subject, setSubject] = useState(initialTemplate?.subject || "");
   const [body, setBody] = useState("");
+  // what is in the editor right now: Jodit only reports it on blur through
+  // `body`, so Send (or Discard) reads this instead of a possibly stale state
+  const bodyRef = useRef("");
   const [minimized, setMinimized] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const [template, setTemplate] = useState(initialTemplate?.html ? initialTemplate : null);
@@ -60,7 +63,7 @@ function ComposeEmail({
   // a draft with something written in it is only thrown away after asking
   const handleDiscard = async () => {
     const hasDraft =
-      body.replace(/<[^>]*>|&nbsp;/g, "").trim() ||
+      bodyRef.current.replace(/<[^>]*>|&nbsp;/g, "").trim() ||
       (subject.trim() && subject !== (initialTemplate?.subject || "")) ||
       attachments.length > 0;
     if (hasDraft) {
@@ -109,6 +112,7 @@ function ComposeEmail({
   // moves the template into the text editor for free editing
   const editTemplateAsText = () => {
     setBody(template.html);
+    bodyRef.current = template.html;
     setTemplate(null);
     setEditorKey((k) => k + 1);
   };
@@ -125,18 +129,21 @@ function ComposeEmail({
     }
     if (!subject.trim()) return fail("Add a subject.");
 
-    const html = template ? template.html : body;
-    if (EMPTY_BODIES.has(String(html || "").trim())) return fail("Write a message or pick a template.");
-
+    // a template is optional: a plain written message is sent as it is
+    const html = template ? template.html : bodyRef.current;
     const scratch = document.createElement("div");
-    scratch.innerHTML = html;
+    scratch.innerHTML = html || "";
+    const text = (scratch.textContent || "").trim();
+    if (EMPTY_BODIES.has(String(html || "").trim()) || (!text && !/<img/i.test(html))) {
+      return fail("Write your message first.");
+    }
 
     await onSend({
       from: fromEmail,
       toEmails: typedEmails,
       subject: subject.trim(),
       html,
-      text: (scratch.textContent || "").trim(),
+      text,
       attachments,
     });
   };
@@ -243,7 +250,13 @@ function ComposeEmail({
                   key={editorKey}
                   value={body}
                   config={{ ...editorConfig, disabled: isSubmitting }}
-                  onBlur={setBody}
+                  onChange={(value) => {
+                    bodyRef.current = value;
+                  }}
+                  onBlur={(value) => {
+                    bodyRef.current = value;
+                    setBody(value);
+                  }}
                 />
               )}
             </div>

@@ -46,6 +46,20 @@ export const broadcastApi = api.injectEndpoints({
       invalidatesTags: ["WhatsAppCampaign"],
       extraOptions: NODE,
     }),
+
+    // sends the campaign's template again to one recipient whose message failed
+    // { hid, campaignId, recipientId }
+    resendCampaignRecipient: build.mutation({
+      query: ({ hid, campaignId, recipientId }) => ({
+        url: `/api/v1/whatsapp/campaign/broadcast/${campaignId}/recipients/${recipientId}/resend`,
+        method: "POST",
+        params: { hid },
+      }),
+      invalidatesTags: (result, error, { campaignId }) => [
+        { type: "WhatsAppCampaign", id: campaignId },
+      ],
+      extraOptions: NODE,
+    }),
   }),
 });
 
@@ -53,4 +67,5 @@ export const {
   useGetCampaignsQuery,
   useGetCampaignDetailsQuery,
   useCreateCampaignMutation,
+  useResendCampaignRecipientMutation,
 } = broadcastApi;

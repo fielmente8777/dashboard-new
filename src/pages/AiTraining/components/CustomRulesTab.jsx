@@ -1,11 +1,13 @@
-import { ListChecks } from "lucide-react";
-import { useState } from "react";
+import { Download, FileUp, ListChecks } from "lucide-react";
+import { useRef, useState } from "react";
+import Button from "../../../components/ui/Button";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../../../components/ui/States";
 import { useConfirm } from "../../../context/ConfirmContext";
+import { useToast } from "../../../context/ToastContext";
 import { useApiAction } from "../../../hooks/useApiAction";
 import { hasTenant } from "../../../hooks/useTenant";
 import {
@@ -16,6 +18,7 @@ import {
 } from "../../../redux/api/aiTrainingApi";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
 import { CATEGORIES } from "../constants";
+import { exportRules, MAX_IMPORT_RULES, readRulesFile } from "../ruleFiles";
 import AddRuleForm from "./AddRuleForm";
 import RuleRow from "./RuleRow";
 
@@ -28,9 +31,13 @@ const chipClassName = (active) =>
 
 // A list of rules with add / edit / turn off / delete, and a filter by
 // category. The WhatsApp AI rules and the Voice AI rules both use it, each
-// with its own API hooks (`api`).
-export const RulesList = ({ tenant, api, intro, emptyTitle = "No rules yet" }) => {
+// with its own API hooks (`api`). Rules can be exported to and imported
+// from a CSV / JSON file (`fileName` names the download).
+export const RulesList = ({ tenant, api, intro, fileName = "ai", emptyTitle = "No rules yet" }) => {
   const { confirm } = useConfirm();
+  const { showToast } = useToast();
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
   const run = useApiAction();
   const [category, setCategory] = useState("");
   const rules = api.useRules(tenant, { skip: !hasTenant(tenant) });
@@ -60,6 +67,45 @@ export const RulesList = ({ tenant, api, intro, emptyTitle = "No rules yet" }) =
       success: "Rule deleted",
       error: "Could not delete the rule.",
     });
+  };
+
+  // adds every rule of the file, one at a time, and says how far it got
+  const handleImport = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // the same file can be picked again
+    if (!file) return;
+
+    let rows;
+    try {
+      rows = await readRulesFile(file);
+    } catch (error) {
+      showToast({ message: error.message, type: "error", duration: 6000 });
+      return;
+    }
+
+    const confirmed = await confirm(
+      `Add ${rows.length} ${rows.length === 1 ? "rule" : "rules"} from ${file.name}? Your existing rules stay as they are.`,
+      { title: "Import rules", confirmText: "Import" },
+    );
+    if (!confirmed) return;
+
+    setImporting(true);
+    let added = 0;
+    try {
+      for (const row of rows) {
+        await addRule({ ...tenant, ...row }).unwrap();
+        added += 1;
+      }
+      showToast({ message: `Imported ${added} ${added === 1 ? "rule" : "rules"}` });
+    } catch (error) {
+      showToast({
+        message: `Imported ${added} of ${rows.length}. ${getApiErrorMessage(error, "The rest could not be added.")}`,
+        type: "error",
+        duration: 6000,
+      });
+    } finally {
+      setImporting(false);
+    }
   };
 
   if (rules.isLoading || rules.isUninitialized) {
@@ -94,6 +140,30 @@ export const RulesList = ({ tenant, api, intro, emptyTitle = "No rules yet" }) =
           </span>
         )}
       </p>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={FileUp}
+          loading={importing}
+          onClick={() => fileInputRef.current?.click()}
+          title={`CSV or JSON with ruleText, category, enabled. Up to ${MAX_IMPORT_RULES} rules.`}
+        >
+          Import
+        </Button>
+        {all.length > 0 && (
+          <>
+            <Button variant="ghost" size="sm" icon={Download} onClick={() => exportRules(all, fileName, "csv")} disabled={importing}>
+              Export CSV
+            </Button>
+            <Button variant="ghost" size="sm" icon={Download} onClick={() => exportRules(all, fileName, "json")} disabled={importing}>
+              JSON
+            </Button>
+          </>
+        )}
+        <input ref={fileInputRef} type="file" accept=".csv,.json,text/csv,application/json" hidden onChange={handleImport} />
+      </div>
 
       {all.length > 0 && (
         <div className="hide-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
@@ -136,6 +206,7 @@ const CustomRulesTab = ({ tenant }) => (
   <RulesList
     tenant={tenant}
     api={WHATSAPP_RULES}
+    fileName="whatsapp"
     emptyTitle="No custom rules yet"
     intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Turned-off rules stay saved but don't apply."
   />

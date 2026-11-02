@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { ToastProvider } from "../context/ToastContext.jsx";
 import { ConfirmProvider } from "../context/ConfirmContext.jsx";
 import ChatbotWidget from "../components/chatbot/ChatbotWidget.jsx";
+import { isStaleChunk, reloadForNewVersion } from "./staleChunk";
 
 // Wraps every route. Anything that needs the router (useNavigate, useLocation)
 // has to live in here rather than in main.jsx.
@@ -36,33 +37,16 @@ export function RootFallback() {
   );
 }
 
-const RELOAD_KEY = "eazotel_chunk_reload";
-
-// After a deploy the old page chunks are gone; an open tab then fails to load them.
-const isStaleChunk = (error) =>
-  /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(
-    error?.message ?? "",
-  );
-
+// The last resort, when the dashboard frame itself (or a page outside the
+// dashboard) fails. A single dashboard page that fails shows PageError
+// inside the frame instead, so the menu keeps working.
 export function RouteError() {
   const error = useRouteError();
   const staleChunk = isStaleChunk(error);
 
   useEffect(() => {
-    if (!staleChunk) return;
-    // reload to pick up the new build, but not again if that reload just failed too
-    try {
-      const last = Number(sessionStorage.getItem(RELOAD_KEY));
-      if (Date.now() - last < 10_000) return;
-      sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
-    } catch {
-      return;
-    }
-    window.location.reload();
-  }, [staleChunk]);
-
-  useEffect(() => {
-    if (!staleChunk) console.error(error);
+    if (staleChunk) reloadForNewVersion();
+    else console.error(error);
   }, [error, staleChunk]);
 
   return (
@@ -75,6 +59,11 @@ export function RouteError() {
           ? "Reload the page to continue."
           : "This page failed to load. Try again, or go back to the dashboard."}
       </p>
+      {!staleChunk && error?.message && (
+        <p className="max-w-lg break-words rounded-lg bg-red-500/10 px-3 py-2 font-mono text-xs text-red-500">
+          {error.name ? `${error.name}: ` : ""}{error.message}
+        </p>
+      )}
       <button
         type="button"
         onClick={() => window.location.reload()}

@@ -2,6 +2,7 @@ import { Skeleton } from "../../components/ui/States";
 import ChangePassword from "./components/ChangePassword";
 import HotelsSection from "./components/HotelsSection";
 import LeadWebhooks from "./components/LeadWebhooks";
+import MarketingEmail from "./components/MarketingEmail";
 import ProfileOverview from "./components/ProfileOverview";
 import { useProfile } from "./hooks/useProfile";
 import UrlManager from "./UrlManager";
@@ -24,6 +25,11 @@ const Setting = () => {
   return (
     <div className="space-y-4 sm:space-y-5">
       <ProfileOverview profile={profile} authUser={authUser} />
+
+      <MarketingEmail
+        profile={profile}
+        onSaved={(marketingEmail) => patchProfile({ marketingEmail })}
+      />
 
       <HotelsSection
         hotels={profile.hotels ?? {}}

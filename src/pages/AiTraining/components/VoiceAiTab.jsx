@@ -124,6 +124,7 @@ const VoiceAiTab = ({ tenant }) => (
     <RulesList
       tenant={tenant}
       api={VOICE_RULES}
+      fileName="voice"
       emptyTitle="No voice rules yet"
       intro="Rules for phone calls only, e.g. how to greet callers or when to transfer to staff. Your WhatsApp rules don't apply to calls."
     />

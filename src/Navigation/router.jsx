@@ -3,6 +3,7 @@ import ProtectedRoute from "../Protected/ProtecRoute";
 import { protectedLoader, sessionLoader } from "../Protected/protectedLoader";
 import { dashboardRoutes } from "../routes/dashboardRoutes";
 import { BASE_PATH, PAGES, ROUTES, dashboardPath } from "../routes/paths";
+import PageError from "./PageError";
 import RootLayout, { RootFallback, RouteError } from "./RootLayout";
 
 const lazyDefault = (load) => async () => ({ Component: (await load()).default });
@@ -46,8 +47,12 @@ const router = createBrowserRouter([
         // check the session on every page change, not only when :hid changes
         shouldRevalidate: () => true,
         ErrorBoundary: RouteError,
+        // a page that fails shows PageError inside the dashboard frame, so the
+        // menu keeps working and opening another page clears the error
         children: dashboardRoutes.map(({ path, lazy }) =>
-          path === "" ? { index: true, lazy } : { path, lazy },
+          path === ""
+            ? { index: true, lazy, ErrorBoundary: PageError }
+            : { path, lazy, ErrorBoundary: PageError },
         ),
       },
 

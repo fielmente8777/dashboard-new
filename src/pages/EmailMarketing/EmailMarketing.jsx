@@ -322,7 +322,8 @@ export function EmailMarketingManagement() {
           initialTemplate={compose.template}
           onSend={handleSend}
           isSubmitting={sending}
-          defaultFrom={hotel?.Profile?.hotelEmail}
+          // the marketing email (Settings → Profile) when set, else the hotel email
+          defaultFrom={hotel?.Profile?.marketingEmail || hotel?.Profile?.hotelEmail}
         />
       )}
     </PageShell>

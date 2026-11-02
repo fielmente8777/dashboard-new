@@ -8,6 +8,7 @@ import {
   Wallet,
   Workflow,
   ListTree,
+  Settings,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { ReactFlowProvider } from "reactflow";
@@ -34,6 +35,7 @@ import TemplateLibrary from "./components/TemplateLibrary";
 import WhatsAppMessageTemplate from "./components/Templates";
 import WhatsAppMenu from "./components/WhatsAppMenu";
 import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
+import WhatsAppSettings from "./components/WhatsAppSettings";
 import DisplayNameCard from "./components/DisplayNameCard";
 import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
 import WhatsAppCreditsCard from "./components/WhatsAppCredits/WhatsAppCreditsCard";
@@ -65,7 +67,12 @@ const MENU = [
       { id: "whatsapp-flow", label: "Chatbot builder", icon: Bot },
     ],
   },
-  { items: [{ id: "credits", label: "Credits & usage", icon: Wallet }] },
+  {
+    items: [
+      { id: "credits", label: "Credits & usage", icon: Wallet },
+      { id: "settings", label: "Settings", icon: Settings },
+    ],
+  },
 ];
 const SECTION_IDS = MENU.flatMap((group) => group.items.map((item) => item.id));
 
@@ -281,6 +288,8 @@ const WhatsAppBusiness = ({ template = false, section = null }) => {
             <WhatsAppCreditsCard />
           </div>
         )}
+
+        {active === "settings" && <WhatsAppSettings phoneNumber={phoneNumber} waba={waba} />}
       </div>
     </div>
   );

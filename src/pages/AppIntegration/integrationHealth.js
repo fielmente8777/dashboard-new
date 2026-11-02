@@ -107,7 +107,11 @@ const QUALITY = {
 
 export const whatsappChecks = (account) => {
   if (!account) return [];
-  const { onboardingStatus = {}, phoneNumber = {}, business = {} } = account;
+  // Meta / gian answer null (not missing) for parts it couldn't read, e.g. a
+  // number still being set up; defaults alone don't cover null
+  const onboardingStatus = account.onboardingStatus ?? {};
+  const phoneNumber = account.phoneNumber ?? {};
+  const business = account.business ?? {};
   const checks = [];
 
   checks.push(

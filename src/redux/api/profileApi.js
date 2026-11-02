@@ -25,6 +25,18 @@ export const profileApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // The address email campaigns use as their "From" (guests' replies go
+    // there). Empty = campaigns use the hotel email.
+    // (gian: PUT /api/v1/profile/marketing-email) -> { result: { marketingEmail } }
+    updateMarketingEmail: build.mutation({
+      query: (marketingEmail) => ({
+        url: "/api/v1/profile/marketing-email",
+        method: "PUT",
+        body: { marketingEmail },
+      }),
+      extraOptions: NODE,
+    }),
+
     // Hotel locations (gian: /api/v1/profile/hotels). Each answers
     // { result: { hotel, hotels } } with the profile's hotels after the change.
 
@@ -57,6 +69,7 @@ export const profileApi = baseApi.injectEndpoints({
 export const {
   useChangePasswordMutation,
   useUpdateProfileUrlsMutation,
+  useUpdateMarketingEmailMutation,
   useCreateHotelMutation,
   useUpdateHotelMutation,
   useDeleteHotelMutation,

@@ -1,4 +1,5 @@
-import { Search } from "lucide-react";
+import { RotateCw, Search } from "lucide-react";
+import Button from "../../../../components/ui/Button";
 import TablePagination from "../../../../components/ui/TablePagination";
 import Badge from "../../../../components/ui/Badge";
 import Card from "../../../../components/ui/Card";
@@ -11,7 +12,8 @@ import { formatNumber, recipientStatus } from "../../broadcastUtils";
 
 const when = (date) => (date ? timeAgo(date) : "—");
 
-const columns = [
+// onResend(row) adds a Resend button to failed rows; resendingId is the one in progress
+const getColumns = ({ onResend, resendingId }) => [
   {
     key: "name",
     header: "Contact",
@@ -57,6 +59,30 @@ const columns = [
         <span className="text-app-text-faint">—</span>
       ),
   },
+  ...(onResend
+    ? [
+        {
+          key: "resend",
+          header: "",
+          render: (row) =>
+            row.status === "failed" && (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={RotateCw}
+                loading={resendingId === row._id}
+                disabled={Boolean(resendingId)}
+                onClick={(event) => {
+                  event.stopPropagation(); // the row itself opens the chat
+                  onResend(row);
+                }}
+              >
+                Resend
+              </Button>
+            ),
+        },
+      ]
+    : []),
 ];
 
 // Server-paged list of who the campaign went to. Clicking a row opens the
@@ -74,6 +100,8 @@ const RecipientsTable = ({
   total,
   onPageChange,
   onOpen,
+  onResend,
+  resendingId,
 }) => (
   <Card
     title="Recipients"
@@ -99,7 +127,7 @@ const RecipientsTable = ({
     </div>
 
     <DataTable
-      columns={columns}
+      columns={getColumns({ onResend, resendingId })}
       rows={recipients}
       rowKey={(row) => row._id}
       loading={loading}

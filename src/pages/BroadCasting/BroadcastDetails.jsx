@@ -1,9 +1,13 @@
 import { ArrowLeft, RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
 import { ErrorState, Skeleton } from "../../components/ui/States";
+import { useApiAction } from "../../hooks/useApiAction";
+import { useTenant } from "../../hooks/useTenant";
+import { useResendCampaignRecipientMutation } from "../../redux/api/broadcastApi";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
 import { PAGES, dashboardPath } from "../../routes/paths";
 import { formatDateTime } from "../../utils/formateDate";
@@ -18,6 +22,20 @@ const BroadcastDetails = () => {
   const details = useCampaignDetails(id);
   const { campaign } = details;
   const status = campaignStatus(campaign?.status);
+  const { hid } = useTenant();
+  const run = useApiAction();
+  const [resendRecipient] = useResendCampaignRecipientMutation();
+  const [resendingId, setResendingId] = useState(null);
+
+  // sends again to one failed recipient; the list and stats refresh after
+  const resend = async (row) => {
+    setResendingId(row._id);
+    await run(resendRecipient({ hid, campaignId: id, recipientId: row._id }), {
+      success: `Sent again to ${row.name || row.phone}`,
+      error: "Could not resend the message.",
+    });
+    setResendingId(null);
+  };
 
   const back = (
     <Button
@@ -98,6 +116,8 @@ const BroadcastDetails = () => {
                 }),
               )
             }
+            onResend={resend}
+            resendingId={resendingId}
           />
         </>
       )}
