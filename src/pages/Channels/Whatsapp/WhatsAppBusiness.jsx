@@ -34,6 +34,7 @@ import TemplateLibrary from "./components/TemplateLibrary";
 import WhatsAppMessageTemplate from "./components/Templates";
 import WhatsAppMenu from "./components/WhatsAppMenu";
 import WhatsAppProfileCard from "./components/WhatsAppProfileCard";
+import DisplayNameCard from "./components/DisplayNameCard";
 import WhatsappWidgetCard from "./components/WhatsappWidgetCard";
 import WhatsAppCreditsCard from "./components/WhatsAppCredits/WhatsAppCreditsCard";
 import WhatsappFlow from "./WhatsappFlow/WhatsappFlow";
@@ -222,6 +223,7 @@ const WhatsAppBusiness = ({ template = false, section = null }) => {
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="flex flex-col gap-4">
               <AccountCard waba={waba} business={business} phoneNumber={phoneNumber} />
+              <DisplayNameCard />
               <WhatsappWidgetCard phoneNumber={phoneNumber} />
             </div>
             <WhatsAppProfileCard

@@ -1,6 +1,8 @@
-import { Settings } from "lucide-react";
+import { Settings, Store } from "lucide-react";
 import { createElement, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { close as closeSidebar } from "../../redux/slice/SidebarToggle";
+import { openEazStore } from "../Popup/eazStore";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PAGES, dashboardPath } from "../../routes/paths";
 import { useSidebarItems } from "./hooks/useSidebarItems";
@@ -25,6 +27,7 @@ const SectionHeading = ({ collapsed, children }) =>
 const SidebarNav = ({ collapsed, onExpand }) => {
   const items = useSidebarItems();
   const loading = useSelector((state) => state.userProfile.loading);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -94,7 +97,20 @@ const SidebarNav = ({ collapsed, onExpand }) => {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-white/10! px-3 py-3">
+      <div className="shrink-0 space-y-2 border-t border-white/10! px-3 py-3">
+        {/* phones: the navbar has no room for the EazStore button */}
+        <button
+          type="button"
+          onClick={() => {
+            dispatch(closeSidebar());
+            openEazStore();
+          }}
+          className="flex w-full items-center gap-3 rounded-lg bg-ternary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] sm:hidden"
+        >
+          <Store size={18} strokeWidth={1.75} />
+          EazStore
+          <span className="ml-auto text-[11px] font-normal text-white/80">Apps &amp; services</span>
+        </button>
         <SidebarNavItem item={settingsItem} collapsed={collapsed} isActive={isActive} />
       </div>
     </>

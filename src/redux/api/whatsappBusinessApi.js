@@ -8,7 +8,9 @@ const NODE = { service: "node" };
 // Every answer is passed through as the API sends it ({ success, result,
 // responseMessage }); pages read it with responseBody(). The GETs are used as
 // lazy queries, so each call fetches fresh.
-export const whatsappBusinessApi = baseApi.injectEndpoints({
+export const whatsappBusinessApi = baseApi
+  .enhanceEndpoints({ addTagTypes: ["WhatsAppDisplayName"] })
+  .injectEndpoints({
   endpoints: (build) => ({
     // --- account and profile ---
     // hid -> { result: { docs: account } }
@@ -41,6 +43,27 @@ export const whatsappBusinessApi = baseApi.injectEndpoints({
         method: "PUT",
         body,
       }),
+      extraOptions: NODE,
+    }),
+
+    // hid -> { verified_name, name_status, new_display_name, new_name_status }
+    // straight from Meta, so it shows a name change still under review
+    getWhatsAppDisplayName: build.query({
+      query: (hid) => ({ url: "/api/v1/whatsapp/profile/display-name", params: { hid } }),
+      transformResponse: (response) => response?.result?.doc || null,
+      providesTags: ["WhatsAppDisplayName"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, displayName } - starts Meta's review; the old name stays until it is approved
+    updateWhatsAppDisplayName: build.mutation({
+      query: ({ hid, displayName }) => ({
+        url: "/api/v1/whatsapp/profile/display-name",
+        method: "PUT",
+        params: { hid },
+        body: { displayName },
+      }),
+      invalidatesTags: ["WhatsAppDisplayName"],
       extraOptions: NODE,
     }),
 
@@ -164,3 +187,5 @@ export const getWhatsAppTransactions = ({ page = 1, limit = 10 } = {}) =>
 export const createWhatsAppCreditOrder = (amount) =>
   request(e.createWhatsAppCreditOrder, { hid: selectedHid(), amount });
 export const verifyWhatsAppCreditPayment = (body) => request(e.verifyWhatsAppCreditPayment, body);
+
+export const { useGetWhatsAppDisplayNameQuery, useUpdateWhatsAppDisplayNameMutation } = whatsappBusinessApi;

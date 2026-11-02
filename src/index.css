@@ -519,6 +519,15 @@ html.dark select option {
   }
 }
 
+@keyframes app-sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
 @keyframes app-grow-x {
   from {
     transform: scaleX(0);
@@ -563,6 +572,11 @@ html.dark select option {
 
 .anim-slide-in {
   animation: app-slide-in 0.3s var(--ease-out) backwards;
+}
+
+/* phone pickers that open from the bottom edge */
+.anim-sheet {
+  animation: app-sheet 0.28s var(--ease-out) backwards;
 }
 
 .anim-grow-x {
@@ -626,6 +640,7 @@ html.dark select option {
   .anim-pop,
   .anim-menu,
   .anim-slide-in,
+  .anim-sheet,
   .anim-grow-x,
   .anim-stagger > *,
   .anim-shimmer::after {

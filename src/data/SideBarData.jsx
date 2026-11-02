@@ -36,6 +36,7 @@ import {
   ShieldCheck,
   Tags,
   Users,
+  Star,
 } from "lucide-react";
 import { createElement } from "react";
 import { FaMeta, FaWhatsapp } from "react-icons/fa6";
@@ -160,6 +161,7 @@ export const SidebarData = [
     icon: top(Search),
     subLinks: [
       { name: "Local SEO", link: `seo/local-seo`, icon: sub(MapPin) },
+      { name: "Google reviews", link: `gmb/reviews`, icon: sub(Star) },
       { name: "Website SEO", link: `seo/website-seo`, icon: sub(Globe) },
     ],
   },

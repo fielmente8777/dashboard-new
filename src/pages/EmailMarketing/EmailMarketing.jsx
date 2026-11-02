@@ -1,12 +1,13 @@
-import { FileSpreadsheet, Mail, Plus, RefreshCw } from "lucide-react";
+import { FileSpreadsheet, PenLine, Plus, RefreshCw, Users } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import CampaignsList from "../../components/Email/CampaignsList.jsx";
+import { QuickActions } from "../../components/Marketing/MarketingParts";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
-import { EmptyState, ErrorState } from "../../components/ui/States";
+import { ErrorState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 import { useToast } from "../../context/ToastContext";
 import {
@@ -77,6 +78,8 @@ export function EmailMarketingManagement() {
   const { showToast } = useToast();
   const hotel = useSelector((state) => state.userProfile.user);
   const [view, setView] = useState("campaigns");
+  // the campaign whose recipients are open (from the list or "best campaign")
+  const [openCampaignId, setOpenCampaignId] = useState(null);
 
   /* campaigns */
   const [campaigns, setCampaigns] = useState([]);
@@ -192,11 +195,27 @@ export function EmailMarketingManagement() {
     }
   };
 
-  const newEmailButton = (
-    <Button icon={Plus} onClick={() => openCompose()}>
-      New email
-    </Button>
-  );
+  const firstSteps = [
+    {
+      icon: PenLine,
+      title: "Write an email",
+      description: "Start blank, from a template, or let AI draft it.",
+      onClick: () => openCompose(),
+      primary: true,
+    },
+    {
+      icon: Users,
+      title: "Send to your leads",
+      description: "Pick leads by source, status or date.",
+      onClick: () => setView("recipients"),
+    },
+    {
+      icon: FileSpreadsheet,
+      title: "Import a list",
+      description: "Upload an Excel or CSV file of email addresses.",
+      onClick: () => excelInputRef.current?.click(),
+    },
+  ];
 
   const tabs = [
     { value: "campaigns", label: "Campaigns", count: campaignTotal },
@@ -206,8 +225,8 @@ export function EmailMarketingManagement() {
 
   return (
     <PageShell
-      title="Email Campaigns"
-      description="Send emails and offers to your leads, then follow who opened and clicked."
+      title="Email marketing"
+      description="Send offers and newsletters to your leads, then see who opened and clicked."
       actions={
         <>
           <Button
@@ -233,28 +252,48 @@ export function EmailMarketingManagement() {
           >
             Import list
           </Button>
-          {newEmailButton}
+          <Button icon={Plus} onClick={() => openCompose()}>
+            New email
+          </Button>
         </>
       }
     >
       {!failed && (loading || campaigns.length > 0) && (
-        <EmailCampaignSummary campaigns={campaigns} />
+        <EmailCampaignSummary
+          campaigns={campaigns}
+          loading={loading}
+          onOpen={(campaign) => {
+            setView("campaigns");
+            setOpenCampaignId(campaign._id);
+          }}
+        />
       )}
 
-      <Tabs tabs={tabs} value={view} onChange={setView} />
+      <div className="hide-scrollbar -mx-1 overflow-x-auto px-1">
+        <Tabs tabs={tabs} value={view} onChange={setView} className="w-max" />
+      </div>
 
       {view === "campaigns" &&
         (failed ? (
           <ErrorState message="Could not load your campaigns." onRetry={() => loadCampaigns()} />
         ) : !loading && campaigns.length === 0 ? (
-          <EmptyState
-            icon={Mail}
-            title="No campaigns yet"
-            description="Pick leads under Recipients, or import a list, to send your first email."
-            action={newEmailButton}
-          />
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-app-border! bg-app-surface p-5 sm:p-6">
+              <h2 className="text-base font-semibold text-app-text">Send your first email campaign</h2>
+              <p className="mt-1 max-w-xl text-sm text-app-text-muted">
+                Bring past guests back with an offer, share a festive package, or say thank you. You&apos;ll see
+                who opened and clicked.
+              </p>
+            </div>
+            <QuickActions actions={firstSteps} />
+          </div>
         ) : (
-          <CampaignsList campaigns={campaigns} loading={loading} />
+          <CampaignsList
+            campaigns={campaigns}
+            loading={loading}
+            selectedId={openCampaignId}
+            onSelect={setOpenCampaignId}
+          />
         ))}
 
       {view === "recipients" && (
@@ -265,6 +304,7 @@ export function EmailMarketingManagement() {
       )}
 
       {view === "templates" && <TemplatesList onUseTemplate={(template) => openCompose(template)} />}
+      <div className="h-14" aria-hidden="true" />
 
       <ExcelRecipientsDialog
         emails={excelEmails}

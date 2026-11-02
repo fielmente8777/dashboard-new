@@ -1,9 +1,9 @@
 import { Bell, Menu, Store } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useMediaQuery from "../../hooks/useMediaQuery";
-import { selectUnreadCount } from "../../redux/slice/notificationsSlice";
+import { useUnreadNotificationTotal } from "../Notifications/useNotificationFeed";
 import { open as openSidebar } from "../../redux/slice/SidebarToggle";
 import { selectCurrentLocation } from "../../redux/slice/UserSlice";
 import GlobalSearch from "../GlobalSearch/GlobalSearch";
@@ -11,6 +11,7 @@ import Greeting from "../Greeting";
 import { PAGES, dashboardPath } from "../../routes/paths";
 import NotificationPanel from "../Notifications/NotificationPanel";
 import AppsPopup from "../Popup/AppsPopup";
+import { onOpenEazStore } from "../Popup/eazStore";
 import { useNotifications } from "./hooks/useNotifications";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
@@ -27,10 +28,14 @@ const Navbar = () => {
   // phones get the full Notifications page instead of the slide-over panel
   const isPhone = useMediaQuery("(max-width: 639px)");
   useNotifications();
-  const unreadCount = useSelector(selectUnreadCount);
+  // server notifications plus the website-visitor ones kept in this browser
+  const unreadCount = useUnreadNotificationTotal();
   const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const closeNotifications = useCallback(() => setIsNotificationsOpen(false), []);
+
+  // the account menu and the sidebar open EazStore on phones
+  useEffect(() => onOpenEazStore(() => setIsAppsOpen(true)), []);
 
   const openNotifications = () => {
     if (isPhone) navigate(dashboardPath(PAGES.NOTIFICATIONS));
@@ -58,7 +63,10 @@ const Navbar = () => {
           <Greeting name={greetingName} />
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-1.5">
+        {/* Phones keep search, notifications and the account menu here;
+            EazStore and the theme move into the account menu and sidebar,
+            so the hotel name has room. */}
+        <div className="flex shrink-0 items-center justify-end gap-0.5 sm:gap-1.5">
           <div className="sm:w-56 lg:w-72">
             <GlobalSearch />
           </div>
@@ -89,7 +97,7 @@ const Navbar = () => {
             aria-label="EazStore"
             title="EazStore"
             onClick={() => setIsAppsOpen(true)}
-            className="ml-1 flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] lg:px-3"
+            className="ml-1 flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-ternary px-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] max-sm:hidden lg:px-3"
           >
             <Icon icon={Store} size="md" />
             <span className="hidden lg:inline">EazStore</span>
@@ -97,7 +105,9 @@ const Navbar = () => {
 
           <div className="mx-1.5 hidden h-7 w-px bg-app-border sm:block" />
 
-          <UserMenu />
+          <div className="ml-1 sm:ml-0">
+            <UserMenu />
+          </div>
         </div>
       </header>
 

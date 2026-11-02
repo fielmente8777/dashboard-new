@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -15,6 +15,8 @@ const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const MONTHS_BACK = 24; // how far back the calendar scrolls
 const MONTHS_AHEAD = 12; // and forward, when future dates are allowed
 const PANEL_WIDTH = 672;
+// below Tailwind's `sm`: too narrow for the popover, opened as a bottom sheet
+const SHEET_QUERY = "(max-width: 639px)";
 const GAP = 8;
 const EMPTY = { start: null, end: null, preset: null, label: null };
 
@@ -51,7 +53,8 @@ const DateBox = ({ label, value, active, onClick }) => (
 
 // The calendar: a scrolling column of months. Clicking picks the start date,
 // then the end date (`editing` says which one the next click sets).
-const Calendar = ({ draft, editing, onPick, allowFuture }) => {
+// `sheet`: on a phone it fills the bottom sheet and has bigger days to tap.
+const Calendar = ({ draft, editing, onPick, allowFuture, sheet = false }) => {
   const scrollRef = useRef(null);
   const monthRefs = useRef({});
   const [hover, setHover] = useState(null);
@@ -122,7 +125,7 @@ const Calendar = ({ draft, editing, onPick, allowFuture }) => {
         ref={scrollRef}
         onScroll={onScroll}
         onMouseLeave={() => setHover(null)}
-        className="relative h-72 overflow-y-auto px-2 pb-2"
+        className={`relative overflow-y-auto overscroll-contain px-2 pb-2 ${sheet ? "min-h-0 flex-1" : "h-72"}`}
       >
         {months.map((month) => (
           <div key={month.key} ref={(el) => (monthRefs.current[month.key] = el)} className="pt-2">
@@ -144,14 +147,16 @@ const Calendar = ({ draft, editing, onPick, allowFuture }) => {
                     disabled={future}
                     onClick={() => onPick(iso)}
                     onMouseEnter={() => setHover(iso)}
-                    className={`relative flex h-8 items-center justify-center text-xs tabular-nums transition-colors disabled:cursor-not-allowed disabled:text-app-text-faint/60 ${
+                    className={`relative flex items-center justify-center tabular-nums transition-colors disabled:cursor-not-allowed disabled:text-app-text-faint/60 ${
+                      sheet ? "h-10 text-sm" : "h-8 text-xs"
+                    } ${
                       inRange ? "bg-blue-500/10" : ""
                     } ${inRange && (iso === draft.start || column === 0) ? "rounded-l-full" : ""} ${
                       inRange && (iso === end || column === 6) ? "rounded-r-full" : ""
                     }`}
                   >
                     <span
-                      className={`flex size-8 items-center justify-center rounded-full ${
+                      className={`flex items-center justify-center rounded-full ${sheet ? "size-9" : "size-8"} ${
                         isEdge
                           ? "bg-primary font-semibold text-white dark:bg-blue-600"
                           : iso === todayISO
@@ -192,6 +197,8 @@ const DateRangePicker = ({
   const [draft, setDraft] = useState(value || EMPTY);
   const [editing, setEditing] = useState("start");
   const [position, setPosition] = useState(null);
+  // on a phone the panel is a bottom sheet instead of a popover
+  const [sheet, setSheet] = useState(false);
   const triggerRef = useRef(null);
   const panelRef = useRef(null);
 
@@ -199,12 +206,32 @@ const DateRangePicker = ({
     setDraft(value || EMPTY);
     setEditing("start");
     setPosition(null);
+    setSheet(window.matchMedia(SHEET_QUERY).matches);
     setOpen(true);
   };
 
+  // follow the phone turning, or the window being resized, while open
+  useEffect(() => {
+    if (!open) return;
+    const media = window.matchMedia(SHEET_QUERY);
+    const onChange = () => setSheet(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [open]);
+
+  // the page behind a sheet must not scroll along with the calendar
+  useEffect(() => {
+    if (!open || !sheet) return;
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, [open, sheet]);
+
   // below the button (or above it when there's no room), inside the window
   useLayoutEffect(() => {
-    if (!open) return;
+    if (!open || sheet) return;
 
     const place = () => {
       const rect = triggerRef.current.getBoundingClientRect();
@@ -227,7 +254,7 @@ const DateRangePicker = ({
       window.removeEventListener("resize", place);
       window.removeEventListener("scroll", place, true);
     };
-  }, [open, align]);
+  }, [open, align, sheet]);
 
   useEffect(() => {
     if (!open) return;
@@ -273,12 +300,19 @@ const DateRangePicker = ({
     setOpen(false);
   };
 
+  // a list down the side of the popover; a row of chips in the sheet
   const presetButton = (active) =>
-    `w-full px-4 py-2 text-left text-sm transition ${
-      active
-        ? "bg-blue-500/10 font-medium text-blue-600 dark:text-blue-400"
-        : "text-app-text hover:bg-app-surface-secondary"
-    }`;
+    sheet
+      ? `shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
+          active
+            ? "border-blue-500! bg-blue-500/10 text-blue-600 dark:text-blue-400"
+            : "border-app-border! text-app-text"
+        }`
+      : `w-full px-4 py-2 text-left text-sm transition ${
+          active
+            ? "bg-blue-500/10 font-medium text-blue-600 dark:text-blue-400"
+            : "text-app-text hover:bg-app-surface-secondary"
+        }`;
 
   return (
     <>
@@ -308,23 +342,53 @@ const DateRangePicker = ({
 
       {open &&
         createPortal(
+          <>
+          {/* a tap outside the sheet closes it, like outside the popover */}
+          {sheet && <div aria-hidden="true" className="anim-fade fixed inset-0 z-9996 bg-black/40" />}
           <div
             ref={panelRef}
             role="dialog"
             aria-label="Choose a date range"
-            style={{
-              top: position?.top ?? -9999,
-              left: position?.left ?? -9999,
-              width: position?.width,
-            }}
-            className="anim-menu fixed z-[9996] flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-xl border border-app-border! bg-app-surface text-app-text shadow-xl"
+            style={
+              sheet
+                ? undefined
+                : {
+                    top: position?.top ?? -9999,
+                    left: position?.left ?? -9999,
+                    width: position?.width,
+                  }
+            }
+            className={`fixed z-9996 flex flex-col overflow-hidden border border-app-border! bg-app-surface text-app-text shadow-xl ${
+              sheet
+                ? "anim-sheet inset-x-0 bottom-0 h-[min(88dvh,640px)] rounded-t-2xl border-b-0"
+                : "anim-menu max-h-[calc(100vh-2rem)] rounded-xl"
+            }`}
           >
+            {sheet && (
+              <div className="flex shrink-0 items-center justify-between px-4 pt-3">
+                <span className="text-sm font-semibold">Choose dates</span>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setOpen(false)}
+                  className="rounded-md p-1.5 text-app-text-muted hover:bg-app-surface-secondary hover:text-app-text"
+                >
+                  <Icon icon={X} />
+                </button>
+              </div>
+            )}
             <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
-              <div className="max-h-40 shrink-0 overflow-y-auto border-b border-app-border! py-2 sm:max-h-none sm:w-56 sm:border-b-0 sm:border-r">
+              <div
+                className={
+                  sheet
+                    ? "hide-scrollbar flex shrink-0 gap-2 overflow-x-auto px-4 py-3"
+                    : "shrink-0 overflow-y-auto py-2 sm:w-56 sm:border-r sm:border-app-border!"
+                }
+              >
                 <button type="button" className={presetButton(!draft.preset)} onClick={() => setDraft({ ...draft, preset: null, label: null })}>
                   Custom
                 </button>
-                <div className="my-1 border-t border-app-border!" />
+                {!sheet && <div className="my-1 border-t border-app-border!" />}
                 {DATE_PRESETS.map((preset) => (
                   <button
                     key={preset.key}
@@ -337,35 +401,40 @@ const DateRangePicker = ({
                 ))}
               </div>
 
-              <div className="flex min-w-0 flex-1 flex-col gap-3 pt-3">
+              <div className={`flex min-h-0 min-w-0 flex-1 flex-col gap-3 ${sheet ? "border-t border-app-border! pt-3" : "pt-3"}`}>
                 <div className="flex items-center gap-2 px-3">
                   <DateBox label="Start date" value={draft.start} active={editing === "start"} onClick={() => setEditing("start")} />
                   <span className="text-app-text-faint">–</span>
                   <DateBox label="End date" value={draft.end} active={editing === "end"} onClick={() => setEditing("end")} />
                 </div>
-                <Calendar draft={draft} editing={editing} onPick={pickDay} allowFuture={allowFuture} />
+                <Calendar draft={draft} editing={editing} onPick={pickDay} allowFuture={allowFuture} sheet={sheet} />
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2 border-t border-app-border! px-4 py-3">
-              <span className="truncate text-xs text-app-text-muted">
+            <div
+              className={`flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-app-border! px-4 py-3 ${
+                sheet ? "pb-[max(0.75rem,env(safe-area-inset-bottom))]" : ""
+              }`}
+            >
+              <span className={`text-xs text-app-text-muted ${sheet ? "w-full" : "min-w-0 flex-1 truncate"}`}>
                 {hasDraft ? `${formatRange(draft)} · ${dayCount(draft)} days` : "Pick a start and an end date"}
               </span>
-              <div className="flex shrink-0 gap-2">
+              <div className={`flex gap-2 ${sheet ? "w-full *:flex-1" : "shrink-0"}`}>
                 {clearable && value && (
-                  <Button variant="ghost" size="sm" onClick={clear}>
+                  <Button variant="ghost" size={sheet ? "md" : "sm"} onClick={clear}>
                     Clear
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
+                <Button variant="ghost" size={sheet ? "md" : "sm"} onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
-                <Button size="sm" onClick={apply} disabled={!hasDraft}>
+                <Button size={sheet ? "md" : "sm"} onClick={apply} disabled={!hasDraft}>
                   Apply
                 </Button>
               </div>
             </div>
-          </div>,
+          </div>
+          </>,
           document.body,
         )}
     </>

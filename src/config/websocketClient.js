@@ -7,11 +7,13 @@ class WebSocketClient {
     this.url = url;
   }
 
-  connect(onMessage) {
+  // onOpen (optional) runs on every connect, reconnects included: the place
+  // to (re)send subscriptions, since send() drops messages while closed.
+  connect(onMessage, onOpen) {
     this.socket = new WebSocket(this.url);
 
     this.socket.onopen = () => {
-      // console.log("WebSocket connected 🚀");
+      onOpen?.();
     };
 
     this.socket.onmessage = (event) => {
@@ -30,7 +32,7 @@ class WebSocketClient {
       if (this.shouldReconnect) {
         setTimeout(() => {
           // console.log("Reconnecting WebSocket...");
-          this.connect(onMessage);
+          this.connect(onMessage, onOpen);
         }, this.reconnectInterval);
       }
     };

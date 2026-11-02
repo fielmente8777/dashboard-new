@@ -2,9 +2,10 @@ import { baseApi } from "./baseApi";
 
 const RULES_URL = "/api/v1/ai-instructions";
 const FEEDBACK_URL = "/api/v1/ai-feedback";
+const VOICE_URL = "/api/v1/voice-instructions";
 const NODE = { service: "node" };
 
-const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiRule", "AiFeedback"] });
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiRule", "AiFeedback", "VoiceRule", "VoiceSettings"] });
 
 // Every call takes the tenant ({ hid, ndid }) alongside its own fields.
 export const aiTrainingApi = api.injectEndpoints({
@@ -75,6 +76,49 @@ export const aiTrainingApi = api.injectEndpoints({
       invalidatesTags: ["AiFeedback"],
       extraOptions: NODE,
     }),
+    // --- Voice AI: what the phone assistant follows, and its switches ---
+
+    getVoiceRules: build.query({
+      query: ({ hid, ndid }) => ({ url: VOICE_URL, params: { hid, ndid } }),
+      transformResponse: (response) => response?.items || [],
+      providesTags: ["VoiceRule"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, ndid, ruleText, category, enabled }
+    addVoiceRule: build.mutation({
+      query: ({ hid, ...body }) => ({ url: VOICE_URL, method: "POST", params: { hid }, body: { hid, ...body } }),
+      invalidatesTags: ["VoiceRule"],
+      extraOptions: NODE,
+    }),
+
+    // { id, hid, ndid, ...fields to change }
+    updateVoiceRule: build.mutation({
+      query: ({ id, hid, ...body }) => ({ url: `${VOICE_URL}/${id}`, method: "PUT", params: { hid }, body }),
+      invalidatesTags: ["VoiceRule"],
+      extraOptions: NODE,
+    }),
+
+    deleteVoiceRule: build.mutation({
+      query: ({ id, hid, ndid }) => ({ url: `${VOICE_URL}/${id}`, method: "DELETE", params: { hid, ndid } }),
+      invalidatesTags: ["VoiceRule"],
+      extraOptions: NODE,
+    }),
+
+    // -> { voiceEnabled, whatsappIntegrationEnabled, defaultMessage }
+    getVoiceSettings: build.query({
+      query: ({ hid, ndid }) => ({ url: `${VOICE_URL}/settings`, params: { hid, ndid } }),
+      transformResponse: (response) => response?.settings || null,
+      providesTags: ["VoiceSettings"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, ...settings to change }
+    updateVoiceSettings: build.mutation({
+      query: ({ hid, ndid: _ndid, ...body }) => ({ url: `${VOICE_URL}/settings`, method: "PATCH", params: { hid }, body }),
+      invalidatesTags: ["VoiceSettings"],
+      extraOptions: NODE,
+    }),
   }),
 });
 
@@ -86,4 +130,10 @@ export const {
   useGetFlaggedRepliesQuery,
   useApproveFlaggedReplyMutation,
   useRejectFlaggedReplyMutation,
+  useGetVoiceRulesQuery,
+  useAddVoiceRuleMutation,
+  useUpdateVoiceRuleMutation,
+  useDeleteVoiceRuleMutation,
+  useGetVoiceSettingsQuery,
+  useUpdateVoiceSettingsMutation,
 } = aiTrainingApi;

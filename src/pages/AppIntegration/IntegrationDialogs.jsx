@@ -34,7 +34,8 @@ export const ExotelDialog = ({ open, onClose, onConnected }) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const data = await connectExotel(form).unwrap();
+      // with hid, so this hotel's Integrations page shows Exotel as connected
+      const data = await connectExotel({ hid: localStorage.getItem("hid"), ...form }).unwrap();
       if (!data?.success) throw new Error(data?.responseMessage);
       showToast({ message: "Exotel connected" });
       onConnected();
@@ -49,8 +50,8 @@ export const ExotelDialog = ({ open, onClose, onConnected }) => {
     <Dialog
       open={open}
       onClose={onClose}
-      title="Connect Exotel"
-      description="Find these in your Exotel dashboard under Settings → API."
+      title="Exotel API keys"
+      description="Find these in your Exotel dashboard under Settings → API. Saving replaces any keys saved before."
     >
       <form onSubmit={submit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
@@ -71,7 +72,7 @@ export const ExotelDialog = ({ open, onClose, onConnected }) => {
             Cancel
           </Button>
           <Button type="submit" loading={saving} disabled={!complete}>
-            Connect
+            Save keys
           </Button>
         </div>
       </form>

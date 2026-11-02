@@ -6,7 +6,7 @@ import DateRangePicker from "../../components/ui/DateRangePicker";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
-import { PAGES, dashboardPath } from "../../routes/paths";
+import { integrationPath } from "../../routes/paths";
 import AdPreviews from "./components/AdPreviews";
 import AdsFilters from "./components/AdsFilters";
 import BreakdownCards from "./components/BreakdownCards";
@@ -41,7 +41,7 @@ const NotConnected = () => {
         action={
           <Button
             icon={Plug}
-            onClick={() => navigate(dashboardPath(PAGES.INTEGRATION))}
+            onClick={() => navigate(integrationPath("google-ads"))}
           >
             Go to Integrations
           </Button>

@@ -51,6 +51,15 @@ export const responseBody = (result) => {
   throw result.error;
 };
 
+// Providers such as Exotel answer with XML; keep only its <Message> text
+// so the toast never shows raw markup.
+const readableDetails = (details) => {
+  if (typeof details !== "string") return "";
+  if (!details.trim().startsWith("<")) return details;
+  const match = details.match(/<Message>([\s\S]*?)<\/Message>/i);
+  return match ? match[1].trim() : "";
+};
+
 export const getApiErrorMessage = (error, fallback = "Something went wrong") => {
   if (error?.status === "FETCH_ERROR") {
     return "Unable to reach the server. Please check your connection.";
@@ -58,7 +67,8 @@ export const getApiErrorMessage = (error, fallback = "Something went wrong") => 
   const data = error?.data;
   // the Node APIs answer { error, details? }, the core API { Message }
   const nodeError = typeof data?.error === "string" ? data.error : "";
-  if (nodeError && data.details) return `${nodeError}: ${data.details}`;
+  const details = readableDetails(data?.details);
+  if (nodeError && details) return `${nodeError}: ${details}`;
   return (
     data?.Message ||
     data?.message ||

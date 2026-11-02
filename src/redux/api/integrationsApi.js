@@ -5,7 +5,7 @@ const NODE = { service: "node" };
 const NODE_OPEN = { service: "node", skipAuth: true };
 const CORE_OPEN = { skipAuth: true };
 
-const api = baseApi.enhanceEndpoints({ addTagTypes: ["Integration"] });
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["Integration", "ExotelAccount"] });
 
 // Connecting and disconnecting apps on the Integrations page.
 // Each answer is passed through as the API sends it.
@@ -62,9 +62,42 @@ export const integrationsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { apiKey, authToken, accountSID, subDomain, virtualNumber } -> { success, responseMessage }
+    // { hid, apiKey, authToken, accountSID, subDomain, virtualNumber } -> { success, responseMessage }
     connectExotel: build.mutation({
-      query: (body) => ({ url: "/api/v1/call/auth/connect", method: "POST", body }),
+      query: ({ hid, ...body }) => ({
+        url: "/api/v1/call/auth/connect",
+        method: "POST",
+        params: { hid },
+        body,
+      }),
+      invalidatesTags: ["Integration", "ExotelAccount"],
+      extraOptions: NODE,
+    }),
+
+    // hid -> { connected, connectedAt, config: { accountSID, subDomain,
+    // virtualNumber, apiKey (masked) }, balance: { amount, currency, pricingPlan,
+    // updatedAt, isLow, isEmpty, lowThreshold } | null, balanceError, checkedAt }
+    // The keys are per account; hid only keeps one cache entry per hotel.
+    // gian asks Exotel for the balance at most once a minute.
+    getExotelOverview: build.query({
+      query: () => "/api/v1/call/account/overview",
+      transformResponse: (response) => response?.result?.doc || null,
+      providesTags: ["ExotelAccount"],
+      extraOptions: NODE,
+    }),
+
+    // hid -> asks Exotel again now (skips that minute) and updates the overview
+    refreshExotelOverview: build.mutation({
+      query: () => ({ url: "/api/v1/call/account/overview", params: { fresh: true } }),
+      transformResponse: (response) => response?.result?.doc || null,
+      async onQueryStarted(hid, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(integrationsApi.util.upsertQueryData("getExotelOverview", hid, data));
+        } catch {
+          // the page keeps the last answer and shows the error toast
+        }
+      },
       extraOptions: NODE,
     }),
 
@@ -93,6 +126,8 @@ export const {
   useStartGmailAuthMutation,
   useDisconnectIntegrationMutation,
   useConnectExotelMutation,
+  useGetExotelOverviewQuery,
+  useRefreshExotelOverviewMutation,
   useConnectOtpLessMutation,
   useGetAnalyticsStatusMutation,
   useDisconnectAnalyticsMutation,

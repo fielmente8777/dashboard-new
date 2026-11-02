@@ -1,4 +1,5 @@
 import { ListChecks } from "lucide-react";
+import { useState } from "react";
 import {
   EmptyState,
   ErrorState,
@@ -14,16 +15,28 @@ import {
   useUpdateAiRuleMutation,
 } from "../../../redux/api/aiTrainingApi";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
+import { CATEGORIES } from "../constants";
 import AddRuleForm from "./AddRuleForm";
 import RuleRow from "./RuleRow";
 
-const CustomRulesTab = ({ tenant }) => {
+const chipClassName = (active) =>
+  `inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-colors ${
+    active
+      ? "border-primary! bg-primary text-white dark:border-blue-600! dark:bg-blue-600"
+      : "border-app-border! bg-app-surface text-app-text-muted hover:text-app-text"
+  }`;
+
+// A list of rules with add / edit / turn off / delete, and a filter by
+// category. The WhatsApp AI rules and the Voice AI rules both use it, each
+// with its own API hooks (`api`).
+export const RulesList = ({ tenant, api, intro, emptyTitle = "No rules yet" }) => {
   const { confirm } = useConfirm();
   const run = useApiAction();
-  const rules = useGetAiRulesQuery(tenant, { skip: !hasTenant(tenant) });
-  const [addRule] = useAddAiRuleMutation();
-  const [updateRule] = useUpdateAiRuleMutation();
-  const [deleteRule] = useDeleteAiRuleMutation();
+  const [category, setCategory] = useState("");
+  const rules = api.useRules(tenant, { skip: !hasTenant(tenant) });
+  const [addRule] = api.useAdd();
+  const [updateRule] = api.useUpdate();
+  const [deleteRule] = api.useDelete();
 
   const handleAdd = (rule) =>
     run(addRule({ ...tenant, ...rule }), {
@@ -56,35 +69,76 @@ const CustomRulesTab = ({ tenant }) => {
   if (rules.isError) {
     return (
       <ErrorState
-        message={getApiErrorMessage(rules.error, "Could not load rules.")}
+        message={
+          rules.error?.status === 404
+            ? "This arrives with the next server update."
+            : getApiErrorMessage(rules.error, "Could not load rules.")
+        }
         onRetry={rules.refetch}
       />
     );
   }
 
+  const all = rules.data;
+  const shown = category ? all.filter((rule) => rule.category === category) : all;
+  const countOf = (value) => all.filter((rule) => rule.category === value).length;
+  const activeCount = all.filter((rule) => rule.enabled).length;
+
   return (
     <div className="space-y-3">
       <p className="text-sm text-app-text-muted">
-        Rules that shape how your AI replies on WhatsApp — tone, policy, what
-        not to say. Turned off rules stay saved but don&apos;t apply.
+        {intro}{" "}
+        {all.length > 0 && (
+          <span className="text-app-text">
+            {activeCount} of {all.length} on.
+          </span>
+        )}
       </p>
 
-      {rules.data.length === 0 && (
-        <EmptyState icon={ListChecks} title="No custom rules yet" />
+      {all.length > 0 && (
+        <div className="hide-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
+          <button type="button" aria-pressed={!category} onClick={() => setCategory("")} className={chipClassName(!category)}>
+            All <span className="tabular-nums opacity-70">{all.length}</span>
+          </button>
+          {CATEGORIES.filter((c) => countOf(c.value) > 0).map((c) => (
+            <button
+              key={c.value}
+              type="button"
+              aria-pressed={category === c.value}
+              onClick={() => setCategory(c.value)}
+              className={chipClassName(category === c.value)}
+            >
+              {c.label} <span className="tabular-nums opacity-70">{countOf(c.value)}</span>
+            </button>
+          ))}
+        </div>
       )}
 
-      {rules.data.map((rule) => (
-        <RuleRow
-          key={rule._id}
-          rule={rule}
-          onSave={handleSave}
-          onDelete={handleDelete}
-        />
+      {all.length === 0 && <EmptyState icon={ListChecks} title={emptyTitle} />}
+
+      {shown.map((rule) => (
+        <RuleRow key={rule._id} rule={rule} onSave={handleSave} onDelete={handleDelete} />
       ))}
 
       <AddRuleForm onAdd={handleAdd} />
     </div>
   );
 };
+
+const WHATSAPP_RULES = {
+  useRules: useGetAiRulesQuery,
+  useAdd: useAddAiRuleMutation,
+  useUpdate: useUpdateAiRuleMutation,
+  useDelete: useDeleteAiRuleMutation,
+};
+
+const CustomRulesTab = ({ tenant }) => (
+  <RulesList
+    tenant={tenant}
+    api={WHATSAPP_RULES}
+    emptyTitle="No custom rules yet"
+    intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Turned-off rules stay saved but don't apply."
+  />
+);
 
 export default CustomRulesTab;

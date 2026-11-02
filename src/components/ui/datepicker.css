@@ -204,3 +204,48 @@
   color: var(--app-text-faint);
   opacity: 0.45;
 }
+
+/* --- phones: open from the bottom edge, full width, bigger days to tap ---
+   The popover is placed next to its field, which on a narrow screen can push
+   it past the edge. Pinned to the bottom it always fits. */
+
+@media (max-width: 639px) {
+  .react-datepicker-popper.app-datepicker-popper {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+    transform: none !important;
+  }
+
+  .app-datepicker-popper .app-datepicker.react-datepicker {
+    width: 100%;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    border-width: 1px 0 0;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.25);
+    animation: app-sheet 0.28s var(--ease-out) backwards;
+  }
+
+  .app-datepicker-popper .app-datepicker .react-datepicker__day-name,
+  .app-datepicker-popper .app-datepicker .react-datepicker__day {
+    width: 2.5rem;
+    line-height: 2.5rem;
+  }
+
+  /* with the time list beside it the month must stay narrower */
+  .app-datepicker-popper .app-datepicker:has(.react-datepicker__time-container) .react-datepicker__day-name,
+  .app-datepicker-popper .app-datepicker:has(.react-datepicker__time-container) .react-datepicker__day {
+    width: 2rem;
+    line-height: 2.25rem;
+  }
+
+  .app-datepicker-popper .app-datepicker .react-datepicker__time-container {
+    width: 5.5rem;
+  }
+}
+
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+  .app-datepicker-popper .app-datepicker.react-datepicker {
+    animation: none;
+  }
+}

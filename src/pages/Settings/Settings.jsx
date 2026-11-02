@@ -54,7 +54,8 @@ const Settings = () => {
   return (
     <div className="flex h-full w-full flex-col">
       {/* Tabs (WhatsApp and Eazbot only with the matching app access) */}
-      <div className="shrink-0 overflow-x-auto border-b border-app-border! px-3 py-2.5 sm:px-5 scrollbar-hidden">
+      {/* on phones the row scrolls sideways; the faded edges hint at more tabs */}
+      <div className="shrink-0 overflow-x-auto border-b border-app-border! px-3 py-2.5 sm:px-5 scrollbar-hidden max-sm:mask-[linear-gradient(to_right,transparent,black_12px,black_calc(100%-28px),transparent)]">
         <Tabs
           tabs={TABS.filter(
             (t) =>

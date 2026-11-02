@@ -1,5 +1,6 @@
 import Badge from "../../../components/ui/Badge";
 import DataTable from "../../../components/ui/DataTable";
+import { CampaignCard } from "../../../components/Marketing/MarketingParts";
 import { campaignStatus, formatDate, formatNumber, percent } from "../emailUtils";
 
 // a number with its share of a base next to it, e.g. 120 82%
@@ -84,15 +85,53 @@ const columns = [
   },
 ];
 
+// A table on wider screens; on phones, one card per campaign.
 const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage }) => (
-  <DataTable
-    columns={columns}
-    rows={campaigns}
-    rowKey={(row) => row._id}
-    loading={loading}
-    onRowClick={onOpen}
-    emptyMessage={emptyMessage}
-  />
+  <>
+    <div className="hidden md:block">
+      <DataTable
+        columns={columns}
+        rows={campaigns}
+        rowKey={(row) => row._id}
+        loading={loading}
+        onRowClick={onOpen}
+        emptyMessage={emptyMessage}
+      />
+    </div>
+    <div className="space-y-2 md:hidden">
+      {loading ? (
+        [0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-xl bg-app-surface-secondary" />)
+      ) : campaigns.length === 0 ? (
+        <p className="rounded-xl border border-app-border! bg-app-surface p-6 text-center text-sm text-app-text-muted">
+          {emptyMessage}
+        </p>
+      ) : (
+        campaigns.map((row) => {
+          const { tone, label } = campaignStatus(row.status);
+          return (
+            <CampaignCard
+              key={row._id}
+              title={row.subject || row.name || "No subject"}
+              subtitle={row.fromEmail}
+              statusBadge={<Badge tone={tone}>{label}</Badge>}
+              onOpen={() => onOpen(row)}
+              date={formatDate(row.createdAt, true)}
+              stats={[
+                { label: "Audience", value: formatNumber(row.recipientCount) },
+                { label: "Opened", value: `${percent(row.stats?.opened, row.stats?.sent)}%` },
+                { label: "Clicked", value: `${percent(row.stats?.clicked, row.stats?.opened)}%` },
+                {
+                  label: "Failed",
+                  value: formatNumber(row.stats?.failed),
+                  className: row.stats?.failed ? "text-red-500" : "text-app-text",
+                },
+              ]}
+            />
+          );
+        })
+      )}
+    </div>
+  </>
 );
 
 export default EmailCampaignTable;

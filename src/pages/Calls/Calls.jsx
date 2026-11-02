@@ -28,7 +28,7 @@ import {
   useUpdateCallMutation,
 } from "../../redux/api/callsApi";
 import { selectHid } from "../../redux/slice/UserSlice";
-import { PAGES, callViewPath, dashboardPath } from "../../routes/paths";
+import { callViewPath, integrationPath } from "../../routes/paths";
 import { useLeadWhatsApp } from "../Leads/hooks/useLeadWhatsApp";
 import CallsAnalytics from "./CallsAnalytics";
 import { getGuestNumber, isOutgoing } from "./callUtils";
@@ -148,7 +148,7 @@ const Calls = () => {
           description="Connect your calling account to see and manage your calls here."
           action={
             <Link
-              to={dashboardPath(PAGES.INTEGRATION)}
+              to={integrationPath("exotel")}
               className="text-sm font-medium text-blue-500 hover:underline"
             >
               Connect it in Integrations

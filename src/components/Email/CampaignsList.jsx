@@ -8,11 +8,11 @@ import Tabs from "../ui/Tabs";
 import CampaignDetail from "./CampaignDetail";
 
 // Emails sent so far, filtered by status and searched by subject; a row
-// opens that campaign's recipients.
-export default function CampaignsList({ campaigns, loading }) {
+// opens that campaign's recipients. The page owns which one is open
+// (selectedId / onSelect), so other parts of it can open one too.
+export default function CampaignsList({ campaigns, loading, selectedId, onSelect }) {
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
 
   // one tab per status the campaigns actually have
   const tabs = useMemo(() => {
@@ -21,11 +21,10 @@ export default function CampaignsList({ campaigns, loading }) {
       return acc;
     }, {});
     return [
-      { value: "all", label: "All" },
+      { value: "all", label: `All (${campaigns.length})` },
       ...Object.keys(counts).map((value) => ({
         value,
-        label: campaignStatus(value).label,
-        count: counts[value],
+        label: `${campaignStatus(value).label} (${counts[value]})`,
       })),
     ];
   }, [campaigns]);
@@ -43,9 +42,11 @@ export default function CampaignsList({ campaigns, loading }) {
 
   return (
     <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Tabs tabs={tabs} value={status} onChange={setStatus} />
-        <div className="relative w-full sm:w-64">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="hide-scrollbar -mx-1 overflow-x-auto px-1">
+          <Tabs tabs={tabs} value={status} onChange={setStatus} className="w-max" />
+        </div>
+        <div className="relative w-full lg:w-64">
           <Icon
             icon={Search}
             size="sm"
@@ -65,11 +66,11 @@ export default function CampaignsList({ campaigns, loading }) {
       <EmailCampaignTable
         campaigns={visible}
         loading={loading}
-        onOpen={(c) => setSelectedId(c._id)}
+        onOpen={(c) => onSelect(c._id)}
         emptyMessage="No campaigns match these filters"
       />
 
-      {selectedId && <CampaignDetail campaignId={selectedId} onClose={() => setSelectedId(null)} />}
+      {selectedId && <CampaignDetail campaignId={selectedId} onClose={() => onSelect(null)} />}
     </section>
   );
 }

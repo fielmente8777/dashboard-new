@@ -171,14 +171,14 @@ const PrintCardPreview = ({ hotelName, headline, caption, children }) => (
     </div>
 
     <div className="px-5 pb-4 pt-5 text-center">
-      <p className="truncate text-base font-bold">{headline}</p>
+      <p className="text-base font-bold leading-snug">{headline}</p>
       <p style={{ color: CARD_COLORS.text }} className="mt-0.5 truncate text-xs">
         {caption}
       </p>
 
       <div
         style={{ borderColor: CARD_COLORS.accent }}
-        className="mx-auto mt-4 flex aspect-square w-[212px] items-center justify-center rounded-2xl border-[3px]"
+        className="mx-auto mt-4 flex aspect-square w-full max-w-[212px] items-center justify-center rounded-2xl border-[3px] p-[11px]"
       >
         {children}
       </div>
@@ -297,9 +297,11 @@ const Settings = () => {
       title="QR Code"
       description="Create a QR code guests can scan, then print it or share it."
     >
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
-        <div className="space-y-5">
-          <Card title="What should the code open?">
+      {/* grid-cols-1, so on a phone the column is the screen's width and not
+          as wide as its longest line. Phones get form, preview, then steps;
+          wide screens keep the preview in its own column on the right. */}
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,400px)]">
+          <Card title="What should the code open?" className="order-1 min-w-0 lg:order-none">
             <form
               className="space-y-4"
               onSubmit={(e) => {
@@ -352,7 +354,7 @@ const Settings = () => {
             </form>
           </Card>
 
-          <Card title="How it works">
+          <Card title="How it works" className="order-3 min-w-0 lg:order-none lg:col-start-1">
             <ol className="grid gap-4 sm:grid-cols-3">
               {STEPS.map((step, index) => (
                 <li key={step.title} className="flex gap-3 sm:flex-col">
@@ -374,12 +376,11 @@ const Settings = () => {
               ))}
             </ol>
           </Card>
-        </div>
 
         <Card
           title="Preview"
           description={qrLink ? "This is the card you download and print." : undefined}
-          className="lg:sticky lg:top-4"
+          className="order-2 min-w-0 lg:sticky lg:top-4 lg:order-none lg:col-start-2 lg:row-span-2 lg:row-start-1"
           actions={
             qrLink && (
               <Button
@@ -395,7 +396,7 @@ const Settings = () => {
         >
           {qrLink ? (
             <>
-              <div className="rounded-xl bg-app-bg px-4 py-6">
+              <div className="rounded-xl bg-app-bg px-2 py-4 sm:px-4 sm:py-6">
                 <PrintCardPreview
                   hotelName={hotelName}
                   headline={headline}
@@ -405,6 +406,8 @@ const Settings = () => {
                     value={qrLink}
                     size={PREVIEW_QR_SIZE}
                     fgColor={CARD_COLORS.navy}
+                    // shrinks with the card on narrow phones
+                    style={{ width: "100%", height: "auto", maxWidth: PREVIEW_QR_SIZE }}
                   />
                 </PrintCardPreview>
               </div>
@@ -486,7 +489,7 @@ const Settings = () => {
               </div>
             </>
           ) : (
-            <div className="flex min-h-[420px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-app-border! bg-app-bg px-6 text-center">
+            <div className="flex min-h-[260px] flex-col items-center lg:min-h-[420px] justify-center gap-3 rounded-xl border border-dashed border-app-border! bg-app-bg px-6 text-center">
               <span className="flex size-12 items-center justify-center rounded-xl bg-app-surface-secondary text-app-text-faint">
                 <Icon icon={QrCode} size={26} />
               </span>

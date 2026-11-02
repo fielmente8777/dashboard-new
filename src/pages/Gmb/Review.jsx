@@ -1,133 +1,399 @@
-import { useState } from "react";
-import { FiStar, FiMessageSquare, FiFilter, FiSend } from "react-icons/fi";
-import { Select } from "../../components/ui/Field";
+import {
+  Bot,
+  ChevronLeft,
+  ChevronRight,
+  MessageSquareReply,
+  RefreshCw,
+  Sparkles,
+  Star,
+  Store,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import Drawer from "../../components/ui/Drawer";
+import { Field, Input } from "../../components/ui/Field";
+import PageShell from "../../components/ui/PageShell";
+import SelectMenu from "../../components/ui/SelectMenu";
+import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
+import Switch from "../../components/ui/Switch";
+import { useApiAction } from "../../hooks/useApiAction";
+import {
+  STARS,
+  useGenerateGbpReplyMutation,
+  useGetGbpAutopilotQuery,
+  useGetGbpLocationsQuery,
+  useGetGbpReviewsQuery,
+  usePostGbpReplyMutation,
+  useSyncGbpReviewsMutation,
+  useUpdateGbpAutopilotMutation,
+} from "../../redux/api/gbpApi";
+import { integrationPath } from "../../routes/paths";
+import { timeAgo } from "../../utils/relativeTime";
 
-export default function Reviews() {
-  const [filter, setFilter] = useState("all");
+const FILTERS = [
+  { value: "unreplied", label: "Needs reply" },
+  { value: "all", label: "All" },
+  { value: "negative", label: "1 to 3 stars" },
+  { value: "positive", label: "4 and 5 stars" },
+  { value: "replied", label: "Replied" },
+];
 
-  const reviews = [
-    {
-      author: "Sarah Johnson",
-      rating: 5,
-      platform: "Google",
-      time: "2 hours ago",
-      text: "Amazing coffee and friendly staff! Highly recommend.",
-    },
-    {
-      author: "Mike Chen",
-      rating: 4,
-      platform: "Google",
-      time: "1 day ago",
-      text: "Great location and ambiance. Service could be faster.",
-    },
-    {
-      author: "Emily Davis",
-      rating: 3,
-      platform: "Yelp",
-      time: "2 days ago",
-      text: "Good coffee, but seating space is limited.",
-    },
-  ];
+const TONES = [
+  { value: "professional", label: "Professional" },
+  { value: "friendly", label: "Friendly" },
+  { value: "luxury", label: "Luxury" },
+];
 
-  const filteredReviews =
-    filter === "all"
-      ? reviews
-      : reviews.filter((r) => r.rating === Number(filter));
+const STAR_OPTIONS = [1, 2, 3, 4, 5].map((n) => ({ value: n, label: `${n} star${n > 1 ? "s" : ""}` }));
+
+const chipClassName = (active) =>
+  `inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-colors ${
+    active
+      ? "border-primary! bg-primary text-white dark:border-blue-600! dark:bg-blue-600"
+      : "border-app-border! bg-app-surface text-app-text-muted hover:text-app-text"
+  }`;
+
+const Stars = ({ value, size = 14 }) => (
+  <span className="inline-flex items-center gap-0.5" aria-label={`${value} out of 5 stars`}>
+    {[1, 2, 3, 4, 5].map((n) => (
+      <Star
+        key={n}
+        size={size}
+        className={n <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-app-text-faint/40"}
+      />
+    ))}
+  </span>
+);
+
+// One review: what the guest wrote, and the reply (posted, or a draft to
+// write with AI and edit before posting).
+const ReviewCard = ({ review }) => {
+  const run = useApiAction();
+  const [generate, { isLoading: drafting }] = useGenerateGbpReplyMutation();
+  const [post, { isLoading: posting }] = usePostGbpReplyMutation();
+  const [draft, setDraft] = useState(review.hasReply ? null : review.aiReplyDraft || null);
+  const stars = STARS[review.starRating] || 0;
+  const name = review.reviewerDisplayName || "Google user";
+
+  const writeWithAi = async () => {
+    const text = await run(generate(review.reviewId), { error: "Could not write a reply." });
+    if (typeof text === "string" && text) setDraft(text);
+  };
+
+  const publish = async () => {
+    const done = await run(post({ reviewId: review.reviewId, replyText: draft.trim() }), {
+      success: "Reply posted on Google",
+      error: "Could not post the reply.",
+    });
+    if (done) setDraft(null);
+  };
 
   return (
-    <div className="flex-1 bg-gray-50 p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Reviews</h1>
-          <p className="text-gray-600 mt-1">
-            Manage and respond to customer reviews
+    <article className="rounded-xl border border-app-border! bg-app-surface p-4">
+      <header className="flex items-start gap-3">
+        {review.reviewerPhotoUrl ? (
+          <img src={review.reviewerPhotoUrl} alt="" className="size-9 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-app-surface-secondary text-sm font-semibold text-app-text-muted">
+            {name.charAt(0).toUpperCase()}
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-app-text">{name}</p>
+          <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-app-text-faint">
+            <Stars value={stars} size={13} />
+            {timeAgo(review.createTime, Date.now())}
           </p>
         </div>
-      </div>
+        {!review.hasReply && stars <= 3 && <Badge tone="red">Needs care</Badge>}
+      </header>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <SummaryCard title="Average Rating" value="4.6" icon={FiStar} />
-        <SummaryCard title="Total Reviews" value="234" icon={FiMessageSquare} />
-        <SummaryCard title="New This Week" value="12" icon={FiMessageSquare} />
-      </div>
+      {review.comment ? (
+        <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-app-text">{review.comment}</p>
+      ) : (
+        <p className="mt-3 text-sm italic text-app-text-faint">Rating only, no comment.</p>
+      )}
 
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-xl border flex items-center gap-4">
-        <FiFilter className="text-gray-500" />
-        <div className="w-40">
-          <Select
-            aria-label="Rating"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            options={[
-              { value: "all", label: "All Ratings" },
-              { value: "5", label: "5 Stars" },
-              { value: "4", label: "4 Stars" },
-              { value: "3", label: "3 Stars" },
-              { value: "2", label: "2 Stars" },
-              { value: "1", label: "1 Star" },
-            ]}
-          />
+      {review.hasReply ? (
+        <div className="mt-3 rounded-lg border-l-2 border-blue-500! bg-app-bg px-3 py-2.5">
+          <p className="flex items-center gap-2 text-xs font-medium text-app-text-muted">
+            Your reply
+            {review.isAutoReplied && <Badge tone="purple">Autopilot</Badge>}
+          </p>
+          <p className="mt-1 whitespace-pre-line text-sm text-app-text">{review.replyComment}</p>
         </div>
-      </div>
-
-      {/* Reviews List */}
-      <div className="bg-white rounded-xl border divide-y">
-        {filteredReviews.map((review, index) => (
-          <div key={index} className="p-6">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center font-semibold">
-                  {review.author
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </div>
-
-                <div>
-                  <p className="font-semibold text-gray-900">{review.author}</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex">
-                      {[...Array(review.rating)].map((_, i) => (
-                        <FiStar
-                          key={i}
-                          className="w-4 h-4 text-yellow-500 fill-yellow-500"
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-500">{review.time}</span>
-                  </div>
-                </div>
-              </div>
-
-              <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                {review.platform}
-              </span>
-            </div>
-
-            <p className="text-sm text-gray-700 mb-4">{review.text}</p>
-
-            <button className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:underline">
-              <FiSend />
-              Reply
-            </button>
+      ) : draft !== null ? (
+        <div className="mt-3 space-y-2">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={4}
+            placeholder="Write your reply…"
+            className="w-full resize-y rounded-lg border border-app-border! bg-app-bg px-3 py-2 text-sm text-app-text outline-none focus:border-blue-500! focus:ring-1 focus:ring-blue-500"
+          />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setDraft(null)} disabled={posting}>
+              Cancel
+            </Button>
+            <Button variant="secondary" size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi} disabled={posting}>
+              Rewrite with AI
+            </Button>
+            <Button size="sm" loading={posting} disabled={!draft.trim()} onClick={publish}>
+              Post on Google
+            </Button>
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi}>
+            Write reply with AI
+          </Button>
+          <Button size="sm" variant="ghost" icon={MessageSquareReply} onClick={() => setDraft("")}>
+            Write myself
+          </Button>
+        </div>
+      )}
+    </article>
   );
-}
+};
 
-function SummaryCard({ title, value, icon: Icon }) {
+// What the AI does on its own: replies to new reviews with enough stars.
+// (gian also stores low-rating alert and weekly report settings, but nothing
+// sends those yet, so they are not offered here.)
+const AutopilotDrawer = ({ open, onClose, location }) => {
+  const run = useApiAction();
+  const config = useGetGbpAutopilotQuery(location?.locationId, { skip: !open || !location });
+  const [update] = useUpdateGbpAutopilotMutation();
+  const [signature, setSignature] = useState("");
+
+  useEffect(() => {
+    if (config.data) setSignature(config.data.autoReplySignature || "");
+  }, [config.data]);
+
+  const save = (changes) =>
+    run(update({ locationId: location.locationId, ...changes }), { error: "Could not save the setting." });
+  const c = config.data || {};
+
   return (
-    <div className="bg-white rounded-xl p-6 border hover:shadow-md transition">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-gray-600">{title}</p>
-        <Icon className="text-gray-400" />
-      </div>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
-    </div>
+    <Drawer open={open} onClose={onClose} title="Review autopilot" description={location?.locationName}>
+      {!config.data ? (
+        <Skeleton className="h-64 rounded-xl" />
+      ) : (
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-app-text">Reply automatically</p>
+                <p className="mt-0.5 text-xs text-app-text-muted">
+                  The AI posts a reply to new reviews with at least the stars below. Lower ratings wait for you.
+                </p>
+              </div>
+              <Switch label="Reply automatically" checked={Boolean(c.autoReplyEnabled)} onChange={(on) => save({ autoReplyEnabled: on })} />
+            </div>
+            <Field as="div" label="Only for reviews with at least">
+              <SelectMenu
+                label="Minimum stars for auto replies"
+                options={STAR_OPTIONS}
+                value={c.autoReplyMinStars ?? 4}
+                onChange={(value) => save({ autoReplyMinStars: Number(value) })}
+                className="w-full"
+              />
+            </Field>
+            <Field as="div" label="Tone of AI replies" hint="Also used when you press Write reply with AI.">
+              <SelectMenu
+                label="Tone"
+                options={TONES}
+                value={c.autoReplyTone || "professional"}
+                onChange={(value) => save({ autoReplyTone: value })}
+                className="w-full"
+              />
+            </Field>
+            <Field label="Sign replies as" hint="e.g. Team Corbett The Grand">
+              <Input
+                value={signature}
+                onChange={(e) => setSignature(e.target.value)}
+                onBlur={() => signature !== (c.autoReplySignature || "") && save({ autoReplySignature: signature.trim() })}
+                placeholder="Optional"
+              />
+            </Field>
+          </section>
+
+        </div>
+      )}
+    </Drawer>
   );
-}
+};
+
+// Google reviews of the hotel's Business Profile listing(s): read, reply
+// (written by AI, edited by you), and set what the AI does on its own.
+const Review = () => {
+  const run = useApiAction();
+  const locations = useGetGbpLocationsQuery();
+  const [locationId, setLocationId] = useState("");
+  const [filter, setFilter] = useState("unreplied");
+  const [page, setPage] = useState(1);
+  const [autopilotOpen, setAutopilotOpen] = useState(false);
+  const [syncReviews, { isLoading: syncing }] = useSyncGbpReviewsMutation();
+
+  const list = locations.data || [];
+  const location = list.find((l) => l.locationId === locationId) || list[0];
+  const activeId = location?.locationId;
+
+  const reviews = useGetGbpReviewsQuery({ locationId: activeId, filter, page }, { skip: !activeId });
+  const unreplied = useGetGbpReviewsQuery({ locationId: activeId, filter: "unreplied", page: 1, limit: 1 }, { skip: !activeId });
+
+  const pickFilter = (value) => {
+    setFilter(value);
+    setPage(1);
+  };
+
+  const connectLink = (
+    <Link to={integrationPath("google-business-profile")}>
+      <Button icon={Store}>Connect Google Business Profile</Button>
+    </Link>
+  );
+
+  let body;
+  if (locations.isLoading) {
+    body = <Skeleton className="h-96 rounded-xl" />;
+  } else if (locations.isError && locations.error?.status !== 404) {
+    body = <ErrorState message="Couldn't load your Google listings." onRetry={locations.refetch} />;
+  } else if (!list.length) {
+    body = (
+      <Card>
+        <EmptyState
+          icon={Store}
+          title="Connect your Google listing"
+          description="See every Google review in one place, reply with AI in seconds, and let autopilot answer the happy guests."
+          action={connectLink}
+        />
+      </Card>
+    );
+  } else {
+    const data = reviews.data;
+    body = (
+      <>
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="rounded-xl border border-app-border! bg-app-surface p-3 sm:p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-app-text-muted">Rating</p>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xl font-semibold tabular-nums text-app-text sm:text-2xl">
+              {location.averageRating ? location.averageRating.toFixed(1) : "–"}
+              <span className="hidden sm:inline">
+                <Stars value={location.averageRating || 0} />
+              </span>
+            </p>
+          </div>
+          <div className="rounded-xl border border-app-border! bg-app-surface p-3 sm:p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-app-text-muted">Reviews</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-app-text sm:text-2xl">{location.totalReviewCount ?? "–"}</p>
+          </div>
+          <div className="rounded-xl border border-app-border! bg-app-surface p-3 sm:p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-app-text-muted">Need reply</p>
+            <p
+              className={`mt-1 text-xl font-semibold tabular-nums sm:text-2xl ${
+                unreplied.data?.total ? "text-amber-600 dark:text-amber-400" : "text-app-text"
+              }`}
+            >
+              {unreplied.data?.total ?? "–"}
+            </p>
+          </div>
+        </div>
+
+        <div className="hide-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
+          {FILTERS.map((f) => (
+            <button key={f.value} type="button" aria-pressed={filter === f.value} onClick={() => pickFilter(f.value)} className={chipClassName(filter === f.value)}>
+              {f.label}
+              {f.value === "unreplied" && unreplied.data?.total > 0 && (
+                <span className={`rounded-full px-1.5 text-[10px] ${filter === f.value ? "bg-white/20" : "bg-amber-500/15 text-amber-600"}`}>
+                  {unreplied.data.total}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {reviews.isError ? (
+          <ErrorState message="Couldn't load reviews." onRetry={reviews.refetch} />
+        ) : !data ? (
+          <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-36 rounded-xl" />
+            ))}
+          </div>
+        ) : data.reviews.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={MessageSquareReply}
+              title={filter === "unreplied" ? "Every review has a reply" : "No reviews here"}
+              description={filter === "unreplied" ? "Nice work. New reviews show up after a sync." : "Press Sync to fetch the newest reviews from Google."}
+            />
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {data.reviews.map((review) => (
+              <ReviewCard key={review.reviewId} review={review} />
+            ))}
+            {data.totalPages > 1 && (
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <Button variant="ghost" size="sm" icon={ChevronLeft} disabled={page <= 1} onClick={() => setPage(page - 1)}>
+                  Newer
+                </Button>
+                <span className="text-xs text-app-text-muted">
+                  Page {page} of {data.totalPages}
+                </span>
+                <Button variant="ghost" size="sm" disabled={page >= data.totalPages} onClick={() => setPage(page + 1)}>
+                  Older <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  return (
+    <PageShell
+      title="Google reviews"
+      description="Reply to every review from one place. The AI writes the first draft."
+      maxWidth="max-w-4xl"
+      actions={
+        list.length > 0 && (
+          <>
+            {list.length > 1 && (
+              <SelectMenu
+                label="Google listing"
+                options={list.map((l) => ({ value: l.locationId, label: l.locationName }))}
+                value={activeId}
+                onChange={(value) => {
+                  setLocationId(value);
+                  setPage(1);
+                }}
+              />
+            )}
+            <Button
+              variant="secondary"
+              icon={RefreshCw}
+              loading={syncing}
+              onClick={() => run(syncReviews(activeId), { success: "Reviews are up to date", error: "Could not sync reviews." })}
+            >
+              Sync
+            </Button>
+            <Button variant="secondary" icon={Bot} onClick={() => setAutopilotOpen(true)}>
+              Autopilot
+            </Button>
+          </>
+        )
+      }
+    >
+      {body}
+      <AutopilotDrawer open={autopilotOpen} onClose={() => setAutopilotOpen(false)} location={location} />
+      <div className="h-14" aria-hidden="true" />
+    </PageShell>
+  );
+};
+
+export default Review;

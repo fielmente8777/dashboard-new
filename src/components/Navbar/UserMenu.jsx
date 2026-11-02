@@ -4,8 +4,10 @@ import {
   Moon,
   QrCode,
   Settings,
+  Store,
   Sun,
 } from "lucide-react";
+import { openEazStore } from "../Popup/eazStore";
 import { useColorMode } from "../../hooks/useColorMode";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,7 +22,7 @@ const itemClassName =
   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-app-text transition-colors hover:bg-app-surface-secondary";
 
 // The avatar in the navbar and the account menu it opens.
-// On phones the navbar hides its theme button, so the menu lists it instead.
+// On phones the navbar hides its theme and EazStore buttons, so the menu lists them instead.
 const UserMenu = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -102,6 +104,21 @@ const UserMenu = () => {
           </div>
 
           <div className="my-1 h-px bg-app-border" />
+
+          {/* the navbar has no room for EazStore on phones */}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setIsOpen(false);
+              openEazStore();
+            }}
+            className={`${itemClassName} mb-1 bg-ternary/10 text-ternary! hover:bg-ternary/15! sm:hidden`}
+          >
+            <Icon icon={Store} />
+            EazStore
+            <span className="ml-auto text-[11px] font-normal text-app-text-muted">Apps &amp; services</span>
+          </button>
 
           <Link
             role="menuitem"

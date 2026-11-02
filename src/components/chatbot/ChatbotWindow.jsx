@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { v4 as uuidv4 } from "uuid";
-import { Check, Copy, Loader2, PanelLeft, Plus, RotateCcw, SendHorizontal, Sparkles, X } from "lucide-react";
+import { Check, Copy, Loader2, Mic, PanelLeft, Plus, RotateCcw, SendHorizontal, Sparkles, Square, X } from "lucide-react";
 import { getConversation, sendChatMessage } from "../../services/chatbot.service";
 import useChatbotHistory from "../../hooks/useChatbotHistory";
 import ChatHistorySidebar from "./ChatHistorySidebar";
+import { useToast } from "../../context/ToastContext";
+import { isVoiceInputSupported, useVoiceInput } from "../../hooks/useVoiceInput";
 
 const suggestions = [
   "Show today's leads",
@@ -77,6 +79,15 @@ const fromServer = (m) => ({
 export default function ChatbotWindow({ hid, question, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const { showToast } = useToast();
+  // speak instead of typing: the text lands in the box to check before sending
+  const voice = useVoiceInput({
+    onText: useCallback((text) => {
+      setInput((current) => (current.trim() ? `${current.trimEnd()} ${text}` : text));
+      inputRef.current?.focus();
+    }, []),
+    onError: useCallback((message) => showToast({ message, type: "error" }), [showToast]),
+  });
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationIdState] = useState(null);
   const [conversationLoading, setConversationLoading] = useState(false);
@@ -554,6 +565,35 @@ export default function ChatbotWindow({ hid, question, onClose }) {
                 aria-label="Ask Eazotel AI a question"
                 className="min-w-0 flex-1 resize-none bg-transparent px-2 py-3 text-sm leading-5 text-[var(--cb-text)] outline-none placeholder:text-[var(--cb-faint)] sm:px-3"
               />
+              {isVoiceInputSupported() && (
+                <button
+                  type="button"
+                  onClick={voice.status === "recording" ? voice.stop : voice.start}
+                  disabled={loading || conversationLoading || voice.status === "transcribing"}
+                  aria-label={voice.status === "recording" ? "Stop recording" : "Speak your question"}
+                  title={voice.status === "recording" ? "Stop and use what I said" : "Speak your question"}
+                  className={`flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium transition disabled:opacity-40 ${
+                    voice.status === "recording"
+                      ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                      : "text-[var(--cb-faint)] hover:bg-[var(--cb-border)] hover:text-[var(--cb-text)]"
+                  }`}
+                >
+                  {voice.status === "transcribing" ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : voice.status === "recording" ? (
+                    <>
+                      <span className="relative flex size-2.5">
+                        <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-60" />
+                        <span className="relative inline-flex size-2.5 rounded-full bg-red-500" />
+                      </span>
+                      <span className="tabular-nums">0:{String(voice.maxSeconds - voice.seconds).padStart(2, "0")}</span>
+                      <Square size={14} className="fill-current" />
+                    </>
+                  ) : (
+                    <Mic size={18} />
+                  )}
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={loading || conversationLoading || !input.trim()}
@@ -564,7 +604,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
               </button>
             </form>
             <p className="mx-auto mt-2 hidden max-w-[710px] px-2 text-[11px] text-[var(--cb-faint)] sm:block">
-              Enter to send · Shift+Enter for a new line · AI answers can be wrong, so check important numbers.
+              Enter to send · Shift+Enter for a new line · Mic to speak · AI answers can be wrong, so check important numbers.
             </p>
           </footer>
         </div>

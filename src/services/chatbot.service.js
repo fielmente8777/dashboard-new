@@ -70,3 +70,40 @@ export function getConversation(id) { return request(`/chatbot/conversations/${e
 export function renameConversation(id, title) { return request(`/chatbot/conversations/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ title }) }); }
 export function setConversationPinned(id, pinned) { return request(`/chatbot/conversations/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ pinned: Boolean(pinned) }) }); }
 export function deleteConversation(id) { return request(`/chatbot/conversations/${encodeURIComponent(id)}`, { method: "DELETE" }); }
+// ---- Voice input ----
+// Recorded audio (Blob from MediaRecorder) -> { text, languageCode }.
+// Sent as multipart, so not through request(), which always sends JSON.
+// gian answers { success:false, code, message } on failure, e.g. NO_SPEECH.
+export async function transcribeAudio(blob) {
+  const token = getToken();
+  if (!token) throw new Error("Login token missing. Please log in again.");
+
+  const form = new FormData();
+  const type = (blob.type || "audio/webm").split(";")[0];
+  const extension = type.split("/")[1] || "webm";
+  form.append("audio", blob, `voice.${extension}`);
+
+  let response;
+  try {
+    response = await fetch(`${API_URL}/chatbot/transcribe`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: form,
+      credentials: "omit",
+    });
+  } catch {
+    throw new Error("Cannot reach the server. Please check your connection and try again.");
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload?.text) {
+    const error = new Error(
+      response.status === 404
+        ? "Voice input arrives with the next server update."
+        : payload?.message || "Could not understand the recording. Please try again.",
+    );
+    error.code = payload?.code;
+    throw error;
+  }
+  return { text: payload.text, languageCode: payload.languageCode ?? null };
+}

@@ -23,6 +23,7 @@ export const PAGES = {
   PROFILE: "profile",
   SETTINGS: "settings",
   INTEGRATION: "integration",
+  INTEGRATION_DETAILS: "integration/:slug",
   QR_CODE: "qr-code",
   NOTIFICATIONS: "notifications",
   USER_MANAGEMENT_ALL_USERS: "user-management/all-users",
@@ -184,6 +185,10 @@ export const callViewPath = (callId, options) =>
     generatePath(PAGES.CALL_VIEW, { slug: "all-calls", sid: callId }),
     options,
   );
+
+// one app's page under Integrations, e.g. integrationPath("exotel")
+export const integrationPath = (slug, options) =>
+  dashboardPath(generatePath(PAGES.INTEGRATION_DETAILS, { slug }), options);
 
 export const broadcastPath = (id, options) =>
   dashboardPath(generatePath(PAGES.BROADCAST_DETAILS, { id }), options);

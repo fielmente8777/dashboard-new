@@ -20,8 +20,9 @@ export default function RootLayout() {
         <ConfirmProvider>
           <Outlet />
         </ConfirmProvider>
+        {/* inside ToastProvider: the assistant shows toasts (e.g. voice input errors) */}
+        <ChatbotWidget />
       </ToastProvider>
-      <ChatbotWidget />
     </>
   );
 }

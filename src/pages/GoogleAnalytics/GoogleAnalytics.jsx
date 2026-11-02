@@ -8,7 +8,7 @@ import DateRangePicker from "../../components/ui/DateRangePicker";
 import Icon from "../../components/ui/Icon";
 import SelectMenu from "../../components/ui/SelectMenu";
 import { Skeleton } from "../../components/ui/States";
-import { PAGES, dashboardPath } from "../../routes/paths";
+import { integrationPath } from "../../routes/paths";
 import { metricByKey, METRICS } from "./analyticsUtils";
 import { ChannelsCard, SourcesCard } from "./components/AcquisitionCards";
 import { DevicesCard, LocationsCard, TechnologyCard } from "./components/AudienceCards";
@@ -41,7 +41,7 @@ const NotConnected = ({ message }) => (
       </p>
     </div>
     <Link
-      to={dashboardPath(PAGES.INTEGRATION)}
+      to={integrationPath("google-analytics")}
       className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white transition hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-500"
     >
       <Icon icon={Plug} />

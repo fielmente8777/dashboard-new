@@ -1,19 +1,13 @@
 import { ArrowRight, BellOff, CheckCheck, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  allNotificationsRead,
-  selectNotifications,
-  selectUnreadCount,
-} from "../../redux/slice/notificationsSlice";
 import { PAGES, dashboardPath } from "../../routes/paths";
 import { groupByDay } from "../../utils/relativeTime";
 import Icon from "../ui/Icon";
 import IconButton from "../ui/IconButton";
 import NotificationItem from "./NotificationItem";
-import { useOpenNotification } from "./useOpenNotification";
+import { useNotificationFeed } from "./useNotificationFeed";
 
 // the panel shows the newest few; the Notifications page has them all
 const PANEL_LIMIT = 30;
@@ -28,12 +22,10 @@ const tabClassName = (active) =>
 // The bell's slide-over: newest notifications, grouped by day, with a link
 // to the full Notifications page at the bottom.
 const NotificationPanel = ({ open, onClose }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const notifications = useSelector(selectNotifications);
-  const unreadCount = useSelector(selectUnreadCount);
   const [tab, setTab] = useState("all");
-  const openNotification = useOpenNotification(onClose);
+  const feed = useNotificationFeed({ status: tab, afterOpen: onClose });
+  const unreadCount = feed.unreadTotal;
 
   useEffect(() => {
     if (!open) return;
@@ -44,15 +36,7 @@ const NotificationPanel = ({ open, onClose }) => {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
-  const shown = useMemo(
-    () =>
-      (tab === "unread" ? notifications.filter((n) => !n.read) : notifications).slice(
-        0,
-        PANEL_LIMIT,
-      ),
-    [notifications, tab],
-  );
-  const groups = groupByDay(shown, (n) => n.receivedAt);
+  const groups = groupByDay(feed.items.slice(0, PANEL_LIMIT), (n) => n.at);
 
   if (!open) return null;
 
@@ -85,7 +69,7 @@ const NotificationPanel = ({ open, onClose }) => {
                 icon={CheckCheck}
                 label="Mark all as read"
                 disabled={unreadCount === 0}
-                onClick={() => dispatch(allNotificationsRead())}
+                onClick={feed.markAllRead}
               />
               <IconButton icon={X} label="Close" onClick={onClose} />
             </div>
@@ -117,7 +101,13 @@ const NotificationPanel = ({ open, onClose }) => {
         </header>
 
         <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto px-2 py-2">
-          {groups.length === 0 ? (
+          {feed.isLoading ? (
+            <div className="space-y-2 p-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-14 animate-pulse rounded-lg bg-app-surface-secondary" />
+              ))}
+            </div>
+          ) : groups.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
               <span className="flex size-12 items-center justify-center rounded-full bg-app-surface-secondary text-app-text-faint">
                 <Icon icon={BellOff} size="xl" />
@@ -129,7 +119,7 @@ const NotificationPanel = ({ open, onClose }) => {
                 <p className="mt-1 text-xs text-app-text-muted">
                   {tab === "unread"
                     ? "There is nothing new to look at."
-                    : "You'll see website visitors and other activity here as it happens."}
+                    : "New leads, WhatsApp chats and website visitors show up here as they happen."}
                 </p>
               </div>
             </div>
@@ -144,7 +134,7 @@ const NotificationPanel = ({ open, onClose }) => {
                     key={notification.id}
                     notification={notification}
                     now={now}
-                    onOpen={openNotification}
+                    onOpen={feed.open}
                   />
                 ))}
               </section>

@@ -1,5 +1,6 @@
 import Badge from "../../../components/ui/Badge";
 import DataTable from "../../../components/ui/DataTable";
+import { CampaignCard } from "../../../components/Marketing/MarketingParts";
 import { formatDateTime } from "../../../utils/formateDate";
 import { campaignStatus, formatNumber, percent } from "../broadcastUtils";
 
@@ -95,15 +96,53 @@ const columns = [
   },
 ];
 
+// A table on wider screens; on phones, one card per campaign.
 const CampaignTable = ({ campaigns, loading, onOpen, emptyMessage }) => (
-  <DataTable
-    columns={columns}
-    rows={campaigns}
-    rowKey={(row) => row._id}
-    loading={loading}
-    onRowClick={onOpen}
-    emptyMessage={emptyMessage}
-  />
+  <>
+    <div className="hidden md:block">
+      <DataTable
+        columns={columns}
+        rows={campaigns}
+        rowKey={(row) => row._id}
+        loading={loading}
+        onRowClick={onOpen}
+        emptyMessage={emptyMessage}
+      />
+    </div>
+    <div className="space-y-2 md:hidden">
+      {loading ? (
+        [0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-xl bg-app-surface-secondary" />)
+      ) : campaigns.length === 0 ? (
+        <p className="rounded-xl border border-app-border! bg-app-surface p-6 text-center text-sm text-app-text-muted">
+          {emptyMessage}
+        </p>
+      ) : (
+        campaigns.map((row) => {
+          const { tone, label } = campaignStatus(row.status);
+          return (
+            <CampaignCard
+              key={row._id}
+              title={row.name}
+              subtitle={row.templateName}
+              statusBadge={<Badge tone={tone}>{label}</Badge>}
+              onOpen={() => onOpen(row)}
+              date={row.createdAt ? formatDateTime(row.createdAt) : null}
+              stats={[
+                { label: "Audience", value: formatNumber(row.totalRecipients) },
+                { label: "Delivered", value: `${percent(row.deliveredCount, row.sentCount)}%` },
+                { label: "Read", value: `${percent(row.readCount, row.deliveredCount)}%` },
+                {
+                  label: "Failed",
+                  value: formatNumber(row.failedCount),
+                  className: row.failedCount ? "text-red-500" : "text-app-text",
+                },
+              ]}
+            />
+          );
+        })
+      )}
+    </div>
+  </>
 );
 
 export default CampaignTable;
