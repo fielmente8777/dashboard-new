@@ -163,6 +163,12 @@ export const ExotelPanel = ({ app, integrations }) => {
   const range = useMemo(() => getDateRange("30days"), []);
   const usage = useGetCallAnalyticsQuery({ hid, ...range }, { skip: !hid });
   const summary = usage.data?.summary || {};
+  // gian sends each number as { value, previous, change, trend } (older
+  // servers sent the plain number), so read either
+  const count = (key) => {
+    const metric = summary[key];
+    return Number((metric !== null && typeof metric === "object" ? metric.value : metric) || 0);
+  };
 
   const refresh = () =>
     run(refreshOverview(hid), { success: "Checked with Exotel", error: "Could not reach Exotel." });
@@ -178,10 +184,10 @@ export const ExotelPanel = ({ app, integrations }) => {
       }
     >
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-        <MiniStat icon={PhoneCall} label="Total" value={summary.totalCalls ?? 0} loading={usage.isLoading} />
-        <MiniStat icon={PhoneCall} label="Answered" value={summary.successfulCalls ?? 0} loading={usage.isLoading} />
-        <MiniStat icon={PhoneMissed} label="Missed" value={summary.missedCalls ?? 0} loading={usage.isLoading} />
-        <MiniStat icon={Timer} label="Talk time" value={formatDuration(summary.totalTalkTime || 0)} loading={usage.isLoading} />
+        <MiniStat icon={PhoneCall} label="Total" value={count("totalCalls")} loading={usage.isLoading} />
+        <MiniStat icon={PhoneCall} label="Answered" value={count("successfulCalls")} loading={usage.isLoading} />
+        <MiniStat icon={PhoneMissed} label="Missed" value={count("missedCalls")} loading={usage.isLoading} />
+        <MiniStat icon={Timer} label="Talk time" value={formatDuration(count("totalTalkTime"))} loading={usage.isLoading} />
       </div>
     </Card>
   );
