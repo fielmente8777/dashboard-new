@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import { useBellRing } from "../Notifications/notificationAlert";
 import { useUnreadNotificationTotal } from "../Notifications/useNotificationFeed";
 import { open as openSidebar } from "../../redux/slice/SidebarToggle";
 import { selectCurrentLocation } from "../../redux/slice/UserSlice";
@@ -30,6 +31,8 @@ const Navbar = () => {
   useNotifications();
   // server notifications plus the website-visitor ones kept in this browser
   const unreadCount = useUnreadNotificationTotal();
+  // changes on every new notification: rings the bell and pops the badge
+  const ring = useBellRing();
   const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const closeNotifications = useCallback(() => setIsNotificationsOpen(false), []);
@@ -82,11 +85,17 @@ const Navbar = () => {
             }
             title="Notifications"
             onClick={openNotifications}
-            className={iconButtonClassName}
+            className={`${iconButtonClassName} bell-button ${ring ? "text-app-text" : ""}`}
           >
-            <Icon icon={Bell} size="lg" />
+            {/* the key restarts the swing when another one arrives mid-ring */}
+            <span key={ring} className={`bell-icon flex ${ring ? "bell-ring" : ""}`}>
+              <Icon icon={Bell} size="lg" />
+            </span>
+            {ring > 0 && <span className="bell-pulse pointer-events-none absolute inset-1 rounded-full" aria-hidden="true" />}
             {unreadCount > 0 && (
-              <span className="anim-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-app-surface">
+              <span
+                key={`badge-${ring}`}
+                className="anim-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-app-surface">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

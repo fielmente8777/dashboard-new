@@ -1,4 +1,4 @@
-import { BellRing, Send } from "lucide-react";
+import { BellRing, Play, Send, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useApiAction } from "../../hooks/useApiAction";
 import { useTenant } from "../../hooks/useTenant";
@@ -24,6 +24,7 @@ import Icon from "../ui/Icon";
 import { Skeleton } from "../ui/States";
 import Switch from "../ui/Switch";
 import { NOTIFICATION_TYPE_LABELS } from "./notificationKinds";
+import { isSoundOn, playNotificationSound, setSoundOn } from "./notificationAlert";
 
 // Browser push for this device: on, off, or why it can't be turned on.
 const PushCard = ({ pushOn, onPushOnChange }) => {
@@ -128,6 +129,44 @@ const PushCard = ({ pushOn, onPushOnChange }) => {
   );
 };
 
+// The chime for new notifications while the dashboard is open. Kept per
+// browser: a shared front-desk PC can be quiet while a phone still rings.
+const SoundCard = () => {
+  const [on, setOn] = useState(isSoundOn);
+
+  const change = (next) => {
+    setSoundOn(next);
+    setOn(next);
+    if (next) playNotificationSound();
+  };
+
+  return (
+    <Card title="Sound" description="Plays when a notification arrives while the dashboard is open.">
+      <div className="flex flex-col gap-3 rounded-xl bg-app-bg p-4 sm:flex-row sm:items-center">
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+            on ? "bg-blue-500/12 text-blue-600 dark:text-blue-400" : "bg-app-surface-secondary text-app-text-muted"
+          }`}
+        >
+          <Icon icon={on ? Volume2 : VolumeX} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-app-text">{on ? "Sound on" : "Sound off"}</p>
+          <p className="mt-0.5 text-xs text-app-text-muted">
+            For this browser. Types switched off for the dashboard below stay quiet.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" size="sm" icon={Play} onClick={playNotificationSound}>
+            Preview
+          </Button>
+          <Switch label="Notification sound" checked={on} onChange={change} />
+        </div>
+      </div>
+    </Card>
+  );
+};
+
 // Which notification types show in the dashboard and which come as push.
 const NotificationSettings = () => {
   const { hid } = useTenant();
@@ -164,6 +203,8 @@ const NotificationSettings = () => {
         pushOn={pushOn}
         onPushOnChange={(enabled) => run(update({ hid, push: { enabled } }))}
       />
+
+      <SoundCard />
 
       <Card title="What to notify me about" description="Saved for your login, on every device.">
         <div className="-mx-1 overflow-x-auto">

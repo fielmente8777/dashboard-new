@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import WebSocketClient from "../../../config/websocketClient";
 import { WS_BASE_URL } from "../../../data/constant";
@@ -7,7 +7,9 @@ import {
   notificationsApi,
   receiveNotification,
   receiveNotificationsRead,
+  useGetNotificationPreferencesQuery,
 } from "../../../redux/api/notificationsApi";
+import { alertNewNotification } from "../../Notifications/notificationAlert";
 import {
   MAX_NOTIFICATIONS,
   notificationReceived,
@@ -53,6 +55,12 @@ export const useNotifications = () => {
     useSelector((state) => getUserNdid(state.userProfile.user)) ||
     localStorage.getItem("ndid");
 
+  // types switched off for the dashboard (Notifications → Settings) arrive
+  // quietly: no ring, no sound. A ref, so a change doesn't reconnect the socket.
+  const prefs = useGetNotificationPreferencesQuery(hid, { skip: !hid });
+  const mutedRef = useRef([]);
+  mutedRef.current = prefs.data?.preferences?.inApp?.mutedTypes || [];
+
   useEffect(() => {
     if (ndid) dispatch(notificationsLoaded({ ndid, items: readSaved(ndid) }));
   }, [ndid, dispatch]);
@@ -87,9 +95,11 @@ export const useNotifications = () => {
       ({ data, event }) => {
         if (event === "NOTIFICATION" && data?.ndid === ndid) {
           dispatch(notificationReceived(toNotification(data)));
+          alertNewNotification();
         } else if (event === "NOTIFICATION_NEW" && data?.notification) {
           dispatch(receiveNotification({ ...data.notification, hid: data.notification.hid ?? hid }));
           setUnread(data.unreadCount);
+          if (!mutedRef.current.includes(data.notification.type)) alertNewNotification();
         } else if (event === "NOTIFICATION_READ" && Array.isArray(data?.ids)) {
           dispatch(receiveNotificationsRead(hid, data.ids));
           setUnread(data.unreadCount);

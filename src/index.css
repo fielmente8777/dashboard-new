@@ -623,7 +623,55 @@ html.dark select option {
   box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
 }
 
+/* ── The navbar bell ─────────────────────────────────────────────────────
+   bell-ring   swings from its top when a notification arrives
+   bell-pulse  a soft ring spreading out behind it at the same time
+   hovering the bell gives it a small wiggle                               */
+
+@keyframes bell-ring {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(18deg); }
+  22% { transform: rotate(-16deg); }
+  34% { transform: rotate(13deg); }
+  46% { transform: rotate(-10deg); }
+  58% { transform: rotate(7deg); }
+  70% { transform: rotate(-4deg); }
+  82% { transform: rotate(2deg); }
+  100% { transform: rotate(0); }
+}
+
+@keyframes bell-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(12deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes bell-pulse {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ternary, #f97316) 45%, transparent); }
+  to { box-shadow: 0 0 0 12px transparent; }
+}
+
+.bell-icon {
+  transform-origin: 50% 8%;
+}
+
+.bell-ring {
+  animation: bell-ring 1s var(--ease-out, ease-out);
+}
+
+.bell-button:hover .bell-icon:not(.bell-ring) {
+  animation: bell-wiggle 0.5s ease-in-out;
+}
+
+.bell-pulse {
+  animation: bell-pulse 1s ease-out 2;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .bell-ring,
+  .bell-pulse,
+  .bell-button:hover .bell-icon,
   .anim-enter,
   .anim-fade,
   .anim-pop,
