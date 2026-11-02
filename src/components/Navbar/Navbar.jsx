@@ -17,9 +17,26 @@ import { toggleSideBar } from "../../redux/slice/SidebarToggle";
 import { FaAlignRight } from "react-icons/fa";
 import NotificationPopup from "../Popup/NotificationPopup";
 import ThemeToggle from "./ThemeToggle";
-import { WS_BASE_URL } from "../../data/constant";
+import {
+  BASE_PATH,
+  NOTIFICATION_WS_URL,
+  ROUTES_PATH,
+  WS_BASE_URL,
+} from "../../data/constant";
 import WebSocketClient from "../../config/websocketClient";
 import GlobalSearch from "../GlobalSearch/GlobalSearch";
+import {
+  getNotifications,
+  getNotificationUnreadCount,
+  markAllNotificationsRead,
+  markNotificationRead,
+  sendTestPush,
+} from "../../services/api/notification.api";
+import {
+  enablePushNotifications,
+  ensurePushSubscription,
+  getPushPermission,
+} from "../../utils/pushNotifications";
 
 const letterColorMap = {
   a: "#e6194b",
@@ -137,6 +154,167 @@ const Navbar = () => {
     return () => wsRef.current?.close();
   }, []);
 
+  // ---------------- In-app notifications (new system) ----------------
+  const navigate = useNavigate();
+  const notificationWsRef = useRef(null);
+  const [inAppNotifications, setInAppNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+
+  const loadNotifications = async (cursor) => {
+    setNotificationsLoading(true);
+    try {
+      const res = await getNotifications({ limit: 20, cursor });
+      console.log("🔔 [notifications] list:", res);
+      const docs = res?.result?.docs || [];
+      setInAppNotifications((prev) => {
+        if (!cursor) return docs;
+        const seen = new Set(prev.map((n) => n.id));
+        return [...prev, ...docs.filter((n) => !seen.has(n.id))];
+      });
+      setNextCursor(res?.result?.nextCursor || null);
+    } catch (err) {
+      console.error("🔔 [notifications] list failed:", err);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  // initial load (and reload on property switch)
+  useEffect(() => {
+    if (!token) return;
+
+    loadNotifications();
+
+    getNotificationUnreadCount()
+      .then((res) => {
+        console.log("🔔 [notifications] unread count:", res);
+        setUnreadCount(res?.result?.total || 0);
+      })
+      .catch((err) =>
+        console.error("🔔 [notifications] unread count failed:", err),
+      );
+  }, [token, hid]);
+
+  // realtime
+  useEffect(() => {
+    if (!token) return;
+
+    const client = new WebSocketClient(NOTIFICATION_WS_URL);
+    notificationWsRef.current = client;
+
+    client.connect(
+      ({ event, data }) => {
+        switch (event) {
+          case "NOTIFICATION_SUBSCRIBED":
+            console.log("🔔 [notifications] subscribed:", data);
+            setUnreadCount(data?.unreadCount || 0);
+            break;
+          case "NOTIFICATION_NEW":
+            console.log("🔔 [notifications] NEW:", data);
+            if (!data?.notification) break;
+            // grouped notifications reuse the same id -> replace & move to top
+            setInAppNotifications((prev) => [
+              data.notification,
+              ...prev.filter((n) => n.id !== data.notification.id),
+            ]);
+            setUnreadCount(data?.unreadCount || 0);
+            break;
+          case "NOTIFICATION_READ": {
+            // read state changed (this tab or another tab/device of the same user)
+            console.log("🔔 [notifications] READ sync:", data);
+            setUnreadCount(data?.unreadCount || 0);
+            const ids = data?.ids;
+            if (ids === "all") {
+              setInAppNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true })),
+              );
+            }
+            break;
+          }
+          case "NOTIFICATION_ERROR":
+            console.error("🔔 [notifications] socket error:", data);
+            break;
+          default:
+            break;
+        }
+      },
+      // (re)subscribe on every (re)connect
+      () =>
+        client.send({
+          event: "NOTIFICATION_SUBSCRIBE",
+          data: { token, hid },
+        }),
+    );
+
+    return () => client.close();
+  }, [token, hid]);
+
+  // ---------------- Browser (Chrome) push notifications ----------------
+  const [pushPermission, setPushPermission] = useState(getPushPermission());
+
+  // already allowed -> make sure this browser is registered on the backend
+  useEffect(() => {
+    if (!token || getPushPermission() !== "granted") return;
+    ensurePushSubscription().catch((err) =>
+      console.error("🔔 [push] subscription failed:", err),
+    );
+  }, [token]);
+
+  const handleEnablePush = async () => {
+    try {
+      const permission = await enablePushNotifications();
+      setPushPermission(permission);
+      if (permission === "granted") {
+        const res = await sendTestPush();
+        console.log("🔔 [push] test push:", res);
+      }
+    } catch (err) {
+      console.error("🔔 [push] enable failed:", err);
+    }
+  };
+
+  const getNotificationPath = (n) => {
+    const targetHid = n.hid || hid;
+    const base = `${BASE_PATH}/${targetHid}`;
+
+    if (n.entity?.type === "lead" && n.entity?.id) {
+      return `${base}/${ROUTES_PATH.LEADS_MANAGEMENT}/all-leads/${n.entity.id}/view?hid=${targetHid}&lead=1`;
+    }
+    if (n.entity?.type === "whatsapp_conversation" && n.entity?.id) {
+      const phone = n.actor?.phone ? `&phone=${n.actor.phone}` : "";
+      return `${base}/channel/wa/chat?conversationId=${n.entity.id}${phone}`;
+    }
+    return null;
+  };
+
+  const handleNotificationClick = (n) => {
+    if (!n.isRead) {
+      setInAppNotifications((prev) =>
+        prev.map((x) => (x.id === n.id ? { ...x, isRead: true } : x)),
+      );
+      setUnreadCount((c) => Math.max(0, c - 1));
+      markNotificationRead(n.id).catch((err) =>
+        console.error("🔔 [notifications] mark read failed:", err),
+      );
+    }
+
+    const path = getNotificationPath(n);
+    if (path) {
+      setIsNotificationPopupOpen(false);
+      navigate(path);
+    }
+  };
+
+  const handleMarkAllRead = () => {
+    setInAppNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+    markAllNotificationsRead().catch((err) =>
+      console.error("🔔 [notifications] mark all read failed:", err),
+    );
+  };
+
   return (
     <div className="left-0 top-0">
       <div className="py-2 z-10 bg-app-navbar sm:bg-primary dark:bg-app-navbar flex cardShadow px-4 items-center justify-between top-0 w-full transition-colors duration-200">
@@ -204,12 +382,17 @@ const Navbar = () => {
             <ThemeToggle />
             <button
               onClick={() => setIsNotificationPopupOpen(true)}
-              className="group transition-transform duration-200 hover:scale-110 hover:shadow-md"
+              className="relative group transition-transform duration-200 hover:scale-110 hover:shadow-md"
             >
               <IoIosNotifications
                 size={22}
                 className="text-white origin-top transition-transform duration-200 group-hover:animate-ring group-hover:scale-125"
               />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-4.5 h-4.5 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </button>
             {/* <Link to="settings">
               <MdSettings size={22} color="white" />
@@ -293,6 +476,15 @@ const Navbar = () => {
           isOpen={isNotificationPopupOpen}
           onClose={onNotificationPopupClose}
           data={notifications}
+          notifications={inAppNotifications}
+          unreadCount={unreadCount}
+          hasMore={Boolean(nextCursor)}
+          loading={notificationsLoading}
+          onLoadMore={() => loadNotifications(nextCursor)}
+          onItemClick={handleNotificationClick}
+          onMarkAllRead={handleMarkAllRead}
+          pushPermission={pushPermission}
+          onEnablePush={handleEnablePush}
         />
       </div>
     </div>

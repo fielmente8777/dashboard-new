@@ -7,11 +7,12 @@ class WebSocketClient {
     this.url = url;
   }
 
-  connect(onMessage) {
+  connect(onMessage, onOpen) {
     this.socket = new WebSocket(this.url);
 
     this.socket.onopen = () => {
       // console.log("WebSocket connected 🚀");
+      onOpen?.();
     };
 
     this.socket.onmessage = (event) => {
@@ -30,7 +31,7 @@ class WebSocketClient {
       if (this.shouldReconnect) {
         setTimeout(() => {
           // console.log("Reconnecting WebSocket...");
-          this.connect(onMessage);
+          this.connect(onMessage, onOpen);
         }, this.reconnectInterval);
       }
     };

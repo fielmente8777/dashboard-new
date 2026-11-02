@@ -44,6 +44,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import WhatsAppCreditsCard from "./components/WhatsAppCredits/WhatsAppCreditsCard";
 import { DUMMY_WHATSAPP_BILLING } from "./components/WhatsAppCredits/billingDummyData";
+import WhatsAppSettings from "./components/WhatsAppSettings";
 
 const sidebarTabs = [
   { id: "overview", label: "Overview" },
@@ -68,6 +69,7 @@ const sidebarTabs = [
   { id: "whatsapp-flow", label: "WhatsApp Flow" },
   { id: "quick-replies", label: "Quick Replies" },
   { id: "credits", label: "Credits & Usage" },
+  { id: "settings", label: "Settings" },
 ];
 
 const WhatsAppBusiness = ({ template = false, section = null }) => {
@@ -430,6 +432,12 @@ const WhatsAppBusiness = ({ template = false, section = null }) => {
                   }
                 />
               </div>
+            )}
+            {activeTab === "settings" && (
+              <WhatsAppSettings
+                phoneNumber={accountDetails?.phoneNumber}
+                waba={accountDetails?.waba}
+              />
             )}
           </div>
         </div>

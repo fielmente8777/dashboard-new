@@ -2,12 +2,86 @@ import { useEffect, useRef, useState } from "react";
 import { FiEdit2, FiUser, FiX } from "react-icons/fi";
 import Loader from "../../../../components/Loader";
 import { useToast } from "../../../../context/ToastContext";
+import {
+  getWhatsAppDisplayName,
+  updateWhatsAppDisplayName,
+} from "../../../../services/api/whatsApp";
+
+const NAME_STATUS_STYLE = {
+  APPROVED:
+    "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400",
+  PENDING_REVIEW:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400",
+  DECLINED: "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400",
+};
+
+const formatStatus = (status) =>
+  status ? status.replace(/_/g, " ").toLowerCase() : "";
+
+const NameStatusBadge = ({ status }) => {
+  if (!status) return null;
+  return (
+    <span
+      className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${
+        NAME_STATUS_STYLE[status] ||
+        "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-app-text-faint"
+      }`}
+    >
+      {formatStatus(status)}
+    </span>
+  );
+};
 
 const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
   const { showToast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [preview, setPreview] = useState(null);
   const fileRef = useRef(null);
+  const [displayNameInfo, setDisplayNameInfo] = useState({});
+  const [displayName, setDisplayName] = useState("");
+  const [isDisplayNameSaving, setIsDisplayNameSaving] = useState(false);
+
+  const fetchDisplayName = async () => {
+    try {
+      const response = await getWhatsAppDisplayName();
+      if (response?.success) {
+        setDisplayNameInfo(response?.result?.doc || {});
+      }
+    } catch (error) {
+      console.error("Error fetching display name", error?.message);
+    }
+  };
+
+  // Only submit when the name actually changed, Meta limits changes to 10 per 30 days
+  const saveDisplayName = async () => {
+    const newName = displayName.trim();
+    if (!newName || newName === displayNameInfo?.verified_name) return;
+
+    setIsDisplayNameSaving(true);
+    try {
+      const response = await updateWhatsAppDisplayName(newName);
+      if (response?.success) {
+        showToast({
+          message:
+            "Display name submitted to Meta for review. It will update once approved.",
+          type: "success",
+        });
+        fetchDisplayName();
+      } else {
+        showToast({
+          message: response?.message || "Failed to update display name",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      showToast({
+        message: error?.message || "Failed to update display name",
+        type: "error",
+      });
+    } finally {
+      setIsDisplayNameSaving(false);
+    }
+  };
 
   const [form, setForm] = useState({
     about: profile?.about || "",
@@ -54,6 +128,7 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
       websites: form.websites.filter(Boolean), // ✅ clean empty
     };
 
+    await saveDisplayName();
     onSave && (await onSave(payload));
     setIsEditing(false);
   };
@@ -90,6 +165,16 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
     }
   }, [profile]);
 
+  useEffect(() => {
+    fetchDisplayName();
+  }, []);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setDisplayName(displayNameInfo?.verified_name || "");
+    }
+  }, [displayNameInfo, isEditing]);
+
   if (!profile) return null;
 
   return (
@@ -114,6 +199,27 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
           {/* VIEW MODE */}
           {!isEditing && (
             <div className="space-y-2">
+              <div>
+                <p className="text-xs text-gray-500">Display Name</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm text-gray-700 dark:text-app-text-faint">
+                    {displayNameInfo?.verified_name || "—"}
+                  </p>
+                  <NameStatusBadge status={displayNameInfo?.name_status} />
+                </div>
+                {displayNameInfo?.new_display_name &&
+                  displayNameInfo?.new_name_status !== "APPROVED" && (
+                    <div className="flex items-center gap-2 flex-wrap mt-1">
+                      <p className="text-xs text-gray-500 dark:text-app-text-faint">
+                        Requested: {displayNameInfo.new_display_name}
+                      </p>
+                      <NameStatusBadge
+                        status={displayNameInfo?.new_name_status}
+                      />
+                    </div>
+                  )}
+              </div>
+
               <div>
                 <p className="text-xs text-gray-500">About</p>
                 <p className="text-sm text-gray-700 dark:text-app-text-faint">{profile.about || "—"}</p>
@@ -170,6 +276,22 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
           {/* EDIT MODE */}
           {isEditing && (
             <div className="space-y-3">
+              <div>
+                <label className="text-xs text-gray-500 dark:text-app-text-faint">
+                  Display Name
+                </label>
+                <input
+                  name="displayName"
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full border rounded-md px-2 py-1 text-sm"
+                />
+                <p className="text-[11px] text-gray-400 dark:text-app-text-faint mt-1">
+                  Changes are reviewed by Meta before going live.
+                </p>
+              </div>
+
               <div>
                 <label className="text-xs text-gray-500 dark:text-app-text-faint">About</label>
                 <textarea
@@ -249,11 +371,14 @@ const WhatsAppProfileCard = ({ profile, onSave, loading }) => {
 
               <div className="flex gap-2 pt-2">
                 <button
-                  disabled={loading}
+                  disabled={loading || isDisplayNameSaving}
                   onClick={handleSave}
                   className="bg-primary text-white px-3 py-1 rounded-md text-sm flex items-center gap-2 disabled:opacity-60 "
                 >
-                  Save {loading && <Loader color="#fefefe" size={12} />}
+                  Save{" "}
+                  {(loading || isDisplayNameSaving) && (
+                    <Loader color="#fefefe" size={12} />
+                  )}
                 </button>
 
                 <button

@@ -171,6 +171,40 @@ export const updateWhatsAppProfile = async (payload) => {
   return data;
 };
 
+export const getWhatsAppDisplayName = async () => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/profile/display-name?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
+export const updateWhatsAppDisplayName = async (displayName) => {
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/profile/display-name?hid=${localStorage.getItem("hid")}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ displayName }),
+    },
+  );
+
+  const data = await response.json();
+  return data;
+};
+
 export const createWhatsAppMessageTemplate = async (payload) => {
   const response = await fetch(
     `${NEW_BASE_URL}/api/v1/whatsapp/message/template/create?hid=${localStorage.getItem("hid")}`,
