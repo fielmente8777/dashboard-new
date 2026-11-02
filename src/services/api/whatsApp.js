@@ -538,3 +538,33 @@ export const getWhatsAppTransactions = async ({
 
   return await response.json();
 };
+
+
+export const resendFailedCampaignRecipient = async ({
+  campaignId,
+  recipientId,
+}) => {
+  const hid = localStorage.getItem("hid");
+
+  const response = await fetch(
+    `${NEW_BASE_URL}/api/v1/whatsapp/campaign/broadcast/${campaignId}/recipients/${recipientId}/resend?hid=${encodeURIComponent(hid || "")}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data?.message || data?.responseMessage || "Failed to resend message"
+    );
+  }
+
+  return data;
+};
+
