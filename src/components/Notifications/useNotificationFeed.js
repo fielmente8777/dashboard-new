@@ -47,6 +47,15 @@ const fromLocal = (n) => ({
 
 const byNewest = (a, b) => new Date(b.at) - new Date(a.at);
 
+// Where a notification's link goes. Server links are full dashboard paths; account-wide
+// ones (e.g. the calling balance) carry ":hid", filled with the property being viewed.
+// Local (browser-kept) links are PAGES.* paths.
+export const resolveNotificationLink = (n, hid) => {
+  if (!n?.link) return null;
+  if (n.source === "local" || !n.link.startsWith("/")) return dashboardPath(n.link);
+  return hid ? n.link.replace("/:hid/", `/${hid}/`) : n.link;
+};
+
 // The server answers 404 until gian with the notification center is deployed;
 // then only the browser-kept notifications are shown.
 const isMissing = (error) => error?.status === 404;
@@ -114,9 +123,8 @@ export const useNotificationFeed = ({ status = "all", category = "", afterOpen }
   const open = (n) => {
     if (!n.isRead) setRead(n, true);
     afterOpen?.();
-    if (!n.link) return;
-    // server links are full dashboard paths; local ones are PAGES.* paths
-    navigate(n.source === "server" && n.link.startsWith("/") ? n.link : dashboardPath(n.link));
+    const link = resolveNotificationLink(n, hid);
+    if (link) navigate(link);
   };
 
   const remove = (n) => {

@@ -66,6 +66,8 @@ export const NOTIFICATION_TYPE_LABELS = {
   "lead.created": { label: "New leads", hint: "From Meta, Google Ads, your website and every other source." },
   "whatsapp.conversation.new": { label: "New WhatsApp chats", hint: "A guest messages you for the first time." },
   "whatsapp.message.new": { label: "WhatsApp messages", hint: "Every new message in an existing chat." },
+  "call.balance.low": { label: "Calling balance running low", hint: "About 2 days before the Exotel balance runs out (admins and people who make calls)." },
+  "call.balance.empty": { label: "Calling balance used up", hint: "Calls stop until the Exotel account is recharged." },
   "system.announcement": { label: "Eazotel announcements", hint: "Product news and important account updates." },
   "system.test": { label: "Test notifications", hint: "Sent when you test push from this page." },
 };

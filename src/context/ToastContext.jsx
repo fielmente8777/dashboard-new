@@ -42,6 +42,8 @@ const POSITIONS = {
 //
 // type: "success" (default) | "error" | "warning" | "info"
 // title: optional bold first line; duration: ms, 0 keeps it until closed.
+// action: optional { label, onClick } button under the text (e.g. "View" on a notification);
+//         clicking it also closes the toast.
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
   const nextId = useRef(0);
@@ -51,7 +53,7 @@ export const ToastProvider = ({ children }) => {
   }, []);
 
   const showToast = useCallback(
-    ({ message, title, type = "success", duration = 3000, position }) => {
+    ({ message, title, type = "success", duration = 3000, position, action }) => {
       const id = ++nextId.current;
       setToasts((prev) => [
         ...prev,
@@ -61,6 +63,7 @@ export const ToastProvider = ({ children }) => {
           title,
           type: TYPES[type] ? type : "success",
           duration,
+          action: action?.label && typeof action.onClick === "function" ? action : null,
           position: POSITIONS[position] ? position : "bottom-right",
         },
       ]);
@@ -111,6 +114,18 @@ export const ToastProvider = ({ children }) => {
                   >
                     {toast.message}
                   </p>
+                  {toast.action && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        removeToast(toast.id);
+                        toast.action.onClick();
+                      }}
+                      className="mt-1.5 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {toast.action.label}
+                    </button>
+                  )}
                 </div>
 
                 <button
