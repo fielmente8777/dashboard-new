@@ -1,12 +1,16 @@
 import { BellRing, X } from "lucide-react";
 import { useState } from "react";
+import {
+  getFollowUpError,
+  splitFollowUp,
+  toFollowUpValue,
+} from "../../../components/followUp";
+import FollowUpFields from "../../../components/FollowUpFields";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import DatePicker from "../../../components/ui/DatePicker";
 import CustomDropdown from "../../../components/ui/Dropdown";
 import { Field } from "../../../components/ui/Field";
 import { Stages, TurnAwayCode } from "../../../data/constant";
-import { toInputValue } from "./leadDetailsUtils";
 
 // The controls to work a lead: who has it, its stage, why it was turned
 // away, and when to follow up. `savedFollowUp` is the saved follow-up as a
@@ -24,7 +28,9 @@ const LeadManageCard = ({
   onTurnAway,
   onSaveFollowUp,
 }) => {
-  const [followUp, setFollowUp] = useState(savedFollowUp);
+  const [followUp, setFollowUp] = useState(() =>
+    splitFollowUp(savedFollowUp),
+  );
 
   return (
     <Card title="Manage lead" description="Owner, stage and next step">
@@ -62,26 +68,26 @@ const LeadManageCard = ({
         </div>
 
         <div className="rounded-lg border border-dashed border-app-border! bg-app-surface-secondary/50 p-3">
-          <Field label="Follow up on" as="div">
-            <DatePicker
-              mode="datetime"
-              timeStep={5}
-              value={followUp}
-              min={toInputValue(new Date())}
-              onChange={setFollowUp}
-            />
-          </Field>
+          <p className="mb-2 text-xs font-medium text-app-text-muted">
+            Follow up on
+          </p>
+          <FollowUpFields value={followUp} onChange={setFollowUp} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
               size="sm"
               icon={BellRing}
               loading={saving}
-              disabled={!followUp || followUp === savedFollowUp}
-              onClick={() => onSaveFollowUp(followUp)}
+              disabled={
+                Boolean(getFollowUpError(followUp)) ||
+                toFollowUpValue(followUp) === savedFollowUp
+              }
+              onClick={() => onSaveFollowUp(toFollowUpValue(followUp))}
             >
               Save follow-up
             </Button>
-            {savedFollowUp && (
+            {/* a "Follow Up" lead keeps its date; moving it to another
+                stage is what clears it */}
+            {savedFollowUp && lead.status !== "Follow Up" && (
               <Button
                 size="sm"
                 variant="ghost"

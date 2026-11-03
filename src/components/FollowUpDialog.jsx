@@ -1,30 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { getFollowUpError, splitFollowUp, toFollowUpValue } from "./followUp";
+import FollowUpFields from "./FollowUpFields";
 import Button from "./ui/Button";
-import DatePicker from "./ui/DatePicker";
 import Dialog from "./ui/Dialog";
 
-// "YYYY-MM-DDTHH:mm" of right now, in local time
-const getNow = () => {
-  const now = new Date();
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16);
-};
-
 // Asks when to follow up (on a call, a lead, ...). onSave gets a Date.
+// The stage only becomes "Follow Up" through onSave, so it can't be set
+// without a date; the time is optional.
 const FollowUpDialog = ({
   open,
   onSave,
   onClose,
-  description = "Pick the date and time to follow up.",
+  description = "Pick the day to follow up. Add a time if you need one.",
 }) => {
-  const [value, setValue] = useState("");
-  // fixed while the dialog is open, so the allowed times do not shift under the user
-  const now = useMemo(getNow, [open]);
+  const [value, setValue] = useState(splitFollowUp(""));
 
   useEffect(() => {
-    if (open) setValue("");
+    if (open) setValue(splitFollowUp(""));
   }, [open]);
+
+  const canSave = !getFollowUpError(value);
 
   return (
     <Dialog
@@ -33,22 +28,16 @@ const FollowUpDialog = ({
       title="Follow up"
       description={description}
     >
-      <div className="flex justify-center">
-        <DatePicker
-          inline
-          mode="datetime"
-          timeStep={5}
-          min={now}
-          value={value}
-          onChange={setValue}
-        />
-      </div>
+      <FollowUpFields inline value={value} onChange={setValue} />
 
       <div className="mt-5 flex justify-end gap-2">
         <Button variant="secondary" onClick={onClose}>
           Cancel
         </Button>
-        <Button disabled={!value} onClick={() => onSave(new Date(value))}>
+        <Button
+          disabled={!canSave}
+          onClick={() => onSave(new Date(toFollowUpValue(value)))}
+        >
           Save follow-up
         </Button>
       </div>
