@@ -91,6 +91,7 @@ export const callsApi = api.injectEndpoints({
 
 export const {
   useGetCallConnectionQuery,
+  useGetBalanceAlertQuery,
   useGetCallsQuery,
   useImportCallsMutation,
   useMakeCallMutation,
