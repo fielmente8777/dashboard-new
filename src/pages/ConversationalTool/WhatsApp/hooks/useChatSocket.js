@@ -4,6 +4,7 @@ import { WEBSOCKET_EVENTS, WS_BASE_URL } from "../../../../data/constant";
 import useNotificationSound from "../../../../hooks/useNotificationSound";
 import { useMarkConversationReadMutation } from "../../../../redux/api/whatsappApi";
 import { samePhone } from "../chatUtils";
+import { rememberEarlyStatus } from "../sendFailure";
 import { useChatCache } from "./useChatCache";
 
 const sameMessage = (a, b) =>
@@ -101,13 +102,24 @@ export const useChatSocket = ({ hid, ndid, openConversation }) => {
         }
 
         case WEBSOCKET_EVENTS.WHATSAPP_MESSAGE_STATUS: {
-          if (!openConversation) return;
-          cache.patchMessages(openConversation._id, (messages) => {
-            const message = messages.find(
-              (item) => item.messageId === data.messageId,
-            );
-            if (message) message.status = data.status;
-          });
+          const update = {
+            status: data.status,
+            ...(data.failure && { failure: data.failure }),
+          };
+          let found = false;
+          if (openConversation) {
+            cache.patchMessages(openConversation._id, (messages) => {
+              const message = messages.find(
+                (item) => item.messageId === data.messageId,
+              );
+              if (message) {
+                Object.assign(message, update);
+                found = true;
+              }
+            });
+          }
+          // may be a message whose send hasn't answered yet
+          if (!found) rememberEarlyStatus(data.messageId, update);
           return;
         }
 
