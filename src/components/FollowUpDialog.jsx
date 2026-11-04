@@ -27,6 +27,7 @@ const FollowUpDialog = ({
       onClose={onClose}
       title="Follow up"
       description={description}
+      sheetOnPhone
     >
       <FollowUpFields inline value={value} onChange={setValue} />
 

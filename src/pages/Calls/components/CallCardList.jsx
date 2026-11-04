@@ -121,11 +121,14 @@ const CallCardList = ({
                 id={call.sid}
                 value={call.stage}
                 options={CALL_STAGES}
-                onSelect={(stage) =>
-                  stage === "Follow Up"
-                    ? onFollowUp(call)
-                    : onUpdate(call, { stage, followUpDate: null })
-                }
+                // until the date is saved the stage stays as it was (false)
+                onSelect={(stage) => {
+                  if (stage === "Follow Up") {
+                    onFollowUp(call);
+                    return false;
+                  }
+                  onUpdate(call, { stage, followUpDate: null });
+                }}
               />
             </div>
 

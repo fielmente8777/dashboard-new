@@ -152,7 +152,7 @@ const CallDetails = () => {
     // a follow up needs a date: the follow-up box below asks for it
     if (stage === "Follow Up") {
       showToast({ message: "Pick the follow-up date below and save it." });
-      return;
+      return false; // the stage stays as it was until the date is saved
     }
     // only a "Follow Up" call has a follow-up date
     handleUpdate({ stage, followUpDate: null });

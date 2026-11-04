@@ -162,9 +162,13 @@ const LeadDetails = () => {
     );
 
   const handleStageChange = (stage) => {
-    // a follow up also needs a date, which the dialog asks for
-    if (stage === "Follow Up") setDialog("stageFollowUp");
-    else handleUpdate({ status: stage, followUpDate: null });
+    // a follow up also needs a date, which the dialog asks for; until it is
+    // saved the stage stays as it was (false tells the dropdown)
+    if (stage === "Follow Up") {
+      setDialog("stageFollowUp");
+      return false;
+    }
+    handleUpdate({ status: stage, followUpDate: null });
   };
 
   const handleCallClick = () => {

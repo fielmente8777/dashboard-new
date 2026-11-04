@@ -81,8 +81,9 @@ export default function CustomDropdown({
       setSelected(updated);
       onChange(updated);
     } else {
-      setSelected(opt.value);
-      onChange(opt.value);
+      // the owner returns false when the pick doesn't count yet (a follow up
+      // still needs its date): keep showing what was there before
+      if (onChange(opt.value) !== false) setSelected(opt.value);
       setOpen(false);
     }
   };
