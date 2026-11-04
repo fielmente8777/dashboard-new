@@ -113,7 +113,10 @@ const BalanceCard = ({ overview, onRefresh, refreshing, onEditKeys, providerUrl 
     );
   }
 
-  const level = balance.isEmpty ? "error" : balance.isLow ? "warn" : "ok";
+  // the server's forecast (days left at the current spend) decides when it has one
+  const forecastLevel = { empty: "error", low: "warn", ok: "ok" }[balance.level];
+  const level = forecastLevel ?? (balance.isEmpty ? "error" : balance.isLow ? "warn" : "ok");
+  const daysLeft = typeof balance.daysLeft === "number" ? balance.daysLeft : null;
   const tone = BALANCE_TONES[level];
   // the bar is full at four times the warning level; the tick marks that level
   const full = balance.lowThreshold * 4;
@@ -149,7 +152,12 @@ const BalanceCard = ({ overview, onRefresh, refreshing, onEditKeys, providerUrl 
         <span className="absolute -top-1 h-4 w-0.5 rounded bg-app-text-faint" style={{ left: "25%" }} title="Low balance level" />
       </div>
       <p className="mt-2 text-[11px] text-app-text-faint">
-        We warn you below {formatMoney(balance.lowThreshold, balance.currency)}. When it reaches zero, calls from the dashboard fail.
+        {daysLeft !== null
+          ? `${daysLeft < 1 ? "Less than a day" : `About ${Math.floor(daysLeft)} day${Math.floor(daysLeft) === 1 ? "" : "s"}`} of calls left at your current usage` +
+            (balance.dailySpend ? ` (about ${formatMoney(balance.dailySpend, balance.currency)} a day)` : "") +
+            ". We warn admins 2 days before it runs out."
+          : `We warn you below ${formatMoney(balance.lowThreshold, balance.currency)} until we have a day of usage to forecast from.`}{" "}
+        When it reaches zero, calls from the dashboard fail.
       </p>
     </Card>
   );

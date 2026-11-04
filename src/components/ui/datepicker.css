@@ -242,6 +242,11 @@
   .app-datepicker-popper .app-datepicker .react-datepicker__time-container {
     width: 5.5rem;
   }
+
+  /* a time-only picker is the whole sheet: the list spans it */
+  .app-datepicker-popper .app-datepicker .react-datepicker__time-container:only-child {
+    width: 100%;
+  }
 }
 
 @media (max-width: 639px) and (prefers-reduced-motion: reduce) {

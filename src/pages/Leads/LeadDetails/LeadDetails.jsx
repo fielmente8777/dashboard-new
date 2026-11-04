@@ -151,12 +151,13 @@ const LeadDetails = () => {
     return saved;
   };
 
+  // a date moves the lead to "Follow Up"; removing one leaves the stage alone
+  // (the card only offers it when the stage is something else)
   const saveFollowUp = (value) =>
     handleUpdate(
-      {
-        status: "Follow Up",
-        followUpDate: value ? new Date(value).toISOString() : null,
-      },
+      value
+        ? { status: "Follow Up", followUpDate: new Date(value).toISOString() }
+        : { followUpDate: null },
       value ? "Follow-up saved" : "Follow-up removed",
     );
 

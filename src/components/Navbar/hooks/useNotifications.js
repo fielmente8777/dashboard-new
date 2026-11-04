@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import WebSocketClient from "../../../config/websocketClient";
 import { WS_BASE_URL } from "../../../data/constant";
 import { useTenant } from "../../../hooks/useTenant";
@@ -9,7 +10,9 @@ import {
   receiveNotificationsRead,
   useGetNotificationPreferencesQuery,
 } from "../../../redux/api/notificationsApi";
+import { useToast } from "../../../context/ToastContext";
 import { alertNewNotification } from "../../Notifications/notificationAlert";
+import { resolveNotificationLink } from "../../Notifications/useNotificationFeed";
 import {
   MAX_NOTIFICATIONS,
   notificationReceived,
@@ -22,6 +25,10 @@ import { PAGES } from "../../../routes/paths";
 import { getAccountToken } from "../../../utils/session";
 
 const storageKey = (ndid) => `notifications:${ndid}`;
+
+// how long a new notification stays in the corner before it slides away
+const TOAST_MS = 6000;
+const TOAST_TYPE = { urgent: "error", high: "warning" };
 
 const readSaved = (ndid) => {
   try {
@@ -61,6 +68,22 @@ export const useNotifications = () => {
   const mutedRef = useRef([]);
   mutedRef.current = prefs.data?.preferences?.inApp?.mutedTypes || [];
 
+  // a new server notification also pops up bottom right (like the "saved" toasts),
+  // then closes by itself; it stays in the bell and on the Notifications page
+  const { showToast } = useToast();
+  const navigate = useNavigate();
+  const toastRef = useRef(null);
+  toastRef.current = (n) =>
+    showToast({
+      title: n.body ? n.title : undefined,
+      message: n.body || n.title,
+      type: TOAST_TYPE[n.priority] || "info",
+      duration: TOAST_MS,
+      action: n.link
+        ? { label: "View", onClick: () => navigate(resolveNotificationLink({ ...n, source: "server" }, hid)) }
+        : undefined,
+    });
+
   useEffect(() => {
     if (ndid) dispatch(notificationsLoaded({ ndid, items: readSaved(ndid) }));
   }, [ndid, dispatch]);
@@ -99,7 +122,10 @@ export const useNotifications = () => {
         } else if (event === "NOTIFICATION_NEW" && data?.notification) {
           dispatch(receiveNotification({ ...data.notification, hid: data.notification.hid ?? hid }));
           setUnread(data.unreadCount);
-          if (!mutedRef.current.includes(data.notification.type)) alertNewNotification();
+          if (!mutedRef.current.includes(data.notification.type)) {
+            alertNewNotification();
+            toastRef.current?.(data.notification);
+          }
         } else if (event === "NOTIFICATION_READ" && Array.isArray(data?.ids)) {
           dispatch(receiveNotificationsRead(hid, data.ids));
           setUnread(data.unreadCount);

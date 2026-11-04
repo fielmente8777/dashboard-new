@@ -13,6 +13,15 @@ export const callsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // what this user should be told about the calling balance (gian decides who sees what):
+    // { level: "none" | "ok" | "low" | "empty", audience: "admin" | "caller" | null,
+    //   title, message, alertKey, amount?, currency?, daysLeft?, runsOutAt?, rechargeUrl? }
+    getBalanceAlert: build.query({
+      query: () => "/api/v1/call/balance-alert",
+      transformResponse: (response) => response?.result?.doc ?? { level: "none" },
+      extraOptions: NODE,
+    }),
+
     // { hid, page, limit, search? } -> { calls, total }
     getCalls: build.query({
       query: ({ hid, page, limit, search }) => ({
@@ -82,6 +91,7 @@ export const callsApi = api.injectEndpoints({
 
 export const {
   useGetCallConnectionQuery,
+  useGetBalanceAlertQuery,
   useGetCallsQuery,
   useImportCallsMutation,
   useMakeCallMutation,

@@ -124,7 +124,7 @@ const CallCardList = ({
                 onSelect={(stage) =>
                   stage === "Follow Up"
                     ? onFollowUp(call)
-                    : onUpdate(call, { stage })
+                    : onUpdate(call, { stage, followUpDate: null })
                 }
               />
             </div>

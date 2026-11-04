@@ -1,8 +1,13 @@
 import { BellRing, X } from "lucide-react";
 import { useState } from "react";
+import {
+  getFollowUpError,
+  splitFollowUp,
+  toFollowUpValue,
+} from "../../../components/followUp";
+import FollowUpFields from "../../../components/FollowUpFields";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import DatePicker from "../../../components/ui/DatePicker";
 import CustomDropdown from "../../../components/ui/Dropdown";
 import { Field } from "../../../components/ui/Field";
 import {
@@ -12,7 +17,6 @@ import {
   Property,
 } from "../../../data/constant";
 import { CALL_STAGES } from "../callUtils";
-import { toInputValue } from "../../Leads/LeadDetails/leadDetailsUtils";
 
 // The controls to work a call: its stage and labels, and when to follow
 // up. Give it a key that changes with the saved follow-up, so it starts from
@@ -27,7 +31,9 @@ const CallManageCard = ({
   onStageChange,
   onSaveFollowUp,
 }) => {
-  const [followUp, setFollowUp] = useState(savedFollowUp);
+  const [followUp, setFollowUp] = useState(() =>
+    splitFollowUp(savedFollowUp),
+  );
 
   const select = (label, value, options, onChange, placeholder = "Select") => (
     <Field label={label} as="div">
@@ -64,26 +70,26 @@ const CallManageCard = ({
         </div>
 
         <div className="rounded-lg border border-dashed border-app-border! bg-app-surface-secondary/50 p-3">
-          <Field label="Follow up on" as="div">
-            <DatePicker
-              mode="datetime"
-              timeStep={5}
-              value={followUp}
-              min={toInputValue(new Date())}
-              onChange={setFollowUp}
-            />
-          </Field>
+          <p className="mb-2 text-xs font-medium text-app-text-muted">
+            Follow up on
+          </p>
+          <FollowUpFields value={followUp} onChange={setFollowUp} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
               size="sm"
               icon={BellRing}
               loading={saving}
-              disabled={!followUp || followUp === savedFollowUp}
-              onClick={() => onSaveFollowUp(followUp)}
+              disabled={
+                Boolean(getFollowUpError(followUp)) ||
+                toFollowUpValue(followUp) === savedFollowUp
+              }
+              onClick={() => onSaveFollowUp(toFollowUpValue(followUp))}
             >
               Save follow-up
             </Button>
-            {savedFollowUp && (
+            {/* a "Follow Up" call keeps its date; moving it to another
+                stage is what clears it */}
+            {savedFollowUp && call.stage !== "Follow Up" && (
               <Button
                 size="sm"
                 variant="ghost"

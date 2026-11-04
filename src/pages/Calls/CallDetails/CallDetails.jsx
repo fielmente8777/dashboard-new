@@ -138,12 +138,13 @@ const CallDetails = () => {
     return saved;
   };
 
+  // a date moves the call to "Follow Up"; removing one leaves the stage alone
+  // (the card only offers it when the stage is something else)
   const saveFollowUp = (value) =>
     handleUpdate(
-      {
-        followUpDate: value ? new Date(value).toISOString() : null,
-        stage: "Follow Up",
-      },
+      value
+        ? { followUpDate: new Date(value).toISOString(), stage: "Follow Up" }
+        : { followUpDate: null },
       value ? "Follow-up saved" : "Follow-up removed",
     );
 
@@ -153,7 +154,8 @@ const CallDetails = () => {
       showToast({ message: "Pick the follow-up date below and save it." });
       return;
     }
-    handleUpdate({ stage });
+    // only a "Follow Up" call has a follow-up date
+    handleUpdate({ stage, followUpDate: null });
   };
 
   // calls the guest back from the same team number that was on the call

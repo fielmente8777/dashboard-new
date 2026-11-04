@@ -1,3 +1,4 @@
+import BalanceAlertDialog from "../components/BalanceAlert/BalanceAlertDialog";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 
@@ -15,6 +16,9 @@ export default function DashboardLayout({ children }) {
           {children}
         </div>
       </div>
+
+      {/* calling balance low / used up: once a day, only for admins and people who can call */}
+      <BalanceAlertDialog />
     </div>
   );
 }
