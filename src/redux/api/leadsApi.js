@@ -182,16 +182,21 @@ export const leadsApi = api.injectEndpoints({
     }),
 
     // pulls the latest leads from the connected Meta lead forms
-    syncMetaLeads: build.mutation({
-      query: (hid) => ({
-        url: "/api/v1/meta/leads/bulk-import",
-        method: "POST",
-        params: { hid },
-        body: {},
-      }),
-      invalidatesTags: ["Lead"],
-      extraOptions: NODE,
-    }),
+    // Fetch Meta leads for selected date range
+syncMetaLeads: build.mutation({
+  query: ({ hid, from, to }) => ({
+    url: "/api/v1/meta/leads/bulk-import",
+    method: "POST",
+    params: {
+      hid,
+      from,
+      to,
+    },
+    body: {},
+  }),
+  invalidatesTags: ["Lead"],
+  extraOptions: NODE,
+}),
 
     // --- one-time password that guards the export ---
     // sends the code to the account's WhatsApp number
