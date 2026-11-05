@@ -188,4 +188,8 @@ export const createWhatsAppCreditOrder = (amount) =>
   request(e.createWhatsAppCreditOrder, { hid: selectedHid(), amount });
 export const verifyWhatsAppCreditPayment = (body) => request(e.verifyWhatsAppCreditPayment, body);
 
-export const { useGetWhatsAppDisplayNameQuery, useUpdateWhatsAppDisplayNameMutation } = whatsappBusinessApi;
+export const {
+  useGetWhatsAppDisplayNameQuery,
+  useUpdateWhatsAppDisplayNameMutation,
+  useGetWhatsAppBillingQuery,
+} = whatsappBusinessApi;

@@ -9,6 +9,7 @@ import {
   ChartNoAxesCombined,
   CircleHelp,
   ClipboardList,
+  Coins,
   ConciergeBell,
   Contact,
   CreditCard,
@@ -37,6 +38,7 @@ import {
   Tags,
   Users,
   Star,
+  Wallet,
 } from "lucide-react";
 import { createElement } from "react";
 import { FaMeta, FaWhatsapp } from "react-icons/fa6";
@@ -55,6 +57,7 @@ const brand = (icon) => createElement(icon, { size: 14 });
 //   section - heading the entry is listed under (consecutive entries share it)
 //   access - on a sub-link: the same check as a top-level `key`, for pages
 //            that were top-level before being grouped
+//   ownerOnly - shown only to Eazotel owner accounts (platform admin pages)
 // A group with no visible sub-link is hidden.
 export const SidebarData = [
   {
@@ -244,9 +247,22 @@ export const SidebarData = [
     ],
   },
   {
+    name: "Credits & Wallet",
+    section: "Setup",
+    link: `ai-wallet`,
+    icon: top(Wallet),
+  },
+  {
     name: "Payment Gateway",
     section: "Setup",
     link: `payment-gateway`,
     icon: top(CreditCard),
+  },
+  {
+    name: "AI Credit Management",
+    section: "Admin",
+    link: `admin/ai-credits`,
+    ownerOnly: true,
+    icon: top(Coins),
   },
 ];

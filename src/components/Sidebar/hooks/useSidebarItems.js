@@ -14,11 +14,13 @@ export const useSidebarItems = () => {
 
   return useMemo(() => {
     const isAdmin = Boolean(authUser?.isAdmin);
+    const isOwner = authUser?.role === "owner";
     const locationScope = authUser?.assigned_location?.find(
       (location) => location?.hid === String(hid),
     )?.accessScope;
 
     const canSeeItem = (item) => {
+      if (item.ownerOnly) return isOwner;
       if (isAdmin || !item.key || !locationScope) return true;
       return Boolean(locationScope[accessScopeMap[item.key]]);
     };
