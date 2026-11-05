@@ -49,7 +49,7 @@ const NewContactModal = ({ open, templates = [], loading, onClose }) => {
     });
 
     if (result.data?.success) {
-      showToast({ message: "Message sent" });
+      showToast({ message: "Sent to WhatsApp, waiting for delivery" });
       onClose(true);
       return;
     }

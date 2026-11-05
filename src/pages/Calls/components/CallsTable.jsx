@@ -203,12 +203,15 @@ const CallsTable = ({
             id={call.sid}
             value={call.stage}
             options={CALL_STAGES}
-            // a follow up also needs a date, which the page asks for
-            onSelect={(stage) =>
-              stage === "Follow Up"
-                ? onFollowUp(call)
-                : onUpdate(call, { stage, followUpDate: null })
-            }
+            // a follow up also needs a date, which the page asks for; until
+            // it is saved the stage stays as it was (false)
+            onSelect={(stage) => {
+              if (stage === "Follow Up") {
+                onFollowUp(call);
+                return false;
+              }
+              onUpdate(call, { stage, followUpDate: null });
+            }}
           />
         ),
       },

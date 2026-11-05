@@ -1,90 +1,112 @@
-import { Calendar, ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { forwardRef, useMemo } from "react";
-import ReactDatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import "./datepicker.css";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { parseISODate } from "../../utils/datePresets";
+import Calendar from "./Calendar";
+import DatePopover from "./DatePopover";
 import { inputClassName } from "./Field";
 import Icon from "./Icon";
-import IconButton from "./IconButton";
 
 const pad = (number) => String(number).padStart(2, "0");
-const toDatePart = (date) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-const toTimePart = (date) =>
-  `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 
-// How each mode shows the value, and how it turns the string the app keeps
-// into a Date and back. All of them use the user's own timezone.
-const MODES = {
-  date: {
-    icon: Calendar,
-    display: "dd MMM yyyy",
-    placeholder: "Select date",
-    parse: (value) => new Date(`${value}T00:00:00`),
-    format: toDatePart,
-  },
-  datetime: {
-    icon: Calendar,
-    display: "dd MMM yyyy, h:mm aa",
-    placeholder: "Select date and time",
-    parse: (value) => new Date(value),
-    format: (date) => `${toDatePart(date)}T${toTimePart(date)}`,
-  },
-  // check-in -> check-out and the like; the value is { start, end }
-  range: {
-    icon: Calendar,
-    display: "dd MMM yyyy",
-    placeholder: "Select dates",
-    parse: (value) => new Date(`${value}T00:00:00`),
-    format: toDatePart,
-  },
-  time: {
-    icon: Clock,
-    display: "h:mm aa",
-    placeholder: "Select time",
-    parse: (value) => new Date(`${toDatePart(new Date())}T${value}:00`),
-    format: toTimePart,
-  },
+const formatDate = (iso) =>
+  parseISODate(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
+// "14:30" -> "2:30 PM"
+const formatTime = (time) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return `${hours % 12 || 12}:${pad(minutes)} ${hours < 12 ? "AM" : "PM"}`;
 };
 
-const MONTHS = Array.from({ length: 12 }, (_, month) =>
-  new Date(2000, month, 1).toLocaleDateString("en-US", { month: "long" }),
-);
+const PLACEHOLDERS = { date: "Select date", range: "Select dates", time: "Select time" };
+const TITLES = { date: "Choose a date", range: "Choose dates", time: "Choose a time" };
 
-const headerSelectClassName =
-  "rounded-md bg-transparent px-1 py-1 text-sm font-semibold text-app-text outline-none hover:bg-app-surface-secondary";
+const displayValue = (mode, value) => {
+  if (mode === "time") return value ? formatTime(value) : "";
+  if (mode === "date") return value ? formatDate(value) : "";
+  if (!value?.start) return "";
+  return value.end ? `${formatDate(value.start)} - ${formatDate(value.end)}` : `${formatDate(value.start)} -`;
+};
 
-// The field itself: looks like the other inputs and opens the calendar.
-const PickerField = forwardRef(function PickerField(
-  { value, onClick, placeholder, disabled, icon, label, className = "" },
-  ref,
-) {
+// Every time of the day, `step` minutes apart. On a computer a column that
+// scrolls; on a phone a grid to tap.
+const TimeList = ({ value, step, filterTime, sheet, onPick }) => {
+  const listRef = useRef(null);
+
+  const times = useMemo(() => {
+    const list = Array.from({ length: Math.floor(1440 / step) }, (_, i) => {
+      const minutes = i * step;
+      return `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`;
+    });
+    if (!filterTime) return list;
+    return list.filter((time) => {
+      const date = new Date();
+      const [hours, minutes] = time.split(":").map(Number);
+      date.setHours(hours, minutes, 0, 0);
+      return filterTime(date);
+    });
+    // the filter is a new function each render but only depends on today
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, Boolean(filterTime)]);
+
+  // open on the picked time, or the one coming up next
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || !times.length) return;
+    const now = new Date();
+    const upcoming = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    const target = value || times.find((time) => time >= upcoming) || times[0];
+    const element = list.querySelector(`[data-time="${target}"]`);
+    if (!element) return;
+    list.scrollTop = element.offsetTop - list.clientHeight / 2 + element.offsetHeight / 2;
+    element.focus({ preventScroll: true });
+    // only when it opens
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!times.length) {
+    return <p className="p-4 text-center text-sm text-app-text-muted">No times left today.</p>;
+  }
+
   return (
-    <button
-      ref={ref}
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-label={label}
-      className={`${inputClassName} flex items-center justify-between gap-2 text-left ${className}`}
+    <div
+      ref={listRef}
+      className={`relative min-h-0 overflow-y-auto overscroll-contain p-2 ${
+        sheet ? "grid max-h-[60dvh] grid-cols-3 gap-2 p-3" : "max-h-64 w-36 space-y-0.5"
+      }`}
     >
-      <span className={`truncate ${value ? "" : "text-app-text-faint"}`}>
-        {value || placeholder}
-      </span>
-      <Icon icon={icon} tone="muted" />
-    </button>
+      {times.map((time) => {
+        const active = time === value;
+        return (
+          <button
+            key={time}
+            type="button"
+            data-time={time}
+            onClick={() => onPick(time)}
+            className={`w-full rounded-lg px-3 text-sm tabular-nums transition ${
+              sheet ? "h-11 border border-app-border! text-center" : "h-8 text-left"
+            } ${
+              active
+                ? "border-transparent! bg-primary font-semibold text-white dark:bg-blue-600"
+                : "text-app-text hover:bg-app-surface-secondary"
+            }`}
+          >
+            {formatTime(time)}
+          </button>
+        );
+      })}
+    </div>
   );
-});
+};
 
-// Date, date + time or time picker with the app's look.
+// Date, date range or time field with the app's calendar.
 //
 // The value is a plain string, the same one a native input would give:
-//   mode="date"      "2026-10-08"
-//   mode="datetime"  "2026-10-08T14:30"
-//   mode="time"      "14:30"
-//   mode="range"     { start: "2026-10-08", end: "2026-10-11" } - one calendar,
-//                    the first click picks the start, the second the end
-// `min` / `max` take the same kind of string. onChange gets the new value.
+//   mode="date"   "2026-10-08"
+//   mode="time"   "14:30"
+//   mode="range"  { start: "2026-10-08", end: "2026-10-11" } - the first click
+//                 picks the start, the second the end
+// `min` / `max` take "YYYY-MM-DD"; onChange gets the new value.
+// `filterTime(date)` hides times in mode="time".
 // With `inline` the calendar is shown in place instead of in a popup.
 const DatePicker = ({
   value,
@@ -96,154 +118,87 @@ const DatePicker = ({
   disabled = false,
   inline = false,
   timeStep = 15,
+  filterTime,
   className = "",
   "aria-label": ariaLabel,
-  ...props
 }) => {
-  const config = MODES[mode];
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
   const isRange = mode === "range";
-  const toDate = (text) => {
-    const date = text ? config.parse(text) : null;
-    return date && !Number.isNaN(date.getTime()) ? date : null;
-  };
-  const selected = isRange ? toDate(value?.start) : toDate(value);
-  const rangeEnd = isRange ? toDate(value?.end) : null;
-  // two months side by side for a range, one on a phone
-  const monthsShown = isRange && window.innerWidth >= 640 ? 2 : 1;
-  const minDate = min ? config.parse(min) : undefined;
-  const maxDate = max ? config.parse(max) : undefined;
+  const close = useCallback(() => setOpen(false), []);
 
-  // years offered in the header: ten either side, widened to fit min / max
-  const years = useMemo(() => {
-    const thisYear = new Date().getFullYear();
-    const first = Math.min(thisYear - 10, minDate?.getFullYear() ?? thisYear);
-    const last = Math.max(thisYear + 10, maxDate?.getFullYear() ?? thisYear);
-    return Array.from({ length: last - first + 1 }, (_, i) => first + i);
-    // only the years matter, not the Date objects
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [min, max]);
+  const calendarProps = {
+    mode: isRange ? "range" : "single",
+    value,
+    min,
+    max,
+  };
+
+  if (inline) {
+    return (
+      <div className="w-full sm:max-w-xs sm:rounded-xl sm:border sm:border-app-border! sm:p-3">
+        <Calendar {...calendarProps} onChange={onChange} />
+      </div>
+    );
+  }
+
+  const shown = displayValue(mode, value);
 
   return (
-    <ReactDatePicker
-      selected={selected}
-      {...(isRange
-        ? {
-            selectsRange: true,
-            startDate: selected,
-            endDate: rangeEnd,
-            monthsShown,
-            onChange: ([start, end]) =>
-              onChange({
-                start: start ? config.format(start) : "",
-                end: end ? config.format(end) : "",
-              }),
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        disabled={disabled}
+        aria-label={ariaLabel}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className={`${inputClassName} flex items-center justify-between gap-2 text-left ${
+          open ? "border-blue-500! ring-1 ring-blue-500" : ""
+        } ${className}`}
+      >
+        <span className={`truncate ${shown ? "" : "text-app-text-faint"}`}>
+          {shown || placeholder || PLACEHOLDERS[mode]}
+        </span>
+        <Icon icon={mode === "time" ? Clock : CalendarIcon} tone="muted" />
+      </button>
+
+      {open && (
+        <DatePopover
+          triggerRef={triggerRef}
+          title={ariaLabel || TITLES[mode]}
+          height={mode === "time" ? undefined : 400}
+          onClose={close}
+        >
+          {(sheet) =>
+            mode === "time" ? (
+              <TimeList
+                value={value}
+                step={timeStep}
+                filterTime={filterTime}
+                sheet={sheet}
+                onPick={(time) => {
+                  onChange(time);
+                  close();
+                }}
+              />
+            ) : (
+              <div className="flex min-h-0 w-full flex-1 flex-col p-3 sm:w-80">
+                <Calendar
+                  {...calendarProps}
+                  fill
+                  onChange={(next) => {
+                    onChange(next);
+                    if (!isRange || next.end) close();
+                  }}
+                />
+              </div>
+            )
           }
-        : { onChange: (date) => onChange(date ? config.format(date) : "") })}
-      minDate={mode === "time" ? undefined : minDate}
-      maxDate={mode === "time" ? undefined : maxDate}
-      // on the first allowed day, earlier times are not allowed either
-      filterTime={
-        mode === "datetime" && minDate
-          ? (time) => time.getTime() >= minDate.getTime()
-          : undefined
-      }
-      showTimeSelect={mode === "datetime" || mode === "time"}
-      showTimeSelectOnly={mode === "time"}
-      timeIntervals={timeStep}
-      timeCaption="Time"
-      dateFormat={config.display}
-      placeholderText={placeholder || config.placeholder}
-      disabled={disabled}
-      inline={inline}
-      showPopperArrow={false}
-      popperPlacement="bottom-start"
-      // drawn at the end of <body>, so tables and dialogs never clip it
-      portalId="app-datepicker-portal"
-      popperClassName="app-datepicker-popper"
-      calendarClassName="app-datepicker"
-      wrapperClassName="w-full"
-      customInput={
-        <PickerField
-          icon={config.icon}
-          label={ariaLabel}
-          className={className}
-        />
-      }
-      renderCustomHeader={({
-        date,
-        monthDate,
-        customHeaderCount,
-        changeMonth,
-        changeYear,
-        decreaseMonth,
-        increaseMonth,
-        prevMonthButtonDisabled,
-        nextMonthButtonDisabled,
-      }) =>
-        // with two months, the second one only names itself; the arrows sit
-        // on the outer edges
-        customHeaderCount > 0 ? (
-          <div className="flex h-8 items-center justify-between gap-1">
-            <span className="size-8" />
-            <span className="text-sm font-semibold text-app-text">
-              {monthDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-            </span>
-            <IconButton
-              icon={ChevronRight}
-              label="Next month"
-              disabled={nextMonthButtonDisabled}
-              onClick={increaseMonth}
-            />
-          </div>
-        ) : (
-        <div className="flex items-center justify-between gap-1">
-          <IconButton
-            icon={ChevronLeft}
-            label="Previous month"
-            disabled={prevMonthButtonDisabled}
-            onClick={decreaseMonth}
-          />
-          <div className="flex items-center gap-1">
-            <select
-              aria-label="Month"
-              value={date.getMonth()}
-              onChange={(e) => changeMonth(Number(e.target.value))}
-              className={headerSelectClassName}
-            >
-              {MONTHS.map((month, index) => (
-                <option key={month} value={index}>
-                  {month}
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Year"
-              value={date.getFullYear()}
-              onChange={(e) => changeYear(Number(e.target.value))}
-              className={headerSelectClassName}
-            >
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-          </div>
-          {monthsShown > 1 && isRange ? (
-            <span className="size-8" />
-          ) : (
-            <IconButton
-              icon={ChevronRight}
-              label="Next month"
-              disabled={nextMonthButtonDisabled}
-              onClick={increaseMonth}
-            />
-          )}
-        </div>
-        )
-      }
-      {...props}
-    />
+        </DatePopover>
+      )}
+    </>
   );
 };
 

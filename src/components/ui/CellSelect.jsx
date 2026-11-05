@@ -5,7 +5,8 @@ const dropdownClassName =
 
 // A dropdown that sits in a table cell: shows `value` and reports the option
 // picked. `id` is the row's id; with it the cell goes back to the saved value
-// when the row changes. Clicking it never counts as a click on the row.
+// when the row changes; onSelect returning false keeps the current value shown.
+// Clicking it never counts as a click on the row.
 const CellSelect = ({ id, value, options, onSelect }) => (
   <div onClick={(e) => e.stopPropagation()}>
     <CustomDropdown

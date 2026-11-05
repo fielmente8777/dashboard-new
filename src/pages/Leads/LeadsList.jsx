@@ -2,7 +2,6 @@ import {
   Download,
   FilterX,
   Plus,
-  RefreshCw,
   Search,
   Trash2,
   Upload,
@@ -41,6 +40,7 @@ import ExportLeadsDialog from "./components/ExportLeadsDialog";
 import ImportLeadsDialog from "./components/ImportLeadsDialog";
 import LeadStats from "./components/LeadStats";
 import LeadsTable from "./components/LeadsTable";
+import RefreshMetaLeads from "./components/RefreshMetaLeads";
 import { useAssigneeChatSync } from "./hooks/useAssigneeChatSync";
 import { useLeadFilters } from "./hooks/useLeadFilters";
 import { useLeadWhatsApp } from "./hooks/useLeadWhatsApp";
@@ -52,30 +52,6 @@ const STAGE_OPTIONS = [{ value: "", label: "All stages" }, ...Stages];
 
 // A leads list page. `source` is one entry of LEAD_SOURCES: it says which
 // leads the page shows and which columns, filters and actions it has.
-const formatDateInput = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
-const getDateDaysAgo = (days) => {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() - days);
-
-  return formatDateInput(date);
-};
-
-const getThreeMonthsAgo = () => {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() - 90);
-
-  return formatDateInput(date);
-};
-
 const LeadsList = ({ source }) => {
   const navigate = useNavigate();
   const { confirm } = useConfirm();
@@ -92,14 +68,7 @@ const LeadsList = ({ source }) => {
   const [selectedIds, setSelectedIds] = useState([]);
   // one piece of state per dialog
   const [dialog, setDialog] = useState(null); // "add" | "import" | "export"
-  const [isRefreshDialogOpen, setIsRefreshDialogOpen] = useState(false);
-
-const [refreshRange, setRefreshRange] = useState("7");
-
-const [customFrom, setCustomFrom] = useState(getDateDaysAgo(7));
-
-const [customTo, setCustomTo] = useState(formatDateInput(new Date()));
-const [followUpLead, setFollowUpLead] = useState(null);
+  const [followUpLead, setFollowUpLead] = useState(null);
 
   const query = {
     hid,
@@ -170,9 +139,13 @@ const [followUpLead, setFollowUpLead] = useState(null);
 
   const handleStageChange = useCallback(
     (lead, stage) => {
-      // a follow up also needs a date, which the dialog asks for
-      if (stage === "Follow Up") setFollowUpLead(lead);
-      else handleUpdate(lead, { status: stage, followUpDate: null });
+      // a follow up also needs a date, which the dialog asks for; until it is
+      // saved the stage stays as it was (false tells the dropdown)
+      if (stage === "Follow Up") {
+        setFollowUpLead(lead);
+        return false;
+      }
+      handleUpdate(lead, { status: stage, followUpDate: null });
     },
     [handleUpdate],
   );
@@ -255,8 +228,6 @@ const [followUpLead, setFollowUpLead] = useState(null);
     exportLeadsToCsv(exported, source.title);
   };
 
-  
-
   const clearFilters = () => {
     setSearchText("");
     setFilters({
@@ -285,59 +256,17 @@ const [followUpLead, setFollowUpLead] = useState(null);
     navigate(leadViewPath(lead._id, { hid, query: viewQuery }));
   };
 
-  const handleRefreshMetaLeads = async () => {
-  let from;
-  let to;
-
-  if (refreshRange === "custom") {
-    from = customFrom;
-    to = customTo;
-
-    if (!from || !to) {
-      showToast({
-        message: "Please select both dates.",
-        type: "error",
-      });
-      return;
-    }
-
-    if (from > to) {
-      showToast({
-        message: "Start date cannot be after end date.",
-        type: "error",
-      });
-      return;
-    }
-
-    if (
-      from < getThreeMonthsAgo() ||
-      to > formatDateInput(new Date())
-    ) {
-      showToast({
-        message: "Select dates within the last 90 days.",
-        type: "error",
-      });
-      return;
-    }
-  } else {
-    from = getDateDaysAgo(Number(refreshRange));
-    to = formatDateInput(new Date());
-  }
-
-  const result = await run(
-    syncMetaLeads({ hid, from, to }),
-    {
+  const handleRefreshMetaLeads = async ({ from, to }) => {
+    const result = await run(syncMetaLeads({ hid, from, to }), {
       success: "Meta leads refreshed successfully.",
       error: "Could not refresh Meta leads.",
-    }
-  );
+    });
+    if (!result) return false;
 
-  if (!result) return;
-
-  setFilters({ from, to, page: 1 });
-  setSelectedIds([]);
-  setIsRefreshDialogOpen(false);
-};
+    setFilters({ from, to });
+    setSelectedIds([]);
+    return true;
+  };
 
   return (
     <PageShell
@@ -367,15 +296,8 @@ const [followUpLead, setFollowUpLead] = useState(null);
             </Button>
           )}
           {source.canSync && (
-  <Button
-    variant="secondary"
-    icon={RefreshCw}
-    loading={isSyncing}
-    onClick={() => setIsRefreshDialogOpen(true)}
-  >
-    Refresh
-  </Button>
-)}
+            <RefreshMetaLeads onSubmit={handleRefreshMetaLeads} loading={isSyncing} />
+          )}
           {source.canAdd && (
             <Button icon={Plus} onClick={() => setDialog("add")}>
               Add lead
@@ -546,120 +468,12 @@ const [followUpLead, setFollowUpLead] = useState(null);
         onClose={() => setDialog(null)}
       />
       <ExportLeadsDialog
-  open={dialog === "export"}
-  onClose={() => setDialog(null)}
-  onExport={handleExport}
-/>
-
-{/* Refresh Meta Leads Popup */}
-{isRefreshDialogOpen && (
-  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4">
-    <div className="w-full max-w-md rounded-2xl border border-app-border bg-app-surface p-6 shadow-2xl">
-
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-app-text">
-            Refresh Meta Leads
-          </h2>
-          <p className="mt-1 text-sm text-app-text-muted">
-            Select the period for fetching leads.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsRefreshDialogOpen(false)}
-        >
-          &times;
-        </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "7 Days", value: "7" },
-          { label: "15 Days", value: "15" },
-          { label: "30 Days", value: "30" },
-          { label: "60 Days", value: "60" },
-          { label: "90 Days", value: "90" },
-        ].map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => setRefreshRange(option.value)}
-            className={`rounded-xl border px-3 py-3 text-sm ${
-              refreshRange === option.value
-                ? "border-primary bg-primary text-white"
-                : "border-app-border bg-app-surface-secondary text-app-text"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setRefreshRange("custom")}
-        className="my-4 w-full rounded-xl border border-app-border p-3 text-left text-sm"
-      >
-        Custom Date Range
-      </button>
-
-      {refreshRange === "custom" && (
-        <div className="mb-5 grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-2 block text-sm">From Date</label>
-            <input
-              type="date"
-              value={customFrom}
-              min={getThreeMonthsAgo()}
-              max={customTo || formatDateInput(new Date())}
-              onChange={(e) => setCustomFrom(e.target.value)}
-              className="w-full rounded-lg border border-app-border bg-app-surface-secondary p-2 text-sm"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm">To Date</label>
-            <input
-              type="date"
-              value={customTo}
-              min={customFrom || getThreeMonthsAgo()}
-              max={formatDateInput(new Date())}
-              onChange={(e) => setCustomTo(e.target.value)}
-              className="w-full rounded-lg border border-app-border bg-app-surface-secondary p-2 text-sm"
-            />
-          </div>
-        </div>
-      )}
-
-      <p className="mb-5 text-xs text-app-text-muted">
-        Only the last 90 days are allowed.
-      </p>
-
-      <div className="flex justify-end gap-3">
-        <Button
-          variant="secondary"
-          onClick={() => setIsRefreshDialogOpen(false)}
-        >
-          Cancel
-        </Button>
-
-        <Button
-          icon={RefreshCw}
-          loading={isSyncing}
-          disabled={isSyncing}
-          onClick={handleRefreshMetaLeads}
-        >
-          Fetch Leads
-        </Button>
-      </div>
-    </div>
-  </div>
-)}
-
-</PageShell>
-);
+        open={dialog === "export"}
+        onClose={() => setDialog(null)}
+        onExport={handleExport}
+      />
+    </PageShell>
+  );
 };
 
 export default LeadsList;

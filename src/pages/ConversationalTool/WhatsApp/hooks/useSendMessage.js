@@ -9,6 +9,7 @@ import {
   fillTemplate,
   getMessageTypeOfFile,
 } from "../chatUtils";
+import { takeEarlyStatus } from "../sendFailure";
 import { useChatCache } from "./useChatCache";
 
 const NO_CREDITS = 402;
@@ -38,9 +39,12 @@ export const useSendMessage = (hid, conversation, onSend) => {
       const answer = result.data;
 
       if (answer?.success) {
+        const messageId = answer.result?.docs?.messageId;
         setMessage(messageKey, {
           status: "sent",
-          messageId: answer.result?.docs?.messageId,
+          messageId,
+          failure: undefined,
+          ...takeEarlyStatus(messageId),
         });
         return true;
       }
@@ -213,8 +217,13 @@ export const useSendMessage = (hid, conversation, onSend) => {
         }
 
         setMessage(message._id, { status: "sending" });
-        if (await post(message._id, payload)) {
-          showToast({ message: "Message sent" });
+        // the server reuses the failed message instead of adding another
+        const retry = message.messageId
+          ? { ...payload, retryOf: message.messageId }
+          : payload;
+        // WhatsApp has only accepted it: delivery can still fail after this
+        if (await post(message._id, retry)) {
+          showToast({ message: "Sent to WhatsApp, waiting for delivery" });
         }
       },
     };

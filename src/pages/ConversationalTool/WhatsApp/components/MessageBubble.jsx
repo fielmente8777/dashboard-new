@@ -20,6 +20,7 @@ import {
   getMediaUrl,
   isOutgoing,
 } from "../chatUtils";
+import { getSendFailure } from "../sendFailure";
 import AudioMessage from "./AudioMessage";
 import InteractiveMessage from "./InteractiveMesssage";
 import LocationCard from "./LocationCard";
@@ -45,6 +46,29 @@ const STATUS_ICONS = {
   delivered: { icon: CheckCheck, label: "Delivered" },
   read: { icon: CheckCheck, label: "Read", className: "text-sky-500" },
   failed: { icon: AlertCircle, label: "Not sent", className: "text-red-500" },
+};
+
+// Under a failed message: why it failed, and a retry when one can help.
+const SendFailure = ({ message, onResend }) => {
+  const { text, canRetry } = getSendFailure(message);
+
+  return (
+    <div className="mt-0.5 text-right text-xs text-red-500">
+      <p>Not sent{text ? `: ${text}` : "."}</p>
+      {canRetry && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onResend(message);
+          }}
+          className="font-medium hover:underline"
+        >
+          Try again
+        </button>
+      )}
+    </div>
+  );
 };
 
 const TextBody = ({ text }) => {
@@ -350,18 +374,7 @@ const MessageBubble = ({
             )}
           </div>
 
-          {message.status === "failed" && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onResend(message);
-              }}
-              className="mt-0.5 block w-full text-right text-xs font-medium text-red-500 hover:underline"
-            >
-              Not sent. Try again
-            </button>
-          )}
+          {message.status === "failed" && <SendFailure message={message} onResend={onResend} />}
 
           {!selecting && (
             <MessageMenu message={message} onSelect={toggleSelect} />
