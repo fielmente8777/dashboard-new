@@ -1,6 +1,7 @@
 import { createBrowserRouter, redirect } from "react-router-dom";
 import ProtectedRoute from "../Protected/ProtecRoute";
 import { protectedLoader, sessionLoader } from "../Protected/protectedLoader";
+import { staffAccessLoader } from "../Protected/staffAccessLoader";
 import { dashboardRoutes } from "../routes/dashboardRoutes";
 import { BASE_PATH, PAGES, ROUTES, dashboardPath } from "../routes/paths";
 import PageError from "./PageError";
@@ -29,6 +30,8 @@ const router = createBrowserRouter([
         lazy: lazyDefault(() => import("../pages/Onboarding/OnboardingForm")),
       },
       { path: ROUTES.PLANS, lazy: lazyDefault(() => import("../pages/Plans/Plan")) },
+      // the admin console's "Open account" lands here (see staffAccessLoader)
+      { path: ROUTES.STAFF_ACCESS, loader: staffAccessLoader },
 
       // Protected routes - "/" only forwards to the selected hotel (protectedLoader)
       {

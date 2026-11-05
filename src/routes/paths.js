@@ -14,6 +14,7 @@ export const ROUTES = {
   RESET_PASSWORD: "/reset-password",
   PLANS: "/plans",
   ONBOARDING_FORM: "/onboarding/form",
+  STAFF_ACCESS: "/staff-access",
 };
 
 // Pages inside the dashboard, relative to /dashboard/client/:hid
