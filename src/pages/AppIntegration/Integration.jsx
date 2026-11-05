@@ -12,6 +12,7 @@ import { appState, headlineCheck, isConnectedState } from "./integrationHealth";
 import { AppLogo, StatusPill } from "./IntegrationParts";
 import { CATEGORIES, INTEGRATIONS } from "./integrationsData";
 import { useIntegrations } from "./useIntegrations";
+import ContactSupportButton from "../../components/SubscriptionLock/ContactSupportButton";
 
 // One app. The whole card opens the app's page; the button in the footer
 // connects it (or opens it, once connected) without leaving the list.
@@ -57,11 +58,9 @@ const IntegrationCard = ({ app, state, problem, busy, onConnect }) => (
             Connect
           </Button>
         ) : state === "locked" ? (
-          <Link to={ROUTES.PLANS}>
-            <Button size="sm" variant="secondary" icon={Lock}>
-              Upgrade
-            </Button>
-          </Link>
+          <ContactSupportButton size="sm" variant="secondary" icon={Lock}>
+            Upgrade
+          </ContactSupportButton>
         ) : isConnectedState(state) && app.openPage ? (
           <Link to={dashboardPath(app.openPage)}>
             <Button size="sm" variant="secondary">

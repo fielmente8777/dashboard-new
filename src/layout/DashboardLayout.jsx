@@ -1,8 +1,13 @@
 import BalanceAlertDialog from "../components/BalanceAlert/BalanceAlertDialog";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
+import SubscriptionLock from "../components/SubscriptionLock/SubscriptionLock";
+import { useSubscriptionLock } from "../components/SubscriptionLock/useSubscriptionLock";
 
 export default function DashboardLayout({ children }) {
+  // an ended or paused subscription shows the renew screen in place of every page
+  const lock = useSubscriptionLock();
+
   return (
     <div className="flex h-dvh overflow-hidden">
       <Sidebar />
@@ -13,7 +18,7 @@ export default function DashboardLayout({ children }) {
         </div>
 
         <div className="flex-1 h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
-          {children}
+          {lock.locked ? <SubscriptionLock lock={lock} /> : children}
         </div>
       </div>
 

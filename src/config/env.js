@@ -83,3 +83,10 @@ export const GEOCODING_API_URL = "https://nominatim.openstreetmap.org";
 // "Maps JavaScript API" + "Maps Embed API".
 export const GOOGLE_MAPS_API_KEY =
   env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyDuVL4di42wGAKroxfkR3wY1X34mWxBYrs";
+
+// --- Eazotel support, shown where a hotel has to contact us (e.g. to renew) ---
+export const SUPPORT = {
+  email: env.VITE_SUPPORT_EMAIL || "support@eazotel.com",
+  // digits with country code, e.g. 919876543210; empty hides WhatsApp and call
+  phone: (env.VITE_SUPPORT_PHONE || "").replace(/\D/g, ""),
+};

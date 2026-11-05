@@ -19,6 +19,7 @@ import { BILLING_PORTAL_URL } from "../../config/env";
 import { NEW_BASE_URL } from "../../data/constant";
 import { ROUTES } from "../../routes/paths";
 import { formatDateTime } from "../../utils/formateDate";
+import ContactSupportButton from "../../components/SubscriptionLock/ContactSupportButton";
 
 const DAY = 1000 * 60 * 60 * 24;
 
@@ -106,11 +107,9 @@ const Subscription = () => {
           title="No active plan"
           description="Choose a plan to unlock WhatsApp, Eazbot, the booking engine and more."
           action={
-            <Link to={ROUTES.PLANS}>
-              <Button size="sm" icon={Crown}>
-                See plans
-              </Button>
-            </Link>
+            <ContactSupportButton size="sm" icon={Crown}>
+              See plans
+            </ContactSupportButton>
           }
         />
       </div>
@@ -201,11 +200,9 @@ const Subscription = () => {
         </div>
 
         <div className="relative mt-5 flex flex-wrap gap-2">
-          <Link to={ROUTES.PLANS}>
-            <Button className="bg-ternary! hover:bg-ternary/90!" icon={Crown}>
-              {status === "TRIAL" ? "Choose a plan" : "Upgrade plan"}
-            </Button>
-          </Link>
+          <ContactSupportButton className="bg-ternary! hover:bg-ternary/90!" icon={Crown}>
+            {status === "TRIAL" ? "Choose a plan" : "Upgrade plan"}
+          </ContactSupportButton>
           <a href={BILLING_PORTAL_URL} target="_blank" rel="noreferrer">
             <Button className="bg-white/15! hover:bg-white/25!" icon={ExternalLink}>
               Manage billing
