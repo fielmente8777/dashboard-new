@@ -36,6 +36,7 @@ export const dashboardRoutes = [
   { path: PAGES.HOME, lazy: page(() => import("../pages/Home/Dashboard")) },
   { path: PAGES.PROFILE, lazy: page(() => import("../pages/Setting/Setting"), padded) },
   { path: PAGES.SETTINGS, lazy: page(() => import("../pages/Settings/Settings")) },
+  { path: PAGES.PLANS, lazy: page(() => import("../pages/Billing/PlansPage")) },
   { path: PAGES.INTEGRATION, lazy: page(() => import("../pages/AppIntegration/Integration"), padded) },
   { path: PAGES.INTEGRATION_DETAILS, lazy: page(() => import("../pages/AppIntegration/IntegrationDetails"), padded) },
   { path: PAGES.QR_CODE, lazy: page(() => import("../pages/Grm/Settings")) },

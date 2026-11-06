@@ -6,7 +6,6 @@ import Integration from "../AppIntegration/Integration";
 import Usermanagement from "../UserMgmt/Usermanagement";
 import Wallet from "../Wallet/Wallet";
 import Notification from "./Notification/Notification";
-import Billing from "../Wallet/Billing";
 import { useSearchParams } from "react-router-dom";
 import Subscription from "../Wallet/Subscription";
 import { useSelector } from "react-redux";
@@ -37,7 +36,6 @@ const Settings = () => {
     },
     { key: "Notification", label: "Notification", component: <Notification /> },
     // { key: "EazWallet", label: "EazWallet", component: <Wallet /> },
-    // { key: "Billing", label: "Billing", component: <Billing /> },
     { key: "Subscription", label: "Subscription", component: <Subscription /> },
   ];
   const [activeTab, setActiveTab] = useState(tab || TABS[0].key);
