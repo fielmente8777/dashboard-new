@@ -5,7 +5,7 @@ import {
   useGetAdsAccountsQuery,
   useGetAdsAdGroupsQuery,
   useGetAdsAdsQuery,
-  useGetAdsCampaignComparisonQuery,
+  useGetAdsBreakdownQuery,
   useGetAdsCampaignsQuery,
   useGetAdsDevicesQuery,
   useGetAdsSummaryQuery,
@@ -16,12 +16,59 @@ import {
   ALL,
   hasMetrics,
   previousRange,
+  resolveBreakdown,
   resolveTarget,
   syncRange,
 } from "../googleAdsUtils";
 
-// Data and actions of the Google Ads Insights page. Everything is read from
-// our database; only "Sync" goes to Google (and pulls the last 90 days).
+const NO_METRICS = {
+  impressions: 0,
+  clicks: 0,
+  cost: 0,
+  conversions: 0,
+  conversionsValue: 0,
+  ctr: 0,
+  averageCpc: 0,
+  costPerConversion: 0,
+  roas: 0,
+};
+
+// the name and id of each kind of item, as gian returns them
+const ENTITY = {
+  campaign: (c) => ({ id: c.campaignId, name: c.name || c.campaignId }),
+  adgroup: (g) => ({ id: g.adGroupId, name: g.name || g.adGroupId }),
+  ad: (a) => ({
+    id: a.adId,
+    name:
+      (a.headlines || []).map((h) => h?.text || h).filter(Boolean)[0] ||
+      a.finalUrls?.[0] ||
+      a.adId,
+    url: a.finalUrls?.[0],
+  }),
+};
+
+// Every item of the level (also the ones with no activity), with its numbers
+// for the date range; most spend first.
+const tableRows = (level, items, metrics) => {
+  const byId = new Map((metrics || []).map((m) => [String(m.id), m]));
+  const rows = (items || []).map((item) => {
+    const { id, name, url } = ENTITY[level](item);
+    return {
+      id: String(id),
+      name,
+      url,
+      paused: Boolean(item.paused),
+      ...NO_METRICS,
+      ...byId.get(String(id)),
+    };
+  });
+  return rows.sort(
+    (a, b) => b.cost - a.cost || b.clicks - a.clicks || b.impressions - a.impressions,
+  );
+};
+
+// Data and actions of the Google Ads page. Everything is read from our
+// database; only "Sync" goes to Google (and pulls the last 90 days).
 export const useGoogleAds = () => {
   const {
     integrationStatus,
@@ -29,6 +76,7 @@ export const useGoogleAds = () => {
     isLoadingIntegrationStatus,
   } = useIntegrationStatus();
   const connected = Boolean(integrationStatus?.googleAdsInsight?.status);
+  const lastSync = integrationStatus?.googleAdsInsight?.lastSyncTime || null;
   const run = useApiAction();
 
   const [range, setRange] = useState(() => presetRange("last30"));
@@ -72,17 +120,20 @@ export const useGoogleAds = () => {
   );
   const devices = useGetAdsDevicesQuery({ ...target, range }, skipMetrics);
 
-  const campaignList = useMemo(
-    () =>
-      (campaigns.data || []).map(({ campaignId, name }) => ({
-        campaignId,
-        name,
-      })),
-    [campaigns.data],
+  // the table: the children of what is selected
+  const breakdownTarget = useMemo(() => resolveBreakdown(selection), [selection]);
+  const breakdown = useGetAdsBreakdownQuery(
+    { ...breakdownTarget, range },
+    { skip: !account || !breakdownTarget.parentId },
   );
-  const comparison = useGetAdsCampaignComparisonQuery(
-    { campaigns: campaignList, range },
-    { skip: !campaignList.length },
+  const items = {
+    campaign: campaigns,
+    adgroup: adGroups,
+    ad: ads,
+  }[breakdownTarget.level];
+  const rows = useMemo(
+    () => tableRows(breakdownTarget.level, items.data, breakdown.data),
+    [breakdownTarget.level, items.data, breakdown.data],
   );
 
   const [syncGoogleAds, { isLoading: syncing }] = useSyncGoogleAdsMutation();
@@ -99,11 +150,14 @@ export const useGoogleAds = () => {
         error: "Couldn't reach Google Ads right now. Please try again.",
       },
     );
-    if (done && account) autoSynced.current.add(account);
+    if (done) {
+      if (account) autoSynced.current.add(account);
+      checkIntegrationStatus();
+    }
   };
 
   // An account with nothing in our database yet is synced once by itself.
-  const accountLevel = campaign === ALL && selection.ad === ALL;
+  const accountLevel = target.level === "account";
   useEffect(() => {
     if (
       account &&
@@ -136,21 +190,39 @@ export const useGoogleAds = () => {
     ad: (value) => setSelection((s) => ({ ...s, ad: value })),
   };
 
+  // a row of the table opens that item
+  const drillInto = (row) => {
+    if (breakdownTarget.level === "campaign") select.campaign(row.id);
+    else if (breakdownTarget.level === "adgroup") select.adGroup(row.id);
+    else select.ad(row.id);
+  };
+
   return {
     connected,
-    checkingConnection: isLoadingIntegrationStatus,
+    // only the first check: a re-check after a sync must not blank the page
+    checkingConnection: isLoadingIntegrationStatus && !connected,
+    lastSync,
     range,
     setRange,
     selection,
     select,
+    target,
     accounts,
     campaigns,
     adGroups,
     ads,
     summary,
-    previousTotals: previous.data?.totals || null,
+    previous,
     devices,
-    comparison,
+    breakdown: {
+      level: breakdownTarget.level,
+      rows,
+      loading: breakdown.isLoading || items.isLoading,
+      fetching: breakdown.isFetching,
+      error: breakdown.isError,
+      refetch: breakdown.refetch,
+    },
+    drillInto,
     sync,
     syncing,
   };

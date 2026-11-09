@@ -1,6 +1,8 @@
 import SelectMenu from "../../../components/ui/SelectMenu";
 import { ALL } from "../googleAdsUtils";
 
+const withPaused = (label, item) => (item.paused ? `${label} (paused)` : label);
+
 const Filter = ({
   label,
   query,
@@ -61,7 +63,7 @@ const AdsFilters = ({
       allLabel="All campaigns"
       options={(campaigns.data || []).map((c) => ({
         value: c.campaignId,
-        label: c.name,
+        label: withPaused(c.name || c.campaignId, c),
       }))}
     />
     <Filter
@@ -73,7 +75,7 @@ const AdsFilters = ({
       allLabel="All ad groups"
       options={(adGroups.data || []).map((g) => ({
         value: g.adGroupId,
-        label: g.name,
+        label: withPaused(g.name || g.adGroupId, g),
       }))}
     />
     <Filter
@@ -85,7 +87,7 @@ const AdsFilters = ({
       allLabel="All ads"
       options={(ads.data || []).map((a) => ({
         value: a.adId,
-        label: a.finalUrls?.[0] || a.adId,
+        label: withPaused(a.finalUrls?.[0] || a.adId, a),
       }))}
     />
   </div>

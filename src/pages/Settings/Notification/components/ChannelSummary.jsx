@@ -29,7 +29,7 @@ const Tile = ({ icon, iconClass, title, status, action, children }) => (
 
 // The state of each alert channel at a glance. The WhatsApp switch turns the
 // whole channel on or off and saves straight away; everything else is set below.
-const ChannelSummary = ({ whatsApp, draft }) => {
+const ChannelSummary = ({ whatsApp, exotel, draft }) => {
   const total = SOURCES.length;
   const whatsAppCount = sourcesOn(draft.config, "phone");
   const emailCount = sourcesOn(draft.config, "email");
@@ -84,14 +84,18 @@ const ChannelSummary = ({ whatsApp, draft }) => {
           iconClass="bg-purple-500/10 text-purple-600 dark:text-purple-400"
           title="Call follow-up"
           status={
-            draft.callConfig.enabled && whatsApp.enabled ? (
+            exotel.loading ? null : !exotel.connected ? (
+              <Badge tone="amber">Not connected</Badge>
+            ) : draft.callConfig.enabled && whatsApp.enabled ? (
               <Badge tone="green">On</Badge>
             ) : (
               <Badge>Off</Badge>
             )
           }
         >
-          Message callers on WhatsApp when their call is missed, busy or not answered.
+          {!exotel.loading && !exotel.connected
+            ? "Connect Exotel under Integrations to message callers after a missed call."
+            : "Message callers on WhatsApp when their call is missed, busy or not answered."}
         </Tile>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { Monitor, PieChart, Target } from "lucide-react";
+import { Monitor } from "lucide-react";
 import { CHART_COLORS } from "../../../components/Charts/chartTheme";
 import DonutChart from "../../../components/Charts/DonutChart";
 import Card from "../../../components/ui/Card";
@@ -121,82 +121,11 @@ const DevicesCard = ({ rows }) => {
   );
 };
 
-const RADIUS = 52;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-const ImpressionShareCard = ({ share, approximate, adLevel }) => {
-  const pct = share == null ? null : Math.min(share * 100, 100);
-
-  return (
-    <Card
-      title="Search impression share"
-      description={
-        adLevel
-          ? "Not available for a single ad"
-          : "Share of the impressions you were eligible for"
-      }
-    >
-      {pct == null ? (
-        <EmptyState
-          icon={adLevel ? Target : PieChart}
-          title="No impression share"
-          description={
-            adLevel
-              ? "Switch to a campaign or the whole account."
-              : "No data for this date range."
-          }
-        />
-      ) : (
-        <div className="flex flex-col items-center gap-3 py-2">
-          <div className="relative flex size-40 items-center justify-center">
-            <svg viewBox="0 0 140 140" className="size-40 -rotate-90">
-              <circle
-                cx="70"
-                cy="70"
-                r={RADIUS}
-                fill="none"
-                strokeWidth="14"
-                className="stroke-app-surface-secondary"
-              />
-              <circle
-                cx="70"
-                cy="70"
-                r={RADIUS}
-                fill="none"
-                stroke={CHART_COLORS[0]}
-                strokeWidth="14"
-                strokeLinecap="round"
-                strokeDasharray={`${(pct / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-                style={{
-                  transition:
-                    "stroke-dasharray 900ms cubic-bezier(.22,1,.36,1)",
-                }}
-              />
-            </svg>
-            <span className="absolute text-3xl font-semibold tabular-nums text-app-text">
-              {pct.toFixed(1)}%
-            </span>
-          </div>
-          <p className="text-center text-xs text-app-text-muted">
-            {approximate
-              ? "Weighted average across campaigns (approximate)"
-              : "Of the impressions available to you"}
-          </p>
-        </div>
-      )}
-    </Card>
-  );
-};
-
-const BreakdownCards = ({ totals, derived, devices, adLevel }) => (
-  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+// (search impression share is not synced from Google, so it has no card)
+const BreakdownCards = ({ totals, derived, devices }) => (
+  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
     <FunnelCard totals={totals} derived={derived} />
     <DevicesCard rows={devices} />
-    <ImpressionShareCard
-      share={derived.searchImpressionShare ?? null}
-      approximate={derived.searchImpressionShareApprox === true}
-      adLevel={adLevel}
-    />
   </div>
 );
 

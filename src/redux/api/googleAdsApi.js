@@ -5,25 +5,37 @@ const BASE = "/api/v1/google-ads";
 
 const api = baseApi.enhanceEndpoints({ addTagTypes: ["GoogleAds"] });
 
-// The API also returns paused / removed items, and sometimes the same one
-// twice: keep the enabled ones, once each.
-const enabledOnly = (items, idKey) => {
-  const enabled = items.filter((item) => {
-    const status = String(item.status ?? "").toUpperCase();
-    return status === "ENABLED" || status === "2";
-  });
-  return [...new Map(enabled.map((item) => [item[idKey], item])).values()];
+// Google's status, saved as its name or its number (2 enabled, 3 paused,
+// 4 removed).
+const statusOf = (item) => {
+  const status = String(item.status ?? "").toUpperCase();
+  if (status === "ENABLED" || status === "2") return "enabled";
+  if (status === "PAUSED" || status === "3") return "paused";
+  if (status === "REMOVED" || status === "4") return "removed";
+  return "unknown";
+};
+
+// The API sometimes returns the same item twice, and removed ones too: keep
+// each item once, without the removed ones. Paused items stay (marked
+// `paused`), so a hotel whose ads are paused still sees them and their
+// history; enabled ones come first.
+const visibleItems = (items, idKey) => {
+  const kept = items
+    .map((item) => ({ ...item, paused: statusOf(item) === "paused" }))
+    .filter((item) => statusOf(item) !== "removed");
+  const unique = [...new Map(kept.map((item) => [item[idKey], item])).values()];
+  return unique.sort((a, b) => Number(a.paused) - Number(b.paused));
 };
 
 const list = (path, resultKey, idKey) => ({
   query: (id) => `${BASE}/${path}/${id}`,
   transformResponse: (response) =>
-    enabledOnly(response?.data || response?.result?.[resultKey] || [], idKey),
+    visibleItems(response?.data || response?.result?.[resultKey] || [], idKey),
   providesTags: ["GoogleAds"],
   extraOptions: NODE,
 });
 
-// { entityId, level: "account" | "campaign" | "ad", range: { start, end } }
+// { entityId, level: "account" | "campaign" | "adgroup" | "ad", range: { start, end } }
 const summaryArgs = ({ entityId, level, range }) => ({
   url: `${BASE}/metrics/summary/${entityId}`,
   params: { level, startDate: range.start, endDate: range.end },
@@ -61,33 +73,17 @@ export const googleAdsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { campaigns: [{ campaignId, name }], range } -> one summary row per campaign
-    getAdsCampaignComparison: build.query({
-      async queryFn({ campaigns, range }, _api, _extra, baseQuery) {
-        const rows = await Promise.all(
-          campaigns.map(async (campaign) => {
-            const { data } = await baseQuery(
-              summaryArgs({ entityId: campaign.campaignId, level: "campaign", range }),
-              _api,
-              NODE,
-            );
-            const totals = data?.result?.totals || {};
-            const derived = data?.result?.derived || {};
-            return {
-              campaignId: campaign.campaignId,
-              name: campaign.name || campaign.campaignId,
-              impressions: totals.impressions || 0,
-              clicks: totals.clicks || 0,
-              cost: totals.cost || 0,
-              conversions: totals.conversions || 0,
-              ctr: derived.ctr || 0,
-              roas: derived.roas || 0,
-            };
-          }),
-        );
-        return { data: rows.sort((a, b) => b.cost - a.cost) };
-      },
+    // Totals per child of one parent, in one request:
+    // { level: "campaign" | "adgroup" | "ad", parentId, range }
+    //   -> [{ id, impressions, clicks, cost, conversions, conversionsValue, ctr, averageCpc, costPerConversion, roas }]
+    getAdsBreakdown: build.query({
+      query: ({ level, parentId, range }) => ({
+        url: `${BASE}/metrics/breakdown`,
+        params: { level, parentId, startDate: range.start, endDate: range.end },
+      }),
+      transformResponse: (response) => response?.result?.rows || [],
       providesTags: ["GoogleAds"],
+      extraOptions: NODE,
     }),
 
     // Pulls the last 90 days from Google into our database (slow).
@@ -115,6 +111,6 @@ export const {
   useGetAdsAdsQuery,
   useGetAdsSummaryQuery,
   useGetAdsDevicesQuery,
-  useGetAdsCampaignComparisonQuery,
+  useGetAdsBreakdownQuery,
   useSyncGoogleAdsMutation,
 } = googleAdsApi;

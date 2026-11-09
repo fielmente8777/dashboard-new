@@ -7,6 +7,7 @@ import {
   Search,
   Wallet,
   FileSpreadsheet,
+  Plug,
 } from "lucide-react";
 
 import { useMemo, useRef, useState } from "react";
@@ -17,10 +18,12 @@ import Button from "../../components/ui/Button";
 import { Input } from "../../components/ui/Field";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
-import { ErrorState } from "../../components/ui/States";
+import Card from "../../components/ui/Card";
+import { EmptyState, ErrorState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 
 import { useToast } from "../../context/ToastContext";
+import { useIntegrationStatus } from "../../hooks/useIntegrationStatus";
 import { hasTenant, useTenant } from "../../hooks/useTenant";
 
 import { useGetCampaignsQuery } from "../../redux/api/broadcastApi";
@@ -30,6 +33,7 @@ import {
   PAGES,
   broadcastPath,
   dashboardPath,
+  integrationPath,
 } from "../../routes/paths";
 
 import {
@@ -54,6 +58,8 @@ const WhatsappBroadcasting = () => {
   const navigate = useNavigate();
   const tenant = useTenant();
   const { showToast } = useToast();
+  const { integrationStatus, isLoadingIntegrationStatus } = useIntegrationStatus();
+  const whatsAppConnected = Boolean(integrationStatus?.metaWhatsapp);
 
   // Campaign states
   const [creating, setCreating] = useState(false);
@@ -201,6 +207,30 @@ const WhatsappBroadcasting = () => {
     setSelectedContacts([]);
     setCampaignMode("default");
   };
+
+  // campaigns go out from the hotel's own WhatsApp Business number: without
+  // one connected there is nothing to set up here, only how to connect it
+  if (!isLoadingIntegrationStatus && !whatsAppConnected) {
+    return (
+      <PageShell
+        title="WhatsApp marketing"
+        description="Broadcast offers and updates to your guests, then see who got and read them."
+      >
+        <Card>
+          <EmptyState
+            icon={Plug}
+            title="Connect WhatsApp Business"
+            description="Campaigns are sent from your own WhatsApp Business number. Connect it to create campaigns and import contacts here."
+            action={
+              <Button icon={Plug} onClick={() => navigate(integrationPath("whatsapp"))}>
+                Go to Integrations
+              </Button>
+            }
+          />
+        </Card>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
