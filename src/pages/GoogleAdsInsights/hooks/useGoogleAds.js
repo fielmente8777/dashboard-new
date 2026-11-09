@@ -132,7 +132,7 @@ export const useGoogleAds = () => {
     ad: ads,
   }[breakdownTarget.level];
   const rows = useMemo(
-    () => tableRows(breakdownTarget.level, items.data, breakdown.data),
+    () => tableRows(breakdownTarget.level, items.data, breakdown.data?.rows),
     [breakdownTarget.level, items.data, breakdown.data],
   );
 
@@ -221,6 +221,9 @@ export const useGoogleAds = () => {
       fetching: breakdown.isFetching,
       error: breakdown.isError,
       refetch: breakdown.refetch,
+      // false: nothing of this level was ever synced for this parent (ad group and ad
+      // numbers come only from syncs after the 2026-11 change)
+      levelSynced: breakdown.data?.levelSynced !== false,
     },
     drillInto,
     sync,

@@ -1,4 +1,5 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CloudDownload } from "lucide-react";
+import Button from "../../../components/ui/Button";
 import Badge from "../../../components/ui/Badge";
 import Card from "../../../components/ui/Card";
 import DataTable from "../../../components/ui/DataTable";
@@ -7,6 +8,7 @@ import { ErrorState } from "../../../components/ui/States";
 import {
   formatCompact,
   formatCurrency,
+  formatDate,
   formatNumber,
   formatPercent,
 } from "../googleAdsUtils";
@@ -50,6 +52,12 @@ const columns = (level, selectedId) => [
   num("Spend", "cost", formatCurrency),
   num("Conv.", "conversions", formatNumber),
   num("Cost / conv.", "costPerConversion", formatCurrency),
+  {
+    key: "lastActivity",
+    header: "Last active",
+    className: "whitespace-nowrap text-right text-xs text-app-text-muted",
+    render: (row) => (row.lastActivity ? formatDate(row.lastActivity) : "Never"),
+  },
   ...(level === "ad"
     ? []
     : [
@@ -64,8 +72,9 @@ const columns = (level, selectedId) => [
 
 // The children of what is selected, with their numbers for the date range.
 // A row opens that campaign / ad group / ad.
-const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen }) => {
-  const { level, rows, loading, fetching, error, refetch } = breakdown;
+const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen, onSync, syncing }) => {
+  const { level, rows, loading, fetching, error, refetch, levelSynced } = breakdown;
+  const showSyncHint = !loading && !error && rows.length > 0 && !levelSynced;
   const { title, empty } = TITLES[level];
   const active = rows.filter((r) => r.clicks || r.impressions || r.cost).length;
 
@@ -78,6 +87,20 @@ const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen }) => {
           : undefined
       }
     >
+      {showSyncHint && (
+        <div className="mb-4 flex flex-col gap-3 rounded-lg border border-blue-500/30! bg-blue-500/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2 text-sm text-app-text">
+            <CloudDownload className="mt-0.5 size-4 shrink-0 text-blue-500" />
+            <span>
+              {TITLES[level].title} numbers haven&apos;t been synced from Google Ads yet. Sync once to
+              fetch them for the last 90 days.
+            </span>
+          </p>
+          <Button size="sm" icon={CloudDownload} loading={syncing} onClick={onSync} className="shrink-0">
+            Sync now
+          </Button>
+        </div>
+      )}
       {error ? (
         <ErrorState message={`Couldn't load the ${title.toLowerCase()}.`} onRetry={refetch} />
       ) : (

@@ -83,7 +83,7 @@ const ScopeBar = ({ steps }) => (
 
 // In place of the charts when the selection has no clicks, impressions or
 // spend in the range: says why, and what to do. The table stays below.
-const NoActivity = ({ range, paused, noun, lastSync, onSync, syncing }) => (
+const NoActivity = ({ range, paused, noun, lastActivity, lastSync, onSync, syncing }) => (
   <Card>
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-start gap-3">
@@ -96,8 +96,11 @@ const NoActivity = ({ range, paused, noun, lastSync, onSync, syncing }) => (
           </p>
           <p className="mt-0.5 text-sm text-app-text-muted">
             {paused
-              ? `This ${noun} is paused in Google Ads, so it had no impressions or spend. Pick a wider date range to see when it last ran.`
-              : `This ${noun} had no impressions, clicks or spend in these dates.`}
+              ? `This ${noun} is paused in Google Ads, so it had no impressions or spend.`
+              : `This ${noun} had no impressions, clicks or spend in these dates.`}{" "}
+            {lastActivity
+              ? `Its last activity was on ${formatDate(lastActivity)}: pick a range that includes it.`
+              : `No activity has been synced for this ${noun} yet${noun === "account" || noun === "campaign" ? "" : " (ad group and ad numbers come from a fresh sync)"}.`}
             {lastSync && ` Last synced ${timeAgo(lastSync)}.`}
           </p>
         </div>
@@ -206,6 +209,7 @@ const GoogleAdsInsights = () => {
           range={ads.range}
           paused={selectedStep?.paused}
           noun={noun}
+          lastActivity={summary.data?.lastActivity}
           lastSync={ads.lastSync}
           onSync={ads.sync}
           syncing={ads.syncing}
@@ -290,6 +294,8 @@ const GoogleAdsInsights = () => {
               }
               selectedId={selection.ad !== ALL ? selection.ad : undefined}
               onOpen={ads.drillInto}
+              onSync={ads.sync}
+              syncing={ads.syncing}
             />
           )}
 

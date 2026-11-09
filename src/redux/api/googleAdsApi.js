@@ -75,13 +75,17 @@ export const googleAdsApi = api.injectEndpoints({
 
     // Totals per child of one parent, in one request:
     // { level: "campaign" | "adgroup" | "ad", parentId, range }
-    //   -> [{ id, impressions, clicks, cost, conversions, conversionsValue, ctr, averageCpc, costPerConversion, roas }]
+    //   -> { rows: [{ id, lastActivity, impressions, clicks, cost, conversions, conversionsValue, ctr, averageCpc, costPerConversion, roas }],
+    //        levelSynced } (false: this level was never synced for this parent)
     getAdsBreakdown: build.query({
       query: ({ level, parentId, range }) => ({
         url: `${BASE}/metrics/breakdown`,
         params: { level, parentId, startDate: range.start, endDate: range.end },
       }),
-      transformResponse: (response) => response?.result?.rows || [],
+      transformResponse: (response) => ({
+        rows: response?.result?.rows || [],
+        levelSynced: response?.result?.levelSynced !== false,
+      }),
       providesTags: ["GoogleAds"],
       extraOptions: NODE,
     }),
