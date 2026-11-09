@@ -10,9 +10,12 @@ import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import DataTable from "../../../components/ui/DataTable";
 import IconButton from "../../../components/ui/IconButton";
+import { ErrorState } from "../../../components/ui/States";
+import { getApiErrorMessage } from "../../../redux/api/baseApi";
 
-// The recharge packages tenants can buy. onEdit(pack) / onCreate() open the editor.
-const CreditPackages = ({ packages, onEdit, onCreate }) => {
+// The recharge packages tenants can buy (inactive ones are hidden from them).
+// query: the admin packages query; onEdit(pack) / onCreate() open the editor.
+const CreditPackages = ({ query, onEdit, onCreate }) => {
   const columns = [
     {
       key: "name",
@@ -61,7 +64,17 @@ const CreditPackages = ({ packages, onEdit, onCreate }) => {
         </Button>
       }
     >
-      <DataTable columns={columns} rows={packages} rowKey={(row) => row.id} emptyMessage="No packages yet" />
+      {query.error ? (
+        <ErrorState message={getApiErrorMessage(query.error, "Couldn't load packages.")} onRetry={query.refetch} />
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={query.data ?? []}
+          rowKey={(row) => row.id}
+          loading={query.isLoading}
+          emptyMessage="No packages yet. Tenants can't recharge until one is active."
+        />
+      )}
     </Card>
   );
 };

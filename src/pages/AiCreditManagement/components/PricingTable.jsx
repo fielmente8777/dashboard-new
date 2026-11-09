@@ -1,26 +1,46 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import {
   STATUS_TONES,
   capitalize,
   formatCredits,
-  pricingTypeLabel,
+  formatPrice,
+  providerLabel,
 } from "../../../components/AiCredits/aiCredits";
 import Badge from "../../../components/ui/Badge";
+import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import DataTable from "../../../components/ui/DataTable";
 import IconButton from "../../../components/ui/IconButton";
+import { ErrorState } from "../../../components/ui/States";
+import { getApiErrorMessage } from "../../../redux/api/baseApi";
 
-// What each AI service costs in credits; onEdit(service) opens the editor.
-const PricingTable = ({ pricing, onEdit }) => {
+const per1M = (price, row) => (price > 0 ? `${formatPrice(price, row.currency)}` : "—");
+
+// Provider prices per model, and how much provider cost one credit stands
+// for. AI requests are charged from these; a model without an active row
+// can't be used. onEdit(row) / onCreate() open the editor.
+const PricingTable = ({ query, onEdit, onCreate }) => {
   const columns = [
-    { key: "name", header: "Service Name", className: "whitespace-nowrap font-medium" },
     {
-      key: "creditsPerUsage",
-      header: "Credits Per Usage",
-      className: "tabular-nums",
-      render: (row) => `${formatCredits(row.creditsPerUsage)} credits`,
+      key: "model",
+      header: "Provider / Model",
+      className: "whitespace-nowrap",
+      render: (row) => (
+        <span>
+          <span className="font-medium">{providerLabel(row.provider)}</span>
+          <span className="text-app-text-muted"> · {row.model}</span>
+        </span>
+      ),
     },
-    { key: "pricingType", header: "Pricing Type", render: (row) => pricingTypeLabel(row.pricingType) },
+    { key: "inputPrice", header: "Input / 1M", className: "tabular-nums", render: (row) => per1M(row.inputPrice, row) },
+    { key: "outputPrice", header: "Output / 1M", className: "tabular-nums", render: (row) => per1M(row.outputPrice, row) },
+    { key: "embeddingPrice", header: "Embedding / 1M", className: "tabular-nums", render: (row) => per1M(row.embeddingPrice, row) },
+    {
+      key: "creditConversionRate",
+      header: "Credit rate",
+      className: "tabular-nums",
+      render: (row) => `${formatCredits(row.creditConversionRate)} per ${row.currency}`,
+    },
     {
       key: "status",
       header: "Status",
@@ -30,13 +50,31 @@ const PricingTable = ({ pricing, onEdit }) => {
       key: "edit",
       header: <span className="sr-only">Edit</span>,
       className: "text-right",
-      render: (row) => <IconButton icon={Pencil} label={`Edit ${row.name} pricing`} onClick={() => onEdit(row)} />,
+      render: (row) => <IconButton icon={Pencil} label={`Edit ${row.provider} ${row.model} pricing`} onClick={() => onEdit(row)} />,
     },
   ];
 
   return (
-    <Card title="AI pricing" description="Credits charged each time a tenant uses an AI service">
-      <DataTable columns={columns} rows={pricing} rowKey={(row) => row.id} emptyMessage="No AI services yet" />
+    <Card
+      title="AI provider pricing"
+      description="Credits = provider cost × credits per currency unit, rounded up to a whole credit per request"
+      actions={
+        <Button size="sm" icon={Plus} onClick={onCreate}>
+          New model
+        </Button>
+      }
+    >
+      {query.error ? (
+        <ErrorState message={getApiErrorMessage(query.error, "Couldn't load pricing.")} onRetry={query.refetch} />
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={query.data ?? []}
+          rowKey={(row) => row.id}
+          loading={query.isLoading}
+          emptyMessage="No models priced yet. AI requests are blocked until their model has pricing."
+        />
+      )}
     </Card>
   );
 };

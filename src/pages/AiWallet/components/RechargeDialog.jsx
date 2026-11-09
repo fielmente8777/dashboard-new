@@ -3,9 +3,8 @@ import { formatCredits, formatMoney } from "../../../components/AiCredits/aiCred
 import Button from "../../../components/ui/Button";
 import Dialog from "../../../components/ui/Dialog";
 
-// Picks a package and confirms the recharge. IN PROGRESS: there is no payment
-// yet; onConfirm(pack) only tells the user so.
-const RechargeDialog = ({ open, packages, initialPackage, balance, onClose, onConfirm }) => {
+// Picks a package; onConfirm(pack) starts the Razorpay payment (`busy` while it runs).
+const RechargeDialog = ({ open, packages, initialPackage, balance, busy = false, onClose, onConfirm }) => {
   const [selectedId, setSelectedId] = useState(null);
 
   useEffect(() => {
@@ -23,15 +22,18 @@ const RechargeDialog = ({ open, packages, initialPackage, balance, onClose, onCo
       sheetOnPhone
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button disabled={!selected} onClick={() => onConfirm(selected)}>
-            Pay {selected ? formatMoney(selected.price, selected.currency) : ""}
+          <Button disabled={!selected || busy} onClick={() => onConfirm(selected)}>
+            {busy ? "Processing…" : `Pay ${selected ? formatMoney(selected.price, selected.currency) : ""}`}
           </Button>
         </>
       }
     >
+      {packages.length === 0 && (
+        <p className="text-sm text-app-text-muted">No recharge packages are available right now. Contact Eazotel support.</p>
+      )}
       <div role="radiogroup" aria-label="Package" className="space-y-2">
         {packages.map((pack) => {
           const active = pack.id === selectedId;

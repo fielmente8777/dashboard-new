@@ -93,8 +93,8 @@ const CreditCard = ({ icon, iconClass, name, query, value, caption, level, demo,
   );
 };
 
-// Every credit balance the account has: AI (demo for now) next to the live
-// WhatsApp, calling (Exotel) and SEO balances. Each card loads on its own, so
+// Every credit balance the account has: AI next to WhatsApp, calling
+// (Exotel) and SEO balances. Each card loads on its own, so
 // one failing service never hides the others.
 // aiQuery: the AI wallet query of the page; aiLevel: its creditState()
 const AllCredits = ({ aiQuery, aiLevel }) => {
@@ -132,11 +132,10 @@ const AllCredits = ({ aiQuery, aiLevel }) => {
         icon={BrainCircuit}
         iconClass="text-violet-600 dark:text-violet-400"
         name="AI credits"
-        demo
         query={aiQuery}
         value={`${formatCredits(aiWallet.availableCredits)} credits`}
         level={aiLevel}
-        caption={`${formatCredits(aiWallet.totalConsumed)} used`}
+        caption={`${formatCredits(aiWallet.totalUsed)} used`}
         onClick={() =>
           document.getElementById(AI_SECTION_ID)?.scrollIntoView({ behavior: "smooth", block: "start" })
         }

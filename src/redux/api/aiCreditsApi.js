@@ -1,26 +1,172 @@
+import { getSignedInToken } from "../../utils/session";
 import { baseApi } from "./baseApi";
 
 const NODE = { service: "node" };
+const BASE = "/api/v1/ai-credits";
+const result = (response) => response?.result;
 
-// AI credits (gian: /api/v1/ai-credits). IN PROGRESS: gian answers with demo
-// data for now; edits on the pages stay in the browser until the write
-// endpoints exist.
-export const aiCreditsApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    // AI Credit Management (owners): { overview, tenants, pricing, packages, lowCreditSettings }
-    getAdminAiCredits: build.query({
-      query: () => "/api/v1/ai-credits/admin",
-      transformResponse: (response) => response?.result,
-      extraOptions: NODE,
+// Admin calls go out with the signed-in owner's own token: after switching
+// into a client account the default token is the client's, and gian checks
+// the admin's email (AI_CREDITS_ADMIN_EMAILS) on the token it receives.
+const asAdmin = (args) => {
+  const request = typeof args === "string" ? { url: args } : args;
+  const token = getSignedInToken();
+  return token ? { ...request, headers: { ...request.headers, Authorization: `Bearer ${token}` } } : request;
+};
+
+const clean = (params = {}) =>
+  Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== "" && v !== "all"));
+
+// AI credit wallet (gian: /api/v1/ai-credits).
+export const aiCreditsApi = baseApi
+  .enhanceEndpoints({ addTagTypes: ["AiWallet", "AiAdmin"] })
+  .injectEndpoints({
+    endpoints: (build) => ({
+      /* ------------------------------ tenant ------------------------------ */
+
+      // { wallet, thresholds: { low, critical }, packages }
+      getAiWallet: build.query({
+        query: () => `${BASE}/wallet`,
+        transformResponse: result,
+        providesTags: ["AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      // { items, pagination }; params: { page, limit, type }
+      getAiTransactions: build.query({
+        query: (params) => ({ url: `${BASE}/transactions`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      // { summary: { totals, daily, byProvider, byModel, byService }, items, pagination }
+      // params: { from, to, service, provider, page, limit }
+      getAiUsage: build.query({
+        query: (params) => ({ url: `${BASE}/usage`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      // packageId -> { orderId, amount (paise), currency, keyId, credits, packageName }
+      createAiRecharge: build.mutation({
+        query: (packageId) => ({ url: `${BASE}/recharge`, method: "POST", body: { packageId } }),
+        transformResponse: result,
+        extraOptions: NODE,
+      }),
+
+      // Razorpay checkout response -> { credited, pending, alreadyProcessed, credits }
+      verifyAiRecharge: build.mutation({
+        query: (body) => ({ url: `${BASE}/recharge/verify`, method: "POST", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      /* ------------------------------ admin ------------------------------ */
+
+      // { overview, tenants: { items, pagination }, settings }
+      getAdminAiOverview: build.query({
+        query: (params) => asAdmin({ url: `${BASE}/admin/overview`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      getAdminAiTenant: build.query({
+        query: (tenantId) => asAdmin(`${BASE}/admin/tenants/${encodeURIComponent(tenantId)}`),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      getAdminAiTenantTransactions: build.query({
+        query: ({ tenantId, ...params }) =>
+          asAdmin({ url: `${BASE}/admin/tenants/${encodeURIComponent(tenantId)}/transactions`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      getAdminAiTenantUsage: build.query({
+        query: ({ tenantId, ...params }) =>
+          asAdmin({ url: `${BASE}/admin/tenants/${encodeURIComponent(tenantId)}/usage`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      // { tenantId, direction: "add" | "deduct", amount, reason, idempotencyKey }
+      adjustAiCredits: build.mutation({
+        query: (body) => asAdmin({ url: `${BASE}/admin/adjust`, method: "POST", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiAdmin", "AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      setAiWalletStatus: build.mutation({
+        query: ({ tenantId, ...body }) =>
+          asAdmin({ url: `${BASE}/admin/tenants/${encodeURIComponent(tenantId)}/status`, method: "PATCH", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiAdmin", "AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      getAdminAiPricing: build.query({
+        query: () => asAdmin(`${BASE}/admin/pricing`),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      saveAiPricing: build.mutation({
+        query: ({ id, ...body }) =>
+          asAdmin({ url: `${BASE}/admin/pricing${id ? `/${id}` : ""}`, method: id ? "PATCH" : "POST", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      getAdminAiPackages: build.query({
+        query: () => asAdmin(`${BASE}/admin/packages`),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      saveAiPackage: build.mutation({
+        query: ({ id, ...body }) =>
+          asAdmin({ url: `${BASE}/admin/packages${id ? `/${id}` : ""}`, method: id ? "PATCH" : "POST", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiAdmin", "AiWallet"],
+        extraOptions: NODE,
+      }),
+
+      updateAiCreditSettings: build.mutation({
+        query: (body) => asAdmin({ url: `${BASE}/admin/settings`, method: "PUT", body }),
+        transformResponse: result,
+        invalidatesTags: ["AiAdmin", "AiWallet"],
+        extraOptions: NODE,
+      }),
     }),
+  });
 
-    // AI Wallet: { wallet, thresholds, dailyUsage, usage, packages, transactions }
-    getAiWallet: build.query({
-      query: () => "/api/v1/ai-credits/wallet",
-      transformResponse: (response) => response?.result,
-      extraOptions: NODE,
-    }),
-  }),
-});
-
-export const { useGetAdminAiCreditsQuery, useGetAiWalletQuery } = aiCreditsApi;
+export const {
+  useGetAiWalletQuery,
+  useGetAiTransactionsQuery,
+  useGetAiUsageQuery,
+  useCreateAiRechargeMutation,
+  useVerifyAiRechargeMutation,
+  useGetAdminAiOverviewQuery,
+  useGetAdminAiTenantQuery,
+  useGetAdminAiTenantTransactionsQuery,
+  useGetAdminAiTenantUsageQuery,
+  useAdjustAiCreditsMutation,
+  useSetAiWalletStatusMutation,
+  useGetAdminAiPricingQuery,
+  useSaveAiPricingMutation,
+  useGetAdminAiPackagesQuery,
+  useSaveAiPackageMutation,
+  useUpdateAiCreditSettingsMutation,
+} = aiCreditsApi;

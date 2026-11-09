@@ -1,4 +1,4 @@
-import { Building2, KeyRound, Link2, Mail, Webhook } from "lucide-react";
+import { Building2, KeyRound, Link2, Mail, Phone, Webhook } from "lucide-react";
 import { Skeleton } from "../../components/ui/States";
 import { useTenant } from "../../hooks/useTenant";
 import ChangePassword from "./components/ChangePassword";
@@ -6,6 +6,7 @@ import HotelsSection from "./components/HotelsSection";
 import LeadWebhooks from "./components/LeadWebhooks";
 import MarketingEmail from "./components/MarketingEmail";
 import ProfileOverview from "./components/ProfileOverview";
+import SecondaryPhone from "./components/SecondaryPhone";
 import SectionNav from "./components/SectionNav";
 import { useProfile } from "./hooks/useProfile";
 import UrlManager from "./UrlManager";
@@ -14,6 +15,7 @@ import UrlManager from "./UrlManager";
 const SECTIONS = [
   { id: "locations", label: "Locations", icon: Building2 },
   { id: "marketing-email", label: "Marketing email", icon: Mail },
+  { id: "secondary-phone", label: "Secondary phone", icon: Phone },
   { id: "links", label: "Websites & links", icon: Link2 },
   { id: "lead-webhooks", label: "Lead webhooks", icon: Webhook },
   { id: "security", label: "Password", icon: KeyRound },
@@ -63,6 +65,12 @@ const Setting = () => {
             id="marketing-email"
             profile={profile}
             onSaved={(marketingEmail) => patchProfile({ marketingEmail })}
+          />
+
+          <SecondaryPhone
+            id="secondary-phone"
+            profile={profile}
+            onSaved={(secondaryPhone) => patchProfile({ secondaryPhone })}
           />
 
           <UrlManager

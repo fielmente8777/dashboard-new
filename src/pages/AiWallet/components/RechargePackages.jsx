@@ -8,6 +8,9 @@ import Icon from "../../../components/ui/Icon";
 // The recharge plans; onRecharge(pack) opens the confirmation.
 const RechargePackages = ({ packages, onRecharge }) => (
   <Card title="Recharge packages" description="Credits never expire">
+    {packages.length === 0 && (
+      <p className="text-sm text-app-text-muted">No recharge packages are available right now. Contact Eazotel support.</p>
+    )}
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {packages.map((pack) => {
         const perCredit = pack.price / pack.credits;

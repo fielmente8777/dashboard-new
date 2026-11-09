@@ -1,25 +1,30 @@
 import { ShieldCheck } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
-import InProgressNotice from "../../components/AiCredits/InProgressNotice";
-import { creditState } from "../../components/AiCredits/aiCredits";
+import { formatCredits, newIdempotencyKey } from "../../components/AiCredits/aiCredits";
 import PageShell from "../../components/ui/PageShell";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import { useToast } from "../../context/ToastContext";
+import useDebounce from "../../hooks/useDebounce";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
-import { useGetAdminAiCreditsQuery } from "../../redux/api/aiCreditsApi";
+import {
+  useAdjustAiCreditsMutation,
+  useGetAdminAiOverviewQuery,
+  useGetAdminAiPackagesQuery,
+  useGetAdminAiPricingQuery,
+  useSaveAiPackageMutation,
+  useSaveAiPricingMutation,
+  useUpdateAiCreditSettingsMutation,
+} from "../../redux/api/aiCreditsApi";
 import AdjustCreditsDialog from "./components/AdjustCreditsDialog";
 import CreditPackages from "./components/CreditPackages";
-import EditPricingDialog from "./components/EditPricingDialog";
-import LowCreditSettings from "./components/LowCreditSettings";
+import CreditSettings from "./components/CreditSettings";
 import OverviewCards from "./components/OverviewCards";
 import PackageDialog from "./components/PackageDialog";
+import PricingDialog from "./components/PricingDialog";
 import PricingTable from "./components/PricingTable";
 import TenantCreditsTable from "./components/TenantCreditsTable";
 import TenantWalletDrawer from "./components/TenantWalletDrawer";
-
-// IN PROGRESS: every change below is kept in this page's state only.
-const NOT_SAVED = "Updated for this session only. Saving arrives with the wallet API.";
 
 const LoadingPage = () => (
   <>
@@ -33,92 +38,105 @@ const LoadingPage = () => (
   </>
 );
 
-// Admin > AI Credit Management: every tenant's AI wallet, AI prices,
-// recharge packages and low-credit alerts. Owner accounts only.
+const NotAllowed = () => (
+  <PageShell title="AI Credit Management">
+    <EmptyState
+      icon={ShieldCheck}
+      title="Only Eazotel admins can open this page"
+      description="Your AI credits are on the AI Wallet page."
+    />
+  </PageShell>
+);
+
+// Admin > AI Credit Management: every tenant's AI wallet, provider pricing,
+// recharge packages and credit settings. gian allows only the emails in
+// AI_CREDITS_ADMIN_EMAILS; the owner check here just avoids a pointless call.
 const AiCreditManagement = () => {
   const { authUser, loading: profileLoading } = useSelector((state) => state.userProfile);
   const isOwner = authUser?.role === "owner";
-  const { data, isLoading, error, refetch } = useGetAdminAiCreditsQuery(undefined, { skip: !isOwner });
   const { showToast } = useToast();
 
-  const [tenants, setTenants] = useState([]);
-  const [pricing, setPricing] = useState([]);
-  const [packages, setPackages] = useState([]);
-  const [settings, setSettings] = useState(null);
-  const [adjustments, setAdjustments] = useState({});
+  const [filters, setFilters] = useState({ search: "", status: "all", level: "all" });
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const search = useDebounce(filters.search.trim(), 300);
 
-  const [adjusting, setAdjusting] = useState(null); // { mode, tenant }
+  const overviewQuery = useGetAdminAiOverviewQuery(
+    { page, limit, search, status: filters.status, level: filters.level },
+    { skip: !isOwner },
+  );
+  const pricingQuery = useGetAdminAiPricingQuery(undefined, { skip: !isOwner });
+  const packagesQuery = useGetAdminAiPackagesQuery(undefined, { skip: !isOwner });
+  const [adjustCredits, adjustState] = useAdjustAiCreditsMutation();
+  const [savePricing, pricingState] = useSaveAiPricingMutation();
+  const [savePackage, packageState] = useSaveAiPackageMutation();
+  const [saveSettings, settingsState] = useUpdateAiCreditSettingsMutation();
+
+  const [adjusting, setAdjusting] = useState(null); // { mode, tenant, idempotencyKey }
   const [viewing, setViewing] = useState(null); // { tenantId, tab }
-  const [editingService, setEditingService] = useState(null);
+  const [pricingForm, setPricingForm] = useState(null); // { row } (null row = new)
   const [packageForm, setPackageForm] = useState(null); // { pack } (null pack = new)
 
-  useEffect(() => {
-    if (!data) return;
-    setTenants(data.tenants ?? []);
-    setPricing(data.pricing ?? []);
-    setPackages(data.packages ?? []);
-    setSettings(data.lowCreditSettings ?? null);
-  }, [data]);
+  const { data, isLoading, error, refetch } = overviewQuery;
+  const thresholds = data && { low: data.settings.lowThreshold, critical: data.settings.criticalThreshold };
 
-  const thresholds = { low: settings?.lowThreshold, critical: settings?.criticalThreshold };
+  const changeFilters = (next) => {
+    setFilters((prev) => ({ ...prev, ...next }));
+    setPage(1);
+  };
 
-  const overview = useMemo(
-    () =>
-      data && {
-        ...data.overview,
-        totalAvailableCredits: tenants.reduce((sum, t) => sum + t.availableCredits, 0),
-        lowCreditTenants: tenants.filter((t) => creditState(t.availableCredits, thresholds) !== "healthy").length,
-      },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, tenants, settings],
-  );
-
-  const saved = (message) => showToast({ title: message, message: NOT_SAVED, type: "info", duration: 4000 });
+  const fail = (err, fallback) => showToast({ type: "error", message: getApiErrorMessage(err, fallback) });
 
   const onTenantAction = (action, tenant) => {
-    if (action === "add" || action === "deduct") setAdjusting({ mode: action, tenant });
-    else setViewing({ tenantId: tenant.tenantId, tab: action === "transactions" ? "transactions" : "wallet" });
+    if (action === "add" || action === "deduct") {
+      // one key per opened dialog: a double submit or a retry applies once
+      setAdjusting({ mode: action, tenant, idempotencyKey: newIdempotencyKey() });
+    } else {
+      setViewing({ tenantId: tenant.tenantId, tab: action === "transactions" ? "transactions" : "wallet" });
+    }
   };
 
-  const applyAdjustment = ({ amount, reason }) => {
-    const { mode, tenant } = adjusting;
-    const credits = mode === "add" ? amount : -amount;
-    const balanceAfter = Math.max(0, tenant.availableCredits + credits);
-    setTenants((prev) =>
-      prev.map((t) => (t.tenantId === tenant.tenantId ? { ...t, availableCredits: balanceAfter } : t)),
-    );
-    setAdjustments((prev) => ({
-      ...prev,
-      [tenant.tenantId]: [
-        { id: `${Date.now()}`, date: new Date().toISOString(), credits, reason, balanceAfter },
-        ...(prev[tenant.tenantId] ?? []),
-      ],
-    }));
-    setAdjusting(null);
-    saved(`${mode === "add" ? "Added" : "Deducted"} ${amount.toLocaleString("en-IN")} credits`);
+  const applyAdjustment = async ({ amount, reason }) => {
+    const { mode, tenant, idempotencyKey } = adjusting;
+    try {
+      const result = await adjustCredits({ tenantId: tenant.tenantId, direction: mode, amount, reason, idempotencyKey }).unwrap();
+      setAdjusting(null);
+      showToast({
+        type: "success",
+        message: `${mode === "add" ? "Added" : "Deducted"} ${formatCredits(amount)} credits. New balance: ${formatCredits(result.balanceAfter)}`,
+      });
+    } catch (err) {
+      fail(err, "Couldn't adjust credits");
+    }
   };
 
-  const savePricing = (service) => {
-    setPricing((prev) => prev.map((s) => (s.id === service.id ? service : s)));
-    setEditingService(null);
-    saved(`${service.name} pricing updated`);
+  const submitPricing = async (row) => {
+    try {
+      await savePricing(row).unwrap();
+      setPricingForm(null);
+      showToast({ type: "success", message: `${row.provider} / ${row.model} pricing saved` });
+    } catch (err) {
+      fail(err, "Couldn't save pricing");
+    }
   };
 
-  const savePackage = (pack) => {
-    setPackages((prev) => {
-      // only one package can be the highlighted one
-      const others = pack.popular ? prev.map((p) => ({ ...p, popular: false })) : prev;
-      return pack.id
-        ? others.map((p) => (p.id === pack.id ? pack : p))
-        : [...others, { ...pack, id: `custom-${Date.now()}` }];
-    });
-    setPackageForm(null);
-    saved(pack.id ? `${pack.name} updated` : `${pack.name} created`);
+  const submitPackage = async (pack) => {
+    try {
+      await savePackage(pack).unwrap();
+      setPackageForm(null);
+      showToast({ type: "success", message: `${pack.name} ${pack.id ? "updated" : "created"}` });
+    } catch (err) {
+      fail(err, "Couldn't save the package");
+    }
   };
 
-  const saveSettings = (next) => {
-    setSettings(next);
-    saved("Low-credit settings updated");
+  const submitSettings = async (next) => {
+    try {
+      await saveSettings(next).unwrap();
+      showToast({ type: "success", message: "Credit settings saved" });
+    } catch (err) {
+      fail(err, "Couldn't save settings");
+    }
   };
 
   if (profileLoading && !authUser) {
@@ -129,72 +147,80 @@ const AiCreditManagement = () => {
     );
   }
 
-  if (!isOwner) {
-    return (
-      <PageShell title="AI Credit Management">
-        <EmptyState
-          icon={ShieldCheck}
-          title="Only Eazotel admins can open this page"
-          description="Your AI credits are on the AI Wallet page."
-        />
-      </PageShell>
-    );
-  }
-
-  const viewedTenant = viewing && tenants.find((t) => t.tenantId === viewing.tenantId);
+  if (!isOwner || error?.status === 403) return <NotAllowed />;
 
   return (
     <PageShell
       title="AI Credit Management"
-      description="AI credit wallets, pricing and recharge packages for every tenant"
+      description="AI credit wallets, provider pricing and recharge packages for every tenant"
     >
-      <InProgressNotice />
-
       {isLoading && <LoadingPage />}
 
-      {error && (
-        <ErrorState message={getApiErrorMessage(error, "Couldn't load AI credits.")} onRetry={refetch} />
-      )}
+      {error && <ErrorState message={getApiErrorMessage(error, "Couldn't load AI credits.")} onRetry={refetch} />}
 
-      {data && settings && (
+      {data && (
         <>
-          <OverviewCards overview={overview} />
-          <TenantCreditsTable tenants={tenants} thresholds={thresholds} onAction={onTenantAction} />
+          <OverviewCards overview={data.overview} />
+          <TenantCreditsTable
+            tenants={data.tenants.items}
+            pagination={{
+              ...data.tenants.pagination,
+              page,
+              limit,
+              onPageChange: setPage,
+              onLimitChange: (value) => {
+                setLimit(value);
+                setPage(1);
+              },
+            }}
+            filters={filters}
+            onFiltersChange={changeFilters}
+            loading={overviewQuery.isFetching}
+            thresholds={thresholds}
+            onAction={onTenantAction}
+          />
+          <PricingTable
+            query={pricingQuery}
+            onEdit={(row) => setPricingForm({ row })}
+            onCreate={() => setPricingForm({ row: null })}
+          />
           <div className="grid gap-5 2xl:grid-cols-2">
-            <PricingTable pricing={pricing} onEdit={setEditingService} />
             <CreditPackages
-              packages={packages}
+              query={packagesQuery}
               onEdit={(pack) => setPackageForm({ pack })}
               onCreate={() => setPackageForm({ pack: null })}
             />
+            <CreditSettings settings={data.settings} saving={settingsState.isLoading} onSave={submitSettings} />
           </div>
-          <LowCreditSettings settings={settings} onSave={saveSettings} />
 
           <AdjustCreditsDialog
             open={Boolean(adjusting)}
             mode={adjusting?.mode}
             tenant={adjusting?.tenant}
+            busy={adjustState.isLoading}
             onClose={() => setAdjusting(null)}
             onSubmit={applyAdjustment}
           />
           <TenantWalletDrawer
-            tenant={viewedTenant}
+            tenantId={viewing?.tenantId}
             tab={viewing?.tab}
             onTabChange={(tab) => setViewing((prev) => ({ ...prev, tab }))}
-            adjustments={adjustments[viewing?.tenantId] ?? []}
             thresholds={thresholds}
             onClose={() => setViewing(null)}
           />
-          <EditPricingDialog
-            service={editingService}
-            onClose={() => setEditingService(null)}
-            onSubmit={savePricing}
+          <PricingDialog
+            open={Boolean(pricingForm)}
+            row={pricingForm?.row}
+            busy={pricingState.isLoading}
+            onClose={() => setPricingForm(null)}
+            onSubmit={submitPricing}
           />
           <PackageDialog
             open={Boolean(packageForm)}
             pack={packageForm?.pack}
+            busy={packageState.isLoading}
             onClose={() => setPackageForm(null)}
-            onSubmit={savePackage}
+            onSubmit={submitPackage}
           />
         </>
       )}

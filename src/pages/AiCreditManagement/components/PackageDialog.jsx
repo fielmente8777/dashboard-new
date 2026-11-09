@@ -7,8 +7,8 @@ import Switch from "../../../components/ui/Switch";
 
 const EMPTY = { name: "", credits: "", price: "", status: "active", popular: false, currency: "INR" };
 
-// Creates a package (`pack` null) or edits one; onSubmit(pack).
-const PackageDialog = ({ open, pack, onClose, onSubmit }) => {
+// Creates a package (`pack` null) or edits one; onSubmit(pack); `busy` while it saves.
+const PackageDialog = ({ open, pack, busy = false, onClose, onSubmit }) => {
   const [form, setForm] = useState(EMPTY);
 
   useEffect(() => {
@@ -30,14 +30,24 @@ const PackageDialog = ({ open, pack, onClose, onSubmit }) => {
       description="Tenants see this on their AI Wallet"
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button
-            disabled={!valid}
-            onClick={() => onSubmit({ ...form, name: form.name.trim(), credits, price })}
+            disabled={!valid || busy}
+            onClick={() =>
+              onSubmit({
+                ...(pack ? { id: pack.id } : {}),
+                name: form.name.trim(),
+                credits,
+                price,
+                currency: form.currency || "INR",
+                status: form.status,
+                popular: Boolean(form.popular),
+              })
+            }
           >
-            {pack ? "Save package" : "Create package"}
+            {busy ? "Saving…" : pack ? "Save package" : "Create package"}
           </Button>
         </>
       }

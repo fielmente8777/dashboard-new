@@ -1,5 +1,4 @@
 import { Eye, MinusCircle, PlusCircle, ReceiptText, Search } from "lucide-react";
-import { useMemo, useState } from "react";
 import {
   STATUS_TONES,
   capitalize,
@@ -7,7 +6,6 @@ import {
   formatCredits,
   formatDate,
 } from "../../../components/AiCredits/aiCredits";
-import { usePagedRows } from "../../../components/AiCredits/usePagedRows";
 import Badge from "../../../components/ui/Badge";
 import Card from "../../../components/ui/Card";
 import DataTable from "../../../components/ui/DataTable";
@@ -16,7 +14,6 @@ import Icon from "../../../components/ui/Icon";
 import IconButton from "../../../components/ui/IconButton";
 import SelectMenu from "../../../components/ui/SelectMenu";
 import TablePagination from "../../../components/ui/TablePagination";
-import useDebounce from "../../../hooks/useDebounce";
 
 const STATUS_FILTERS = [
   { value: "all", label: "All statuses" },
@@ -34,27 +31,9 @@ const LEVEL_FILTERS = [
 
 const LEVEL_TONES = { healthy: "", low: "text-amber-600 dark:text-amber-400", critical: "text-red-600 dark:text-red-400", empty: "text-red-600 dark:text-red-400" };
 
+// Every client and its AI wallet; filtering and paging happen on the server.
 // onAction(action, tenant), action: "wallet" | "add" | "deduct" | "transactions"
-const TenantCreditsTable = ({ tenants, thresholds, onAction }) => {
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [level, setLevel] = useState("all");
-  const term = useDebounce(search.trim().toLowerCase(), 250);
-
-  const rows = useMemo(
-    () =>
-      tenants.filter(
-        (tenant) =>
-          (!term ||
-            tenant.name.toLowerCase().includes(term) ||
-            tenant.tenantId.toLowerCase().includes(term)) &&
-          (status === "all" || tenant.walletStatus === status) &&
-          (level === "all" || creditState(tenant.availableCredits, thresholds) === level),
-      ),
-    [tenants, term, status, level, thresholds],
-  );
-  const { pageRows, pagination } = usePagedRows(rows);
-
+const TenantCreditsTable = ({ tenants, pagination, filters, onFiltersChange, loading, thresholds, onAction }) => {
   const columns = [
     { key: "name", header: "Tenant Name", className: "whitespace-nowrap font-medium" },
     { key: "tenantId", header: "Tenant ID", className: "font-mono text-xs! text-app-text-muted!" },
@@ -97,21 +76,22 @@ const TenantCreditsTable = ({ tenants, thresholds, onAction }) => {
           <div className="relative sm:w-72">
             <Icon icon={Search} size="sm" tone="faint" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={filters.search}
+              onChange={(e) => onFiltersChange({ search: e.target.value })}
               placeholder="Search tenant name or ID"
               aria-label="Search tenants"
               className="pl-9"
             />
           </div>
-          <SelectMenu label="Wallet status" options={STATUS_FILTERS} value={status} onChange={setStatus} className="sm:w-44" />
-          <SelectMenu label="Balance" options={LEVEL_FILTERS} value={level} onChange={setLevel} className="sm:w-44" />
+          <SelectMenu label="Wallet status" options={STATUS_FILTERS} value={filters.status} onChange={(status) => onFiltersChange({ status })} className="sm:w-44" />
+          <SelectMenu label="Balance" options={LEVEL_FILTERS} value={filters.level} onChange={(level) => onFiltersChange({ level })} className="sm:w-44" />
         </div>
 
         <DataTable
           columns={columns}
-          rows={pageRows}
+          rows={tenants}
           rowKey={(row) => row.tenantId}
+          loading={loading}
           emptyMessage="No tenants match these filters"
         />
         <TablePagination {...pagination} itemLabel="tenants" />

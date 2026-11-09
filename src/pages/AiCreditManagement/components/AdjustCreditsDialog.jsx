@@ -5,8 +5,8 @@ import Dialog from "../../../components/ui/Dialog";
 import { Field, Input, Textarea } from "../../../components/ui/Field";
 
 // Adds credits to, or takes them from, one tenant's wallet.
-// mode: "add" | "deduct"; onSubmit({ amount, reason }).
-const AdjustCreditsDialog = ({ open, mode, tenant, onClose, onSubmit }) => {
+// mode: "add" | "deduct"; onSubmit({ amount, reason }); `busy` while it saves.
+const AdjustCreditsDialog = ({ open, mode, tenant, busy = false, onClose, onSubmit }) => {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
 
@@ -38,15 +38,15 @@ const AdjustCreditsDialog = ({ open, mode, tenant, onClose, onSubmit }) => {
       description={`${tenant.name} · ${tenant.tenantId}`}
       footer={
         <>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button
             variant={isAdd ? "primary" : "danger"}
-            disabled={!valid}
+            disabled={!valid || busy}
             onClick={() => onSubmit({ amount: value, reason: reason.trim() })}
           >
-            {isAdd ? "Add credits" : "Deduct credits"}
+            {busy ? "Saving…" : isAdd ? "Add credits" : "Deduct credits"}
           </Button>
         </>
       }
@@ -63,7 +63,7 @@ const AdjustCreditsDialog = ({ open, mode, tenant, onClose, onSubmit }) => {
             autoFocus
           />
         </Field>
-        <Field label="Reason" hint="Shown in the tenant's transaction history">
+        <Field label="Reason" hint="Shown in the tenant's transaction history and kept in the admin audit log">
           <Textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
