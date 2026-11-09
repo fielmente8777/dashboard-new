@@ -124,6 +124,8 @@ export const PAGES = {
   KNOWLEDGE_BASE: "knowledge-base",
   AI_TRAINING: "ai-training",
   EAZBOT: "eazbot",
+  AI_WALLET: "ai-wallet",
+  AI_CREDIT_MANAGEMENT: "admin/ai-credits", // owners only
 
   // Human resources
   HR_ANALYTICS: "human-resources-management/analytics",
