@@ -11,6 +11,7 @@ const EMPTY = {
   inputPrice: "0",
   outputPrice: "0",
   embeddingPrice: "0",
+  requestPrice: "0",
   currency: "USD",
   creditConversionRate: "",
   status: "active",
@@ -34,6 +35,7 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
             inputPrice: String(row.inputPrice),
             outputPrice: String(row.outputPrice),
             embeddingPrice: String(row.embeddingPrice),
+            requestPrice: String(row.requestPrice ?? 0),
             creditConversionRate: String(row.creditConversionRate),
           }
         : EMPTY,
@@ -52,14 +54,14 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
     currency: form.currency && !/^[A-Z]{3}$/.test(currency) ? "A 3-letter code such as USD or INR" : null,
     rate: form.creditConversionRate !== "" && !(num("creditConversionRate") > 0) ? "Must be above 0" : null,
   };
-  const pricesValid = ["inputPrice", "outputPrice", "embeddingPrice"].every(
+  const pricesValid = ["inputPrice", "outputPrice", "embeddingPrice", "requestPrice"].every(
     (f) => form[f] !== "" && num(f) >= 0,
   );
   const valid =
     provider && model && currency && pricesValid && num("creditConversionRate") > 0 && !Object.values(errors).some(Boolean);
 
   // a worked example so the admin sees what a typical request costs
-  const exampleCost = (1000 / 1e6) * num("inputPrice") + (500 / 1e6) * num("outputPrice");
+  const exampleCost = (1000 / 1e6) * num("inputPrice") + (500 / 1e6) * num("outputPrice") + num("requestPrice");
   const exampleCredits = Math.ceil(Number((exampleCost * num("creditConversionRate")).toFixed(6)));
 
   return (
@@ -83,6 +85,7 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
                 inputPrice: num("inputPrice"),
                 outputPrice: num("outputPrice"),
                 embeddingPrice: num("embeddingPrice"),
+                requestPrice: num("requestPrice"),
                 currency,
                 creditConversionRate: num("creditConversionRate"),
                 status: form.status,
@@ -114,6 +117,9 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
             <Input type="number" min="0" step="any" value={form.embeddingPrice} onChange={(e) => set("embeddingPrice")(e.target.value)} />
           </Field>
         </div>
+        <Field label="Price per request" hint="For APIs not billed by tokens, e.g. Sarvam speech-to-text (saaras:v4). Leave 0 otherwise.">
+          <Input type="number" min="0" step="any" value={form.requestPrice} onChange={(e) => set("requestPrice")(e.target.value)} />
+        </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Currency" error={errors.currency}>
             <Input value={form.currency} maxLength={3} onChange={(e) => set("currency")(e.target.value)} />
@@ -142,7 +148,7 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
         <div className="flex items-center justify-between gap-3 rounded-lg border border-app-border! px-3 py-2.5">
           <div>
             <p className="text-sm font-medium text-app-text">Active</p>
-            <p className="text-xs text-app-text-muted">Requests to a model without active pricing are refused</p>
+            <p className="text-xs text-app-text-muted">Inactive: this model is charged at the fallback rates in Credit settings</p>
           </div>
           <Switch label="Active" checked={form.status === "active"} onChange={(on) => set("status")(on ? "active" : "inactive")} />
         </div>

@@ -1,5 +1,6 @@
 import { API_URLS } from "../config/env";
 import { getToken } from "../utils/session";
+import { isAiCreditsBlock, notifyAiCreditsBlocked } from "../utils/aiCreditsEvents";
 
 // "Ask Eazotel AI" is served by the Node API (gian: /api/v1/chatbot).
 const API_URL = `${API_URLS.node}/api/v1`;
@@ -37,6 +38,12 @@ async function request(endpoint, options = {}) {
     error.status = response.status;
     // e.g. { conversationId } when the user message was saved but the model failed.
     if (typeof payload === "object" && payload?.data) error.data = payload.data;
+    // AI paused by the credit wallet (402 / 403): code + balance for the UI
+    if (isAiCreditsBlock(response.status, payload)) {
+      error.code = payload.code;
+      error.availableCredits = payload.availableCredits;
+      notifyAiCreditsBlocked(payload);
+    }
     throw error;
   }
   return payload;
@@ -96,6 +103,7 @@ export async function transcribeAudio(blob) {
   }
 
   const payload = await response.json().catch(() => ({}));
+  if (isAiCreditsBlock(response.status, payload)) notifyAiCreditsBlocked(payload);
   if (!response.ok || !payload?.text) {
     const error = new Error(
       response.status === 404

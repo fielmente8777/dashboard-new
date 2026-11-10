@@ -48,25 +48,25 @@ const STATUS_ICONS = {
   failed: { icon: AlertCircle, label: "Not sent", className: "text-red-500" },
 };
 
-// Under a failed message: why it failed, and a retry when one can help.
+// Under a failed message: why it failed, and Resend. Resend is always there,
+// also for reasons the team has to fix first (billing, locked account): once
+// fixed, they resend from here.
 const SendFailure = ({ message, onResend }) => {
-  const { text, canRetry } = getSendFailure(message);
+  const { text } = getSendFailure(message);
 
   return (
     <div className="mt-0.5 text-right text-xs text-red-500">
       <p>Not sent{text ? `: ${text}` : "."}</p>
-      {canRetry && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onResend(message);
-          }}
-          className="font-medium hover:underline"
-        >
-          Try again
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onResend(message);
+        }}
+        className="font-medium hover:underline"
+      >
+        Resend
+      </button>
     </div>
   );
 };

@@ -17,6 +17,13 @@ export const formatPrice = (amount, currency = "USD") =>
     maximumFractionDigits: 6,
   }).format(Number(amount) || 0);
 
+// cost per currency: { USD: 0.12, INR: 4.5 } -> "$0.12 · ₹4.50"
+// (AI providers bill in different currencies, so costs are never summed across them)
+export const costText = (cost = {}) => {
+  const entries = Object.entries(cost).filter(([, v]) => v > 0);
+  return entries.length ? entries.map(([currency, v]) => formatPrice(v, currency)).join(" · ") : "—";
+};
+
 export const formatTokens = (value) => {
   const n = Number(value) || 0;
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M`;
@@ -46,11 +53,26 @@ export const formatDateTime = (value) =>
 // what each billed AI operation is called (AiUsageLog.service)
 export const SERVICE_LABELS = {
   chatbot: "AI Chatbot",
-  knowledge_base: "Knowledge base",
+  knowledge_base: "Knowledge base (embeddings)",
+  knowledge_base_extraction: "Knowledge base generation",
+  voice_input: "Voice input",
+  whatsapp_ai: "WhatsApp AI replies",
+  website_chatbot: "Website chatbot (Eazbot)",
+  email_template_ai: "AI email templates",
+  review_reply: "AI review replies",
+  unattributed: "Not linked to a client",
 };
 export const serviceLabel = (id) => SERVICE_LABELS[id] ?? id ?? "—";
 
-export const PROVIDER_LABELS = { sarvam: "Sarvam", openai: "OpenAI", anthropic: "Anthropic" };
+export const PROVIDER_LABELS = {
+  sarvam: "Sarvam",
+  openai: "OpenAI",
+  anthropic: "Anthropic Claude",
+  groq: "Groq",
+  gemini: "Google Gemini",
+};
+
+export const KIND_LABELS = { chat: "Chat", embedding: "Embeddings", stt: "Speech-to-text" };
 export const providerLabel = (id) => PROVIDER_LABELS[id] ?? id ?? "—";
 
 export const TRANSACTION_TYPES = {

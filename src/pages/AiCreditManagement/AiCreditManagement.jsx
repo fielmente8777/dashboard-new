@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { formatCredits, newIdempotencyKey } from "../../components/AiCredits/aiCredits";
 import PageShell from "../../components/ui/PageShell";
+import Tabs from "../../components/ui/Tabs";
+import ApiUsageAnalytics from "./analytics/ApiUsageAnalytics";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import { useToast } from "../../context/ToastContext";
 import useDebounce from "../../hooks/useDebounce";
@@ -76,6 +78,7 @@ const AiCreditManagement = () => {
   const [viewing, setViewing] = useState(null); // { tenantId, tab }
   const [pricingForm, setPricingForm] = useState(null); // { row } (null row = new)
   const [packageForm, setPackageForm] = useState(null); // { pack } (null pack = new)
+  const [section, setSection] = useState("wallets"); // "wallets" | "usage"
 
   const { data, isLoading, error, refetch } = overviewQuery;
   const thresholds = data && { low: data.settings.lowThreshold, critical: data.settings.criticalThreshold };
@@ -152,13 +155,27 @@ const AiCreditManagement = () => {
   return (
     <PageShell
       title="AI Credit Management"
-      description="AI credit wallets, provider pricing and recharge packages for every tenant"
+      description="AI credit wallets, provider pricing, recharge packages and AI API usage for every tenant"
     >
-      {isLoading && <LoadingPage />}
+      <Tabs
+        value={section}
+        onChange={setSection}
+        className="border-b border-app-border! pb-2"
+        tabs={[
+          { value: "wallets", label: "Wallets & pricing" },
+          { value: "usage", label: "API usage analytics" },
+        ]}
+      />
 
-      {error && <ErrorState message={getApiErrorMessage(error, "Couldn't load AI credits.")} onRetry={refetch} />}
+      {section === "usage" && <ApiUsageAnalytics />}
 
-      {data && (
+      {section === "wallets" && isLoading && <LoadingPage />}
+
+      {section === "wallets" && error && (
+        <ErrorState message={getApiErrorMessage(error, "Couldn't load AI credits.")} onRetry={refetch} />
+      )}
+
+      {section === "wallets" && data && (
         <>
           <OverviewCards overview={data.overview} />
           <TenantCreditsTable

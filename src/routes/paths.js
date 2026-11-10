@@ -14,12 +14,15 @@ export const ROUTES = {
   RESET_PASSWORD: "/reset-password",
   PLANS: "/plans",
   ONBOARDING_FORM: "/onboarding/form",
+  STAFF_ACCESS: "/staff-access",
 };
 
 // Pages inside the dashboard, relative to /dashboard/client/:hid
 export const PAGES = {
   // Home & account
   HOME: "",
+  // renew and upgrade (gian-new billing); the lock screen never covers it
+  PLANS: "plans",
   PROFILE: "profile",
   SETTINGS: "settings",
   INTEGRATION: "integration",
@@ -187,6 +190,9 @@ export const callViewPath = (callId, options) =>
     generatePath(PAGES.CALL_VIEW, { slug: "all-calls", sid: callId }),
     options,
   );
+
+// the plans page (renew / upgrade), e.g. plansPath({ plan: "PRO", cycle: 12 })
+export const plansPath = (query, options) => dashboardPath(PAGES.PLANS, { ...options, query });
 
 // one app's page under Integrations, e.g. integrationPath("exotel")
 export const integrationPath = (slug, options) =>

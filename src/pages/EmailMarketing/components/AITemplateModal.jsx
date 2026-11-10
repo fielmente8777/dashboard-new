@@ -16,6 +16,8 @@ import {
 } from "react-icons/fi";
 
 import EmailPreviewFrame from "./EmailPreviewFrame";
+import AiPausedNotice from "../../../components/AiCredits/AiPausedNotice";
+import { useAiAccess } from "../../../components/AiCredits/useAiAccess";
 import {
   createEmailTemplate,
   generateEmailTemplate,
@@ -111,6 +113,7 @@ export default function AITemplateModal({
   const [device, setDevice] = useState("desktop");
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const aiAccess = useAiAccess();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -199,7 +202,8 @@ export default function AITemplateModal({
   --------------------------------------------------------- */
 
   const runGenerate = async (isRefine = false) => {
-    if (isGenerating) return;
+    // AI generation is billed to AI credits; paused until the wallet is recharged
+    if (isGenerating || aiAccess.paused) return;
 
     const brief = (isRefine ? refineText : prompt).trim();
 
@@ -671,10 +675,11 @@ export default function AITemplateModal({
                 </div>
 
                 <div className="shrink-0 border-t border-app-border! p-4">
+                  <AiPausedNotice access={aiAccess} feature="AI email generation" compact className="mb-3" />
                   <button
                     type="button"
                     onClick={() => runGenerate(false)}
-                    disabled={isGenerating || prompt.trim().length < 5}
+                    disabled={isGenerating || aiAccess.paused || prompt.trim().length < 5}
                     className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isGenerating ? (
@@ -852,7 +857,7 @@ export default function AITemplateModal({
                   <button
                     type="button"
                     onClick={() => runGenerate(true)}
-                    disabled={isGenerating || refineText.trim().length < 5}
+                    disabled={isGenerating || aiAccess.paused || refineText.trim().length < 5}
                     className="flex h-[38px] shrink-0 items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FiZap size={14} />

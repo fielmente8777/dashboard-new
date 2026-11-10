@@ -9,13 +9,7 @@ import {
 import { PAGES, ROUTES, dashboardPath } from "../routes/paths";
 import handleLocalStorage from "../utils/handleLocalStorage";
 import { getCookie, removeCookie } from "../utils/handleCookies";
-import { getAccountToken } from "../utils/session";
-import { isExpired } from "../utils/isExpired";
 import { resolveHid } from "../utils/resolveLocation";
-
-// the plan is checked when a hotel is (re)selected, not on every page change,
-// so paying on the plans page lets the user straight back in
-let planCheckedFor = null;
 
 // Runs before a protected page renders: a signed-out user never sees it, and
 // the page opens with the account and the selected hotel already known.
@@ -54,13 +48,9 @@ export const protectedLoader = async ({ request, params }) => {
   if (nextHid && nextHid !== hid) store.dispatch(setHid(nextHid));
   const currentHid = nextHid ?? hid;
 
-  // per account: an owner switching into a client checks that client's plan
-  const planKey = `${getAccountToken()}:${currentHid}`;
-  if (planKey !== planCheckedFor) {
-    planCheckedFor = planKey;
-    const endDate = user?.SubscriptionDetails?.endDate;
-    if (endDate && isExpired(endDate)) throw redirect(ROUTES.PLANS);
-  }
+  // An ended or paused subscription no longer redirects to the plans page:
+  // DashboardLayout shows the renew screen in place of every page instead
+  // (components/SubscriptionLock), so the sidebar and top bar stay.
 
   store.dispatch(loadWebsiteData(currentHid));
 

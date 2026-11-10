@@ -17,6 +17,7 @@ import {
 } from "./IntegrationPanels";
 import { findIntegration } from "./integrationsData";
 import { useIntegrations } from "./useIntegrations";
+import ContactSupportButton from "../../components/SubscriptionLock/ContactSupportButton";
 
 // the apps with more to show than "connected"
 const PANELS = {
@@ -128,9 +129,9 @@ function IntegrationDetails() {
               </Button>
             )}
             {state === "locked" && (
-              <Link to={ROUTES.PLANS} className="w-full sm:w-auto">
-                <Button icon={Lock} className="w-full">Upgrade to connect</Button>
-              </Link>
+              <ContactSupportButton icon={Lock} className="w-full sm:w-auto">
+                Upgrade to connect
+              </ContactSupportButton>
             )}
             {state === "soon" && (
               <Button variant="secondary" disabled className="w-full sm:w-auto">

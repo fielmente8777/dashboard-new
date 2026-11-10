@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import {
   getTemplateDefaults,
@@ -16,6 +15,9 @@ import {
 } from "../broadcastUtils";
 
 const EMPTY_VALUES = { body: [], header: [] };
+
+// gian rejects imports larger than this (campaignController.createCampaign)
+const MAX_IMPORTED_RECIPIENTS = 10000;
 
 const isApproved = (template) =>
   !template.status || template.status.toUpperCase() === "APPROVED";
@@ -113,7 +115,9 @@ export const useCreateCampaign = ({
       ? "Choose a template"
       : !isTemplateFilled(values)
         ? "Fill in every template value"
-        : audienceLoading
+        : isExcelMode && importedContacts.length > MAX_IMPORTED_RECIPIENTS
+          ? `An import can have at most ${MAX_IMPORTED_RECIPIENTS.toLocaleString("en-IN")} contacts`
+          : audienceLoading
           ? "Please wait while audience is loading"
           : !hasAudience
             ? "No contacts match this audience"
@@ -134,6 +138,8 @@ export const useCreateCampaign = ({
         phone: contact.phone,
       }));
 
+      // gian only adds CRM contacts to an import when this is true
+      payload.includeCrm = includeCrm;
       if (includeCrm && source) {
         payload.source = source;
       }

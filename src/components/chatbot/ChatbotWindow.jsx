@@ -8,6 +8,8 @@ import useChatbotHistory from "../../hooks/useChatbotHistory";
 import ChatHistorySidebar from "./ChatHistorySidebar";
 import { useToast } from "../../context/ToastContext";
 import { isVoiceInputSupported, useVoiceInput } from "../../hooks/useVoiceInput";
+import AiPausedNotice from "../AiCredits/AiPausedNotice";
+import { useAiAccess } from "../AiCredits/useAiAccess";
 
 const suggestions = [
   "Show today's leads",
@@ -80,6 +82,9 @@ export default function ChatbotWindow({ hid, question, onClose }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const { showToast } = useToast();
+  // AI paused (no AI credits / wallet suspended): history stays readable, asking is off
+  const aiAccess = useAiAccess();
+  const aiPaused = aiAccess.paused;
   // speak instead of typing: the text lands in the box to check before sending
   const voice = useVoiceInput({
     onText: useCallback((text) => {
@@ -225,7 +230,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
     event?.preventDefault();
 
     const question = String(retryMessage?.content ?? suggestedQuestion ?? input).trim();
-    if (!question || loadingRef.current || conversationLoading) return;
+    if (!question || loadingRef.current || conversationLoading || aiPaused) return;
 
     const view = viewRef.current;
     const clientMessageId = retryMessage?.clientMessageId || uuidv4();
@@ -448,7 +453,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
                     <button
                       key={suggestion}
                       type="button"
-                      disabled={loading || conversationLoading}
+                      disabled={loading || conversationLoading || aiPaused}
                       onClick={() => handleSubmit(null, suggestion)}
                       className="flex min-h-[66px] items-start gap-3 rounded-xl border border-[var(--cb-border)] bg-[var(--cb-hover)] px-4 py-4 text-left text-sm leading-5 text-[var(--cb-text-2)] transition hover:border-blue-400/40 hover:bg-[var(--cb-hover)] hover:text-[var(--cb-text)] disabled:opacity-50"
                     >
@@ -506,7 +511,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
                         <button
                           type="button"
                           onClick={() => retry(message)}
-                          disabled={loading}
+                          disabled={loading || aiPaused}
                           className="mt-2 flex items-center gap-1.5 rounded-md border border-red-300/30 px-2 py-1 text-xs text-[var(--cb-danger)] hover:bg-red-500/20 disabled:opacity-40"
                         >
                           <RotateCcw size={12} /> Retry
@@ -544,6 +549,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
           </main>
 
           <footer className="shrink-0 border-t border-[var(--cb-border)] bg-[var(--cb-bg)] px-3 pb-4 pt-3 sm:px-4 sm:pb-5">
+            <AiPausedNotice access={aiAccess} feature="AI chat" compact className="mx-auto mb-2 w-full max-w-[710px]" />
             <form
               onSubmit={(event) => handleSubmit(event)}
               className="mx-auto flex w-full max-w-[710px] items-end gap-2 rounded-2xl border border-blue-500/50 bg-[var(--cb-raised)] p-1.5 focus-within:ring-2 focus-within:ring-blue-500/20 transition sm:p-2"
@@ -560,8 +566,8 @@ export default function ChatbotWindow({ hid, question, onClose }) {
                     handleSubmit(event);
                   }
                 }}
-                placeholder="Ask about your leads, e.g. leads of October 2"
-                disabled={loading || conversationLoading}
+                placeholder={aiPaused ? "AI chat is paused until your AI wallet is recharged" : "Ask about your leads, e.g. leads of October 2"}
+                disabled={loading || conversationLoading || aiPaused}
                 aria-label="Ask Eazotel AI a question"
                 className="min-w-0 flex-1 resize-none bg-transparent px-2 py-3 text-sm leading-5 text-[var(--cb-text)] outline-none placeholder:text-[var(--cb-faint)] sm:px-3"
               />
@@ -569,7 +575,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
                 <button
                   type="button"
                   onClick={voice.status === "recording" ? voice.stop : voice.start}
-                  disabled={loading || conversationLoading || voice.status === "transcribing"}
+                  disabled={loading || conversationLoading || aiPaused || voice.status === "transcribing"}
                   aria-label={voice.status === "recording" ? "Stop recording" : "Speak your question"}
                   title={voice.status === "recording" ? "Stop and use what I said" : "Speak your question"}
                   className={`flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-medium transition disabled:opacity-40 ${
@@ -596,7 +602,7 @@ export default function ChatbotWindow({ hid, question, onClose }) {
               )}
               <button
                 type="submit"
-                disabled={loading || conversationLoading || !input.trim()}
+                disabled={loading || conversationLoading || aiPaused || !input.trim()}
                 aria-label="Send message"
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-600 dark:from-blue-600 dark:to-indigo-500 text-white disabled:opacity-40"
               >

@@ -48,9 +48,10 @@ export const normalizeWhatsAppPhone = (value) => {
 
   if (!digits) return "";
 
-  // Assume India for 10-digit mobile numbers.
-  if (/^[6-9]\d{9}$/.test(digits)) {
-    phone = `+91${digits}`;
+  // Assume India for 10-digit mobile numbers, also when written with the
+  // trunk 0 (09876543210).
+  if (/^0?[6-9]\d{9}$/.test(digits)) {
+    phone = `+91${digits.slice(-10)}`;
   } else if (hadPlus) {
     phone = `+${digits}`;
   } else if (/^\d{11,15}$/.test(digits)) {
@@ -72,9 +73,12 @@ export const importWhatsAppContacts = async (file) => {
 
   const buffer = await file.arrayBuffer();
 
+  // raw values, not formatted text: Excel shows a numeric cell such as
+  // 919876543210 as "9.19877E+11" in General format, which loses digits.
+  // For CSV, raw keeps each cell as typed (leading + or 0 stays).
   const workbook = XLSX.read(buffer, {
     type: "array",
-    raw: false,
+    raw: true,
   });
 
   const contactsMap = new Map();
@@ -88,7 +92,7 @@ export const importWhatsAppContacts = async (file) => {
     const rows = XLSX.utils.sheet_to_json(sheet, {
       header: 1,
       defval: "",
-      raw: false,
+      raw: true,
     });
 
     if (rows.length < 2) continue;

@@ -35,6 +35,7 @@ const PricingTable = ({ query, onEdit, onCreate }) => {
     { key: "inputPrice", header: "Input / 1M", className: "tabular-nums", render: (row) => per1M(row.inputPrice, row) },
     { key: "outputPrice", header: "Output / 1M", className: "tabular-nums", render: (row) => per1M(row.outputPrice, row) },
     { key: "embeddingPrice", header: "Embedding / 1M", className: "tabular-nums", render: (row) => per1M(row.embeddingPrice, row) },
+    { key: "requestPrice", header: "Per request", className: "tabular-nums", render: (row) => per1M(row.requestPrice, row) },
     {
       key: "creditConversionRate",
       header: "Credit rate",
@@ -57,7 +58,7 @@ const PricingTable = ({ query, onEdit, onCreate }) => {
   return (
     <Card
       title="AI provider pricing"
-      description="Credits = provider cost × credits per currency unit, rounded up to a whole credit per request"
+      description="Credits = provider cost (tokens, plus any per-request price) × credits per currency unit, rounded up to a whole credit"
       actions={
         <Button size="sm" icon={Plus} onClick={onCreate}>
           New model
@@ -72,7 +73,7 @@ const PricingTable = ({ query, onEdit, onCreate }) => {
           rows={query.data ?? []}
           rowKey={(row) => row.id}
           loading={query.isLoading}
-          emptyMessage="No models priced yet. AI requests are blocked until their model has pricing."
+          emptyMessage="No models priced yet. AI still runs, charged at the fallback rates in Credit settings, until you add pricing."
         />
       )}
     </Card>

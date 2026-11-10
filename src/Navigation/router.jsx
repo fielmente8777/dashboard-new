@@ -1,12 +1,22 @@
 import { createBrowserRouter, redirect } from "react-router-dom";
 import ProtectedRoute from "../Protected/ProtecRoute";
 import { protectedLoader, sessionLoader } from "../Protected/protectedLoader";
+import { staffAccessLoader } from "../Protected/staffAccessLoader";
+import { getToken } from "../utils/session";
 import { dashboardRoutes } from "../routes/dashboardRoutes";
 import { BASE_PATH, PAGES, ROUTES, dashboardPath } from "../routes/paths";
 import PageError from "./PageError";
 import RootLayout, { RootFallback, RouteError } from "./RootLayout";
 
 const lazyDefault = (load) => async () => ({ Component: (await load()).default });
+
+// /plans?plan=PRO&cycle=12 -> /dashboard/client/<hid>/plans?plan=PRO&cycle=12
+const plansRedirectLoader = ({ request }) => {
+  if (!getToken()) throw redirect(ROUTES.LOGIN);
+  const hid = localStorage.getItem("hid");
+  if (!hid) throw redirect(ROUTES.ROOT);
+  throw redirect(`${dashboardPath(PAGES.PLANS, { hid })}${new URL(request.url).search}`);
+};
 
 const router = createBrowserRouter([
   {
@@ -28,7 +38,10 @@ const router = createBrowserRouter([
         path: ROUTES.ONBOARDING_FORM,
         lazy: lazyDefault(() => import("../pages/Onboarding/OnboardingForm")),
       },
-      { path: ROUTES.PLANS, lazy: lazyDefault(() => import("../pages/Plans/Plan")) },
+      // old link (the website's pricing page): the plans page is now inside the dashboard
+      { path: ROUTES.PLANS, loader: plansRedirectLoader },
+      // the admin console's "Open account" lands here (see staffAccessLoader)
+      { path: ROUTES.STAFF_ACCESS, loader: staffAccessLoader },
 
       // Protected routes - "/" only forwards to the selected hotel (protectedLoader)
       {

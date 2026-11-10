@@ -32,6 +32,17 @@ export const aiCreditsApi = baseApi
         extraOptions: NODE,
       }),
 
+      // Can this tenant use AI right now? Polled, and refreshed after any
+      // recharge / adjustment / blocked request (tag AiWallet), so AI actions
+      // turn back on without a reload.
+      // { paused, reason: "insufficient_credits" | "wallet_suspended" | null, availableCredits, requiredCredits }
+      getAiStatus: build.query({
+        query: () => `${BASE}/status`,
+        transformResponse: result,
+        providesTags: ["AiWallet"],
+        extraOptions: NODE,
+      }),
+
       // { items, pagination }; params: { page, limit, type }
       getAiTransactions: build.query({
         query: (params) => ({ url: `${BASE}/transactions`, params: clean(params) }),
@@ -149,11 +160,47 @@ export const aiCreditsApi = baseApi
         invalidatesTags: ["AiAdmin", "AiWallet"],
         extraOptions: NODE,
       }),
+
+      /* ------------------------- admin: API usage analytics ------------------------- */
+
+      // { range, trackingSince, totals, byProvider, byModel, byService, daily }; params: { from, to }
+      getAdminAiAnalytics: build.query({
+        query: (params) => asAdmin({ url: `${BASE}/admin/analytics`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      // { items, pagination }; params: { from, to, provider, sort, order, page, limit }
+      getAdminAiAnalyticsModels: build.query({
+        query: (params) => asAdmin({ url: `${BASE}/admin/analytics/models`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      // { items, pagination }; params: { from, to, search, sort, order, page, limit }
+      getAdminAiAnalyticsClients: build.query({
+        query: (params) => asAdmin({ url: `${BASE}/admin/analytics/clients`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
+
+      // { tenantId, name, byModel, calls: { items, pagination } }
+      getAdminAiAnalyticsClient: build.query({
+        query: ({ tenantId, ...params }) =>
+          asAdmin({ url: `${BASE}/admin/analytics/clients/${encodeURIComponent(tenantId)}`, params: clean(params) }),
+        transformResponse: result,
+        providesTags: ["AiAdmin"],
+        extraOptions: NODE,
+      }),
     }),
   });
 
 export const {
   useGetAiWalletQuery,
+  useGetAiStatusQuery,
   useGetAiTransactionsQuery,
   useGetAiUsageQuery,
   useCreateAiRechargeMutation,
@@ -169,4 +216,8 @@ export const {
   useGetAdminAiPackagesQuery,
   useSaveAiPackageMutation,
   useUpdateAiCreditSettingsMutation,
+  useGetAdminAiAnalyticsQuery,
+  useGetAdminAiAnalyticsModelsQuery,
+  useGetAdminAiAnalyticsClientsQuery,
+  useGetAdminAiAnalyticsClientQuery,
 } = aiCreditsApi;

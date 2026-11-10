@@ -1,4 +1,3 @@
-
 import {
   FileText,
   Info,
@@ -156,9 +155,6 @@ const WhatsappBroadcasting = () => {
       setImporting(true);
 
       const result = await importWhatsAppContacts(file);
-
-      console.log("IMPORT RESULT:", result);
-      console.log("IMPORTED CONTACTS:", result.contacts);
 
       if (!result.contacts || result.contacts.length === 0) {
         showToast({

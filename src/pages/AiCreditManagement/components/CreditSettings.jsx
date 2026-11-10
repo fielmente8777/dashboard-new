@@ -4,7 +4,15 @@ import Button from "../../../components/ui/Button";
 import { Field, Input } from "../../../components/ui/Field";
 import SettingsCard from "../../../components/ui/SettingsCard";
 
-const FIELDS = ["lowThreshold", "criticalThreshold", "chatReserveCredits", "reserveMultiplier", "reservationTtlMinutes"];
+const FIELDS = [
+  "lowThreshold",
+  "criticalThreshold",
+  "chatReserveCredits",
+  "reserveMultiplier",
+  "reservationTtlMinutes",
+  "fallbackCreditsPer1kTokens",
+  "fallbackCreditsPerRequest",
+];
 
 const toForm = (settings) => Object.fromEntries(FIELDS.map((key) => [key, String(settings[key] ?? "")]));
 
@@ -20,11 +28,13 @@ const CreditSettings = ({ settings, saving = false, onSave }) => {
     !Number.isInteger(n("lowThreshold")) || n("lowThreshold") < 1 ? "The low threshold must be a whole number above 0"
       : !Number.isInteger(n("criticalThreshold")) || n("criticalThreshold") < 0 ? "The critical threshold must be a whole number"
         : n("criticalThreshold") >= n("lowThreshold") ? "The critical threshold must be below the low threshold"
-          : !Number.isInteger(n("chatReserveCredits")) || n("chatReserveCredits") < 1 ? "The chatbot hold must be a whole number above 0"
+          : !Number.isInteger(n("chatReserveCredits")) || n("chatReserveCredits") < 1 ? "The AI request hold must be a whole number above 0"
             : !(n("reserveMultiplier") >= 1 && n("reserveMultiplier") <= 10) ? "The headroom must be between 1 and 10"
               : !Number.isInteger(n("reservationTtlMinutes")) || n("reservationTtlMinutes") < 5 || n("reservationTtlMinutes") > 1440
                 ? "Holds must expire after 5 to 1440 minutes"
-                : null;
+                : !(n("fallbackCreditsPer1kTokens") >= 0) || !(n("fallbackCreditsPerRequest") >= 0)
+                  ? "Fallback rates can't be negative"
+                  : null;
 
   const changed = FIELDS.filter((key) => n(key) !== Number(settings[key]));
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -57,7 +67,7 @@ const CreditSettings = ({ settings, saving = false, onSave }) => {
         <Field label="Critical-credit threshold" hint="Red warning below this balance">
           <Input type="number" min="0" value={form.criticalThreshold} onChange={set("criticalThreshold")} />
         </Field>
-        <Field label="Chatbot hold (credits)" hint="Held before each chatbot message; unused credits return right after">
+        <Field label="AI request hold (credits)" hint="Held before each AI request; with less available, the request holds what is left. Unused credits return right after">
           <Input type="number" min="1" value={form.chatReserveCredits} onChange={set("chatReserveCredits")} />
         </Field>
         <Field label="Knowledge base headroom" hint="Estimated embedding cost × this, held while documents are added">
@@ -65,6 +75,12 @@ const CreditSettings = ({ settings, saving = false, onSave }) => {
         </Field>
         <Field label="Release stuck holds after (minutes)" hint="Holds of requests that never finished return to the tenant">
           <Input type="number" min="5" max="1440" value={form.reservationTtlMinutes} onChange={set("reservationTtlMinutes")} />
+        </Field>
+        <Field label="Unpriced models: credits per 1K tokens" hint="AI on a model without a pricing row still runs and is charged this until you add its pricing">
+          <Input type="number" min="0" step="any" value={form.fallbackCreditsPer1kTokens} onChange={set("fallbackCreditsPer1kTokens")} />
+        </Field>
+        <Field label="Unpriced models: credits per request" hint="For unpriced calls that report no tokens (e.g. speech-to-text)">
+          <Input type="number" min="0" step="any" value={form.fallbackCreditsPerRequest} onChange={set("fallbackCreditsPerRequest")} />
         </Field>
       </div>
     </SettingsCard>

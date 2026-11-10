@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import AiPausedNotice from "../../components/AiCredits/AiPausedNotice";
+import { useAiAccess } from "../../components/AiCredits/useAiAccess";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -75,6 +77,7 @@ const ReviewCard = ({ review }) => {
   const [generate, { isLoading: drafting }] = useGenerateGbpReplyMutation();
   const [post, { isLoading: posting }] = usePostGbpReplyMutation();
   const [draft, setDraft] = useState(review.hasReply ? null : review.aiReplyDraft || null);
+  const { paused: aiPaused } = useAiAccess(); // AI drafts wait while AI credits are exhausted
   const stars = STARS[review.starRating] || 0;
   const name = review.reviewerDisplayName || "Google user";
 
@@ -138,7 +141,7 @@ const ReviewCard = ({ review }) => {
             <Button variant="ghost" size="sm" onClick={() => setDraft(null)} disabled={posting}>
               Cancel
             </Button>
-            <Button variant="secondary" size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi} disabled={posting}>
+            <Button variant="secondary" size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi} disabled={posting || aiPaused}>
               Rewrite with AI
             </Button>
             <Button size="sm" loading={posting} disabled={!draft.trim()} onClick={publish}>
@@ -148,7 +151,7 @@ const ReviewCard = ({ review }) => {
         </div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi}>
+          <Button size="sm" icon={Sparkles} loading={drafting} onClick={writeWithAi} disabled={aiPaused}>
             Write reply with AI
           </Button>
           <Button size="sm" variant="ghost" icon={MessageSquareReply} onClick={() => setDraft("")}>
@@ -168,6 +171,7 @@ const AutopilotDrawer = ({ open, onClose, location }) => {
   const config = useGetGbpAutopilotQuery(location?.locationId, { skip: !open || !location });
   const [update] = useUpdateGbpAutopilotMutation();
   const [signature, setSignature] = useState("");
+  const aiAccess = useAiAccess();
 
   useEffect(() => {
     if (config.data) setSignature(config.data.autoReplySignature || "");
@@ -183,6 +187,8 @@ const AutopilotDrawer = ({ open, onClose, location }) => {
         <Skeleton className="h-64 rounded-xl" />
       ) : (
         <div className="space-y-6">
+          {/* settings stay as they are; autopilot replies resume after a recharge */}
+          <AiPausedNotice access={aiAccess} feature="Autopilot replies" />
           <section className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -236,6 +242,7 @@ const Review = () => {
   const [filter, setFilter] = useState("unreplied");
   const [page, setPage] = useState(1);
   const [autopilotOpen, setAutopilotOpen] = useState(false);
+  const reviewAiAccess = useAiAccess();
   const [syncReviews, { isLoading: syncing }] = useSyncGbpReviewsMutation();
 
   const list = locations.data || [];
@@ -389,6 +396,7 @@ const Review = () => {
         )
       }
     >
+      <AiPausedNotice access={reviewAiAccess} feature="AI review replies" className="mb-4" />
       {body}
       <AutopilotDrawer open={autopilotOpen} onClose={() => setAutopilotOpen(false)} location={location} />
       <div className="h-14" aria-hidden="true" />
