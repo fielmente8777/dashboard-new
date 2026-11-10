@@ -1,5 +1,6 @@
 import { getSignedInToken } from "../../utils/session";
 import { baseApi } from "./baseApi";
+import { demoAiWallet } from "../../components/AiCredits/aiCreditsDemo";
 
 const NODE = { service: "node" };
 const BASE = "/api/v1/ai-credits";
@@ -26,8 +27,12 @@ export const aiCreditsApi = baseApi
 
       // { wallet, thresholds: { low, critical }, packages }
       getAiWallet: build.query({
-        query: () => `${BASE}/wallet`,
-        transformResponse: result,
+        queryFn: async (_arg, _api, _extra, fetchWithBQ) => {
+          const response = await fetchWithBQ(`${BASE}/wallet`);
+          if (response.error?.status === 404) return { data: demoAiWallet() };
+          if (response.error) return { error: response.error };
+          return { data: result(response.data) };
+        },
         providesTags: ["AiWallet"],
         extraOptions: NODE,
       }),

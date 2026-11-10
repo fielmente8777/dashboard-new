@@ -46,11 +46,43 @@ export const DEVICES = {
   6: "Other",
 };
 
-// what the numbers are for: an ad, a campaign or the whole account
-export const resolveTarget = ({ account, campaign, ad }) => {
+// what the numbers are for: an ad, an ad group, a campaign or the whole account
+export const resolveTarget = ({ account, campaign, adGroup, ad }) => {
   if (ad !== ALL) return { entityId: ad, level: "ad" };
+  if (adGroup !== ALL) return { entityId: adGroup, level: "adgroup" };
   if (campaign !== ALL) return { entityId: campaign, level: "campaign" };
   return { entityId: account, level: "account" };
+};
+
+// the table under the charts lists the children of what is selected
+//   account -> its campaigns, campaign -> its ad groups, ad group or ad -> its ads
+export const resolveBreakdown = ({ account, campaign, adGroup }) => {
+  if (adGroup !== ALL) return { level: "ad", parentId: adGroup };
+  if (campaign !== ALL) return { level: "adgroup", parentId: campaign };
+  return { level: "campaign", parentId: account };
+};
+
+// "12 Oct 2026"
+export const formatDate = (iso) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : "";
+
+// "5 minutes ago", "3 hours ago", "2 days ago"
+export const timeAgo = (value) => {
+  if (!value) return null;
+  const minutes = Math.round((Date.now() - new Date(value).getTime()) / 60000);
+  if (!Number.isFinite(minutes)) return null;
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? "" : "s"} ago`;
 };
 
 export const hasMetrics = (totals) =>

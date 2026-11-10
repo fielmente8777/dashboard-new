@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useApiAction } from "../../../../hooks/useApiAction";
+import { useIntegrationStatus } from "../../../../hooks/useIntegrationStatus";
 import { useTenant } from "../../../../hooks/useTenant";
 import { useGetWhatsAppTemplatesQuery } from "../../../../redux/api/callsApi";
 import {
@@ -21,6 +22,9 @@ export const useNotificationSettings = () => {
   const hasWhatsApp = Boolean(
     useSelector((state) => state.subscription?.subscription?.appAccess?.whatsapp),
   );
+
+  // missed-call follow-ups need Exotel: calls only reach us through it
+  const { integrationStatus, isLoadingIntegrationStatus } = useIntegrationStatus();
 
   const settings = useGetNotificationSettingsQuery(hid, { skip: !hid });
   const users = useGetTeamUsersQuery();
@@ -102,6 +106,10 @@ export const useNotificationSettings = () => {
     save,
     discard,
     recipients,
+    exotel: {
+      loading: isLoadingIntegrationStatus,
+      connected: Boolean(integrationStatus?.exotel),
+    },
     whatsApp: {
       available: hasWhatsApp,
       loading: account.isLoading,
