@@ -18,6 +18,9 @@ import { CheckoutClosedError, openRazorpay } from "./razorpay";
 //      so a closed tab after paying still counts)
 //   4. if auto-renew was ticked, the success screen asks to set it up: a separate Razorpay window
 //      that authorises the mandate (never opened by itself, so it can't look like paying twice)
+// When Eazotel staff switched payments to Zoho Books (admin console → Billing → Zoho Books),
+// step 1 answers with a Zoho invoice instead: its payment page opens in a new tab, and the plan
+// renews by itself as soon as Zoho says it's paid (done.zohoInvoice).
 // `step` drives the button text; `done` holds the account after a successful payment.
 export function usePlanCheckout({ onPriceChanged }) {
   const dispatch = useDispatch();
@@ -45,6 +48,19 @@ export function usePlanCheckout({ onPriceChanged }) {
     setStep("starting");
     try {
       const started = await startCheckout({ ...choice, autoRenew, expectedTotalPaise: quote.totalPaise }).unwrap();
+      if (started.status === "invoice") {
+        // opened from the click, so pop-up blockers let it through; the screen has the link too
+        if (started.invoiceUrl) window.open(started.invoiceUrl, "_blank", "noopener");
+        setDone({
+          account: null,
+          quote,
+          zohoInvoice: { number: started.invoiceNumber, url: started.invoiceUrl, totalPaise: started.totalPaise },
+          autoRenewSet: false,
+          wantsAutoRenew: false,
+        });
+        setStep("idle");
+        return;
+      }
       let account;
       if (started.status === "applied") {
         account = started.account;

@@ -123,6 +123,13 @@ export default function PlansPage() {
       </Frame>
     );
   }
+  if (checkout.done?.zohoInvoice) {
+    return (
+      <Frame>
+        <ZohoInvoiceStarted invoice={checkout.done.zohoInvoice} onBack={checkout.reset} />
+      </Frame>
+    );
+  }
   if (checkout.done) {
     return (
       <Frame>
@@ -249,8 +256,9 @@ export default function PlansPage() {
             quoteError={quoteError}
             offerCode={offerCode}
             onApplyOffer={setOfferCode}
-            autoRenew={autoRenew}
+            autoRenew={data.paymentProvider === "zoho" ? false : autoRenew}
             onAutoRenew={setAutoRenew}
+            zoho={data.paymentProvider === "zoho"}
             step={checkout.step}
             error={checkout.error}
             canPay={data.canPay}
@@ -320,6 +328,38 @@ function CurrentPlan({ data }) {
         <RefreshCw className="size-3.5" aria-hidden />
         {sub.autoRenew ? `Auto-renews ${day(sub.endDate)}` : "Auto-renew off"}
       </span>
+    </div>
+  );
+}
+
+/** After the pay button made a Zoho Books invoice: pay it there, the plan renews by itself. */
+function ZohoInvoiceStarted({ invoice, onBack }) {
+  return (
+    <div className="flex justify-center py-4 @2xl:py-10">
+      <section className="w-full max-w-md rounded-2xl border border-app-border! bg-app-surface p-6 text-center shadow-xl @2xl:p-8">
+        <span className="mx-auto grid size-14 place-content-center rounded-2xl bg-orange-500/15 text-orange-600">
+          <CalendarClock className="size-7" aria-hidden />
+        </span>
+        <h1 className="mt-4 text-2xl font-bold text-app-text">Your invoice is ready</h1>
+        <p className="mt-2 text-sm text-app-text-muted">
+          Invoice {invoice.number} for {fromPaise(invoice.totalPaise)} (GST included) opened in a new tab. Pay it there by UPI,
+          card or net banking. Your plan renews by itself as soon as the payment is through, usually within a few minutes.
+        </p>
+        {invoice.url && (
+          <a
+            href={invoice.url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-6 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-orange-500 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
+          >
+            Open the payment page
+          </a>
+        )}
+        <button type="button" onClick={onBack} className="mt-3 text-sm text-app-text-muted hover:text-app-text">
+          Back to plans
+        </button>
+        <p className="mt-4 text-xs text-app-text-muted">The invoice is also emailed to you and listed under Settings → Subscription.</p>
+      </section>
     </div>
   );
 }

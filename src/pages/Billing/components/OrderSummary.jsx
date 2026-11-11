@@ -27,6 +27,7 @@ export default function OrderSummary({
   onApplyOffer,
   autoRenew,
   onAutoRenew,
+  zoho = false,
   onPay,
   step,
   error,
@@ -122,8 +123,8 @@ export default function OrderSummary({
         {quote?.offer && <p className="mt-1.5 text-xs text-emerald-600 dark:text-emerald-400">{quote.offer.name} applied.</p>}
       </form>
 
-      {/* auto-renew */}
-      <div className="mt-4 flex items-start justify-between gap-3 rounded-xl bg-app-surface-secondary p-3">
+      {/* auto-renew (Razorpay only; a Zoho invoice is paid each time) */}
+      <div className={`mt-4 items-start justify-between gap-3 rounded-xl bg-app-surface-secondary p-3 ${zoho ? "hidden" : "flex"}`}>
         <div>
           <p className="flex items-center gap-1.5 text-sm font-medium text-app-text">
             <RefreshCw className="size-3.5" aria-hidden /> Auto-renew
@@ -164,13 +165,14 @@ export default function OrderSummary({
             </>
           ) : (
             <>
-              Pay {quote ? fromPaise(quote.totalPaise) : ""} <ArrowRight className="size-4" />
+              {zoho ? "Get invoice and pay" : "Pay"} {quote ? fromPaise(quote.totalPaise) : ""} <ArrowRight className="size-4" />
             </>
           )}
         </button>
       )}
       <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-app-text-muted">
-        <ShieldCheck className="size-3.5" aria-hidden /> Secure payment by Razorpay · UPI, cards, net banking
+        <ShieldCheck className="size-3.5" aria-hidden />{" "}
+        {zoho ? "A Zoho Books invoice opens to pay · your plan renews once it's paid" : "Secure payment by Razorpay · UPI, cards, net banking"}
       </p>
     </aside>
   );
