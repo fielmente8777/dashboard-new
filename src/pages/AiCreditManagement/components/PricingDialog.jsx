@@ -140,7 +140,7 @@ const PricingDialog = ({ open, row, busy = false, onClose, onSubmit }) => {
         </div>
         {valid && exampleCost > 0 && (
           <p className="rounded-lg bg-app-surface-secondary px-3 py-2 text-xs text-app-text-muted">
-            Example: a chat request with 1,000 input and 500 output tokens costs{" "}
+            Single-model preview: 1,000 input and 500 output tokens cost{" "}
             {exampleCost.toFixed(6)} {currency} and is charged{" "}
             <span className="font-semibold text-app-text">{formatCredits(exampleCredits)} credits</span>.
           </p>

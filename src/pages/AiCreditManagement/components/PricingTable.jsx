@@ -58,7 +58,7 @@ const PricingTable = ({ query, onEdit, onCreate }) => {
   return (
     <Card
       title="AI provider pricing"
-      description="Credits = provider cost (tokens, plus any per-request price) × credits per currency unit, rounded up to a whole credit"
+      description="Provider and model costs are converted to credits, combined across the operation, then rounded up once at settlement."
       actions={
         <Button size="sm" icon={Plus} onClick={onCreate}>
           New model
