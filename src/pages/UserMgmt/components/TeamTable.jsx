@@ -116,9 +116,10 @@ const TeamTable = ({
       key: "role",
       header: "Role",
       render: (user) =>
-        // "owner" is the account holder; team members are created with
-        // role "admin" too, so isAdmin is what tells an admin apart
-        user.role === "owner" ? (
+        // the account holder: nexon's sign-up (email and Google) saves the
+        // role "superadmin", older accounts may say "owner". Team members are
+        // created with role "admin" too, so isAdmin is what tells an admin apart
+        user.role === "owner" || user.role === "superadmin" ? (
           <Badge tone="amber">Owner</Badge>
         ) : user.isAdmin ? (
           <Badge tone="purple">Admin</Badge>
