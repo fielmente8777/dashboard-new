@@ -37,6 +37,33 @@ export const profileApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // The profile straight from Zucks_profile (gian: GET /api/v1/profile)
+    // -> { result: { docs: profile } }. The core profile the dashboard loads
+    // at sign-in leaves out newer fields such as secondaryPhone, so they are
+    // read from here.
+    getNodeProfile: build.query({
+      query: () => "/api/v1/profile",
+      extraOptions: NODE,
+    }),
+
+    // An optional second number that also gets WhatsApp lead notifications.
+    // (gian: PUT /api/v1/profile/secondary-phone) -> { result: { secondaryPhone } }
+    // secondaryPhone comes back as digits with country code, e.g. "919759349941"
+    updateSecondaryPhone: build.mutation({
+      query: (secondaryPhone) => ({
+        url: "/api/v1/profile/secondary-phone",
+        method: "PUT",
+        body: { secondaryPhone },
+      }),
+      extraOptions: NODE,
+    }),
+
+    // (gian: DELETE /api/v1/profile/secondary-phone)
+    deleteSecondaryPhone: build.mutation({
+      query: () => ({ url: "/api/v1/profile/secondary-phone", method: "DELETE" }),
+      extraOptions: NODE,
+    }),
+
     // Hotel locations (gian: /api/v1/profile/hotels). Each answers
     // { result: { hotel, hotels } } with the profile's hotels after the change.
 
@@ -70,6 +97,10 @@ export const {
   useChangePasswordMutation,
   useUpdateProfileUrlsMutation,
   useUpdateMarketingEmailMutation,
+  useGetNodeProfileQuery,
+  useLazyGetNodeProfileQuery,
+  useUpdateSecondaryPhoneMutation,
+  useDeleteSecondaryPhoneMutation,
   useCreateHotelMutation,
   useUpdateHotelMutation,
   useDeleteHotelMutation,

@@ -2,6 +2,7 @@ import { ROUTES } from "../../routes/paths";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { API_URLS } from "../../config/env";
 import { clearSession, getToken } from "../../utils/session";
+import { isAiCreditsBlock, notifyAiCreditsBlocked } from "../../utils/aiCreditsEvents";
 
 const rawBaseQuery = fetchBaseQuery({ baseUrl: "" });
 
@@ -23,6 +24,13 @@ const baseQuery = async (args, api, extraOptions = {}) => {
     api,
     extraOptions,
   );
+
+  // An AI request stopped by the credit wallet: tell the user once (with a
+  // recharge link) and refresh the wallet / AI status everywhere.
+  if (result.error && isAiCreditsBlock(result.error.status, result.error.data)) {
+    notifyAiCreditsBlocked(result.error.data);
+    api.dispatch(baseApi.util.invalidateTags(["AiWallet"]));
+  }
 
   // Session expired or token rejected: drop it and go back to login.
   if (token && result.error?.status === 401) {

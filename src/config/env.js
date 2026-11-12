@@ -19,6 +19,8 @@ export const API_URLS = {
   ),
   // guest request management (requests raised by guests from the GRM site)
   grm: trimSlash(env.VITE_GRM_API_URL || "https://hmsbackend-7pyp.onrender.com"),
+  // gian-new, the new core API: plans, payments and auto-renew (Settings > Subscription, /plans)
+  app: trimSlash(env.VITE_APP_API_URL || "https://gn.eazotel.com"),
 };
 
 // the site guests open (usually by scanning the QR code) to raise requests
@@ -30,7 +32,7 @@ export const WS_URL = env.VITE_WS_URL || API_URLS.node.replace(/^http/, "ws");
 
 export const GOOGLE_CLIENT_ID =
   env.VITE_CLIENT_ID ||
-  "737012285391-mvm0kikmmfqm8vu8hr3lmcc39lb8blj2.apps.googleusercontent.com";
+  "579254279555-me5qc2denm58ttngj6qipo4rdqb18vrh.apps.googleusercontent.com";
 
 export const ONBOARDING_SIGNUP_URL =
   env.VITE_ONBOARDING_SIGNUP_URL || "https://onboarding.eazotel.com/sign-in";

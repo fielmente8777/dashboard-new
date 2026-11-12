@@ -36,6 +36,7 @@ export const dashboardRoutes = [
   { path: PAGES.HOME, lazy: page(() => import("../pages/Home/Dashboard")) },
   { path: PAGES.PROFILE, lazy: page(() => import("../pages/Setting/Setting"), padded) },
   { path: PAGES.SETTINGS, lazy: page(() => import("../pages/Settings/Settings")) },
+  { path: PAGES.PLANS, lazy: page(() => import("../pages/Billing/PlansPage")) },
   { path: PAGES.INTEGRATION, lazy: page(() => import("../pages/AppIntegration/Integration"), padded) },
   { path: PAGES.INTEGRATION_DETAILS, lazy: page(() => import("../pages/AppIntegration/IntegrationDetails"), padded) },
   { path: PAGES.QR_CODE, lazy: page(() => import("../pages/Grm/Settings")) },
@@ -137,6 +138,8 @@ export const dashboardRoutes = [
   { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },
   { path: PAGES.AI_TRAINING, lazy: page(() => import("../pages/AiTraining/AiTrainingPage")) },
   { path: PAGES.EAZBOT, lazy: page(() => import("../pages/Eazobot/Eazobot")) },
+  { path: PAGES.AI_WALLET, lazy: page(() => import("../pages/AiWallet/AiWallet")) },
+  { path: PAGES.AI_CREDIT_MANAGEMENT, lazy: page(() => import("../pages/AiCreditManagement/AiCreditManagement")) },
 
   // Human resources
   { path: PAGES.HR_ANALYTICS, lazy: page(() => import("../pages/TalentMgmt/Analytics")) },

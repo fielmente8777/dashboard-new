@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { ToastProvider } from "../context/ToastContext.jsx";
 import { ConfirmProvider } from "../context/ConfirmContext.jsx";
 import ChatbotWidget from "../components/chatbot/ChatbotWidget.jsx";
+import AiCreditsBlockedListener from "../components/AiCredits/AiCreditsBlockedListener.jsx";
 import { isStaleChunk, reloadForNewVersion } from "./staleChunk";
 
 // Wraps every route. Anything that needs the router (useNavigate, useLocation)
@@ -23,6 +24,8 @@ export default function RootLayout() {
         </ConfirmProvider>
         {/* inside ToastProvider: the assistant shows toasts (e.g. voice input errors) */}
         <ChatbotWidget />
+        {/* one notice + recharge link whenever an AI request is refused for lack of AI credits */}
+        <AiCreditsBlockedListener />
       </ToastProvider>
     </>
   );

@@ -132,6 +132,15 @@ const ProfileOverview = ({ profile, authUser }) => {
           <Detail icon={Phone} label="Phone" href={`tel:${profile.hotelPhone}`}>
             {profile.hotelPhone}
           </Detail>
+          {profile.secondaryPhone && (
+            <Detail
+              icon={Phone}
+              label="Secondary phone"
+              href={`tel:+${profile.secondaryPhone}`}
+            >
+              +{profile.secondaryPhone}
+            </Detail>
+          )}
           {whatsappNumber && (
             <Detail
               icon={MessageCircle}

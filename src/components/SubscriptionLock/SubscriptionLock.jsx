@@ -1,7 +1,9 @@
-import { ArrowUpRight, CalendarX2, Inbox, Lock, PauseCircle, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowUpRight, CalendarX2, Headphones, Inbox, Lock, PauseCircle, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { getUserNdid } from "../../redux/slice/UserSlice";
+import { plansPath } from "../../routes/paths";
 import Button from "../ui/Button";
 import SupportDialog from "./SupportDialog";
 
@@ -25,6 +27,7 @@ function Fact({ icon: Icon, label, value }) {
 // paused. The sidebar and top bar stay, so the hotel still sees where it is.
 export default function SubscriptionLock({ lock }) {
   const [action, setAction] = useState(null);
+  const navigate = useNavigate();
   const user = useSelector((state) => state.userProfile.user);
   const hotelName = user?.Profile?.hotelName;
   const accountId = getUserNdid(user);
@@ -60,14 +63,21 @@ export default function SubscriptionLock({ lock }) {
           </p>
 
           <div className="mt-7 flex flex-col justify-center gap-2.5 sm:flex-row">
-            <Button size="lg" icon={RefreshCw} onClick={() => setAction("renew")} className="bg-orange-500! hover:bg-orange-600!">
+            <Button size="lg" icon={RefreshCw} onClick={() => navigate(plansPath())} className="bg-orange-500! hover:bg-orange-600!">
               Renew subscription
             </Button>
-            <Button size="lg" variant="secondary" icon={Sparkles} onClick={() => setAction("upgrade")}>
+            <Button size="lg" variant="secondary" icon={Sparkles} onClick={() => navigate(plansPath())}>
               Upgrade plan
               <ArrowUpRight className="size-4" aria-hidden />
             </Button>
           </div>
+          <button
+            type="button"
+            onClick={() => setAction("renew")}
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-app-text-muted hover:text-app-text"
+          >
+            <Headphones className="size-3.5" aria-hidden /> Need help or want to pay another way? Contact support
+          </button>
         </div>
 
         <div className="relative grid gap-2.5 border-t border-app-border! bg-app-surface-secondary/40 px-6 py-5 sm:grid-cols-3 sm:px-8">

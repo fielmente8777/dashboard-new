@@ -16,38 +16,66 @@ import {
 
 const EMPTY_VALUES = { body: [], header: [] };
 
+// gian rejects imports larger than this (campaignController.createCampaign)
+const MAX_IMPORTED_RECIPIENTS = 10000;
+
 const isApproved = (template) =>
   !template.status || template.status.toUpperCase() === "APPROVED";
 
-// State and submit of the "new campaign" form. Only loads its data while
-// the dialog is open.
-export const useCreateCampaign = ({ open, onCreated }) => {
+export const useCreateCampaign = ({
+  open,
+  onCreated,
+  importedContacts = [],
+  campaignMode = "default",
+}) => {
   const tenant = useTenant();
-  const skip = !open || !hasTenant(tenant);
   const run = useApiAction();
+
+  const isExcelMode = campaignMode === "excel";
+  const hasImportedContacts = importedContacts.length > 0;
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("marketing");
   const [template, setTemplate] = useState(null);
   const [values, setValues] = useState(EMPTY_VALUES);
   const [source, setSource] = useState("");
+  const [includeCrm, setIncludeCrm] = useState(false);
 
-  const templatesQuery = useGetWhatsAppTemplatesQuery(tenant.hid, { skip });
+  const skip = !open || !hasTenant(tenant);
+
+  const templatesQuery = useGetWhatsAppTemplatesQuery(tenant.hid, {
+    skip,
+  });
+
+  // Default mode always uses CRM.
+  // Excel mode uses CRM only when the user enables it.
   const audienceQuery = useGetCampaignAudienceQuery(
     { hid: tenant.hid, source },
-    { skip },
+    {
+      skip: skip || (isExcelMode && !includeCrm),
+    },
   );
-  const [createCampaign, { isLoading: creating }] = useCreateCampaignMutation();
+
+  const [createCampaign, { isLoading: creating }] =
+    useCreateCampaignMutation();
 
   const templates = useMemo(
     () =>
       (templatesQuery.data || []).filter(
-        (t) => isApproved(t) && t.category?.toLowerCase() === category,
+        (t) =>
+          isApproved(t) &&
+          t.category?.toLowerCase() === category,
       ),
     [templatesQuery.data, category],
   );
 
-  const audience = audienceQuery.data || 0;
+  const crmAudience = audienceQuery.data || 0;
+
+  // This is an estimated total. Backend removes overlapping phone numbers.
+  const audience = isExcelMode
+    ? importedContacts.length + (includeCrm ? crmAudience : 0)
+    : crmAudience;
+
   const cost = audience * (PRICE_PER_MESSAGE[category] || 0);
   const overLimit = audience > DAILY_SEND_LIMIT;
 
@@ -68,30 +96,62 @@ export const useCreateCampaign = ({ open, onCreated }) => {
     setTemplate(null);
     setValues(EMPTY_VALUES);
     setSource("");
+    setIncludeCrm(false);
   };
 
-  // the first thing still missing, or null when the form can be sent
+  const audienceLoading =
+    !isExcelMode || includeCrm
+      ? audienceQuery.isFetching
+      : false;
+
+  const hasAudience =
+    isExcelMode
+      ? hasImportedContacts || (includeCrm && crmAudience > 0)
+      : crmAudience > 0;
+
   const missing = !name.trim()
     ? "Give the campaign a name"
     : !template
       ? "Choose a template"
       : !isTemplateFilled(values)
         ? "Fill in every template value"
-        : !audienceQuery.isFetching && audience === 0
-          ? "No contacts match this audience"
-          : null;
+        : isExcelMode && importedContacts.length > MAX_IMPORTED_RECIPIENTS
+          ? `An import can have at most ${MAX_IMPORTED_RECIPIENTS.toLocaleString("en-IN")} contacts`
+          : audienceLoading
+          ? "Please wait while audience is loading"
+          : !hasAudience
+            ? "No contacts match this audience"
+            : null;
 
   const submit = async () => {
     if (missing) return;
+
+    const payload = {
+      hid: tenant.hid,
+      campaignName: name.trim(),
+      template: buildCampaignTemplate(template, values),
+    };
+
+    if (isExcelMode) {
+      payload.recipients = importedContacts.map((contact) => ({
+        name: contact.name || "",
+        phone: contact.phone,
+      }));
+
+      // gian only adds CRM contacts to an import when this is true
+      payload.includeCrm = includeCrm;
+      if (includeCrm && source) {
+        payload.source = source;
+      }
+    } else if (source) {
+      payload.source = source;
+    }
+
     const created = await run(
-      createCampaign({
-        hid: tenant.hid,
-        campaignName: name.trim(),
-        template: buildCampaignTemplate(template, values),
-        ...(source && { source }),
-      }),
+      createCampaign(payload),
       { success: "Campaign created" },
     );
+
     if (created) {
       reset();
       onCreated?.();
@@ -111,8 +171,13 @@ export const useCreateCampaign = ({ open, onCreated }) => {
     setValues,
     source,
     setSource,
+    includeCrm,
+    setIncludeCrm,
+    isExcelMode,
+    importedCount: importedContacts.length,
+    crmAudience,
     audience,
-    audienceLoading: audienceQuery.isFetching,
+    audienceLoading,
     cost,
     overLimit,
     missing,

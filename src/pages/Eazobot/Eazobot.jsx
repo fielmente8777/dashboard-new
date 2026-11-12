@@ -1,5 +1,7 @@
 import { ArrowLeft, ArrowRight, Rocket } from "lucide-react";
 import { useState } from "react";
+import AiPausedNotice from "../../components/AiCredits/AiPausedNotice";
+import { useAiAccess } from "../../components/AiCredits/useAiAccess";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
@@ -35,6 +37,8 @@ const Eazobot = () => {
   // furthest step the user may jump to; a published bot can open any step
   const [reached, setReached] = useState(0);
   const [errors, setErrors] = useState({});
+  // visitors' messages are answered by AI (the hotel's AI credits)
+  const aiAccess = useAiAccess();
 
   if (bot.bot.isError) {
     return (
@@ -101,6 +105,8 @@ const Eazobot = () => {
 
   return (
     <div className="space-y-4">
+      {/* the bot and its settings stay as they are; replies resume after a recharge */}
+      <AiPausedNotice access={aiAccess} feature="Website chat replies" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-base font-semibold text-app-text">

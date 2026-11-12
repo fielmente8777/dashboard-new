@@ -13,6 +13,8 @@ import FileDropZone from "../../../components/ui/FileDropZone";
 import PageShell from "../../../components/ui/PageShell";
 import { ErrorState } from "../../../components/ui/States";
 import Icon from "../../../components/ui/Icon";
+import AiPausedNotice from "../../../components/AiCredits/AiPausedNotice";
+import { useAiAccess } from "../../../components/AiCredits/useAiAccess";
 
 const MAX_IMAGES = 8;
 
@@ -29,6 +31,8 @@ const IntakeStep = ({
 }) => {
   const { url, clientName, file, images } = intake;
   const imagesFull = images.length >= MAX_IMAGES;
+  // generation is AI (billed to AI credits); it waits while AI is paused
+  const aiAccess = useAiAccess();
 
   const pickPdf = (files) => {
     const pdf = files.find((f) => f.type === "application/pdf");
@@ -65,12 +69,13 @@ const IntakeStep = ({
         </Button>
       }
     >
+      <AiPausedNotice access={aiAccess} feature="Knowledge base generation" />
       <Card>
         <form
           className="space-y-5"
           onSubmit={(e) => {
             e.preventDefault();
-            onGenerate();
+            if (!aiAccess.paused) onGenerate();
           }}
         >
           <Field label="Website URL">
@@ -181,7 +186,7 @@ const IntakeStep = ({
             size="lg"
             icon={Sparkles}
             loading={generating}
-            disabled={!url.trim()}
+            disabled={!url.trim() || aiAccess.paused}
             className="w-full"
           >
             {generating

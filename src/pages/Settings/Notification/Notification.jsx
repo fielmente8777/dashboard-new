@@ -1,5 +1,8 @@
-import { BellRing } from "lucide-react";
+import { BellRing, PhoneMissed, Plug } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Button from "../../../components/ui/Button";
 import SaveBar from "../../../components/ui/SaveBar";
+import { integrationPath } from "../../../routes/paths";
 import SettingsCard from "../../../components/ui/SettingsCard";
 import { ErrorState, Skeleton } from "../../../components/ui/States";
 import AlertMatrix from "./components/AlertMatrix";
@@ -9,6 +12,7 @@ import { useNotificationSettings } from "./hooks/useNotificationSettings";
 
 const Notification = () => {
   const n = useNotificationSettings();
+  const navigate = useNavigate();
   const { whatsApp } = n;
 
   if (n.settings.isError) {
@@ -46,7 +50,7 @@ const Notification = () => {
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <ChannelSummary whatsApp={whatsApp} draft={n.draft} />
+      <ChannelSummary whatsApp={whatsApp} exotel={n.exotel} draft={n.draft} />
 
       <SettingsCard
         icon={BellRing}
@@ -64,14 +68,33 @@ const Notification = () => {
         <AlertMatrix channels={channels} config={n.draft.config} onChange={n.setSource} />
       </SettingsCard>
 
-      {whatsApp.available && (
-        <CallFollowUp
-          callConfig={n.draft.callConfig}
-          templates={whatsApp.templates}
-          disabled={whatsAppOff}
-          onToggle={n.setCallEnabled}
-          onChange={n.setCallStatus}
-        />
+      {/* calls only reach us through Exotel: without it there is nothing to
+          follow up on, so only say how to turn it on */}
+      {whatsApp.available && !n.exotel.loading && (
+        n.exotel.connected ? (
+          <CallFollowUp
+            callConfig={n.draft.callConfig}
+            templates={whatsApp.templates}
+            disabled={whatsAppOff}
+            onToggle={n.setCallEnabled}
+            onChange={n.setCallStatus}
+          />
+        ) : (
+          <SettingsCard
+            icon={PhoneMissed}
+            title="Missed-call follow-up"
+            description="Connect Exotel to message callers on WhatsApp when you miss their call. These settings appear here once it is connected."
+            actions={
+              <Button
+                variant="secondary"
+                icon={Plug}
+                onClick={() => navigate(integrationPath("exotel"))}
+              >
+                Connect Exotel
+              </Button>
+            }
+          />
+        )
       )}
 
       <SaveBar

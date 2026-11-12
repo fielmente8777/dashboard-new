@@ -128,24 +128,23 @@ const Calls = () => {
       description="Every call made and received through your business number."
       actions={<Tabs tabs={VIEW_TABS} value={view} onChange={setView} />}
     >
-      {view === "analytics" && <CallsAnalytics />}
-
-      {view === "calls" && connection.isLoading && (
+      {/* both views need calling (Exotel) connected; without it, only say how */}
+      {connection.isLoading && (
         <Skeleton className="h-96" />
       )}
 
-      {view === "calls" && connection.isError && (
+      {connection.isError && (
         <ErrorState
           message="Could not check the calling connection."
           onRetry={connection.refetch}
         />
       )}
 
-      {view === "calls" && connection.isSuccess && !isConnected && (
+      {connection.isSuccess && !isConnected && (
         <EmptyState
           icon={PhoneOff}
           title="Calling is not connected"
-          description="Connect your calling account to see and manage your calls here."
+          description="Connect your Exotel calling account to see your calls and call analytics here."
           action={
             <Link
               to={integrationPath("exotel")}
@@ -156,6 +155,8 @@ const Calls = () => {
           }
         />
       )}
+
+      {view === "analytics" && isConnected && <CallsAnalytics />}
 
       {view === "calls" && isConnected && (
         <>

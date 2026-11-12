@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
+import { appForPath, hasApp } from "../../../config/entitlements";
 import { SidebarData } from "../../../data/SideBarData";
 import { accessScopeMap } from "../../../pages/UserMgmt/userAccess";
 import { selectHid } from "../../../redux/slice/UserSlice";
@@ -7,6 +8,8 @@ import { selectHid } from "../../../redux/slice/UserSlice";
 // The sidebar entries the signed-in user is allowed to see.
 // Admins see every entry (sub-links follow the subscription's app access);
 // team members only see what is enabled for them at the selected location.
+// Everyone only sees the apps the hotel's plan includes or it bought (config/entitlements.js):
+// after the free trial an app that wasn't paid for disappears from the menu.
 export const useSidebarItems = () => {
   const authUser = useSelector((state) => state.userProfile.authUser);
   const subscription = useSelector((state) => state.subscription?.subscription);
@@ -14,11 +17,13 @@ export const useSidebarItems = () => {
 
   return useMemo(() => {
     const isAdmin = Boolean(authUser?.isAdmin);
+    const isOwner = authUser?.role === "owner";
     const locationScope = authUser?.assigned_location?.find(
       (location) => location?.hid === String(hid),
     )?.accessScope;
 
     const canSeeItem = (item) => {
+      if (item.ownerOnly) return isOwner;
       if (isAdmin || !item.key || !locationScope) return true;
       return Boolean(locationScope[accessScopeMap[item.key]]);
     };
@@ -34,10 +39,14 @@ export const useSidebarItems = () => {
       return Boolean(locationScope?.[accessScopeMap[subLink.key]]);
     };
 
+    const paidFor = (link) => hasApp(subscription, appForPath(link));
+
     return SidebarData.filter(canSeeItem)
+      // a group is judged by its sub-links (Leads may keep "Meta" without Lead Management)
+      .filter((item) => item.subLinks || paidFor(item.link))
       .map((item) =>
         item.subLinks
-          ? { ...item, subLinks: item.subLinks.filter(canSeeSubLink) }
+          ? { ...item, subLinks: item.subLinks.filter((s) => canSeeSubLink(s) && paidFor(s.link)) }
           : item,
       )
       .filter((item) => !item.subLinks || item.subLinks.length > 0);

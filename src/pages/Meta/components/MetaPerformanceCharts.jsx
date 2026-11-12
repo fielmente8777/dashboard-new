@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,75 +17,81 @@ import {
   tooltipProps,
 } from "../../../components/Charts/chartTheme";
 import Card from "../../../components/ui/Card";
+import Segmented from "../../../components/ui/Segmented";
 
-// Reach and engagements are on very different scales, so each gets its own
-// chart (and its own axis) instead of sharing one with two axes.
-const SERIES = [
-  { key: "reach", title: "Reach", color: CHART_COLORS[0] },
-  { key: "engagements", title: "Engagements", color: CHART_COLORS[1] },
+// each series gian sends under performanceOverview, with its own colour
+const METRICS = [
+  { value: "reach", label: "Reach", color: CHART_COLORS[0] },
+  { value: "views", label: "Views", color: CHART_COLORS[6] },
+  { value: "engagements", label: "Engagements", color: CHART_COLORS[1] },
+  { value: "newFollowers", label: "New followers", color: CHART_COLORS[2] },
 ];
 
-// data: { reach: [{ date, value }], engagements: [{ date, value }] }
+// Meta sends some daily values as a breakdown object; the chart needs the total
+const total = (value) =>
+  value && typeof value === "object"
+    ? Object.values(value).reduce((sum, v) => sum + Number(v || 0), 0)
+    : Number(value || 0);
+
+// data: { reach: [{ date, value }], views: [...], engagements: [...], newFollowers: [...] }
 const MetaPerformanceCharts = ({ data }) => {
+  // only the metrics this answer has (older gian answers send reach + engagements only)
+  const available = METRICS.filter((m) => data?.[m.value]?.length);
+  const [picked, setPicked] = useState("reach");
+  const metric = available.find((m) => m.value === picked) || available[0] || METRICS[0];
+
   const rows = useMemo(
-    () =>
-      (data?.reach || []).map((point, index) => ({
-        date: point.date,
-        reach: point.value || 0,
-        engagements: data.engagements?.[index]?.value || 0,
-      })),
-    [data],
+    () => (data?.[metric.value] || []).map((p) => ({ date: p.date, value: total(p.value) })),
+    [data, metric.value],
   );
+  const sum = rows.reduce((s, r) => s + r.value, 0);
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {SERIES.map((series) => (
-        <Card key={series.key} title={series.title} description="Per day">
-          <div className="h-64">
-            {rows.length === 0 ? (
-              <p className="flex h-full items-center justify-center text-sm text-app-text-muted">
-                No data for this period.
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={rows}
-                  margin={{ top: 8, right: 12, left: -12, bottom: 0 }}
-                >
-                  <CartesianGrid {...gridProps} />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={formatDayLabel}
-                    minTickGap={24}
-                    {...axisProps}
-                  />
-                  <YAxis tickFormatter={formatCompact} {...axisProps} />
-                  <Tooltip
-                    {...tooltipProps}
-                    labelFormatter={formatDayLabel}
-                    formatter={(value) => value.toLocaleString()}
-                  />
-                  <Line
-                    type="monotone"
-                    name={series.title}
-                    dataKey={series.key}
-                    stroke={series.color}
-                    strokeWidth={2}
-                    dot={false}
-                    activeDot={{
-                      r: 5,
-                      fill: series.color,
-                      stroke: "var(--app-surface)",
-                      strokeWidth: 2,
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Card>
-      ))}
-    </div>
+    <Card
+      title="Performance over time"
+      description={rows.length ? `${metric.label} per day · ${sum.toLocaleString("en-IN")} in this period` : "Per day"}
+      actions={
+        available.length > 1 && (
+          <Segmented label="Metric" options={available} value={metric.value} onChange={setPicked} />
+        )
+      }
+    >
+      <div className="h-72">
+        {rows.length === 0 ? (
+          <p className="flex h-full items-center justify-center text-sm text-app-text-muted">
+            No data for this period.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="meta-performance-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={metric.color} stopOpacity={0.25} />
+                  <stop offset="100%" stopColor={metric.color} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid {...gridProps} />
+              <XAxis dataKey="date" tickFormatter={formatDayLabel} minTickGap={28} {...axisProps} />
+              <YAxis tickFormatter={formatCompact} width={48} {...axisProps} />
+              <Tooltip
+                {...tooltipProps}
+                labelFormatter={formatDayLabel}
+                formatter={(value) => [value.toLocaleString("en-IN"), metric.label]}
+              />
+              <Area
+                type="monotone"
+                dataKey="value"
+                stroke={metric.color}
+                strokeWidth={2}
+                fill="url(#meta-performance-fill)"
+                dot={false}
+                activeDot={{ r: 4, fill: metric.color, stroke: "var(--app-surface)", strokeWidth: 2 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+    </Card>
   );
 };
 

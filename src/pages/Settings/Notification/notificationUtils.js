@@ -22,7 +22,9 @@ export const CALL_STATUSES = [
 
 const EMPTY_CALL = { type: "template", templateName: "", message: "", templateMeta: null };
 
-// the saved settings with every source and call status filled in
+// the saved settings with every source and call status filled in.
+// Lead alerts are on until someone switches them off: a source never saved
+// shows (and gets) both alerts, the same rule gian sends by (AlertSettings).
 export const normalizeSettings = (docs) => ({
   config: Object.fromEntries(
     SOURCES.map(({ key }) => {
@@ -32,8 +34,8 @@ export const normalizeSettings = (docs) => ({
         {
           email: saved.email || [],
           phone: saved.phone || [],
-          isEmailAllowed: Boolean(saved.isEmailAllowed),
-          isPhoneAllowed: Boolean(saved.isPhoneAllowed),
+          isEmailAllowed: saved.isEmailAllowed !== false,
+          isPhoneAllowed: saved.isPhoneAllowed !== false,
         },
       ];
     }),

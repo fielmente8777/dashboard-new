@@ -1,4 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
 import authReducer from "./slice/LoginSlice";
 import userProfileReducer from "./slice/UserSlice.js";
 import applicantsReducer from "./slice/TalentSlice.js";
@@ -27,5 +28,9 @@ const store = configureStore({
       serializableCheck: { ignoredPaths: [`${baseApi.reducerPath}.mutations`] },
     }).concat(baseApi.middleware),
 });
+
+// lets queries that opt in (refetchOnFocus / refetchOnReconnect) refresh,
+// e.g. the AI credit status after a recharge in another tab
+setupListeners(store.dispatch);
 
 export default store;
