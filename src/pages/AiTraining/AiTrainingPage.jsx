@@ -7,7 +7,7 @@ import CustomRulesTab from "./components/CustomRulesTab";
 import FlaggedRepliesTab from "./components/FlaggedRepliesTab";
 import VoiceAiTab from "./components/VoiceAiTab";
 
-const AiTrainingPage = () => {
+const AiTrainingPage = () => { 
   const tenant = useTenant();
   const [tab, setTab] = useState("rules");
   // loaded here, not in the tab, so the badge shows the count straight away

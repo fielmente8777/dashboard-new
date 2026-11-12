@@ -55,6 +55,7 @@ export const WEBSOCKET_EVENTS = {
   WHATSAPP_MESSAGE_STATUS: "WHATSAPP_MESSAGE_STATUS",
 
   META_NEW_LEAD: "META_NEW_LEAD",
+  INSTAGRAM_NEW_LEAD: "INSTAGRAM_NEW_LEAD",
   EXOTEL_CALL: "NEW_EXOTEL_CALL",
   EXOTEL_CALL_ANSWERED: "CALL_ANSWERED",
   EXOTEL_CALL_MISSED: "MISSED_CALL",
@@ -322,6 +323,7 @@ export const Sources = [
   { label: "Vistors", value: "visitors" },
   { label: "Exotel", value: "exotel" },
   { label: "Insta - Ad & DM", value: "insta_ad_dm" },
+  { label: "Instagram DM", value: "instagram" },
   { label: "Front desk", value: "front_desk" },
   { label: "Booking Engine", value: "booking_engine" },
   { label: "Email", value: "email" },

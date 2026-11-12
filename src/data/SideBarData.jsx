@@ -39,7 +39,7 @@ import {
   Star,
 } from "lucide-react";
 import { createElement } from "react";
-import { FaMeta, FaWhatsapp } from "react-icons/fa6";
+import { FaInstagram, FaMeta, FaWhatsapp } from "react-icons/fa6";
 import { SiGoogleads, SiGoogleanalytics } from "react-icons/si";
 import { SOCIAL_PORTAL_URL } from "../config/env";
 
@@ -70,6 +70,7 @@ export const SidebarData = [
     icon: top(MessagesSquare),
     subLinks: [
       { name: "WhatsApp", link: `channel/wa/chat`, icon: brand(FaWhatsapp) },
+      { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
     ],
   },
   {
@@ -82,6 +83,7 @@ export const SidebarData = [
       { name: "All leads", link: `leads-management/all-leads`, icon: sub(LayoutList) },
       { name: "Meta", link: `leads-management/meta-leads`, icon: brand(FaMeta) },
       { name: "WhatsApp", link: `leads-management/whatsapp`, icon: brand(FaWhatsapp) },
+      { name: "Instagram", link: `leads-management/instagram`, icon: brand(FaInstagram) },
       { name: "Webform", link: `leads-management/webform-leads`, icon: sub(FileSpreadsheet) },
       { name: "Eazbot", link: `leads-management/eazbot-leads`, icon: sub(Bot) },
       { name: "Visitors", link: `leads-management/all-visitors`, icon: sub(Eye) },

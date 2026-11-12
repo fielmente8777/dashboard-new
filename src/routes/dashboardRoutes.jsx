@@ -46,7 +46,8 @@ export const dashboardRoutes = [
 
   // Live chat
   { path: PAGES.CHAT_WHATSAPP, lazy: page(() => import("../pages/ConversationalTool/WhatsApp/WhatsApp")) },
-  { path: PAGES.CHAT_INSTAGRAM, lazy: page(() => import("../pages/ConversationalTool/Instagram/Instagram")) },
+  // Instagram DMs (the old placeholder, with the WhatsApp call test, is still in Instagram/Instagram.jsx)
+  { path: PAGES.CHAT_INSTAGRAM, lazy: page(() => import("../pages/ConversationalTool/InstagramDM/InstagramDM")) },
   { path: PAGES.CHAT_FACEBOOK, lazy: page(() => import("../pages/ConversationalTool/Facebook/Facebook")) },
   { path: PAGES.CHAT_EAZBOT, lazy: page(() => import("../pages/ConversationalTool/Eazbot/EazbotChat")) },
   { path: PAGES.CONVERSATIONAL_TOOL, lazy: page(() => import("../pages/ConversationalTool/ConversationalTool")) },
@@ -55,6 +56,7 @@ export const dashboardRoutes = [
   { path: PAGES.LEADS_ALL, lazy: leadsList(LEAD_SOURCES.all) },
   { path: PAGES.LEADS_META, lazy: leadsList(LEAD_SOURCES.meta) },
   { path: PAGES.LEADS_WHATSAPP, lazy: leadsList(LEAD_SOURCES.whatsapp) },
+  { path: PAGES.LEADS_INSTAGRAM, lazy: leadsList(LEAD_SOURCES.instagram) },
   { path: PAGES.LEADS_GOOGLE_ADS, lazy: leadsList(LEAD_SOURCES.googleAds) },
   { path: PAGES.LEADS_WEBFORM, lazy: leadsList(LEAD_SOURCES.webform) },
   { path: PAGES.LEADS_EAZBOT, lazy: leadsList(LEAD_SOURCES.eazbot) },

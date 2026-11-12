@@ -2,12 +2,19 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import Button from "../../../components/ui/Button";
 import { Input, Select } from "../../../components/ui/Field";
-import { CATEGORIES, DEFAULT_CATEGORY } from "../constants";
+import {
+  CATEGORIES,
+  DEFAULT_CATEGORY,
+  DEFAULT_PRIORITY,
+  PRIORITIES,
+} from "../constants";
 
 // onAdd(rule) resolves truthy when the rule was created.
-const AddRuleForm = ({ onAdd }) => {
+// withPriority: also ask for a priority (WhatsApp / website rules).
+const AddRuleForm = ({ onAdd, withPriority = false }) => {
   const [ruleText, setRuleText] = useState("");
   const [category, setCategory] = useState(DEFAULT_CATEGORY);
+  const [priority, setPriority] = useState(DEFAULT_PRIORITY);
   const [adding, setAdding] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -18,12 +25,14 @@ const AddRuleForm = ({ onAdd }) => {
       ruleText: ruleText.trim(),
       category,
       enabled: true,
+      ...(withPriority ? { priority: Number(priority) } : {}),
     });
     setAdding(false);
 
     if (added) {
       setRuleText("");
       setCategory(DEFAULT_CATEGORY);
+      setPriority(DEFAULT_PRIORITY);
     }
   };
 
@@ -41,6 +50,15 @@ const AddRuleForm = ({ onAdd }) => {
           aria-label="Category"
           className="sm:w-48"
         />
+        {withPriority && (
+          <Select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            options={PRIORITIES}
+            aria-label="Priority"
+            className="sm:w-44"
+          />
+        )}
         <Input
           value={ruleText}
           onChange={(e) => setRuleText(e.target.value)}

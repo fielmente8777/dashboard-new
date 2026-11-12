@@ -15,3 +15,17 @@ export const DEFAULT_CATEGORY = "other";
 export const getCategory = (value) =>
   CATEGORIES.find((category) => category.value === value) ||
   CATEGORIES.find((category) => category.value === DEFAULT_CATEGORY);
+
+// WhatsApp / website rules only. The AI reads rules in this order and the
+// higher one wins when two rules disagree. Rules without one are "normal".
+export const PRIORITIES = [
+  { value: "1", label: "High priority", short: "High", tone: "red" },
+  { value: "2", label: "Normal priority", short: "Normal", tone: "gray" },
+  { value: "3", label: "Low priority", short: "Low", tone: "sky" },
+];
+
+export const DEFAULT_PRIORITY = "2";
+
+export const getPriority = (value) =>
+  PRIORITIES.find((priority) => priority.value === String(value)) ||
+  PRIORITIES.find((priority) => priority.value === DEFAULT_PRIORITY);

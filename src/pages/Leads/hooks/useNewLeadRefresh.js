@@ -16,7 +16,8 @@ export const useNewLeadRefresh = ({ hid, ndid }, enabled) => {
 
     client.connect(({ event, data }) => {
       if (
-        event === WEBSOCKET_EVENTS.META_NEW_LEAD &&
+        (event === WEBSOCKET_EVENTS.META_NEW_LEAD ||
+          event === WEBSOCKET_EVENTS.INSTAGRAM_NEW_LEAD) &&
         data?.ndid === ndid &&
         String(data?.hId) === hid
       ) {
