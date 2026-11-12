@@ -34,7 +34,7 @@ called nexon for a route only gian has.
 | `node` | **gian** (Node): leads, calls, WhatsApp, Meta, Google, SEO, AI, notifications, subscription, onboarding | `https://gian-1eve.onrender.com` | `VITE_NODE_API_URL` |
 | `salesAgent` | AI sales agent | `https://ai-sales-agent-o4wi.onrender.com` | `VITE_SALES_AGENT_API_URL` |
 | `grm` | HMSBackend (guest requests) | `https://hmsbackend-7pyp.onrender.com` | `VITE_GRM_API_URL` |
-| `app` | **gian-new**: plans, payments, auto-renew (`redux/api/billingApi.js`) | `https://gian-new.onrender.com` | `VITE_APP_API_URL` |
+| `app` | **gian-new**: plans, payments, auto-renew (`redux/api/billingApi.js`) | `https://gn.eazotel.com` | `VITE_APP_API_URL` |
 | WebSocket | gian, same host | `wss://gian-1eve.onrender.com` | `VITE_WS_URL` |
 
 Both nexon and gian are being replaced by **gian-new**. Until a path moves there (behind

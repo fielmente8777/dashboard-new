@@ -18,7 +18,7 @@ export const API_URLS = {
   // guest request management (requests raised by guests from the GRM site)
   grm: trimSlash(env.VITE_GRM_API_URL || "https://hmsbackend-7pyp.onrender.com"),
   // gian-new, the new core API: plans, payments and auto-renew (Settings > Subscription, /plans)
-  app: trimSlash(env.VITE_APP_API_URL || "https://gian-new.onrender.com"),
+  app: trimSlash(env.VITE_APP_API_URL || "https://gn.eazotel.com"),
 };
 
 // the site guests open (usually by scanning the QR code) to raise requests
