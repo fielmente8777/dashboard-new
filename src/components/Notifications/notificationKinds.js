@@ -7,6 +7,7 @@ import {
   Phone,
   Users,
 } from "lucide-react";
+import { FaInstagram } from "react-icons/fa6";
 import { IoLogoWhatsapp } from "react-icons/io";
 
 // How each kind of notification is drawn: the server's categories plus
@@ -22,6 +23,11 @@ export const NOTIFICATION_KINDS = {
     label: "WhatsApp",
     icon: IoLogoWhatsapp,
     tile: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400",
+  },
+  instagram: {
+    label: "Instagram",
+    icon: FaInstagram,
+    tile: "bg-pink-500/12 text-pink-600 dark:text-pink-400",
   },
   visitor: {
     label: "Website visitors",
@@ -59,13 +65,15 @@ export const getNotificationKind = (kind) =>
   NOTIFICATION_KINDS[kind] || NOTIFICATION_KINDS.general;
 
 // Filters on the Notifications page, in this order.
-export const NOTIFICATION_FILTERS = ["lead", "whatsapp", "visitor", "call", "booking", "system"];
+export const NOTIFICATION_FILTERS = ["lead", "whatsapp", "instagram", "visitor", "call", "booking", "system"];
 
 // What each server notification type is, for the settings toggles.
 export const NOTIFICATION_TYPE_LABELS = {
   "lead.created": { label: "New leads", hint: "From Meta, Google Ads, your website and every other source." },
   "whatsapp.conversation.new": { label: "New WhatsApp chats", hint: "A guest messages you for the first time." },
   "whatsapp.message.new": { label: "WhatsApp messages", hint: "Every new message in an existing chat." },
+  "instagram.conversation.new": { label: "New Instagram chats", hint: "A guest DMs your Instagram for the first time." },
+  "instagram.message.new": { label: "Instagram messages", hint: "Every new DM in an existing Instagram chat." },
   "call.balance.low": { label: "Calling balance running low", hint: "About 2 days before the Exotel balance runs out (admins and people who make calls)." },
   "call.balance.empty": { label: "Calling balance used up", hint: "Calls stop until the Exotel account is recharged." },
   "system.announcement": { label: "Eazotel announcements", hint: "Product news and important account updates." },

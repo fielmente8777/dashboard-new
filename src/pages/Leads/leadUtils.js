@@ -163,6 +163,7 @@ const SOURCE_STYLES = {
   eazbot: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
   visitors: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   insta_ad_dm: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400",
+  instagram: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
 };
 
 export const getSourceStyle = (lead) =>

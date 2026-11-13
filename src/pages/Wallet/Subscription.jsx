@@ -129,7 +129,15 @@ const Subscription = () => {
       key: "invoice",
       header: "Invoice",
       render: (p) =>
-        p.invoice ? (
+        p.zohoInvoice ? (
+          p.zohoInvoice.url ? (
+            <a href={p.zohoInvoice.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:underline">
+              <Download className="size-3.5" aria-hidden /> {p.zohoInvoice.number}
+            </a>
+          ) : (
+            <span className="text-xs">{p.zohoInvoice.number}</span>
+          )
+        ) : p.invoice ? (
           <button
             type="button"
             onClick={() => onDownload(p.invoice)}

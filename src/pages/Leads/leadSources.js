@@ -57,6 +57,16 @@ export const LEAD_SOURCES = {
     createdFrom: "whatsapp",
     columns: BASE_COLUMNS,
   },
+  // DMs only: a guest's first Instagram DM becomes a lead straight away (webhook),
+  // so there is nothing to sync. Instagram lead-form ads arrive with the Meta leads.
+  instagram: {
+    key: "instagram",
+    title: "Instagram Leads",
+    description: "Guests who messaged your Instagram account (DMs).",
+    createdFrom: "instagram",
+    columns: BASE_COLUMNS,
+    live: true,
+  },
   googleAds: {
     key: "googleAds",
     title: "Google Ads Leads",

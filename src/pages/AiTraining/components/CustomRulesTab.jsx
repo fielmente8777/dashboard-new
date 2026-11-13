@@ -33,7 +33,8 @@ const chipClassName = (active) =>
 // category. The WhatsApp AI rules and the Voice AI rules both use it, each
 // with its own API hooks (`api`). Rules can be exported to and imported
 // from a CSV / JSON file (`fileName` names the download).
-export const RulesList = ({ tenant, api, intro, fileName = "ai", emptyTitle = "No rules yet" }) => {
+// `withPriority` adds a High / Normal / Low priority to each rule.
+export const RulesList = ({ tenant, api, intro, fileName = "ai", emptyTitle = "No rules yet", withPriority = false }) => {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
   const fileInputRef = useRef(null);
@@ -187,10 +188,10 @@ export const RulesList = ({ tenant, api, intro, fileName = "ai", emptyTitle = "N
       {all.length === 0 && <EmptyState icon={ListChecks} title={emptyTitle} />}
 
       {shown.map((rule) => (
-        <RuleRow key={rule._id} rule={rule} onSave={handleSave} onDelete={handleDelete} />
+        <RuleRow key={rule._id} rule={rule} onSave={handleSave} onDelete={handleDelete} withPriority={withPriority} />
       ))}
 
-      <AddRuleForm onAdd={handleAdd} />
+      <AddRuleForm onAdd={handleAdd} withPriority={withPriority} />
     </div>
   );
 };
@@ -208,7 +209,8 @@ const CustomRulesTab = ({ tenant }) => (
     api={WHATSAPP_RULES}
     fileName="whatsapp"
     emptyTitle="No custom rules yet"
-    intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Turned-off rules stay saved but don't apply."
+    withPriority
+    intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Your rules take precedence over the knowledge base, and High priority rules win when two rules disagree. Turned-off rules stay saved but don't apply."
   />
 );
 

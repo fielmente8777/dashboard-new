@@ -5,11 +5,18 @@ import Button from "../../../components/ui/Button";
 import { Select, Textarea } from "../../../components/ui/Field";
 import IconButton from "../../../components/ui/IconButton";
 import Switch from "../../../components/ui/Switch";
-import { CATEGORIES, DEFAULT_CATEGORY, getCategory } from "../constants";
+import {
+  CATEGORIES,
+  DEFAULT_CATEGORY,
+  getCategory,
+  getPriority,
+  PRIORITIES,
+} from "../constants";
 
 // onSave(id, changes) resolves truthy when the rule was saved.
-const RuleRow = ({ rule, onSave, onDelete }) => {
-  const [draft, setDraft] = useState(null); // { ruleText, category } while editing
+// withPriority: the rule has a priority (WhatsApp / website rules).
+const RuleRow = ({ rule, onSave, onDelete, withPriority = false }) => {
+  const [draft, setDraft] = useState(null); // { ruleText, category, priority } while editing
   const [busy, setBusy] = useState(false);
 
   const save = async (changes) => {
@@ -23,12 +30,14 @@ const RuleRow = ({ rule, onSave, onDelete }) => {
     setDraft({
       ruleText: rule.ruleText,
       category: rule.category || DEFAULT_CATEGORY,
+      priority: getPriority(rule.priority).value,
     });
 
   const handleSaveEdit = async () => {
     const saved = await save({
       ruleText: draft.ruleText.trim(),
       category: draft.category,
+      ...(withPriority ? { priority: Number(draft.priority) } : {}),
     });
     if (saved) setDraft(null);
   };
@@ -36,13 +45,24 @@ const RuleRow = ({ rule, onSave, onDelete }) => {
   if (draft) {
     return (
       <div className="space-y-2 rounded-xl border border-blue-500/50! bg-app-surface p-4">
-        <Select
-          value={draft.category}
-          onChange={(e) => setDraft({ ...draft, category: e.target.value })}
-          options={CATEGORIES}
-          aria-label="Category"
-          className="sm:w-48"
-        />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Select
+            value={draft.category}
+            onChange={(e) => setDraft({ ...draft, category: e.target.value })}
+            options={CATEGORIES}
+            aria-label="Category"
+            className="sm:w-48"
+          />
+          {withPriority && (
+            <Select
+              value={draft.priority}
+              onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
+              options={PRIORITIES}
+              aria-label="Priority"
+              className="sm:w-48"
+            />
+          )}
+        </div>
         <Textarea
           autoFocus
           rows={2}
@@ -69,6 +89,7 @@ const RuleRow = ({ rule, onSave, onDelete }) => {
   }
 
   const category = getCategory(rule.category);
+  const priority = getPriority(rule.priority);
 
   return (
     <div className="flex items-start gap-3 rounded-xl border border-app-border! bg-app-surface p-4">
@@ -83,7 +104,13 @@ const RuleRow = ({ rule, onSave, onDelete }) => {
       <div
         className={`flex min-w-0 flex-1 flex-wrap items-start gap-x-3 gap-y-1.5 ${rule.enabled ? "" : "opacity-50"}`}
       >
-        <Badge tone={category.tone}>{category.label}</Badge>
+        <div className="flex shrink-0 flex-wrap gap-1.5">
+          {withPriority && (
+            <Badge tone={priority.tone}>{priority.short}</Badge>
+          )}
+          <Badge tone={category.tone}>{category.label}</Badge>
+          {rule.source === "default" && <Badge tone="purple">Default</Badge>}
+        </div>
         <p className="min-w-0 flex-1 basis-48 text-sm text-app-text">
           {rule.ruleText}
         </p>
