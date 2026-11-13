@@ -1,9 +1,12 @@
+
 import { ArrowLeft, RefreshCw, Save } from "lucide-react";
 import { useCallback, useState } from "react";
+
 import Button from "../../../components/ui/Button";
 import PageShell from "../../../components/ui/PageShell";
 import { useConfirm } from "../../../context/ConfirmContext";
 import { useToast } from "../../../context/ToastContext";
+
 import {
   HIDDEN_FIELDS,
   TOP_LEVEL_LEGACY_KEYS,
@@ -11,12 +14,12 @@ import {
   setValueAtPath,
   slugifyKey,
 } from "../utils/kbHelpers";
+
 import { toSectionTab } from "../utils/sectionConfig";
 import KnowledgeBaseSection from "./KnowledgeBaseSection";
 import TabBar from "./TabBar";
+import MediaTab from "./MediaTab";
 
-// Step 3: review and edit the knowledge base, one section (tab) at a time.
-// `savedId` is null for a freshly generated one that has not been saved yet.
 const EditableKnowledgeBase = ({
   kb,
   setKb,
@@ -28,38 +31,73 @@ const EditableKnowledgeBase = ({
   onBack,
 }) => {
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
+
+  // Media is a permanent tab, not a dynamic KB section.
   const [selectedTab, setSelectedTab] = useState(null);
 
-  // stable, so the memoised editor fields only re-render when their value changes
+  const isMediaSelected = selectedTab === "__media__";
+
+  // Update knowledge base fields.
   const handleChange = useCallback(
-    (path, value) => setKb((prev) => setValueAtPath(prev, path, value)),
+    (path, value) =>
+      setKb((prev) => setValueAtPath(prev, path, value)),
     [setKb],
   );
-  const { confirm } = useConfirm();
-  // stable as well; asks first, since a field can hold a whole list of entries
+
+  // Update media assets inside the same KB document.
+  const handleMediaChange = useCallback(
+    (mediaAssets) => {
+      setKb((prev) => ({
+        ...prev,
+        media_assets: mediaAssets,
+      }));
+    },
+    [setKb],
+  );
+
+  // Delete a knowledge base field.
   const handleDelete = useCallback(
     async (path) => {
       const name = String(path[path.length - 1]);
-      const label = /^\d+$/.test(name) ? "this entry" : `"${name.replace(/_/g, " ")}"`;
+
+      const label = /^\d+$/.test(name)
+        ? "this entry"
+        : `"${name.replace(/_/g, " ")}"`;
+
       const confirmed = await confirm(
         `Remove ${label} from the knowledge base? It is gone once you save.`,
-        { title: "Remove from knowledge base", confirmText: "Remove" },
+        {
+          title: "Remove from knowledge base",
+          confirmText: "Remove",
+        },
       );
-      if (confirmed) setKb((prev) => deleteValueAtPath(prev, path));
+
+      if (confirmed) {
+        setKb((prev) => deleteValueAtPath(prev, path));
+      }
+
       return confirmed;
     },
     [setKb, confirm],
   );
 
-  const sectionEntries = Object.entries(kb).filter(
-    ([key]) => !HIDDEN_FIELDS.has(key) && !TOP_LEVEL_LEGACY_KEYS.has(key),
+  // Keep media_assets out of the dynamic Knowledge Base sections.
+  const sectionEntries = Object.entries(kb || {}).filter(
+    ([key]) =>
+      key !== "media_assets" &&
+      !HIDDEN_FIELDS.has(key) &&
+      !TOP_LEVEL_LEGACY_KEYS.has(key),
   );
-  // falls back to the first section if the selected one was deleted
-  const activeEntry =
-    sectionEntries.find(([key]) => key === selectedTab) || sectionEntries[0];
 
+  const activeEntry =
+    sectionEntries.find(([key]) => key === selectedTab) ||
+    sectionEntries[0];
+
+  // Add a normal Knowledge Base section.
   const handleAddSection = (name) => {
     const key = slugifyKey(name);
+
     if (!key) return;
 
     if (Object.hasOwn(kb, key)) {
@@ -74,49 +112,89 @@ const EditableKnowledgeBase = ({
     setSelectedTab(key);
   };
 
+  const mediaAssets = Array.isArray(kb?.media_assets)
+    ? kb.media_assets
+    : [];
+
   return (
     <PageShell
       title="Review Knowledge Base"
       description={
         savedId
-          ? `Last saved ${updatedAt ? new Date(updatedAt).toLocaleString() : "-"}. Update anything below, then save your changes.`
+          ? `Last saved ${
+              updatedAt
+                ? new Date(updatedAt).toLocaleString()
+                : "-"
+            }. Update anything below, then save your changes.`
           : "We generated this from your source. Edit anything below, then publish when it looks right."
       }
       actions={
-        // A saved knowledge base cannot be started over: the account is
-        // limited to one, so it is edited in place or deleted from the list.
         savedId ? (
-          <Button variant="secondary" icon={ArrowLeft} onClick={onBack}>
+          <Button
+            variant="secondary"
+            icon={ArrowLeft}
+            onClick={onBack}
+          >
             Back to list
           </Button>
         ) : (
-          <Button variant="secondary" icon={RefreshCw} onClick={onStartOver}>
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            onClick={onStartOver}
+          >
             Start over
           </Button>
         )
       }
     >
+      {/* TAB NAVIGATION */}
+
       <TabBar
-        sections={sectionEntries.map(toSectionTab)}
-        activeKey={activeEntry?.[0]}
-        onSelect={setSelectedTab}
-        onAddSection={handleAddSection}
-      />
+  sections={sectionEntries
+    .filter(([key]) => key !== "media_assets")
+    .map(toSectionTab)}
+  activeKey={isMediaSelected ? "__media__" : activeEntry?.[0]}
+  onSelect={(key) => setSelectedTab(key)}
+  onAddSection={handleAddSection}
+  mediaActive={isMediaSelected}
+  onMediaSelect={() => setSelectedTab("__media__")}
+/>
 
-      {activeEntry && (
-        <KnowledgeBaseSection
-          key={activeEntry[0]}
-          sectionKey={activeEntry[0]}
-          value={activeEntry[1]}
-          onChange={handleChange}
-          onDelete={handleDelete}
-        />
-      )}
+      {/* NORMAL KNOWLEDGE BASE SECTION */}
 
-      {/* stays in view while scrolling a long section */}
+     
+{/* CONTENT RENDERING */}
+
+{isMediaSelected ? (
+  <MediaTab
+    mediaAssets={mediaAssets}
+    onChange={handleMediaChange}
+  />
+) : (
+  activeEntry && (
+    <KnowledgeBaseSection
+      sectionKey={activeEntry[0]}
+      value={activeEntry[1]}
+      onChange={handleChange}
+      onDelete={handleDelete}
+    />
+  )
+)}
+
+
+      {/* SAVE CHANGES */}
+
       <div className="sticky bottom-0 -mx-4 flex justify-end border-t border-app-border! bg-app-bg px-4 py-3 sm:-mx-6 sm:px-6">
-        <Button size="lg" icon={Save} loading={saving} onClick={onSave}>
-          {savedId ? "Save changes" : "Publish knowledge base"}
+        <Button
+          size="lg"
+          icon={Save}
+          loading={saving}
+          onClick={onSave}
+        >
+          {savedId
+            ? "Save changes"
+            : "Publish knowledge base"}
         </Button>
       </div>
     </PageShell>
