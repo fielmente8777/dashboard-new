@@ -86,7 +86,7 @@ export const SidebarData = [
       { name: "All leads", link: `leads-management/all-leads`, icon: sub(LayoutList) },
       { name: "Meta", link: `leads-management/meta-leads`, icon: brand(FaMeta) },
       { name: "WhatsApp", link: `leads-management/whatsapp`, icon: brand(FaWhatsapp) },
-      { name: "Instagram", link: `leads-management/instagram`, icon: brand(FaInstagram) },
+      // { name: "Instagram", link: `leads-management/instagram`, icon: brand(FaInstagram) },
       { name: "Webform", link: `leads-management/webform-leads`, icon: sub(FileSpreadsheet) },
       { name: "Eazbot", link: `leads-management/eazbot-leads`, icon: sub(Bot) },
       { name: "Visitors", link: `leads-management/all-visitors`, icon: sub(Eye) },
@@ -166,7 +166,7 @@ export const SidebarData = [
     icon: top(Search),
     subLinks: [
       { name: "Local SEO", link: `seo/local-seo`, icon: sub(MapPin) },
-      { name: "Google reviews", link: `gmb/reviews`, icon: sub(Star) },
+      // { name: "Google reviews", link: `gmb/reviews`, icon: sub(Star) },
       { name: "Website SEO", link: `seo/website-seo`, icon: sub(Globe) },
     ],
   },

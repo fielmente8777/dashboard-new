@@ -44,7 +44,7 @@ export const PAGES = {
   LEADS_ALL: "leads-management/all-leads",
   LEADS_META: "leads-management/meta-leads",
   LEADS_WHATSAPP: "leads-management/whatsapp",
-  LEADS_INSTAGRAM: "leads-management/instagram",
+  // LEADS_INSTAGRAM: "leads-management/instagram",
   LEADS_GOOGLE_ADS: "leads-management/google-ads-leads",
   LEADS_WEBFORM: "leads-management/webform-leads",
   LEADS_EAZBOT: "leads-management/eazbot-leads",
