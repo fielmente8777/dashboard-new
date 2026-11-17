@@ -77,6 +77,44 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- sender mailbox: the property's own mailbox campaigns go out from ---
+    // { hid } -> { result: { mailbox | null, presets } }
+    getSenderMailbox: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox`, params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, body: { email, password, displayName, username, smtp, imap, saveToSent } }
+    // gian logs in first; 400 with a readable message when the details don't work
+    saveSenderMailbox: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/sender-mailbox`,
+        method: "PUT",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
+    // { hid }
+    deleteSenderMailbox: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, to? } - a test email through the mailbox, to itself by default
+    testSenderMailbox: build.mutation({
+      query: ({ hid, to }) => ({
+        url: `${BASE}/sender-mailbox/test`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...(to && { to }) },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
     // --- templates: hid goes in the query and, for writes, in the body ---
     // { hid, page, limit, search }
     getEmailTemplates: build.query({
@@ -205,3 +243,9 @@ export const createEmailTemplate = (payload) =>
 export const updateEmailTemplate = (id, payload) =>
   strict(e.updateEmailTemplate, { hid: selectedHid(), id, body: payload });
 export const deleteEmailTemplate = (id) => strict(e.deleteEmailTemplate, { hid: selectedHid(), id });
+
+// Sender mailbox: resolve with `result`, throw with the server's message.
+export const getSenderMailbox = () => strict(e.getSenderMailbox, { hid: selectedHid() });
+export const saveSenderMailbox = (body) => strict(e.saveSenderMailbox, { hid: selectedHid(), body });
+export const deleteSenderMailbox = () => strict(e.deleteSenderMailbox, { hid: selectedHid() });
+export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: selectedHid(), to });

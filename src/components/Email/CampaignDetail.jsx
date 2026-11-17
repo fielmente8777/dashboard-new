@@ -99,6 +99,19 @@ export default function CampaignDetail({ campaignId, onClose }) {
     { key: "status", header: "Status", render: (r) => <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge> },
     { key: "sentAt", header: "Sent", render: (r) => formatDate(r.sentAt, true) },
     {
+      key: "engaged",
+      header: "Opened / clicked",
+      render: (r) =>
+        r.openedAt || r.clickedAt ? (
+          <div className="text-xs leading-snug">
+            {r.openedAt && <p>Opened {formatDate(r.openedAt, true)}</p>}
+            {r.clickedAt && <p className="text-blue-600 dark:text-blue-400">Clicked {formatDate(r.clickedAt, true)}</p>}
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+    {
       key: "error",
       header: "Problem",
       render: (r) =>

@@ -40,7 +40,7 @@ export default function ChatbotWidget() {
 
   if (!isOpen) {
     return (
-      <button type="button" onClick={() => setIsOpen(true)} aria-label="Ask Eazotel AI" title="Ask Eazotel AI" className={launcherClass}>
+      <button type="button" data-chatbot-fab onClick={() => setIsOpen(true)} aria-label="Ask Eazotel AI" title="Ask Eazotel AI" className={launcherClass}>
         <Sparkles size={26} />
       </button>
     );

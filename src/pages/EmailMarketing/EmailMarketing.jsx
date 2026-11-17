@@ -1,26 +1,22 @@
-import { FileSpreadsheet, PenLine, Plus, RefreshCw, Users } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { ChevronRight, FileSpreadsheet, FolderOpen, MailPlus, PenLine, Plus, Users } from "lucide-react";
+import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import CampaignsList from "../../components/Email/CampaignsList.jsx";
-import { QuickActions } from "../../components/Marketing/MarketingParts";
 import ComposeEmail from "../../components/Email/ComposeEmail";
+import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
-import { ErrorState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 import { useToast } from "../../context/ToastContext";
-import {
-  createEmailCampaign,
-  createManualRecipientBatch,
-  getEmailCampaigns,
-  sendEmailCampaign,
-} from "../../redux/api/emailMarketingApi";
-import EmailCampaignSummary from "./components/EmailCampaignSummary.jsx";
+import { createManualRecipientBatch } from "../../redux/api/emailMarketingApi";
 import ExcelRecipientsDialog from "./components/ExcelRecipientsDialog.jsx";
 import RecipientsPanel from "./components/RecipientsPanel.jsx";
 import TemplatesList from "./components/TemplatesList.jsx";
 import { EMAIL_REGEX, formatNumber } from "./emailUtils.js";
+import { useCampaignSender } from "./useCampaignSender.js";
+import { useRecipientReview } from "../Newsletter/useRecipientReview";
+import { useLazyGetNewsletterAudienceQuery } from "../../redux/api/newsletterApi";
+import GroupsPanel from "../Newsletter/GroupsPanel";
+import ImportDialog from "../Newsletter/ImportDialog";
 
 /* ---------------- Excel import ---------------- */
 
@@ -69,96 +65,108 @@ const extractEmailsFromExcel = async (file) => {
 
 /* ---------------- page ---------------- */
 
-// campaigns are loaded in one go so the totals and filters cover all of them
-const CAMPAIGN_LIMIT = 500;
+// "Send an email to…": the four ways to start, always one click away
+const StartRow = ({ actions }) => (
+  <section aria-label="Send an email" className="space-y-2">
+    <h2 className="text-xs font-semibold uppercase tracking-wide text-app-text-muted">Send an email to…</h2>
+    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+      {actions.map((action) => {
+        const ActionIcon = action.icon;
+        return (
+          <button
+            key={action.title}
+            type="button"
+            onClick={action.onClick}
+            disabled={action.loading}
+            className={`group flex items-center gap-3 rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-60 ${
+              action.primary
+                ? "border-transparent! bg-gradient-to-br from-primary to-blue-600 text-white dark:from-blue-600 dark:to-indigo-500"
+                : "border-app-border! bg-app-surface text-app-text"
+            }`}
+          >
+            <span
+              className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+                action.primary ? "bg-white/15" : "bg-app-surface-secondary text-app-text-muted"
+              }`}
+            >
+              <ActionIcon className="size-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-semibold">{action.title}</span>
+              <span className={`block truncate text-xs ${action.primary ? "text-white/80" : "text-app-text-muted"}`}>
+                {action.description}
+              </span>
+            </span>
+            <ChevronRight className="hidden size-4 shrink-0 opacity-60 transition group-hover:translate-x-0.5 sm:block" />
+          </button>
+        );
+      })}
+    </div>
+  </section>
+);
 
-// Email marketing: campaigns sent so far with their opens and clicks, the
-// leads to send to (or an imported list), and reusable templates.
+// Email marketing: start an email (to anyone, a group, your leads or a file),
+// then see every email sent with who opened and clicked.
 export function EmailMarketingManagement() {
   const { showToast } = useToast();
-  const hotel = useSelector((state) => state.userProfile.user);
-  const [view, setView] = useState("campaigns");
-  // the campaign whose recipients are open (from the list or "best campaign")
+  const [view, setView] = useState("sent");
+  const [groupImport, setGroupImport] = useState(null); // the group a file is imported into, or null
+  const [loadAudience] = useLazyGetNewsletterAudienceQuery();
+  // the sent email whose details are open
   const [openCampaignId, setOpenCampaignId] = useState(null);
-
-  /* campaigns */
-  const [campaigns, setCampaigns] = useState([]);
-  const [campaignTotal, setCampaignTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  const loadCampaigns = useCallback(async ({ quiet = false } = {}) => {
-    if (quiet) setRefreshing(true);
-    setFailed(false);
-    try {
-      const res = await getEmailCampaigns({ page: 1, limit: CAMPAIGN_LIMIT });
-      if (!res) throw new Error();
-      setCampaigns(res.doc || []);
-      setCampaignTotal(res.pagination?.total || res.doc?.length || 0);
-    } catch {
-      setFailed(true);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCampaigns();
-  }, [loadCampaigns]);
+  const [sentCount, setSentCount] = useState(0);
+  const [reloadSent, setReloadSent] = useState(0);
 
   /* compose / send */
-  const [compose, setCompose] = useState(null); // { batchId, count, template }
-  const [sending, setSending] = useState(false);
+  const [compose, setCompose] = useState(null); // { batchId, count, template, label }
+  const { send, sending, defaultFrom } = useCampaignSender();
+  // the "N selected people" chip in the email reviews who gets it (groups and imported lists)
+  const review = useRecipientReview(compose, setCompose);
   const [clearSignal, setClearSignal] = useState(0);
 
   const openCompose = (template = null) => setCompose({ batchId: null, count: 0, template });
 
+  // After sending, the page stays where it was, so the next group can go out
+  // straight away; the toast links to the email's numbers.
   const handleSend = async ({ toEmails, subject, html, text, from, attachments }) => {
-    setSending(true);
     try {
-      const batchIds = compose?.batchId ? [compose.batchId] : [];
-      // addresses typed into "To" go out too, as their own batch
-      if (toEmails.length) {
-        const res = await createManualRecipientBatch({ emails: toEmails });
-        const batchId = res?.doc?.recipientBatchId;
-        if (!batchId) throw new Error("Could not prepare the recipients.");
-        batchIds.push(batchId);
-      }
-
-      const campaignRes = await createEmailCampaign({
-        name: subject,
+      const campaignId = await send({
+        batchIds: compose?.batchId ? [compose.batchId] : [],
+        toEmails,
         subject,
         html,
         text,
-        fromName: hotel?.Profile?.hotelName,
-        fromEmail: from,
-        recipientBatchIds: batchIds,
+        from,
         attachments,
       });
-      const campaignId = campaignRes?.doc?.campaign?._id;
-      if (!campaignId) throw new Error("Could not create the campaign.");
-
-      await sendEmailCampaign({ campaignId });
 
       const count = (compose?.count || 0) + toEmails.length;
-      showToast({ message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}` });
+      const to = compose?.label ? ` (${compose.label})` : "";
+      showToast({
+        message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}${to}.`,
+        duration: 6000,
+        action: campaignId
+          ? {
+              label: "View",
+              onClick: () => {
+                setView("sent");
+                setOpenCampaignId(campaignId);
+              },
+            }
+          : undefined,
+      });
       setCompose(null);
       setClearSignal((n) => n + 1);
-      setView("campaigns");
-      loadCampaigns({ quiet: true });
+      setReloadSent((n) => n + 1);
     } catch (error) {
       showToast({ message: error?.message || "Could not send the email. Please try again.", type: "error" });
-    } finally {
-      setSending(false);
     }
   };
 
   /* Excel import */
   const excelInputRef = useRef(null);
   const [importing, setImporting] = useState(false);
-  const [preparingExcel, setPreparingExcel] = useState(false);
+  const [preparingList, setPreparingList] = useState(false);
   const [excelEmails, setExcelEmails] = useState(null);
 
   const onExcelPicked = async (event) => {
@@ -180,63 +188,78 @@ export function EmailMarketingManagement() {
     }
   };
 
-  const composeToExcel = async (emails) => {
-    setPreparingExcel(true);
+  // a list of addresses becomes one recipient batch, then the compose window opens
+  const composeToList = async (emails, label = "") => {
+    setPreparingList(true);
     try {
       const res = await createManualRecipientBatch({ emails });
       const batchId = res?.doc?.recipientBatchId;
       if (!batchId) throw new Error();
       setExcelEmails(null);
-      setCompose({ batchId, count: res?.doc?.count ?? emails.length, template: null });
+      setCompose({ key: Date.now(), batchId, count: res?.doc?.count ?? emails.length, template: null, emails, label });
     } catch {
       showToast({ message: "Could not prepare the recipients. Please try again.", type: "error" });
     } finally {
-      setPreparingExcel(false);
+      setPreparingList(false);
     }
   };
 
-  const firstSteps = [
+  // a group's subscribed people become one batch, then the compose window opens
+  const composeToGroup = async (name) => {
+    try {
+      const { emails } = await loadAudience({ tag: name }).unwrap();
+      if (!emails?.length) {
+        showToast({ message: `No one in "${name}" is subscribed.`, type: "error" });
+        return;
+      }
+      await composeToList(emails, name);
+    } catch {
+      showToast({ message: "Could not load the group. Please try again.", type: "error" });
+    }
+  };
+
+  const startActions = [
     {
       icon: PenLine,
-      title: "Write an email",
-      description: "Start blank, from a template, or let AI draft it.",
+      title: "Anyone",
+      description: "Type the addresses yourself",
       onClick: () => openCompose(),
       primary: true,
     },
     {
+      icon: FolderOpen,
+      title: "A group",
+      description: "Past guests, corporate…",
+      onClick: () => setView("groups"),
+    },
+    {
       icon: Users,
-      title: "Send to your leads",
-      description: "Pick leads by source, status or date.",
-      onClick: () => setView("recipients"),
+      title: "Your leads",
+      description: "By source, status or date",
+      onClick: () => setView("leads"),
     },
     {
       icon: FileSpreadsheet,
-      title: "Import a list",
-      description: "Upload an Excel or CSV file of email addresses.",
+      title: "A file",
+      description: "Excel or CSV of emails",
       onClick: () => excelInputRef.current?.click(),
+      loading: importing,
     },
   ];
 
   const tabs = [
-    { value: "campaigns", label: "Campaigns", count: campaignTotal },
-    { value: "recipients", label: "Recipients" },
+    { value: "sent", label: "Sent emails", count: sentCount },
+    { value: "groups", label: "Groups" },
+    { value: "leads", label: "Leads" },
     { value: "templates", label: "Templates" },
   ];
 
   return (
     <PageShell
       title="Email marketing"
-      description="Send offers and newsletters to your leads, then see who opened and clicked."
+      description="Send offers and news to your guests, then see who opened and clicked."
       actions={
         <>
-          <Button
-            variant="secondary"
-            icon={RefreshCw}
-            loading={refreshing}
-            onClick={() => loadCampaigns({ quiet: true })}
-          >
-            Refresh
-          </Button>
           <input
             ref={excelInputRef}
             type="file"
@@ -244,88 +267,80 @@ export function EmailMarketingManagement() {
             onChange={onExcelPicked}
             className="hidden"
           />
-          <Button
-            variant="secondary"
-            icon={FileSpreadsheet}
-            onClick={() => excelInputRef.current?.click()}
-            loading={importing}
-          >
-            Import list
-          </Button>
           <Button icon={Plus} onClick={() => openCompose()}>
             New email
           </Button>
         </>
       }
     >
-      {!failed && (loading || campaigns.length > 0) && (
-        <EmailCampaignSummary
-          campaigns={campaigns}
-          loading={loading}
-          onOpen={(campaign) => {
-            setView("campaigns");
-            setOpenCampaignId(campaign._id);
-          }}
-        />
-      )}
+      <StartRow actions={startActions} />
 
       <div className="hide-scrollbar -mx-1 overflow-x-auto px-1">
         <Tabs tabs={tabs} value={view} onChange={setView} className="w-max" />
       </div>
 
-      {view === "campaigns" &&
-        (failed ? (
-          <ErrorState message="Could not load your campaigns." onRetry={() => loadCampaigns()} />
-        ) : !loading && campaigns.length === 0 ? (
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-app-border! bg-app-surface p-5 sm:p-6">
-              <h2 className="text-base font-semibold text-app-text">Send your first email campaign</h2>
-              <p className="mt-1 max-w-xl text-sm text-app-text-muted">
-                Bring past guests back with an offer, share a festive package, or say thank you. You&apos;ll see
-                who opened and clicked.
+      {/* kept mounted, so its numbers and list stay loaded while other tabs are open */}
+      <div hidden={view !== "sent"}>
+        <SentEmailsPanel
+          reloadSignal={reloadSent}
+          openId={openCampaignId}
+          onOpenChange={setOpenCampaignId}
+          onCount={setSentCount}
+          empty={
+            <div className="flex flex-col items-center rounded-2xl border border-dashed border-app-border! bg-app-surface px-6 py-12 text-center">
+              <span className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <MailPlus className="size-6" />
+              </span>
+              <h2 className="mt-4 text-base font-semibold text-app-text">No emails sent yet</h2>
+              <p className="mt-1 max-w-md text-sm text-app-text-muted">
+                Bring past guests back with an offer, share a festive package, or say thank you. Pick who to send
+                to above, and you&apos;ll see here who opened and clicked.
               </p>
+              <Button icon={Plus} className="mt-5" onClick={() => openCompose()}>
+                Write your first email
+              </Button>
             </div>
-            <QuickActions actions={firstSteps} />
-          </div>
-        ) : (
-          <CampaignsList
-            campaigns={campaigns}
-            loading={loading}
-            selectedId={openCampaignId}
-            onSelect={setOpenCampaignId}
-          />
-        ))}
+          }
+        />
+      </div>
 
-      {view === "recipients" && (
+      {view === "leads" && (
         <RecipientsPanel
           clearSignal={clearSignal}
-          onCompose={({ batchId, count }) => setCompose({ batchId, count, template: null })}
+          onCompose={({ batchId, count }) => setCompose({ batchId, count, template: null, label: "selected leads" })}
         />
+      )}
+
+      {view === "groups" && (
+        <GroupsPanel kind="email" onSend={composeToGroup} onImport={(name) => setGroupImport(name)} />
       )}
 
       {view === "templates" && <TemplatesList onUseTemplate={(template) => openCompose(template)} />}
       <div className="h-14" aria-hidden="true" />
 
+      <ImportDialog open={groupImport !== null} group={groupImport || ""} onClose={() => setGroupImport(null)} />
+
       <ExcelRecipientsDialog
         emails={excelEmails}
         onClose={() => setExcelEmails(null)}
-        onContinue={composeToExcel}
-        preparing={preparingExcel}
+        onContinue={(emails) => composeToList(emails, "imported list")}
+        preparing={preparingList}
       />
 
       {compose && (
         <ComposeEmail
-          key={compose.batchId || compose.template?._id || "new"}
+          key={compose.key || compose.batchId || compose.template?._id || "new"}
           onClose={() => setCompose(null)}
           isBroadcast={Boolean(compose.batchId)}
           recipientCount={compose.count}
           initialTemplate={compose.template}
           onSend={handleSend}
           isSubmitting={sending}
-          // the marketing email (Settings → Profile) when set, else the hotel email
-          defaultFrom={hotel?.Profile?.marketingEmail || hotel?.Profile?.hotelEmail}
+          defaultFrom={defaultFrom}
+          onReviewRecipients={review.canReview ? review.openReview : undefined}
         />
       )}
+      {review.dialog}
     </PageShell>
   );
 }
