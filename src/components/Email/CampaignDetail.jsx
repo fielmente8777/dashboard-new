@@ -11,6 +11,7 @@ import {
   getEmailCampaign,
 } from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
+import CampaignDeliveryBar from "./CampaignDeliveryBar";
 import Button from "../ui/Button";
 import DataTable from "../ui/DataTable";
 import Dialog from "../ui/Dialog";
@@ -82,6 +83,11 @@ export default function CampaignDetail({ campaignId, onClose }) {
   useEffect(() => {
     setPage(1);
   }, [filter]);
+
+  const reloadAll = useCallback(() => {
+    loadCampaign();
+    loadRecipients();
+  }, [loadCampaign, loadRecipients]);
 
   const stats = campaign?.stats || {};
 
@@ -169,6 +175,8 @@ export default function CampaignDetail({ campaignId, onClose }) {
             </div>
           ))}
         </div>
+
+        <CampaignDeliveryBar campaignId={campaignId} onChanged={reloadAll} />
 
         <Tabs tabs={FILTERS} value={filter} onChange={setFilter} />
 

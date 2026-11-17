@@ -1,12 +1,18 @@
 import JoditEditor from "jodit-react";
 import {
   CheckCircle2,
+  Expand,
+  FileCode2,
   FileText,
+  FlaskConical,
   LayoutTemplate,
+  Loader2,
   Maximize2,
   Minimize2,
   Minus,
+  Monitor,
   Paperclip,
+  Smartphone,
   Sparkles,
   Trash2,
   TriangleAlert,
@@ -19,9 +25,12 @@ import { useSelector } from "react-redux";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import AITemplateModal from "../../pages/EmailMarketing/components/AITemplateModal";
-import EmailPreviewFrame from "../../pages/EmailMarketing/components/EmailPreviewFrame";
-import { EMAIL_REGEX, parseEmails } from "../../pages/EmailMarketing/emailUtils";
-import { getSenderMailbox } from "../../redux/api/emailMarketingApi";
+import { FittedEmailPreview } from "../../pages/EmailMarketing/components/EmailPreviewFrame";
+import Dialog from "../ui/Dialog";
+import { EMAIL_REGEX, parseEmails, withPreviewText } from "../../pages/EmailMarketing/emailUtils";
+import { getEmailFooter, getSenderMailbox, renderEmail, sendTestEmail } from "../../redux/api/emailMarketingApi";
+import FooterEditorDialog from "./FooterEditorDialog";
+import { htmlTemplateImporter } from "./htmlTemplateImporter";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
 import SenderMailboxDialog from "./SenderMailboxDialog";
@@ -131,6 +140,33 @@ function RecipientInput({ chips, onChipsChange, draft, onDraftChange, disabled, 
   );
 }
 
+// Desktop / Mobile switch for the template preview
+function DeviceToggle({ value, onChange }) {
+  const options = [
+    { id: "desktop", label: "Desktop", icon: Monitor },
+    { id: "ios", label: "iPhone", icon: Smartphone },
+    { id: "android", label: "Android", icon: Smartphone },
+  ];
+  return (
+    <div className="inline-flex shrink-0 rounded-full bg-app-surface-secondary p-0.5 ring-1 ring-app-border">
+      {options.map(({ id, label, icon: Icon }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onChange(id)}
+          aria-pressed={value === id}
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
+            value === id ? "bg-app-surface text-app-text shadow-sm" : "text-app-text-muted hover:text-app-text"
+          }`}
+        >
+          <Icon className="size-3.5" />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const Row = ({ label, children }) => (
   <div className="flex min-h-10 items-center gap-2 border-b border-app-border! py-1.5">
     {label && <span className="shrink-0 text-sm text-app-text-muted">{label}</span>}
@@ -178,6 +214,22 @@ function ComposeEmail({
   const [mailbox, setMailbox] = useState(null);
   const [presets, setPresets] = useState([]);
   const [isMailboxOpen, setIsMailboxOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  // template preview: device, how it measured (fixed-width designs), the big view
+  const [device, setDevice] = useState("desktop");
+  const [fit, setFit] = useState(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  // Mailchimp-style: the inbox preview text, and the property's footer
+  const [previewText, setPreviewText] = useState(initialTemplate?.previewText || "");
+  const [footerName, setFooterName] = useState(null); // null = default footer
+  const [isFooterOpen, setIsFooterOpen] = useState(false);
+  // the exact email guests get (gian: device-optimized + footer), for the preview
+  const [finalHtml, setFinalHtml] = useState("");
+  const [renderVersion, setRenderVersion] = useState(0);
+  // "Send test": the email as it is now, to a few addresses, saved nowhere
+  const [isTestOpen, setIsTestOpen] = useState(false);
+  const [testTo, setTestTo] = useState("");
+  const [testing, setTesting] = useState(false);
   const hotelName = useSelector((state) => state.userProfile.user?.Profile?.hotelName) || "Your hotel";
 
   useEffect(() => {
@@ -193,6 +245,34 @@ function ComposeEmail({
       alive = false;
     };
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    getEmailFooter()
+      .then((result) => alive && setFooterName(result?.footer ? result.footer.companyName || "Custom footer" : null))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // the preview shows what gian will send; the raw template until it answers (or on an older server)
+  useEffect(() => {
+    if (!template?.html) {
+      setFinalHtml("");
+      return undefined;
+    }
+    let alive = true;
+    const timer = setTimeout(() => {
+      renderEmail({ html: template.html, previewText })
+        .then((result) => alive && setFinalHtml(result?.html || ""))
+        .catch(() => alive && setFinalHtml(""));
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [template, previewText, renderVersion]);
 
   // a connected mailbox is the sender
   useEffect(() => {
@@ -211,10 +291,10 @@ function ComposeEmail({
   // Esc leaves full screen, as in Gmail
   useEffect(() => {
     if (!full) return undefined;
-    const onKey = (e) => e.key === "Escape" && !isTemplateOpen && !isMailboxOpen && setView("normal");
+    const onKey = (e) => e.key === "Escape" && !isTemplateOpen && !isMailboxOpen && !isTestOpen && !isPreviewOpen && setView("normal");
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [full, isTemplateOpen, isMailboxOpen]);
+  }, [full, isTemplateOpen, isMailboxOpen, isTestOpen, isPreviewOpen]);
 
   useEffect(() => {
     if (defaultFrom) setFrom((current) => current || defaultFrom);
@@ -277,6 +357,83 @@ function ComposeEmail({
 
   const fail = (message) => showToast({ message, type: "error", duration: 5000 });
 
+  // a ready-made .html file from the user's computer becomes the template,
+  // shown and sent exactly as designed (Change → can save it to Saved templates).
+  // Pictures embedded in the file are uploaded and linked (htmlTemplateImporter).
+  const importHtmlFile = async (file) => {
+    if (!file || importing) return;
+    setImporting(true);
+    try {
+      const imported = await htmlTemplateImporter.read(file);
+      applyTemplate({ name: imported.name, subject: imported.subject, html: imported.html });
+      const notes = [];
+      if (imported.hostedImages) notes.push(`${imported.hostedImages} picture(s) uploaded and linked`);
+      if (imported.localImages.length) {
+        notes.push(`${imported.localImages.length} picture(s) point to files on your computer and won't show, e.g. ${imported.localImages[0]}`);
+      }
+      if (imported.tooLongForGmail) notes.push(`it is ${imported.sizeKb} KB, so Gmail may cut it short`);
+      showToast({
+        message: `Template “${file.name}” added${notes.length ? `: ${notes.join("; ")}.` : "."}`,
+        type: imported.localImages.length || imported.tooLongForGmail ? "warning" : "success",
+        duration: notes.length ? 8000 : 4000,
+      });
+    } catch (error) {
+      fail(error?.message || "Couldn't read that file.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  // the current email, as Send would send it; null (with a message shown) when not ready
+  const currentContent = () => {
+    if (!subject.trim()) {
+      fail("Add a subject.");
+      return null;
+    }
+    const html = template ? template.html : bodyRef.current;
+    const scratch = document.createElement("div");
+    scratch.innerHTML = html || "";
+    const text = (scratch.textContent || "").trim();
+    if (EMPTY_BODIES.has(String(html || "").trim()) || (!text && !/<img/i.test(html))) {
+      fail("Write your message first.");
+      return null;
+    }
+    return { html: withPreviewText(html, previewText), text };
+  };
+
+  const openTest = () => {
+    setTestTo((current) => current || mailbox?.email || from.trim());
+    setIsTestOpen(true);
+  };
+
+  const sendTest = async () => {
+    if (testing) return;
+    const to = parseEmails(testTo);
+    if (!to.length) return fail("Enter an address to send the test to.");
+    const bad = to.find((email) => !EMAIL_REGEX.test(email));
+    if (bad) return fail(`“${bad}” doesn't look like an email address.`);
+    if (to.length > 5) return fail("Send a test to at most 5 addresses.");
+    const content = currentContent();
+    if (!content) return;
+    setTesting(true);
+    try {
+      await sendTestEmail({
+        to,
+        subject: subject.trim(),
+        html: content.html,
+        text: content.text,
+        fromName: hotelName,
+        replyTo: from.trim().toLowerCase(),
+      });
+      showToast({ message: `Test sent to ${to.join(", ")}. Check the inbox (and spam).`, type: "success" });
+      setIsTestOpen(false);
+    } catch (error) {
+      fail(error?.message || "The test email could not be sent.");
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const send = async () => {
     if (isSubmitting) return;
     if (mailbox?.status === "error") {
@@ -289,16 +446,10 @@ function ComposeEmail({
     if (invalidTyped.length) {
       return fail(`Check these addresses: ${invalidTyped.slice(0, 3).join(", ")}${invalidTyped.length > 3 ? "…" : ""}`);
     }
-    if (!subject.trim()) return fail("Add a subject.");
-
     // a template is optional: a plain written message is sent as it is
-    const html = template ? template.html : bodyRef.current;
-    const scratch = document.createElement("div");
-    scratch.innerHTML = html || "";
-    const text = (scratch.textContent || "").trim();
-    if (EMPTY_BODIES.has(String(html || "").trim()) || (!text && !/<img/i.test(html))) {
-      return fail("Write your message first.");
-    }
+    const content = currentContent();
+    if (!content) return;
+    const { html, text } = content;
 
     await onSend({
       from: fromEmail,
@@ -465,6 +616,34 @@ function ComposeEmail({
                     disabled={isSubmitting}
                     className={fieldClass}
                   />
+                  {subject.length > 60 && (
+                    <span className="shrink-0 text-[11px] text-amber-600" title="Phones cut subjects at about 40–60 characters">
+                      {subject.length} chars
+                    </span>
+                  )}
+                </Row>
+
+                <Row>
+                  <input
+                    value={previewText}
+                    onChange={(e) => setPreviewText(e.target.value.slice(0, 150))}
+                    placeholder="Preview text: the line shown after the subject in the inbox"
+                    disabled={isSubmitting}
+                    className={fieldClass}
+                  />
+                </Row>
+
+                <Row label="Footer">
+                  <span className="min-w-0 flex-1 truncate text-sm text-app-text-muted">
+                    {footerName ? `${footerName} · address, contacts & unsubscribe` : "Default (hotel name + unsubscribe)"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsFooterOpen(true)}
+                    className="shrink-0 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+                  >
+                    Edit footer
+                  </button>
                 </Row>
               </div>
 
@@ -488,7 +667,27 @@ function ComposeEmail({
                       </Button>
                       <IconButton icon={X} label="Remove template" size="sm" onClick={() => setTemplate(null)} disabled={isSubmitting} />
                     </div>
-                    <EmailPreviewFrame html={template.html} className={full ? "h-[60vh]" : "h-80"} />
+                    <div className="flex items-center gap-2 border-b border-app-border! px-3 py-1.5">
+                      <DeviceToggle value={device} onChange={setDevice} />
+                      {fit && !fit.mobileFriendly && (
+                        <span
+                          className="inline-flex min-w-0 items-center gap-1 truncate text-[11px] text-amber-700 dark:text-amber-400"
+                          title="Even after optimizing, part of this design is wider than a phone (often side-by-side columns or a wide picture). Phones shrink it to fit, so text gets small."
+                        >
+                          <TriangleAlert className="size-3 shrink-0" />
+                          <span className="truncate">Still {fit.contentWidth}px wide on phones: text may look small</span>
+                        </span>
+                      )}
+                      <Button size="sm" variant="ghost" icon={Expand} onClick={() => setIsPreviewOpen(true)} className="ml-auto">
+                        Preview
+                      </Button>
+                    </div>
+                    <FittedEmailPreview
+                      html={finalHtml || template.html}
+                      device={device}
+                      onMeasure={setFit}
+                      className={full ? "h-[58vh]" : "h-80"}
+                    />
                   </div>
                 ) : (
                   <div className={`gm-editor ${showFormatting ? "" : "gm-no-toolbar"} ${full ? "gm-full" : ""}`}>
@@ -534,6 +733,41 @@ function ComposeEmail({
               )}
             </div>
 
+            {isTestOpen && (
+              <div className="shrink-0 border-t border-app-border! bg-app-surface-secondary px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <FlaskConical className="size-4 shrink-0 text-blue-500" />
+                  <input
+                    type="text"
+                    value={testTo}
+                    autoFocus
+                    onChange={(e) => setTestTo(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        sendTest();
+                      } else if (e.key === "Escape") {
+                        e.stopPropagation();
+                        setIsTestOpen(false);
+                      }
+                    }}
+                    placeholder="you@yourhotel.com, colleague@yourhotel.com"
+                    disabled={testing}
+                    className="min-w-0 flex-1 rounded-md border border-app-border! bg-app-surface px-2.5 py-1.5 text-sm text-app-text outline-none placeholder:text-app-text-faint focus:border-blue-500!"
+                  />
+                  <Button size="sm" onClick={sendTest} loading={testing} icon={null}>
+                    Send test
+                  </Button>
+                  <IconButton icon={X} label="Close test" size="sm" onClick={() => setIsTestOpen(false)} disabled={testing} />
+                </div>
+                <p className="mt-1.5 text-[11px] leading-snug text-app-text-faint">
+                  Up to 5 addresses. Sent exactly as guests will get it, with “[Test]” in the subject. It isn't saved as a
+                  campaign. Attachments aren't included.
+                </p>
+              </div>
+            )}
+
             {/* bottom bar: Send, then the tools, Discard on the far right */}
             <div className="flex shrink-0 items-center gap-1 px-4 py-3">
               <Button
@@ -572,6 +806,32 @@ function ComposeEmail({
                 />
               </label>
               <IconButton
+                icon={FlaskConical}
+                label="Send a test email"
+                onClick={() => (isTestOpen ? setIsTestOpen(false) : openTest())}
+                disabled={isSubmitting}
+                className={`rounded-full! ${isTestOpen ? "bg-app-surface-secondary text-app-text" : ""}`}
+              />
+              <label
+                className={`inline-flex h-8 min-w-8 items-center justify-center rounded-full px-1.5 text-app-text-muted transition hover:bg-app-surface-secondary hover:text-app-text ${
+                  importing ? "cursor-wait" : "cursor-pointer"
+                }`}
+                title={importing ? "Uploading the template's pictures…" : "Upload HTML template"}
+                aria-label="Upload HTML template"
+              >
+                {importing ? <Loader2 className="size-4 animate-spin" /> : <FileCode2 className="size-4" />}
+                <input
+                  type="file"
+                  accept=".html,.htm,text/html"
+                  hidden
+                  disabled={isSubmitting || importing}
+                  onChange={(e) => {
+                    importHtmlFile(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <IconButton
                 icon={Sparkles}
                 label={template ? "Change template" : "Use a template"}
                 onClick={() => setIsTemplateOpen(true)}
@@ -589,6 +849,34 @@ function ComposeEmail({
           </>
         )}
       </div>
+
+      <Dialog
+        open={isPreviewOpen && Boolean(template)}
+        onClose={() => setIsPreviewOpen(false)}
+        size="xl"
+        title={subject.trim() || template?.name || "Preview"}
+        description="How guests will see this email."
+      >
+        <div className="mb-3 flex justify-center">
+          <DeviceToggle value={device} onChange={setDevice} />
+        </div>
+        {template && (
+          <FittedEmailPreview
+            html={finalHtml || template.html}
+            device={device}
+            className="h-[72vh] rounded-lg"
+          />
+        )}
+      </Dialog>
+
+      <FooterEditorDialog
+        open={isFooterOpen}
+        onClose={() => setIsFooterOpen(false)}
+        onSaved={(saved) => {
+          setFooterName(saved ? saved.companyName || "Custom footer" : null);
+          setRenderVersion((v) => v + 1); // the preview picks up the new footer
+        }}
+      />
 
       <SenderMailboxDialog
         open={isMailboxOpen}

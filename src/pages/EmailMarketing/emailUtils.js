@@ -54,3 +54,16 @@ export const RECIPIENT_TONE = {
 // share of `part` in `total`, as "12%"
 export const rate = (part = 0, total = 0) =>
   total > 0 ? `${Math.round((part / total) * 100)}%` : "—";
+
+// The inbox "preview text" shown next to the subject: a hidden first line in the
+// email (preheader). Same markup as gian's emailHtmlOptimizer, which then skips it.
+export const withPreviewText = (html = "", text = "") => {
+  const clean = String(text).trim();
+  if (!clean) return html;
+  const escaped = clean.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const block =
+    `<div data-eaz-preheader style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:transparent">` +
+    `${escaped}${"&#847;&zwnj;&nbsp;".repeat(80)}</div>`;
+  const stripped = String(html).replace(/<div data-eaz-preheader[^>]*>[\s\S]*?<\/div>/i, "");
+  return /<body[^>]*>/i.test(stripped) ? stripped.replace(/<body([^>]*)>/i, `<body$1>${block}`) : `${block}${stripped}`;
+};
