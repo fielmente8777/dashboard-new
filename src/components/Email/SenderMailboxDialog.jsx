@@ -1,55 +1,65 @@
-import { CheckCircle2, ChevronDown, Mail, Send, ShieldCheck, TriangleAlert, Unplug } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ChevronDown, Mail, Send, ShieldCheck, TriangleAlert, Unplug } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
-import { deleteSenderMailbox, saveSenderMailbox, testSenderMailbox } from "../../redux/api/emailMarketingApi";
+import {
+  deleteSenderMailbox,
+  detectSenderMailbox,
+  saveSenderMailbox,
+  testSenderMailbox,
+} from "../../redux/api/emailMarketingApi";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
 import { Field, Input } from "../ui/Field";
 import Switch from "../ui/Switch";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // which preset a saved mailbox matches, by its SMTP host
 const presetFor = (presets, host) =>
-  presets.find((p) => p.id !== "other" && p.smtp.host === host)?.id || (host ? "other" : presets[0]?.id || "other");
+  presets.find((p) => p.id !== "other" && p.smtp.host === host)?.id || (host ? "other" : "other");
 
-// guess the provider from the address while connecting for the first time
-const presetFromEmail = (email) => {
-  const domain = email.split("@")[1]?.toLowerCase() || "";
-  if (/^(gmail|googlemail)\.com$/.test(domain)) return "gmail";
-  if (/^(outlook|hotmail|live|msn)\.[a-z.]+$/.test(domain)) return "outlook";
-  if (/^zoho(mail)?\.[a-z.]+$/.test(domain)) return "zoho";
-  return null;
-};
+const serversOf = (source) => ({
+  smtpHost: source?.smtp?.host || "",
+  smtpPort: String(source?.smtp?.port || 465),
+  imapHost: source?.imap?.host || "",
+  imapPort: String(source?.imap?.port || 993),
+});
 
-const emptyForm = (preset) => ({
+const emptyForm = () => ({
   email: "",
   password: "",
   displayName: "",
   username: "",
-  smtpHost: preset?.smtp.host || "",
-  smtpPort: String(preset?.smtp.port || 465),
-  imapHost: preset?.imap.host || "",
-  imapPort: String(preset?.imap.port || 993),
+  ...serversOf(null),
   saveToSent: true,
 });
 
-// Connects the property's own mailbox (SMTP + IMAP) so campaigns and
-// newsletters go out from the hotel's address, and a copy lands in its Sent
-// folder. gian checks the login before saving (see gian sendCampaignMail.ts).
+// Connects the property's own mailbox so campaigns and newsletters go out
+// from the hotel's address, and a copy lands in its Sent folder.
+//
+// Two steps: the hotel types its email, gian finds where it is hosted (from
+// the domain's mail records, e.g. villaantilla.com → One.com) and fills in the
+// servers; then only the password is left. gian checks the login before saving.
 //
 // mailbox: the saved one or null; presets: from gian; onChange(mailbox | null)
 function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange }) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const [presetId, setPresetId] = useState("gmail");
-  const [form, setForm] = useState(emptyForm(null));
+  const [step, setStep] = useState("email"); // email | details
+  const [presetId, setPresetId] = useState("other");
+  const [detected, setDetected] = useState(null); // { label, known, passwordHint, autoSavesSent }
+  const [form, setForm] = useState(emptyForm());
   const [showServers, setShowServers] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(!mailbox);
 
   const preset = useMemo(() => presets.find((p) => p.id === presetId), [presets, presetId]);
+  // the usual choices, plus the one found for this address when it isn't one of them
+  const choices = presets.filter((p) => p.featured !== false || p.id === presetId);
 
   // fill the form each time it opens: the saved mailbox, or a blank one
   useEffect(() => {
@@ -59,23 +69,23 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
     if (mailbox) {
       const id = presetFor(presets, mailbox.smtp?.host);
       setPresetId(id);
+      setDetected(null);
       setShowServers(id === "other");
+      setStep("details");
       setForm({
         email: mailbox.email,
         password: "",
         displayName: mailbox.displayName || "",
         username: mailbox.username === mailbox.email ? "" : mailbox.username,
-        smtpHost: mailbox.smtp?.host || "",
-        smtpPort: String(mailbox.smtp?.port || 465),
-        imapHost: mailbox.imap?.host || "",
-        imapPort: String(mailbox.imap?.port || 993),
+        ...serversOf(mailbox),
         saveToSent: mailbox.saveToSent,
       });
     } else {
-      const first = presets[0];
-      setPresetId(first?.id || "other");
-      setShowServers(first?.id === "other");
-      setForm(emptyForm(first));
+      setPresetId("other");
+      setDetected(null);
+      setShowServers(false);
+      setStep("email");
+      setForm(emptyForm());
     }
   }, [open, mailbox, presets]);
 
@@ -84,23 +94,54 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
   const pickPreset = (id) => {
     const next = presets.find((p) => p.id === id);
     setPresetId(id);
-    setShowServers(id === "other");
-    setForm((f) => ({
-      ...f,
-      smtpHost: next?.smtp.host ?? "",
-      smtpPort: String(next?.smtp.port ?? 465),
-      imapHost: next?.imap.host ?? "",
-      imapPort: String(next?.imap.port ?? 993),
-    }));
+    setDetected(null);
+    setShowServers(true);
+    setForm((f) => ({ ...f, ...serversOf(next) }));
+  };
+
+  // step 1 → 2: find the provider from the address and fill in its servers
+  const findProvider = async () => {
+    setError("");
+    const email = form.email.trim().toLowerCase();
+    if (!EMAIL_REGEX.test(email)) return setError("Enter the email address you want to send from.");
+    setDetecting(true);
+    try {
+      const result = await detectSenderMailbox(email);
+      const found = result?.detected;
+      if (found) {
+        setPresetId(found.presetId);
+        setDetected(found);
+        setForm((f) => ({ ...f, email, ...serversOf(found) }));
+        // not recognised: open the server settings so they can be checked
+        setShowServers(!found.known);
+      } else {
+        setPresetId("other");
+        setDetected(null);
+        setShowServers(true);
+      }
+    } catch {
+      // detection is a convenience: carry on with the settings open
+      setPresetId("other");
+      setDetected(null);
+      setShowServers(true);
+    } finally {
+      setDetecting(false);
+      setStep("details");
+    }
   };
 
   // the provider files sent mail in Sent by itself: no copy of ours needed
-  const providerSavesSent = Boolean(preset?.autoSavesSent);
+  const providerSavesSent = Boolean(detected ? detected.autoSavesSent : preset?.autoSavesSent);
+  const passwordHint = detected?.passwordHint || preset?.passwordHint;
+  const providerName = detected?.known ? detected.label : presetId !== "other" ? preset?.label : null;
 
   const save = async () => {
     setError("");
-    if (!form.email.trim()) return setError("Enter the email address to send from.");
-    if (!mailbox && !form.password) return setError("Enter the password (or App Password) of this mailbox.");
+    if (!mailbox && !form.password) return setError("Enter the password of this mailbox.");
+    if (!form.smtpHost.trim()) {
+      setShowServers(true);
+      return setError("Enter the sending (SMTP) server.");
+    }
     setSaving(true);
     try {
       const result = await saveSenderMailbox({
@@ -117,6 +158,8 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
       showToast({ message: `Connected. Emails now go out from ${result?.mailbox?.email}.`, type: "success" });
     } catch (err) {
       setError(err.message);
+      // a server problem is fixed in the server settings
+      if (/server|port|reach|SMTP|IMAP/i.test(err.message)) setShowServers(true);
     } finally {
       setSaving(false);
     }
@@ -149,6 +192,13 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
       showToast({ message: err.message, type: "error" });
     }
   };
+
+  const errorBox = error && (
+    <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">
+      <TriangleAlert className="mt-px size-4 shrink-0" />
+      {error}
+    </p>
+  );
 
   // ---- a saved mailbox, not being edited ----
   if (open && mailbox && !editing) {
@@ -192,17 +242,63 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
     );
   }
 
-  // ---- connect / edit form ----
+  // ---- step 1: just the email ----
+  if (step === "email") {
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        title="Send from your own email"
+        description="Guests see your address instead of support@eazotel.com, and every email shows in your own Sent folder."
+        footer={
+          <>
+            <Button variant="secondary" onClick={onClose} disabled={detecting}>
+              Cancel
+            </Button>
+            <Button onClick={findProvider} loading={detecting}>
+              Continue <ArrowRight className="size-4" />
+            </Button>
+          </>
+        }
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            findProvider();
+          }}
+        >
+          <Field label="Your email address" hint="We'll find your email provider and fill in its settings for you.">
+            <Input
+              type="email"
+              autoFocus
+              value={form.email}
+              placeholder="reservations@yourhotel.com"
+              onChange={set("email")}
+            />
+          </Field>
+          {errorBox}
+        </form>
+      </Dialog>
+    );
+  }
+
+  // ---- step 2: password (servers are filled in) ----
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title="Send from your own email"
-      description="Guests see your address instead of support@eazotel.com, and every email shows in your own Sent folder."
+      description={mailbox ? "Update the password or settings of your mailbox." : "Almost done: enter the password of this mailbox."}
       footer={
         <>
-          <Button variant="secondary" onClick={mailbox ? () => setEditing(false) : onClose} disabled={saving}>
-            Cancel
+          <Button
+            variant="secondary"
+            icon={mailbox ? undefined : ArrowLeft}
+            onClick={mailbox ? () => setEditing(false) : () => setStep("email")}
+            disabled={saving}
+          >
+            {mailbox ? "Cancel" : "Back"}
           </Button>
           <Button icon={ShieldCheck} onClick={save} loading={saving}>
             {saving ? "Checking login…" : mailbox ? "Save" : "Connect"}
@@ -210,42 +306,32 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
         </>
       }
     >
-      <div className="space-y-4">
-        <div>
-          <span className="mb-1.5 block text-xs font-medium text-app-text-muted">Your email is with</span>
-          <div className="flex flex-wrap gap-1.5">
-            {presets.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => pickPreset(p.id)}
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                  presetId === p.id
-                    ? "border-blue-500! bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                    : "border-app-border! text-app-text-muted hover:text-app-text"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+      <form
+        className="space-y-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save();
+        }}
+      >
+        <div className="flex items-center gap-3 rounded-lg bg-app-surface-secondary p-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <Mail className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1 text-sm">
+            <p className="truncate font-medium">{form.email}</p>
+            <p className={`text-xs ${providerName ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
+              {providerName ? `Email by ${providerName}: settings filled in` : "Provider not recognised: check the server settings below"}
+            </p>
           </div>
+          {!mailbox && (
+            <button type="button" onClick={() => setStep("email")} className="shrink-0 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">
+              Change
+            </button>
+          )}
         </div>
 
-        <Field label="Email address">
-          <Input
-            type="email"
-            value={form.email}
-            placeholder="reservations@yourhotel.com"
-            onChange={set("email")}
-            onBlur={() => {
-              const guess = !mailbox && presetFromEmail(form.email);
-              if (guess && guess !== presetId) pickPreset(guess);
-            }}
-          />
-        </Field>
-
-        <Field label={mailbox ? "Password (leave empty to keep the saved one)" : "Password"} hint={preset?.passwordHint}>
-          <Input type="password" autoComplete="new-password" value={form.password} onChange={set("password")} />
+        <Field label={mailbox ? "Password (leave empty to keep the saved one)" : "Password"} hint={passwordHint}>
+          <Input type="password" autoFocus={!mailbox} autoComplete="new-password" value={form.password} onChange={set("password")} />
         </Field>
 
         <Field label="Name guests see (optional)" hint="Empty = your hotel name.">
@@ -263,7 +349,7 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
         ) : (
           <p className="flex items-center gap-2 rounded-lg bg-app-surface-secondary p-3 text-xs text-app-text-muted">
             <Mail className="size-4 shrink-0 text-blue-500" />
-            {preset?.label.split(" /")[0]} puts every sent email in your Sent folder by itself.
+            {providerName?.split(" /")[0] || "Your provider"} puts every sent email in your Sent folder by itself.
           </p>
         )}
 
@@ -277,37 +363,55 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
             <ChevronDown className={`size-3.5 transition ${showServers ? "rotate-180" : ""}`} />
           </button>
           {showServers && (
-            <div className="mt-3 grid grid-cols-[1fr_6rem] gap-3">
-              <Field label="SMTP server (sending)">
-                <Input value={form.smtpHost} placeholder="mail.yourhotel.com" onChange={set("smtpHost")} />
-              </Field>
-              <Field label="Port" hint="465 or 587">
-                <Input inputMode="numeric" value={form.smtpPort} onChange={set("smtpPort")} />
-              </Field>
-              {!providerSavesSent && form.saveToSent && (
-                <>
-                  <Field label="IMAP server (Sent copy)">
-                    <Input value={form.imapHost} placeholder="mail.yourhotel.com" onChange={set("imapHost")} />
-                  </Field>
-                  <Field label="Port" hint="Usually 993">
-                    <Input inputMode="numeric" value={form.imapPort} onChange={set("imapPort")} />
-                  </Field>
-                </>
-              )}
-              <Field label="Login name (optional)" hint="Only if it isn't the email address." className="col-span-2">
-                <Input value={form.username} onChange={set("username")} />
-              </Field>
+            <div className="mt-3 space-y-3">
+              <div>
+                <span className="mb-1.5 block text-xs font-medium text-app-text-muted">Your email is with</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {choices.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => pickPreset(p.id)}
+                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                        presetId === p.id
+                          ? "border-blue-500! bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          : "border-app-border! text-app-text-muted hover:text-app-text"
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-[1fr_6rem] gap-3">
+                <Field label="SMTP server (sending)">
+                  <Input value={form.smtpHost} placeholder="mail.yourhotel.com" onChange={set("smtpHost")} />
+                </Field>
+                <Field label="Port" hint="465 or 587">
+                  <Input inputMode="numeric" value={form.smtpPort} onChange={set("smtpPort")} />
+                </Field>
+                {!providerSavesSent && form.saveToSent && (
+                  <>
+                    <Field label="IMAP server (Sent copy)">
+                      <Input value={form.imapHost} placeholder="mail.yourhotel.com" onChange={set("imapHost")} />
+                    </Field>
+                    <Field label="Port" hint="Usually 993">
+                      <Input inputMode="numeric" value={form.imapPort} onChange={set("imapPort")} />
+                    </Field>
+                  </>
+                )}
+                <Field label="Login name (optional)" hint="Only if it isn't the email address." className="col-span-2">
+                  <Input value={form.username} onChange={set("username")} />
+                </Field>
+              </div>
             </div>
           )}
         </div>
 
-        {error && (
-          <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">
-            <TriangleAlert className="mt-px size-4 shrink-0" />
-            {error}
-          </p>
-        )}
-      </div>
+        {errorBox}
+        {/* lets Enter in the password field connect */}
+        <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
+      </form>
     </Dialog>
   );
 }

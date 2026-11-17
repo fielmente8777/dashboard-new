@@ -84,6 +84,12 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // { hid, email } -> { result: { detected: { presetId, label, smtp, imap, autoSavesSent, passwordHint, known } } }
+    detectSenderMailbox: build.query({
+      query: ({ hid, email }) => ({ url: `${BASE}/sender-mailbox/detect`, params: { hid, email } }),
+      extraOptions: NODE,
+    }),
+
     // { hid, body: { email, password, displayName, username, smtp, imap, saveToSent } }
     // gian logs in first; 400 with a readable message when the details don't work
     saveSenderMailbox: build.mutation({
@@ -246,6 +252,7 @@ export const deleteEmailTemplate = (id) => strict(e.deleteEmailTemplate, { hid: 
 
 // Sender mailbox: resolve with `result`, throw with the server's message.
 export const getSenderMailbox = () => strict(e.getSenderMailbox, { hid: selectedHid() });
+export const detectSenderMailbox = (email) => strict(e.detectSenderMailbox, { hid: selectedHid(), email });
 export const saveSenderMailbox = (body) => strict(e.saveSenderMailbox, { hid: selectedHid(), body });
 export const deleteSenderMailbox = () => strict(e.deleteSenderMailbox, { hid: selectedHid() });
 export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: selectedHid(), to });
