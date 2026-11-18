@@ -1,4 +1,6 @@
 import * as XLSX from "xlsx";
+import { normalizeEmail } from "../EmailMarketing/emailUtils";
+import { readSheetFile } from "../EmailMarketing/readSheetFile";
 
 export const SOURCE_LABELS = {
   website: "Website",
@@ -76,7 +78,7 @@ const NAME_HEADERS = new Set([
  * Emails are checked again on the server; this only counts what will be sent.
  */
 export async function readSubscriberFile(file) {
-  const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+  const workbook = await readSheetFile(file);
   const rows = [];
   const columns = new Set();
   for (const sheetName of workbook.SheetNames) {
@@ -92,7 +94,7 @@ export async function readSubscriberFile(file) {
         .filter(({ label, i }) => label && i !== emailCol && i !== nameCol);
       extra.forEach(({ label }) => columns.add(label));
       for (const row of cells.slice(1)) {
-        const email = String(row[emailCol] ?? "").trim();
+        const email = normalizeEmail(row[emailCol]);
         if (!email) continue;
         const fields = {};
         for (const { label, i } of extra) {
@@ -104,7 +106,7 @@ export async function readSubscriberFile(file) {
     } else {
       for (const row of cells) {
         for (const cell of row) {
-          const email = String(cell ?? "").trim();
+          const email = normalizeEmail(cell);
           if (EMAIL_REGEX.test(email.toLowerCase())) rows.push({ email, name: null });
         }
       }

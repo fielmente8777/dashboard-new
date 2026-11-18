@@ -2,6 +2,8 @@ import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   CAMPAIGN_TONE,
+  deliveredCount,
+  describeSendProblem,
   formatDate,
   rate,
   RECIPIENT_TONE,
@@ -89,7 +91,7 @@ export default function CampaignDetail({ campaignId, onClose }) {
     loadRecipients();
   }, [loadCampaign, loadRecipients]);
 
-  const stats = campaign?.stats || {};
+  const stats = { ...campaign?.stats, delivered: deliveredCount(campaign?.stats) };
 
   const columns = [
     {
@@ -120,14 +122,17 @@ export default function CampaignDetail({ campaignId, onClose }) {
     {
       key: "error",
       header: "Problem",
-      render: (r) =>
-        r.error ? (
-          <span className="block max-w-56 truncate text-red-500" title={r.error}>
-            {r.error}
-          </span>
-        ) : (
-          "—"
-        ),
+      // plain words; the server's text stays in the tooltip
+      render: (r) => {
+        if (!r.error) return "—";
+        const problem = describeSendProblem(r.error);
+        return (
+          <div className="min-w-64 max-w-sm whitespace-normal py-1.5 leading-normal" title={r.error}>
+            <p className="text-sm font-medium text-red-500">{problem.title}</p>
+            <p className="mt-1 text-xs leading-relaxed text-app-text-muted">{problem.hint}</p>
+          </div>
+        );
+      },
     },
   ];
 
@@ -135,7 +140,7 @@ export default function CampaignDetail({ campaignId, onClose }) {
     <Dialog
       open
       onClose={onClose}
-      size="lg"
+      size="xl"
       title={campaign?.subject || "Campaign"}
       description={
         campaign
