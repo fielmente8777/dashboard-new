@@ -1,3 +1,4 @@
+import { cleanEmails } from "../../pages/EmailMarketing/emailUtils";
 import { request, run, selectedHid } from "../request";
 import store from "../Store";
 import { baseApi } from "./baseApi";
@@ -248,8 +249,9 @@ export const createLeadRecipientBatch = ({ leadIds }) =>
   result(e.createLeadRecipientBatch, { hid: selectedHid(), leadIds });
 export const createLeadRecipientBatchFromFilter = ({ search = "" }) =>
   result(e.createLeadRecipientBatchFromFilter, { hid: selectedHid(), search });
+// Last check before the server: accents removed, invalid addresses never sent
 export const createManualRecipientBatch = ({ emails }) =>
-  result(e.createManualRecipientBatch, { hid: selectedHid(), emails });
+  result(e.createManualRecipientBatch, { hid: selectedHid(), emails: cleanEmails(emails).valid });
 
 export const createEmailCampaign = ({
   name,

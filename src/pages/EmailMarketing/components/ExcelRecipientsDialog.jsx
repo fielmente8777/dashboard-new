@@ -4,7 +4,7 @@ import Button from "../../../components/ui/Button";
 import Dialog from "../../../components/ui/Dialog";
 import { Input } from "../../../components/ui/Field";
 import IconButton from "../../../components/ui/IconButton";
-import { EMAIL_REGEX } from "../emailUtils";
+import { EMAIL_REGEX, normalizeEmail } from "../emailUtils";
 
 // rows shown for review; the rest are still sent
 const SHOWN = 300;
@@ -18,7 +18,7 @@ const ExcelRecipientsDialog = ({ emails, onClose, onContinue, preparing }) => {
     if (emails) setList(emails);
   }, [emails]);
 
-  const cleaned = [...new Set(list.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+  const cleaned = [...new Set(list.map(normalizeEmail).filter(Boolean))];
   const valid = cleaned.filter((e) => EMAIL_REGEX.test(e));
   const invalidCount = cleaned.length - valid.length;
 
@@ -45,7 +45,7 @@ const ExcelRecipientsDialog = ({ emails, onClose, onContinue, preparing }) => {
     >
       <div className="max-h-[50vh] space-y-1.5 overflow-y-auto pr-1">
         {list.slice(0, SHOWN).map((email, index) => {
-          const bad = email.trim() && !EMAIL_REGEX.test(email.trim());
+          const bad = email.trim() && !EMAIL_REGEX.test(normalizeEmail(email));
           return (
             <div key={index} className="flex items-center gap-2">
               <span className="w-8 shrink-0 text-right text-xs text-app-text-faint">{index + 1}</span>

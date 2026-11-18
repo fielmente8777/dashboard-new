@@ -11,7 +11,8 @@ import { createManualRecipientBatch } from "../../redux/api/emailMarketingApi";
 import ExcelRecipientsDialog from "./components/ExcelRecipientsDialog.jsx";
 import RecipientsPanel from "./components/RecipientsPanel.jsx";
 import TemplatesList from "./components/TemplatesList.jsx";
-import { EMAIL_REGEX, formatNumber } from "./emailUtils.js";
+import { EMAIL_REGEX, formatNumber, normalizeEmail } from "./emailUtils.js";
+import { readSheetFile } from "./readSheetFile.js";
 import { useCampaignSender } from "./useCampaignSender.js";
 import { useRecipientReview } from "../Newsletter/useRecipientReview";
 import { useLazyGetNewsletterAudienceQuery } from "../../redux/api/newsletterApi";
@@ -34,10 +35,10 @@ const EMAIL_COLUMN_NAMES = new Set([
 // Every valid email in the file: from "email"-like columns when the sheet has
 // them, otherwise from any cell.
 const extractEmailsFromExcel = async (file) => {
-  const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+  const workbook = await readSheetFile(file);
   const found = [];
   const add = (value) => {
-    const email = String(value ?? "").trim().toLowerCase();
+    const email = normalizeEmail(value);
     if (EMAIL_REGEX.test(email)) found.push(email);
   };
 
