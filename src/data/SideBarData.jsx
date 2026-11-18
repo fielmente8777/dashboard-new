@@ -118,12 +118,12 @@ export const SidebarData = [
         icon: sub(Mail),
       },
       { name: "Newsletter", link: `newsletter`, icon: sub(Newspaper) },
-      {
-        name: "Social media",
-        link: SOCIAL_PORTAL_URL,
-        access: "Social Media",
-        icon: sub(Share2),
-      },
+      // {
+      //   name: "Social media",
+      //   link: SOCIAL_PORTAL_URL,
+      //   access: "Social Media",
+      //   icon: sub(Share2),
+      // },
     ],
   },
   {

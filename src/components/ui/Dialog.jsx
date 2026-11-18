@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { useIsPhone, useLockBodyScroll } from "../../hooks/useIsPhone";
 import IconButton from "./IconButton";
 
-const SIZES = { md: "max-w-md", lg: "max-w-3xl" };
+const SIZES = { md: "max-w-md", lg: "max-w-3xl", xl: "max-w-6xl" };
 
 // `sheetOnPhone` opens it from the bottom edge on a phone instead of centred.
 const Dialog = ({

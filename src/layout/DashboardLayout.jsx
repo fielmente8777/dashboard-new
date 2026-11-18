@@ -42,8 +42,9 @@ export default function DashboardLayout({ children }) {
         </div>
       </div>
 
-      {/* calling balance low / used up: once a day, only for admins and people who can call */}
-      <BalanceAlertDialog />
+      {/* calling balance low / used up: once a day, only for admins and people who can call;
+          not while the subscription has ended - the renew screen comes first */}
+      {!lock.locked && <BalanceAlertDialog />}
     </div>
   );
 }

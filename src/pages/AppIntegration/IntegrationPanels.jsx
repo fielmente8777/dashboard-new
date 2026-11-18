@@ -7,7 +7,8 @@ import {
   Timer,
   Wallet,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useToast } from "../../context/ToastContext";
 import { Link } from "react-router-dom";
 import { formatDuration } from "../../components/Charts/chartTheme";
 import GscSettings from "../../components/GscSettings";
@@ -23,6 +24,7 @@ import { useGetAdsAccountsQuery } from "../../redux/api/googleAdsApi";
 import { useRefreshExotelOverviewMutation } from "../../redux/api/integrationsApi";
 import { useSyncGbpLocationsMutation } from "../../redux/api/gbpApi";
 import { useGetMetaLeadsTotalQuery } from "../../redux/api/metaApi";
+import { testSenderMailbox } from "../../redux/api/emailMarketingApi";
 import { dashboardPath } from "../../routes/paths";
 import { getDateRange } from "../../utils/dateRange";
 import { formatMoney } from "./integrationHealth";
@@ -446,6 +448,70 @@ export const AnalyticsPanel = ({ app }) => (
     <GscSettings />
   </div>
 );
+
+// ---------------------------------------------------------------- Send from your email
+
+// The hotel's own mailbox that campaigns and newsletters go out from.
+export const SenderMailboxPanel = ({ app, integrations }) => {
+  const { showToast } = useToast();
+  const [testing, setTesting] = useState(false);
+  const mailbox = integrations.senderMailbox;
+  const checks = integrations.health.senderMailbox?.checks || [];
+
+  if (!mailbox) return <BasicPanel app={app} />;
+
+  const sendTest = async () => {
+    setTesting(true);
+    try {
+      const result = await testSenderMailbox();
+      showToast({ message: `Test email sent to ${result?.to}. Check its inbox and your Sent folder.`, type: "success", duration: 6000 });
+    } catch (error) {
+      showToast({ message: error.message, type: "error", duration: 8000 });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <HealthCard
+        checks={checks}
+        description="Checked when you connected, and again every time an email is sent."
+        actions={{
+          login: (
+            <Button size="sm" variant="secondary" onClick={integrations.manageSenderMailbox}>
+              Update password
+            </Button>
+          ),
+        }}
+      />
+      <Card
+        title="Mailbox"
+        actions={
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={integrations.manageSenderMailbox}>
+              Edit
+            </Button>
+            <Button size="sm" loading={testing} disabled={mailbox.status === "error"} onClick={sendTest}>
+              Send test
+            </Button>
+          </div>
+        }
+      >
+        <dl className="grid gap-4 sm:grid-cols-2">
+          <Detail label="Guests see">
+            {mailbox.displayName ? `${mailbox.displayName} <${mailbox.email}>` : mailbox.email}
+          </Detail>
+          <Detail label="Sending server">{mailbox.smtp ? `${mailbox.smtp.host}:${mailbox.smtp.port}` : ""}</Detail>
+          <Detail label="Sent folder">
+            {mailbox.providerSavesSent ? "Saved by your provider" : mailbox.saveToSent ? mailbox.sentFolder || "Sent" : "Not saved"}
+          </Detail>
+          <Detail label="Last email sent">{formatDate(mailbox.lastUsedAt, true) || "Not used yet"}</Detail>
+        </dl>
+      </Card>
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------- the rest
 

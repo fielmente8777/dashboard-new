@@ -1,4 +1,4 @@
-import { KeyRound, PhoneCall } from "lucide-react";
+import { KeyRound, MailCheck, PhoneCall } from "lucide-react";
 import { FaMeta } from "react-icons/fa6";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { MdOutlineStorefront, MdOutlineTrackChanges } from "react-icons/md";
@@ -62,6 +62,27 @@ export const INTEGRATIONS = [
     steps: [
       "Click Connect and choose the Google account of your hotel's mailbox.",
       "Allow Eazotel to read and send mail for it.",
+    ],
+  },
+  {
+    id: "senderMailbox",
+    slug: "send-from-your-email",
+    name: "Send from your email",
+    description: "Campaigns and newsletters go out from your own address and show in your Sent folder.",
+    icon: <MailCheck className="size-6 text-[#2563EB]" />,
+    category: "Messaging",
+    openPage: PAGES.MARKETING_EMAIL,
+    openLabel: "Open Email marketing",
+    features: [
+      "Guests see your address, not support@eazotel.com",
+      "Every email shows in your own Sent folder",
+      "Replies come straight to your inbox",
+      "Works with Gmail, Outlook, Zoho, Hostinger, GoDaddy and others",
+    ],
+    steps: [
+      "Click Connect and pick where your email is hosted.",
+      "Enter your email and its password. Gmail and accounts with two-step sign-in need an App Password.",
+      "We check the login before saving. Then send a test email to make sure it arrives.",
     ],
   },
   {

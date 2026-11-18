@@ -132,7 +132,7 @@ export const dashboardRoutes = [
   { path: PAGES.CMS_PRIVACY, lazy: page(() => import("../pages/CMS/Privacy")) },
   { path: PAGES.CMS_TERMS, lazy: page(() => import("../pages/CMS/Tandc")) },
   { path: PAGES.CMS_CANCELLATION, lazy: page(() => import("../pages/CMS/Cancellationrefund")) },
-  { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/CMS/Newsletter")) },
+  { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/Newsletter/Newsletter")) },
 
   // AI
   { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },

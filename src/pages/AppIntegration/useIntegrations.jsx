@@ -18,6 +18,8 @@ import {
   useStartGoogleAdsAuthMutation,
 } from "../../redux/api/integrationsApi";
 import { useConnectWhatsAppMutation, useGetWhatsAppAccountQuery } from "../../redux/api/whatsappApi";
+import { deleteSenderMailbox, emailMarketingApi } from "../../redux/api/emailMarketingApi";
+import SenderMailboxDialog from "../../components/Email/SenderMailboxDialog";
 import {
   useDisconnectGbpMutation,
   useGetGbpLocationsQuery,
@@ -25,7 +27,7 @@ import {
   useSyncGbpLocationsMutation,
 } from "../../redux/api/gbpApi";
 import { integrationPath } from "../../routes/paths";
-import { exotelChecks, whatsappChecks } from "./integrationHealth";
+import { exotelChecks, senderMailboxChecks, whatsappChecks } from "./integrationHealth";
 import {
   ExotelDialog,
   GaPropertyDialog,
@@ -81,7 +83,7 @@ export const useIntegrations = () => {
 
   const [loaded, setLoaded] = useState(false);
   const [busyId, setBusyId] = useState(null);
-  const [dialog, setDialog] = useState(null); // "exotel" | "otp-less" | "tracking"
+  const [dialog, setDialog] = useState(null); // "exotel" | "otp-less" | "tracking" | "mailbox"
   const [isGaConnected, setIsGaConnected] = useState(false);
   const [ga, setGa] = useState({ open: false, email: "", properties: [], loading: false });
   // set while the user signs in to an app in another tab
@@ -126,14 +128,25 @@ export const useIntegrations = () => {
     return () => window.removeEventListener("focus", onFocus);
   }, [refresh, syncGbpLocations]);
 
+  // the property's own mailbox for campaign emails (same as Email marketing's compose window)
+  const mailboxHid = tenant().hid;
+  const mailboxQuery = emailMarketingApi.useGetSenderMailboxQuery({ hid: mailboxHid },
+    // it can also be connected from the compose window: always ask afresh
+    { skip: !mailboxHid, refetchOnMountOrArgChange: true },
+  );
+  const senderMailbox = mailboxQuery.data?.result?.mailbox || null;
+  const mailboxPresets = mailboxQuery.data?.result?.presets || [];
+
   const isConnected = useCallback(
     (app) =>
       app.id === "google_analytics"
         ? isGaConnected
         : app.id === "gmb"
           ? gbpLocations.length > 0
-          : Boolean(app.statusKey && readPath(integrationStatus, app.statusKey)),
-    [integrationStatus, isGaConnected, gbpLocations.length],
+          : app.id === "senderMailbox"
+            ? Boolean(senderMailbox)
+            : Boolean(app.statusKey && readPath(integrationStatus, app.statusKey)),
+    [integrationStatus, isGaConnected, gbpLocations.length, senderMailbox],
   );
   const isLocked = (app) =>
     Boolean(app.access && subscription?.appAccess && !subscription.appAccess[app.access]);
@@ -148,6 +161,7 @@ export const useIntegrations = () => {
   const health = {
     exotel: { query: exotel, checks: exotelOn ? exotelChecks(exotel.data) : [] },
     metaWhatsapp: { query: whatsapp, checks: whatsappOn ? whatsappChecks(whatsapp.data) : [] },
+    senderMailbox: { query: mailboxQuery, checks: senderMailboxChecks(senderMailbox) },
   };
 
   const loadGaProperties = async (email) => {
@@ -273,6 +287,8 @@ export const useIntegrations = () => {
           return setDialog("otp-less");
         case "WebsiteTracking":
           return setDialog("tracking");
+        case "senderMailbox":
+          return setDialog("mailbox");
         default:
           return;
       }
@@ -292,7 +308,10 @@ export const useIntegrations = () => {
 
     setBusyId(app.id);
     try {
-      if (app.id === "gmb") {
+      if (app.id === "senderMailbox") {
+        await deleteSenderMailbox();
+        await mailboxQuery.refetch();
+      } else if (app.id === "gmb") {
         // every Google account this login connected
         const accounts = [...new Set(gbpLocations.map((l) => l.googleAccountId).filter(Boolean))];
         await Promise.all(accounts.map((id) => disconnectGbp(id).unwrap()));
@@ -332,6 +351,13 @@ export const useIntegrations = () => {
       />
       <OtpLessDialog open={dialog === "otp-less"} onClose={() => setDialog(null)} />
       <WebsiteTrackingDialog open={dialog === "tracking"} onClose={() => setDialog(null)} />
+      <SenderMailboxDialog
+        open={dialog === "mailbox"}
+        onClose={() => setDialog(null)}
+        mailbox={senderMailbox}
+        presets={mailboxPresets}
+        onChange={() => mailboxQuery.refetch()}
+      />
       <GaPropertyDialog
         open={ga.open}
         email={ga.email}
@@ -349,7 +375,8 @@ export const useIntegrations = () => {
   );
 
   return {
-    loaded,
+    // wait for the mailbox too, or it flashes "Connect" before it is known
+    loaded: loaded && !mailboxQuery.isLoading,
     refresh,
     integrationStatus,
     gbpLocations,
@@ -361,6 +388,9 @@ export const useIntegrations = () => {
     health,
     // opens the Exotel keys form, also to replace keys that are already saved
     editExotelKeys: () => setDialog("exotel"),
+    senderMailbox,
+    // the mailbox dialog: status, Send test, edit the password, disconnect
+    manageSenderMailbox: () => setDialog("mailbox"),
     dialogs,
   };
 };

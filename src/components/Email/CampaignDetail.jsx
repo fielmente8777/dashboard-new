@@ -11,6 +11,7 @@ import {
   getEmailCampaign,
 } from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
+import CampaignDeliveryBar from "./CampaignDeliveryBar";
 import Button from "../ui/Button";
 import DataTable from "../ui/DataTable";
 import Dialog from "../ui/Dialog";
@@ -83,6 +84,11 @@ export default function CampaignDetail({ campaignId, onClose }) {
     setPage(1);
   }, [filter]);
 
+  const reloadAll = useCallback(() => {
+    loadCampaign();
+    loadRecipients();
+  }, [loadCampaign, loadRecipients]);
+
   const stats = campaign?.stats || {};
 
   const columns = [
@@ -98,6 +104,19 @@ export default function CampaignDetail({ campaignId, onClose }) {
     },
     { key: "status", header: "Status", render: (r) => <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge> },
     { key: "sentAt", header: "Sent", render: (r) => formatDate(r.sentAt, true) },
+    {
+      key: "engaged",
+      header: "Opened / clicked",
+      render: (r) =>
+        r.openedAt || r.clickedAt ? (
+          <div className="text-xs leading-snug">
+            {r.openedAt && <p>Opened {formatDate(r.openedAt, true)}</p>}
+            {r.clickedAt && <p className="text-blue-600 dark:text-blue-400">Clicked {formatDate(r.clickedAt, true)}</p>}
+          </div>
+        ) : (
+          "—"
+        ),
+    },
     {
       key: "error",
       header: "Problem",
@@ -156,6 +175,8 @@ export default function CampaignDetail({ campaignId, onClose }) {
             </div>
           ))}
         </div>
+
+        <CampaignDeliveryBar campaignId={campaignId} onChanged={reloadAll} />
 
         <Tabs tabs={FILTERS} value={filter} onChange={setFilter} />
 

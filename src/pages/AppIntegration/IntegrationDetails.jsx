@@ -13,6 +13,7 @@ import {
   GbpPanel,
   GoogleAdsPanel,
   MetaLeadsPanel,
+  SenderMailboxPanel,
   WhatsAppPanel,
 } from "./IntegrationPanels";
 import { findIntegration } from "./integrationsData";
@@ -27,6 +28,7 @@ const PANELS = {
   meta: MetaLeadsPanel,
   google_analytics: AnalyticsPanel,
   gmb: GbpPanel,
+  senderMailbox: SenderMailboxPanel,
 };
 
 const BackLink = () => (
@@ -83,7 +85,7 @@ function IntegrationDetails() {
 
   const state = appState(app, integrations);
   const connected = isConnectedState(state);
-  const canDisconnect = connected && (app.statusKey || ["google_analytics", "gmb"].includes(app.id));
+  const canDisconnect = connected && (app.statusKey || ["google_analytics", "gmb", "senderMailbox"].includes(app.id));
   const Panel = PANELS[app.id] || BasicPanel;
   const busy = integrations.busyId === app.id;
 

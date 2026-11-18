@@ -1,4 +1,5 @@
 import { request, run, selectedHid } from "../request";
+import store from "../Store";
 import { baseApi } from "./baseApi";
 
 const NODE = { service: "node" };
@@ -73,6 +74,108 @@ export const emailMarketingApi = baseApi.injectEndpoints({
         url: `${BASE}/campaigns/${campaignId}/send`,
         method: "POST",
         body: { hid },
+      }),
+      extraOptions: NODE,
+    }),
+
+    // --- footer + final email (gian services/emailDesign) ---
+    // { hid, hotelName } -> { result: { footer | null, defaults, html } }
+    getEmailFooter: build.query({
+      query: ({ hid, hotelName }) => ({ url: `${BASE}/footer`, params: { hid, hotelName } }),
+      extraOptions: NODE,
+    }),
+    // { hid, hotelName, footer } -> { result: { footer, html } }
+    saveEmailFooter: build.mutation({
+      query: ({ hid, hotelName, footer }) => ({
+        url: `${BASE}/footer`,
+        method: "PUT",
+        params: { hid },
+        body: { hid, hotelName, footer },
+      }),
+      extraOptions: NODE,
+    }),
+    // { hid }
+    deleteEmailFooter: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/footer`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+    // { hid, body: { html, previewText, hotelName, footer? } } -> { result: { html } }
+    // the exact email guests get: optimized for every device + footer
+    renderEmail: build.mutation({
+      query: ({ hid, body }) => ({ url: `${BASE}/render`, method: "POST", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, campaignId } -> { result: { status, pauseReason, stuck, pending, failedRetryable, failedPermanent, canRetry } }
+    getCampaignDelivery: build.query({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/delivery`, params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, campaignId } - resend failed (not bounced/invalid) + continue the unsent
+    retryEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({
+        url: `${BASE}/campaigns/${campaignId}/retry`,
+        method: "POST",
+        params: { hid },
+        body: { hid },
+      }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, body: { to: [..up to 5], subject, html, text, fromName, replyTo } }
+    // sends the email being written as "[Test] subject"; saves no campaign
+    sendTestEmail: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/campaigns/test`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
+    // --- sender mailbox: the property's own mailbox campaigns go out from ---
+    // { hid } -> { result: { mailbox | null, presets } }
+    getSenderMailbox: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox`, params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, email } -> { result: { detected: { presetId, label, smtp, imap, autoSavesSent, passwordHint, known } } }
+    detectSenderMailbox: build.query({
+      query: ({ hid, email }) => ({ url: `${BASE}/sender-mailbox/detect`, params: { hid, email } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, body: { email, password, displayName, username, smtp, imap, saveToSent } }
+    // gian logs in first; 400 with a readable message when the details don't work
+    saveSenderMailbox: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/sender-mailbox`,
+        method: "PUT",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
+    // { hid }
+    deleteSenderMailbox: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, to? } - a test email through the mailbox, to itself by default
+    testSenderMailbox: build.mutation({
+      query: ({ hid, to }) => ({
+        url: `${BASE}/sender-mailbox/test`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...(to && { to }) },
+        timeout: 60000,
       }),
       extraOptions: NODE,
     }),
@@ -205,3 +308,32 @@ export const createEmailTemplate = (payload) =>
 export const updateEmailTemplate = (id, payload) =>
   strict(e.updateEmailTemplate, { hid: selectedHid(), id, body: payload });
 export const deleteEmailTemplate = (id) => strict(e.deleteEmailTemplate, { hid: selectedHid(), id });
+
+// Sender mailbox: resolve with `result`, throw with the server's message.
+export const getSenderMailbox = () => strict(e.getSenderMailbox, { hid: selectedHid() });
+export const detectSenderMailbox = (email) => strict(e.detectSenderMailbox, { hid: selectedHid(), email });
+export const saveSenderMailbox = (body) => strict(e.saveSenderMailbox, { hid: selectedHid(), body });
+export const deleteSenderMailbox = () => strict(e.deleteSenderMailbox, { hid: selectedHid() });
+export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: selectedHid(), to });
+
+// Footer + final email; throw with the server's message.
+const hotelNameNow = () => store.getState().userProfile.user?.Profile?.hotelName || "";
+export const getEmailFooter = () => strict(e.getEmailFooter, { hid: selectedHid(), hotelName: hotelNameNow() });
+export const saveEmailFooter = (footer) =>
+  strict(e.saveEmailFooter, { hid: selectedHid(), hotelName: hotelNameNow(), footer });
+export const deleteEmailFooter = () => strict(e.deleteEmailFooter, { hid: selectedHid() });
+// footer: undefined = the saved one, an object = unsaved changes from the editor
+export const renderEmail = ({ html, previewText = "", footer }) =>
+  strict(e.renderEmail, {
+    hid: selectedHid(),
+    body: { html, previewText, hotelName: hotelNameNow(), ...(footer !== undefined && { footer }) },
+  });
+
+// Retry / resume a campaign that didn't reach everyone; throw with the server's message.
+export const getCampaignDelivery = ({ campaignId }) =>
+  strict(e.getCampaignDelivery, { hid: selectedHid(), campaignId });
+export const retryEmailCampaign = ({ campaignId }) =>
+  strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
+
+// A test of the email being written; throws with the server's message.
+export const sendTestEmail = (body) => strict(e.sendTestEmail, { hid: selectedHid(), body });
