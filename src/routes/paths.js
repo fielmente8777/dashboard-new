@@ -124,6 +124,7 @@ export const PAGES = {
   // AI
   KNOWLEDGE_BASE: "knowledge-base",
   AI_TRAINING: "ai-training",
+  AI_AGENTS: "ai-agents",
   EAZBOT: "eazbot",
   AI_WALLET: "ai-wallet",
   AI_CREDIT_MANAGEMENT: "admin/ai-credits", // owners only

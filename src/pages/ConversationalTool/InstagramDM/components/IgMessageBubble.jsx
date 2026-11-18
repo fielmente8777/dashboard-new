@@ -28,8 +28,10 @@ const LINK_LABELS = {
   ig_post: "Shared a post",
 };
 
-const Attachment = ({ attachment, onImageClick }) => {
+const Attachment = ({ attachment, fileName, onImageClick }) => {
   const { type, url } = attachment;
+
+  if (type === "like_heart") return null; // drawn as the big heart
 
   if (type === "image" && url) {
     return (
@@ -58,13 +60,17 @@ const Attachment = ({ attachment, onImageClick }) => {
     >
       <Icon icon={type === "file" ? FileText : ExternalLink} size="lg" className="text-pink-500" />
       <span className="min-w-0 flex-1 truncate">
-        {LINK_LABELS[type] || (type === "file" ? "File" : "Attachment")}
+        {type === "file"
+          ? fileName || "File"
+          : LINK_LABELS[type] || "Attachment"}
       </span>
     </a>
   );
 };
 
-const MessageMenu = ({ message, onSelect }) => {
+const MessageMenu = ({ message, onSelect, onReact }) => {
+  // the hotel can ❤️ what the guest sent (once Instagram knows the message)
+  const canReact = message.sender === "user" && message.mid && message.status !== "deleted";
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -106,6 +112,18 @@ const MessageMenu = ({ message, onSelect }) => {
               Copy
             </button>
           )}
+          {canReact && (
+            <button
+              type="button"
+              className={`${itemClassName} text-app-text`}
+              onClick={() => {
+                onReact(message, !message.myReaction);
+                setOpen(false);
+              }}
+            >
+              {message.myReaction ? "Remove ❤️" : "❤️ React"}
+            </button>
+          )}
           <button
             type="button"
             className={`${itemClassName} text-red-500`}
@@ -131,8 +149,12 @@ const IgMessageBubble = ({
   onToggleSelect,
   onImageClick,
   onResend,
+  onReact,
 }) => {
   const mine = isOutgoing(message);
+  const isHeart =
+    message.messageType === "like_heart" ||
+    message.attachments?.[0]?.type === "like_heart";
   const status = mine ? STATUS[message.status] : null;
   const deleted = message.status === "deleted";
   const toggleSelect = () => onToggleSelect(message);
@@ -173,11 +195,18 @@ const IgMessageBubble = ({
           </a>
         )}
 
+        {isHeart && !deleted && (
+          <p className="px-1 text-4xl leading-none" aria-label="Heart">
+            ❤️
+          </p>
+        )}
+
         {!deleted &&
           (message.attachments || []).map((attachment, index) => (
             <Attachment
               key={`${attachment.url}-${index}`}
               attachment={attachment}
+              fileName={message.fileName}
               onImageClick={onImageClick}
             />
           ))}
@@ -193,8 +222,21 @@ const IgMessageBubble = ({
         )}
 
         <div className="mt-1 flex items-center justify-end gap-1 text-[11px] text-app-text-muted">
-          {message.reaction?.emoji && (
-            <span className="mr-auto text-sm">{message.reaction.emoji}</span>
+          {(message.reaction?.emoji || message.myReaction) && (
+            <span
+              className="mr-auto text-sm"
+              title={message.myReaction ? "You reacted" : "The guest reacted"}
+            >
+              {message.reaction?.emoji || message.myReaction}
+            </span>
+          )}
+          {message.isAi && (
+            <span
+              title="Sent by the AI agent"
+              className="rounded bg-purple-500/15 px-1 text-[10px] font-semibold text-purple-600 dark:text-purple-300"
+            >
+              AI
+            </span>
           )}
           {formatTime(getMessageTime(message))}
           {status && (
@@ -217,7 +259,9 @@ const IgMessageBubble = ({
           </div>
         )}
 
-        {!selecting && <MessageMenu message={message} onSelect={toggleSelect} />}
+        {!selecting && (
+          <MessageMenu message={message} onSelect={toggleSelect} onReact={onReact} />
+        )}
       </div>
       </div>
     </div>

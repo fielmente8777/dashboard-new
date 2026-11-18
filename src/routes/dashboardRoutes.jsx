@@ -137,6 +137,7 @@ export const dashboardRoutes = [
   // AI
   { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },
   { path: PAGES.AI_TRAINING, lazy: page(() => import("../pages/AiTraining/AiTrainingPage")) },
+  { path: PAGES.AI_AGENTS, lazy: page(() => import("../pages/AiAgents/AiAgentsPage")) },
   { path: PAGES.EAZBOT, lazy: page(() => import("../pages/Eazobot/Eazobot")) },
   { path: PAGES.AI_WALLET, lazy: page(() => import("../pages/AiWallet/AiWallet")) },
   { path: PAGES.AI_CREDIT_MANAGEMENT, lazy: page(() => import("../pages/AiCreditManagement/AiCreditManagement")) },

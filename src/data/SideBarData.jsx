@@ -3,6 +3,7 @@ import {
   BedDouble,
   BookOpen,
   Bot,
+  Sparkles,
   BrainCircuit,
   CalendarCheck,
   CalendarDays,
@@ -73,7 +74,7 @@ export const SidebarData = [
     icon: top(MessagesSquare),
     subLinks: [
       { name: "WhatsApp", link: `channel/wa/chat`, icon: brand(FaWhatsapp) },
-      // { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
+      { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
     ],
   },
   {
@@ -245,6 +246,7 @@ export const SidebarData = [
     icon: top(BrainCircuit),
     subLinks: [
       { name: "Knowledge base", link: `knowledge-base`, icon: sub(BookOpen) },
+      { name: "AI agents", link: `ai-agents`, icon: sub(Sparkles) },
       { name: "AI training", link: `ai-training`, icon: sub(Bot) },
     ],
   },

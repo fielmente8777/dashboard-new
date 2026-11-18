@@ -40,12 +40,37 @@ export const instagramApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { conversationId, text } -> { message, canReply }
+    // { conversationId, payload } - payload is a FormData (text and / or "file")
+    // or an object { text } | { mediaUrl, mimeType, fileName } | { sticker: "like_heart" }
+    // -> { messages, message, canReply }
     sendInstagramMessage: build.mutation({
-      query: ({ conversationId, text }) => ({
+      query: ({ conversationId, payload }) => ({
         url: `/api/v1/instagram/conversations/${conversationId}/messages`,
         method: "POST",
-        body: { text },
+        body: payload,
+      }),
+      transformResponse: (response) => response?.result || {},
+      extraOptions: NODE,
+    }),
+
+    // { conversationId, mode: "AI" | "HUMAN" } -> { handling, aiReplyCount }
+    // "Resume AI" / "Pause AI" in the chat header
+    updateInstagramHandling: build.mutation({
+      query: ({ conversationId, mode }) => ({
+        url: `/api/v1/instagram/conversations/${conversationId}/handling`,
+        method: "PATCH",
+        body: { mode },
+      }),
+      transformResponse: (response) => response?.result || {},
+      extraOptions: NODE,
+    }),
+
+    // { messageId, react } -> { messageId, myReaction }  (❤️ a guest's message)
+    reactInstagramMessage: build.mutation({
+      query: ({ messageId, react }) => ({
+        url: `/api/v1/instagram/messages/${messageId}/react`,
+        method: "POST",
+        body: { react },
       }),
       transformResponse: (response) => response?.result || {},
       extraOptions: NODE,
@@ -135,6 +160,8 @@ export const {
   useGetInstagramMessagesQuery,
   useSendInstagramMessageMutation,
   useMarkInstagramConversationReadMutation,
+  useReactInstagramMessageMutation,
+  useUpdateInstagramHandlingMutation,
   useDeleteInstagramConversationMutation,
   useDeleteInstagramConversationsMutation,
   useDeleteInstagramMessagesMutation,

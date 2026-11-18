@@ -1,12 +1,19 @@
 import {
   ArrowDown,
   ArrowLeft,
+  Bot,
   ExternalLink,
   PanelRight,
-  SendHorizontal,
   Trash2,
+  UserRound,
   X,
 } from "lucide-react";
+import { useTenant } from "../../../../hooks/useTenant";
+import { useGetAiAgentQuery } from "../../../../redux/api/aiAgentsApi";
+import { useUpdateInstagramHandlingMutation } from "../../../../redux/api/instagramApi";
+import { useGetQuickRepliesQuery } from "../../../../redux/api/whatsappApi";
+import { useIgSend } from "../hooks/useIgSend";
+import IgComposer from "./IgComposer";
 import Button from "../../../../components/ui/Button";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useApiAction } from "../../../../hooks/useApiAction";
@@ -22,21 +29,18 @@ import { createPortal } from "react-dom";
 import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import { ErrorState, Skeleton } from "../../../../components/ui/States";
-import { getApiErrorMessage } from "../../../../redux/api/baseApi";
 import {
   useDeleteInstagramMessagesMutation,
   useGetInstagramMessagesQuery,
-  useSendInstagramMessageMutation,
 } from "../../../../redux/api/instagramApi";
 import {
-  buildOutgoingMessage,
   canReply,
+  isAiHandling,
   formatDayLabel,
   getDisplayName,
   getMessageTime,
   isOutgoing,
   isSameDay,
-  sameMessage,
 } from "../igUtils";
 import { useInstagramCache } from "../hooks/useInstagramCache";
 import IgAvatar from "./IgAvatar";
@@ -44,7 +48,6 @@ import IgMessageBubble from "./IgMessageBubble";
 
 const NO_MESSAGES = [];
 const NEAR_BOTTOM = 120;
-const MAX_LENGTH = 1000;
 
 const ImageViewer = ({ url, onClose }) => {
   useEffect(() => {
@@ -72,6 +75,52 @@ const ImageViewer = ({ url, onClose }) => {
       />
     </div>,
     document.body,
+  );
+};
+
+// Who answers this chat: the AI agent or your team, with a button to switch.
+// Shown only while the Instagram AI agent is turned on.
+const AiHandlingControl = ({ conversation }) => {
+  const { hid } = useTenant();
+  const run = useApiAction();
+  const cache = useInstagramCache(hid);
+  const agent = useGetAiAgentQuery({ channel: "instagram", hid }, { skip: !hid });
+  const [updateHandling, { isLoading }] = useUpdateInstagramHandlingMutation();
+
+  if (!agent.data?.config?.enabled) return null;
+  const aiOn = isAiHandling(conversation);
+
+  const toggle = async () => {
+    const mode = aiOn ? "HUMAN" : "AI";
+    const result = await run(updateHandling({ conversationId: conversation._id, mode }), {
+      success: aiOn ? "AI paused in this chat" : "AI resumed in this chat",
+      error: "Could not change who replies.",
+    });
+    if (result?.handling) {
+      cache.patchConversation(conversation._id, {
+        handling: result.handling,
+        aiReplyCount: result.aiReplyCount,
+      });
+    }
+  };
+
+  return (
+    <div className="hidden items-center gap-2 sm:flex">
+      <span
+        title={conversation.handling?.reason || ""}
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+          aiOn
+            ? "bg-purple-500/10 text-purple-600 dark:text-purple-300"
+            : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+        }`}
+      >
+        <Icon icon={aiOn ? Bot : UserRound} size="xs" />
+        {aiOn ? "AI replying" : "Your team"}
+      </span>
+      <Button variant="secondary" size="sm" loading={isLoading} onClick={toggle}>
+        {aiOn ? "Pause AI" : "Resume AI"}
+      </Button>
+    </div>
   );
 };
 
@@ -125,6 +174,7 @@ const ChatHeader = ({
           {open ? "Can reply" : "Reply window closed (24h passed)"}
         </p>
       </div>
+      <AiHandlingControl conversation={conversation} />
       {conversation.username && (
         <a
           href={`https://www.instagram.com/${conversation.username}/`}
@@ -153,6 +203,7 @@ const MessageList = ({
   selectedKeys,
   onToggleSelect,
   onResend,
+  onReact,
 }) => {
   const selecting = selectedKeys.length > 0;
   const scrollRef = useRef(null);
@@ -234,6 +285,7 @@ const MessageList = ({
                     onToggleSelect={onToggleSelect}
                     onImageClick={setImageUrl}
                     onResend={onResend}
+                    onReact={onReact}
                   />
                 ))}
               </section>
@@ -262,73 +314,6 @@ const MessageList = ({
   );
 };
 
-const Composer = ({ windowOpen, onSend }) => {
-  const [text, setText] = useState("");
-  const inputRef = useRef(null);
-  const trimmed = text.trim();
-  const canSend = windowOpen && trimmed.length > 0 && trimmed.length <= MAX_LENGTH;
-
-  // grow with the text, up to a few lines
-  useLayoutEffect(() => {
-    const element = inputRef.current;
-    if (!element) return;
-    element.style.height = "auto";
-    element.style.height = `${Math.min(element.scrollHeight, 140)}px`;
-  }, [text]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!canSend) return;
-    onSend(trimmed);
-    setText("");
-    inputRef.current?.focus();
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="shrink-0 border-t border-app-border! bg-app-surface px-3 py-3 sm:px-4"
-    >
-      <div className="flex items-end gap-2">
-        {windowOpen ? (
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) handleSubmit(e);
-            }}
-            maxLength={MAX_LENGTH}
-            placeholder="Message..."
-            aria-label="Message"
-            className="min-w-0 flex-1 resize-none rounded-2xl border border-app-border! bg-app-surface px-4 py-2 text-sm text-app-text outline-none transition placeholder:text-app-text-faint focus:border-pink-500! focus:ring-1 focus:ring-pink-500"
-          />
-        ) : (
-          <p className="flex-1 rounded-lg border border-amber-500/30! bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-            Instagram only allows replies within 24 hours of the guest's last
-            message. You can reply again once they message you.
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={!canSend}
-          aria-label="Send"
-          title="Send"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 text-white transition hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
-        >
-          <Icon icon={SendHorizontal} size="lg" />
-        </button>
-      </div>
-      {windowOpen && trimmed.length > MAX_LENGTH * 0.9 && (
-        <p className="mt-1 text-right text-[11px] text-app-text-muted">
-          {trimmed.length}/{MAX_LENGTH}
-        </p>
-      )}
-    </form>
-  );
-};
-
 // The open Instagram conversation. Give it `key={conversation._id}`.
 //   onBack()  onShowProfile()
 const IgChatPanel = ({ conversation, hid, onBack, onShowProfile }) => {
@@ -338,7 +323,7 @@ const IgChatPanel = ({ conversation, hid, onBack, onShowProfile }) => {
   const messages = useGetInstagramMessagesQuery(conversation._id, {
     refetchOnMountOrArgChange: true,
   });
-  const [sendMessage] = useSendInstagramMessageMutation();
+  const quickReplies = useGetQuickRepliesQuery(hid, { skip: !hid });
   const [deleteMessages] = useDeleteInstagramMessagesMutation();
   const messageList = messages.data || NO_MESSAGES;
   const [selectedKeys, setSelectedKeys] = useState([]);
@@ -378,62 +363,8 @@ const IgChatPanel = ({ conversation, hid, onBack, onShowProfile }) => {
     setSelectedKeys([]);
   };
 
-  const send = useCallback(
-    async (text, retryOf) => {
-      const temp = retryOf
-        ? { ...retryOf, status: "sending", failure: undefined }
-        : buildOutgoingMessage(conversation, text);
-
-      cache.patchMessages(conversation._id, (list) => {
-        const index = list.findIndex((item) => item._id === temp._id);
-        if (index >= 0) list[index] = temp;
-        else list.push(temp);
-      });
-
-      try {
-        const result = await sendMessage({
-          conversationId: conversation._id,
-          text,
-        }).unwrap();
-        const saved = result?.message;
-
-        cache.patchMessages(conversation._id, (list) => {
-          const index = list.findIndex((item) => item._id === temp._id);
-          if (index < 0) return;
-          // the websocket may have delivered the saved copy already
-          if (saved && list.some((item, i) => i !== index && sameMessage(item, saved))) {
-            list.splice(index, 1);
-          } else {
-            list[index] = saved || { ...temp, status: "sent" };
-          }
-        });
-        cache.patchConversation(conversation._id, {
-          last_message: { text, sender: "me", created_at: new Date().toISOString() },
-          updatedAt: new Date().toISOString(),
-        });
-      } catch (err) {
-        cache.patchMessages(conversation._id, (list) => {
-          const message = list.find((item) => item._id === temp._id);
-          if (message) {
-            message.status = "failed";
-            message.failure = {
-              message: getApiErrorMessage(err, "Could not send the message."),
-            };
-          }
-        });
-      }
-    },
-    [cache, conversation, sendMessage],
-  );
-
-  const sendRef = useRef(send);
-  useEffect(() => {
-    sendRef.current = send;
-  });
-  const handleResend = useCallback(
-    (message) => sendRef.current(message.text, message),
-    [],
-  );
+  // stable: the memoised bubbles get handlers that never change
+  const send = useIgSend(hid, conversation);
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-app-surface">
@@ -457,11 +388,16 @@ const IgChatPanel = ({ conversation, hid, onBack, onShowProfile }) => {
           loading={messages.isLoading}
           selectedKeys={selectedKeys}
           onToggleSelect={handleToggleSelect}
-          onResend={handleResend}
+          onResend={send.resend}
+          onReact={send.react}
         />
       )}
 
-      <Composer windowOpen={canReply(conversation)} onSend={(text) => send(text)} />
+      <IgComposer
+        windowOpen={canReply(conversation)}
+        quickReplies={quickReplies.data || []}
+        send={send}
+      />
     </div>
   );
 };

@@ -74,6 +74,7 @@ export const NOTIFICATION_TYPE_LABELS = {
   "whatsapp.message.new": { label: "WhatsApp messages", hint: "Every new message in an existing chat." },
   "instagram.conversation.new": { label: "New Instagram chats", hint: "A guest DMs your Instagram for the first time." },
   "instagram.message.new": { label: "Instagram messages", hint: "Every new DM in an existing Instagram chat." },
+  "instagram.handoff": { label: "Instagram AI handovers", hint: "The Instagram AI agent hands a chat to your team." },
   "call.balance.low": { label: "Calling balance running low", hint: "About 2 days before the Exotel balance runs out (admins and people who make calls)." },
   "call.balance.empty": { label: "Calling balance used up", hint: "Calls stop until the Exotel account is recharged." },
   "system.announcement": { label: "Eazotel announcements", hint: "Product news and important account updates." },
