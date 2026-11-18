@@ -1,8 +1,5 @@
 import { downloadCsv } from "../../utils/csv";
 
-// internal fields that mean nothing in an exported sheet
-const EXPORT_HIDDEN_FIELDS = ["_id", "ndid", "hId", "updatedAt", "updated_at"];
-
 export const getLeadName = (lead) =>
   lead.Name || lead.other_details?.full_name || "—";
 
@@ -243,17 +240,79 @@ export const getRequestDetails = (lead) => {
 export const toApiDate = (date) =>
   date ? new Date(`${date}T00:00:00`).toISOString() : "";
 
-export const exportLeadsToCsv = (leads, filename) =>
-  downloadCsv(
-    leads.map((lead) =>
-      Object.fromEntries(
-        Object.entries(lead).filter(
-          ([field]) => !EXPORT_HIDDEN_FIELDS.includes(field),
+// "18 Nov 2026, 03:06 pm" in the viewer's time zone; "" when not a date
+const formatExportDate = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// form answers already in a column of their own
+const DUPLICATE_DETAILS = ["full_name", "name", "email", "phone_number", "phone"];
+
+// The fixed columns of an exported sheet, in order: [header, lead -> value].
+const EXPORT_COLUMNS = [
+  ["Created", (lead) => formatExportDate(getLeadCreatedAt(lead))],
+  ["Name", (lead) => cleanValue(getLeadName(lead).replace(/^—$/, ""))],
+  ["Phone", getLeadPhone],
+  ["Email", getLeadEmail],
+  ["Source", (lead) => cleanValue(lead.created_from)],
+  ["Stage", (lead) => cleanValue(lead.status) || "Open"],
+  ["Assignee", (lead) => cleanValue(lead.assignee)],
+  ["Follow up", (lead) => formatExportDate(lead.followUpDate || lead.followUp)],
+  ["Turn away code", (lead) => cleanValue(lead.turnAwayCode)],
+  ["Latest note", getLatestNote],
+  [
+    "All notes",
+    (lead) =>
+      (lead.notes || [])
+        .map((note) => cleanValue(note?.message))
+        .filter(Boolean)
+        .join(" | "),
+  ],
+  ["Message", (lead) => cleanValue(lead.Message)],
+  ["Campaign", (lead) => cleanValue(lead.meta?.campaign_name || lead.campaign_name)],
+  ["Ad", (lead) => cleanValue(lead.meta?.ad_name)],
+  ["Form ID", (lead) => cleanValue(lead.meta?.form_id)],
+  ["Instagram", (lead) => cleanValue(lead.instagram?.username)],
+  ["Page URL", getLeadSourceUrl],
+];
+
+// The leads as a CSV the team can open in Excel: readable columns first, then
+// one column per extra form answer (Meta form questions etc.).
+export const exportLeadsToCsv = (leads, filename) => {
+  const detailKeys = [
+    ...new Set(
+      leads.flatMap((lead) =>
+        Object.keys(lead.other_details || {}).filter(
+          (key) => !DUPLICATE_DETAILS.includes(key.toLowerCase()),
         ),
       ),
     ),
-    filename,
-  );
+  ];
+
+  const rows = leads.map((lead) => {
+    const row = Object.fromEntries(
+      EXPORT_COLUMNS.map(([header, getValue]) => [header, getValue(lead) || ""]),
+    );
+    detailKeys.forEach((key) => {
+      const value = lead.other_details?.[key];
+      row[toLabel(key)] =
+        value && typeof value === "object" ? JSON.stringify(value) : cleanValue(value);
+    });
+    row["Lead ID"] = lead._id;
+    return row;
+  });
+
+  downloadCsv(rows, filename);
+};
 
 // --- CSV import ---
 // The column names (lower case, letters only) accepted for each lead field.
