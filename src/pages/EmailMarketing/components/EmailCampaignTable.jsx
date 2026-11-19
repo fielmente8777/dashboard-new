@@ -1,3 +1,4 @@
+import CampaignRunControl from "../../../components/Email/CampaignRunControl";
 import Badge from "../../../components/ui/Badge";
 import DataTable from "../../../components/ui/DataTable";
 import { CampaignCard } from "../../../components/Marketing/MarketingParts";
@@ -86,11 +87,14 @@ const columns = [
 ];
 
 // A table on wider screens; on phones, one card per campaign.
-const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage }) => (
+const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage, onChanged }) => (
   <>
     <div className="hidden md:block">
       <DataTable
-        columns={columns}
+        columns={[...columns, {
+          key: "actions", header: "Actions",
+          render: (row) => <CampaignRunControl campaign={row} onChanged={onChanged} />,
+        }]}
         rows={campaigns}
         rowKey={(row) => row._id}
         loading={loading}
@@ -109,24 +113,26 @@ const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage }) => (
         campaigns.map((row) => {
           const { tone, label } = campaignStatus(row.status);
           return (
-            <CampaignCard
-              key={row._id}
-              title={row.subject || row.name || "No subject"}
-              subtitle={row.fromEmail}
-              statusBadge={<Badge tone={tone}>{label}</Badge>}
-              onOpen={() => onOpen(row)}
-              date={formatDate(row.createdAt, true)}
-              stats={[
-                { label: "Audience", value: formatNumber(row.recipientCount) },
-                { label: "Opened", value: `${percent(row.stats?.opened, row.stats?.sent)}%` },
-                { label: "Clicked", value: `${percent(row.stats?.clicked, row.stats?.opened)}%` },
-                {
-                  label: "Failed",
-                  value: formatNumber(row.stats?.failed),
-                  className: row.stats?.failed ? "text-red-500" : "text-app-text",
-                },
-              ]}
-            />
+            <div key={row._id} className="space-y-2">
+              <CampaignCard
+                title={row.subject || row.name || "No subject"}
+                subtitle={row.fromEmail}
+                statusBadge={<Badge tone={tone}>{label}</Badge>}
+                onOpen={() => onOpen(row)}
+                date={formatDate(row.createdAt, true)}
+                stats={[
+                  { label: "Audience", value: formatNumber(row.recipientCount) },
+                  { label: "Opened", value: `${percent(row.stats?.opened, row.stats?.sent)}%` },
+                  { label: "Clicked", value: `${percent(row.stats?.clicked, row.stats?.opened)}%` },
+                  {
+                    label: "Failed",
+                    value: formatNumber(row.stats?.failed),
+                    className: row.stats?.failed ? "text-red-500" : "text-app-text",
+                  },
+                ]}
+              />
+              <CampaignRunControl campaign={row} onChanged={onChanged} />
+            </div>
           );
         })
       )}

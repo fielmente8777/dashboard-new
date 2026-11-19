@@ -11,7 +11,7 @@ import CampaignsList from "./CampaignsList";
 const CAMPAIGN_LIMIT = 500;
 // while an email is still going out, its numbers are refreshed this often
 const LIVE_REFRESH_MS = 5000;
-const IN_PROGRESS = new Set(["sending", "scheduled"]);
+const IN_PROGRESS = new Set(["sending", "stopping", "scheduled"]);
 
 // Emails sent so far: four headline numbers and the list, where a row opens
 // who got it and who opened / clicked. Used by Email marketing (every email)
@@ -136,6 +136,7 @@ export default function SentEmailsPanel({
       </div>
 
       <CampaignsList
+        onChanged={() => load({ quiet: true })}
         campaigns={campaigns}
         loading={false}
         selectedId={openId}

@@ -1,7 +1,7 @@
 import { cleanEmails } from "../../pages/EmailMarketing/emailUtils";
 import { request, run, selectedHid } from "../request";
 import store from "../Store";
-import { baseApi } from "./baseApi";
+import { baseApi, getApiErrorMessage } from "./baseApi";
 
 const NODE = { service: "node" };
 const BASE = "/api/v1/email-marketing";
@@ -12,6 +12,16 @@ const GENERATE_TIMEOUT_MS = 120000;
 // hid of the selected location; the functions below fill it in.
 export const emailMarketingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getEmailQuota: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/quota`, params: { hid } }),
+      extraOptions: NODE,
+    }),
+    // next 50 server replies older than `before` -> { result: { items, hasMore, nextBefore } }
+    getEmailQuotaReplies: build.query({
+      query: ({ hid, before, source }) => ({ url: `${BASE}/quota/replies`, params: { hid, before, source } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
     // --- recipients ---
     // { hid, page, limit, search } -> { result: { docs, pagination } }
     getEmailRecipients: build.query({
@@ -114,6 +124,10 @@ export const emailMarketingApi = baseApi.injectEndpoints({
     }),
 
     // { hid, campaignId } - resend failed (not bounced/invalid) + continue the unsent
+    stopEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/stop`, method: "POST", body: { hid } }),
+      extraOptions: NODE,
+    }),
     retryEmailCampaign: build.mutation({
       query: ({ hid, campaignId }) => ({
         url: `${BASE}/campaigns/${campaignId}/retry`,
@@ -294,7 +308,10 @@ const strict = async (endpoint, arg) => {
   const body = error ? error.data : data;
   if (error || body?.success === false) {
     throw Object.assign(
-      new Error(body?.message || body?.result?.message || "Something went wrong. Please try again."),
+      new Error(getApiErrorMessage(
+        error || { data: body },
+        body?.result?.message || "Something went wrong. Please try again.",
+      )),
       { status: typeof error?.status === "number" ? error.status : 200, isApiError: true },
     );
   }
@@ -334,6 +351,10 @@ export const renderEmail = ({ html, previewText = "", footer }) =>
 // Retry / resume a campaign that didn't reach everyone; throw with the server's message.
 export const getCampaignDelivery = ({ campaignId }) =>
   strict(e.getCampaignDelivery, { hid: selectedHid(), campaignId });
+export const stopEmailCampaign = ({ campaignId }) =>
+  strict(e.stopEmailCampaign, { hid: selectedHid(), campaignId });
+export const startEmailCampaign = ({ campaignId }) =>
+  strict(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
 export const retryEmailCampaign = ({ campaignId }) =>
   strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
 

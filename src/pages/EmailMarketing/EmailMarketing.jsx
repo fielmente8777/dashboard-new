@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
+import EmailQuotaPanel from "../../components/Email/EmailQuotaPanel";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
 import Tabs from "../../components/ui/Tabs";
@@ -253,6 +254,7 @@ export function EmailMarketingManagement() {
     { value: "groups", label: "Groups" },
     { value: "leads", label: "Leads" },
     { value: "templates", label: "Templates" },
+    { value: "quota", label: "Email quota" },
   ];
 
   return (
@@ -317,6 +319,7 @@ export function EmailMarketingManagement() {
       )}
 
       {view === "templates" && <TemplatesList onUseTemplate={(template) => openCompose(template)} />}
+      {view === "quota" && <EmailQuotaPanel />}
       <div className="h-14" aria-hidden="true" />
 
       <ImportDialog open={groupImport !== null} group={groupImport || ""} onClose={() => setGroupImport(null)} />

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import { getCampaignDelivery, retryEmailCampaign } from "../../redux/api/emailMarketingApi";
+import CampaignRunControl from "./CampaignRunControl";
 import Button from "../ui/Button";
 
 const n = (value) => (value ?? 0).toLocaleString("en-IN");
@@ -35,22 +36,23 @@ export default function CampaignDeliveryBar({ campaignId, onChanged }) {
   // follow a run in progress: totals and the bar every 5 s
   const sending = info?.status === "sending" && !info?.stuck;
   useEffect(() => {
-    if (!sending) return undefined;
+    if (!sending && info?.status !== "stopping") return undefined;
     const timer = setInterval(() => {
       load();
       onChanged?.();
     }, 5000);
     return () => clearInterval(timer);
-  }, [sending, load, onChanged]);
+  }, [sending, info?.status, load, onChanged]);
 
   if (!info) return null;
   const { pending, failedRetryable, failedPermanent, status, pauseReason, stuck, canRetry } = info;
 
-  if (sending) {
+  if (sending || (status === "stopping" && !stuck)) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-blue-200! bg-blue-50 px-3 py-2.5 text-sm text-blue-800 dark:border-blue-500/30! dark:bg-blue-500/10 dark:text-blue-300">
         <Loader2 className="size-4 shrink-0 animate-spin" />
-        Sending… {n(pending)} still to go. This page updates by itself.
+        <span className="flex-1">{status === "stopping" ? "Stopping — finishing emails already in progress." : `Sending… ${n(pending)} still to go.`}</span>
+        <CampaignRunControl campaign={{ _id: campaignId, status }} onChanged={() => { load(); onChanged?.(); }} />
       </div>
     );
   }

@@ -10,7 +10,7 @@ import CampaignDetail from "./CampaignDetail";
 // Emails sent so far, filtered by status and searched by subject; a row
 // opens that campaign's recipients. The page owns which one is open
 // (selectedId / onSelect), so other parts of it can open one too.
-export default function CampaignsList({ campaigns, loading, selectedId, onSelect }) {
+export default function CampaignsList({ campaigns, loading, selectedId, onSelect, onChanged }) {
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -65,6 +65,7 @@ export default function CampaignsList({ campaigns, loading, selectedId, onSelect
 
       <EmailCampaignTable
         campaigns={visible}
+        onChanged={onChanged}
         loading={loading}
         onOpen={(c) => onSelect(c._id)}
         emptyMessage="No campaigns match these filters"
