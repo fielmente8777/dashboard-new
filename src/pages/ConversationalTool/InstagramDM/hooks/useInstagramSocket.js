@@ -80,6 +80,15 @@ export const useInstagramSocket = ({ hid, ndid, openConversation }) => {
           return;
         }
 
+        // AI / team handling changed (handover, team reply, resumed)
+        case IG_EVENTS.CONVERSATION_UPDATED: {
+          cache.patchConversation(data.conversationId, {
+            handling: data.handling,
+            aiReplyCount: data.aiReplyCount,
+          });
+          return;
+        }
+
         case IG_EVENTS.MESSAGE_STATUS: {
           if (!openConversation) return;
           cache.patchMessages(openConversation._id, (messages) => {

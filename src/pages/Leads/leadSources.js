@@ -5,7 +5,8 @@
 //   sourceFilter   - offer the "Source" filter
 //   campaignFilter - offer the campaign filter (fills the search)
 //   canAdd / canImport / canSync - header actions
-//   exportNeedsOtp - ask for a date range and a one-time password before exporting
+//   exportNeedsOtp - confirm the export with a one-time password on WhatsApp
+//                    (every page exports through the filters dialog)
 //   live           - refresh when a new lead arrives over the websocket
 const BASE_COLUMNS = [
   "created",

@@ -3,6 +3,7 @@ import {
   BedDouble,
   BookOpen,
   Bot,
+  Sparkles,
   BrainCircuit,
   CalendarCheck,
   CalendarDays,
@@ -245,6 +246,7 @@ export const SidebarData = [
     icon: top(BrainCircuit),
     subLinks: [
       { name: "Knowledge base", link: `knowledge-base`, icon: sub(BookOpen) },
+      { name: "AI agents", link: `ai-agents`, icon: sub(Sparkles) },
       { name: "AI training", link: `ai-training`, icon: sub(Bot) },
     ],
   },

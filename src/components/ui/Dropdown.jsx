@@ -10,6 +10,7 @@ export default function CustomDropdown({
   zIndex = 99999,
   multiple = false,
   disabled = false,
+  placeholder = "Select",
   ...props
 }) {
   const [selected, setSelected] = useState(multiple ? [] : label);
@@ -167,7 +168,7 @@ export default function CustomDropdown({
               ))
             ) : (
               <span className="text-app-text dark:text-app-text-muted">
-                Select
+                {placeholder}
               </span>
             )
           ) : (
