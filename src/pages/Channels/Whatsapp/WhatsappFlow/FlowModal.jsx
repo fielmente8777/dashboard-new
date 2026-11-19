@@ -1,58 +1,48 @@
-import { useState } from "react";
-import { FiX } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import Button from "../../../../components/ui/Button";
+import Dialog from "../../../../components/ui/Dialog";
+import { Field, Input } from "../../../../components/ui/Field";
 
+// Names a new flow before the builder opens.
 const FlowModal = ({ template, onClose, onSave }) => {
   const [name, setName] = useState("");
 
-  const handleSubmit = () => {
-    if (!name.trim()) return;
+  useEffect(() => {
+    if (template) setName("");
+  }, [template]);
 
-    onSave({
-      name,
-      category: template?.category, // ✅ fixed
-      templateId: template?.id,
-    });
+  const submit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave({ name: name.trim(), category: template?.category, template });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-app-surface w-[400px] rounded-xl shadow-lg p-5 relative">
-        <FiX
-          className="absolute right-4 top-4 cursor-pointer"
-          onClick={onClose}
-        />
-
-        <h2 className="text-lg font-semibold mb-4">Enter flow details</h2>
-
-        {/* Flow Name */}
-        <div className="mb-4">
-          <label className="text-sm text-gray-600">Flow Name</label>
-          <input
+    <Dialog
+      open={Boolean(template)}
+      onClose={onClose}
+      title="Name your flow"
+      description={`Starting from the “${template?.title}” template.`}
+    >
+      <form onSubmit={submit} className="space-y-4">
+        <Field label="Flow name" hint="Only your team sees this.">
+          <Input
+            autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="border rounded w-full p-2 mt-1"
-            placeholder="Enter flow name"
+            placeholder="e.g. Room enquiry form"
           />
+        </Field>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!name.trim()}>
+            Continue
+          </Button>
         </div>
-
-        {/* Category (DISABLED) */}
-        <div className="mb-5">
-          <label className="text-sm text-gray-600">Category</label>
-          <input
-            value={template?.title}
-            disabled
-            className="border rounded w-full p-2 mt-1 bg-app-surface-secondary cursor-not-allowed"
-          />
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          className="w-full bg-green-500 text-white py-2 rounded-md"
-        >
-          Save and continue
-        </button>
-      </div>
-    </div>
+      </form>
+    </Dialog>
   );
 };
 

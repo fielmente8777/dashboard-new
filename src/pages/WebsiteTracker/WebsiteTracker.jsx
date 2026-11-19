@@ -1,37 +1,13 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { NEW_BASE_URL } from "../../data/constant";
-import { getAllVisitors } from "../../services/api/WebsiteTracker.api";
+import React from "react";
+import { Skeleton } from "../../components/ui/States";
+import { useGetVisitorsQuery } from "../../redux/api/websiteTrackerApi";
 
 const WebsiteTracker = () => {
-  const [visitors, setVisitors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: visitors = [], isFetching: loading } = useGetVisitorsQuery(
+    { skip: 0, limit: 100 },
+    { refetchOnMountOrArgChange: true },
+  );
 
-  const fetchVisitors = async () => {
-    setLoading(true);
-    try {
-      const formBody = {
-        skip: 0,
-        limit: 100,
-      };
-      const response = await getAllVisitors(formBody);
-      setVisitors(response);
-    } catch (error) {
-      console.error("Error fetching call");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewDetails = (visitorId) => {
-    alert(`Viewing details for NDID: ${ndid}`);
-  };
-
-  useEffect(() => {
-    fetchVisitors();
-  }, []);
-
-  // console.log(visitors)
   return (
     <div className="p-4">
       <h1 className="text-md font-medium mb-4">Visitors</h1>
@@ -64,14 +40,13 @@ const WebsiteTracker = () => {
           </thead>
           <tbody className="divide-y divide-gray-200 text-gray-800">
             {loading ? (
-              <tr>
-                <td
-                  colSpan="12"
-                  className="px-4 py-6 text-center text-gray-500"
-                >
-                  Loading...
-                </td>
-              </tr>
+              Array.from({ length: 5 }, (_, row) => (
+                <tr key={row}>
+                  <td colSpan="12" className="px-4 py-3">
+                    <Skeleton className="h-5" />
+                  </td>
+                </tr>
+              ))
             ) : visitors && visitors.length > 0 ? (
               visitors.map((visitor) => (
                 <tr

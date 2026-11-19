@@ -1,98 +1,457 @@
+// src/components/Notes/ActivityModal.jsx
+import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import VoiceRecorder from "../../../../components/VoiceRecorder";
+import Button from "../../../../components/ui/Button";
+import Icon from "../../../../components/ui/Icon";
+import { NOTE_ACTIVITIES } from "./noteActivities";
 
+// The form to add or edit one note: its kind, the text and / or a voice
+// recording. Shown inline (not as a pop-up) while `open`.
 export default function ActivityModal({ open, onClose, onSave, initialData }) {
   const [activitySource, setActivitySource] = useState("phone_call");
   const [message, setMessage] = useState("");
+  // audio = { blob, duration, mimeType }  (new, not uploaded yet)
+  //      or { url, key, duration, mimeType } (already saved on backend)
+  const [audio, setAudio] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (open) {
       setActivitySource(initialData?.activitySource || "phone_call");
       setMessage(initialData?.message || "");
+      setAudio(
+        initialData?.audio?.blob || initialData?.audio?.url
+          ? initialData.audio
+          : null,
+      );
+      setIsRecording(false);
+      setSaving(false);
+      setError("");
     }
   }, [open, initialData]);
 
   if (!open) return null;
 
-  const handleSave = () => {
-    if (!message.trim()) return;
+  const hasText = message.trim().length > 0;
+  const canSave = (hasText || !!audio) && !isRecording && !saving;
 
-    onSave({
-      activitySource,
-      message,
-      createdAt: initialData?.createdAt || new Date().toISOString(),
-    });
+  const handleSave = async () => {
+    if (!hasText && !audio) {
+      setError("Add a note or record a voice message.");
+      return;
+    }
+    if (isRecording) return;
 
-    onClose();
+    setSaving(true);
+    setError("");
+    try {
+      let audioPayload = null;
+
+      if (audio?.blob) {
+        // New recording -> keep the blob; NotesCard sends it with the notes
+        // in the same update API call. The local URL is only for instant preview.
+        audioPayload = {
+          blob: audio.blob,
+          duration: audio.duration,
+          mimeType: audio.mimeType,
+          url: URL.createObjectURL(audio.blob),
+        };
+      } else if (audio?.url) {
+        audioPayload = audio; // unchanged existing voice note ({ url, key, ... })
+      }
+
+      const now = new Date().toISOString();
+      const ok = await onSave({
+        activitySource,
+        message: message.trim(),
+        ...(audioPayload && { audio: audioPayload }),
+        createdAt: initialData?.createdAt || now,
+        ...(initialData && { updatedAt: now }),
+      });
+
+      if (ok !== false) onClose();
+    } catch (err) {
+      setError(err?.message || "Couldn't save. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const activityOptions = [
-    { value: "phone_call", label: "Phone Call", emoji: "📞" },
-    { value: "message", label: "Message", emoji: "💬" },
-    { value: "note", label: "Note", emoji: "📝" },
-    { value: "email", label: "Email", emoji: "✉️" },
-    { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
-  ];
-
-  const selected = activityOptions.find((a) => a.value === activitySource);
-
   return (
-    <div className="">
-      {open&&<div className="bg-app-surface">
-        {/* Header */}
-        {/* <div className="flex justify-between items-center px-5 py-4 border-b">
-          <h2 className="font-semibold text-lg">
-            {initialData ? "Edit Activity" : "Add Activity"}
-          </h2>
-          <button onClick={onClose} className="text-gray-500">
-            ✕
-          </button>
-        </div> */}
+    <div className="rounded-xl border border-app-border! bg-app-surface-secondary/40 p-3 sm:p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-text-faint">
+        {initialData ? "Edit note" : "New note"}
+      </p>
 
-        {/* Body */}
-        <div className=" space-y-4">
-          <div className="flex items-center gap-3 border rounded-lg px-3 py-2">
-            <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center">
-              {selected.emoji}
-            </div>
-
-            <select
-              className="flex-1 outline-none text-app-text dark:text-app-text-faint bg-app-surface"
-              value={activitySource}
-              onChange={(e) => setActivitySource(e.target.value)}
+      {/* the kind of note */}
+      <div
+        role="radiogroup"
+        aria-label="Activity"
+        className="flex flex-wrap gap-1.5"
+      >
+        {NOTE_ACTIVITIES.map((activity) => {
+          const active = activity.value === activitySource;
+          return (
+            <button
+              key={activity.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => setActivitySource(activity.value)}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition ${
+                active
+                  ? `border-transparent! ${activity.tone} ring-1 ring-current/30`
+                  : "border-app-border! bg-app-surface text-app-text-muted hover:text-app-text"
+              }`}
             >
-              {activityOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              <Icon icon={activity.icon} size="sm" />
+              {activity.label}
+            </button>
+          );
+        })}
+      </div>
 
-          <textarea
-            rows={5}
-            placeholder="Add details..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            className="w-full border rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-purple-300"
+      {/* text, with the voice recorder along the bottom */}
+      <div className="relative mt-3 rounded-lg border border-app-border! bg-app-surface transition-colors focus-within:border-blue-500! focus-within:ring-2 focus-within:ring-blue-500/20">
+        <textarea
+          rows={4}
+          placeholder="Add details... or tap the mic to record"
+          value={message}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            if (error) setError("");
+          }}
+          className="w-full resize-none rounded-lg bg-transparent p-3 pb-14 text-sm text-app-text outline-none placeholder:text-app-text-faint"
+        />
+        <div className="absolute bottom-2 left-2 right-2 flex items-center">
+          <VoiceRecorder
+            existingAudio={audio?.url ? audio : null}
+            onChange={(rec) => {
+              setAudio(rec);
+              if (error) setError("");
+            }}
+            onRecordingChange={setIsRecording}
+            disabled={saving}
           />
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="py-5 pt-0 flex items-center gap-2">
-          {initialData &&<button
-            onClick={()=>{setMessage(""); onClose()}}
-            className="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700"
-          >
-            Cancle
-          </button>}
-          <button
-            onClick={handleSave}
-            className="w-full bg-teal-600 text-white py-2 rounded-lg hover:bg-teal-700"
-          >
-            Save
-          </button>
-        </div>
-      </div>}
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+
+      <div className="mt-3 flex justify-end gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={X}
+          disabled={saving}
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="sm"
+          icon={Check}
+          loading={saving}
+          disabled={!canSave}
+          onClick={handleSave}
+        >
+          {isRecording
+            ? "Stop recording to save"
+            : initialData
+              ? "Update note"
+              : "Save note"}
+        </Button>
+      </div>
     </div>
   );
 }
+
+// src/components/Notes/ActivityModal.jsx
+// import { useEffect, useState } from "react";
+// // import { uploadVoiceNote } from "../../services/voiceNoteService";
+// // import Loader from "../Loader"; // adjust to wherever your Loader lives
+// import VoiceRecorder from "../../../../components/VoiceRecorder";
+// import Loader from "../../../../components/Loader";
+
+// /* <option> is drawn by the OS, so it needs its own explicit colors.
+//    Chrome/Edge/Firefox honour these; Safari falls back to color-scheme. */
+// const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
+
+// const activityOptions = [
+//   { value: "phone_call", label: "Phone Call", emoji: "📞" },
+//   { value: "message", label: "Message", emoji: "💬" },
+//   { value: "note", label: "Note", emoji: "📝" },
+//   { value: "email", label: "Email", emoji: "✉️" },
+//   { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
+// ];
+
+// export default function ActivityModal({
+//   open,
+//   onClose,
+//   onSave,
+//   initialData,
+//   hid,
+// }) {
+//   const [activitySource, setActivitySource] = useState("phone_call");
+//   const [message, setMessage] = useState("");
+//   // audio = { blob, duration, mimeType }  (new, not uploaded yet)
+//   //      or { url, key, duration, mimeType } (already saved on backend)
+//   const [audio, setAudio] = useState(null);
+//   const [isRecording, setIsRecording] = useState(false);
+//   const [saving, setSaving] = useState(false);
+//   const [error, setError] = useState("");
+
+//   useEffect(() => {
+//     if (open) {
+//       setActivitySource(initialData?.activitySource || "phone_call");
+//       setMessage(initialData?.message || "");
+//       setAudio(initialData?.audio?.url ? initialData.audio : null);
+//       setIsRecording(false);
+//       setSaving(false);
+//       setError("");
+//     }
+//   }, [open, initialData]);
+
+//   if (!open) return null;
+
+//   const hasText = message.trim().length > 0;
+//   const canSave = (hasText || !!audio) && !isRecording && !saving;
+
+//   const handleSave = async () => {
+//     if (!hasText && !audio) {
+//       setError("Add a note or record a voice message.");
+//       return;
+//     }
+
+//     if (isRecording) return;
+
+//     setSaving(true);
+//     setError("");
+//     try {
+//       let audioPayload = null;
+
+//       if (audio?.blob) {
+//         // New recording -> upload first, store only the URL in the note
+//         const uploaded = await uploadVoiceNote(audio.blob, { hid });
+//         audioPayload = {
+//           url: uploaded.url,
+//           key: uploaded.key,
+//           duration: audio.duration,
+//           mimeType: audio.mimeType,
+//         };
+//       } else if (audio?.url) {
+//         audioPayload = audio; // unchanged existing voice note
+//       }
+
+//       const now = new Date().toISOString();
+//       const ok = await onSave({
+//         activitySource,
+//         message: message.trim(),
+//         ...(audioPayload && { audio: audioPayload }),
+//         createdAt: initialData?.createdAt || now,
+//         ...(initialData && { updatedAt: now }),
+//       });
+
+//       if (ok !== false) onClose();
+//     } catch (err) {
+//       setError(err?.message || "Couldn't save. Please try again.");
+//     } finally {
+//       setSaving(false);
+//     }
+//   };
+
+//   const selected = activityOptions.find((a) => a.value === activitySource);
+
+//   return (
+//     <div className="bg-app-surface scheme:light dark:scheme-dark bg-transparent">
+//       <div className="space-y-4">
+//         {/* Activity type */}
+//         <div className="flex items-center gap-3 border border-app-border rounded-lg px-3 py-2 bg-app-surface focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-colors">
+//           <div className="w-9 h-9 shrink-0 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-base">
+//             {selected?.emoji}
+//           </div>
+//           <select
+//             className="flex-1 min-w-0 outline-none text-sm sm:text-base text-app-text bg-app-surface cursor-pointer"
+//             value={activitySource}
+//             onChange={(e) => setActivitySource(e.target.value)}
+//           >
+//             {activityOptions.map((opt) => (
+//               <option key={opt.value} value={opt.value} className={OPTION}>
+//                 {opt.label}
+//               </option>
+//             ))}
+//           </select>
+//         </div>
+
+//         {/* Textarea + voice bar in bottom-left */}
+//         <div className="relative border border-app-border rounded-lg bg-app-surface focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-colors">
+//           <textarea
+//             rows={5}
+//             placeholder="Add details... or tap the mic to record"
+//             value={message}
+//             onChange={(e) => {
+//               setMessage(e.target.value);
+//               if (error) setError("");
+//             }}
+//             className="w-full rounded-lg p-3 pb-14 text-sm outline-none resize-none bg-transparent text-app-text placeholder:text-app-text-faint"
+//           />
+//           <div className="absolute left-2 right-2 bottom-2 flex items-center">
+//             <VoiceRecorder
+//               existingAudio={audio?.url && !audio?.blob ? audio : null}
+//               onChange={(rec) => {
+//                 setAudio(rec);
+//                 if (error) setError("");
+//               }}
+//               onRecordingChange={setIsRecording}
+//               disabled={saving}
+//             />
+//           </div>
+//         </div>
+
+//         {error && <p className="text-xs text-red-500">{error}</p>}
+//       </div>
+
+//       {/* Footer */}
+//       <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+//         {initialData && (
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             disabled={saving}
+//             className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-60"
+//           >
+//             Cancel
+//           </button>
+//         )}
+//         <button
+//           type="button"
+//           onClick={handleSave}
+//           disabled={!canSave}
+//           className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+//         >
+//           {saving
+//             ? "Saving"
+//             : isRecording
+//               ? "Stop recording to save"
+//               : initialData
+//                 ? "Update"
+//                 : "Save"}
+//           {saving && <Loader size={12} color="#fefefe" />}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
+
+// import { useEffect, useState } from "react";
+
+// /* <option> is drawn by the OS, so it needs its own explicit colors.
+//    Chrome/Edge/Firefox honour these; Safari falls back to color-scheme. */
+// const OPTION = "bg-white dark:bg-[#1e293b] text-gray-800 dark:text-gray-100";
+
+// export default function ActivityModal({ open, onClose, onSave, initialData }) {
+//   const [activitySource, setActivitySource] = useState("phone_call");
+//   const [message, setMessage] = useState("");
+
+//   useEffect(() => {
+//     if (open) {
+//       setActivitySource(initialData?.activitySource || "phone_call");
+//       setMessage(initialData?.message || "");
+//     }
+//   }, [open, initialData]);
+
+//   if (!open) return null;
+
+//   const handleSave = () => {
+//     if (!message.trim()) return;
+
+//     onSave({
+//       activitySource,
+//       message,
+//       createdAt: initialData?.createdAt || new Date().toISOString(),
+//     });
+
+//     onClose();
+//   };
+
+//   const activityOptions = [
+//     { value: "phone_call", label: "Phone Call", emoji: "📞" },
+//     { value: "message", label: "Message", emoji: "💬" },
+//     { value: "note", label: "Note", emoji: "📝" },
+//     { value: "email", label: "Email", emoji: "✉️" },
+//     { value: "whatsapp", label: "Whatsapp", emoji: "🟢" },
+//   ];
+
+//   const selected = activityOptions.find((a) => a.value === activitySource);
+
+//   return (
+//     <div className="">
+//       {open && (
+//         <div className="bg-app-surface scheme:light dark:scheme-dark bg-transparent">
+//           {/* Header */}
+//           {/* <div className="flex justify-between items-center px-5 py-4 border-b">
+//           <h2 className="font-semibold text-lg">
+//             {initialData ? "Edit Activity" : "Add Activity"}
+//           </h2>
+//           <button onClick={onClose} className="text-gray-500">
+//             ✕
+//           </button>
+//         </div> */}
+
+//           {/* Body */}
+//           <div className="space-y-4">
+//             <div className="flex items-center gap-3 border border-app-border rounded-lg px-3 py-2 bg-app-surface focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary transition-colors">
+//               <div className="w-9 h-9 shrink-0 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-base">
+//                 {selected?.emoji}
+//               </div>
+
+//               <select
+//                 className="flex-1 min-w-0 outline-none text-sm sm:text-base text-app-text bg-app-surface cursor-pointer"
+//                 value={activitySource}
+//                 onChange={(e) => setActivitySource(e.target.value)}
+//               >
+//                 {activityOptions.map((opt) => (
+//                   <option key={opt.value} value={opt.value} className={OPTION}>
+//                     {opt.label}
+//                   </option>
+//                 ))}
+//               </select>
+//             </div>
+
+//             <textarea
+//               rows={5}
+//               placeholder="Add details..."
+//               value={message}
+//               onChange={(e) => setMessage(e.target.value)}
+//               className="w-full border border-app-border rounded-lg p-3 text-sm outline-none resize-none bg-app-surface text-app-text placeholder:text-app-text-faint focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+//             />
+//           </div>
+
+//           {/* Footer */}
+//           <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+//             {initialData && (
+//               <button
+//                 onClick={() => {
+//                   setMessage("");
+//                   onClose();
+//                 }}
+//                 className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+//               >
+//                 Cancel
+//               </button>
+//             )}
+//             <button
+//               onClick={handleSave}
+//               className="w-full bg-teal-600 hover:bg-teal-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors"
+//             >
+//               Save
+//             </button>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }

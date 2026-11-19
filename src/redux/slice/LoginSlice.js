@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { UserLogin } from "../../services/api/auth.api";
+import { authApi } from "../api/authApi";
 
 const initialState = {
   user: null,
@@ -35,11 +35,19 @@ export default authSlice.reducer;
 export const loginUser = (userData) => async (dispatch) => {
   dispatch(loginUserRequest());
   try {
-    const response = await UserLogin(userData);
+    const login = dispatch(
+      authApi.endpoints.login.initiate({ email: userData.email, password: userData.password }),
+    );
+    let response;
+    try {
+      response = await login.unwrap();
+    } finally {
+      login.reset();
+    }
     dispatch(loginUserSuccess(response));
     return { success: true, data: response };
   } catch (error) {
-    const errorMessage = error.response?.data?.msg || "User Login failed.";
+    const errorMessage = error?.data?.msg || "User Login failed.";
     console.error("User Login API Error:", errorMessage);
     dispatch(loginUserFailure(errorMessage));
     return { success: false, error: errorMessage };

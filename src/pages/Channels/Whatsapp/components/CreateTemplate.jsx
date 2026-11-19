@@ -1,148 +1,183 @@
-import React, { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import TemplateHeader from "./TemplateHeader";
-import { templateSchema } from "../../../../schema/templateSchema";
-import TemplateContent from "./TemplateContent";
-import TemplateButtons from "./TemplateButtons";
-import VariableSamples from "./VariableSample";
-import TemplatePreview from "./TemplatePreview";
-import { createWhatsAppMessageTemplate } from "../../../../services/api/whatsApp";
+import { ArrowLeft, Send } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import Button from "../../../../components/ui/Button";
+import IconButton from "../../../../components/ui/IconButton";
 import { useToast } from "../../../../context/ToastContext";
-import Loader from "../../../../components/Loader";
+import { templateSchema } from "../../../../schema/templateSchema";
+import {
+  createWhatsAppMessageTemplate,
+  updateWhatsAppMessageTemplate,
+} from "../../../../redux/api/whatsappBusinessApi";
+import TemplateButtons from "./TemplateButtons";
+import TemplateContent from "./TemplateContent";
+import TemplateHeader from "./TemplateHeader";
+import TemplatePreview from "./TemplatePreview";
+import {
+  buttonsProblem,
+  extractVariables,
+  normalizeTemplate,
+  toMetaButtons,
+} from "./templateUtils";
 
-const extractVariables = (text = "") => {
-  const matches = text.match(/{{(\d+)}}/g) || [];
+const toDefaults = (template) => ({
+  name: template?.name || "",
+  language: template?.language || "en_US",
+  category: template?.category || "UTILITY",
+  headerType: template?.headerType || "NONE",
+  header: template?.header || "",
+  headerImage: template?.headerImage || null,
+  body: template?.body || "",
+  footer: template?.footer || "",
+  headerVariables: template?.headerVariables || [],
+  bodyVariables: template?.bodyVariables || [],
+  buttons: template?.buttons || [],
+});
 
-  return matches.map((v) => ({
-    key: v,
-    sample: "",
-  }));
-};
+// Meta's error for a rejected template, in words a user can act on
+const metaMessage = (response, fallback) =>
+  response?.error?.error?.error_user_msg ||
+  response?.metaError?.error?.error_user_msg ||
+  response?.error?.error?.message ||
+  response?.responseMessage ||
+  fallback;
 
-const CreateTemplate = ({ initialData = null, onClose }) => {
-  const [loading, setLoading] = React.useState(false);
+// Create a template (blank, or from the library) or edit one, with a live
+// preview. Templates go to Meta for approval when submitted.
+const CreateTemplate = ({ initialData = null, mode = "create", onClose, onSaved }) => {
   const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const isEdit = mode === "edit";
+
+  const template = useMemo(() => normalizeTemplate(initialData), [initialData]);
   const methods = useForm({
     resolver: zodResolver(templateSchema),
-    defaultValues: {
-      name: initialData?.name || "",
-      language: initialData?.language || "en_US",
-      category: initialData?.category || "UTILITY",
-      header: initialData?.header || "",
-      body: initialData?.body || "",
-      footer: initialData?.footer || "",
-      headerVariables: initialData?.headerVariables || [],
-      bodyVariables: initialData?.bodyVariables || [],
-      buttons: initialData?.buttons || [],
-    },
+    defaultValues: toDefaults(template),
   });
+  const { handleSubmit, watch, setValue, getValues, reset } = methods;
 
-  const { handleSubmit, watch, setValue } = methods;
+  // a new template picked from the library refills the form
+  useEffect(() => reset(toDefaults(template)), [template, reset]);
 
   const header = watch("header");
   const body = watch("body");
-  const footer = watch("footer");
-  const buttons = watch("buttons");
+  const headerType = watch("headerType");
+
+  // one example per variable, keeping the ones already typed
+  useEffect(() => {
+    const fit = (name, text) => {
+      const current = getValues(name) || [];
+      setValue(name, extractVariables(text).map((_, i) => current[i] || ""));
+    };
+    fit("headerVariables", header);
+    fit("bodyVariables", body);
+  }, [header, body, getValues, setValue]);
 
   const components = [
-    {
-      type: "HEADER",
-      text: header,
-    },
-    {
-      type: "BODY",
-      text: body,
-    },
-    {
-      type: "FOOTER",
-      text: footer,
-    },
-    {
-      type: "BUTTONS",
-      buttons: buttons || [],
-    },
-  ];
+    headerType === "TEXT" && { type: "HEADER", format: "TEXT", text: header },
+    headerType === "IMAGE" && { type: "HEADER", format: "IMAGE", file: watch("headerImage") },
+    { type: "BODY", text: body },
+    { type: "FOOTER", text: watch("footer") },
+    { type: "BUTTONS", buttons: watch("buttons") || [] },
+  ].filter(Boolean);
 
   const onSubmit = async (data) => {
+    const problem =
+      buttonsProblem(data.buttons) ||
+      (data.headerType === "IMAGE" && !data.headerImage && "Add a header image or choose another header.") ||
+      ([...data.headerVariables, ...data.bodyVariables].some((v) => !v?.trim()) &&
+        "Add an example for every variable.");
+    if (problem) {
+      showToast({ message: problem, type: "error" });
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await createWhatsAppMessageTemplate(data);
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("language", data.language);
+      formData.append("category", data.category || "UTILITY");
+      formData.append("headerType", data.headerType);
+      formData.append("header", data.header || "");
+      formData.append("body", data.body);
+      formData.append("footer", data.footer || "");
+      formData.append("headerVariables", JSON.stringify(data.headerVariables || []));
+      formData.append("bodyVariables", JSON.stringify(data.bodyVariables || []));
+      formData.append("buttons", JSON.stringify(toMetaButtons(data.buttons)));
+      if (data.headerType === "IMAGE" && data.headerImage instanceof File) {
+        formData.append("file", data.headerImage);
+      }
 
-      if (response?.success && response?.responseStatusCode === 200) {
-        showToast({
-          message: "Template created successfully",
-          type: "success",
-        });
+      const response = isEdit
+        ? await updateWhatsAppMessageTemplate(formData, initialData?.id)
+        : await createWhatsAppMessageTemplate(formData);
 
-        return;
+      if (!response?.success) {
+        throw new Error(metaMessage(response, "Meta did not accept this template."));
       }
 
       showToast({
-        message:
-          response?.error?.error?.error_user_msg || "Failed to create template",
-        type: "error",
+        message: isEdit
+          ? "Changes sent to Meta for review"
+          : "Template sent to Meta for approval",
       });
+      reset(toDefaults(null));
+      onSaved?.();
     } catch (error) {
-      console.error(error);
-      showToast({
-        message: error?.message || "Failed to create template",
-        type: "error",
-      });
+      showToast({ message: error?.message || "Could not save the template.", type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    const headerVars = extractVariables(header);
-    const bodyVars = extractVariables(body);
-
-    const currentHeaderSamples = methods.getValues("headerVariables") || [];
-    const currentBodySamples = methods.getValues("bodyVariables") || [];
-
-    const newHeaderSamples = headerVars.map(
-      (_, i) => currentHeaderSamples[i] || "",
-    );
-
-    const newBodySamples = bodyVars.map((_, i) => currentBodySamples[i] || "");
-
-    setValue("headerVariables", newHeaderSamples);
-    setValue("bodyVariables", newBodySamples);
-  }, [header, body, setValue]);
-
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex gap-6 p-2 bg-app-surface "
-      >
-        {/* LEFT FORM */}
-
-        <div className="flex-1 space-y-6">
-          <TemplateHeader onCancel={onClose} showCancelButton={initialData} />
-          <TemplateContent />
-          <TemplateButtons />
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="outline-none border border-slate-500! text-gray-600 dark:text-app-text px-4 py-2 rounded-sm hover:bg-slate-700 hover:text-white transition flex items-center justify-center gap-2"
-            >
-              + Create Template {loading && <Loader color="#378863" />}
-            </button>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          {onClose && (isEdit || initialData) && (
+            <IconButton icon={ArrowLeft} label="Back" onClick={onClose} />
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-semibold text-app-text">
+              {isEdit ? `Edit ${initialData?.name}` : "Create a message template"}
+            </h2>
+            <p className="text-xs text-app-text-muted">
+              Templates start conversations with guests. Meta usually reviews them within
+              a few minutes.
+            </p>
           </div>
         </div>
 
-        {/* PREVIEW */}
-        <div className="">
-          <h2 className="mb-2">Template Preview</h2>
-          <TemplatePreview
-            components={components}
-            headerVariables={watch("headerVariables")}
-            bodyVariables={watch("bodyVariables")}
-          />
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_22rem]">
+          <div className="min-w-0 space-y-4">
+            <TemplateHeader mode={mode} />
+            <TemplateContent />
+            <TemplateButtons />
+
+            <div className="flex justify-end gap-2">
+              {onClose && (isEdit || initialData) && (
+                <Button variant="secondary" onClick={onClose} disabled={loading}>
+                  Cancel
+                </Button>
+              )}
+              <Button type="submit" icon={Send} loading={loading}>
+                {isEdit ? "Submit changes" : "Submit for approval"}
+              </Button>
+            </div>
+          </div>
+
+          <div className="lg:sticky lg:top-2">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-app-text-muted">
+              Preview
+            </p>
+            <TemplatePreview
+              components={components}
+              headerVariables={watch("headerVariables")}
+              bodyVariables={watch("bodyVariables")}
+            />
+          </div>
         </div>
       </form>
     </FormProvider>

@@ -1,77 +1,46 @@
 import { useFormContext } from "react-hook-form";
+import { Input } from "../../../../components/ui/Field";
+import { extractVariables } from "./templateUtils";
 
-const extractVariables = (text) => {
-  const matches = text?.match(/{{\d+}}/g);
-  return matches ? [...new Set(matches)] : [];
-};
+const SampleRows = ({ title, variables, name, register }) => (
+  <div className="space-y-2">
+    <p className="text-xs font-medium text-app-text-muted">{title}</p>
+    {variables.map((variable, index) => (
+      <div key={variable} className="flex items-center gap-2">
+        <span className="w-12 shrink-0 rounded-md bg-blue-500/10 py-2 text-center font-mono text-xs text-blue-600 dark:text-blue-400">
+          {variable}
+        </span>
+        <Input
+          {...register(`${name}.${index}`)}
+          placeholder={`Example for ${variable}, e.g. ${index === 0 ? "Rahul" : "Hotel Lotus"}`}
+        />
+      </div>
+    ))}
+  </div>
+);
 
+// Example values for each variable. Meta needs them to review the template;
+// they also fill the preview.
 const VariableSamples = () => {
   const { register, watch } = useFormContext();
-
-  const header = watch("header");
-  const body = watch("body");
-
-  const headerVars = extractVariables(header);
-  const bodyVars = extractVariables(body);
+  const headerVars = extractVariables(watch("header"));
+  const bodyVars = extractVariables(watch("body"));
 
   if (!headerVars.length && !bodyVars.length) return null;
 
   return (
-    <div className="bg-app-surface p-6 rounded-lg border">
-      <h2 className="text-lg font-semibold mb-4">Variable Samples</h2>
-
-      <p className="text-sm text-gray-500 mb-6">
-        Include samples of all variables to help Meta review your template.
-      </p>
-
-      {/* HEADER VARIABLES */}
+    <div className="space-y-4 rounded-lg border border-app-border! bg-app-surface-secondary/50 p-4">
+      <div>
+        <p className="text-sm font-medium text-app-text">Variable examples</p>
+        <p className="text-xs text-app-text-muted">
+          Meta uses these to review your template. Guests see the real values.
+        </p>
+      </div>
       {headerVars.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Header</h3>
-
-          <div className="space-y-2">
-            {headerVars.map((v, index) => (
-              <div key={v} className="flex gap-3">
-                <input
-                  value={v}
-                  disabled
-                  className="border rounded-md px-3 py-2 w-20 bg-gray-100"
-                />
-
-                <input
-                  {...register(`headerVariables.${index}`)}
-                  placeholder={`Enter content for ${v}`}
-                  className="border rounded-md px-3 py-2 flex-1"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+        <SampleRows title="Header" variables={headerVars} name="headerVariables" register={register} />
       )}
-
-      {/* BODY VARIABLES */}
       {bodyVars.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Body</h3>
-
-          <div className="space-y-2">
-            {bodyVars.map((v, index) => (
-              <div key={v} className="flex gap-3">
-                <input
-                  value={v}
-                  disabled
-                  className="border rounded-md px-3 py-2 w-20 bg-gray-100"
-                />
-
-                <input
-                  {...register(`bodyVariables.${index}`)}
-                  placeholder={`Enter content for ${v}`}
-                  className="border rounded-md px-3 py-2 flex-1"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
+        <SampleRows title="Body" variables={bodyVars} name="bodyVariables" register={register} />
       )}
     </div>
   );

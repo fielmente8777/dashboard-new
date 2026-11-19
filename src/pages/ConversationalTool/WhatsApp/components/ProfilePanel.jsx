@@ -1,466 +1,236 @@
-import { useContext, useState } from "react";
-
-import { IoMdArrowDropdown } from "react-icons/io";
-import { IoArrowBack } from "react-icons/io5";
-import Loader from "../../../../components/Loader";
+import {
+  ArrowLeft,
+  Bot,
+  Clock,
+  ExternalLink,
+  Plus,
+  Timer,
+  Trash2,
+  UserRound,
+  X,
+} from "lucide-react";
+import { useState } from "react";
+import Badge from "../../../../components/ui/Badge";
+import Button from "../../../../components/ui/Button";
 import CustomDropdown from "../../../../components/ui/Dropdown";
+import { Field } from "../../../../components/ui/Field";
+import Icon from "../../../../components/ui/Icon";
+import IconButton from "../../../../components/ui/IconButton";
 import { useConfirm } from "../../../../context/ConfirmContext";
-import DataContext from "../../../../context/DataContext";
 import { useToast } from "../../../../context/ToastContext";
 import { Stages } from "../../../../data/constant";
-import { updateLead } from "../../../../services/api/leads.api";
+import { getStageTone } from "../../../Leads/leadUtils";
 import {
-  addWhatsAppLead,
-  deleteConversation,
-} from "../../../../services/api/whatsApp";
-import {
-  formatDateByOnlyDay,
-  formateDateInTimeIS,
-} from "../../../../utils/formateDate";
+  formatDayLabel,
+  formatTime,
+  getConversationAssignee,
+  getLastActivity,
+  isWindowClosed,
+} from "../chatUtils";
+import { useOpenConversationLead } from "../hooks/useOpenConversationLead";
+import ContactAvatar from "./ContactAvatar";
+import { useConversationLead } from "../hooks/useConversationLead";
 import ActivityModal from "./ActivityModal";
 import Timeline from "./Timeline";
-import { RiDeleteBin6Line } from "react-icons/ri";
 
-const ProfilePanel = ({ selectedContact, fetchConversations }) => {
+const formatLastActive = (date) =>
+  date && !Number.isNaN(new Date(date).getTime())
+    ? `${formatDayLabel(date)}, ${formatTime(date)}`
+    : "—";
+
+// The guest behind the open conversation: their lead stage and the team's
+// notes on them.
+//   lastActive  - when the last message was exchanged
+//   knownLeadId - the lead the chat was opened from, if any
+//   onBack()   onDelete() - deletes the whole conversation
+const ProfilePanel = ({
+  conversation,
+  hid,
+  knownLeadId,
+  lastActive,
+  deleting,
+  onBack,
+  onDelete,
+}) => {
   const { confirm } = useConfirm();
   const { showToast } = useToast();
-  const {
-    selectedConversation,
-    setSelectedConversation,
-    setConversations,
-    setMobileActive,
-    lastMessage,
-  } = useContext(DataContext);
-  const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+  const saveLead = useConversationLead(hid, conversation);
+  const lead = useOpenConversationLead({
+    hid,
+    conversation,
+    knownLeadId,
+    saveLead,
+  });
+  const windowOpen = !isWindowClosed(getLastActivity(conversation));
+  const assignee = getConversationAssignee(conversation);
+  const byAi = !conversation.handling || conversation.handling.mode === "AI";
 
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingNote, setEditingNote] = useState(null);
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  // the note being written: null = closed, { index: null } = a new one
+  const [noteEditor, setNoteEditor] = useState(null);
+  const notes = conversation.notes || [];
 
-  const handleAddLead = async ({ stage, activity }) => {
-    const isEdit = selectedConversation?.markAsLead;
-    const notes = [...(selectedConversation?.notes || [])];
-
-    if (activity) {
-      editingIndex !== null
-        ? (notes[editingIndex] = activity)
-        : notes.push(activity);
+  const saveNote = async (note) => {
+    if (note.audio?.blob) {
+      showToast({
+        message:
+          "Voice notes cannot be saved from the chat yet. Add them from the lead's page.",
+        type: "error",
+      });
+      return false;
     }
 
-    try {
-      const payload = {
-        Contact: selectedConversation.phone,
-        Name: selectedConversation.name,
-        ndid: selectedConversation.ndid,
-        notes,
-        status: stage,
-        conversationId: selectedConversation._id,
-        hId: selectedConversation?.hid || localStorage.getItem("hid"),
-      };
-      const response = isEdit
-        ? await updateLead(payload)
-        : await addWhatsAppLead(payload);
-      if (response.success && response.responseStatusCode === 200) {
-        setSelectedConversation({
-          ...selectedConversation,
-          ...(stage && { status: stage }),
-          ...(notes && { notes }),
-        });
+    const next = [...notes];
+    if (noteEditor.index === null) next.push(note);
+    else next[noteEditor.index] = note;
 
-        showToast({
-          message: response.responseMessage || "Lead added successfully",
-          type: "success",
-          position: "bottom-right",
-        });
-
-        fetchConversations(false);
-      }
-    } catch (error) {
-      console.log("Error", error);
-    }
+    const saved = await saveLead({ notes: next }, "Note saved");
+    if (saved) setNoteEditor(null);
+    return saved;
   };
 
-  const handleRemoveNote = async (index) => {
-    try {
-      const isConfirmed = await confirm(
-        "Are you sure you want to delete this lead?",
-      );
+  const removeNote = async (index) => {
+    const confirmed = await confirm("Delete this note?", {
+      title: "Delete note",
+    });
+    if (!confirmed) return;
 
-      if (!isConfirmed) return;
-
-      const notes = [...selectedConversation.notes];
-      notes.splice(index, 1);
-
-      const payload = {
-        ndid: selectedConversation.ndid,
-        conversationId: selectedConversation._id,
-        hid: selectedConversation?.hid,
-        notes,
-      };
-
-      setSelectedConversation({
-        ...selectedConversation,
-        notes,
-      });
-
-      const response = await updateLead(payload);
-
-      if (response?.success && response?.responseStatusCode === 200) {
-        showToast({
-          message: response.responseMessage || "Lead added successfully",
-          type: "success",
-          position: "bottom-right",
-        });
-        fetchConversations(false);
-      }
-    } catch (error) {
-      showToast({
-        message: error?.message || "Failed to update lead",
-        type: "error",
-        position: "bottom-right",
-      });
-    }
-  };
-
-  const handleDeleteConversation = async () => {
-    setIsDeleteLoading(true);
-    try {
-      const isConfirmed = await confirm(
-        "Are you sure you want to delete this conversation?",
-      );
-
-      if (!isConfirmed) return;
-
-      const response = await deleteConversation({
-        conversationId: selectedConversation._id,
-        phone: selectedConversation.phone,
-      });
-
-      setConversations((prevConversations) =>
-        prevConversations.filter(
-          (conv) => conv._id !== selectedConversation._id,
-        ),
-      );
-
-      setSelectedConversation(null);
-
-      if (response?.success) {
-        showToast({
-          message:
-            response?.responseMessage || "Conversation deleted successfully",
-          type: "success",
-          position: "bottom-right",
-        });
-      }
-    } catch (error) {
-      showToast({
-        message: error?.message || "Failed to delete conversation",
-        type: "error",
-        position: "bottom-right",
-      });
-    } finally {
-      setIsDeleteLoading(false);
-    }
+    saveLead({ notes: notes.filter((_, i) => i !== index) }, "Note deleted");
   };
 
   return (
-    <div className="w-full xl:w-80 h-full overflow-y-auto bg-app-surface border-l border-gray-200 flex flex-col">
-      <div className="flex justify-end p-2"></div>
-      {/* Profile Header */}
-      <div className="px-3 md:px-6 md:py-0 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <div className="mr-2 lg:hidden">
-              <IoArrowBack
-                size={22}
-                onClick={() => setMobileActive("chatarea")}
-              />
-            </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 border text-gray-600 dark:text-app-text border-gray-900 bg-ternary/20 rounded-full flex items-center justify-center  font-bold text-md md:text-lg mr-2 md:mr-4">
-              {selectedContact?.name?.charAt(0)?.toUpperCase()}
-            </div>
-            <div>
-              <h3 className="text-md md:text-lg font-semibold text-gray-900 dark:text-app-text">
-                {selectedContact?.name}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-app-text-faint font-medium">
-                {selectedContact?.phone}
-              </p>
-            </div>
-          </div>
-          <button
-            disabled={isDeleteLoading}
-            className="bg-red-200 text-red-600 p-2 font-medium text-sm rounded-sm flex items-center gap-1.5"
-            onClick={handleDeleteConversation}
-          >
-            <RiDeleteBin6Line /> {isDeleteLoading && <Loader color="#fefefe" />}
-          </button>
-        </div>
+    <aside className="flex min-h-0 w-full flex-col overflow-hidden bg-app-surface">
+      <div className="flex h-16 shrink-0 items-center gap-2 border-b border-app-border! px-3">
+        <IconButton
+          icon={ArrowLeft}
+          label="Back to chat"
+          className="xl:hidden"
+          onClick={onBack}
+        />
+        <p className="flex-1 text-sm font-semibold text-app-text">
+          Guest details
+        </p>
+        <IconButton
+          icon={Trash2}
+          label="Delete conversation"
+          tone="danger"
+          disabled={deleting}
+          onClick={onDelete}
+        />
+      </div>
 
-        {/* Status Information */}
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Status
-            </span>
-            <span className="text-gray-600 dark:text-app-text-faint bg-green-200 px-4 rounded-2xl font-medium text-sm">
-              {/* {selectedContact?.status === "ACTIVE" ? "Active" : "Inactive"} */}
+      {/* only this part scrolls; the header above stays put */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="flex flex-col items-center gap-1 border-b border-app-border! bg-gradient-to-b from-emerald-500/10 to-transparent px-4 pb-5 pt-6 text-center">
+        <button
+          type="button"
+          onClick={lead.openLead}
+          disabled={lead.finding}
+          title="Open this guest's lead"
+          className="mb-1 rounded-full ring-4 ring-app-surface transition hover:ring-blue-500/40"
+        >
+          <ContactAvatar name={conversation.name} size="lg" />
+        </button>
+        <p className="max-w-full truncate text-base font-semibold capitalize text-app-text">
+          {conversation.name || "Unknown guest"}
+        </p>
+        <p className="text-sm tabular-nums text-app-text-muted">
+          {conversation.phone}
+        </p>
+        {conversation.status && (
+          <Badge tone={getStageTone(conversation.status)} className="mt-1 capitalize">
+            {conversation.status}
+          </Badge>
+        )}
+        <Button
+          size="sm"
+          variant="secondary"
+          icon={ExternalLink}
+          loading={lead.finding}
+          className="mt-3 w-full"
+          onClick={lead.openLead}
+        >
+          Open lead
+        </Button>
+      </div>
 
-              {selectedContact?.status}
-            </span>
+      <dl className="space-y-3 border-b border-app-border! p-4 text-sm">
+        {[
+          { icon: Clock, label: "Last active", value: formatLastActive(lastActive) },
+          {
+            icon: Timer,
+            label: "Reply window",
+            value: (
+              <span
+                className={
+                  windowOpen
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-amber-600 dark:text-amber-400"
+                }
+              >
+                {windowOpen ? "Open" : "Closed · template only"}
+              </span>
+            ),
+          },
+          { icon: UserRound, label: "Assigned to", value: assignee || "No one" },
+          { icon: Bot, label: "Replying", value: byAi ? "AI" : "Team member" },
+        ].map((row) => (
+          <div key={row.label} className="flex items-center justify-between gap-3">
+            <dt className="flex items-center gap-2 text-app-text-muted">
+              <Icon icon={row.icon} size="sm" tone="faint" />
+              {row.label}
+            </dt>
+            <dd className="truncate text-right font-medium text-app-text">
+              {row.value}
+            </dd>
           </div>
+        ))}
 
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Last Active
-            </span>
-            <span className="text-gray-900 dark:text-app-text-faint">{`${formatDateByOnlyDay(
-              selectedContact?.last_message?.created_at ||
-                lastMessage?.createdAt,
-            )} ${formateDateInTimeIS(selectedContact?.last_message?.created_at || lastMessage?.createdAt)} `}</span>
-          </div>
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Template Messages</span>
-            <span className="text-gray-900">0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Session Messages</span>
-            <span className="text-gray-900">1</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Unresolved Queries</span>
-            <span className="text-gray-900">0</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Source</span>
-            <span className="text-gray-900">AD</span>
-          </div> */}
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Last Message</span>
-            <span className="text-gray-900">
-              {selectedContact?.last_message?.text}
-            </span>
-          </div> */}
-          {/* <div className="flex justify-between text-sm">
-            <span className="text-gray-600">WA Conversation</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">MAU Status</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Active":"Inactive"}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Incoming</span>
-            <span className="text-gray-900">{selectedContact?.status==="ACTIVE"?"Allowed":"Not Allowed"}</span>
-          </div> */}
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600 dark:text-app-text-faint">
-              Opted In
-            </span>
-
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" checked={true} />
-              <div
-                class="w-11 h-6 bg-gray-300 rounded-full peer 
-                            peer-checked:bg-teal-500 
-                            transition-colors duration-300"
-              ></div>
-              <div
-                class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full 
-                            transition-transform duration-300 
-                            peer-checked:translate-x-5"
-              ></div>
-            </label>
-          </div>
-
-          <div className="w-full">
-            <CustomDropdown
-              options={Stages}
-              label={selectedContact.status || "Open"}
-              onChange={(value) => {
-                handleAddLead({
-                  stage: value,
-                });
-              }}
-            />
-            {/* <select
-              name="stage"
-              id=""
-              className="border border-gray-50 outline-none py-1 rounded-md w-full"
-              onChange={handleInputChange}
-            >
-              <option value="">Select</option>
-              {header?.map((item) => {
-                return <option value={item.value}>{item.label}</option>;
-              })}
-            </select> */}
-          </div>
-
-          <div className="">
-            <h3 className="text-sm font-medium text-[#37322F] dark:text-app-text-faint mb-4">
-              Notes
-            </h3>
-
-            {/* Add Activity */}
-            <div
-              onClick={() => {
-                setIsAddActivityOpen(!isAddActivityOpen);
-                setEditingNote(null);
-                setEditingIndex(null);
-              }}
-              className=" cursor-pointer flex items-center gap-3.5 mb-4"
-            >
-              <button className="rounded-full w-10 h-10 border border-gray-400 flex items-center justify-center text-lg">
-                +
-              </button>
-
-              <p className="text-teal-600 font-medium flex items-center gap-2">
-                Add Activity{" "}
-                <span>
-                  {isAddActivityOpen ? (
-                    <span>
-                      <IoMdArrowDropdown className="rotate-180" size={20} />
-                    </span>
-                  ) : (
-                    <span>
-                      <IoMdArrowDropdown size={20} />
-                    </span>
-                  )}
-                </span>
-              </p>
-            </div>
-
-            {/* Timeline */}
-            <div className="max-h-72 overflow-auto pr-2">
-              <Timeline
-                items={selectedConversation?.notes || []}
-                onEdit={(item, index) => {
-                  setEditingIndex(index);
-                  setEditingNote(item);
-                  setIsAddActivityOpen(true);
-                }}
-                onDelete={(item, index) => handleRemoveNote(index)}
-              />
-            </div>
-          </div>
-
-          {/* Modal */}
-          <ActivityModal
-            open={isAddActivityOpen}
-            onClose={() => setIsAddActivityOpen(false)}
-            initialData={editingNote}
-            onSave={(activity) => {
-              handleAddLead({
-                activity,
-              });
-              // setNotes((prev) => [...prev, activity]);
-              // setSelectedConversation((prev) => ({
-              //   ...prev,
-              //   notes: [...(prev.notes || []), activity],
-              // }));
-            }}
+        <Field label="Lead stage" as="div" className="pt-1">
+          <CustomDropdown
+            key={`${conversation._id}-${conversation.status}`}
+            label={conversation.status || "Open"}
+            options={Stages}
+            onChange={(status) => saveLead({ status }, "Stage updated")}
           />
+        </Field>
+      </dl>
+
+      <div className="space-y-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-app-text">
+            Notes
+            {notes.length > 0 && (
+              <span className="ml-2 rounded-full bg-app-surface-secondary px-2 py-0.5 text-xs font-medium text-app-text-muted">
+                {notes.length}
+              </span>
+            )}
+          </h3>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={noteEditor ? X : Plus}
+            onClick={() => setNoteEditor(noteEditor ? null : { index: null })}
+          >
+            {noteEditor ? "Cancel" : "Add note"}
+          </Button>
         </div>
+
+        {/* the editor is drawn in place, not as a popup */}
+        <ActivityModal
+          open={Boolean(noteEditor)}
+          initialData={noteEditor?.index != null ? notes[noteEditor.index] : null}
+          onClose={() => setNoteEditor(null)}
+          onSave={saveNote}
+        />
+
+        <Timeline
+          items={notes}
+          onEdit={(_, index) => setNoteEditor({ index })}
+          onDelete={(_, index) => removeNote(index)}
+        />
       </div>
-
-      {/* Expandable Sections */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Payments Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("payments")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Payments</span>
-            {expandedSections?.payments ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections?.payments && (
-            <div className="px-4 pb-4">
-              <div className="bg-gray-50 rounded-lg p-3">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Order Id</span>
-                  <span className="text-gray-600">Amount</span>
-                  <span className="text-gray-600">Status</span>
-                </div>
-                <p className="text-xs text-gray-400 text-center py-4">
-                  No payment records
-                </p>
-              </div>
-            </div>
-          )}
-        </div> */}
-
-        {/* Campaigns Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("campaigns")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Campaigns</span>
-            {expandedSections?.campaigns ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections?.campaigns && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">
-                No campaigns
-              </p>
-            </div>
-          )}
-        </div> */}
-
-        {/* Attributes Section */}
-        {/* <div className="border-b border-gray-200">
-          <button
-            onClick={() => toggleSection("attributes")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">
-              Attributes
-            </span>
-            {expandedSections.attributes ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections.attributes && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">
-                No attributes
-              </p>
-            </div>
-          )}
-        </div> */}
-
-        {/* Tags Section */}
-        {/* <div>
-          <button
-            onClick={() => toggleSection("tags")}
-            className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50"
-          >
-            <span className="text-sm font-medium text-gray-700">Tags</span>
-            {expandedSections.tags ? (
-              <BsChevronUp className="text-gray-400" />
-            ) : (
-              <BsChevronDown className="text-gray-400" />
-            )}
-          </button>
-          {expandedSections.tags && (
-            <div className="px-4 pb-4">
-              <p className="text-xs text-gray-400 text-center py-4">No tags</p>
-            </div>
-          )}
-        </div> */}
       </div>
-    </div>
+    </aside>
   );
 };
 

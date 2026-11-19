@@ -6,10 +6,11 @@ export default function CustomDropdown({
   label,
   options,
   onChange,
-  width = "w-48",
+  // width = "w-48",
   zIndex = 99999,
   multiple = false,
   disabled = false,
+  placeholder = "Select",
   ...props
 }) {
   const [selected, setSelected] = useState(multiple ? [] : label);
@@ -81,8 +82,9 @@ export default function CustomDropdown({
       setSelected(updated);
       onChange(updated);
     } else {
-      setSelected(opt.value);
-      onChange(opt.value);
+      // the owner returns false when the pick doesn't count yet (a follow up
+      // still needs its date): keep showing what was there before
+      if (onChange(opt.value) !== false) setSelected(opt.value);
       setOpen(false);
     }
   };
@@ -166,7 +168,7 @@ export default function CustomDropdown({
               ))
             ) : (
               <span className="text-app-text dark:text-app-text-muted">
-                Select
+                {placeholder}
               </span>
             )
           ) : (

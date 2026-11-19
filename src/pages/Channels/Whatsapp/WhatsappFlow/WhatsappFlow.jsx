@@ -1,73 +1,49 @@
 import { useState } from "react";
 import FlowCard from "./FlowCard";
-import FlowModal from "./FlowModal"; // your existing builder
+import FlowModal from "./FlowModal";
 import FlowScreenBuilder from "./FlowScreenBuilder";
+import { FLOW_TEMPLATES } from "./flowUtils";
 
-const TEMPLATES = [
-  {
-    id: "lead-generation",
-    category: "LEAD_GENERATION",
-    title: "Lead Generation",
-    desc: "Request user sign up and generate leads effortlessly.",
-    icon: "L",
-  },
-  {
-    id: "feedback-form",
-    category: "FEEDBACK_FORM",
-    title: "Feedback Form",
-    desc: "Send feedback forms to customers and get feedback easily.",
-    icon: "F",
-  },
-];
+// Create a WhatsApp flow (a form guests fill in inside WhatsApp):
+// pick a template -> name it -> build its screens -> publish.
+const WhatsappFlow = ({ onPublished }) => {
+  const [picked, setPicked] = useState(null);
+  const [flowMeta, setFlowMeta] = useState(null);
 
-const WhatsappFlow = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [flowData, setFlowData] = useState(null);
-  const [step, setStep] = useState("list"); // list | builder
-
-  const handleCreate = (template) => {
-    setSelectedTemplate(template);
-    setShowModal(true);
-  };
-
-  const handleSaveFlow = (data) => {
-    setFlowData(data);
-    setStep("builder"); // ✅ go to builder
-  };
-
-  // 👉 If flow created → open builder
-  if (step === "builder") {
-    return <FlowScreenBuilder flowMeta={flowData} />;
+  if (flowMeta) {
+    return (
+      <FlowScreenBuilder
+        flowMeta={flowMeta}
+        onBack={() => setFlowMeta(null)}
+        onPublished={onPublished}
+      />
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4 dark:text-app-text-muted">WhatsApp Flows</h1>
-
-      <p className="text-sm text-gray-500 dark:text-app-text-faint mb-4">TEMPLATES</p>
-
-      <div className="flex flex-col gap-3">
-        {TEMPLATES.map((item) => (
-          <FlowCard key={item.id} data={item} onClick={handleCreate} />
-        ))}
-      </div>
-
-      {/* Empty State */}
-      <div className="flex flex-col items-center justify-center mt-20 text-gray-500">
-        <p>
-          Select a template from above and make it your own by customising it.
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div>
+        <h2 className="text-base font-semibold text-app-text">Create a WhatsApp flow</h2>
+        <p className="mt-1 text-sm text-app-text-muted">
+          Flows are short forms guests fill in without leaving WhatsApp. Pick a template
+          to start from, then change the screens and fields to suit you.
         </p>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <FlowModal
-          template={selectedTemplate}
-          onClose={() => setShowModal(false)}
-          onSave={handleSaveFlow}
-        />
-      )}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {FLOW_TEMPLATES.map((template) => (
+          <FlowCard key={template.id} data={template} onClick={setPicked} />
+        ))}
+      </div>
+
+      <FlowModal
+        template={picked}
+        onClose={() => setPicked(null)}
+        onSave={(meta) => {
+          setPicked(null);
+          setFlowMeta(meta);
+        }}
+      />
     </div>
   );
 };

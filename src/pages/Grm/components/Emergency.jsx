@@ -1,18 +1,13 @@
-import React, { useContext, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import DataContext from '../../../context/DataContext'
 import EmergencyCard from "../../../components/Card/EmergencyCard"
 import DataCard from '../../../components/Card/DataCard'
+import { hasTenant, useTenant } from '../../../hooks/useTenant'
+import { useGetEmergencyRequestsQuery } from '../../../redux/api/grmApi'
 const Emergency = () => {
 
-    const location = useLocation();
-    const { emergencyRequestData, setEmergencyNotifications } = useContext(DataContext)
-
-    useEffect(() => {
-        if (location.pathname === "/emergency-request") {
-            setEmergencyNotifications([])
-        }
-    }, [])
+    const tenant = useTenant();
+    const { data: emergencyRequestData = [] } = useGetEmergencyRequestsQuery(tenant, {
+        skip: !hasTenant(tenant),
+    })
 
 
     return (

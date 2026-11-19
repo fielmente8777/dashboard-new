@@ -1,41 +1,30 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
 import handleLocalStorage from "../../utils/handleLocalStorage";
-import {
-  getAuthUserProfile,
-  getUserProfile,
-} from "../../services/api/profile.api";
+import { sessionApi } from "../api/sessionApi";
+import { getAllowedHids } from "../../utils/resolveLocation";
 
 const initialState = {
   user: null,
   authUser: null,
-  hid: handleLocalStorage("hid") || null,
+  // the hotel location selected last time (survives closing the browser)
+  hid: localStorage.getItem("hid") || null,
   loading: false,
   isAuthLoading: false,
   error: null,
 };
 
+const { getUserProfile, getAuthUser } = sessionApi.endpoints;
+
 const userProfileSlice = createSlice({
   name: "userProfile",
   initialState,
   reducers: {
-    getUserProfileRequest: (state) => {
-      state.isAuthLoading = true;
-      state.loading = true;
-      state.error = null;
-    },
-    setAuthUserProfile: (state, action) => {
-      state.isAuthLoading = false;
-      state.authUser = action.payload?.User;
-    },
+    // a saved profile change, shown before the next fetch (see useProfile)
     getUserProfileSuccess: (state, action) => {
       state.loading = false;
       state.user = {
         ...action.payload,
       };
-    },
-    getUserProfileFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
     },
     setHid: (state, action) => {
       state.loading = false;
@@ -45,49 +34,83 @@ const userProfileSlice = createSlice({
       }
     },
   },
+  // filled by the session queries (redux/session.js); a request skipped
+  // because the answer is cached comes back as a "condition" rejection
+  extraReducers: (builder) => {
+    builder
+      .addMatcher(getUserProfile.matchPending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addMatcher(getUserProfile.matchFulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addMatcher(getUserProfile.matchRejected, (state, action) => {
+        if (action.meta.condition) return;
+        state.loading = false;
+        state.error = action.error?.message ?? "Could not load the profile";
+      })
+      .addMatcher(getAuthUser.matchPending, (state) => {
+        state.isAuthLoading = true;
+      })
+      .addMatcher(getAuthUser.matchFulfilled, (state, action) => {
+        state.isAuthLoading = false;
+        state.authUser = action.payload;
+      })
+      .addMatcher(getAuthUser.matchRejected, (state, action) => {
+        if (action.meta.condition) return;
+        state.isAuthLoading = false;
+      });
+  },
 });
 
-export const {
-  getUserProfileRequest,
-  getUserProfileSuccess,
-  getUserProfileFailure,
-  setCurrentLocation,
-  setAuthUserProfile,
-  setHid,
-} = userProfileSlice.actions;
+export const { getUserProfileSuccess, setHid } = userProfileSlice.actions;
 
 export default userProfileSlice.reducer;
 
-// Thunk function to fetch user profile
-export const fetchUserProfile = (token) => async (dispatch) => {
-  dispatch(getUserProfileRequest());
-  try {
-    const data = await getUserProfile(token);
+// Selectors for the selected hotel location
+export const selectHid = (state) => state.userProfile.hid;
+const selectHotels = (state) => state.userProfile.user?.Profile?.hotels;
+const selectAuthUser = (state) => state.userProfile.authUser;
 
-    dispatch(getUserProfileSuccess(data));
-    return { success: true, response: data };
-  } catch (error) {
-    dispatch(getUserProfileFailure(error.message));
-    return { success: false, error: error.message };
-  }
+export const selectCurrentLocation = createSelector(
+  [selectHotels, selectHid],
+  (hotels, hid) => hotels?.[hid] ?? null,
+);
+
+// A profile saved without any property details (no hotel name and no
+// website data): the hotel still has to fill in the onboarding form.
+// An account with no profile at all gets `Profile: {}` (no ndid) from nexon;
+// that one still needs /createwebsite, so it is not "blank".
+export const hasBlankProfile = (user) =>
+  Boolean(user?.Profile?.ndid) && !user.Profile.hotelName && !user.Data;
+
+// true once the profile has loaded and the account has no hotel yet: the
+// user has to finish onboarding before the dashboard can be used.
+// null while it is not known (profile still loading or the request failed).
+export const selectNeedsOnboarding = (state) => {
+  const { user } = state.userProfile;
+  if (!user) return null;
+  return (
+    user.Status === false ||
+    !Object.keys(user.Profile?.hotels ?? {}).length ||
+    hasBlankProfile(user)
+  );
 };
 
-export const fetchAuthUserProfile = (token) => async (dispatch) => {
-  dispatch(getUserProfileRequest());
-  if (token) {
-    try {
-      if (token) {
-        const data = await getAuthUserProfile(token);
-        dispatch(setAuthUserProfile(data));
-        // console.log(data);
-        return { success: true, response: data };
-      }
-    } catch (error) {
-      dispatch(getUserProfileFailure(error.message));
-      return { success: false, error: error.message };
-    }
-  }
-};
+// The account id. Data is null for an account whose website was never
+// created, but the profile carries the same ndid.
+export const getUserNdid = (user) => user?.Data?.ndid || user?.Profile?.ndid || null;
+
+// Locations the signed-in user may switch to
+export const selectAvailableLocations = createSelector(
+  [selectHotels, selectAuthUser],
+  (hotels, authUser) =>
+    getAllowedHids(hotels, authUser)
+      .filter((hid) => hotels?.[hid])
+      .map((hid) => ({ hid, ...hotels[hid] })),
+);
 
 // import { createSlice } from "@reduxjs/toolkit";
 // import { getUserProfile } from "../../services/api";

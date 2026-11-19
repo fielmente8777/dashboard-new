@@ -1,22 +1,12 @@
-export const BASE_PATH = "/dashboard/client";
-export const BASE_URL = "https://nexon.eazotel.com";
-//  export const BASE_URL = "http://127.0.0.1:8001";
+import { API_URLS, WS_URL } from "../config/env";
 
-export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-// export const NEW_BASE_URL = "http://localhost:8000";
-// export const NEW_BASE_URL ="https://9979-2409-40d2-10e3-a381-8543-29db-31b1-4dde.ngrok-free.app";
-
-// export const NEW_BASE_URL_LIVE = "https://f91201ebdc5c.ngrok-free.app";
-
-// export const NEW_BASE_URL = "https://gian-1eve.onrender.com";
-
-// export const NEW_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-
-export const SALES_AGEENT_BASE_URL = "https://ai-sales-agent-o4wi.onrender.com";
-// export const WS_BASE_URL = "ws://localhost:8000";
-export const WS_BASE_URL = "wss://gian-1eve.onrender.com";
-// export const NODE_BASE_URL = "http://localhost:8000/api/v1";
-export const NODE_BASE_URL = "https://gian-1eve.onrender.com/api/v1";
+export { BASE_PATH } from "../routes/paths";
+// Backend URLs live in src/config/env.js - change them there (or in .env).
+export const BASE_URL = API_URLS.core;
+export const NEW_BASE_URL = API_URLS.node;
+export const SALES_AGEENT_BASE_URL = API_URLS.salesAgent;
+export const WS_BASE_URL = WS_URL;
+export const NODE_BASE_URL = `${API_URLS.node}/api/v1`;
 
 export const room_type_name = {
   1: "DELUXE",
@@ -65,6 +55,7 @@ export const WEBSOCKET_EVENTS = {
   WHATSAPP_MESSAGE_STATUS: "WHATSAPP_MESSAGE_STATUS",
 
   META_NEW_LEAD: "META_NEW_LEAD",
+  INSTAGRAM_NEW_LEAD: "INSTAGRAM_NEW_LEAD",
   EXOTEL_CALL: "NEW_EXOTEL_CALL",
   EXOTEL_CALL_ANSWERED: "CALL_ANSWERED",
   EXOTEL_CALL_MISSED: "MISSED_CALL",
@@ -266,41 +257,6 @@ export const countriesCode = [
   { name: "ZWE", code: "+263" },
 ];
 
-const PATHS = {
-  DASHBOARD: "/",
-  LOGIN: "/login",
-  SIGNUP: "/signup",
-  FORGET_PASSWORD: "/forget-password",
-  CHANGE_PASSWORD: "/change-password",
-
-  LEADS_MANAGEMENT: "leads-management",
-  CALLS_MANAGEMENT: "calls-management",
-};
-
-export const ROUTES_PATH = {
-  DASHBOARD: "/",
-  LOGIN: "/login",
-  SIGNUP: "/signup",
-  FORGET_PASSWORD: "/forget-password",
-  CHANGE_PASSWORD: "/change-password",
-
-  // admin
-  ADMIN_DASHBOARD: "/admin",
-  ADMIN_LOGIN: "/admin/login",
-  ADMIN_SIGNUP: "/admin/signup",
-  ADMIN_FORGET_PASSWORD: "/admin/forget-password",
-  ADMIN_CHANGE_PASSWORD: "/admin/change-password",
-
-  // leads management
-  LEADS_MANAGEMENT: `${PATHS.LEADS_MANAGEMENT}`,
-  LEADS_MANAGEMENT_ALL_LEADS: `${PATHS.LEADS_MANAGEMENT}/all-leads`,
-  LEADS_MANAGEMENT_META_LEADS: `${PATHS.LEADS_MANAGEMENT}/meta-leads`,
-  LEADS_MANAGEMENT_WHATSAPP: `${PATHS.LEADS_MANAGEMENT}/whatsapp`,
-
-  // calls management
-  CALLS_MANAGEMENT: `${PATHS.CALLS_MANAGEMENT}`,
-};
-
 export const tableHeaders = [
   { key: "Created_at", label: "Created Time" },
   { key: "Name", label: "Full Name" },
@@ -358,7 +314,7 @@ export const TurnAwayCode = [
 ];
 
 export const Sources = [
-  { label: "All Sources", value: "" },
+  // { label: "All Sources", value: "" },
   { label: "Eazbot", value: "eazbot" },
   { label: "Webform", value: "webform" },
   { label: "WhatsApp", value: "whatsapp" },
@@ -367,6 +323,7 @@ export const Sources = [
   { label: "Vistors", value: "visitors" },
   { label: "Exotel", value: "exotel" },
   { label: "Insta - Ad & DM", value: "insta_ad_dm" },
+  { label: "Instagram DM", value: "instagram" },
   { label: "Front desk", value: "front_desk" },
   { label: "Booking Engine", value: "booking_engine" },
   { label: "Email", value: "email" },

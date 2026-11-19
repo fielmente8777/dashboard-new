@@ -3,36 +3,46 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* :root {
-  --app-bg: #f8f8fb;
-  --app-surface: #ffffff;
-  --app-surface-secondary: #f3f4f6;
-  --app-text: #363636;
-  --app-text-muted: #747474;
-  --app-text-faint: #ababab;
-  --app-border: #e5e7eb;
-  --app-navbar: #152547;
-  --app-navbar-mobile: #dbeafe;
-  --app-shadow: rgba(0, 0, 0, 0.08);
-} */
+
 :root {
-  --app-bg: #f6f7fb;
-  --app-surface: #ffffff;
-  --app-surface-secondary: #f1f3f9;
+  /* Light theme. Kept soft on purpose: nothing is pure white or pure black.
+     A cool grey page sits behind light grey cards, with ink-blue text.
+     Text on a card is still about 12:1 (muted text about 5.5:1), so it stays
+     easy to read without the glare. */
+  --app-bg: #e9ecf1;
+  --app-surface: #f4f6f9;
+  --app-surface-secondary: #e6e9ef;
 
-  --app-text: #0f1222;
-  --app-text-muted: #5c6175;
-  --app-text-faint: #9aa0b4;
+  --app-text: #232a3b;
+  --app-text-muted: #566175;
+  --app-text-faint: #8a96aa;
 
-  --app-border: #e6e8f0;
-  --app-border-strong: #d4d7e3;
+  --app-border: #d7dce5;
+  --app-border-strong: #c2c9d5;
 
-  --app-navbar: #0f1222;
+  --app-navbar: #1e2d52;
 
-  --tooltip-bg: rgba(255,255,255,0.95);
-  --tooltip-text: #0f172a;
-  --tooltip-label: #475569;
-  --tooltip-border: rgba(0,0,0,0.08);
+  /* brand colours; the dark theme keeps the stronger originals */
+  --brand-primary: #1e2d52;
+  --brand-accent: #f0692b;
+
+  --tooltip-bg: rgba(244,246,249,0.97);
+  --tooltip-text: #232a3b;
+  --tooltip-label: #566175;
+  --tooltip-border: rgba(35,42,59,0.1);
+
+  /* Chart series colours, used in this fixed order (see components/Charts/chartTheme.js).
+     The order keeps neighbouring colours distinguishable for colour-blind readers. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
+  --chart-other: #8a96aa;
+  --chart-grid: #d7dce5;
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -47,6 +57,32 @@
     #1e293b 45%,
     #6366f1 100%
   );
+  /* ---- font sizes ---------------------------------------- */
+  --fs-2xs: clamp(0.625rem, calc(0.60rem + 0.10vw), 0.6875rem); /* 10 → 11 */
+  --fs-xs: clamp(0.6875rem, calc(0.65rem + 0.16vw), 0.75rem); /* 11 → 12 */
+  --fs-sm: clamp(0.75rem, calc(0.71rem + 0.20vw), 0.875rem); /* 12 → 14 */
+  --fs-base: clamp(0.875rem, calc(0.83rem + 0.22vw), 1rem); /* 14 → 16 */
+  --fs-md: clamp(0.9375rem, calc(0.88rem + 0.28vw), 1.125rem); /* 15 → 18 */
+  --fs-lg: clamp(1rem, calc(0.92rem + 0.40vw), 1.25rem); /* 16 → 20 */
+  --fs-xl: clamp(1.125rem, calc(1.01rem + 0.55vw), 1.5rem); /* 18 → 24 */
+  --fs-2xl: clamp(1.25rem, calc(1.08rem + 0.85vw), 1.875rem); /* 20 → 30 */
+ 
+  /* ---- spacing (padding, gap, margin) -------------------- */
+  --sp-1: clamp(0.25rem, calc(0.23rem + 0.10vw), 0.375rem); /*  4 →  6 */
+  --sp-2: clamp(0.375rem, calc(0.34rem + 0.16vw), 0.5rem); /*  6 →  8 */
+  --sp-3: clamp(0.5rem, calc(0.44rem + 0.28vw), 0.75rem); /*  8 → 12 */
+  --sp-4: clamp(0.75rem, calc(0.66rem + 0.44vw), 1rem); /* 12 → 16 */
+  --sp-5: clamp(1rem, calc(0.86rem + 0.66vw), 1.5rem); /* 16 → 24 */
+  --sp-6: clamp(1.25rem, calc(1.03rem + 1.10vw), 2rem); /* 20 → 32 */
+ 
+  /* ---- control heights (inputs, buttons, toggles) -------- */
+  --ctl-sm: clamp(1.75rem, calc(1.66rem + 0.44vw), 2rem); /* 28 → 32 */
+  --ctl-md: clamp(2.25rem, calc(2.16rem + 0.44vw), 2.5rem); /* 36 → 40 */
+ 
+  /* ---- radii --------------------------------------------- */
+  --r-sm: 0.375rem;
+  --r-md: 0.5rem;
+  --r-lg: 0.75rem;
 }
 
 /* .dark {
@@ -76,10 +112,24 @@
 
   --app-navbar: #0d1117;
 
+  --brand-primary: #152547;
+  --brand-accent: #fc5f07;
+
   --tooltip-bg: rgba(15,23,42,0.92);
   --tooltip-text: #ffffff;
   --tooltip-label: #cbd5e1;
   --tooltip-border: rgba(255,255,255,0.08);
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+  --chart-other: #6b7280;
+  --chart-grid: #2a2a36;
 
   --gradient-primary: linear-gradient(
     135deg,
@@ -102,27 +152,84 @@
   box-sizing: border-box;
 }
 
-/* Required for Leaflet to render correctly inside flex/grid layouts */
-.leaflet-container {
-    height: 100%;
-    width: 100%;
-    background: #09090b !important;
-  }
-  
-  /* Dark popup styling to match the dark theme */
-  .geogrid-popup .leaflet-popup-content-wrapper {
-    background: #18181b;
-    border: 1px solid #3f3f46;
-    border-radius: 12px;
-    color: #e4e4e7;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-  }
-  .geogrid-popup .leaflet-popup-tip {
-    background: #18181b;
-  }
-  .geogrid-popup .leaflet-popup-content {
-    margin: 12px 14px;
-  }
+/* Local SEO maps (Google Maps): popups follow the app theme.
+   The map colours themselves switch in googleMap.js (dark style). */
+.local-seo-map .gm-style {
+  font-family: inherit;
+}
+.local-seo-map .gm-style .gm-style-iw-c {
+  background: var(--app-surface);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px var(--app-shadow);
+  padding: 10px 12px !important;
+}
+.local-seo-map .gm-style .gm-style-iw-d {
+  overflow: auto !important;
+}
+.local-seo-map .gm-style .gm-style-iw-tc::after {
+  background: var(--app-surface);
+}
+/* popup close button (x) */
+.local-seo-map .gm-style .gm-style-iw-chr {
+  height: 0;
+}
+.local-seo-map .gm-style .gm-ui-hover-effect {
+  top: 2px !important;
+  right: 2px !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+.local-seo-map .gm-style .gm-ui-hover-effect > span {
+  width: 14px !important;
+  height: 14px !important;
+  margin: 5px !important;
+  background-color: var(--app-text-muted);
+}
+.local-seo-popup__title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.local-seo-popup__meta {
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--app-text-muted);
+}
+
+/* SEO dashboards (Local SEO, Website SEO, wrapped in .seo-scope by SeoShell)
+   and the Google Analytics page (.analytics-scope).
+   The dark theme's --app-border is almost the card colour, so inside these
+   pages it is lifted to an edge you can see. --seo-track is the empty part
+   of bars and rings; .seo-hero is the tinted overview panel. */
+.seo-scope,
+.analytics-scope {
+  --seo-track: #dde2ea;
+  --seo-hero: linear-gradient(
+    135deg,
+    rgba(42, 120, 214, 0.1) 0%,
+    rgba(99, 102, 241, 0.05) 45%,
+    transparent 80%
+  );
+  --seo-hero-edge: rgba(42, 120, 214, 0.22);
+}
+.dark .seo-scope,
+.dark .analytics-scope {
+  --app-border: #262634;
+  --seo-track: #262634;
+  --seo-hero: linear-gradient(
+    135deg,
+    rgba(57, 135, 229, 0.18) 0%,
+    rgba(129, 140, 248, 0.08) 45%,
+    transparent 80%
+  );
+  --seo-hero-edge: rgba(91, 141, 239, 0.32);
+}
+.seo-hero {
+  background: var(--seo-hero), var(--app-surface);
+  border: 1px solid var(--seo-hero-edge) !important;
+}
 button,
 a {
   cursor: pointer;
@@ -145,6 +252,60 @@ body {
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* ── scrollbars ──────────────────────────────────────────────
+   One slim, rounded scrollbar for every scrolling area, in the theme's
+   colours (so it follows light / dark on its own). The thumb is drawn
+   inset from the edges and darkens on hover. Areas that should show no
+   scrollbar at all use .scrollbar-hidden / .hide-scrollbar below. */
+:root {
+  --scrollbar-thumb: color-mix(in srgb, var(--app-text-faint) 55%, transparent);
+  --scrollbar-thumb-hover: var(--app-text-muted);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  /* the transparent border is what insets the thumb from the edges */
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-color: var(--scrollbar-thumb);
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:active {
+  border-width: 2px;
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox has no ::-webkit-scrollbar. Kept behind @supports because in
+   Chrome these two properties would switch the styles above off. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+}
+
+/* The dotted backdrop behind chat messages. Drawn in CSS from the theme's
+   colours, so it needs no image and follows light / dark. */
+.chat-backdrop {
+  background-color: var(--app-bg);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--app-text-faint) 16%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
@@ -207,9 +368,9 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
 
 @theme inline {
   /* --color-primary: #0A3A75; */
-  --color-primary: #152547;
+  --color-primary: var(--brand-primary);
   --color-secondary: #0a3a75;
-  --color-ternary: #fc5f07;
+  --color-ternary: var(--brand-accent);
   --color-color-1: #d1b14e;
   --color-color-2: #040404;
   --color-text-gray: #747474;
@@ -223,6 +384,7 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   --color-app-text-faint: var(--app-text-faint);
   --color-app-border: var(--app-border);
   --color-app-navbar: var(--app-navbar);
+  --color-seo-track: var(--seo-track);
   --gradient-hero: linear-gradient(
     135deg,
     oklch(0.255 0.065 264) 0%,
@@ -257,4 +419,447 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   .dark .border-gray-300 {
     border-color: var(--app-border);
   }
+}
+
+
+/* Pages that still hard-code white (bg-white) get the soft card colour in
+   the light theme too. Written outside the Tailwind layers so it wins over
+   the utility class. Anything that must stay truly white should set it with
+   an inline style. */
+:root:not(.dark) .bg-white {
+  background-color: var(--app-surface);
+}
+
+select option {
+  background-color: #f4f6f9;
+  color: #1f2937;
+}
+html.dark select option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+
+/* ── Motion ──────────────────────────────────────────────────────────────
+   Small, quick entrance animations for the pages built on components/ui.
+   They only move things in; nothing loops except the loading shimmer.
+   Everything is switched off for people who ask for reduced motion.
+   They use fill-mode "backwards" on purpose: once an element has entered,
+   the animation lets go of it, so hover effects such as anim-lift still work.
+
+   anim-enter     fades up into place              (sections, opened panels)
+   anim-fade      plain fade                       (overlays, table rows)
+   anim-pop       scales up from slightly smaller  (dialogs, badges, popups)
+   anim-menu      drops down from its trigger      (menus)
+   anim-slide-in  slides in from the right         (drawers)
+   anim-grow-x    grows from the left              (bars)
+   anim-stagger   put on a parent: its children enter one after another
+   anim-shimmer   light sweeping across            (loading placeholders)
+   anim-lift      rises a little on hover          (clickable cards)        */
+
+@keyframes app-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes app-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-menu {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes app-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes app-sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes app-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes app-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+:root {
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shimmer: rgba(255, 255, 255, 0.55);
+}
+
+.dark {
+  --shimmer: rgba(255, 255, 255, 0.06);
+}
+
+.anim-enter,
+.anim-stagger > * {
+  animation: app-fade-up 0.4s var(--ease-out) backwards;
+}
+
+.anim-fade {
+  animation: app-fade 0.25s ease-out backwards;
+}
+
+.anim-pop {
+  animation: app-pop 0.2s var(--ease-out) backwards;
+}
+
+.anim-menu {
+  transform-origin: top right;
+  animation: app-menu 0.18s var(--ease-out) backwards;
+}
+
+.anim-slide-in {
+  animation: app-slide-in 0.3s var(--ease-out) backwards;
+}
+
+/* phone pickers that open from the bottom edge */
+.anim-sheet {
+  animation: app-sheet 0.28s var(--ease-out) backwards;
+}
+
+.anim-grow-x {
+  transform-origin: left;
+  animation: app-grow-x 0.6s var(--ease-out) backwards;
+}
+
+/* each child starts a little after the one before it; from the 9th on they
+   all share the last delay, so long lists never keep the reader waiting */
+.anim-stagger > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+.anim-stagger > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+.anim-stagger > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+.anim-stagger > *:nth-child(5) {
+  animation-delay: 200ms;
+}
+.anim-stagger > *:nth-child(6) {
+  animation-delay: 250ms;
+}
+.anim-stagger > *:nth-child(7) {
+  animation-delay: 300ms;
+}
+.anim-stagger > *:nth-child(n + 8) {
+  animation-delay: 350ms;
+}
+
+.anim-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.anim-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
+  animation: app-shimmer 1.4s ease-in-out infinite;
+}
+
+.anim-lift {
+  transition:
+    transform 0.2s var(--ease-out),
+    box-shadow 0.2s var(--ease-out),
+    border-color 0.2s;
+}
+
+.anim-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.35);
+}
+
+/* ── The navbar bell ─────────────────────────────────────────────────────
+   bell-ring   swings from its top when a notification arrives
+   bell-pulse  a soft ring spreading out behind it at the same time
+   hovering the bell gives it a small wiggle                               */
+
+@keyframes bell-ring {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(18deg); }
+  22% { transform: rotate(-16deg); }
+  34% { transform: rotate(13deg); }
+  46% { transform: rotate(-10deg); }
+  58% { transform: rotate(7deg); }
+  70% { transform: rotate(-4deg); }
+  82% { transform: rotate(2deg); }
+  100% { transform: rotate(0); }
+}
+
+@keyframes bell-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(12deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes bell-pulse {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-ternary, #f97316) 45%, transparent); }
+  to { box-shadow: 0 0 0 12px transparent; }
+}
+
+.bell-icon {
+  transform-origin: 50% 8%;
+}
+
+.bell-ring {
+  animation: bell-ring 1s var(--ease-out, ease-out);
+}
+
+.bell-button:hover .bell-icon:not(.bell-ring) {
+  animation: bell-wiggle 0.5s ease-in-out;
+}
+
+.bell-pulse {
+  animation: bell-pulse 1s ease-out 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bell-ring,
+  .bell-pulse,
+  .bell-button:hover .bell-icon,
+  .anim-enter,
+  .anim-fade,
+  .anim-pop,
+  .anim-menu,
+  .anim-slide-in,
+  .anim-sheet,
+  .anim-grow-x,
+  .anim-stagger > *,
+  .anim-shimmer::after {
+    animation: none;
+  }
+
+  .anim-lift,
+  .anim-lift:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Switching between light and dark ────────────────────────────────────
+   The switch is a cross-fade of the whole page (see toggleColorMode in
+   context/DataContext.jsx). Browsers without view transitions get the
+   `theme-switching` class instead, which eases every colour for a moment. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.45s;
+  animation-timing-function: ease-in-out;
+}
+
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease,
+    box-shadow 0.4s ease !important;
+}
+
+/* "Ask Eazotel AI" chat colours. Light by default, the original dark look
+   under .dark (set on <html> by DataContext). */
+:root {
+  --cb-overlay: rgb(15 23 42 / 0.45);
+  --cb-bg: #ffffff;
+  --cb-sidebar: #f7f7fa;
+  --cb-raised: #ffffff;
+  --cb-bubble: #f4f3f8;
+  --cb-text: #1d1b26;
+  --cb-text-2: #3d3b4a;
+  --cb-muted: #64626f;
+  --cb-faint: #8b8996;
+  --cb-border: rgb(29 27 38 / 0.1);
+  --cb-hover: rgb(29 27 38 / 0.05);
+  --cb-active: rgb(124 58 237 / 0.1);
+  --cb-accent: #7c3aed;
+  --cb-danger: #b91c1c;
+  --cb-code-bg: rgb(29 27 38 / 0.06);
+}
+.dark {
+  --cb-overlay: rgb(0 0 0 / 0.65);
+  --cb-bg: #17161c;
+  --cb-sidebar: #131217;
+  --cb-raised: #1f1e26;
+  --cb-bubble: #211f28;
+  --cb-text: #ffffff;
+  --cb-text-2: #e5e7eb;
+  --cb-muted: #9ca3af;
+  --cb-faint: #6b7280;
+  --cb-border: rgb(255 255 255 / 0.08);
+  --cb-hover: rgb(255 255 255 / 0.06);
+  --cb-active: rgb(255 255 255 / 0.09);
+  --cb-accent: #c4b5fd;
+  --cb-danger: #fecaca;
+  --cb-code-bg: rgb(0 0 0 / 0.35);
+}
+
+/* Markdown answers in the "Ask Eazotel AI" chat. Tailwind's reset strips list
+   bullets, table borders and heading sizes, so put them back here. */
+.chat-markdown > :first-child { margin-top: 0; }
+.chat-markdown > :last-child { margin-bottom: 0; }
+.chat-markdown p,
+.chat-markdown ul,
+.chat-markdown ol,
+.chat-markdown pre,
+.chat-markdown table { margin: 0.5rem 0; }
+.chat-markdown ul { list-style: disc; padding-left: 1.25rem; }
+.chat-markdown ol { list-style: decimal; padding-left: 1.25rem; }
+.chat-markdown li + li { margin-top: 0.2rem; }
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3 { margin: 0.75rem 0 0.35rem; font-weight: 600; color: var(--cb-text); }
+.chat-markdown h1 { font-size: 1.1rem; }
+.chat-markdown h2 { font-size: 1rem; }
+.chat-markdown h3 { font-size: 0.95rem; }
+.chat-markdown strong { color: var(--cb-text); font-weight: 600; }
+.chat-markdown code { border-radius: 4px; background: var(--cb-code-bg); padding: 0.1rem 0.3rem; font-size: 0.85em; }
+.chat-markdown pre { overflow-x: auto; border-radius: 8px; background: var(--cb-code-bg); padding: 0.75rem; }
+.chat-markdown pre code { background: none; padding: 0; }
+.chat-markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 0.8rem; }
+.chat-markdown th,
+.chat-markdown td { border: 1px solid var(--cb-border); padding: 0.35rem 0.6rem; text-align: left; white-space: nowrap; }
+.chat-markdown th { background: var(--cb-hover); font-weight: 600; }
+.chat-markdown blockquote { border-left: 3px solid rgb(139 92 246 / 0.6); padding-left: 0.75rem; color: var(--cb-muted); }
+
+/* Rich text editor (Jodit). Its own "dark" theme is a flat grey that ignores
+   the dashboard, so the editor always runs the default theme and takes its
+   colours from the app tokens, which already switch with light / dark mode.
+   :root:root outranks Jodit's own :root block, which loads later. Popups and
+   dropdowns are attached to <body>, so the variables must live this high up. */
+:root:root {
+  --jd-font-default: inherit;
+  --jd-border-radius-default: 0.5rem;
+  --jd-color-text: var(--app-text);
+  --jd-color-default: var(--app-text);
+  --jd-color-dark: var(--app-text);
+  --jd-color-label: var(--app-text-muted);
+  --jd-color-placeholder: var(--app-text-faint);
+  --jd-color-icon: var(--app-text-muted);
+  --jd-color-text-icons: var(--app-text-muted);
+  --jd-color-folder-title: var(--app-text-muted);
+  --jd-color-border: var(--app-border);
+  --jd-color-separator: var(--app-border);
+  --jd-color-border-active: var(--app-text-faint);
+  --jd-color-border-selected: #3b82f6;
+  --jd-color-panel: var(--app-surface-secondary);
+  --jd-color-background-default: var(--app-surface);
+  --jd-color-background-light-gray: var(--app-surface);
+  --jd-color-background-gray: var(--app-surface-secondary);
+  --jd-color-background-gray-hover: var(--app-surface-secondary);
+  --jd-color-background-button-hover: color-mix(in srgb, var(--app-text) 10%, transparent);
+  --jd-color-button-background-hover: color-mix(in srgb, var(--app-text) 10%, transparent);
+  --jd-color-button-background-hover-opacity40: color-mix(in srgb, var(--app-text) 6%, transparent);
+  --jd-color-button-background-hover-opacity60: color-mix(in srgb, var(--app-text) 8%, transparent);
+  --jd-color-background-button-hover-opacity30: color-mix(in srgb, var(--app-text) 5%, transparent);
+  --jd-color-background-active: #3b82f6;
+  --jd-color-background-selection: color-mix(in srgb, #3b82f6 30%, transparent);
+  --jd-color-source-area: #0f172a;
+}
+
+/* the toolbar keeps a little air and its separators follow the border colour */
+.jodit-toolbar__box:not(:empty) {
+  padding: 2px 4px;
+}
+.jodit-wysiwyg {
+  color: var(--app-text);
+}
+.jodit-wysiwyg a {
+  color: #3b82f6;
+}
+
+/* Front desk calendar (DayPilot Lite). Its theme is a set of CSS variables
+   on .scheduler_default_main, injected at runtime; the wrapper class outranks
+   it and points every colour at the app tokens, so it follows light / dark. */
+.fd-calendar .scheduler_default_main {
+  --dp-scheduler-font-family: inherit;
+  --dp-scheduler-font-size: 13px;
+  --dp-scheduler-border-color: var(--app-border);
+  --dp-scheduler-border-inner-color: var(--app-border);
+  --dp-scheduler-grid-line-color: color-mix(in srgb, var(--app-text) 8%, transparent);
+  --dp-scheduler-grid-line-break-color: color-mix(in srgb, var(--app-text) 18%, transparent);
+  --dp-scheduler-cell-bg-color: var(--app-surface);
+  --dp-scheduler-cell-business-bg-color: var(--app-surface);
+  --dp-scheduler-header-bg-color: var(--app-surface-secondary);
+  --dp-scheduler-header-color: var(--app-text);
+  --dp-scheduler-event-color: #ffffff;
+  --dp-scheduler-event-border-radius: 6px;
+  --dp-scheduler-event-box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  --dp-scheduler-event-selected-bg-color: color-mix(in srgb, #3b82f6 35%, transparent);
+  --dp-scheduler-selectionrectangle-color: #3b82f6;
+  --dp-scheduler-focus-outline-color: #3b82f6;
+  --dp-scheduler-shadow-color: color-mix(in srgb, #3b82f6 25%, transparent);
+  --dp-scheduler-shadow-border-color: #3b82f6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+/* room-type header rows: a band across the grid, clickable to fold */
+.fd-calendar .fd-group-row {
+  cursor: pointer;
+  font-weight: 600;
+}
+.fd-calendar .fd-group-row,
+.fd-calendar .fd-group-cell {
+  background: color-mix(in srgb, var(--app-text) 5%, var(--app-surface-secondary)) !important;
+}
+.fd-calendar .fd-group-cell {
+  pointer-events: none;
 }

@@ -1,3 +1,4 @@
+import { ROUTES } from "../../routes/paths";
 import { useState } from "react";
 import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 import { useDispatch } from "react-redux";
@@ -87,7 +88,7 @@ const Signup = () => {
         },
       }).then((result) => {
         if (result.dismiss === Swal.DismissReason.timer) {
-          navigate("/");
+          navigate(ROUTES.ROOT);
         }
       });
     } else {
@@ -355,7 +356,7 @@ const Signup = () => {
             <div>
               <h2 className="text-gray-500 font-medium p-2 flex gap-2 items-center">
                 Already have an account?
-                <Link to="/login" className="text-blue-600 underline">
+                <Link to={ROUTES.LOGIN} className="text-blue-600 underline">
                   Login
                 </Link>
               </h2>

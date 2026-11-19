@@ -1,312 +1,387 @@
-import { useEffect, useState } from "react";
-import { IoMdRefresh } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
 import {
-  getCampaign,
-  getWhatsAppMessageTemplates,
-} from "../../services/api/whatsApp";
-import { formatDateTime } from "../../utils/formateDate";
-import { getStatusStyle } from "../../utils/getStatusStyle";
-import CreateWhatsAppCampaign from "./components/CreateWhatsAppCampaign";
+  FileText,
+  Info,
+  Megaphone,
+  Plus,
+  RefreshCw,
+  Search,
+  Wallet,
+  FileSpreadsheet,
+  Plug,
+} from "lucide-react";
 
-const campaignHeaders = [
-  { key: "name", label: "Campaign Name" },
-  { key: "templateName", label: "Template" },
-  { key: "audience", label: "Audience" },
-  { key: "sent", label: "Sent" },
-  { key: "failedCount", label: "Failed" },
-  { key: "deliveredCount", label: "Delivered" },
-  { key: "readCount", label: "Read" },
-  { key: "date", label: "Date" },
-  { key: "status", label: "Status" },
-];
+import { useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { QuickActions } from "../../components/Marketing/MarketingParts";
+import Button from "../../components/ui/Button";
+import { Input } from "../../components/ui/Field";
+import Icon from "../../components/ui/Icon";
+import PageShell from "../../components/ui/PageShell";
+import Card from "../../components/ui/Card";
+import { EmptyState, ErrorState } from "../../components/ui/States";
+import Tabs from "../../components/ui/Tabs";
+
+import { useToast } from "../../context/ToastContext";
+import { useIntegrationStatus } from "../../hooks/useIntegrationStatus";
+import { hasTenant, useTenant } from "../../hooks/useTenant";
+
+import { useGetCampaignsQuery } from "../../redux/api/broadcastApi";
+import { getApiErrorMessage } from "../../redux/api/baseApi";
+
+import {
+  PAGES,
+  broadcastPath,
+  dashboardPath,
+  integrationPath,
+} from "../../routes/paths";
+
+import {
+  DAILY_SEND_LIMIT,
+  campaignStatus,
+  formatNumber,
+} from "./broadcastUtils";
+
+import CampaignSummary from "./components/CampaignSummary";
+import CampaignTable from "./components/CampaignTable";
+import CreateCampaignDialog from "./components/CreateCampaignDialog";
+
+import { importWhatsAppContacts } from "./utils/importWhatsAppContacts";
+import WhatsAppImportPreview from "./components/WhatsAppImportPreview";
+
+const whatsappSettings = (section) =>
+  dashboardPath(PAGES.SETTINGS, {
+    query: { tab: "WhatsApp", section },
+  });
 
 const WhatsappBroadcasting = () => {
   const navigate = useNavigate();
-  const [campaignsData, setCampaignsData] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [templates, setTemplates] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [isRefresh, setIsRefresh] = useState(false);
-  const [isLoadingCampaign, setIsLoadingCampaign] = useState(false);
+  const tenant = useTenant();
+  const { showToast } = useToast();
+  const { integrationStatus, isLoadingIntegrationStatus } = useIntegrationStatus();
+  const whatsAppConnected = Boolean(integrationStatus?.metaWhatsapp);
 
-  // const filteredCampaigns =
-  //   filter === "all"
-  //     ? campaignsData
-  //     : campaignsData.filter((c) => c.status === filter);
+  // Campaign states
+  const [creating, setCreating] = useState(false);
+  const [campaignMode, setCampaignMode] = useState("default");
+  const [status, setStatus] = useState("all");
+  const [search, setSearch] = useState("");
 
-  const fetchTemplates = async () => {
+  // Excel / CSV import states
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState(null);
+  const [selectedContacts, setSelectedContacts] = useState([]);
+
+  // Normal campaign opening
+  const openDefaultCampaign = () => {
+    setSelectedContacts([]);
+    setCampaignMode("default");
+    setCreating(true);
+  };
+
+  // Fetch campaigns
+  const {
+    data: campaigns = [],
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useGetCampaignsQuery(tenant.hid, {
+    skip: !hasTenant(tenant),
+  });
+
+  // Campaign status tabs
+  const tabs = useMemo(() => {
+    const counts = campaigns.reduce((acc, campaign) => {
+      acc[campaign.status] = (acc[campaign.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    return [
+      {
+        value: "all",
+        label: `All (${campaigns.length})`,
+      },
+      ...Object.keys(counts).map((value) => ({
+        value,
+        label: `${campaignStatus(value).label} (${counts[value]})`,
+      })),
+    ];
+  }, [campaigns]);
+
+  // Filter campaigns
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    return campaigns.filter(
+      (campaign) =>
+        (status === "all" || campaign.status === status) &&
+        (!term ||
+          campaign.name?.toLowerCase().includes(term) ||
+          campaign.templateName?.toLowerCase().includes(term))
+    );
+  }, [campaigns, status, search]);
+
+  const openCampaign = (campaign) =>
+    navigate(broadcastPath(campaign._id));
+
+  // First-time campaign actions
+  const firstSteps = [
+    {
+      icon: Megaphone,
+      title: "New campaign",
+      description: "Pick an approved template and who should get it.",
+      onClick: openDefaultCampaign,
+      primary: true,
+    },
+    {
+      icon: FileText,
+      title: "Message templates",
+      description: "Create or check the templates Meta has approved.",
+      onClick: () =>
+        navigate(whatsappSettings("template-library")),
+    },
+    {
+      icon: Wallet,
+      title: "WhatsApp credits",
+      description:
+        "Each message is charged by Meta. Top up before a big send.",
+      onClick: () => navigate(whatsappSettings("credits")),
+    },
+  ];
+
+  // Import Excel / CSV contacts
+  const handleImportContacts = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
     try {
-      // setIsTemplateLoading(true);
-      const response = await getWhatsAppMessageTemplates();
-      if (response.success) {
-        setTemplates(response?.result?.docs?.data || []);
+      setImporting(true);
+
+      const result = await importWhatsAppContacts(file);
+
+      if (!result.contacts || result.contacts.length === 0) {
+        showToast({
+          message:
+            "No valid contacts found. Please check your Excel file.",
+          type: "error",
+        });
+        return;
       }
-    } catch (err) {
-      console.error(err);
+
+      setImportPreview(result);
+
+      showToast({
+        message: `${result.valid} valid contacts found.`,
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Contact import error:", error);
+
+      showToast({
+        message:
+          error.message || "Unable to import contacts.",
+        type: "error",
+      });
     } finally {
-      // setIsTemplateLoading(false);
+      setImporting(false);
+      event.target.value = "";
     }
   };
 
-  const fetchCampaigns = async () => {
-    setIsLoadingCampaign(true);
-    try {
-      const response = await getCampaign();
-      if (response.success) {
-        setCampaignsData(response?.result?.docs?.campaigns || []);
-        // setTemplates(response?.result?.docs?.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoadingCampaign(false);
-      setIsRefresh(false);
-    }
+  // Confirm imported contacts
+  const handleConfirmImport = (contacts) => {
+    if (!contacts?.length) return;
+
+    setSelectedContacts(contacts);
+    setCampaignMode("excel");
+    setImportPreview(null);
+    setCreating(true);
   };
 
-  useEffect(() => {
-    fetchCampaigns();
-    fetchTemplates();
-  }, []);
+  // Close campaign dialog
+  const handleCloseCampaign = () => {
+    setCreating(false);
+    setSelectedContacts([]);
+    setCampaignMode("default");
+  };
+
+  // campaigns go out from the hotel's own WhatsApp Business number: without
+  // one connected there is nothing to set up here, only how to connect it
+  if (!isLoadingIntegrationStatus && !whatsAppConnected) {
+    return (
+      <PageShell
+        title="WhatsApp marketing"
+        description="Broadcast offers and updates to your guests, then see who got and read them."
+      >
+        <Card>
+          <EmptyState
+            icon={Plug}
+            title="Connect WhatsApp Business"
+            description="Campaigns are sent from your own WhatsApp Business number. Connect it to create campaigns and import contacts here."
+            action={
+              <Button icon={Plug} onClick={() => navigate(integrationPath("whatsapp"))}>
+                Go to Integrations
+              </Button>
+            }
+          />
+        </Card>
+      </PageShell>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-app-text dark:text-app-text">
-          Campaign Management
-        </h1>
+    <PageShell
+      title="WhatsApp marketing"
+      description="Broadcast offers and updates to your guests, then see who got and read them."
+      actions={
+        <>
+          {/* Import file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            hidden
+            onChange={handleImportContacts}
+          />
 
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-[#0a3a75] text-white px-4 py-2 rounded-md"
-        >
-          Create New Campaign
-        </button>
-      </div>
+          {/* Import Contacts */}
+          <Button
+            variant="secondary"
+            icon={FileSpreadsheet}
+            loading={importing}
+            disabled={importing}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Import contacts
+          </Button>
 
-      <hr className="mt-4" />
+          {/* Refresh */}
+          <Button
+            variant="secondary"
+            icon={RefreshCw}
+            loading={isFetching && !isLoading}
+            onClick={refetch}
+          >
+            Refresh
+          </Button>
 
-      <div className="py-4 bg-app-surface min-h-screen">
-        {/* Filters */}
-        <div className="flex justify-between items-center">
-          <div className="flex mb-2">
-            {["all", "sent", "scheduled", "inprogress"].map((item) => (
-              <button
-                key={item}
-                onClick={() => setFilter(item)}
-                className={`px-4 py-2 font-medium text-sm capitalize ${
-                  filter === item
-                    ? "bg-[#0a3a75] border !border-[#0a3a75] text-white"
-                    : "bg-app-surface-secondary text-app-text-faint"
-                }`}
-              >
-                {item}
-              </button>
-            ))}
+          {/* New Campaign */}
+          <Button
+            icon={Plus}
+            onClick={openDefaultCampaign}
+          >
+            New campaign
+          </Button>
+        </>
+      }
+    >
+      {error ? (
+        <ErrorState
+          message={getApiErrorMessage(
+            error,
+            "Could not load campaigns."
+          )}
+          onRetry={refetch}
+        />
+      ) : !isLoading && campaigns.length === 0 ? (
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-app-border! bg-app-surface p-5 sm:p-6">
+            <h2 className="text-base font-semibold text-app-text">
+              Send your first WhatsApp campaign
+            </h2>
+
+            <p className="mt-1 max-w-xl text-sm text-app-text-muted">
+              WhatsApp messages are read far more than emails.
+              Send festive offers, last-minute deals or a
+              thank-you to past guests, using a template Meta
+              has approved.
+            </p>
           </div>
 
-          <button
-            disabled={isRefresh}
-            onClick={() => {
-              fetchCampaigns();
-              setIsRefresh(!isRefresh);
-            }}
-            className="border px-4 py-2 bg-primary text-white rounded-md text-sm flex items-center gap-1 disabled:opacity-60 disabled:cursor-not-allowed!"
-          >
-            <span className={`${isRefresh && "animate-spin"}`}>
-              <IoMdRefresh size={20} />
-            </span>{" "}
-            Refresh
-          </button>
+          <QuickActions actions={firstSteps} />
         </div>
+      ) : (
+        <>
+          <CampaignSummary
+            campaigns={campaigns}
+            loading={isLoading}
+            onOpen={openCampaign}
+          />
 
-        {/* Campaign Table */}
-        <div className="border rounded-lg overflow-x-auto hide-scrollba mt-6">
-          <table className="min-w-full text-sm">
-            <thead className="bg-primary sticky top-0 z-10">
-              <tr>
-                <th className="px-3 py-3 text-white dark:text-app-text-muted">
-                  #
-                </th>
+          <section className="space-y-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="hide-scrollbar -mx-1 overflow-x-auto px-1">
+                <Tabs
+                  tabs={tabs}
+                  value={status}
+                  onChange={setStatus}
+                  className="w-max"
+                />
+              </div>
 
-                {campaignHeaders.map((h) => (
-                  <th
-                    key={h.key}
-                    className="px-3 py-3 text-left text-white dark:text-app-text-muted min-w-40"
-                  >
-                    {h.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
+              <div className="relative w-full lg:w-64">
+                <Icon
+                  icon={Search}
+                  size="sm"
+                  tone="faint"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+                />
 
-            <tbody>
-              {isLoadingCampaign ? (
-                <tr>
-                  <td
-                    colSpan={campaignHeaders.length + 1}
-                    className="py-3 px-3 text-center"
-                  >
-                    Loading...
-                  </td>
-                </tr>
-              ) : campaignsData?.length > 0 ? (
-                campaignsData.map((campaign, i) => {
-                  const percent =
-                    campaign.totalRecipients > 0
-                      ? Math.round(
-                          (campaign.sentCount / campaign.totalRecipients) * 100,
-                        )
-                      : 0;
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search campaign or template"
+                  aria-label="Search campaigns"
+                  className="pl-9"
+                />
+              </div>
+            </div>
 
-                  return (
-                    <tr
-                      key={campaign._id}
-                      className="odd:bg-app-surface even:bg-app-surface border-app-border  text-app-text dark:text-app-text-faint hover:bg-blue-500/5 transition-colors cursor-pointer"
-                      onClick={() =>
-                        navigate(
-                          `/dashboard/client/${localStorage.getItem("hid")}/marketing/whatsapp-marketing/broadcast/${campaign._id}`,
-                        )
-                      }
-                    >
-                      {/* Index */}
-                      <td className="px-3 py-2">
-                        {(i + 1).toString().padStart(2, "0")}
-                      </td>
+            <CampaignTable
+              campaigns={visible}
+              loading={isLoading}
+              onOpen={openCampaign}
+              emptyMessage="No campaigns match these filters"
+            />
+          </section>
+        </>
+      )}
 
-                      {/* Campaign Name */}
-                      <td className="px-3 py-2 font-medium text-blue-900">
-                        {campaign.name}
-                      </td>
+      {/* Daily WhatsApp limit information */}
+      <p className="flex items-start gap-2 text-xs text-app-text-muted">
+        <Icon
+          icon={Info}
+          size="sm"
+          className="mt-px shrink-0"
+        />
 
-                      {/* Template */}
-                      <td className="px-3 py-2">
-                        {campaign.templateName || "-"}
-                      </td>
+        Meta lets a new WhatsApp number message about{" "}
+        {formatNumber(DAILY_SEND_LIMIT)} different people a day.
+        The limit grows as guests read your messages and don't
+        block you.
+      </p>
 
-                      {/* Audience */}
-                      <td className="px-3 py-2">{campaign.totalRecipients}</td>
-
-                      {/* Sent */}
-                      <td className="px-3 py-2">
-                        {campaign.sentCount}/{campaign.totalRecipients}
-                        <span className="text-xs text-gray-600 ml-1">
-                          ({percent}%)
-                        </span>
-                      </td>
-
-                      {/* Failed */}
-                      <td className="px-3 py-2 text-red-600">
-                        {campaign.failedCount || 0}
-                      </td>
-
-                      {/* Delivered */}
-                      <td className="px-3 py-2 text-green-600">
-                        {campaign.deliveredCount || 0}
-                      </td>
-
-                      {/* Read */}
-                      <td className="px-3 py-2 text-green-600">
-                        {campaign.readCount || 0}
-                      </td>
-
-                      {/* Date */}
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {formatDateTime(campaign.createdAt)}
-                      </td>
-
-                      {/* Status */}
-                      <td className="px-3 py-2">
-                        <span
-                          className={`px-3 py-1 rounded-full capitalize ${getStatusStyle(
-                            campaign.status,
-                          )}`}
-                        >
-                          {campaign.status}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={campaignHeaders.length + 1} className="py-3">
-                    <div className="flex flex-col items-center justify-center text-gray-500">
-                      {/* Title */}
-                      <p className="text-base font-semibold text-gray-400">
-                        No Campaigns Yet
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <CreateWhatsAppCampaign
-        templates={templates}
-        onClose={() => setIsOpen(false)}
-        open={isOpen}
+      {/* Create Campaign Dialog */}
+      <CreateCampaignDialog
+        open={creating}
+        onClose={handleCloseCampaign}
+        importedContacts={selectedContacts}
+        campaignMode={campaignMode}
       />
-    </div>
+
+      {/* Excel / CSV Import Preview */}
+      <WhatsAppImportPreview
+        data={importPreview}
+        onClose={() => setImportPreview(null)}
+        onConfirm={handleConfirmImport}
+      />
+
+      <div className="h-14" aria-hidden="true" />
+    </PageShell>
   );
 };
 
 export default WhatsappBroadcasting;
-
-{
-  /* Template Type */
-}
-// <div className="mb-4">
-//   <label className="block text-sm font-medium mb-1">
-//     Template Type
-//   </label>
-//   <select
-//     value={templateType}
-//     onChange={(e) => setTemplateType(e.target.value)}
-//     className="w-full border rounded-md p-2"
-//   >
-//     <option value="utility">Utility</option>
-//     <option value="marketing">Marketing</option>
-//   </select>
-// </div>
-
-{
-  /* Template */
-}
-//           <div className="mb-4">
-//             <label className="text-sm font-medium text-gray-700">
-//               Select Template
-//             </label>
-
-//             <select
-//               value={templateName}
-//               onChange={(e) => setTemplateName(e.target.value)}
-//               className="mt-1 w-full border rounded-md px-3 py-2 text-sm"
-//             >
-//               <option value="">Select template</option>
-
-//               {templates?.map((tpl) => (
-//                 <option key={tpl.name} value={tpl.name}>
-//                   {tpl.name}
-//                 </option>
-//               ))}
-//             </select>
-//           </div>
-// useEffect(()=>{
-//   fetchTemplate();
-// },[])
-// const [templates, setTemplates] = useState([]);
-// const fetchTemplate = async () => {
-//     try {
-//       const response = await getWhatsAppMessageTemplates();
-//       if (response.success) {
-//         setTemplates(response?.result?.docs?.data || []);
-//       }
-//     } catch (error) {
-//       console.log("Error", error);
-//     }
-// };

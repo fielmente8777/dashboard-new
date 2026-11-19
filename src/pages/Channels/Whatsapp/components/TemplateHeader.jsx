@@ -1,103 +1,84 @@
-import { useFormContext, Controller } from "react-hook-form";
-import CustomDropdown from "../../../../components/ui/Dropdown";
+import { Controller, useFormContext } from "react-hook-form";
+import Card from "../../../../components/ui/Card";
+import { Field, Input } from "../../../../components/ui/Field";
+import SelectMenu from "../../../../components/ui/SelectMenu";
+import { CATEGORIES, LANGUAGES, toTemplateName } from "./templateUtils";
 
-const languages = [
-  { value: "en_US", label: "English (US)" },
-  { value: "hi", label: "Hindi" },
-];
-
-const categories = [
-  { value: "UTITLITY", label: "UTILITY" },
-  { value: "MARKETING", label: "MARKETING" },
-  { value: "AUTHENTICATION", label: "AUTHENTICATION" },
-];
-
-const TemplateHeader = ({ onCancel, showCancelButton }) => {
+// Name, category and language. Meta does not allow changing them after
+// the template is created, so they are read-only when editing.
+const TemplateHeader = ({ mode }) => {
   const {
     register,
     control,
+    watch,
     formState: { errors },
   } = useFormContext();
+  const isEdit = mode === "edit";
+  const category = CATEGORIES.find((c) => c.value === watch("category"));
 
   return (
-    <div className="bg-app-surface p-4 rounded-lg border-primary/60!">
-      <div className="flex justify-between items-start">
-        <h2 className="text-lg font-semibold mb-4">
-          Template name and language
-        </h2>
-
-        {showCancelButton && (
-          <div>
-            <button
-              className="bg-red-500 rounded-sm text-white px-2 py-1"
-              onClick={onCancel}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-start gap-2 w-full bg-app-surface-secondary p-4 rounded-lg">
-        {/* TEMPLATE NAME */}
-        <div className="flex-1">
-          <label className="text-sm text-gray-600 dark:text-app-text-faint mb-2 inline-block">
-            Template Name
-          </label>
-
-          <input
-            {...register("name")}
-            className="w-full border border-gray-400! bordgr rounded-md px-3 py-2 text-sm 
-             focus:outline-none focus:ring-1 focus:ring-primary
-             transition"
+    <Card
+      title="Basics"
+      description={isEdit ? "Meta does not allow changing these after creation." : undefined}
+    >
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Template name"
+          className="sm:col-span-2"
+          error={errors.name?.message}
+          hint="Lowercase letters, numbers and _ only. Guests never see it."
+        >
+          <Input
+            disabled={isEdit}
+            placeholder="e.g. booking_confirmation"
+            {...register("name", {
+              // typing "Booking Confirmed" becomes booking_confirmed
+              setValueAs: (value) => toTemplateName(value),
+              onChange: (e) => {
+                e.target.value = e.target.value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9_]+/g, "_")
+                  .slice(0, 50);
+              },
+            })}
           />
+        </Field>
 
-          {errors.name && (
-            <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-          )}
-        </div>
+        <Field as="div" label="Category" hint={category?.hint}>
+          <Controller
+            name="category"
+            control={control}
+            render={({ field }) => (
+              <SelectMenu
+                label="Category"
+                options={CATEGORIES}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isEdit}
+                className="w-full"
+              />
+            )}
+          />
+        </Field>
 
-        {/* LANGUAGE DROPDOWN */}
-      </div>
-
-      <div className="flex gap-2 mt-2">
-        <div>
-          <label className="text-sm text-gray-600 inline-block mb-1.5">
-            Category
-          </label>
-
+        <Field as="div" label="Language" error={errors.language?.message}>
           <Controller
             name="language"
             control={control}
             render={({ field }) => (
-              <CustomDropdown {...field} options={categories} className="" />
+              <SelectMenu
+                label="Language"
+                options={LANGUAGES}
+                value={field.value}
+                onChange={field.onChange}
+                disabled={isEdit}
+                className="w-full"
+              />
             )}
           />
-
-          {errors.language && (
-            <p className="text-red-500 text-sm">{errors.language.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="text-sm text-gray-600 inline-block mb-1.5">
-            Language
-          </label>
-
-          <Controller
-            name="language"
-            control={control}
-            render={({ field }) => (
-              <CustomDropdown {...field} options={languages} className="" />
-            )}
-          />
-
-          {errors.language && (
-            <p className="text-red-500 text-sm">{errors.language.message}</p>
-          )}
-        </div>
+        </Field>
       </div>
-    </div>
+    </Card>
   );
 };
 

@@ -2,165 +2,158 @@ import { useState } from "react";
 import Timeline from "../../ConversationalTool/WhatsApp/components/Timeline";
 import ActivityModal from "../../ConversationalTool/WhatsApp/components/ActivityModal";
 import Loader from "../../../components/Loader";
-import { FaPlus } from "react-icons/fa";
-import { updateLead } from "../../../services/api/leads.api";
+import { NotebookPen, Plus } from "lucide-react";
+import Button from "../../../components/ui/Button";
+import Icon from "../../../components/ui/Icon";
 import Swal from "sweetalert2";
-import { GrNotes } from "react-icons/gr";
 import { useToast } from "../../../context/ToastContext";
 import { useConfirm } from "../../../context/ConfirmContext";
-import { updateCall } from "../../../services/api/call.api";
+import { useTenant } from "../../../hooks/useTenant";
+import { getApiErrorMessage } from "../../../redux/api/baseApi";
+import { useUpdateCallMutation } from "../../../redux/api/callsApi";
+import { useUpdateLeadMutation } from "../../../redux/api/leadsApi";
 
 const NotesCard = ({ lead, setLead, callManagement = false }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const tenant = useTenant();
+  const [updateLead] = useUpdateLeadMutation();
+  const [updateCall] = useUpdateCallMutation();
 
-  const [isEdit, setIsEdit] = useState(false);
-  const [isEditingLoading, setIsEditingLoading] = useState(false);
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
+
+  const buildPayload = (notes) => {
+    const baseFields = callManagement
+      ? { sid: lead?.sid, hid: tenant.hid }
+      : {
+          leadId: lead._id,
+          hid: lead?.hId,
+          ...(lead?.conversationId && { conversationId: lead.conversationId }),
+        };
+
+    const files = [];
+    const cleanNotes = notes.map((note, i) => {
+      if (!note?.audio?.blob) return note;
+      const { blob, url, ...meta } = note.audio; // drop local blob + object URL
+      const field = `voice_${i}`;
+      files.push({ field, blob });
+      return { ...note, audio: { ...meta, field } };
+    });
+
+    if (!files.length) return { ...baseFields, notes: cleanNotes };
+
+    const form = new FormData();
+    Object.entries(baseFields).forEach(([k, v]) => form.append(k, v));
+    form.append("notes", JSON.stringify(cleanNotes));
+    files.forEach(({ field, blob }) => {
+      const type = (blob.type || "audio/webm").split(";")[0]; // "audio/webm;codecs=opus" → "audio/webm"
+      const ext = type.includes("mp4")
+        ? "m4a"
+        : type.includes("ogg")
+          ? "ogg"
+          : "webm";
+      form.append(field, new File([blob], `${field}.${ext}`, { type }));
+    });
+
+    // the ids build the url; the form is the body
+    return { ...baseFields, form };
+  };
+
+  // Returns true/false so the modal knows whether to close
+  const persistNotes = async (notes, prevNotes) => {
+    setLead((prev) => ({ ...prev, notes })); // optimistic (local audio preview works)
+    try {
+      const payload = buildPayload(notes);
+      const response = callManagement
+        ? await updateCall(payload).unwrap()
+        : await updateLead(payload).unwrap();
+
+      // Controller returns the saved notes (with S3 URLs) as data.notes
+      const savedNotes = response?.data?.notes;
+      if (Array.isArray(savedNotes)) {
+        setLead((prev) => ({ ...prev, notes: savedNotes }));
+      }
+
+      const ok =
+        response?.success && [200, 201].includes(response?.responseStatusCode);
+      if (!ok) throw new Error(response?.responseMessage || "Failed to update");
+
+      showToast({
+        message: response?.responseMessage || "Notes updated successfully",
+        type: "success",
+      });
+      return true;
+    } catch (error) {
+      console.error("Error updating note:", error);
+      setLead((prev) => ({ ...prev, notes: prevNotes })); // rollback
+      showToast({
+        message: error?.message || getApiErrorMessage(error, "Failed to update notes"),
+        type: "error",
+      });
+      return false;
+    }
+  };
 
   const handleOnAdd = () => {
     setEditingIndex(null);
     setEditingNote(null);
     setIsAddActivityOpen(true);
   };
-  const handleUpdateNote = async (payload) => {
-    const callUpdatePayload = {
-      notes: payload?.notes,
-      sid: payload?.sid,
-    };
 
-    try {
-      const response = callManagement
-        ? await updateCall(callUpdatePayload)
-        : await updateLead(payload);
-
-      if (
-        response?.success &&
-        (response?.responseStatusCode === 200 ||
-          response?.responseStatusCode === 201)
-      ) {
-        showToast({
-          message: response?.responseMessage || "Lead updated successfully",
-          type: "success",
-        });
-      }
-      setIsEdit(false);
-    } catch (error) {
-      console.error("Error updating note:", error);
-      showToast({
-        message: error?.message || "Failed to update lead",
-        type: "error",
-      });
-    }
+  const handleCloseModal = () => {
+    setIsAddActivityOpen(false);
+    setEditingIndex(null);
+    setEditingNote(null);
   };
-  const handleNotesSave = (activity) => {
-    const notes = [...(lead?.notes || [])];
 
-    if (activity) {
-      editingIndex !== null
-        ? (notes[editingIndex] = activity)
-        : notes.push(activity);
-    }
-
-    let payload = {};
-
-    if (callManagement) {
-      payload = {
-        sid: lead?.sid,
-        notes,
-      };
-    } else {
-      payload = {
-        leadId: lead._id,
-        hid: lead?.hId,
-        notes,
-        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
-      };
-    }
-
-    setLead((prev) => ({
-      ...prev,
-      notes,
-    }));
-
-    handleUpdateNote(payload);
-
-    // setIsEdit(true);
-    // const notes = [...(lead?.notes || [])];
-    // editingIndex !== null
-    //   ? (notes[editingIndex] = activity)
-    //   : notes.push(activity);
-
-    // setLead({ ...lead, notes });
-    // setIsAddActivityOpen(false);
-    // setEditingIndex(null);
-    // setEditingNote(null);
+  const handleNotesSave = async (activity) => {
+    const prevNotes = lead?.notes || [];
+    const notes = [...prevNotes];
+    if (editingIndex !== null) notes[editingIndex] = activity;
+    else notes.push(activity);
+    return persistNotes(notes, prevNotes);
   };
 
   const handleRemoveNote = async (index) => {
     const isConfirmed = await confirm(
-      "Are you sure you want to delete this lead?"
+      "Are you sure you want to delete this note?",
     );
-
     if (!isConfirmed) return;
-
-    setIsEdit(true);
-    const notes = [...lead.notes];
-    notes.splice(index, 1);
-    let payload = {};
-    if (callManagement) {
-      payload = {
-        sid: lead?.sid,
-        notes,
-      };
-    } else {
-      payload = {
-        leadId: lead._id,
-        hid: lead?.hId,
-        notes,
-        ...(lead?.conversationId && { conversationId: lead?.conversationId }),
-      };
-    }
-    setLead({ ...lead, notes });
-    handleUpdateNote(payload);
+    const prevNotes = lead?.notes || [];
+    const notes = prevNotes.filter((_, i) => i !== index);
+    await persistNotes(notes, prevNotes);
   };
 
-  return (
-    <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-5 ">
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex gap-2 items-center bg-app-surface-secondary px-4 py-1.5 w-fit rounded-full">
-          <h3 className="text-sm font-medium text-app-text dark:text-app-text">
-            Notes
-          </h3>
+  const notes = lead?.notes || [];
+  const hasNotes = notes.length > 0;
 
-          {lead?.notes?.length > 0 && (
-            <button
-              onClick={handleOnAdd}
-              className="rounded-full size-8 border bg-primary text-white border-gray-400 flex items-center justify-center text-lg"
-            >
-              <FaPlus size={10} />
-            </button>
+  return (
+    <section className="rounded-xl border border-app-border! bg-app-surface p-4 sm:p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-300">
+            <Icon icon={NotebookPen} size="sm" />
+          </span>
+          <h3 className="text-sm font-semibold text-app-text">Notes & activity</h3>
+          {hasNotes && (
+            <span className="rounded-full bg-app-surface-secondary px-2 py-0.5 text-xs font-medium tabular-nums text-app-text-muted">
+              {notes.length}
+            </span>
           )}
         </div>
-
-        {isEdit && lead?.notes?.length > 0 && (
-          <div className="flex justify-end  ">
-            <button
-              onClick={handleUpdateNote}
-              className="bg-green-600 text-white px-4 py-1 rounded flex items-center gap-2"
-            >
-              Save {isEditingLoading && <Loader size={12} color={"#fefefe"} />}
-            </button>
-          </div>
+        {hasNotes && !isAddActivityOpen && (
+          <Button size="sm" icon={Plus} onClick={handleOnAdd}>
+            Add note
+          </Button>
         )}
       </div>
 
-      {lead?.notes?.length ? (
-        <div className="max-h-72 overflow-auto pr-2 ">
+      {hasNotes ? (
+        <div className="max-h-[28rem] overflow-y-auto pr-1 pt-1">
           <Timeline
-            items={lead.notes}
+            items={notes}
             onEdit={(item, index) => {
               setEditingIndex(index);
               setEditingNote(item);
@@ -170,37 +163,253 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
           />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center text-center">
-          {/* SVG */}
-          <GrNotes size={26} color="#cdcaca" />
-          {/* Text */}
-          <h3 className="mt-4 text-sm font-semibold text-gray-700">
-            No notes yet
-          </h3>
-          <p className="text-sm text-gray-500 mt-1 max-w-xs">
-            Keep track of conversations, follow-ups, and important details by
-            adding your first note.
-          </p>
-
-          {/* CTA */}
-          <button
-            onClick={handleOnAdd}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md bg-primary/90 hover:bg-primary text-white transition"
-          >
-            <span>＋</span>
-            Add note
-          </button>
-        </div>
+        !isAddActivityOpen && (
+          <div className="flex flex-col items-center justify-center px-2 py-8 text-center">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-app-surface-secondary text-app-text-faint">
+              <Icon icon={NotebookPen} size="xl" />
+            </span>
+            <h4 className="mt-4 text-sm font-semibold text-app-text">
+              No notes yet
+            </h4>
+            <p className="mt-1 max-w-xs text-sm text-app-text-muted">
+              Keep track of calls, follow-ups and important details by adding
+              a note or a voice message.
+            </p>
+            <Button icon={Plus} className="mt-4" onClick={handleOnAdd}>
+              Add note
+            </Button>
+          </div>
+        )
       )}
 
-      <ActivityModal
-        open={isAddActivityOpen}
-        initialData={editingNote}
-        onClose={() => setIsAddActivityOpen(false)}
-        onSave={handleNotesSave}
-      />
-    </div>
+      {isAddActivityOpen && (
+        <div
+          className={
+            hasNotes ? "mt-5 border-t border-app-border! pt-5" : undefined
+          }
+        >
+          <ActivityModal
+            open={isAddActivityOpen}
+            initialData={editingNote}
+            hid={lead?.hId}
+            onClose={handleCloseModal}
+            onSave={handleNotesSave}
+          />
+        </div>
+      )}
+    </section>
   );
 };
 
 export default NotesCard;
+
+// import { useState } from "react";
+// import Timeline from "../../ConversationalTool/WhatsApp/components/Timeline";
+// import ActivityModal from "../../ConversationalTool/WhatsApp/components/ActivityModal";
+// import Loader from "../../../components/Loader";
+// import { FaPlus } from "react-icons/fa";
+// import { updateLead } from "../../../services/api/leads.api";
+// import Swal from "sweetalert2";
+// import { GrNotes } from "react-icons/gr";
+// import { useToast } from "../../../context/ToastContext";
+// import { useConfirm } from "../../../context/ConfirmContext";
+// import { updateCall } from "../../../services/api/call.api";
+
+// const NotesCard = ({ lead, setLead, callManagement = false }) => {
+//   const { showToast } = useToast();
+//   const { confirm } = useConfirm();
+
+//   const [isEdit, setIsEdit] = useState(false);
+//   const [isEditingLoading, setIsEditingLoading] = useState(false);
+//   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
+//   const [editingIndex, setEditingIndex] = useState(null);
+//   const [editingNote, setEditingNote] = useState(null);
+
+//   const handleOnAdd = () => {
+//     setEditingIndex(null);
+//     setEditingNote(null);
+//     setIsAddActivityOpen(true);
+//   };
+//   const handleUpdateNote = async (payload) => {
+//     const callUpdatePayload = {
+//       notes: payload?.notes,
+//       sid: payload?.sid,
+//     };
+
+//     try {
+//       const response = callManagement
+//         ? await updateCall(callUpdatePayload)
+//         : await updateLead(payload);
+
+//       if (
+//         response?.success &&
+//         (response?.responseStatusCode === 200 ||
+//           response?.responseStatusCode === 201)
+//       ) {
+//         showToast({
+//           message: response?.responseMessage || "Lead updated successfully",
+//           type: "success",
+//         });
+//       }
+//       setIsEdit(false);
+//     } catch (error) {
+//       console.error("Error updating note:", error);
+//       showToast({
+//         message: error?.message || "Failed to update lead",
+//         type: "error",
+//       });
+//     }
+//   };
+//   const handleNotesSave = (activity) => {
+//     const notes = [...(lead?.notes || [])];
+
+//     if (activity) {
+//       editingIndex !== null
+//         ? (notes[editingIndex] = activity)
+//         : notes.push(activity);
+//     }
+
+//     let payload = {};
+
+//     if (callManagement) {
+//       payload = {
+//         sid: lead?.sid,
+//         notes,
+//       };
+//     } else {
+//       payload = {
+//         leadId: lead._id,
+//         hid: lead?.hId,
+//         notes,
+//         ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+//       };
+//     }
+
+//     setLead((prev) => ({
+//       ...prev,
+//       notes,
+//     }));
+
+//     handleUpdateNote(payload);
+
+//     // setIsEdit(true);
+//     // const notes = [...(lead?.notes || [])];
+//     // editingIndex !== null
+//     //   ? (notes[editingIndex] = activity)
+//     //   : notes.push(activity);
+
+//     // setLead({ ...lead, notes });
+//     // setIsAddActivityOpen(false);
+//     // setEditingIndex(null);
+//     // setEditingNote(null);
+//   };
+
+//   const handleRemoveNote = async (index) => {
+//     const isConfirmed = await confirm(
+//       "Are you sure you want to delete this lead?",
+//     );
+
+//     if (!isConfirmed) return;
+
+//     setIsEdit(true);
+//     const notes = [...lead.notes];
+//     notes.splice(index, 1);
+//     let payload = {};
+//     if (callManagement) {
+//       payload = {
+//         sid: lead?.sid,
+//         notes,
+//       };
+//     } else {
+//       payload = {
+//         leadId: lead._id,
+//         hid: lead?.hId,
+//         notes,
+//         ...(lead?.conversationId && { conversationId: lead?.conversationId }),
+//       };
+//     }
+//     setLead({ ...lead, notes });
+//     handleUpdateNote(payload);
+//   };
+
+//   return (
+//     <div className="bg-app-surface-secondary rounded-lg md:shadow-sm p-4 sm:p-5">
+//       <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-5">
+//         <div className="flex gap-2 items-center bg-app-surface px-3 sm:px-4 py-1.5 w-fit rounded-full">
+//           <h3 className="text-sm font-medium text-app-text">Notes</h3>
+
+//           {lead?.notes?.length > 0 && (
+//             <button
+//               onClick={handleOnAdd}
+//               aria-label="Add note"
+//               className="rounded-full size-8 shrink-0 bg-primary hover:bg-primary/90 text-white flex items-center justify-center transition-colors"
+//             >
+//               <FaPlus size={10} />
+//             </button>
+//           )}
+//         </div>
+
+//         {isEdit && lead?.notes?.length > 0 && (
+//           <div className="flex justify-end">
+//             <button
+//               onClick={handleUpdateNote}
+//               className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+//             >
+//               Save {isEditingLoading && <Loader size={12} color={"#fefefe"} />}
+//             </button>
+//           </div>
+//         )}
+//       </div>
+
+//       {lead?.notes?.length ? (
+//         <div className="max-h-72 overflow-auto pr-1 sm:pr-2">
+//           <Timeline
+//             items={lead.notes}
+//             onEdit={(item, index) => {
+//               setEditingIndex(index);
+//               setEditingNote(item);
+//               setIsAddActivityOpen(true);
+//             }}
+//             onDelete={(item, index) => handleRemoveNote(index)}
+//           />
+//         </div>
+//       ) : (
+//         <div className="flex flex-col items-center justify-center text-center px-2 py-6 sm:py-8">
+//           {/* SVG */}
+//           <GrNotes
+//             size={26}
+//             className="text-gray-300 dark:text-app-text-faint"
+//           />
+//           {/* Text */}
+//           <h3 className="mt-4 text-sm font-semibold text-gray-700 dark:text-app-text">
+//             No notes yet
+//           </h3>
+//           <p className="text-sm text-gray-500 dark:text-app-text-faint mt-1 max-w-xs">
+//             Keep track of conversations, follow-ups, and important details by
+//             adding your first note.
+//           </p>
+
+//           {/* CTA */}
+//           <button
+//             onClick={handleOnAdd}
+//             className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary/90 hover:bg-primary text-white transition-colors"
+//           >
+//             <FaPlus size={10} />
+//             Add note
+//           </button>
+//         </div>
+//       )}
+
+//       <div className="mt-4">
+//         <ActivityModal
+//           open={isAddActivityOpen}
+//           initialData={editingNote}
+//           onClose={() => setIsAddActivityOpen(false)}
+//           onSave={handleNotesSave}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default NotesCard;

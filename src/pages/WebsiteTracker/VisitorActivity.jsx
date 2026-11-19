@@ -1,33 +1,11 @@
-import { useEffect, useState } from "react";
-import { getAllVisitorsActivities } from "../../services/api/WebsiteTracker.api";
+import { Skeleton } from "../../components/ui/States";
+import { useGetVisitorSessionsQuery } from "../../redux/api/websiteTrackerApi";
 
 const VisitorActivity = () => {
-  const [sessions, setSessions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchVisitorsActivites = async () => {
-    setLoading(true);
-    try {
-      const formBody = {
-        skip: 0,
-        limit: 100,
-      };
-      const response = await getAllVisitorsActivities(formBody);
-      setSessions(response);
-    } catch (error) {
-      console.error("Error fetching call");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // const handleViewDetails = (sessionId) => {
-  //     alert(`Viewing details for NDID: ${ndid}`);
-  // }
-
-  useEffect(() => {
-    fetchVisitorsActivites();
-  }, []);
+  const { data: sessions = [], isFetching: loading } = useGetVisitorSessionsQuery(
+    { skip: 0, limit: 100 },
+    { refetchOnMountOrArgChange: true },
+  );
 
   function getBrowserName(userAgent) {
     if (!userAgent) return "Unknown";
@@ -84,14 +62,13 @@ const VisitorActivity = () => {
           </thead>
           <tbody className="divide-y divide-gray-200 text-gray-800">
             {loading ? (
-              <tr>
-                <td
-                  colSpan="12"
-                  className="px-4 py-6 text-center text-gray-500"
-                >
-                  Loading...
-                </td>
-              </tr>
+              Array.from({ length: 5 }, (_, row) => (
+                <tr key={row}>
+                  <td colSpan="12" className="px-4 py-3">
+                    <Skeleton className="h-5" />
+                  </td>
+                </tr>
+              ))
             ) : sessions && sessions.length > 0 ? (
               sessions.map((session) => (
                 <tr

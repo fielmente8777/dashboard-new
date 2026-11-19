@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchApplicants } from "../../redux/slice/TalentSlice";
 import { formatDateTime } from "../../services/formateDate";
+import { Skeleton } from "../../components/ui/States";
 const Application = () => {
   const dispatch = useDispatch();
 
@@ -75,9 +76,14 @@ const Application = () => {
           </button>
         </div>
         {!applicants ? (
-          <div className="bg-gray-200 p-6 animate-pulse rounded-md mb-4" />
+          <div className="space-y-2">
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="h-10" />
+            ))}
+          </div>
         ) : (
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="border-b">
                 <th className="py-2 text-[14px] font-medium text-[#575757] capitalize">
@@ -124,6 +130,7 @@ const Application = () => {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

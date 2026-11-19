@@ -1,428 +1,298 @@
-import React, { useEffect, useState } from "react";
-import { NEW_BASE_URL } from "../../data/constant";
-import {
-  Badge,
-  Calendar,
-  Check,
-  CreditCard,
-  Crown,
-  Headphones,
-  Receipt,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { CalendarDays, Crown, Download, Headphones, Home, Lock, Package, RefreshCw, Sparkles, Users } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import Loading from "../../components/Loading";
-import { APPS } from "../../data/enum";
+import { useToast } from "../../context/ToastContext";
+import Badge from "../../components/ui/Badge";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import Dialog from "../../components/ui/Dialog";
+import DataTable from "../../components/ui/DataTable";
+import Icon from "../../components/ui/Icon";
+import Switch from "../../components/ui/Switch";
+import { ErrorState, Skeleton } from "../../components/ui/States";
+import { billingError, downloadInvoice, fromPaise, useGetBillingAccountQuery, useSetAutoRenewMutation } from "../../redux/api/billingApi";
+import { plansPath } from "../../routes/paths";
 import { formatDateTime } from "../../utils/formateDate";
+import { appIcon, cycleWords, day, limitText, PHASE_LABELS, PHASE_TONES, SUPPORT_LABELS } from "../Billing/billingText";
+import { usePlanCheckout } from "../Billing/usePlanCheckout";
+import BillingDetailsCard from "./components/BillingDetailsCard";
 
+const PAYMENT_TONE = { SUCCESS: "green", created: "amber", FAILED: "red" };
+const PAYMENT_LABEL = { SUCCESS: "Paid", created: "Not completed", FAILED: "Failed" };
+const KIND_LABEL = { new: "New plan", renew: "Renewal", change: "Plan change", auto_renew: "Auto-renewal" };
+const DAY_MS = 86_400_000;
+
+export const SubscriptionSkeleton = () => (
+  <div className="space-y-4 p-1">
+    <Skeleton className="h-44 rounded-2xl" />
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {[0, 1, 2, 3].map((i) => (
+        <Skeleton key={i} className="h-20" />
+      ))}
+    </div>
+    <Skeleton className="h-48" />
+  </div>
+);
+
+const Fact = ({ icon, label, value }) => (
+  <div className="rounded-xl border border-app-border! bg-app-surface p-4">
+    <p className="flex items-center gap-1.5 text-xs text-app-text-muted">
+      <Icon icon={icon} size="sm" /> {label}
+    </p>
+    <p className="mt-1 text-sm font-semibold text-app-text">{value || "—"}</p>
+  </div>
+);
+
+// Settings > Subscription: the plan, auto-renew, which apps are on, the limits and every payment.
+// Data from gian-new (/api/v1/billing/account); paying happens on /plans.
 const Subscription = () => {
-  const [subscription, setSubscription] = useState(null);
-  const [payments, setPayments] = useState([]);
-  const fetchMySubscription = async () => {
+  const account = useGetBillingAccountQuery();
+  const [setAutoRenew, autoRenewState] = useSetAutoRenewMutation();
+  const checkout = usePlanCheckout({});
+  const { showToast } = useToast();
+  const [confirmingAutoRenew, setConfirmingAutoRenew] = useState(false);
+  const [downloading, setDownloading] = useState(null);
+
+  const onDownload = async (invoice) => {
+    setDownloading(invoice.id);
     try {
-      const response = await fetch(`${NEW_BASE_URL}/api/v1/subscription/my`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      const result = await response.json();
-      setSubscription(result?.result?.docs);
-      setPayments(result?.result?.payments);
-      console.log("My subscription:", result?.result?.docs);
+      await downloadInvoice(invoice.id);
     } catch (error) {
-      console.error("Error fetching subscription:", error);
+      showToast({ message: error.message, type: "error" });
+    } finally {
+      setDownloading(null);
     }
   };
 
-  const daysLeft = Math.max(
-    0,
-    Math.ceil(
-      (new Date(subscription?.endDate).getTime() - Date.now()) /
-        (1000 * 60 * 60 * 24),
-    ),
-  );
-
-  useEffect(() => {
-    fetchMySubscription();
-  }, []);
-
-  if (!subscription) {
-    return <Loading />;
+  if (account.isLoading) return <SubscriptionSkeleton />;
+  if (account.isError || !account.data) {
+    return (
+      <div className="p-1">
+        <ErrorState message={billingError(account.error, "Could not load your subscription.")} onRetry={account.refetch} />
+      </div>
+    );
   }
 
+  const data = account.data;
+  const sub = data.subscription;
+  if (!sub) {
+    return (
+      <Card title="No plan yet">
+        <p className="text-sm text-app-text-muted">Choose a plan to unlock WhatsApp, Eazbot, the booking engine and more.</p>
+        <Link to={plansPath()} className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-medium text-white hover:bg-orange-600">
+          <Crown className="size-4" /> See plans
+        </Link>
+      </Card>
+    );
+  }
+
+  const plans = data.catalogue.plans;
+  const plan = plans.find((p) => p.id === sub.planId);
+  const start = new Date(sub.startDate).getTime();
+  const end = new Date(sub.endDate).getTime();
+  const usedPct = Math.min(100, Math.max(0, ((Date.now() - start) / Math.max(1, end - start)) * 100));
+  const running = data.phase === "active" || data.phase === "ending" || data.phase === "trial";
+  const paid = data.phase === "active" || data.phase === "ending";
+  const onApps = new Set(data.entitlements.apps);
+  const included = new Set(plan?.includedApps ?? []);
+  const addons = new Set(data.current?.addonCodes ?? []);
+  const renewal = sub.autoRenewal;
+
+  const toggleAutoRenew = async (next) => {
+    // turning it on opens a Razorpay window: explain it first
+    if (next && !confirmingAutoRenew) {
+      setConfirmingAutoRenew(true);
+      return;
+    }
+    setConfirmingAutoRenew(false);
+    try {
+      if (next) {
+        await checkout.authorizeAutoRenew();
+        showToast({ message: "Auto-renew is on. We'll renew your plan before it ends.", type: "success" });
+      } else {
+        await setAutoRenew(false).unwrap();
+        showToast({ message: "Auto-renew is off. Your plan stays active until its end date.", type: "info" });
+      }
+    } catch (error) {
+      if (error?.name === "CheckoutClosedError") return;
+      showToast({ message: billingError(error, error?.message), type: "error" });
+    }
+  };
+
+  const paymentColumns = [
+    { key: "createdAt", header: "Date", render: (p) => formatDateTime(p.paidAt || p.createdAt) },
+    { key: "kind", header: "What", render: (p) => (p.kind ? KIND_LABEL[p.kind] : "Plan payment") + (p.offerCode ? ` · ${p.offerCode}` : "") },
+    { key: "amount", header: "Amount", render: (p) => <span className="font-medium">{fromPaise(p.amount)}</span> },
+    { key: "status", header: "Status", render: (p) => <Badge tone={PAYMENT_TONE[p.status] || "gray"}>{PAYMENT_LABEL[p.status] || p.status}</Badge> },
+    { key: "period", header: "Covers", render: (p) => (p.periodEnd ? `until ${day(p.periodEnd)}` : "—") },
+    {
+      key: "invoice",
+      header: "Invoice",
+      render: (p) =>
+        p.zohoInvoice ? (
+          p.zohoInvoice.url ? (
+            <a href={p.zohoInvoice.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:underline">
+              <Download className="size-3.5" aria-hidden /> {p.zohoInvoice.number}
+            </a>
+          ) : (
+            <span className="text-xs">{p.zohoInvoice.number}</span>
+          )
+        ) : p.invoice ? (
+          <button
+            type="button"
+            onClick={() => onDownload(p.invoice)}
+            disabled={downloading === p.invoice.id}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline disabled:opacity-60 dark:text-blue-400"
+          >
+            <Download className="size-3.5" aria-hidden /> {p.invoice.number}
+          </button>
+        ) : (
+          <span className="text-xs text-app-text-muted">—</span>
+        ),
+    },
+    { key: "paymentId", header: "Payment ID", render: (p) => <span className="font-mono text-xs">{p.paymentId || "—"}</span> },
+  ];
+
   return (
-    <div className="min-h-screen bg-background ">
-      <header
-        className="relative overflow-hidden"
-        style={{ background: "var(--gradient-hero)" }}
-      >
-        <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_20%,white_1px,transparent_1px)] [background-size:24px_24px]" />
-        <div className="relative max-w-6xl text-white! mx-auto py-14 md:py-20">
-          <div className="flex items-center gap-2 text-primary-foreground/80 text-sm mb-4">
-            <Sparkles className="h-4 w-4" />
-            Your subscription
-          </div>
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground tracking-tight">
-                {subscription?.planId?.planName}
-              </h1>
-              <p className="mt-3 text-primary-foreground/80 text-lg">
-                <span className="text-3xl font-semibold text-primary-foreground">
-                  ₹{subscription?.planId?.price.toLocaleString("en-IN")}
-                </span>{" "}
-                / month
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-full bg-green-500/15 text-green-500 px-4 py-1.5 text-sm font-medium backdrop-blur">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                {subscription?.status.toUpperCase()}
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-ternary text-accent-foreground px-4 py-1.5 text-sm font-semibold ">
-                <Crown className="h-4 w-4" />
-                {daysLeft} days left
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-6xl mx-auto py-10 space-y-8">
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <InfoCard
-            icon={<Calendar className="h-5 w-5" />}
-            label="Start date"
-            value={new Date(subscription?.startDate).toLocaleDateString(
-              "en-IN",
-              {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              },
-            )}
-          />
-          <InfoCard
-            icon={<Calendar className="h-5 w-5" />}
-            label="End date"
-            value={new Date(subscription?.endDate).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })}
-          />
-          <InfoCard
-            icon={<RefreshCw className="h-5 w-5" />}
-            label="Auto renew"
-            value={subscription?.autoRenew ? "Enabled" : "Disabled"}
-            highlight={subscription?.autoRenew}
-          />
-          <InfoCard
-            icon={<Headphones className="h-5 w-5" />}
-            label="Support"
-            value={subscription?.planId?.support}
-            capitalize
-          />
-        </section>
-
-        {/* Features */}
-        {/* <div className="rounded-md">
-                    <h3 className="text-lg font-semibold mb-4">Features</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="grid sm:grid-cols-2 gap-2">
-                            {Object.entries(subscription?.planId?.features || {}).map(([k, v]) => (
-                                <ToggleRow key={k} label={k} enabled={v} />
-                            ))}
-                        </div>
-                    </div>
-                </div> */}
-
-        {/* Modules */}
-        <div className="rounded-md">
-          <div className="">
-            <h3 className="text-lg font-semibold mb-4">Apps</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {subscription?.apps?.map((app, index) => {
-                const isExpired = new Date(app.endDate) < new Date();
-
-                return (
-                  <div
-                    key={app._id}
-                    className="flex gap-1 items-center justify-between text-sm bg-app-surface-secondary rounded-lg p-3 px-4 border border-gray-200"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <span className="capitalize font-medium">
-                        {/* {APPS[app.appId]} */}
-                        {app?.appId?.name}
-                      </span>
-
-                      <div className="text-xs text-gray-500">
-                        <p>
-                          Start Date:{" "}
-                          {new Date(app.startDate).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}{" "}
-                          End Date:{" "}
-                          {new Date(app.endDate).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    </div>
-
-                    <span
-                      className={`text-sm font-medium px-2 py-1 rounded-md ${
-                        isExpired
-                          ? "bg-gray-200 text-gray-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {isExpired ? "Expired" : "Active"}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Limits */}
-        {/* <div className="rounded-md">
-                    <div className="p-6">
-                        <h3 className="text-lg font-semibold mb-4">Limits</h3>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            {Object.entries(subscription?.planId?.limits || {}).map(([key, value]) => (
-                                <div key={key}>
-                                    <p className="text-gray-500 capitalize">{key}</p>
-                                    <p className="font-medium">{value}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div> */}
-
-        <section className="">
-          {/* <div className="flex items-start gap-3 mb-5">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
-              <CreditCard className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Payment information
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Latest billing references
-              </p>
-            </div>
-          </div> */}
-          {/* <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-              <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-ternary/10 text-ternary/80">
-                <Receipt className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Order ID
-                </p>
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {subscription?.currentOrderId}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
-              <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-ternary/10 text-ternary/80">
-                <CreditCard className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Payment ID
-                </p>
-                <p className="text-sm font-semibold text-foreground truncate">
-                  {subscription?.lastPaymentId}
-                </p>
-              </div>
-            </div>
-          </div> */}
-
-          <div className="mt-6 flex flex-col sm:flex-row gap-3">
-            <Link
-              to="/plans"
-              className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold bg-ternary text-white hover:scale-[1.02]"
-            >
-              <Crown className="h-4 w-4" />
-              Upgrade plan
-            </Link>
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-all duration-300 hover:border-primary/40 hover:bg-secondary hover:text-white">
-              Manage billing
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <div className="max-w-6xl mx-auto py-10 space-y-4">
-        <div className="flex items-start gap-3 mb-5">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ternary/10 text-ternary/80">
-            <CreditCard className="h-5 w-5" />
-          </div>
+    <div className="space-y-4">
+      <section className="relative overflow-hidden rounded-2xl bg-primary p-5 text-white sm:p-6 dark:bg-blue-950">
+        <div className="pointer-events-none absolute -top-16 -right-16 size-56 rounded-full bg-orange-500/25 blur-3xl" />
+        <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Payment information
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Latest billing references
+            <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-white/70 uppercase">
+              <Sparkles className="size-3.5" /> Your plan
             </p>
+            <h2 className="mt-1 text-3xl font-bold">{sub.planName || "Plan"}</h2>
+            {data.current && (
+              <p className="mt-1 text-white/80">
+                Billed every {cycleWords(data.current.cycleMonths)}
+                {data.current.addonCodes.length ? ` · ${data.current.addonCodes.length} add-on apps` : ""}
+                {data.current.seats ? ` · ${data.current.seats} extra seats` : ""}
+              </p>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{PHASE_LABELS[data.phase]}</span>
+            <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${data.phase === "ending" || data.phase === "trial" ? "bg-orange-500" : "bg-white/15"}`}>
+              <Crown className="size-3.5" />
+              {running ? `${sub.daysLeft} ${sub.daysLeft === 1 ? "day" : "days"} left` : `Ended ${day(sub.endDate)}`}
+            </span>
           </div>
         </div>
-        <PaymentTable payments={payments} />
+        <div className="relative mt-5">
+          <div className="h-1.5 overflow-hidden rounded-full bg-white/20">
+            <div className="h-full rounded-full bg-white" style={{ width: `${usedPct}%` }} />
+          </div>
+          <div className="mt-1.5 flex justify-between text-xs text-white/70">
+            <span>{day(sub.startDate)}</span>
+            <span>{Math.round((end - start) / DAY_MS)}-day period</span>
+            <span>{day(sub.endDate)}</span>
+          </div>
+        </div>
+        <div className="relative mt-5 flex flex-wrap gap-2">
+          <Link to={plansPath()} className="inline-flex h-9 items-center gap-2 rounded-lg bg-orange-500 px-4 text-sm font-medium text-white hover:bg-orange-600">
+            <Crown className="size-4" />
+            {paid ? "Renew or upgrade" : "Choose a plan"}
+          </Link>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <Fact icon={CalendarDays} label="Valid until" value={day(sub.endDate)} />
+        <Fact icon={Users} label="Team members" value={limitText(data.entitlements.teamMembers, "")} />
+        <Fact icon={Home} label="Properties" value={limitText(data.entitlements.properties, "")} />
+        <Fact icon={Headphones} label="Support" value={SUPPORT_LABELS[plan?.support] || "—"} />
       </div>
+
+      <Card
+        title="Auto-renew"
+        description={
+          renewal?.status === "active"
+            ? `Renews by itself on ${day(renewal.startAt)} for ${fromPaise(renewal.amountPaise)} every ${cycleWords(renewal.cycleMonths)}.`
+            : renewal?.status === "halted"
+              ? "The last automatic payment failed. Renew manually or turn auto-renew on again with another card or UPI."
+              : paid
+                ? "Off. Turn it on and we'll renew your plan at the end of each period with UPI AutoPay or your card."
+                : "Available once you're on a paid plan."
+        }
+        actions={
+          <Switch
+            checked={Boolean(sub.autoRenew)}
+            onChange={toggleAutoRenew}
+            disabled={!paid || !data.canPay || !data.autoRenewReady || checkout.busy || autoRenewState.isLoading}
+            label="Auto-renew"
+          />
+        }
+      >
+        <p className="flex items-center gap-1.5 text-xs text-app-text-muted">
+          <RefreshCw className="size-3.5" aria-hidden />
+          {data.canPay ? "You can turn it off any time; your plan stays active until its end date." : "Only the account owner can change this."}
+        </p>
+      </Card>
+
+      <Card title="Apps" description={`${onApps.size} of ${data.catalogue.apps.length} apps are on for your hotel.`}>
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          {data.catalogue.apps.map((app) => {
+            const on = onApps.has(app.code);
+            const AppIcon = appIcon(app.code);
+            const how = data.phase === "trial" ? "Free trial" : included.has(app.code) ? "In your plan" : addons.has(app.code) ? "Add-on" : null;
+            return (
+              <li key={app.code} className={`flex items-center gap-3 rounded-lg border border-app-border! px-3 py-2.5 ${on ? "" : "opacity-70"}`}>
+                <span className={`grid size-8 place-content-center rounded-lg ${on ? "bg-emerald-500/10 text-emerald-600" : "bg-app-surface-secondary text-app-text-muted"}`}>
+                  <AppIcon className="size-4" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-app-text">{app.name}</span>
+                  <span className="block text-xs text-app-text-muted">{on ? how || "On" : "Not in your plan"}</span>
+                </span>
+                {on ? (
+                  <Badge tone="green">On</Badge>
+                ) : (
+                  <Link to={plansPath()} className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:underline">
+                    <Lock className="size-3" /> Add
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      <BillingDetailsCard canEdit={data.canPay} />
+
+      <Dialog
+        open={confirmingAutoRenew}
+        onClose={() => setConfirmingAutoRenew(false)}
+        title="Turn on auto-renew"
+        description="Your plan renews by itself, so the dashboard never locks."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmingAutoRenew(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => toggleAutoRenew(true)}>Continue to Razorpay</Button>
+          </>
+        }
+      >
+        <ul className="space-y-2 text-sm text-app-text">
+          <li>• Razorpay asks you to authorise UPI AutoPay or your card once.</li>
+          <li>• To check it works, it may take a small amount (such as ₹5) and refund it. This is not a payment for your plan.</li>
+          <li>• Your plan renews on {day(sub.endDate)}, and every {cycleWords(data.current?.cycleMonths ?? 1)} after that. You get an invoice each time.</li>
+          <li>• Turn it off here any time; your plan stays active until its end date.</li>
+        </ul>
+      </Dialog>
+
+      <Card title="Payments" description="Every payment for your plan, with its GST invoice.">
+        {data.payments.length ? (
+          <DataTable columns={paymentColumns} rows={data.payments} rowKey={(p) => p.id} />
+        ) : (
+          <p className="flex items-center justify-center gap-2 py-6 text-sm text-app-text-muted">
+            <Package className="size-4" /> No payments yet{data.phase === "trial" ? ". You're on the free trial." : "."}
+          </p>
+        )}
+      </Card>
     </div>
   );
 };
 
 export default Subscription;
-
-function InfoCard({ icon, label, value, highlight, capitalize }) {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5  hover:-translate-y-0.5 ">
-      <div
-        className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${
-          highlight
-            ? "bg-ternary/15 text-ternary"
-            : "bg-ternary/10 text-ternary/80"
-        }`}
-      >
-        {icon}
-      </div>
-      <p className="mt-3 text-sm font-medium tracking-wider text-app-text dark:text-app-text">
-        {label}
-      </p>
-      <p
-        className={`mt-1 text-md font-medium text-gray-900 dark:text-app-text-faint ${
-          capitalize ? "capitalize" : ""
-        }`}
-      >
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ToggleRow({ label, enabled }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-secondary/5 px-4 py-3 ">
-      <span className="text-sm text-gray-800 capitalize">
-        {label.replace(/([A-Z])/g, " $1")}
-      </span>
-      {enabled ? (
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-success/15 text-green-500">
-          <Check className="h-3.5 w-3.5" />
-        </span>
-      ) : (
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-          <X className="h-3.5 w-3.5" />
-        </span>
-      )}
-    </div>
-  );
-}
-
-const PaymentTable = ({ payments }) => {
-  return (
-    <div className="overflow-x-auto border-gray-200">
-      {payments && payments.length > 0 ? (
-        <table className="w-full border-collapse">
-          <thead className="bg-primary text-white">
-            <tr>
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Order Id
-              </th>
-              {/* <th className="px-5 py-3 text-left text-sm font-semibold">
-                Plan Id
-              </th> */}
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Payment Id
-              </th>
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Amount
-              </th>
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Currency
-              </th>
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Status
-              </th>
-              {/* <th className="px-5 py-3 text-left text-sm font-semibold">
-                Paid At
-              </th> */}
-              <th className="px-5 py-3 text-left text-sm text-app-text dark:text-app-text-muted font-semibold">
-                Created At
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {payments.map((payment, index) => (
-              <tr
-                key={payment._id}
-                className={`transition-all duration-200 hover:bg-primary/5
-                  ${index % 2 === 0 ? "bg-app-surface-secondary" : "bg-app-surface"}`}
-              >
-                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint">
-                  {payment.orderId}
-                </td>
-
-                {/* <td className="px-5 py-3 text-sm text-gray-700">
-                  {payment.planId}
-                </td> */}
-
-                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint">
-                  {payment.paymentId}
-                </td>
-
-                <td className="px-5 py-3 font-semibold text-app-text-muted">
-                  ₹{payment.amount / 100}
-                </td>
-
-                <td className="px-5 py-3 text-sm text-gray-700 dark:text-app-text-faint uppercase text-center">
-                  {payment.currency}
-                </td>
-
-                <td className="px-5 py-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold uppercase
-                      ${
-                        payment.status === "SUCCESS"
-                          ? "bg-green-100 text-green-700"
-                          : payment.status === "created"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {payment.status}
-                  </span>
-                </td>
-
-                {/* <td className="px-5 py-3 text-sm text-gray-600 whitespace-nowrap">
-                  {formatDateTime(payment.paidAt)}
-                </td> */}
-
-                <td className="px-5 py-3 text-sm text-gray-600 dark:text-app-text-faint whitespace-nowrap">
-                  {formatDateTime(payment.createdAt)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <div className="p-8 text-center text-gray-500">No payments found</div>
-      )}
-    </div>
-  );
-};

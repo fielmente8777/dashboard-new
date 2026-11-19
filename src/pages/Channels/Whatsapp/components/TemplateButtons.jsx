@@ -1,185 +1,104 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
-import { IoClose } from "react-icons/io5";
+import { Plus, Trash2 } from "lucide-react";
+import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { Field, Input } from "../../../../components/ui/Field";
+import IconButton from "../../../../components/ui/IconButton";
+import SelectMenu from "../../../../components/ui/SelectMenu";
+import { BUTTON_TYPES } from "./templateUtils";
 
+const MAX_BUTTONS = 3;
+
+// Up to three buttons under the message.
 const TemplateButtons = () => {
   const { control, register, watch } = useFormContext();
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "buttons",
-  });
-
+  const { fields, append, remove } = useFieldArray({ control, name: "buttons" });
   const buttons = watch("buttons") || [];
 
   return (
-    <div className="bg-app-surface p-6 rounded-lg border-primary/60!">
-      <h2 className="text-lg font-semibold mb-4">Buttons</h2>
-
-      <div className="space-y-4 max-h-[260px] overflow-y-auto pr-1">
+    <Card
+      title="Buttons (optional)"
+      description="Let guests open a link, call you or reply with one tap."
+    >
+      <div className="space-y-3">
         {fields.map((field, index) => {
-          const textLength = buttons[index]?.text?.length || 0;
-          const urlLength = buttons[index]?.url?.length || 0;
-
+          const type = buttons[index]?.type || "URL";
           return (
             <div
               key={field.id}
-              className="border rounded-md p-3 bg-app-surface-secondary relative"
+              className="grid gap-3 rounded-lg border border-app-border! p-3 sm:grid-cols-[11rem_1fr_auto]"
             >
-              {/* REMOVE ICON */}
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                className="absolute top-3 right-3 text-gray-400 dark:text-app-text-faint hover:text-red-500"
-              >
-                <IoClose />
-              </button>
-
-              <div className="flex gap-3 items-start">
-                {/* DRAG ICON */}
-                {/* <GripVertical
-                  size={18}
-                  className="text-gray-400 mt-6 cursor-grab"
-                /> */}
-
-                <div className="grid grid-cols-4 gap-3 w-full">
-                  {/* TYPE */}
-                  <div>
-                    <label className="text-xs text-gray-500">
-                      Type of action
-                    </label>
-
-                    <select
-                      {...register(`buttons.${index}.type`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
-                    >
-                      <option value="visit">Visit website</option>
-                      <option value="quick">Quick reply</option>
-                    </select>
-                  </div>
-
-                  {/* BUTTON TEXT */}
-                  <div>
-                    <label className="text-xs text-gray-500">Button text</label>
-
-                    <input
-                      {...register(`buttons.${index}.text`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+              <Field as="div" label="Action">
+                <Controller
+                  name={`buttons.${index}.type`}
+                  control={control}
+                  render={({ field: typeField }) => (
+                    <SelectMenu
+                      label="Button action"
+                      options={BUTTON_TYPES}
+                      value={typeField.value}
+                      onChange={typeField.onChange}
+                      className="w-full"
                     />
+                  )}
+                />
+              </Field>
 
-                    <div className="text-[11px] text-gray-400 text-right">
-                      {textLength}/25
-                    </div>
-                  </div>
-
-                  {/* URL TYPE */}
-                  <div>
-                    <label className="text-xs text-gray-500">URL type</label>
-
-                    <select
-                      {...register(`buttons.${index}.urlType`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm bg-app-surface"
-                    >
-                      <option value="static">Static</option>
-                      <option value="dynamic">Dynamic</option>
-                    </select>
-                  </div>
-
-                  {/* URL */}
-                  <div>
-                    <label className="text-xs text-gray-500">Website URL</label>
-
-                    <input
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label={`Label (${buttons[index]?.text?.length || 0}/25)`}>
+                  <Input
+                    {...register(`buttons.${index}.text`)}
+                    maxLength={25}
+                    placeholder={type === "PHONE_NUMBER" ? "Call us" : type === "URL" ? "View booking" : "Yes, please"}
+                  />
+                </Field>
+                {type === "URL" && (
+                  <Field label="Website address">
+                    <Input
                       {...register(`buttons.${index}.url`)}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm"
+                      type="url"
+                      maxLength={2000}
+                      placeholder="https://yourhotel.com"
                     />
-
-                    <div className="text-[11px] text-gray-400 text-right">
-                      {urlLength}/2000
-                    </div>
-                  </div>
-                </div>
+                  </Field>
+                )}
+                {type === "PHONE_NUMBER" && (
+                  <Field label="Phone number">
+                    <Input
+                      {...register(`buttons.${index}.phone_number`)}
+                      type="tel"
+                      placeholder="+919876543210"
+                    />
+                  </Field>
+                )}
               </div>
+
+              <IconButton
+                icon={Trash2}
+                label="Remove button"
+                tone="danger"
+                onClick={() => remove(index)}
+                className="self-end"
+              />
             </div>
           );
         })}
-      </div>
 
-      {/* ADD BUTTON */}
-      <button
-        type="button"
-        onClick={() =>
-          append({
-            type: "visit",
-            text: "",
-            url: "",
-            urlType: "static",
-          })
-        }
-        className="mt-4 border border-gray-300 px-4 py-2 rounded-md text-sm hover:bg-primary/60"
-      >
-        + Add button
-      </button>
-    </div>
+        {fields.length < MAX_BUTTONS ? (
+          <Button
+            variant="dashed"
+            size="sm"
+            icon={Plus}
+            onClick={() => append({ type: "URL", text: "", url: "", phone_number: "" })}
+          >
+            Add button
+          </Button>
+        ) : (
+          <p className="text-xs text-app-text-muted">WhatsApp allows up to {MAX_BUTTONS} buttons.</p>
+        )}
+      </div>
+    </Card>
   );
 };
 
 export default TemplateButtons;
-
-// import { useFieldArray, useFormContext } from "react-hook-form";
-
-// const TemplateButtons = () => {
-//   const { control, register } = useFormContext();
-
-//   const { fields, append, remove } = useFieldArray({
-//     control,
-//     name: "buttons",
-//   });
-
-//   return (
-//     <div className="bg-white p-6 rounded-lg border">
-//       <h2 className="text-lg font-semibold mb-4">Buttons</h2>
-
-//       {fields.map((field, index) => (
-//         <div key={field.id} className="grid grid-cols-4 gap-3 mb-3">
-//           <select
-//             {...register(`buttons.${index}.type`)}
-//             className="border rounded-md p-2"
-//           >
-//             <option value="visit">Visit Website</option>
-//             <option value="quick">Quick Reply</option>
-//           </select>
-
-//           <input
-//             {...register(`buttons.${index}.text`)}
-//             placeholder="Button text"
-//             className="border rounded-md p-2"
-//           />
-
-//           <input
-//             {...register(`buttons.${index}.url`)}
-//             placeholder="URL"
-//             className="border rounded-md p-2"
-//           />
-
-//           <button
-//             type="button"
-//             onClick={() => remove(index)}
-//             className="text-red-500"
-//           >
-//             Remove
-//           </button>
-//         </div>
-//       ))}
-
-//       <button
-//         type="button"
-//         onClick={() => append({ type: "visit", text: "", url: "" })}
-//         className="bg-gray-200 px-4 py-2 rounded"
-//       >
-//         Add Button
-//       </button>
-//     </div>
-//   );
-// };
-
-// export default TemplateButtons;

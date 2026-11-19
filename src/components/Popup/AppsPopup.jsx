@@ -1,359 +1,121 @@
-import { useEffect, useState } from "react";
-import { accessScopeMap } from "../../pages/UserMgmt/UserMgmtPopup";
-import Swal from "sweetalert2";
+import { ChevronRight, Search, SearchX } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MdClose } from "react-icons/md";
+import { dashboardPath } from "../../routes/paths";
+import Drawer from "../ui/Drawer";
+import { inputClassName } from "../ui/Field";
+import Icon from "../ui/Icon";
+import { EmptyState } from "../ui/States";
+import { SERVICE_GROUPS } from "./eazStoreServices";
 
-const AppsPopup = ({ open, setOpen, authUser }) => {
+// The EazStore: every service Eazotel offers, searchable, in a side drawer.
+const AppsPopup = ({ open, setOpen }) => {
   const navigate = useNavigate();
-
   const [search, setSearch] = useState("");
 
-  const peoplePlusServices = [
-    {
-      name: "OTA Listing",
-      icon: "📃",
-      key: "OTA Listing",
-      link: "ota-listing",
-    },
-    {
-      name: "OTA Optimization",
-      icon: "⚙️",
-      key: "OTA Optimization",
-      link: "ota-optimization",
-    },
-    {
-      name: "OTA Management",
-      icon: "📈",
-      key: "OTA Management",
-      link: "ota-management",
-    },
-    // {
-    //   name: "Accounting",
-    //   icon: "💼",
-    //   key: "Accounting",
-    //   link: "accounting",
-    // },
-    {
-      name: "GST Filing",
-      icon: "🧾",
-      key: "GST Filing",
-      link: "gst-filing",
-    },
+  const close = useCallback(() => setOpen(false), [setOpen]);
 
-    {
-      name: "Performance Marketing",
-      icon: "📊",
-      key: "Performance Marketing",
-      link: "performance-marketing",
-    },
-
-    {
-      name: "Public Relations (PR)",
-      icon: "📰",
-      key: "PR",
-      link: "pr",
-    },
-    {
-      name: "Linktree Setup",
-      icon: "🌲",
-      key: "Linktree Setup",
-      link: "linktree-setup",
-    },
-    {
-      name: "Google Listing",
-      icon: "📍",
-      key: "Google Listing",
-      link: "google-listing",
-    },
-    {
-      name: "Google Map Itrations",
-      icon: "🗺️",
-      key: "Google Map Itrations",
-      link: "google-map-itrations",
-    },
-    {
-      name: "Influencer Marketing",
-      icon: "📣",
-      key: "Influencer Marketing",
-      link: "influencer-marketing",
-    },
-    // {
-    //   name: "Social Media",
-    //   icon: "📱",
-    //   key: "Social Media",
-    //   link: "social-media",
-    // },
-    {
-      name: "Email Marketing",
-      icon: "📧",
-      key: "Email Marketing",
-      link: "email-marketing",
-    },
-    {
-      name: "WhatsApp Marketing",
-      icon: "💬",
-      key: "WhatsApp Marketing",
-      link: "whatsapp-marketing",
-    },
-
-    // {
-    //   name: "Website Enquiries",
-    //   icon: "🌐",
-    //   key: "Enquiries Management",
-    //   link: "enquiries-management/enquiries",
-    // },
-    // {
-    //   name: "Lead Gen Form",
-    //   icon: "📝",
-    //   key: "Leads Form",
-    //   link: "lead-form/lead-gen-form",
-    // },
-    // { name: "Eazobot", icon: "🤖", key: "Eazobot", link: "eazobot" },
-
-    // { name: "GRM", icon: "📊", key: "GRM", link: "grm/analytics" }, // Assuming GRM relates to reporting or analytics
-  ];
-
-  const otherServices = [
-    {
-      name: "Conversational Tool",
-      icon: "💬",
-      key: "Conversational Tool",
-      link: "conversational-tool",
-    },
-    {
-      name: "Custom Website",
-      icon: "🌐",
-      key: "Custom Website",
-      link: "custom-website",
-    },
-    {
-      name: "SEO",
-      icon: "🔍",
-      key: "SEO",
-      link: "seo",
-    },
-
-    {
-      name: "Channel Manager",
-      icon: "📡",
-      key: "Channel Manager",
-      link: "channel-manager",
-    },
-    {
-      name: "Leads Management",
-      icon: "📝",
-      key: "Leads Management",
-      link: "leads-management",
-    },
-    {
-      name: "PMS Software",
-      icon: "💻",
-      key: "PMS Software",
-      link: "pms-software",
-    },
-    // {
-    //   name: "Content Management",
-    //   icon: "🗂️",
-    //   key: "CMS",
-    //   link: "cms/profile-and-links",
-    // },
-    // {
-    //   name: "Human Resource",
-    //   icon: "👥",
-    //   key: "HRM",
-    //   link: `human-resources-management/applications`,
-    // },
-    // {
-    //   name: "Payment Gateway",
-    //   icon: "💳",
-    //   key: "Payment Gateway",
-    //   link: "payment-gateway",
-    // },
-    // {
-    //   name: "User Management",
-    //   icon: "👤",
-    //   key: "User Management",
-    //   link: `user-management/all-users`,
-    // },
-    // {
-    //   name: "Booking Engine",
-    //   icon: "🛎️",
-    //   key: "Booking Engine",
-    //   link: "booking-engine",
-    // },
-
-    {
-      name: "SMS Marketing",
-      icon: "📲",
-      key: "SMS Marketing",
-      link: "sms-marketing",
-    },
-    // {
-    //   name: "Analytics & Reporting",
-    //   icon: "📈",
-    //   key: "Analytics Reporting",
-    //   link: "analytics-and-reporting",
-    //   allAnalyticsLinsk: [
-    //     {
-    //       name: "HRM Analytics",
-    //       link: `human-resources-management/analytics`,
-    //       key: "HRM",
-    //     },
-    //     {
-    //       name: "Enquiries Analytics",
-    //       link: `enquiries-management/enquiries-analytics`,
-    //       key: "Enquiries Management",
-    //     },
-    //     {
-    //       name: "GRM Analytics",
-    //       link: `grm/analytics`,
-    //       key: "GRM",
-    //     },
-    //   ],
-    // },
-  ];
-
-  // 🔍 Filtered results
-  let filteredPremium = peoplePlusServices.filter((service) =>
-    service.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  let filteredOther = otherServices.filter((service) =>
-    service.name.toLowerCase().includes(search.toLowerCase())
-  );
-
+  // every visit starts with the full list
   useEffect(() => {
-    if (search.length < 1) {
-      filteredPremium = peoplePlusServices;
-      filteredOther = otherServices;
-    }
-  }, []);
+    if (open) setSearch("");
+  }, [open]);
 
-  const handleOpenService = (service) => {
-    // console.log(service.link)
-    // const key = service.key;
+  // the groups with only the services that match the search
+  const groups = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return SERVICE_GROUPS;
 
-    // if (service?.name === "Analytics & Reporting") {
-    //   const filteredAnyalytics = service?.allAnalyticsLinsk.filter(
-    //     (item) => authUser?.accessScope[accessScopeMap[item.key]]
-    //   );
+    return SERVICE_GROUPS.map((group) => ({
+      ...group,
+      services: group.services.filter((service) =>
+        `${service.name} ${service.description}`.toLowerCase().includes(term),
+      ),
+    })).filter((group) => group.services.length > 0);
+  }, [search]);
 
-    //   if (filteredAnyalytics.length > 0) {
-    //     service = filteredAnyalytics[0];
-    //     setOpen(false);
-    //     navigate(service.link);
-    //     return;
-    //   }
-    // }
-
-    // if (!authUser.accessScope[accessScopeMap[key]]) {
-    //   Swal.fire({
-    //     title: "Access Denied",
-    //     text: "You don't have access to this service",
-    //     icon: "error",
-    //     confirmButtonText: "OK",
-    //   });
-
-    //   return;
-    // }
-
-    setOpen(false);
-    navigate(service.link);
+  const openService = (service) => {
+    close();
+    navigate(dashboardPath(service.page));
   };
 
   return (
-    <>
-      {open && (
-        <div
-          onClick={(e) => {
-            if (e.currentTarget) {
-              setOpen(false);
-            }
-          }}
-          className="fixed top-0 left-0 !z-[99999]  bg-black/50 dark:bg-white/10 w-full h-[100dvh] flex justify-end "
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="text-[#575757] bg-app-surface w-[90%] sm:w-[70%] md:w-[50%] lg:w-[40%] absolute h-[100vh] z-[999999999999999999999999999999999]"
-          >
-            <div className="relative flex items-center">
-              <input
-                type="text"
-                autoFocus
-                onChange={(e) => setSearch(e.target.value)}
-                value={search}
-                name="search"
-                placeholder="Search Services"
-                className="bg-app-surface py-4 w-full px-5 outline-none border  "
-              />
-              <MdClose
-                onClick={() => setOpen(false)}
-                className=" mr-2 md:mr-5 cursor-pointer text-2xl md:text-3xl absolute right-0"
-              />
-            </div>
-
-            <div className=" p-4 pb-20 bg-app-surface scrollbar-hidden min-h-screen h-[98vh] overflow-y-auto">
-              {filteredPremium.length > 0 && (
-                <div>
-                  <h2 className="font-semibold mb-2">Premium Services</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-6">
-                    {filteredPremium.map((service) => (
-                      <div
-                        key={service.name}
-                        className="relative group cursor-pointer  shadow bg-app-surface-secondary hover:bg-white duration-75 rounded-md"
-                        onClick={() => {
-                          handleOpenService(service);
-                        }}
-                      >
-                        <div className="flex flex-col items-center justify-center py-6 px-1">
-                          <div className="text-2xl mb-2">{service.icon}</div>
-                          <span className="text-center">{service.name}</span>
-                        </div>
-
-                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                          {service.name}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {filteredOther.length > 0 && (
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <h2 className="text-gray-800  dark:text-app-text-faint font-semibold">
-                      Other Services
-                    </h2>
-                    {/* <span className="text-blue-600 text-sm cursor-pointer">Preference</span> */}
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-                    {filteredOther.map((service) => (
-                      <div
-                        key={service.name}
-                        className=" relative group cursor-pointer shadow  bg-app-surface-secondary hover:bg-white duration-300 rounded-md"
-                        onClick={() => {
-                          handleOpenService(service);
-                        }}
-                      >
-                        <div className="flex flex-col items-center justify-center py-6 px-1">
-                          <div className="text-2xl mb-2">{service.icon}</div>
-                          <span className="text-center">{service.name}</span>
-                        </div>
-                        <div className="absolute bottom-full mb-2 w-max px-2 py-1 text-sm text-white bg-app-surface-secondary rounded opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                          {service.name}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+    <Drawer
+      open={open}
+      onClose={close}
+      title="EazStore"
+      description="Services and tools to grow your property."
+      header={
+        <div className="relative">
+          <Icon
+            icon={Search}
+            tone="muted"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2"
+          />
+          <input
+            autoFocus
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search services"
+            aria-label="Search services"
+            className={`${inputClassName} pl-9`}
+          />
         </div>
+      }
+    >
+      {groups.length === 0 && (
+        <EmptyState
+          icon={SearchX}
+          title="No service found"
+          description={`Nothing matches "${search.trim()}". Try another word.`}
+        />
       )}
-    </>
+
+      <div className="space-y-6">
+        {groups.map((group) => (
+          <section key={group.title}>
+            <h3 className="text-sm font-semibold text-app-text">
+              {group.title}
+              <span className="ml-2 font-normal text-app-text-muted">
+                {group.services.length}
+              </span>
+            </h3>
+            <p className="mb-3 mt-0.5 text-xs text-app-text-muted">
+              {group.description}
+            </p>
+
+            <ul className="anim-stagger grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {group.services.map((service) => (
+                <li key={service.name}>
+                  <button
+                    type="button"
+                    onClick={() => openService(service)}
+                    className="anim-lift group flex w-full items-center gap-3 rounded-xl border border-app-border! bg-app-surface p-3 text-left hover:border-blue-500!"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 transition-colors group-hover:bg-blue-500 group-hover:text-white">
+                      <Icon icon={service.icon} size="xl" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-app-text">
+                        {service.name}
+                      </span>
+                      <span className="block truncate text-xs text-app-text-muted">
+                        {service.description}
+                      </span>
+                    </span>
+                    <Icon
+                      icon={ChevronRight}
+                      tone="faint"
+                      className="transition-transform group-hover:translate-x-0.5"
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </Drawer>
   );
 };
 

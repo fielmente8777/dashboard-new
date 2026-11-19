@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import {
   FiTrendingUp,
   FiTrendingDown,
@@ -99,26 +98,6 @@ export function Overview() {
       action: "View Details",
     },
   ];
-
-  const getData = async () => {
-    const response = await fetch(
-      "http://localhost:8000/api/v1/google-ads/sync",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      },
-    );
-
-    const data = await response.json();
-    // console.log(data);
-  };
-useEffect(() => {
-  completeGoogleConnect();
-}, []);
-
 
   return (
     <div className="flex-1 bg-gray-50 overflow-y-auto">

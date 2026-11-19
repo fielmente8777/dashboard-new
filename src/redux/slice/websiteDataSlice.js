@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { GetwebsiteDetails } from "../../services/api/websiteDetails.api";
+import { sessionApi } from "../api/sessionApi";
 
 const initialState = {
   hotels: null,
@@ -9,65 +9,35 @@ const initialState = {
   error: null,
 };
 
+const { getWebsiteData } = sessionApi.endpoints;
+
+// Filled by the getWebsiteData query (loadWebsiteData / refreshWebsiteData in
+// redux/session.js); a request skipped because the answer is cached comes
+// back as a "condition" rejection.
 const websiteDataSlice = createSlice({
   name: "websiteData",
   initialState,
-  reducers: {
-    getWebsiteDataRequest: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-
-    getWebsiteDataSucccess: (state, action) => {
-      // console.log(action.payload);
-      state.loading = false;
-      state.hotels = action.payload;
-    },
-    getWebsiteDataFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
-    fetchCurrentLocationWebsiteData: (state, action) => {
-      const { data, hid } = action.payload;
-      // console.log(hid);
-      const currentLocationWebsiteData = data[String(hid)];
-      // console.log(currentLocationWebsiteData);
-      state.loading = false;
-      state.currentLoactionWebsiteData = currentLocationWebsiteData;
-    },
-    newsletterData: (state, action) => {
-      state.loading = false;
-      state.newsletterData = action.payload || [];
-    },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addMatcher(getWebsiteData.matchPending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addMatcher(getWebsiteData.matchFulfilled, (state, action) => {
+        const data = action.payload?.WebsiteData || action.payload?.Hotels;
+        const { hid } = action.meta.arg.originalArgs;
+        state.loading = false;
+        state.hotels = data;
+        state.currentLoactionWebsiteData = data?.[String(hid)];
+        state.newsletterData = action.payload?.Newsletter || [];
+      })
+      .addMatcher(getWebsiteData.matchRejected, (state, action) => {
+        if (action.meta.condition) return;
+        state.loading = false;
+        state.error = action.error?.message ?? "Could not load the website data";
+      });
   },
 });
 
-export const {
-  getWebsiteDataRequest,
-  getWebsiteDataSucccess,
-  getWebsiteDataFailure,
-  fetchCurrentLocationWebsiteData,
-  newsletterData,
-} = websiteDataSlice.actions;
-
 export default websiteDataSlice.reducer;
-
-// Thunk function to fetch user profile
-export const fetchWebsiteData = (token, hid) => async (dispatch) => {
-  dispatch(getWebsiteDataRequest());
-  try {
-    const data = await GetwebsiteDetails(token);
-    dispatch(getWebsiteDataSucccess(data?.WebsiteData || data.Hotels));
-    dispatch(
-      fetchCurrentLocationWebsiteData({
-        data: data?.WebsiteData || data.Hotels,
-        hid,
-      })
-    );
-    dispatch(newsletterData(data?.Newsletter));
-    // return { success: true, response: data };
-  } catch (error) {
-    dispatch(getWebsiteDataFailure(error.message));
-    return { success: false, error: error.message };
-  }
-};

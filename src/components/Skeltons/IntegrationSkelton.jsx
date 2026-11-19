@@ -1,49 +1,35 @@
-import React from "react";
+import { Skeleton } from "../ui/States";
 
-const IntegrationSkelton = () => {
-  const skeletonItems = Array.from({ length: 8 }); // number of placeholder cards
-
-  return (
-    <div className="p-6">
-      {/* Title Skeleton */}
-      <div className="mb-4">
-        <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-1"></div>
-        <div className="h-4 w-72 bg-gray-200 rounded animate-pulse"></div>
+// Placeholder in the shape of Settings > Integration.
+const IntegrationSkelton = () => (
+  <div className="space-y-5 p-1">
+    <div className="flex items-end justify-between gap-3">
+      <div className="space-y-2">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-3.5 w-72 max-w-full" />
       </div>
-
-      {/* Search bar skeleton */}
-      <div className="mb-4">
-        <div className="h-10 w-full max-w-md bg-gray-200 rounded animate-pulse"></div>
-      </div>
-
-      {/* Tabs skeleton */}
-      <div className="flex space-x-4 mb-6">
-        {["All", "Communication", "Analytics", "Productivity", "Storage"].map(
-          (_, idx) => (
-            <div
-              key={idx}
-              className="h-8 w-24 bg-gray-200 rounded animate-pulse"
-            ></div>
-          ),
-        )}
-      </div>
-
-      {/* Grid of skeleton cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {skeletonItems.map((_, idx) => (
-          <div
-            key={idx}
-            className="p-4 border border-gray-200 rounded-lg shadow-sm bg-white animate-pulse"
-          >
-            <div className="h-10 w-10 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-            <div className="h-3 bg-gray-200 rounded mb-4 w-full"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-          </div>
+      <Skeleton className="h-6 w-28" />
+    </div>
+    <div className="flex flex-col gap-3 lg:flex-row">
+      <Skeleton className="h-9 lg:w-72" />
+      <div className="flex gap-1">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-9 w-24" />
         ))}
       </div>
     </div>
-  );
-};
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      {Array.from({ length: 8 }, (_, i) => (
+        <div key={i} className="space-y-3 rounded-xl border border-app-border! bg-app-surface p-4">
+          <Skeleton className="size-11" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 export default IntegrationSkelton;

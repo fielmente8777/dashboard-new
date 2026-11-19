@@ -1,364 +1,143 @@
-"use client";
-import { useState } from "react";
-import { MdClose } from "react-icons/md";
+import { Send } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useToast } from "../../context/ToastContext";
+import { useTenant } from "../../hooks/useTenant";
+import { useSendMessageMutation } from "../../redux/api/whatsappApi";
 import normalizePhone from "../../utils/normalizePhone";
-import { sendWhatsAppMessage } from "../../services/api/whatsApp";
-import Swal from "sweetalert2";
+import Button from "../ui/Button";
+import Dialog from "../ui/Dialog";
+import { Textarea } from "../ui/Field";
+import Tabs from "../ui/Tabs";
+import TemplateChooser from "../WhatsApp/TemplateChooser";
 import {
-  normalizeTemplate,
-  renderTemplatePreview,
-} from "../../utils/whatsappTemplate";
-import { IoArrowBack } from "react-icons/io5";
-import TemplatePreview from "../../pages/Channels/Whatsapp/components/TemplatePreview";
+  buildTemplatePayload,
+  getTemplateDefaults,
+  isTemplateFilled,
+} from "../WhatsApp/templateValues";
 
-// Step 1: Define channels
-const channels = [
-  {
-    id: 0,
-    key: "whatsapp",
-    name: "WhatsApp",
-    icon: "📱",
-    detail: "+91 0000000000",
-  },
-  // { id: 1, name: "SMS", icon: "📩", detail: "+91 1234567890" },
-  // { id: 2, name: "Email", icon: "📧", detail: "hem@example.com" },
+const MODES = [
+  { value: "text", label: "Message" },
+  { value: "template", label: "Template" },
 ];
 
-// Component: Channel Option
-const ChannelOption = ({ channel, selected, onSelect }) => {
-  return (
-    <div
-      onClick={() => onSelect(channel)}
-      className={`cursor-pointer border-2 px-4 py-3 rounded-full flex justify-between items-center ${
-        selected.id === channel.id ? "bg-primary text-white" : "bg-white"
-      } border-primary/75`}
-    >
-      <div>
-        <div className="flex gap-2 items-center">
-          <span>{channel.icon}</span>
-          <p>{channel.name}</p>
-        </div>
-      </div>
-      <input type="radio" checked={selected?.id === channel.id} readOnly />
-    </div>
-  );
-};
+const NO_VALUES = { body: [], header: [] };
 
-// Component: Template Card
-const TemplateCard = ({ template, selected, onSelect }) => {
-  return (
-    <div className="border rounded p-4 flex justify-between items-start gap-5 bg-gray-100">
-      <div className="flex-1">
-        <h3 className="font-semibold">{template.name}</h3>
-        <p className="text-sm text-gray-600">{template.body}</p>
-        <p className="text-xs text-gray-400 mt-1">
-          Language: {template.language}
-        </p>
-      </div>
+// Sends a WhatsApp message to a lead or caller: free text, or an approved
+// template. `lead` needs { Contact, Name? }; `templates` are the account's
+// approved templates. Pass `templateOnly` for a guest who has no chat with
+// you yet: WhatsApp only lets a business start a conversation with an
+// approved template. `onSent` is called after a message goes out.
+const QuickResponsePopup = ({
+  open,
+  setOpen,
+  lead,
+  templates = [],
+  templateOnly = false,
+  onSent,
+}) => {
+  const { showToast } = useToast();
+  const { hid } = useTenant();
+  const [sendMessage, { isLoading }] = useSendMessageMutation();
 
-      <button
-        onClick={() => onSelect(template)}
-        className={`px-4 py-2 rounded ${
-          selected?.id === template.id
-            ? "bg-green-600 text-white"
-            : "bg-primary/90 hover:bg-primary text-white"
-        }`}
-      >
-        {selected?.id === template.id ? "Selected" : "Select"}
-      </button>
-    </div>
-  );
-};
-
-// const TemplatePreview = ({ template, values, setValues }) => {
-//   const handleChange = (key, value) => {
-//     setValues((prev) => ({ ...prev, [key]: value }));
-//   };
-
-//   const renderedText = renderTemplatePreview(template.body, values);
-
-//   return (
-//     <div className=" rounded mt-4">
-//       <div className="">
-//         {/* message preview  */}
-//         <div className="flex-1">
-//           <div className="flex justify-end mb-4">
-//             <div className="relative max-w-90 w-full rounded-2xl rounded-br-sm bg-[#e7fce3] px-4 py-3 shadow-sm">
-//               {/* message text */}
-//               <p className="text-sm text-gray-800 whitespace-pre-line leading-relaxed">
-//                 {renderedText}
-//               </p>
-
-//               {/* time + ticks */}
-//               <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-gray-500">
-//                 <span>10:30 AM</span>
-//                 <svg
-//                   width="16"
-//                   height="10"
-//                   viewBox="0 0 16 10"
-//                   fill="none"
-//                   xmlns="http://www.w3.org/2000/svg"
-//                 >
-//                   <path
-//                     d="M1 5L4 8L9 2"
-//                     stroke="#4ade80"
-//                     strokeWidth="1.5"
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                   />
-//                   <path
-//                     d="M6 5L9 8L14 2"
-//                     stroke="#4ade80"
-//                     strokeWidth="1.5"
-//                     strokeLinecap="round"
-//                     strokeLinejoin="round"
-//                   />
-//                 </svg>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Variable Inputs */}
-//         <div className="w-full ">
-//           {/* Variable Inputs */}
-//           {template.variables.length > 0 && (
-//             <div className=" ">
-//               <p className="text-sm font-medium mb-2">Variables</p>
-
-//               <div className="grid grid-cols-4 gap-2">
-//                 {template &&
-//                   template.variables?.length > 0 &&
-//                   template.variables.map((v) => {
-//                     const index = v.replace(/[{}]/g, "");
-//                     return (
-//                       <div className="relative max-w-40">
-//                         <input
-//                           key={v}
-//                           type="text"
-//                           placeholder={`Value for {{${index}}}`}
-//                           className="w-full border rounded p-2 outline-none border-gray-200 focus:border-gray-300! focus:border-2"
-//                           onChange={(e) => handleChange(index, e.target.value)}
-//                         />
-
-//                         <span className="absolute left-0 -top-3 text-red-500 text-xl">
-//                           *
-//                         </span>
-//                       </div>
-//                     );
-//                   })}
-//               </div>
-//             </div>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// Main Component
-const QuickResponsePopup = ({ open, setOpen, lead, templates }) => {
-  const tabs = [
-    {
-      label: "Text",
-      value: "text",
-    },
-    {
-      label: "WhatsApp Templates",
-      value: "whatsapp templates",
-    },
-  ];
-  const [selectedChannel, setSelectedChannel] = useState(channels[0]);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [selectedTab, setSelectedTab] = useState("text");
+  const [mode, setMode] = useState("text");
   const [text, setText] = useState("");
-  const [values, setValues] = useState({});
-  // const [headerVariables, setHeaderVariables] = useState([]);
-  // const [bodyVariables, setBodyVariables] = useState([]);
+  const [template, setTemplate] = useState(null);
+  const [values, setValues] = useState(NO_VALUES);
+
+  useEffect(() => {
+    if (!open) return;
+    setMode(templateOnly ? "template" : "text");
+    setText("");
+    setTemplate(null);
+    setValues(NO_VALUES);
+  }, [open, templateOnly]);
+
+  const close = () => setOpen(false);
+
+  const canSend =
+    mode === "text"
+      ? Boolean(text.trim())
+      : Boolean(template) && isTemplateFilled(values);
 
   const handleSend = async () => {
     const phone = normalizePhone(lead.Contact);
+    const payload =
+      mode === "text"
+        ? { phone, text: text.trim() }
+        : buildTemplatePayload(phone, template, values);
 
-    const payload = {
-      phone,
-    };
-
-    if (selectedTab === "text") {
-      payload.text = text.trim();
+    const result = await sendMessage({ hid, payload });
+    if (result.data?.success) {
+      showToast({ message: "Message sent" });
+      onSent?.();
+      close();
+      return;
     }
-
-    if (selectedTab === "whatsapp templates") {
-      payload.templateLanguage = selectedTemplate.language;
-      payload.templateName = selectedTemplate.name;
-      // payload.templateParams = Object.values(values)
-      //   ?.map((v) => v.trim())
-      //   ?.filter(Boolean);
-
-      payload.templateParams =
-        selectedTemplate?.components?.find((c) => c.type === "BODY")?.example
-          ?.body_text[0] || [];
-
-      payload.templateParamsHeader =
-        selectedTemplate?.components?.find((c) => c.type === "HEADER")?.example
-          ?.header_text || [];
-
-      if (
-        payload?.templateParams?.length < selectedTemplate?.variables?.length
-      ) {
-        alert("Please fill all the required fields");
-        return;
-      }
-    }
-
-    try {
-      const response = await sendWhatsAppMessage(payload);
-      if (response.success) {
-        Swal.fire("Success", "Message sent successfully", "success");
-        setOpen(false);
-        setValues({});
-      }
-    } catch (error) {
-      Swal.fire("Error", error.message || "Failed to send message", "error");
-    }
+    showToast({
+      message: result.data?.responseMessage || "Could not send the message.",
+      type: "error",
+    });
   };
 
-  const normalizeTemplates = templates.map((template) =>
-    normalizeTemplate(template),
-  );
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-99999">
-      <div className="bg-app-surface rounded shadow-lg flex md:flex-row flex-col min-h-96 max-w-4xl w-full mx-4 overflow-hidden relative">
-        {/* Left Panel */}
-        <div className="md:w-64 w-full bg-app-surface-secondary p-4 space-y-6">
-          <div className="border-b border-gray-200! py-1">
-            <h2 className="text-lg font-semibold">Send Response To</h2>
-            <p className="text-primary font-medium">{lead?.Name}</p>
-          </div>
+    <Dialog
+      open={open}
+      onClose={close}
+      size="lg"
+      title={
+        templateOnly
+          ? `Start a WhatsApp chat${lead?.Name ? ` with ${lead.Name}` : ""}`
+          : `Send a WhatsApp message${lead?.Name ? ` to ${lead.Name}` : ""}`
+      }
+      description={
+        templateOnly
+          ? `${lead?.Contact || ""} has no chat with you yet. Pick an approved template to start one.`
+          : lead?.Contact
+      }
+      footer={
+        <>
+          <Button variant="secondary" onClick={close}>
+            Cancel
+          </Button>
+          <Button
+            icon={Send}
+            disabled={!canSend}
+            loading={isLoading}
+            onClick={handleSend}
+          >
+            {mode === "text" ? "Send message" : "Send template"}
+          </Button>
+        </>
+      }
+    >
+      {!templateOnly && (
+        <Tabs tabs={MODES} value={mode} onChange={setMode} className="mb-4" />
+      )}
 
-          <div>
-            <div className="space-y-4">
-              {channels.map((channel) => (
-                <ChannelOption
-                  key={channel.id}
-                  channel={channel}
-                  selected={selectedChannel}
-                  onSelect={(id) => {
-                    setSelectedChannel(id);
-                    setSelectedTemplate(null); // reset selected template when channel changes
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
+      {mode === "text" && (
+        <Textarea
+          autoFocus
+          rows={7}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Type your message here..."
+          aria-label="Message"
+        />
+      )}
 
-        {/* Right Panel */}
-        <div className="flex-1 p-6 space-y-6">
-          <div className="flex items-center gap-4">
-            {tabs?.map((tab) => (
-              <button
-                key={tab.value}
-                className={`${selectedTab === tab.value && " text-app-text dark:text-app-text border-b-2 border-gray-400!"} px-2 py-1.5 font-medium`}
-                onClick={() => setSelectedTab(tab.value)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {selectedTab === "text" && (
-            <div className="w-full">
-              <textarea
-                rows={8}
-                className={`w-full outline-none border border-gray-200! rounded-sm p-3 bg-app-surface-secondary resize-none focus:border-gray-300! transition duration-300`}
-                placeholder="Type your message here..."
-                onChange={(e) => setText(e.target.value)}
-              />
-
-              <button
-                className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
-                onClick={handleSend}
-              >
-                Send Message
-              </button>
-            </div>
-          )}
-
-          {selectedTab === "whatsapp templates" && (
-            <div className="space-y-2 max-h-90 overflow-y-auto">
-              {!selectedTemplate &&
-                templates?.map((template) => (
-                  <TemplateCard
-                    key={template.id}
-                    template={template}
-                    selected={selectedTemplate}
-                    onSelect={setSelectedTemplate}
-                  />
-                ))}
-
-              {selectedTemplate && (
-                <div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      className="size-6 bg-app-surface rounded-full flex justify-center items-center"
-                      onClick={() => {
-                        setSelectedTemplate(null);
-                        setValues({});
-                      }}
-                    >
-                      <IoArrowBack />
-                    </button>
-                    <h2 className="text-lg font-bold">Template Preview</h2>
-                  </div>
-
-                  {selectedTemplate && (
-                    <TemplatePreview
-                      components={selectedTemplate?.components}
-                      // headerVariables={
-                      //   selectedTemplate?.components?.find(
-                      //     (c) => c.type === "HEADER",
-                      //   ).example?.header_text || []
-                      // }
-                      // bodyVariables={
-                      //   selectedTemplate?.components?.find(
-                      //     (c) => c.type === "BODY",
-                      //   ).example?.body_text[0] || []
-                      // }
-                      // bodyVariables={bodyVariables}
-                      // values={values}
-                      // setValues={setValues}
-                    />
-                  )}
-
-                  <button
-                    className="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 mt-4"
-                    onClick={handleSend}
-                  >
-                    Send Template
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Cross Icon */}
-        <div
-          className="absolute right-4 top-2 size-5 flex items-center justify-center bg-red-500 text-white rounded-full cursor-pointer"
-          onClick={() => {
-            setOpen(false);
-            setValues({});
+      {mode === "template" && (
+        <TemplateChooser
+          templates={templates}
+          selected={template}
+          values={values}
+          onSelect={(picked) => {
+            setTemplate(picked);
+            setValues(getTemplateDefaults(picked));
           }}
-        >
-          <span className="text-lg font-bold">
-            <MdClose size={14} />
-          </span>
-        </div>
-      </div>
-    </div>
+          onValuesChange={setValues}
+        />
+      )}
+    </Dialog>
   );
 };
 
