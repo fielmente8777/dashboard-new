@@ -1,0 +1,66 @@
+.deep-links { padding: 24px; max-width: 1500px; margin: 0 auto; color: var(--app-text); }
+.deep-links-header { margin-bottom: 26px; }
+.deep-links-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .11em; color: var(--app-text-muted); }
+.deep-links h1 { display: flex; align-items: center; gap: 12px; font-size: clamp(23px, 3vw, 30px); font-weight: 700; margin: 10px 0; }
+.deep-links-header > p { font-size: 14px; color: var(--app-text-muted); }
+.deep-link-property { display: inline-block; margin-top: 14px; padding: 6px 10px; border-radius: 7px; background: var(--app-surface-secondary); font-size: 12px; }
+.deep-links-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; gap: 24px; }
+.deep-link-form, .deep-link-preview { min-width: 0; }
+.deep-link-card { padding: 24px; border: 1px solid var(--app-border-strong); border-radius: 14px; background: var(--app-surface); margin-bottom: 18px; }
+.deep-links h2 { font-size: 16px; font-weight: 700; margin: 0 0 20px; }
+.deep-link-preview h2 { font-size: 22px; margin-top: 10px; margin-bottom: 8px; }
+.deep-links h3 { font-size: 13px; font-weight: 700; }
+.deep-link-field { display: flex; flex-direction: column; gap: 7px; margin: 16px 0; min-width: 0; }
+.deep-link-field label, .deep-link-output-label { font-size: 12px; font-weight: 600; }
+.deep-link-field input, .deep-link-field select, .deep-link-preview textarea { width: 100%; min-width: 0; padding: 11px 12px; color: var(--app-text); background: var(--app-bg); border: 1px solid var(--app-border-strong); border-radius: 8px; font-size: 13px; }
+.deep-link-field select { min-height: 43px; }
+.deep-link-field input[aria-invalid="true"] { border-color: #dc2626; }
+.deep-links :is(input, select, textarea, button, a, summary):focus-visible { outline: 2px solid #5b8def; outline-offset: 3px; }
+.deep-link-field input::placeholder { color: var(--app-text-faint); }
+.deep-link-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.deep-link-hint { color: var(--app-text-muted); font-size: 11px; line-height: 1.7; }
+.deep-link-error { color: #dc2626; font-size: 12px; line-height: 1.6; }
+.dark .deep-link-error { color: #fca5a5; }
+.deep-link-check { display: flex; align-items: center; gap: 9px; margin: 13px 0 6px; font-size: 13px; }
+.deep-link-check input { width: 16px; height: 16px; accent-color: #2563eb; flex-shrink: 0; }
+.deep-link-child-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 24px; margin-bottom: 8px; }
+.deep-link-text-button { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #2563eb; }
+.dark .deep-link-text-button { color: #93c5fd; }
+.deep-link-child-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 30px; gap: 12px; align-items: start; }
+.deep-link-remove { margin-top: 48px; color: var(--app-text-muted); padding: 4px; }
+.deep-links details summary { cursor: pointer; font-size: 13px; font-weight: 600; }
+.deep-links details[open] summary { margin-bottom: 14px; }
+.deep-link-form-actions, .deep-link-share-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.deep-link-primary, .deep-link-secondary { display: inline-flex; justify-content: center; align-items: center; gap: 7px; min-height: 40px; padding: 10px 14px; font-size: 12px; font-weight: 600; border-radius: 8px; text-decoration: none; }
+.deep-link-primary { background: #2563eb; border: 1px solid #2563eb; color: #fff; }
+.deep-link-primary:hover { background: #1d4ed8; }
+.deep-link-secondary { background: var(--app-surface); border: 1px solid var(--app-border-strong); color: var(--app-text); }
+.deep-link-secondary:hover { background: var(--app-surface-secondary); }
+.deep-link-form-actions + p { margin: 10px 0; }
+.deep-link-notice { font-size: 12px; color: var(--app-text-muted); line-height: 1.7; margin-bottom: 16px; }
+.deep-link-notice.deep-link-error { color: #dc2626; }
+.dark .deep-link-notice.deep-link-error { color: #fca5a5; }
+.deep-link-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; min-height: 230px; padding: 24px; color: var(--app-text-muted); font-size: 13px; line-height: 1.8; border: 1px dashed var(--app-border-strong); border-radius: 10px; }
+.deep-link-preview textarea { resize: vertical; font-family: monospace; line-height: 1.7; margin-top: 8px; overflow-wrap: anywhere; }
+.deep-link-output-label { display: block; margin-top: 20px; }
+.deep-link-share-actions { margin-top: 12px; }
+.deep-link-parameters { margin-top: 24px; }
+.deep-link-parameters dl { font-family: monospace; font-size: 12px; }
+.deep-link-parameters dl > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); padding: 9px 0; border-bottom: 1px solid var(--app-border); gap: 10px; }
+.deep-link-parameters dt { color: var(--app-text-muted); }
+.deep-link-parameters dd { overflow-wrap: anywhere; }
+.deep-link-date-note { padding: 10px 12px; border-radius: 8px; background: var(--app-surface-secondary); font-size: 12px; margin-top: 18px; line-height: 1.6; }
+.deep-link-guide ol { list-style: decimal; padding-left: 18px; }
+.deep-link-guide li, .deep-link-guide p { font-size: 12px; color: var(--app-text-muted); line-height: 1.8; margin-top: 10px; }
+.deep-links button:disabled { opacity: .5; cursor: not-allowed; }
+.deep-link-preview-button { margin-top: 12px; }
+.deep-link-saved { margin-top: 24px; }
+.deep-link-saved-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; border-top: 1px solid var(--app-border); }
+.deep-link-saved-row h3 { overflow-wrap: anywhere; }
+.deep-link-saved-row .deep-link-share-actions { margin-top: 0; }
+.deep-link-demo { width: min(94vw, 620px); max-height: 90vh; margin: auto; padding: 24px; overflow-y: auto; border: 1px solid var(--app-border-strong); border-radius: 14px; background: var(--app-surface); color: var(--app-text); }
+.deep-link-demo::backdrop { background: rgb(0 0 0 / .55); }
+.deep-link-demo-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.deep-link-demo-header h2 { margin: 0; }
+@media (max-width: 1100px) { .deep-links-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { .deep-links { padding: 16px 10px; } .deep-link-card { padding: 18px; } .deep-link-grid { grid-template-columns: minmax(0, 1fr); } .deep-link-form-actions > button { width: 100%; } }

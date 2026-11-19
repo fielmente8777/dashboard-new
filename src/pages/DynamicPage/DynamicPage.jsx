@@ -53,6 +53,7 @@ import InfluencerMarketing from "../Social/InfluencerMarketing";
 import Newsletter from "../CMS/Newsletter";
 import PricePackage from "../BookingEngine/PricePackage";
 import BookingCustom from "../BookingEngine/BookingCustom";
+import DeepLinks from "../BookingEngine/DeepLinks";
 // import AdsLeadsUsingGoogleSheet from "../Enquiry/AdsLeadsUsingGoogleSheet";
 import AdLeadsAnalytics from "../Enquiry/AdLeadsAnalytics";
 import WhatsApp from "../ConversationalTool/WhatsApp/WhatsApp";
@@ -122,6 +123,7 @@ const DynamicPage = () => {
     [`${BASE_PATH}/${hid}/reservation-desk`]: <ReservationDesk />,
 
     // Bookin Engine
+    [`${BASE_PATH}/${hid}/booking-engine/deep-links`]: <DeepLinks />,
     [`${BASE_PATH}/${hid}/booking-engine/all-bookings`]: <BookingEngine />,
     [`${BASE_PATH}/${hid}/booking-engine/rooms-setup`]: <BookingSetup />,
     [`${BASE_PATH}/${hid}/booking-engine/rooms-and-inventory`]: (

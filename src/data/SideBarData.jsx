@@ -426,6 +426,11 @@ export const SidebarData = [
         link: `booking-engine/customization`,
         icon: <MdBedroomParent size={18} />,
       },
+      {
+        name: "Deep Links",
+        link: `booking-engine/deep-links`,
+        icon: <MdLink size={18} />,
+      },
     ],
   },
 
