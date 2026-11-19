@@ -1,30 +1,23 @@
-import { FileText, Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import Button from "../../../components/ui/Button";
 import { useMediaPicker } from "../hooks/useMediaPicker";
-import { isImageUrl } from "../utils/kbHelpers";
-import Icon from "../../../components/ui/Icon";
+import { MediaThumbnail } from "../../Media/components/MediaPreview";
+import { mediaKindFor } from "../../Media/components/mediaFormat";
 
 // An already-uploaded media value: thumbnail (or a file icon for videos and
 // PDFs), its URL and a Replace button that uploads a new file over it.
-export const MediaValue = ({ value, onChange }) => {
+export const MediaValue = ({ value, onChange, mimeType }) => {
   const picker = useMediaPicker(onChange);
+  const mediaKind = mediaKindFor(value, mimeType);
 
   return (
     <div className="flex items-center gap-3">
-      {isImageUrl(value) ? (
-        <img
-          src={value}
-          alt=""
-          className="size-14 shrink-0 rounded-lg border border-app-border! object-cover"
-        />
-      ) : (
-        <div className="flex size-14 shrink-0 items-center justify-center rounded-lg border border-app-border! bg-app-surface text-app-text-muted">
-          <Icon icon={FileText} size="xl" />
-        </div>
-      )}
+      {mediaKind === "video"
+        ? <video src={value} controls preload="metadata" className="h-16 w-28 shrink-0 rounded-lg bg-black" aria-label="Video preview" />
+        : <MediaThumbnail asset={{ mediaKind, thumbnailUrl: mediaKind === "image" ? value : null }} className="size-14 shrink-0 rounded-lg border border-app-border!" />}
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-xs text-app-text-muted">{value}</p>
+        <a href={value} target="_blank" rel="noreferrer" className="block truncate text-xs text-primary underline">{value}</a>
         <Button
           variant="secondary"
           size="sm"

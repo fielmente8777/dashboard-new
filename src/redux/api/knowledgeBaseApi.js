@@ -150,33 +150,7 @@ export const knowledgeBaseApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // Start a background analysis of the source URLs (answers 202 with the job)
-    analyzeKnowledgeBaseMedia: build.mutation({
-      query: ({ sources }) => ({
-        url: `${KB_URL}/media/analyze`,
-        method: "POST",
-        body: { sources },
-      }),
-      transformResponse: (response) => ({ job: response?.job || null }),
-      extraOptions: NODE,
-    }),
-
-    // Progress and results of one analysis (polled while it runs)
-    getKnowledgeBaseMediaJob: build.query({
-      query: (jobId) => `${KB_URL}/media/jobs/${encodeURIComponent(jobId)}`,
-      transformResponse: (response) => response?.job || null,
-      extraOptions: NODE,
-    }),
-
-    // Re-process only the images that failed
-    retryKnowledgeBaseMediaJob: build.mutation({
-      query: (jobId) => ({
-        url: `${KB_URL}/media/jobs/${encodeURIComponent(jobId)}/retry`,
-        method: "POST",
-      }),
-      transformResponse: (response) => ({ job: response?.job || null }),
-      extraOptions: NODE,
-    }),
+    // Image import / AI analysis: see mediaApi.js (Media library).
 
   }),
 });
@@ -189,7 +163,4 @@ export const {
   useSaveKnowledgeBaseMutation,
   useDeleteKnowledgeBaseMutation,
   useUploadKnowledgeBaseMediaMutation,
-  useAnalyzeKnowledgeBaseMediaMutation,
-  useGetKnowledgeBaseMediaJobQuery,
-  useRetryKnowledgeBaseMediaJobMutation,
 } = knowledgeBaseApi;

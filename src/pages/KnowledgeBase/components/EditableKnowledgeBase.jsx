@@ -19,6 +19,8 @@ import { toSectionTab } from "../utils/sectionConfig";
 import KnowledgeBaseSection from "./KnowledgeBaseSection";
 import TabBar from "./TabBar";
 import MediaTab from "./MediaTab";
+import useKbMediaDraft from "../hooks/useKbMediaDraft";
+import useKbMediaPlacement, { KbPlacementContext } from "../hooks/useKbMediaPlacement";
 
 const EditableKnowledgeBase = ({
   kb,
@@ -32,6 +34,21 @@ const EditableKnowledgeBase = ({
 }) => {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  // imported images wait for "Save changes" (removed if the editor is left without saving)
+  const media = useKbMediaDraft();
+  // ...and each one is placed in the document by its title (Rooms › Inventory › Deluxe Room)
+  const placement = useKbMediaPlacement({ draftId: media.draftId, count: media.count, kb, setKb });
+
+  const handleSave = async () => {
+    const saved = await onSave();
+    if (!saved || !media.count) return;
+    try {
+      const n = await media.publish();
+      showToast({ message: `${n} image${n === 1 ? "" : "s"} added to the Knowledge Base.`, type: "success" });
+    } catch (error) {
+      showToast({ message: error?.data?.error || "The knowledge base was saved, but the new images could not be added. Click Save changes again.", type: "error" });
+    }
+  };
 
   // Media is a permanent tab, not a dynamic KB section.
   const [selectedTab, setSelectedTab] = useState(null);
@@ -42,17 +59,6 @@ const EditableKnowledgeBase = ({
   const handleChange = useCallback(
     (path, value) =>
       setKb((prev) => setValueAtPath(prev, path, value)),
-    [setKb],
-  );
-
-  // Update media assets inside the same KB document.
-  const handleMediaChange = useCallback(
-    (mediaAssets) => {
-      setKb((prev) => ({
-        ...prev,
-        media_assets: mediaAssets,
-      }));
-    },
     [setKb],
   );
 
@@ -112,10 +118,6 @@ const EditableKnowledgeBase = ({
     setSelectedTab(key);
   };
 
-  const mediaAssets = Array.isArray(kb?.media_assets)
-    ? kb.media_assets
-    : [];
-
   return (
     <PageShell
       title="Review Knowledge Base"
@@ -133,7 +135,7 @@ const EditableKnowledgeBase = ({
           <Button
             variant="secondary"
             icon={ArrowLeft}
-            onClick={onBack}
+            onClick={() => media.leave(onBack)}
           >
             Back to list
           </Button>
@@ -141,7 +143,7 @@ const EditableKnowledgeBase = ({
           <Button
             variant="secondary"
             icon={RefreshCw}
-            onClick={onStartOver}
+            onClick={() => media.leave(onStartOver)}
           >
             Start over
           </Button>
@@ -167,10 +169,10 @@ const EditableKnowledgeBase = ({
 {/* CONTENT RENDERING */}
 
 {isMediaSelected ? (
-  <MediaTab
-    mediaAssets={mediaAssets}
-    onChange={handleMediaChange}
-  />
+  // images live in the Media library (and the KB index), not in this document
+  <KbPlacementContext.Provider value={placement}>
+    <MediaTab draftId={media.draftId} unsavedCount={media.count} />
+  </KbPlacementContext.Provider>
 ) : (
   activeEntry && (
     <KnowledgeBaseSection
@@ -185,16 +187,18 @@ const EditableKnowledgeBase = ({
 
       {/* SAVE CHANGES */}
 
-      <div className="sticky bottom-0 -mx-4 flex justify-end border-t border-app-border! bg-app-bg px-4 py-3 sm:-mx-6 sm:px-6">
+      {/* pr-24: keeps the button clear of the floating AI assistant button (fixed bottom-6 right-6, 56px) */}
+      <div className="sticky bottom-0 -mx-4 flex justify-end border-t border-app-border! bg-app-bg py-3 pl-4 pr-24 sm:-mx-6 sm:pl-6 sm:pr-24">
         <Button
           size="lg"
           icon={Save}
-          loading={saving}
-          onClick={onSave}
+          loading={saving || media.publishing}
+          onClick={handleSave}
         >
           {savedId
             ? "Save changes"
             : "Publish knowledge base"}
+          {media.count > 0 && ` (+${media.count} image${media.count === 1 ? "" : "s"})`}
         </Button>
       </div>
     </PageShell>
