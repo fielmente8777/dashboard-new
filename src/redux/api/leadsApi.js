@@ -4,8 +4,15 @@ const NODE = { service: "node" };
 
 const api = baseApi.enhanceEndpoints({ addTagTypes: ["Lead"] });
 
+// "a" | ["a", "b"] | "" -> "a" | "a,b" | undefined
+const toListParam = (value) => {
+  const list = Array.isArray(value) ? value : [value];
+  return list.filter(Boolean).join(",") || undefined;
+};
+
 // The filters every leads request understands. `source` is a list of
 // sources (All Leads page), `createdFrom` a single one (the per-source pages).
+// `stage` is one stage or a list of them.
 const toLeadParams = ({
   hid,
   page,
@@ -22,8 +29,8 @@ const toLeadParams = ({
   page,
   limit,
   search: search || undefined,
-  stage: stage || undefined,
-  source: source?.length ? source.join(",") : undefined,
+  stage: toListParam(stage),
+  source: toListParam(source),
   notes: notes || undefined,
   created_from: createdFrom || undefined,
   // the range only applies when both ends are set
@@ -104,14 +111,19 @@ export const leadsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // Same filters without paging; resolves with every matching lead.
+    // Same filters without paging -> { leads, truncated, maxRows }. The
+    // server stops at maxRows; truncated says there were more.
     // A mutation so the (large) answer is never cached.
     exportLeads: build.mutation({
-      query: (filters) => ({
+      query: ({ page: _page, limit: _limit, ...filters }) => ({
         url: "/api/v1/leads/get",
-        params: { ...toLeadParams(filters), is_export: "excel" },
+        params: { ...toLeadParams(filters), is_export: "1" },
       }),
-      transformResponse: (response) => response?.result?.docs?.leads || [],
+      transformResponse: (response) => ({
+        leads: response?.result?.docs?.leads || [],
+        truncated: Boolean(response?.result?.truncated),
+        maxRows: response?.result?.maxRows || 0,
+      }),
       extraOptions: NODE,
     }),
 

@@ -42,6 +42,9 @@ const StatCard = ({
           )}
         </p>
       )}
+      {growth === undefined && caption && (
+        <p className="mt-1 text-xs text-app-text-muted">{caption}</p>
+      )}
     </div>
   );
 };

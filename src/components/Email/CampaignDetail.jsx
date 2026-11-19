@@ -2,6 +2,8 @@ import { RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   CAMPAIGN_TONE,
+  deliveredCount,
+  describeSendProblem,
   formatDate,
   rate,
   RECIPIENT_TONE,
@@ -11,6 +13,7 @@ import {
   getEmailCampaign,
 } from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
+import CampaignDeliveryBar from "./CampaignDeliveryBar";
 import Button from "../ui/Button";
 import DataTable from "../ui/DataTable";
 import Dialog from "../ui/Dialog";
@@ -83,7 +86,12 @@ export default function CampaignDetail({ campaignId, onClose }) {
     setPage(1);
   }, [filter]);
 
-  const stats = campaign?.stats || {};
+  const reloadAll = useCallback(() => {
+    loadCampaign();
+    loadRecipients();
+  }, [loadCampaign, loadRecipients]);
+
+  const stats = { ...campaign?.stats, delivered: deliveredCount(campaign?.stats) };
 
   const columns = [
     {
@@ -99,16 +107,32 @@ export default function CampaignDetail({ campaignId, onClose }) {
     { key: "status", header: "Status", render: (r) => <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge> },
     { key: "sentAt", header: "Sent", render: (r) => formatDate(r.sentAt, true) },
     {
-      key: "error",
-      header: "Problem",
+      key: "engaged",
+      header: "Opened / clicked",
       render: (r) =>
-        r.error ? (
-          <span className="block max-w-56 truncate text-red-500" title={r.error}>
-            {r.error}
-          </span>
+        r.openedAt || r.clickedAt ? (
+          <div className="text-xs leading-snug">
+            {r.openedAt && <p>Opened {formatDate(r.openedAt, true)}</p>}
+            {r.clickedAt && <p className="text-blue-600 dark:text-blue-400">Clicked {formatDate(r.clickedAt, true)}</p>}
+          </div>
         ) : (
           "—"
         ),
+    },
+    {
+      key: "error",
+      header: "Problem",
+      // plain words; the server's text stays in the tooltip
+      render: (r) => {
+        if (!r.error) return "—";
+        const problem = describeSendProblem(r.error);
+        return (
+          <div className="min-w-64 max-w-sm whitespace-normal py-1.5 leading-normal" title={r.error}>
+            <p className="text-sm font-medium text-red-500">{problem.title}</p>
+            <p className="mt-1 text-xs leading-relaxed text-app-text-muted">{problem.hint}</p>
+          </div>
+        );
+      },
     },
   ];
 
@@ -116,7 +140,7 @@ export default function CampaignDetail({ campaignId, onClose }) {
     <Dialog
       open
       onClose={onClose}
-      size="lg"
+      size="xl"
       title={campaign?.subject || "Campaign"}
       description={
         campaign
@@ -156,6 +180,8 @@ export default function CampaignDetail({ campaignId, onClose }) {
             </div>
           ))}
         </div>
+
+        <CampaignDeliveryBar campaignId={campaignId} onChanged={reloadAll} />
 
         <Tabs tabs={FILTERS} value={filter} onChange={setFilter} />
 

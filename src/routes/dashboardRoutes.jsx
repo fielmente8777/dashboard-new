@@ -132,11 +132,12 @@ export const dashboardRoutes = [
   { path: PAGES.CMS_PRIVACY, lazy: page(() => import("../pages/CMS/Privacy")) },
   { path: PAGES.CMS_TERMS, lazy: page(() => import("../pages/CMS/Tandc")) },
   { path: PAGES.CMS_CANCELLATION, lazy: page(() => import("../pages/CMS/Cancellationrefund")) },
-  { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/CMS/Newsletter")) },
+  { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/Newsletter/Newsletter")) },
 
   // AI
   { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },
   { path: PAGES.AI_TRAINING, lazy: page(() => import("../pages/AiTraining/AiTrainingPage")) },
+  { path: PAGES.AI_AGENTS, lazy: page(() => import("../pages/AiAgents/AiAgentsPage")) },
   { path: PAGES.EAZBOT, lazy: page(() => import("../pages/Eazobot/Eazobot")) },
   { path: PAGES.AI_WALLET, lazy: page(() => import("../pages/AiWallet/AiWallet")) },
   { path: PAGES.AI_CREDIT_MANAGEMENT, lazy: page(() => import("../pages/AiCreditManagement/AiCreditManagement")) },

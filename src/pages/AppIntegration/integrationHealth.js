@@ -175,6 +175,37 @@ export const whatsappChecks = (account) => {
   return checks;
 };
 
+// the hotel's own mailbox for campaign emails (gian sender-mailbox)
+export const senderMailboxChecks = (mailbox) => {
+  if (!mailbox) return [];
+  const checks = [
+    mailbox.status === "error"
+      ? {
+          id: "login",
+          label: "Mailbox login",
+          status: "error",
+          detail: mailbox.lastError || "Your mail server refused the login. Update the password to keep sending.",
+        }
+      : {
+          id: "login",
+          label: "Mailbox login",
+          status: "ok",
+          detail: `Emails go out from ${mailbox.email}.`,
+        },
+  ];
+
+  if (mailbox.providerSavesSent) {
+    checks.push({ id: "sent", label: "Sent folder", status: "ok", detail: "Your provider files every sent email in Sent by itself." });
+  } else if (!mailbox.saveToSent) {
+    checks.push({ id: "sent", label: "Sent folder", status: "info", detail: "Copies are not saved to your Sent folder." });
+  } else if (mailbox.lastSentCopyError) {
+    checks.push({ id: "sent", label: "Sent folder", status: "warn", detail: `The last copy couldn't be saved: ${mailbox.lastSentCopyError}` });
+  } else {
+    checks.push({ id: "sent", label: "Sent folder", status: "ok", detail: `A copy of every email is saved to "${mailbox.sentFolder || "Sent"}".` });
+  }
+  return checks;
+};
+
 // Where an app stands, from best to worst news:
 //   connected | warn | error   - connected (warn/error: a health check failed)
 //   available | locked | soon  - not connected

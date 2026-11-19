@@ -203,29 +203,46 @@ const LeadsList = ({ source }) => {
     });
   };
 
-  // `period` ({ from, to } as Dates) comes from the export dialog, on the
-  // pages that ask for one; those also export with the filters in use.
-  const handleExport = async (period) => {
-    const exported = await run(
+  // `exportFilters` come from the export dialog: the page's filters, as the
+  // user left them there. Resolves true once the file is downloaded.
+  const handleExport = async (exportFilters) => {
+    const result = await run(
       exportLeads({
         hid,
-        createdFrom: source.createdFrom,
-        ...(period && {
-          stage: filters.stage,
-          source: filters.source,
-          from: period.from?.toISOString(),
-          to: period.to?.toISOString(),
-        }),
+        ...exportFilters,
+        from: toApiDate(exportFilters.from),
+        to: toApiDate(exportFilters.to),
       }),
       { error: "Could not export the leads." },
     );
-    if (!exported) return;
+    if (!result) return false;
 
+    const { leads: exported, truncated, maxRows } = result;
     if (exported.length === 0) {
-      showToast({ message: "There are no leads to export.", type: "error" });
-      return;
+      showToast({ message: "No leads match these filters.", type: "error" });
+      return false;
     }
-    exportLeadsToCsv(exported, source.title);
+
+    const period =
+      exportFilters.from && exportFilters.to
+        ? exportFilters.from === exportFilters.to
+          ? exportFilters.from
+          : `${exportFilters.from}_to_${exportFilters.to}`
+        : new Date().toISOString().slice(0, 10);
+    exportLeadsToCsv(exported, `${source.title} ${period}`);
+
+    showToast(
+      truncated
+        ? {
+            message: `Exported the newest ${maxRows.toLocaleString()} leads. Pick a shorter date range to get the rest.`,
+            type: "error",
+          }
+        : {
+            message: `Exported ${exported.length.toLocaleString()} ${exported.length === 1 ? "lead" : "leads"}`,
+            type: "success",
+          },
+    );
+    return true;
   };
 
   const clearFilters = () => {
@@ -279,9 +296,7 @@ const LeadsList = ({ source }) => {
               variant="secondary"
               icon={Download}
               loading={isExporting}
-              onClick={() =>
-                source.exportNeedsOtp ? setDialog("export") : handleExport()
-              }
+              onClick={() => setDialog("export")}
             >
               Export
             </Button>
@@ -470,6 +485,9 @@ const LeadsList = ({ source }) => {
       <ExportLeadsDialog
         open={dialog === "export"}
         onClose={() => setDialog(null)}
+        pageFilters={filters}
+        source={source}
+        requireOtp={Boolean(source.exportNeedsOtp)}
         onExport={handleExport}
       />
     </PageShell>

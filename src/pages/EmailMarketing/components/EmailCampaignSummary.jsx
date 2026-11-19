@@ -1,7 +1,7 @@
 import { CheckCheck, MailOpen, MousePointerClick, Users } from "lucide-react";
 import FunnelCard from "../../../components/Marketing/FunnelCard";
 import { TopCampaign } from "../../../components/Marketing/MarketingParts";
-import { formatDate, formatNumber, percent } from "../emailUtils";
+import { deliveredCount, formatDate, formatNumber, percent } from "../emailUtils";
 
 // a campaign needs this many delivered emails before its open rate counts
 const MIN_DELIVERED_FOR_BEST = 20;
@@ -12,7 +12,7 @@ const EmailCampaignSummary = ({ campaigns, loading, onOpen }) => {
   const totals = campaigns.reduce(
     (sum, c) => ({
       recipients: sum.recipients + (c.recipientCount || c.stats?.sent || 0),
-      delivered: sum.delivered + (c.stats?.delivered || c.stats?.sent || 0),
+      delivered: sum.delivered + (deliveredCount(c.stats)),
       opened: sum.opened + (c.stats?.opened || 0),
       clicked: sum.clicked + (c.stats?.clicked || 0),
       failed: sum.failed + (c.stats?.failed || 0),
@@ -24,7 +24,7 @@ const EmailCampaignSummary = ({ campaigns, loading, onOpen }) => {
   // links); until one is recorded, showing 0% opened would only mislead
   const tracked = totals.opened > 0 || totals.clicked > 0;
 
-  const delivered = (c) => c.stats?.delivered || c.stats?.sent || 0;
+  const delivered = (c) => deliveredCount(c.stats);
   const best = !tracked ? null : campaigns
     .filter((c) => delivered(c) >= MIN_DELIVERED_FOR_BEST)
     .sort((a, b) => percent(b.stats?.opened, delivered(b)) - percent(a.stats?.opened, delivered(a)))[0];

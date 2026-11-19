@@ -17,14 +17,15 @@ import { useNotifications } from "./hooks/useNotifications";
 import ThemeToggle from "./ThemeToggle";
 import UserMenu from "./UserMenu";
 import Icon from "../ui/Icon";
+import { useSubscriptionLock } from "../SubscriptionLock/useSubscriptionLock";
 
 export const iconButtonClassName =
   "relative flex size-9 shrink-0 items-center justify-center rounded-lg text-app-text-muted transition-colors hover:bg-app-surface-secondary hover:text-app-text";
 
-const Navbar = () => {
-  const dispatch = useDispatch();
-  const hotel = useSelector((state) => state.userProfile.user);
-  const currentLocation = useSelector(selectCurrentLocation);
+// The bell, its live feed (websocket, toasts, sound) and the slide-over panel.
+// Rendered only while the subscription runs: an ended or paused account gets no
+// notifications of any kind until it pays (gian holds them back as well).
+const NotificationBell = () => {
   const navigate = useNavigate();
   // phones get the full Notifications page instead of the slide-over panel
   const isPhone = useMediaQuery("(max-width: 639px)");
@@ -33,17 +34,51 @@ const Navbar = () => {
   const unreadCount = useUnreadNotificationTotal();
   // changes on every new notification: rings the bell and pops the badge
   const ring = useBellRing();
-  const [isAppsOpen, setIsAppsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const closeNotifications = useCallback(() => setIsNotificationsOpen(false), []);
-
-  // the account menu and the sidebar open EazStore on phones
-  useEffect(() => onOpenEazStore(() => setIsAppsOpen(true)), []);
 
   const openNotifications = () => {
     if (isPhone) navigate(dashboardPath(PAGES.NOTIFICATIONS));
     else setIsNotificationsOpen(true);
   };
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} new` : "Notifications"}
+        title="Notifications"
+        onClick={openNotifications}
+        className={`${iconButtonClassName} bell-button ${ring ? "text-app-text" : ""}`}
+      >
+        {/* the key restarts the swing when another one arrives mid-ring */}
+        <span key={ring} className={`bell-icon flex ${ring ? "bell-ring" : ""}`}>
+          <Icon icon={Bell} size="lg" />
+        </span>
+        {ring > 0 && <span className="bell-pulse pointer-events-none absolute inset-1 rounded-full" aria-hidden="true" />}
+        {unreadCount > 0 && (
+          <span
+            key={`badge-${ring}`}
+            className="anim-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-app-surface">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+      <NotificationPanel open={isNotificationsOpen} onClose={closeNotifications} />
+    </>
+  );
+};
+
+const Navbar = () => {
+  const dispatch = useDispatch();
+  const hotel = useSelector((state) => state.userProfile.user);
+  const currentLocation = useSelector(selectCurrentLocation);
+  // ended or paused subscription: no bell and no live notifications
+  const { locked } = useSubscriptionLock();
+  const [isAppsOpen, setIsAppsOpen] = useState(false);
+
+  // the account menu and the sidebar open EazStore on phones
+  useEffect(() => onOpenEazStore(() => setIsAppsOpen(true)), []);
 
   // undefined while the profile is loading, so the greeting shows a placeholder
   const greetingName = hotel?.Profile
@@ -76,30 +111,7 @@ const Navbar = () => {
 
           <ThemeToggle className="max-sm:hidden" />
 
-          <button
-            type="button"
-            aria-label={
-              unreadCount > 0
-                ? `Notifications, ${unreadCount} new`
-                : "Notifications"
-            }
-            title="Notifications"
-            onClick={openNotifications}
-            className={`${iconButtonClassName} bell-button ${ring ? "text-app-text" : ""}`}
-          >
-            {/* the key restarts the swing when another one arrives mid-ring */}
-            <span key={ring} className={`bell-icon flex ${ring ? "bell-ring" : ""}`}>
-              <Icon icon={Bell} size="lg" />
-            </span>
-            {ring > 0 && <span className="bell-pulse pointer-events-none absolute inset-1 rounded-full" aria-hidden="true" />}
-            {unreadCount > 0 && (
-              <span
-                key={`badge-${ring}`}
-                className="anim-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ternary px-1 text-[10px] font-semibold leading-none text-white ring-2 ring-app-surface">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
+          {!locked && <NotificationBell />}
 
           <button
             type="button"
@@ -121,7 +133,6 @@ const Navbar = () => {
       </header>
 
       <AppsPopup open={isAppsOpen} setOpen={setIsAppsOpen} />
-      <NotificationPanel open={isNotificationsOpen} onClose={closeNotifications} />
     </>
   );
 };
