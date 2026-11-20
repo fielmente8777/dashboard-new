@@ -195,6 +195,38 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- Amazon SES: the hotel's own domain / address verified in Eazotel's SES ---
+    // { hid, body: { kind: 'domain'|'email', domain?, fromEmail, displayName? } }
+    //   -> { result: { ses: { kind, identity, fromEmail, status, records[], ... } } }
+    startSesSender: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/sender-mailbox/ses`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
+    // { hid } -> { result: { ses } } with the status Amazon has now
+    checkSesSender: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox/ses/check`, method: "POST", params: { hid }, body: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, body: { fromEmail?, displayName? } }
+    updateSesSender: build.mutation({
+      query: ({ hid, body }) => ({ url: `${BASE}/sender-mailbox/ses`, method: "PUT", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid }
+    deleteSesSender: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox/ses`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+
     // --- templates: hid goes in the query and, for writes, in the body ---
     // { hid, page, limit, search }
     getEmailTemplates: build.query({
@@ -334,6 +366,10 @@ export const detectSenderMailbox = (email) => strict(e.detectSenderMailbox, { hi
 export const saveSenderMailbox = (body) => strict(e.saveSenderMailbox, { hid: selectedHid(), body });
 export const deleteSenderMailbox = () => strict(e.deleteSenderMailbox, { hid: selectedHid() });
 export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: selectedHid(), to });
+export const startSesSender = (body) => strict(e.startSesSender, { hid: selectedHid(), body });
+export const checkSesSender = () => strict(e.checkSesSender, { hid: selectedHid() });
+export const updateSesSender = (body) => strict(e.updateSesSender, { hid: selectedHid(), body });
+export const deleteSesSender = () => strict(e.deleteSesSender, { hid: selectedHid() });
 
 // Footer + final email; throw with the server's message.
 const hotelNameNow = () => store.getState().userProfile.user?.Profile?.hotelName || "";

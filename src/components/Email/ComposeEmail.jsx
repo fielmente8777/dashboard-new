@@ -19,8 +19,9 @@ import {
   Type,
   Users,
   X,
+  Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
@@ -212,6 +213,9 @@ function ComposeEmail({
   // the property's own mailbox: when connected, emails go out from it
   // (gian sendCampaignMail); otherwise from support@eazotel.com "via Eazotel"
   const [mailbox, setMailbox] = useState(null);
+  // or its own address verified in Amazon SES (comes first when verified)
+  const [ses, setSes] = useState(null);
+  const sesOn = ses?.status === "verified";
   const [presets, setPresets] = useState([]);
   const [isMailboxOpen, setIsMailboxOpen] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -232,19 +236,25 @@ function ComposeEmail({
   const [testing, setTesting] = useState(false);
   const hotelName = useSelector((state) => state.userProfile.user?.Profile?.hotelName) || "Your hotel";
 
-  useEffect(() => {
-    let alive = true;
+  // how this property sends: own mail server, own address in Amazon, or via Eazotel
+  const loadSender = useCallback((alive = { current: true }) => {
     getSenderMailbox()
       .then((result) => {
-        if (!alive) return;
+        if (!alive.current) return;
         setMailbox(result?.mailbox || null);
+        setSes(result?.ses || null);
         setPresets(result?.presets || []);
       })
       .catch(() => {}); // not connected / older server: send through Eazotel as before
-    return () => {
-      alive = false;
-    };
   }, []);
+
+  useEffect(() => {
+    const alive = { current: true };
+    loadSender(alive);
+    return () => {
+      alive.current = false;
+    };
+  }, [loadSender]);
 
   useEffect(() => {
     let alive = true;
@@ -274,10 +284,11 @@ function ComposeEmail({
     };
   }, [template, previewText, renderVersion]);
 
-  // a connected mailbox is the sender
+  // a verified Amazon address, else a connected mailbox, is the sender
   useEffect(() => {
-    if (mailbox?.email) setFrom(mailbox.email);
-  }, [mailbox]);
+    if (sesOn) setFrom(ses.fromEmail);
+    else if (mailbox?.email) setFrom(mailbox.email);
+  }, [mailbox, ses, sesOn]);
 
   const minimized = view === "minimized";
   const full = view === "full";
@@ -436,7 +447,7 @@ function ComposeEmail({
 
   const send = async () => {
     if (isSubmitting) return;
-    if (mailbox?.status === "error") {
+    if (!sesOn && mailbox?.status === "error") {
       setIsMailboxOpen(true);
       return fail(`Your mailbox ${mailbox.email} needs to be reconnected before sending.`);
     }
@@ -534,7 +545,23 @@ function ComposeEmail({
           <>
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               <div className="px-4">
-                {mailbox ? (
+                {sesOn ? (
+                  <Row label="From">
+                    <span className="min-w-0 flex-1 truncate text-sm">
+                      {ses.displayName || hotelName}{" "}
+                      <span className="text-app-text-muted">&lt;{ses.fromEmail}&gt;</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsMailboxOpen(true)}
+                      title="Sent from your own address through Amazon SES"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 hover:bg-amber-500/20 dark:text-amber-400"
+                    >
+                      <Zap className="size-3" />
+                      Amazon
+                    </button>
+                  </Row>
+                ) : mailbox ? (
                   <Row label="From">
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {mailbox.displayName || hotelName}{" "}
@@ -882,10 +909,12 @@ function ComposeEmail({
         open={isMailboxOpen}
         onClose={() => setIsMailboxOpen(false)}
         mailbox={mailbox}
+        ses={ses}
         presets={presets}
-        onChange={(next) => {
-          setMailbox(next);
-          if (!next) setFrom(defaultFrom || "");
+        onChange={() => {
+          // Amazon / mail server changed: read both again; back to the default Reply-To until it answers
+          setFrom(defaultFrom || "");
+          loadSender();
         }}
       />
 
