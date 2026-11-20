@@ -1,14 +1,16 @@
 import { ChevronRight, FileSpreadsheet, FolderOpen, MailPlus, PenLine, Plus, Users } from "lucide-react";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
+import DraftsPanel from "../../components/Email/DraftsPanel";
+import SentBySenderPanel from "../../components/Email/SentBySenderPanel";
 import EmailQuotaPanel from "../../components/Email/EmailQuotaPanel";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
 import Tabs from "../../components/ui/Tabs";
 import { useToast } from "../../context/ToastContext";
-import { createManualRecipientBatch } from "../../redux/api/emailMarketingApi";
+import { createManualRecipientBatch, getEmailDraft } from "../../redux/api/emailMarketingApi";
 import ExcelRecipientsDialog from "./components/ExcelRecipientsDialog.jsx";
 import RecipientsPanel from "./components/RecipientsPanel.jsx";
 import TemplatesList from "./components/TemplatesList.jsx";
@@ -118,6 +120,20 @@ export function EmailMarketingManagement() {
   const [openCampaignId, setOpenCampaignId] = useState(null);
   const [sentCount, setSentCount] = useState(0);
   const [reloadSent, setReloadSent] = useState(0);
+  // drafts: saved by the compose window as it is written
+  const [draftCount, setDraftCount] = useState(0);
+  const [reloadDrafts, setReloadDrafts] = useState(0);
+  const [openingDraft, setOpeningDraft] = useState(null);
+  const refreshDrafts = useCallback(() => setReloadDrafts((n) => n + 1), []);
+  // the compose window saved a new draft: remember its id, so opening it from the list
+  // doesn't open a second, older copy
+  const onDraftsChanged = useCallback(
+    (createdId) => {
+      refreshDrafts();
+      if (createdId) setCompose((c) => (c && !c.draftId ? { ...c, draftId: createdId } : c));
+    },
+    [refreshDrafts],
+  );
 
   /* compose / send */
   const [compose, setCompose] = useState(null); // { batchId, count, template, label }
@@ -127,6 +143,28 @@ export function EmailMarketingManagement() {
   const [clearSignal, setClearSignal] = useState(0);
 
   const openCompose = (template = null) => setCompose({ batchId: null, count: 0, template });
+
+  // a saved draft opens in the compose window, with the people it was for
+  const openDraft = async (id) => {
+    if (compose?.draft?._id === id || compose?.draftId === id || openingDraft) return;
+    setOpeningDraft(id);
+    try {
+      const { draft } = await getEmailDraft(id);
+      setCompose({
+        key: `draft-${draft._id}`,
+        draft,
+        batchId: draft.recipientBatchId || null,
+        count: draft.recipientBatchId ? draft.recipientCount || 0 : 0,
+        label: draft.recipientLabel || "",
+        template: null,
+      });
+    } catch (error) {
+      showToast({ message: error?.message || "Could not open the draft.", type: "error" });
+      refreshDrafts();
+    } finally {
+      setOpeningDraft(null);
+    }
+  };
 
   // After sending, the page stays where it was, so the next group can go out
   // straight away; the toast links to the email's numbers.
@@ -160,8 +198,10 @@ export function EmailMarketingManagement() {
       setCompose(null);
       setClearSignal((n) => n + 1);
       setReloadSent((n) => n + 1);
+      return true;
     } catch (error) {
       showToast({ message: error?.message || "Could not send the email. Please try again.", type: "error" });
+      return false;
     }
   };
 
@@ -250,7 +290,8 @@ export function EmailMarketingManagement() {
   ];
 
   const tabs = [
-    { value: "sent", label: "Sent emails", count: sentCount },
+    { value: "sent", label: "Sent", count: sentCount },
+    { value: "drafts", label: "Drafts", count: draftCount },
     { value: "groups", label: "Groups" },
     { value: "leads", label: "Leads" },
     { value: "templates", label: "Templates" },
@@ -283,7 +324,9 @@ export function EmailMarketingManagement() {
       </div>
 
       {/* kept mounted, so its numbers and list stay loaded while other tabs are open */}
-      <div hidden={view !== "sent"}>
+      <div hidden={view !== "sent"} className="space-y-4">
+        {/* how many went out today, from which address (hidden while an email is open) */}
+        {!openCampaignId && <SentBySenderPanel reloadSignal={reloadSent} onOpenCampaign={setOpenCampaignId} />}
         <SentEmailsPanel
           reloadSignal={reloadSent}
           openId={openCampaignId}
@@ -304,6 +347,17 @@ export function EmailMarketingManagement() {
               </Button>
             </div>
           }
+        />
+      </div>
+
+      {/* kept mounted too, so the tab's count is right before it is opened */}
+      <div hidden={view !== "drafts"}>
+        <DraftsPanel
+          reloadSignal={reloadDrafts}
+          onOpen={openDraft}
+          openingId={openingDraft}
+          onCount={setDraftCount}
+          onNew={() => openCompose()}
         />
       </div>
 
@@ -342,6 +396,11 @@ export function EmailMarketingManagement() {
           isSubmitting={sending}
           defaultFrom={defaultFrom}
           onReviewRecipients={review.canReview ? review.openReview : undefined}
+          draftsEnabled
+          initialDraft={compose.draft || null}
+          recipientBatchId={compose.batchId || null}
+          recipientLabel={compose.label || ""}
+          onDraftsChanged={onDraftsChanged}
         />
       )}
       {review.dialog}

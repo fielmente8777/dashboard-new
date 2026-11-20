@@ -65,6 +65,22 @@ export const emailMarketingApi = baseApi.injectEndpoints({
     }),
 
     // { hid, campaignId }
+    // { hid, campaignId, recipientId? } -> { result: { from, html, recipient } }
+    // the sent email as guests got it (footer, inert unsubscribe link) and who it really went out as
+    getCampaignMessage: build.query({
+      query: ({ hid, campaignId, recipientId }) => ({
+        url: `${BASE}/campaigns/${campaignId}/message`,
+        params: { hid, ...(recipientId && { recipientId }) },
+      }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, from, to } (ISO) -> { result: { total, senders: [{ via, email, name, source, sent, failed, campaigns }], sentBy } }
+    getSentSummary: build.query({
+      query: ({ hid, from, to }) => ({ url: `${BASE}/sent-summary`, params: { hid, from, to } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
     getEmailCampaign: build.query({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, params: { hid } }),
       extraOptions: NODE,
@@ -200,6 +216,33 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- drafts: the compose window saves as you type, like Gmail ---
+    // { hid } -> { result: { drafts: [{ _id, subject, snippet, toEmails, toCount, recipientCount, recipientLabel, templateName, updatedAt }] } }
+    getEmailDrafts: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/drafts`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, id } -> { result: { draft } } with its content
+    getEmailDraft: build.query({
+      query: ({ hid, id }) => ({ url: `${BASE}/drafts/${id}`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, body } -> { result: { draft: { _id, ... } } }
+    createEmailDraft: build.mutation({
+      query: ({ hid, body }) => ({ url: `${BASE}/drafts`, method: "POST", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    updateEmailDraft: build.mutation({
+      query: ({ hid, id, body }) => ({ url: `${BASE}/drafts/${id}`, method: "PUT", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    deleteEmailDraft: build.mutation({
+      query: ({ hid, id }) => ({ url: `${BASE}/drafts/${id}`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+
     // --- Amazon SES: the hotel's own domain / address verified in Eazotel's SES ---
     // { hid, body: { kind: 'domain'|'email', domain?, fromEmail, displayName? } }
     //   -> { result: { ses: { kind, identity, fromEmail, status, records[], ... } } }
@@ -330,6 +373,9 @@ export const getEmailCampaigns = ({ page = 1, limit = 20 } = {}) =>
   result(e.getEmailCampaigns, { hid: selectedHid(), page, limit });
 export const getEmailCampaign = ({ campaignId }) =>
   result(e.getEmailCampaign, { hid: selectedHid(), campaignId });
+export const getSentSummary = ({ from, to }) => strict(e.getSentSummary, { hid: selectedHid(), from, to });
+export const getCampaignMessage = ({ campaignId, recipientId }) =>
+  strict(e.getCampaignMessage, { hid: selectedHid(), campaignId, recipientId });
 export const getCampaignRecipients = ({ campaignId, status = "", page = 1, limit = 50 }) =>
   result(e.getCampaignRecipients, { hid: selectedHid(), campaignId, status, page, limit });
 export const sendEmailCampaign = ({ campaignId }) =>
@@ -396,6 +442,12 @@ export const stopEmailCampaign = ({ campaignId }) =>
   strict(e.stopEmailCampaign, { hid: selectedHid(), campaignId });
 export const startEmailCampaign = ({ campaignId }) =>
   strict(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
+// drafts resolve with `result` and throw with the server's message (error.status = HTTP status)
+export const getEmailDrafts = () => strict(e.getEmailDrafts, { hid: selectedHid() });
+export const getEmailDraft = (id) => strict(e.getEmailDraft, { hid: selectedHid(), id });
+export const createEmailDraft = (body) => strict(e.createEmailDraft, { hid: selectedHid(), body });
+export const updateEmailDraft = (id, body) => strict(e.updateEmailDraft, { hid: selectedHid(), id, body });
+export const deleteEmailDraft = (id) => strict(e.deleteEmailDraft, { hid: selectedHid(), id });
 export const deleteEmailCampaign = ({ campaignId }) =>
   strict(e.deleteEmailCampaign, { hid: selectedHid(), campaignId });
 export const retryEmailCampaign = ({ campaignId }) =>

@@ -99,8 +99,11 @@ export default function SentEmailsPanel({
 
   if (!campaigns.length) return empty;
 
+  // an open email fills the panel, like Gmail: the numbers step aside
   return (
     <div className="space-y-4">
+      {!openId && (
+        <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={label}
@@ -134,6 +137,8 @@ export default function SentEmailsPanel({
           className={refreshing ? "animate-spin" : ""}
         />
       </div>
+        </>
+      )}
 
       <CampaignsList
         onChanged={() => load({ quiet: true })}
