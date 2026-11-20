@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import DraftsPanel from "../../components/Email/DraftsPanel";
-import SentBySenderPanel from "../../components/Email/SentBySenderPanel";
+import PerformancePanel from "../../components/Email/PerformancePanel";
 import EmailQuotaPanel from "../../components/Email/EmailQuotaPanel";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
@@ -178,6 +178,8 @@ export function EmailMarketingManagement() {
         text,
         from,
         attachments,
+        // "Past guests", "selected leads"… shown in the Sent list
+        audienceLabel: compose?.label || "",
       });
 
       const count = (compose?.count || 0) + toEmails.length;
@@ -326,8 +328,9 @@ export function EmailMarketingManagement() {
       {/* kept mounted, so its numbers and list stay loaded while other tabs are open */}
       <div hidden={view !== "sent"} className="space-y-4">
         {/* how many went out today, from which address (hidden while an email is open) */}
-        {!openCampaignId && <SentBySenderPanel reloadSignal={reloadSent} onOpenCampaign={setOpenCampaignId} />}
+        {!openCampaignId && <PerformancePanel reloadSignal={reloadSent} onOpenCampaign={setOpenCampaignId} />}
         <SentEmailsPanel
+          showStats={false}
           reloadSignal={reloadSent}
           openId={openCampaignId}
           onOpenChange={setOpenCampaignId}

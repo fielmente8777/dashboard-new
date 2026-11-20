@@ -30,6 +30,8 @@ export default function SentEmailsPanel({
   onCount,
   empty = null,
   label = "Emails sent",
+  // false where the page shows its own numbers (Email marketing → Performance)
+  showStats = true,
 }) {
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,7 +104,7 @@ export default function SentEmailsPanel({
   // an open email fills the panel, like Gmail: the numbers step aside
   return (
     <div className="space-y-4">
-      {!openId && (
+      {!openId && showStats && (
         <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard

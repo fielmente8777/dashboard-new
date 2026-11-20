@@ -10,7 +10,8 @@ const ALIVE_MS = 3 * 60 * 1000;
 
 // Deletes a campaign after asking. Not offered while it is still going out
 // (Stop it first); gian answers 409 if it started meanwhile.
-export default function CampaignDeleteButton({ campaign, onDeleted, size = "sm" }) {
+// iconOnly: just the bin (in table rows); the label stays for screen readers
+export default function CampaignDeleteButton({ campaign, onDeleted, size = "sm", iconOnly = false }) {
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
   const { confirm } = useConfirm();
@@ -55,7 +56,7 @@ export default function CampaignDeleteButton({ campaign, onDeleted, size = "sm" 
       aria-label={`Delete campaign ${name}`}
       title={live ? "Stop the campaign first, then delete it" : "Delete this campaign"}
     >
-      Delete
+      {iconOnly ? null : "Delete"}
     </Button>
   );
 }

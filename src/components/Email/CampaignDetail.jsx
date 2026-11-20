@@ -1,5 +1,18 @@
 import {
   ArrowLeft,
+  CalendarClock,
+  Eye,
+  Info,
+  Paperclip,
+  Reply,
+  Send,
+  UserRound,
+  Users,
+  CircleCheck,
+  Clock,
+  Inbox,
+  MailOpen,
+  MousePointerClick,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -9,15 +22,8 @@ import {
   Smartphone,
   TriangleAlert,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import {
-  campaignStatus,
-  deliveredCount,
-  describeSendProblem,
-  formatDate,
-  rate,
-  RECIPIENT_TONE,
-} from "../../pages/EmailMarketing/emailUtils.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { campaignStatus, describeSendProblem, formatDate, RECIPIENT_TONE } from "../../pages/EmailMarketing/emailUtils.js";
 import { getCampaignMessage, getCampaignRecipients, getEmailCampaign } from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
@@ -26,35 +32,40 @@ import { Skeleton } from "../ui/States";
 import Tabs from "../ui/Tabs";
 import CampaignDeleteButton from "./CampaignDeleteButton";
 import CampaignDeliveryBar from "./CampaignDeliveryBar";
+import CampaignReport from "./CampaignReport";
+import RecipientsTable from "./RecipientsTable";
 import CampaignRunControl from "./CampaignRunControl";
 import MailBody from "./MailBody";
-import {
-  avatarColor,
-  mailDate,
-  mailFullDate,
-  personName,
-  recipientsSummary,
-  SENDER_VIA,
-  senderNote,
-  sentBy,
-} from "./mailFormat";
+import { avatarColor, mailFullDate, recipientsSummary, SENDER_VIA, senderNote, sentBy } from "./mailFormat";
 
+// the filters above the table, with their icon and colour
 const FILTERS = [
-  { value: "", label: "All" },
-  { value: "sent", label: "Sent" },
-  { value: "opened", label: "Opened" },
-  { value: "clicked", label: "Clicked" },
-  { value: "failed", label: "Failed" },
-  { value: "pending", label: "Pending" },
-];
-
-const STATS = [
-  { key: "sent", label: "Sent" },
-  { key: "delivered", label: "Delivered" },
-  { key: "opened", label: "Opened", showRate: true },
-  { key: "clicked", label: "Clicked", showRate: true },
-  { key: "failed", label: "Failed", danger: true },
-  { key: "unsubscribed", label: "Unsubscribed" },
+  { value: "", label: "All", icon: Inbox },
+  {
+    value: "sent",
+    label: "Sent",
+    icon: CircleCheck,
+    tone: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    value: "opened",
+    label: "Opened",
+    icon: MailOpen,
+    tone: "text-violet-600 dark:text-violet-400",
+  },
+  {
+    value: "clicked",
+    label: "Clicked",
+    icon: MousePointerClick,
+    tone: "text-sky-600 dark:text-sky-400",
+  },
+  {
+    value: "failed",
+    label: "Failed",
+    icon: TriangleAlert,
+    tone: "text-red-500",
+  },
+  { value: "pending", label: "Pending", icon: Clock, tone: "text-slate-500" },
 ];
 
 const PAGE_SIZE = 50;
@@ -89,75 +100,91 @@ function DeviceSwitch({ phone, onChange }) {
   );
 }
 
-// Gmail's sender block: avatar, name <address>, "to …" with details, the date
-function SenderHeader({ from, toLine, toFull, date, subject, by, extra }) {
-  const [open, setOpen] = useState(false);
+// one labelled detail of the envelope: icon, label, value
+function EnvelopeRow({ icon: RowIcon, label, children }) {
+  return (
+    <div className="flex min-w-0 items-start gap-2.5">
+      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-app-surface-secondary text-app-text-muted">
+        <RowIcon className="size-3.5" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-app-text-faint">{label}</p>
+        <div className="break-words text-sm text-app-text">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+// The envelope: who it came from (as guests saw it), to whom, where replies go,
+// how it was sent and who sent it from the dashboard. `extra` goes under it.
+function SenderHeader({ from, toLine, toFull, date, by, extra }) {
+  const [showAll, setShowAll] = useState(false);
   const via = SENDER_VIA[from?.via];
   const unknown = !from || from.source === "unknown";
   const name = unknown ? from?.name || "Sender not recorded" : from.name || from.email || "Your mailbox";
   const note = senderNote(from);
-
-  const rows = [
-    ["from", unknown ? "not recorded" : from.email ? `${from.name ? `${from.name} ` : ""}<${from.email}>` : "not recorded"],
-    from?.replyTo && ["reply-to", from.replyTo],
-    ["to", toFull],
-    ["date", formatDate(date, true)],
-    ["subject", subject],
-    via && ["sent through", from.provider ? `${via.label} (${from.provider})` : via.label],
-    by && ["sent by", `${by} (dashboard login)`],
-  ].filter(Boolean);
+  // say how we know only when it was worked out, or isn't known
+  const showNote = unknown || from?.source === "send-log" || from?.source === "amazon-id";
 
   return (
-    <div className="flex items-start gap-3">
-      <span
-        className={`flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold uppercase text-white ${
-          unknown ? "bg-slate-400" : avatarColor(name)
-        }`}
-        aria-hidden
-      >
-        {unknown ? "?" : name[0]}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <span className={`text-sm font-semibold ${unknown ? "text-app-text-muted" : "text-app-text"}`}>{name}</span>
-          {!unknown && from.email && from.name && (
-            <span className="min-w-0 truncate text-xs text-app-text-muted">&lt;{from.email}&gt;</span>
-          )}
-          {via && (
-            <Badge tone={via.tone} className="self-center">
-              {via.label}
-            </Badge>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          className="mt-0.5 inline-flex max-w-full items-center gap-1 text-left text-xs text-app-text-muted hover:text-app-text"
+    <div className="rounded-xl border border-app-border! bg-app-surface">
+      <div className="flex items-start gap-3 p-4">
+        <span
+          className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold uppercase text-white ${
+            unknown ? "bg-slate-400" : avatarColor(name)
+          }`}
+          aria-hidden
         >
-          <span className="truncate">to {toLine}</span>
-          <ChevronDown className={`size-3.5 shrink-0 transition ${open ? "rotate-180" : ""}`} />
-        </button>
-        {open ? (
-          <dl className="mt-2 grid max-w-xl grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-lg border border-app-border! bg-app-surface p-3 text-xs shadow-sm">
-            {rows.map(([label, value]) => (
-              <div key={label} className="contents">
-                <dt className="text-right text-app-text-muted">{label}:</dt>
-                <dd className="min-w-0 break-words text-app-text">{value}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : (
-          note && (
-            <p className={`mt-1 flex items-start gap-1 text-[11px] leading-snug ${unknown ? "text-amber-700 dark:text-amber-400" : "text-app-text-faint"}`}>
-              {unknown && <TriangleAlert className="mt-px size-3 shrink-0" />}
-              {note}
-            </p>
-          )
-        )}
-        {extra}
+          {unknown ? "?" : name[0]}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className={`text-[15px] font-semibold ${unknown ? "text-app-text-muted" : "text-app-text"}`}>{name}</span>
+            {via && <Badge tone={via.tone}>{via.label}</Badge>}
+          </div>
+          {!unknown && from.email && <p className="truncate text-sm text-app-text-muted">{from.email}</p>}
+        </div>
+        <p className="flex shrink-0 items-center gap-1 text-right text-xs text-app-text-muted">
+          <CalendarClock className="size-3.5 shrink-0" />
+          {mailFullDate(date)}
+        </p>
       </div>
-      <p className="hidden shrink-0 text-right text-xs text-app-text-muted sm:block">{mailFullDate(date)}</p>
+
+      <div className="grid gap-x-6 gap-y-3 border-t border-app-border! px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
+        <EnvelopeRow icon={Users} label="To">
+          <span className={showAll ? "" : "line-clamp-2"}>{showAll ? toFull : toLine}</span>
+          {toFull && toFull !== toLine && (
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="block text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {showAll ? "Show less" : "Show addresses"}
+            </button>
+          )}
+        </EnvelopeRow>
+        <EnvelopeRow icon={Reply} label="Replies go to">
+          {from?.replyTo || (!unknown && from?.email) || <span className="text-app-text-faint">—</span>}
+        </EnvelopeRow>
+        <EnvelopeRow icon={Send} label="Sent through">
+          {via ? from.provider ? `${via.label} (${from.provider})` : via.label : <span className="text-app-text-faint">Not recorded</span>}
+        </EnvelopeRow>
+        <EnvelopeRow icon={UserRound} label="Sent by">
+          {by || <span className="text-app-text-faint">—</span>}
+        </EnvelopeRow>
+      </div>
+
+      {showNote && note && (
+        <p
+          className={`flex items-start gap-1.5 border-t border-app-border! px-4 py-2 text-xs ${
+            unknown ? "bg-amber-500/5 text-amber-700 dark:text-amber-400" : "text-app-text-muted"
+          }`}
+        >
+          {unknown ? <TriangleAlert className="mt-px size-3.5 shrink-0" /> : <Info className="mt-px size-3.5 shrink-0" />}
+          {note}
+        </p>
+      )}
+      {extra && <div className="border-t border-app-border! px-4 py-3">{extra}</div>}
     </div>
   );
 }
@@ -184,17 +211,30 @@ function useMessage(campaignId, recipientId) {
 function BodyBlock({ html, attachments = [] }) {
   const [phone, setPhone] = useState(false);
   return (
-    <>
-      <div className="flex items-center gap-2">
-        <p className="min-w-0 flex-1 text-[11px] text-app-text-faint">
-          Your footer is the one saved now; the unsubscribe link is turned off here.
-        </p>
-        <DeviceSwitch phone={phone} onChange={setPhone} />
+    <div className="overflow-hidden rounded-xl border border-app-border!">
+      <div className="flex items-center gap-2 border-b border-app-border! bg-app-surface px-4 py-2.5">
+        <Eye className="size-4 text-app-text-muted" />
+        <p className="text-sm font-semibold text-app-text">Email</p>
+        <span
+          className="hidden items-center gap-1 text-[11px] text-app-text-faint sm:inline-flex"
+          title="The footer shown is the one saved now. The unsubscribe link does nothing here, and opening this doesn't count as an open."
+        >
+          <Info className="size-3.5" /> as guests see it
+        </span>
+        <span className="ml-auto">
+          <DeviceSwitch phone={phone} onChange={setPhone} />
+        </span>
       </div>
-      <MailBody html={html} phone={phone} className="overflow-hidden rounded-lg border border-app-border!" />
+
+      {/* desktop: on white like Gmail; phone: in a phone, on grey */}
+      <div className={phone ? "bg-slate-100 px-3 py-6 sm:py-8 dark:bg-slate-900/50" : "bg-white"}>
+        <MailBody html={html} phone={phone} />
+      </div>
+
       {attachments.length > 0 && (
-        <div className="border-t border-app-border! pt-4">
-          <p className="mb-2 text-xs font-medium text-app-text-muted">
+        <div className="border-t border-app-border! bg-app-surface px-4 py-3">
+          <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-app-text-muted">
+            <Paperclip className="size-3.5" />
             {attachments.length} attachment{attachments.length === 1 ? "" : "s"}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -214,7 +254,7 @@ function BodyBlock({ html, attachments = [] }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -240,13 +280,11 @@ function MessagePane({ campaign, campaignId }) {
           toLine={recipientsSummary(campaign)}
           toFull={recipientsSummary(campaign, { names: false })}
           date={campaign.createdAt}
-          subject={campaign.subject}
           by={sentBy(campaign)}
         />
       ) : (
         <Skeleton className="h-14 rounded-lg" />
       )}
-      <p className="text-xs text-app-text-muted sm:hidden">{mailFullDate(campaign.createdAt)}</p>
       {message ? <BodyBlock html={message.html} attachments={campaign.attachments} /> : <Skeleton className="h-96 rounded-lg" />}
     </div>
   );
@@ -263,13 +301,11 @@ function PersonPane({ campaign, campaignId, recipientId, onBack }) {
 
   return (
     <div className="space-y-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-sm text-app-text-muted hover:text-app-text"
-      >
-        <ArrowLeft className="size-4" /> All recipients
-      </button>
+      {onBack && (
+        <button type="button" onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-app-text-muted hover:text-app-text">
+          <ArrowLeft className="size-4" /> All recipients
+        </button>
+      )}
 
       {failed && (
         <p className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-600">
@@ -289,19 +325,22 @@ function PersonPane({ campaign, campaignId, recipientId, onBack }) {
             toLine={r.name ? `${r.name} <${r.email}>` : r.email}
             toFull={r.email}
             date={r.sentAt || campaign.createdAt}
-            subject={campaign.subject}
             by={sentBy(campaign)}
             extra={
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge>
-                {r.sentAt && <span className={`${STEP} bg-app-surface-secondary text-app-text-muted`}>Sent {formatDate(r.sentAt, true)}</span>}
+                {r.sentAt && (
+                  <span className={`${STEP} bg-app-surface-secondary text-app-text-muted`}>Sent {formatDate(r.sentAt, true)}</span>
+                )}
                 {r.deliveredAt && (
                   <span className={`${STEP} bg-emerald-500/10 text-emerald-700 dark:text-emerald-400`}>
                     Delivered {formatDate(r.deliveredAt, true)}
                   </span>
                 )}
                 {r.openedAt && (
-                  <span className={`${STEP} bg-violet-500/10 text-violet-700 dark:text-violet-400`}>Opened {formatDate(r.openedAt, true)}</span>
+                  <span className={`${STEP} bg-violet-500/10 text-violet-700 dark:text-violet-400`}>
+                    Opened {formatDate(r.openedAt, true)}
+                  </span>
                 )}
                 {r.clickedAt && (
                   <span className={`${STEP} bg-sky-500/10 text-sky-700 dark:text-sky-400`}>Clicked {formatDate(r.clickedAt, true)}</span>
@@ -310,7 +349,10 @@ function PersonPane({ campaign, campaignId, recipientId, onBack }) {
             }
           />
           {problem && (
-            <div className="rounded-lg border border-red-200! bg-red-50 px-4 py-3 dark:border-red-500/30! dark:bg-red-500/10" title={r.error}>
+            <div
+              className="rounded-lg border border-red-200! bg-red-50 px-4 py-3 dark:border-red-500/30! dark:bg-red-500/10"
+              title={r.error}
+            >
               <p className="text-sm font-medium text-red-600 dark:text-red-400">{problem.title}</p>
               <p className="mt-1 text-xs text-app-text-muted">{problem.hint}</p>
             </div>
@@ -327,21 +369,63 @@ function PersonPane({ campaign, campaignId, recipientId, onBack }) {
   );
 }
 
+/* ---------------- an email to one person ---------------- */
+
+// No report, chart or recipients list for one person: the email, with what
+// happened to it (sent, delivered, opened, clicked) on its envelope, like
+// Gmail's tracking; and Retry when it failed.
+function SinglePane({ campaign, campaignId, onChanged }) {
+  const [recipientId, setRecipientId] = useState(null);
+  const [missing, setMissing] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    getCampaignRecipients({ campaignId, page: 1, limit: 1 })
+      .then((res) => {
+        if (!alive) return;
+        const id = res?.doc?.[0]?._id;
+        if (id) setRecipientId(id);
+        else setMissing(true);
+      })
+      .catch(() => alive && setMissing(true));
+    return () => {
+      alive = false;
+    };
+  }, [campaignId]);
+
+  return (
+    <div className="space-y-4">
+      <CampaignDeliveryBar campaignId={campaignId} onChanged={onChanged} />
+      {recipientId ? (
+        <PersonPane campaign={campaign} campaignId={campaignId} recipientId={recipientId} />
+      ) : missing ? (
+        <MessagePane campaign={campaign} campaignId={campaignId} />
+      ) : (
+        <Skeleton className="h-96 rounded-lg" />
+      )}
+    </div>
+  );
+}
+
 /* ---------------- recipients & results ---------------- */
 
-function RecipientsPane({ campaign, campaignId, onOpenPerson, onChanged }) {
+function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
   const [recipients, setRecipients] = useState([]);
   const [total, setTotal] = useState(0);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(initialFilter);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const stats = { ...campaign?.stats, delivered: deliveredCount(campaign?.stats) };
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getCampaignRecipients({ campaignId, status: filter, page, limit: PAGE_SIZE });
+      const res = await getCampaignRecipients({
+        campaignId,
+        status: filter,
+        page,
+        limit: PAGE_SIZE,
+      });
       setRecipients(res?.doc || []);
       setTotal(res?.pagination?.total || 0);
     } catch {
@@ -357,85 +441,47 @@ function RecipientsPane({ campaign, campaignId, onOpenPerson, onChanged }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
-        {STATS.map(({ key, label, showRate, danger }) => (
-          <div key={key} className="rounded-lg border border-app-border! px-3 py-2">
-            <p className="text-[11px] text-app-text-muted">{label}</p>
-            <p className={`text-base font-semibold tabular-nums ${danger && stats[key] ? "text-red-500" : "text-app-text"}`}>
-              {(stats[key] ?? 0).toLocaleString("en-IN")}
-              {showRate && <span className="ml-1 text-[11px] font-normal text-app-text-muted">{rate(stats[key], stats.sent)}</span>}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <CampaignDeliveryBar
-        campaignId={campaignId}
-        onChanged={() => {
-          load();
-          onChanged?.();
-        }}
-      />
-
-      <div className="hide-scrollbar -mx-1 overflow-x-auto px-1">
-        <Tabs
-          tabs={FILTERS}
-          value={filter}
-          onChange={(value) => {
-            setFilter(value);
-            setPage(1);
-          }}
-          className="w-max"
-        />
-      </div>
-
-      <ul className="divide-y divide-app-border overflow-hidden rounded-xl border border-app-border! bg-app-surface">
-        {loading &&
-          [0, 1, 2, 3].map((i) => (
-            <li key={i} className="px-4 py-3">
-              <Skeleton className="h-8 rounded" />
-            </li>
-          ))}
-        {!loading && !recipients.length && (
-          <li className="px-4 py-8 text-center text-sm text-app-text-muted">
-            {filter ? `No recipients are “${filter}”.` : "No recipients."}
-          </li>
-        )}
-        {!loading &&
-          recipients.map((r) => (
-            <li key={r._id}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="hide-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1" role="tablist" aria-label="Filter recipients">
+          {FILTERS.map((f) => {
+            const on = filter === f.value;
+            const FilterIcon = f.icon;
+            return (
               <button
+                key={f.value}
                 type="button"
-                onClick={() => onOpenPerson(r._id)}
-                className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition hover:bg-app-surface-secondary sm:px-4"
+                role="tab"
+                aria-selected={on}
+                onClick={() => {
+                  setFilter(f.value);
+                  setPage(1);
+                }}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  on
+                    ? "bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/30 dark:text-blue-300"
+                    : "text-app-text-muted hover:bg-app-surface-secondary hover:text-app-text"
+                }`}
               >
-                <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold uppercase text-white ${avatarColor(r.email)}`}
-                  aria-hidden
-                >
-                  {personName(r)[0] || "?"}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm text-app-text">
-                    {r.name || r.email}
-                    {r.name && <span className="text-app-text-muted"> &lt;{r.email}&gt;</span>}
-                  </span>
-                  <span className="block truncate text-xs text-app-text-muted">
-                    {r.error
-                      ? describeSendProblem(r.error).title
-                      : [r.openedAt && `Opened ${formatDate(r.openedAt, true)}`, r.clickedAt && `clicked ${formatDate(r.clickedAt, true)}`]
-                          .filter(Boolean)
-                          .join(" · ") || (r.sentFrom ? `From ${r.sentFrom}` : " ")}
-                  </span>
-                </span>
-                <Badge tone={RECIPIENT_TONE[r.status] || "gray"}>{r.status}</Badge>
-                <span className="hidden w-16 shrink-0 text-right text-xs tabular-nums text-app-text-muted sm:block">
-                  {mailDate(r.sentAt)}
-                </span>
+                <FilterIcon className={`size-3.5 ${on ? "" : f.tone || ""}`} />
+                {f.label}
               </button>
-            </li>
-          ))}
-      </ul>
+            );
+          })}
+        </div>
+        {!loading && total > 0 && (
+          <span className="ml-auto text-xs tabular-nums text-app-text-muted">
+            {((page - 1) * PAGE_SIZE + 1).toLocaleString("en-IN")}–{Math.min(page * PAGE_SIZE, total).toLocaleString("en-IN")} of{" "}
+            {total.toLocaleString("en-IN")}
+          </span>
+        )}
+      </div>
+
+      <RecipientsTable
+        recipients={recipients}
+        loading={loading}
+        onOpen={onOpenPerson}
+        emptyMessage={filter ? `No one is “${FILTERS.find((f) => f.value === filter)?.label.toLowerCase()}” yet.` : "No recipients."}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-end gap-2 text-xs text-app-text-muted">
@@ -460,9 +506,26 @@ function RecipientsPane({ campaign, campaignId, onOpenPerson, onChanged }) {
 //
 //   position / total, onPrev / onNext   "3 of 13" and the arrows (optional)
 //   onChanged()                         stopped, started or deleted: refresh the list
-export default function CampaignDetail({ campaignId, onClose, position, total, onPrev, onNext, onChanged }) {
+export default function CampaignDetail({
+  campaignId,
+  onClose,
+  position,
+  total,
+  onPrev,
+  onNext,
+  onChanged,
+  initialTab = "message",
+  onTabChange,
+}) {
   const [campaign, setCampaign] = useState(null);
-  const [tab, setTab] = useState("message");
+  // the report sits above the email, so only Message / Recipients are tabs ("report" opens on Message)
+  const [tab, setTabState] = useState(initialTab === "recipients" ? "recipients" : "message");
+  const tabsRef = useRef(null);
+  const [recipientFilter, setRecipientFilter] = useState("");
+  const setTab = (value) => {
+    setTabState(value);
+    onTabChange?.(value);
+  };
   const [personId, setPersonId] = useState(null);
   const [version, setVersion] = useState(0);
 
@@ -477,7 +540,6 @@ export default function CampaignDetail({ campaignId, onClose, position, total, o
 
   useEffect(() => {
     setCampaign(null);
-    setTab("message");
     setPersonId(null);
     loadCampaign();
   }, [loadCampaign]);
@@ -502,9 +564,15 @@ export default function CampaignDetail({ campaignId, onClose, position, total, o
   };
 
   const status = campaign ? campaignStatus(campaign.status) : null;
+  // an email to one person needs no report or recipients list
+  const single = campaign?.recipientCount === 1;
   const tabs = [
     { value: "message", label: "Message" },
-    { value: "recipients", label: "Recipients", count: campaign?.recipientCount || 0 },
+    {
+      value: "recipients",
+      label: "Recipients",
+      count: campaign?.recipientCount || 0,
+    },
   ];
 
   return (
@@ -547,29 +615,62 @@ export default function CampaignDetail({ campaignId, onClose, position, total, o
           {status && <Badge tone={status.tone}>{status.label}</Badge>}
         </div>
 
-        <div className="mt-3 border-b border-app-border!">
-          <Tabs
-            tabs={tabs}
-            value={tab}
-            onChange={(value) => {
-              setTab(value);
-              setPersonId(null);
-            }}
-            className="-mb-px pb-2"
-          />
-        </div>
+        {single ? (
+          <div className="mt-5" key={version}>
+            <SinglePane campaign={campaign} campaignId={campaignId} onChanged={loadCampaign} />
+          </div>
+        ) : (
+          <>
+            {/* the report, always first, the full width of the page */}
+            <div className="mt-4" key={version}>
+              {campaign ? (
+                <CampaignReport
+                  campaign={campaign}
+                  campaignId={campaignId}
+                  onChanged={loadCampaign}
+                  onShowRecipients={(filter) => {
+                    setRecipientFilter(filter);
+                    setPersonId(null);
+                    setTab("recipients");
+                    requestAnimationFrame(() =>
+                      tabsRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      }),
+                    );
+                  }}
+                />
+              ) : (
+                <Skeleton className="h-64 rounded-xl" />
+              )}
+            </div>
 
-        <div className="pt-5" key={version}>
-          {!campaign ? (
-            <Skeleton className="h-96 rounded-lg" />
-          ) : tab === "message" ? (
-            <MessagePane campaign={campaign} campaignId={campaignId} />
-          ) : personId ? (
-            <PersonPane campaign={campaign} campaignId={campaignId} recipientId={personId} onBack={() => setPersonId(null)} />
-          ) : (
-            <RecipientsPane campaign={campaign} campaignId={campaignId} onOpenPerson={setPersonId} onChanged={loadCampaign} />
-          )}
-        </div>
+            <div ref={tabsRef} className="mt-6 scroll-mt-4 border-b border-app-border!">
+              <Tabs
+                tabs={tabs}
+                value={tab}
+                onChange={(value) => {
+                  setTab(value);
+                  setPersonId(null);
+                  setRecipientFilter("");
+                }}
+                className="-mb-px pb-2"
+              />
+            </div>
+
+            <div className="pt-5" key={version}>
+              {!campaign ? (
+                <Skeleton className="h-96 rounded-lg" />
+              ) : tab === "message" ? (
+                <MessagePane campaign={campaign} campaignId={campaignId} />
+              ) : personId ? (
+                <PersonPane campaign={campaign} campaignId={campaignId} recipientId={personId} onBack={() => setPersonId(null)} />
+              ) : (
+                <RecipientsPane key={recipientFilter} campaignId={campaignId} initialFilter={recipientFilter} onOpenPerson={setPersonId} />
+              )}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

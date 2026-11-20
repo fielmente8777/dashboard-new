@@ -76,6 +76,18 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 0,
     }),
     // { hid, from, to } (ISO) -> { result: { total, senders: [{ via, email, name, source, sent, failed, campaigns }], sentBy } }
+    // { hid, from, to, tz } -> { result: { current, previous, unit: 'day'|'hour', buckets: [{ key, sent, opened, clicked }] } }
+    getEmailPerformance: build.query({
+      query: ({ hid, from, to, tz }) => ({ url: `${BASE}/performance`, params: { hid, from, to, tz } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, campaignId, tz } -> { result: { totals, firstSentAt, average, unit, buckets: [{ key, opened, clicked }], failures: [{ error, count }] } }
+    getCampaignReport: build.query({
+      query: ({ hid, campaignId, tz }) => ({ url: `${BASE}/campaigns/${campaignId}/report`, params: { hid, tz } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
     getSentSummary: build.query({
       query: ({ hid, from, to }) => ({ url: `${BASE}/sent-summary`, params: { hid, from, to } }),
       extraOptions: NODE,
@@ -354,6 +366,7 @@ export const createEmailCampaign = ({
   text = "",
   fromName = "",
   fromEmail = "",
+  audienceLabel = "",
   recipientBatchIds,
   attachments = [],
 }) => {
@@ -365,6 +378,7 @@ export const createEmailCampaign = ({
   form.append("text", text);
   form.append("fromName", fromName);
   form.append("fromEmail", fromEmail);
+  if (audienceLabel) form.append("audienceLabel", audienceLabel);
   form.append("recipientBatchIds", JSON.stringify(recipientBatchIds));
   attachments.forEach((file) => form.append("attachments", file));
   return result(e.createEmailCampaign, form);
@@ -373,6 +387,9 @@ export const getEmailCampaigns = ({ page = 1, limit = 20 } = {}) =>
   result(e.getEmailCampaigns, { hid: selectedHid(), page, limit });
 export const getEmailCampaign = ({ campaignId }) =>
   result(e.getEmailCampaign, { hid: selectedHid(), campaignId });
+export const getEmailPerformance = ({ from, to, tz }) =>
+  strict(e.getEmailPerformance, { hid: selectedHid(), from, to, tz });
+export const getCampaignReport = ({ campaignId, tz }) => strict(e.getCampaignReport, { hid: selectedHid(), campaignId, tz });
 export const getSentSummary = ({ from, to }) => strict(e.getSentSummary, { hid: selectedHid(), from, to });
 export const getCampaignMessage = ({ campaignId, recipientId }) =>
   strict(e.getCampaignMessage, { hid: selectedHid(), campaignId, recipientId });

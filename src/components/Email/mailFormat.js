@@ -76,7 +76,12 @@ export const senderNote = (from) => {
       : from.replyTo
           ? `Replies went to ${from.replyTo}.`
           : "";
-  const how = from.source === "send-log" ? " Worked out from the mail server's log." : "";
+  const how =
+    from.source === "send-log"
+      ? " Worked out from the mail server's log."
+      : from.source === "amazon-id"
+        ? " Worked out from Amazon's message ID (sent before senders were recorded)."
+        : "";
   return `${where}${how}`.trim();
 };
 
