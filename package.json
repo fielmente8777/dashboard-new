@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:deep-links": "vite --config vite.deep-links.config.js --mode deep-links-test",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

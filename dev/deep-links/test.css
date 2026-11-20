@@ -1,0 +1,5 @@
+:root { --app-bg: #f6f7fb; --app-surface: #fff; --app-surface-secondary: #f1f3f9; --app-text: #0f1222; --app-text-muted: #5c6175; --app-text-faint: #9aa0b4; --app-border: #e6e8f0; --app-border-strong: #d4d7e3; font-family: system-ui, sans-serif; color: var(--app-text); background: var(--app-bg); }
+* { box-sizing: border-box; } body { margin: 0; } button, input, select, textarea { font: inherit; } button { cursor: pointer; }
+.test-header { padding: 20px 24px; background: #152547; color: white; } .test-header label { margin-left: 24px; } .test-header select { margin-left: 8px; padding: 5px; color: #0f1222; } .test-header p { font-size: 13px; line-height: 1.7; }
+.test-client { max-width: 650px; margin: 40px auto; padding: 24px; background: white; border-radius: 12px; } .test-client label { display: block; margin-top: 12px; } .test-client input { display: block; width: 100%; padding: 10px; margin: 5px 0; } .test-client button { margin-top: 16px; padding: 10px 18px; }
+@media(max-width: 600px) { .test-header label { display: block; margin: 12px 0; } }

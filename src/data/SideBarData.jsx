@@ -22,6 +22,7 @@ import {
   Image,
   LayoutDashboard,
   LayoutList,
+  Link2,
   Mail,
   MapPin,
   Megaphone,
@@ -178,41 +179,12 @@ export const SidebarData = [
     link: `booking-engine`,
     icon: top(CalendarCheck),
     subLinks: [
-      {
-        name: "Rooms Setup",
-        link: `booking-engine/rooms-setup`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Rooms & Inventory",
-        link: `booking-engine/rooms-and-inventory`,
-        icon: <MdOutlineInventory size={18} />,
-      },
-      {
-        name: "Price Packages",
-        link: `booking-engine/price-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Ads Packages",
-        link: `booking-engine/ads-packages`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Customization",
-        link: `booking-engine/customization`,
-        icon: <MdBedroomParent size={18} />,
-      },
-      {
-        name: "Deep Links",
-        link: `booking-engine/deep-links`,
-        icon: <MdLink size={18} />,
-      },
       { name: "Rooms setup", link: `booking-engine/rooms-setup`, icon: sub(BedDouble) },
       { name: "Rooms & inventory", link: `booking-engine/rooms-and-inventory`, icon: sub(Package) },
       { name: "Price packages", link: `booking-engine/price-packages`, icon: sub(Tags) },
       { name: "Ads packages", link: `booking-engine/ads-packages`, icon: sub(Megaphone) },
       { name: "Customization", link: `booking-engine/customization`, icon: sub(Palette) },
+      { name: "Deep links", link: `booking-engine/deep-links`, icon: sub(Link2) },
     ],
   },
   {

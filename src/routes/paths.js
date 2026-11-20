@@ -98,6 +98,7 @@ export const PAGES = {
   BOOKING_PRICE_PACKAGES: "booking-engine/price-packages",
   BOOKING_ADS_PACKAGES: "booking-engine/ads-packages",
   BOOKING_CUSTOMIZATION: "booking-engine/customization",
+  BOOKING_DEEP_LINKS: "booking-engine/deep-links",
   RESERVATION_DESK: "reservation-desk",
   FRONT_DESK: "front-desk",
   PAYMENT_GATEWAY: "payment-gateway",

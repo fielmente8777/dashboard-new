@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test: landing page</title>
+<link rel="stylesheet" href="./test.css">
+<script defer src="http://localhost:8000/api/v1/booking/deep-links/prefill.js"></script>
+</head>
+<body>
+<main class="test-client">
+<h1>Hotel home page (test)</h1>
+<p>Guest lands here from the deep link, then browses to another page. The forms there should still be filled.</p>
+<a id="next" href="./forms.html">Go to booking forms page →</a>
+</main>
+<script>
+  // Auto-navigate only when ?auto=1 (used for automated testing).
+  if (new URLSearchParams(location.search).get('auto') === '1') setTimeout(function () { document.getElementById('next').click(); }, 800);
+</script>
+</body>
+</html>

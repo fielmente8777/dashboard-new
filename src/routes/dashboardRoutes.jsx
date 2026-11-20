@@ -111,6 +111,7 @@ export const dashboardRoutes = [
   { path: PAGES.BOOKING_PRICE_PACKAGES, lazy: page(() => import("../pages/BookingEngine/PricePackage")) },
   { path: PAGES.BOOKING_ADS_PACKAGES, lazy: page(() => import("../pages/BookingEngine/AdsPackages")) },
   { path: PAGES.BOOKING_CUSTOMIZATION, lazy: page(() => import("../pages/BookingEngine/BookingCustom")) },
+  { path: PAGES.BOOKING_DEEP_LINKS, lazy: page(() => import("../pages/BookingEngine/DeepLinks")) },
   { path: PAGES.RESERVATION_DESK, lazy: page(() => import("../pages/ReservationDesk/ReservationDesk")) },
   { path: PAGES.FRONT_DESK, lazy: page(() => import("../pages/FrontDesk/FrontDesk")) },
   { path: PAGES.PAYMENT_GATEWAY, lazy: page(() => import("../pages/Gateways/PaymentGateway")) },

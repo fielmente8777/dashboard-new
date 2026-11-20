@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test: many form styles</title>
+<link rel="stylesheet" href="./test.css">
+<script defer src="http://localhost:8000/api/v1/booking/deep-links/prefill.js"></script>
+</head>
+<body>
+<main class="test-client">
+<h1>Autofill test · different form styles</h1>
+<p>None of these forms use data-eazotel-field tags. Test data only.</p>
+
+<h2>A. Name-based inputs</h2>
+<form id="formA">
+  <input name="check_in_date" type="date">
+  <input name="check_out_date" type="date">
+  <input name="no_of_adults" type="number" value="1">
+  <input name="no_of_children" type="number" value="0">
+  <input name="coupon" type="text">
+  <input name="guest_name" type="text" placeholder="Guest name">
+</form>
+
+<h2>B. Labels, selects, text dates (dd/mm/yyyy)</h2>
+<form id="formB">
+  <label>Arrival <input type="text" placeholder="dd/mm/yyyy"></label>
+  <label>Departure <input type="text" placeholder="dd/mm/yyyy"></label>
+  <label>Guests
+    <select><option value="1">1 Adult</option><option value="2">2 Adults</option><option value="3">3 Adults</option></select>
+  </label>
+  <label>Currency <select><option>USD</option><option>INR</option><option>THB</option></select></label>
+</form>
+
+<h2>C. Two unlabeled date inputs</h2>
+<form id="formC"><input type="date"><input type="date"></form>
+
+<h2>D. Opted out (data-eazotel-ignore)</h2>
+<form id="formD" data-eazotel-ignore><input name="checkin" type="date"></form>
+
+<h2>F. Tagged fields (names that would never be guessed)</h2>
+<form id="formF"><input name="x1" type="date" data-eazotel-field="checkIn"><input name="x2" type="number" value="1" data-eazotel-field="adults"></form>
+
+<h2>E. Popup added later</h2>
+<button type="button" id="openPopup">Book Now</button>
+<div id="popupHost"></div>
+
+<pre id="results">waiting…</pre>
+</main>
+<script>
+  document.getElementById('openPopup').addEventListener('click', function () {
+    document.getElementById('popupHost').innerHTML =
+      '<form id="formE"><input id="arrival_date" type="date"><input id="departure_date" type="date"><input aria-label="Adults" type="number" value="1"></form>';
+  });
+  // Simulate a popup opening 300 ms after load.
+  setTimeout(function () { document.getElementById('openPopup').click(); }, 300);
+  function dump() {
+    var out = {};
+    Array.prototype.forEach.call(document.forms, function (f) {
+      out[f.id] = Array.prototype.map.call(f.elements, function (el) { return el.value; });
+    });
+    document.getElementById('results').textContent = JSON.stringify(out);
+  }
+  setTimeout(dump, 1500);
+</script>
+</body>
+</html>
