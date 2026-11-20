@@ -128,6 +128,11 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/stop`, method: "POST", body: { hid } }),
       extraOptions: NODE,
     }),
+    // { hid, campaignId } - removes the campaign with its recipients (409 while it is still sending)
+    deleteEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
     retryEmailCampaign: build.mutation({
       query: ({ hid, campaignId }) => ({
         url: `${BASE}/campaigns/${campaignId}/retry`,
@@ -391,6 +396,8 @@ export const stopEmailCampaign = ({ campaignId }) =>
   strict(e.stopEmailCampaign, { hid: selectedHid(), campaignId });
 export const startEmailCampaign = ({ campaignId }) =>
   strict(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
+export const deleteEmailCampaign = ({ campaignId }) =>
+  strict(e.deleteEmailCampaign, { hid: selectedHid(), campaignId });
 export const retryEmailCampaign = ({ campaignId }) =>
   strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
 

@@ -68,6 +68,11 @@ export default function CampaignsList({ campaigns, loading, selectedId, onSelect
         onChanged={onChanged}
         loading={loading}
         onOpen={(c) => onSelect(c._id)}
+        onDeleted={async (c) => {
+          // the deleted one was open: close it
+          if (selectedId === c._id) onSelect(null);
+          await onChanged?.();
+        }}
         emptyMessage="No campaigns match these filters"
       />
 

@@ -1,3 +1,4 @@
+import CampaignDeleteButton from "../../../components/Email/CampaignDeleteButton";
 import CampaignRunControl from "../../../components/Email/CampaignRunControl";
 import Badge from "../../../components/ui/Badge";
 import DataTable from "../../../components/ui/DataTable";
@@ -87,13 +88,19 @@ const columns = [
 ];
 
 // A table on wider screens; on phones, one card per campaign.
-const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage, onChanged }) => (
+// onDeleted(campaign): after a campaign was deleted
+const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage, onChanged, onDeleted }) => (
   <>
     <div className="hidden md:block">
       <DataTable
         columns={[...columns, {
           key: "actions", header: "Actions",
-          render: (row) => <CampaignRunControl campaign={row} onChanged={onChanged} />,
+          render: (row) => (
+            <div className="flex items-center gap-1.5">
+              <CampaignRunControl campaign={row} onChanged={onChanged} />
+              <CampaignDeleteButton campaign={row} onDeleted={onDeleted} />
+            </div>
+          ),
         }]}
         rows={campaigns}
         rowKey={(row) => row._id}
@@ -131,7 +138,10 @@ const EmailCampaignTable = ({ campaigns, loading, onOpen, emptyMessage, onChange
                   },
                 ]}
               />
-              <CampaignRunControl campaign={row} onChanged={onChanged} />
+              <div className="flex items-center justify-end gap-2">
+                <CampaignRunControl campaign={row} onChanged={onChanged} />
+                <CampaignDeleteButton campaign={row} onDeleted={onDeleted} />
+              </div>
             </div>
           );
         })
