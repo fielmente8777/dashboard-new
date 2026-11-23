@@ -94,25 +94,3 @@ export const RUN_STATUS = {
   skipped: { label: "Skipped", tone: "gray" },
   failed: { label: "Failed", tone: "red" },
 };
-
-// the channels the AI agents page lists
-export const CHANNELS = [
-  {
-    key: "instagram",
-    label: "Instagram",
-    description: "Answers DMs to your connected Instagram account.",
-    configurable: true,
-  },
-  {
-    key: "whatsapp",
-    label: "WhatsApp",
-    description: "On/off and hours are set in Settings → WhatsApp for now.",
-    configurable: false,
-  },
-  {
-    key: "voice",
-    label: "Voice",
-    description: "Call instructions are in AI training → Voice AI for now.",
-    configurable: false,
-  },
-];

@@ -1,125 +1,71 @@
-import { Activity, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { formatCredits } from "../../../components/AiCredits/aiCredits";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import { EmptyState, ErrorState, Skeleton } from "../../../components/ui/States";
+import DataTable from "../../../components/ui/DataTable";
+import { Select } from "../../../components/ui/Field";
+import { ErrorState, Skeleton } from "../../../components/ui/States";
 import { useGetAiAgentActivityQuery } from "../../../redux/api/aiAgentsApi";
 import { PAGES, dashboardPath } from "../../../routes/paths";
 import { RUN_STATUS } from "../agentOptions";
 
-const formatWhen = (date) =>
-  new Date(date).toLocaleString([], {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const OUTCOMES = [
+  { value: "all", label: "All outcomes" },
+  ...Object.entries(RUN_STATUS).map(([value, { label }]) => ({ value, label })),
+];
+const whenFormat = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+const formatCount = new Intl.NumberFormat().format;
 
-const Stat = ({ label, value, tone }) => (
-  <div className="rounded-xl border border-app-border! bg-app-surface p-3">
-    <p className="text-xs text-app-text-muted">{label}</p>
-    <p className={`mt-1 text-2xl font-semibold tabular-nums ${tone}`}>{value || 0}</p>
-  </div>
-);
-
-// What the agent did with each guest message, and why it stayed quiet when it
-// did ("Outside the AI working hours", "Your team is handling this chat", ...).
 const ActivityLog = ({ channel, hid }) => {
-  const activity = useGetAiAgentActivityQuery(
-    { channel, hid },
-    { skip: !hid, refetchOnMountOrArgChange: true, pollingInterval: 30000 },
-  );
-  const { runs = [], last7Days = {} } = activity.data || {};
+  const [outcome, setOutcome] = useState("all");
+  const activity = useGetAiAgentActivityQuery({ channel, hid, outcome }, { refetchOnMountOrArgChange: true, pollingInterval: 30000 });
+  const { runs = [] } = activity.currentData ?? {};
+  const { last7Days = {}, summary } = activity.currentData ?? activity.data ?? {};
+  const stats = [
+    { label: "Conversations", value: summary ? formatCount(summary.conversations) : "—" },
+    { label: "AI replies", value: formatCount(last7Days.replied ?? 0) },
+    { label: "Handovers", value: formatCount(last7Days.handoff ?? 0) },
+    { label: "Failed", value: formatCount(last7Days.failed ?? 0) },
+    { label: "Avg. response", value: summary?.averageLatencyMs == null ? "—" : `${(summary.averageLatencyMs / 1000).toFixed(1)} s` },
+    { label: summary?.missingCharges ? "Recorded credits" : "Credits used", value: summary?.chargedCredits == null ? "—" : formatCredits(summary.chargedCredits) },
+  ];
+  const columns = [
+    { key: "createdAt", header: "Time", className: "whitespace-nowrap", render: (run) => <time dateTime={run.createdAt}>{whenFormat.format(new Date(run.createdAt))}</time> },
+    { key: "guestMessage", header: "Guest message", className: "min-w-56 max-w-96", render: (run) => <p className="line-clamp-2 break-words" title={run.guestMessage}>{run.guestMessage || "—"}</p> },
+    { key: "status", header: "Outcome", className: "min-w-40 max-w-72", render: (run) => {
+      const status = RUN_STATUS[run.status] ?? { label: run.status, tone: "gray" };
+      return <><Badge tone={status.tone}>{status.label}</Badge>{run.reason && <p className="mt-1 break-words text-xs text-app-text-muted">{run.reason}</p>}</>;
+    } },
+    { key: "chargedCredits", header: "Credits", className: "tabular-nums", render: (run) => run.chargedCredits == null ? <span aria-label="Charge unavailable">—</span> : formatCredits(run.chargedCredits) },
+    { key: "conversationId", header: "Conversation", className: "whitespace-nowrap", render: (run) => run.conversationId ? (
+      <Link to={dashboardPath(PAGES.CHAT_INSTAGRAM, { hid, query: { conversationId: run.conversationId } })} className="text-blue-600 hover:underline dark:text-blue-400">Open chat</Link>
+    ) : "—" },
+  ];
+
+  if (activity.isError && !activity.currentData) return <ErrorState message="Could not load agent activity." onRetry={activity.refetch} />;
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-4">
-        <Stat label="Replied (7 days)" value={last7Days.replied} tone="text-emerald-600 dark:text-emerald-400" />
-        <Stat label="Handed over" value={last7Days.handoff} tone="text-amber-600 dark:text-amber-400" />
-        <Stat label="Skipped" value={last7Days.skipped} tone="text-app-text" />
-        <Stat label="Failed" value={last7Days.failed} tone="text-red-600 dark:text-red-400" />
-      </div>
-
-      <Card
-        title={
-          <span className="flex items-center gap-2">
-            <Activity className="size-4 text-app-text-muted" /> Recent activity
-          </span>
-        }
-        description="Every guest message the agent looked at, what it did and why."
-        actions={
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={RefreshCw}
-            loading={activity.isFetching}
-            onClick={activity.refetch}
-          >
-            Refresh
-          </Button>
-        }
-      >
-        {activity.isLoading ? (
-          <div className="space-y-2">
-            <Skeleton className="h-14" />
-            <Skeleton className="h-14" />
-            <Skeleton className="h-14" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {stats.map(({ label, value }) => (
+          <div key={label} className="rounded-xl border border-app-border! bg-app-surface p-3.5">
+            <p className="text-xs text-app-text-muted">{label}</p>
+            {activity.isLoading ? <Skeleton className="mt-2 h-6 w-14" /> : <p className="mt-1 text-xl font-semibold tabular-nums text-app-text">{value}</p>}
           </div>
-        ) : activity.isError ? (
-          <ErrorState message="Could not load the activity." onRetry={activity.refetch} />
-        ) : runs.length === 0 ? (
-          <EmptyState
-            icon={Activity}
-            title="No activity yet"
-            description="Turn the agent on and send your Instagram account a DM from a test account."
-          />
-        ) : (
-          <ul className="divide-y divide-app-border">
-            {runs.map((run) => {
-              const status = RUN_STATUS[run.status] || RUN_STATUS.skipped;
-              return (
-                <li key={run._id} className="flex flex-wrap items-start gap-3 py-3">
-                  <Badge tone={status.tone} className="mt-0.5 w-24 justify-center">
-                    {status.label}
-                  </Badge>
-                  <div className="min-w-0 flex-1 space-y-1 text-sm">
-                    {run.guestMessage && (
-                      <p className="truncate text-app-text">
-                        <span className="text-app-text-faint">Guest: </span>
-                        {run.guestMessage}
-                      </p>
-                    )}
-                    {run.reply && (
-                      <p className="line-clamp-2 text-app-text-muted">
-                        <span className="text-app-text-faint">AI: </span>
-                        {run.reply}
-                      </p>
-                    )}
-                    {run.reason && <p className="text-xs text-app-text-muted">{run.reason}</p>}
-                    {run.toolsUsed?.length > 0 && (
-                      <p className="text-xs text-app-text-faint">Actions: {run.toolsUsed.join(", ")}</p>
-                    )}
-                  </div>
-                  <div className="text-right text-xs text-app-text-faint">
-                    <p>{formatWhen(run.createdAt)}</p>
-                    {run.latencyMs != null && <p>{(run.latencyMs / 1000).toFixed(1)}s</p>}
-                    {run.conversationId && (
-                      <Link
-                        to={dashboardPath(PAGES.CHAT_INSTAGRAM, {
-                          query: { conversationId: run.conversationId },
-                        })}
-                        className="text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        Open chat
-                      </Link>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        ))}
+      </div>
+      <Card title="Recent activity" description="Last 7 days" actions={(
+        <div className="flex flex-wrap items-center gap-2">
+          <Select className="max-w-40" aria-label="Filter activity by outcome" options={OUTCOMES} value={outcome} onChange={(event) => setOutcome(event.target.value)} />
+          <Button variant="secondary" icon={RefreshCw} size="sm" loading={activity.isFetching} onClick={activity.refetch}>Refresh</Button>
+        </div>
+      )}>
+        <DataTable columns={columns} rows={runs} rowKey={(run) => run._id} loading={activity.isFetching && !activity.currentData}
+          emptyMessage={outcome === "all" ? "No Instagram agent activity in the last 7 days." : "No runs with this outcome in the last 7 days."} />
+        {summary?.missingCharges > 0 && <p className="mt-3 text-xs text-app-text-muted">Some runs have no recorded charge. The total includes runs with a known charge.</p>}
       </Card>
     </div>
   );
