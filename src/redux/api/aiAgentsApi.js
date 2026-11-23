@@ -13,7 +13,7 @@ const actionTags = (channel, hid) => [
   { type: "AiAgent", id: `${hid}:${channel}` },
 ];
 
-// AI agents per channel (gian: /api/v1/ai-agents/:channel). Instagram today.
+// AI agents per channel (gian: /api/v1/ai-agents/:channel): instagram, whatsapp.
 export const aiAgentsApi = api.injectEndpoints({
   endpoints: (build) => ({
     getAiAgent: build.query({
@@ -24,11 +24,11 @@ export const aiAgentsApi = api.injectEndpoints({
     }),
 
     writeAiAgent: build.mutation({
-      query: ({ channel, hid, action, config, revision }) => ({
+      query: ({ channel, hid, action, config, revision, template }) => ({
         url: `/api/v1/ai-agents/${channel}${["save", "create"].includes(action) ? "" : `/${action}`}`,
         method: action === "save" ? "PUT" : "POST",
         params: { hid },
-        body: { config, revision },
+        body: { config, revision, ...(action === "create" && template ? { template } : {}) },
       }),
       transformResponse: (response) => response?.result || null,
       // publishing the agent also publishes its actions; working hours change availability
@@ -37,7 +37,23 @@ export const aiAgentsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { channel, hid, message, history, config } -> { reply, handoff, toolsUsed, ... }
+    // starter templates for a new agent (same for every channel)
+    getAiAgentTemplates: build.query({
+      query: () => ({ url: "/api/v1/ai-agents/templates" }),
+      transformResponse: (response) => response?.result?.templates || [],
+      keepUnusedDataFor: 3600,
+      extraOptions: NODE,
+    }),
+
+    // { channel, hid, url } -> { url, pages, propertyName, summary, welcomeMessage, facts, template }
+    // A draft only: nothing is saved. Uses AI credits.
+    trainAiAgentFromWebsite: build.mutation({
+      query: ({ channel, hid, url }) => ({ url: `/api/v1/ai-agents/${channel}/setup/website`, method: "POST", params: { hid }, body: { url } }),
+      transformResponse: result,
+      extraOptions: NODE,
+    }),
+
+    // { channel, hid, message, history, config } -> { reply, handoff, toolsUsed, buttons, ... }
     testAiAgent: build.mutation({
       query: ({ channel, hid, ...body }) => ({
         url: `/api/v1/ai-agents/${channel}/test`,
@@ -128,8 +144,11 @@ export const aiAgentsApi = api.injectEndpoints({
 
     // { input, live, action } -> { dryRun, request, response, error, latencyMs }
     testAiAgentAction: build.mutation({
-      query: ({ channel, hid, id, ...body }) => ({ url: actionsUrl(channel, `/${id}/test`), method: "POST", params: { hid }, body }),
+      // no id: an action that is not saved yet ("Try it"; always a practice run)
+      query: ({ channel, hid, id, ...body }) => ({ url: actionsUrl(channel, id ? `/${id}/test` : "/try"), method: "POST", params: { hid }, body }),
       transformResponse: result,
+      // a saved action's test updates its "Connected" badge in the list
+      invalidatesTags: (r, e, { channel, hid, id }) => (r && id ? [{ type: "AiAgentActions", id: `${hid}:${channel}` }] : []),
       extraOptions: NODE,
     }),
 
@@ -186,4 +205,6 @@ export const {
   useExportAiAgentActionsMutation,
   useImportAiAgentActionsMutation,
   useGetAiAgentActionsAvailabilityQuery,
+  useGetAiAgentTemplatesQuery,
+  useTrainAiAgentFromWebsiteMutation,
 } = aiAgentsApi;

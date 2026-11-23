@@ -15,8 +15,8 @@ export const LENGTH_OPTIONS = [
 ];
 
 export const LENGTH_HINTS = {
-  short: "1–2 sentences. Best for Instagram DMs.",
-  medium: "2–4 sentences.",
+  short: "1–2 sentences. Best for quick DMs.",
+  medium: "2–4 sentences. Reads well on WhatsApp.",
   detailed: "Up to a short paragraph when the question needs it.",
 };
 

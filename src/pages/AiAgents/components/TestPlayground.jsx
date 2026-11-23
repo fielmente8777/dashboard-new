@@ -6,7 +6,7 @@ import Card from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Field";
 import Icon from "../../../components/ui/Icon";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
-import { useTestAiAgentMutation } from "../../../redux/api/aiAgentsApi";
+import { useGetAiAgentTemplatesQuery, useTestAiAgentMutation } from "../../../redux/api/aiAgentsApi";
 import TestReplyDetails from "./TestReplyDetails";
 
 const SAMPLES = [
@@ -18,6 +18,10 @@ const SAMPLES = [
 
 const TestPlayground = ({ channel, hid, draft }) => {
   const [testAgent, { isLoading }] = useTestAiAgentMutation();
+  const { currentData: templates = [] } = useGetAiAgentTemplatesQuery();
+  // the template's own questions first, then the general ones
+  const starter = templates.find((t) => t.id === draft.template)?.starterQuestions || [];
+  const samples = [...new Set([...starter, ...SAMPLES])].slice(0, 5);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const chat = useRef(null);
@@ -56,7 +60,7 @@ const TestPlayground = ({ channel, hid, draft }) => {
             <div className="flex min-h-full flex-col items-center justify-center gap-3 text-center">
               <p className="text-sm text-app-text-muted">Try a guest message</p>
               <div className="flex max-w-lg flex-wrap justify-center gap-2">
-                {SAMPLES.map((sample) => <Button key={sample} variant="secondary" className="h-auto py-1.5 text-wrap" size="sm" onClick={() => send(sample)}>{sample}</Button>)}
+                {samples.map((sample) => <Button key={sample} variant="secondary" className="h-auto py-1.5 text-wrap" size="sm" onClick={() => send(sample)}>{sample}</Button>)}
               </div>
             </div>
           )}
@@ -71,6 +75,13 @@ const TestPlayground = ({ channel, hid, draft }) => {
                 <div className="max-w-[82%]">
                   <p className={`mb-1 text-xs text-app-text-muted ${guest ? "text-right" : ""}`}>{guest ? "Guest" : draft.persona.name}</p>
                   <p className={`whitespace-pre-wrap break-words rounded-xl border px-3 py-2 text-sm text-app-text ${guest ? "border-app-border! bg-app-surface" : "border-purple-500/25! bg-app-surface-secondary"}`}>{message.content}</p>
+                  {message.details?.buttons?.length > 0 && (
+                    <div className="mt-1 grid gap-1" role="group" aria-label="Reply buttons">
+                      {message.details.buttons.map((title) => (
+                        <button key={title} type="button" disabled={isLoading || index !== messages.length - 1} onClick={() => send(title)} className="rounded-lg border border-app-border! bg-app-surface px-3 py-1.5 text-xs font-medium text-sky-600 hover:bg-app-surface-secondary disabled:opacity-60 dark:text-sky-400">{title}</button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             );

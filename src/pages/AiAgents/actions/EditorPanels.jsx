@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Clock3, KeyRound, Lock, Plus, Trash2 } from "lucide-react";
+import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
@@ -179,10 +180,28 @@ export const ExecutionPanel = ({ form, set, errors, meta }) => {
   if (meta.isBuiltIn) return <Locked>Runs Eazotel&apos;s built-in <code className={mono}>{executor.handlerKey}</code> handler. Nothing to set up.</Locked>;
 
   if (executor.type === "builtin") {
+    // send_quick_reply is only used by Simple "Reply with a message"
+    const handlers = [...meta.handlers, ...(executor.handlerKey === "send_quick_reply" ? [{ key: "send_quick_reply", name: "Reply with a message", description: "Sends the guest the message from the settings below." }] : [])];
+    const config = executor.config;
     return (
-      <Field label="Built-in handler" as="div" error={err(errors, "executor.handlerKey")} hint={meta.handlers.find((h) => h.key === executor.handlerKey)?.description}>
-        <Select options={[{ value: "", label: "Choose…" }, ...meta.handlers.map((h) => ({ value: h.key, label: h.name }))]} value={executor.handlerKey || ""} onChange={(e) => set("executor.handlerKey", e.target.value)} aria-label="Built-in handler" />
-      </Field>
+      <div className="space-y-3">
+        <Field label="Built-in handler" as="div" error={err(errors, "executor.handlerKey")} hint={handlers.find((h) => h.key === executor.handlerKey)?.description}>
+          <Select options={[{ value: "", label: "Choose…" }, ...handlers.map((h) => ({ value: h.key, label: h.name }))]} value={executor.handlerKey || ""} onChange={(e) => set("executor.handlerKey", e.target.value)} aria-label="Built-in handler" />
+        </Field>
+        {config && (
+          <div className="rounded-lg border border-app-border! p-3">
+            <p className="mb-1.5 text-xs font-medium text-app-text-muted">Handler settings (from the Simple form; the model fills the inputs, never these). Edit them in Simple mode.</p>
+            <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs">
+              {Object.entries(config).filter(([, v]) => v !== "" && v !== undefined).map(([k, v]) => (
+                <Fragment key={k}><dt className="font-mono text-app-text-muted">{k}</dt><dd className="break-words font-mono text-app-text">{String(v)}</dd></Fragment>
+              ))}
+            </dl>
+            {(err(errors, "executor.config.to") || err(errors, "executor.config.text") || err(errors, "executor.config.templateName") || err(errors, "executor.config.messageTemplate")) && (
+              <p className="mt-1.5 text-xs text-app-danger">{err(errors, "executor.config.to") || err(errors, "executor.config.text") || err(errors, "executor.config.templateName") || err(errors, "executor.config.messageTemplate")}</p>
+            )}
+          </div>
+        )}
+      </div>
     );
   }
   if (executor.type === "code") {

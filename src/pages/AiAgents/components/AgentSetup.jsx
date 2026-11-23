@@ -1,16 +1,18 @@
-import { BookOpen, Clock3, ShieldCheck, Target, UserRound, Zap } from "lucide-react";
+import { BookOpen, Clock3, ShieldCheck, Smartphone, Target, UserRound, Zap } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import ActionsTab from "../actions/ActionsTab";
+import ActionsHome from "../actions/ActionsHome";
 import WorkingHoursTab from "../actions/WorkingHoursTab";
 import GoalsSection from "./sections/GoalsSection";
 import HandoffSection from "./sections/HandoffSection";
 import KnowledgeSection from "./sections/KnowledgeSection";
 import PersonaSection from "./sections/PersonaSection";
+import WhatsAppSection from "./sections/WhatsAppSection";
 
-// The builder's six tabs, kept in the URL (?tab=skills) so a link opens the
+// The builder's tabs, kept in the URL (?tab=skills) so a link opens the
 // right one. "Skills" is the old "Goals & instructions" (same settings).
-const AGENT_TABS = [
+// WhatsApp agents get one more tab (test numbers, reply buttons).
+const BASE_TABS = [
   { value: "personality", label: "Personality", icon: UserRound },
   { value: "skills", label: "Skills", icon: Target },
   { value: "knowledge", label: "Knowledge", icon: BookOpen },
@@ -18,6 +20,8 @@ const AGENT_TABS = [
   { value: "working-hours", label: "Working Hours", icon: Clock3 },
   { value: "handover-safety", label: "Handover & Safety", icon: ShieldCheck },
 ];
+const WHATSAPP_TAB = { value: "whatsapp", label: "WhatsApp", icon: Smartphone };
+const tabsFor = (channel) => (channel === "whatsapp" ? [...BASE_TABS, WHATSAPP_TAB] : BASE_TABS);
 
 // old links -> new tabs
 const REDIRECTS = {
@@ -33,6 +37,7 @@ const savedTimeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium"
 
 const AgentSetup = ({ agent, hid, channel }) => {
   const [params, setParams] = useSearchParams();
+  const AGENT_TABS = tabsFor(channel);
   const requested = params.get("tab") || "personality";
   const tab = AGENT_TABS.some((t) => t.value === requested) ? requested : REDIRECTS[requested] || "personality";
   const tabList = useRef(null);
@@ -59,8 +64,9 @@ const AgentSetup = ({ agent, hid, channel }) => {
     const props = { draft: agent.draft, set: agent.set };
     switch (tab) {
       case "skills": return <GoalsSection {...props} />;
-      case "knowledge": return <KnowledgeSection {...props} />;
-      case "actions": return <ActionsTab channel={channel} hid={hid} agentHours={agent.draft.workingHours} />;
+      case "knowledge": return <KnowledgeSection {...props} channel={channel} hid={hid} />;
+      case "whatsapp": return <WhatsAppSection {...props} />;
+      case "actions": return <ActionsHome channel={channel} hid={hid} agentHours={agent.draft.workingHours} />;
       case "working-hours": return <WorkingHoursTab agent={agent} channel={channel} hid={hid} />;
       case "handover-safety": return <HandoffSection {...props} />;
       default: return <PersonaSection {...props} />;

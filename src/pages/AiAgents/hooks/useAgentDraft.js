@@ -43,9 +43,10 @@ export const useAgentDraft = ({ channel, hid }) => {
     return { config, revision: current?.revision ?? snapshot.revision };
   });
 
-  const write = async (action, config) => {
+  // template: only for "create" (a starter template id)
+  const write = async (action, config, template) => {
     const revision = action === "save" ? edits?.revision : snapshot?.revision;
-    const result = await run(writeAgent({ channel, hid, action, config, revision }), {
+    const result = await run(writeAgent({ channel, hid, action, config, revision, template }), {
       success: SUCCESS[action],
       error: "Could not update the AI agent.",
     });
@@ -58,5 +59,5 @@ export const useAgentDraft = ({ channel, hid }) => {
     });
   };
 
-  return { query, snapshot, draft, dirty, outdated, saving, set, write, save: () => write("save", draft), discard: () => setEdits(null) };
+  return { channel, query, snapshot, draft, dirty, outdated, saving, set, write, save: () => write("save", draft), discard: () => setEdits(null) };
 };

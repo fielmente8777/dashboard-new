@@ -7,15 +7,16 @@ import { Field, Input, Select } from "../../../components/ui/Field";
 import IconButton from "../../../components/ui/IconButton";
 import Segmented from "../../../components/ui/Segmented";
 import { useConfirm } from "../../../context/ConfirmContext";
+import Card from "../../../components/ui/Card";
+import { SectionTitle } from "../components/sections/PersonaSection";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
 import { useTestAiAgentActionMutation } from "../../../redux/api/aiAgentsApi";
 import { outputsOf, toPayload, typeLabel } from "./actionModel";
 
-const Panel = ({ title, icon: PanelIcon, children }) => (
-  <section className="rounded-xl border border-app-border! bg-app-surface p-4" aria-label={title}>
-    <h3 className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-app-text"><PanelIcon className="size-4 text-app-text-muted" aria-hidden="true" /> {title}</h3>
+const Panel = ({ title, icon, children }) => (
+  <Card aria-label={title} title={<SectionTitle icon={icon}>{title}</SectionTitle>}>
     {children}
-  </section>
+  </Card>
 );
 
 const target = (form) => {

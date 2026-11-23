@@ -3,12 +3,21 @@ import SelectMenu from "./SelectMenu";
 export const inputClassName =
   "w-full rounded-lg border border-app-border! bg-app-surface px-3 py-2 text-sm text-app-text outline-none transition placeholder:text-app-text-faint focus:border-blue-500! focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60";
 
+// The red line under a control. Field uses it; use it alone for a message
+// that is not tied to one Field.
+export const FieldError = ({ id, children }) =>
+  children ? (
+    <span id={id} role="alert" className="mt-1 block text-xs text-red-500">{children}</span>
+  ) : null;
+
 // Label + control + hint/error. Pass as="div" when the control is not a
-// single input (a file picker, a list of chips, ...).
+// single input (a file picker, a list of chips, ...). `hintId` puts an id on
+// the hint (or error) so the control can point at it with aria-describedby.
 export const Field = ({
   label,
   hint,
   error,
+  hintId,
   as = "label",
   className = "",
   children,
@@ -24,10 +33,10 @@ export const Field = ({
       )}
       {children}
       {error ? (
-        <span className="mt-1 block text-xs text-red-500">{error}</span>
+        <FieldError id={hintId}>{error}</FieldError>
       ) : (
         hint && (
-          <span className="mt-1 block text-xs text-app-text-faint">{hint}</span>
+          <span id={hintId} className="mt-1 block text-xs text-app-text-faint">{hint}</span>
         )
       )}
     </Wrapper>

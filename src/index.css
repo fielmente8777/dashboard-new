@@ -409,6 +409,7 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   --color-app-text-muted: var(--app-text-muted);
   --color-app-text-faint: var(--app-text-faint);
   --color-app-border: var(--app-border);
+  --color-app-border-strong: var(--app-border-strong);
   --color-app-navbar: var(--app-navbar);
   --color-app-surface-raised: var(--app-surface-raised);
   --color-app-accent: var(--app-accent);

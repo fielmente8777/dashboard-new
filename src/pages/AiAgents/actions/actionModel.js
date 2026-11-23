@@ -119,7 +119,11 @@ export const toPayload = (form) => {
   const clean = { ...form, executor: { type: executor.type } };
   if (executor.type === "http") clean.executor.http = executor.http;
   if (executor.type === "n8n") clean.executor.n8n = { webhookUrl: executor.n8n?.webhookUrl || "", secret: executor.n8n?.secret || "" };
-  if (executor.type === "builtin") clean.executor.handlerKey = executor.handlerKey || "";
+  if (executor.type === "builtin") {
+    clean.executor.handlerKey = executor.handlerKey || "";
+    // a custom action's settings for the handler (who to tell, which message)
+    if (executor.config) clean.executor.config = executor.config;
+  }
   if (executor.type === "code") clean.executor.code = executor.code;
   return clean;
 };
