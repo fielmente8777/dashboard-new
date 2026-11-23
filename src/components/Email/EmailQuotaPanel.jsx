@@ -14,10 +14,13 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import useStaleAfter from "../../hooks/useStaleAfter";
 import { emailMarketingApi } from "../../redux/api/emailMarketingApi";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import RefreshNotice from "../ui/RefreshNotice";
+import { STALE_IDLE_MS, STALE_WHILE_SENDING_MS } from "./staleTimes";
 import StatCard from "../ui/StatCard";
 import { ErrorState, LoadingState } from "../ui/States";
 
@@ -82,14 +85,19 @@ const KIND = {
 
 export default function EmailQuotaPanel() {
   const hid = useSelector((state) => state.userProfile.hid);
-  // faster refresh while a campaign is going out
-  const [poll, setPoll] = useState(30000);
-  const { currentData, error, isFetching, refetch } = emailMarketingApi.useGetEmailQuotaQuery(
+  // No polling (it loaded the server): loaded once, then a line offers Refresh
+  // after a while, sooner while a campaign is going out.
+  const { currentData, error, isFetching, refetch, fulfilledTimeStamp } = emailMarketingApi.useGetEmailQuotaQuery(
     { hid },
-    { skip: !hid, pollingInterval: poll, skipPollingIfUnfocused: true },
+    { skip: !hid },
   );
   const liveCount = currentData?.result?.live?.length || 0;
-  useEffect(() => setPoll(liveCount ? 10000 : 30000), [liveCount]);
+  const { stale, loadedAt, markFresh } = useStaleAfter(liveCount ? STALE_WHILE_SENDING_MS : STALE_IDLE_MS, {
+    enabled: Boolean(currentData),
+  });
+  useEffect(() => {
+    if (fulfilledTimeStamp) markFresh();
+  }, [fulfilledTimeStamp, markFresh]);
   if (!hid) return <ErrorState message="Select a hotel to view its email quota." />;
   const data = currentData?.result;
   if (!data && error) {
@@ -112,6 +120,9 @@ export default function EmailQuotaPanel() {
         </Button>
       </div>
       {error && <ErrorState message="Refresh failed. Showing the last successful update." onRetry={refetch} />}
+      <RefreshNotice show={stale && !error} loadedAt={loadedAt} refreshing={isFetching} onRefresh={refetch}>
+        {liveCount ? "A campaign is still going out." : "The mail server may have replied since."}
+      </RefreshNotice>
 
       <StatusHero status={data.status} lastReply={data.lastReply} />
 
@@ -139,7 +150,7 @@ export default function EmailQuotaPanel() {
         <p>{data.note}</p>
         <p>"Accepted" means the mail server took the email, not that it reached the inbox.</p>
         <p>
-          Updated {new Date(data.checkedAt).toLocaleString("en-IN")} · refreshes every {poll / 1000} seconds while open.
+          Updated {new Date(data.checkedAt).toLocaleString("en-IN")} · press Refresh for the latest replies.
         </p>
       </div>
     </section>

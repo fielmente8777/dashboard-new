@@ -1,9 +1,12 @@
 import { ArrowRight, CircleCheck, MailOpen, MousePointerClick, Send, TriangleAlert, UserX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { describeSendProblem, formatDate, formatNumber } from "../../pages/EmailMarketing/emailUtils.js";
+import useStaleAfter from "../../hooks/useStaleAfter";
 import { getCampaignReport } from "../../redux/api/emailMarketingApi";
 import Button from "../ui/Button";
+import RefreshNotice from "../ui/RefreshNotice";
 import { Skeleton } from "../ui/States";
+import { STALE_IDLE_MS } from "./staleTimes";
 import { bucketLabel, fmtPct, pct, TIME_ZONE } from "./analyticsFormat";
 import { BarChart, Delta, Kpi } from "./analyticsParts";
 import CampaignDeliveryBar from "./CampaignDeliveryBar";
@@ -61,13 +64,25 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
     load();
   }, [load]);
 
-  // while it is going out, the numbers follow it
+  // No auto-refresh (it loaded the server). While it is going out the delivery
+  // bar offers Refresh; once sent, opens and clicks still come in, so a line
+  // offers Refresh after a while. One Refresh reloads the report and the bar.
   const live = LIVE.includes(campaign?.status);
+  const [refreshing, setRefreshing] = useState(false);
+  const [barSignal, setBarSignal] = useState(0);
+  const { stale, loadedAt, markFresh } = useStaleAfter(STALE_IDLE_MS, { enabled: Boolean(data) && !live });
   useEffect(() => {
-    if (!live) return undefined;
-    const timer = setInterval(load, 10000);
-    return () => clearInterval(timer);
-  }, [live, load]);
+    markFresh();
+  }, [data, markFresh]);
+  const refresh = async () => {
+    setRefreshing(true);
+    setBarSignal((s) => s + 1);
+    try {
+      await Promise.all([load(), onChanged?.()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // failure reasons in plain words, the same reason counted once
   const reasons = useMemo(() => {
@@ -135,12 +150,14 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
         )}
       </p>
 
+      <RefreshNotice show={stale} loadedAt={loadedAt} refreshing={refreshing} onRefresh={refresh}>
+        New opens and clicks may have come in.
+      </RefreshNotice>
+
       <CampaignDeliveryBar
         campaignId={campaignId}
-        onChanged={() => {
-          load();
-          onChanged?.();
-        }}
+        refreshSignal={barSignal}
+        onChanged={() => Promise.all([load(), onChanged?.()])}
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

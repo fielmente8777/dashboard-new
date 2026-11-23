@@ -1,5 +1,5 @@
 import { ArrowLeft, Building2, Check, CheckCircle2, Clock, Copy, ExternalLink, RefreshCw, Send, Server, TriangleAlert, Unplug, Zap } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import {
@@ -9,15 +9,17 @@ import {
   testSenderMailbox,
   updateSesSender,
 } from "../../redux/api/emailMarketingApi";
+import useStaleAfter from "../../hooks/useStaleAfter";
+import { STALE_SES_CHECK_MS } from "./staleTimes";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
 import { Field, Input } from "../ui/Field";
+import RefreshNotice from "../ui/RefreshNotice";
 import Segmented from "../ui/Segmented";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // while waiting for Amazon, ask again this often (only while the dialog is open)
-const POLL_MS = 30000;
 
 const STATUS = {
   verified: { tone: "green", label: "Verified", icon: CheckCircle2 },
@@ -182,25 +184,15 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
     );
   }, [open, ses]);
 
-  // waiting for Amazon: look again now and then while the dialog is open
-  // (onChange is a new function on every render: kept in a ref so the timer isn't reset)
-  const onChangeRef = useRef(onChange);
-  useEffect(() => {
-    onChangeRef.current = onChange;
-  });
+  // Waiting for Amazon: no auto-check (each one called Amazon and the server).
+  // After a while a line suggests "Check now"; the user clicks when the records are in.
   const pending = Boolean(ses && (ses.status !== "verified" || (ses.kind === "email" && !ses.signing && ses.records?.length)));
+  const { stale: checkDue, loadedAt: lastChecked, markFresh } = useStaleAfter(STALE_SES_CHECK_MS, {
+    enabled: open && pending && !editing,
+  });
   useEffect(() => {
-    if (!open || !pending || editing) return;
-    const id = setInterval(async () => {
-      try {
-        await checkSesSender();
-        onChangeRef.current?.();
-      } catch {
-        // try again next time
-      }
-    }, POLL_MS);
-    return () => clearInterval(id);
-  }, [open, pending, editing]);
+    if (open) markFresh();
+  }, [open, markFresh]);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e?.target ? e.target.value : e }));
 
@@ -242,6 +234,7 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
     setChecking(true);
     try {
       const result = await checkSesSender();
+      markFresh();
       onChange();
       const s = result?.ses;
       const waitingForVia = s?.status === "verified" && s.kind === "email" && !s.signing;
@@ -320,7 +313,7 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
         open={open}
         onClose={onClose}
         title="Send through Amazon (fast)"
-        description="Your emails go out through Amazon SES from your own address: thousands an hour, without “via Eazotel”."
+        description="Send campaigns and newsletters from your own hotel email address. Thousands of emails an hour, and guests won't see “via Eazotel” next to your name."
         footer={
           <>
             <Button
@@ -345,32 +338,38 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
           }}
         >
           <div>
-            <span className="mb-1.5 block text-xs font-medium text-app-text-muted">Verify</span>
+            <span className="mb-1.5 block text-xs font-medium text-app-text-muted">How do you want to set this up?</span>
             <Segmented
-              label="What to verify"
+              label="How do you want to set this up?"
               value={form.kind}
               onChange={set("kind")}
               options={[
-                { value: "domain", label: "My whole domain (recommended)" },
-                { value: "email", label: "One email address" },
+                { value: "domain", label: "Use my domain (best)" },
+                { value: "email", label: "Use one email address" },
               ]}
             />
             <p className="mt-1.5 text-xs text-app-text-muted">
               {form.kind === "domain"
-                ? "Best inbox delivery. You add 3 records in your domain's DNS once (about 10 minutes), then any address on it can send."
-                : "Quicker: Amazon emails a link to this address. Inbox delivery is weaker than with the domain."}
+                ? "Recommended. You add 3 settings (DNS records) once where you bought your domain, like GoDaddy or Hostinger. It takes about 10 minutes. After that, any email address on your domain can send, and more emails reach the inbox instead of spam."
+                : "Quicker to set up. Amazon sends a confirmation link to the email address below. You open it and click the link, and that's it. More emails may land in spam than with the domain option."}
             </p>
           </div>
 
           {form.kind === "domain" && (
-            <Field label="Your domain" hint="The part after @ in your email.">
+            <Field label="Your domain" hint="The part after @ in your hotel email. For info@yourhotel.com, enter yourhotel.com.">
               <Input autoFocus value={form.domain} placeholder="yourhotel.com" onChange={set("domain")} />
             </Field>
           )}
 
           <Field
-            label={form.kind === "domain" ? "From address" : "Email address"}
-            hint={form.kind === "domain" && domainGuess ? `Any address ending with @${domainGuess}.` : "Gmail, Yahoo and Outlook.com addresses can't be used here."}
+            label={form.kind === "domain" ? "Send emails from" : "Your hotel email address"}
+            hint={
+              form.kind === "domain"
+                ? domainGuess
+                  ? `Guests see this as the sender. It must end with @${domainGuess}.`
+                  : "Guests see this as the sender. It must end with your domain."
+                : "Guests see this as the sender. It must be your hotel's own email. Gmail, Yahoo and Outlook.com addresses won't work."
+            }
           >
             <Input
               type="email"
@@ -381,7 +380,7 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
             />
           </Field>
 
-          <Field label="Name guests see (optional)" hint="Empty = your hotel name.">
+          <Field label="Sender name (optional)" hint="Shown in the guest's inbox next to the email. Leave empty to use your hotel name.">
             <Input value={form.displayName} placeholder="Hotel Sunrise" onChange={set("displayName")} />
           </Field>
 
@@ -502,6 +501,17 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
             </div>
           </div>
         )}
+
+        <RefreshNotice
+          show={checkDue}
+          loadedAt={lastChecked}
+          refreshing={checking}
+          onRefresh={checkNow}
+          timeLabel="Last checked at"
+          actionLabel="Check now"
+        >
+          Added the DNS records? Amazon may have found them by now.
+        </RefreshNotice>
 
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <Button variant="ghost" icon={Unplug} onClick={remove} className="text-red-500! hover:bg-red-500/10!">
