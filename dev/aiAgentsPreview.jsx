@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- an entry file, not a module */
 // Dev-only preview of the AI Agent Builder with fake data: renders the real
 // components (AgentWorkspace and its tabs) and answers their API calls from
 // memory, so the screens can be checked and screenshotted without a login or
