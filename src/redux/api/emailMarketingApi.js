@@ -1,7 +1,7 @@
 import { cleanEmails } from "../../pages/EmailMarketing/emailUtils";
 import { request, run, selectedHid } from "../request";
 import store from "../Store";
-import { baseApi } from "./baseApi";
+import { baseApi, getApiErrorMessage } from "./baseApi";
 
 const NODE = { service: "node" };
 const BASE = "/api/v1/email-marketing";
@@ -12,6 +12,16 @@ const GENERATE_TIMEOUT_MS = 120000;
 // hid of the selected location; the functions below fill it in.
 export const emailMarketingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getEmailQuota: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/quota`, params: { hid } }),
+      extraOptions: NODE,
+    }),
+    // next 50 server replies older than `before` -> { result: { items, hasMore, nextBefore } }
+    getEmailQuotaReplies: build.query({
+      query: ({ hid, before, source }) => ({ url: `${BASE}/quota/replies`, params: { hid, before, source } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
     // --- recipients ---
     // { hid, page, limit, search } -> { result: { docs, pagination } }
     getEmailRecipients: build.query({
@@ -55,6 +65,34 @@ export const emailMarketingApi = baseApi.injectEndpoints({
     }),
 
     // { hid, campaignId }
+    // { hid, campaignId, recipientId? } -> { result: { from, html, recipient } }
+    // the sent email as guests got it (footer, inert unsubscribe link) and who it really went out as
+    getCampaignMessage: build.query({
+      query: ({ hid, campaignId, recipientId }) => ({
+        url: `${BASE}/campaigns/${campaignId}/message`,
+        params: { hid, ...(recipientId && { recipientId }) },
+      }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, from, to } (ISO) -> { result: { total, senders: [{ via, email, name, source, sent, failed, campaigns }], sentBy } }
+    // { hid, from, to, tz } -> { result: { current, previous, unit: 'day'|'hour', buckets: [{ key, sent, opened, clicked }] } }
+    getEmailPerformance: build.query({
+      query: ({ hid, from, to, tz }) => ({ url: `${BASE}/performance`, params: { hid, from, to, tz } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, campaignId, tz } -> { result: { totals, firstSentAt, average, unit, buckets: [{ key, opened, clicked }], failures: [{ error, count }] } }
+    getCampaignReport: build.query({
+      query: ({ hid, campaignId, tz }) => ({ url: `${BASE}/campaigns/${campaignId}/report`, params: { hid, tz } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    getSentSummary: build.query({
+      query: ({ hid, from, to }) => ({ url: `${BASE}/sent-summary`, params: { hid, from, to } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
     getEmailCampaign: build.query({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, params: { hid } }),
       extraOptions: NODE,
@@ -114,6 +152,15 @@ export const emailMarketingApi = baseApi.injectEndpoints({
     }),
 
     // { hid, campaignId } - resend failed (not bounced/invalid) + continue the unsent
+    stopEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/stop`, method: "POST", body: { hid } }),
+      extraOptions: NODE,
+    }),
+    // { hid, campaignId } - removes the campaign with its recipients (409 while it is still sending)
+    deleteEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
     retryEmailCampaign: build.mutation({
       query: ({ hid, campaignId }) => ({
         url: `${BASE}/campaigns/${campaignId}/retry`,
@@ -178,6 +225,65 @@ export const emailMarketingApi = baseApi.injectEndpoints({
         body: { hid, ...(to && { to }) },
         timeout: 60000,
       }),
+      extraOptions: NODE,
+    }),
+
+    // --- drafts: the compose window saves as you type, like Gmail ---
+    // { hid } -> { result: { drafts: [{ _id, subject, snippet, toEmails, toCount, recipientCount, recipientLabel, templateName, updatedAt }] } }
+    getEmailDrafts: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/drafts`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, id } -> { result: { draft } } with its content
+    getEmailDraft: build.query({
+      query: ({ hid, id }) => ({ url: `${BASE}/drafts/${id}`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, body } -> { result: { draft: { _id, ... } } }
+    createEmailDraft: build.mutation({
+      query: ({ hid, body }) => ({ url: `${BASE}/drafts`, method: "POST", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    updateEmailDraft: build.mutation({
+      query: ({ hid, id, body }) => ({ url: `${BASE}/drafts/${id}`, method: "PUT", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    deleteEmailDraft: build.mutation({
+      query: ({ hid, id }) => ({ url: `${BASE}/drafts/${id}`, method: "DELETE", params: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // --- Amazon SES: the hotel's own domain / address verified in Eazotel's SES ---
+    // { hid, body: { kind: 'domain'|'email', domain?, fromEmail, displayName? } }
+    //   -> { result: { ses: { kind, identity, fromEmail, status, records[], ... } } }
+    startSesSender: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/sender-mailbox/ses`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
+    // { hid } -> { result: { ses } } with the status Amazon has now
+    checkSesSender: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox/ses/check`, method: "POST", params: { hid }, body: { hid } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid, body: { fromEmail?, displayName? } }
+    updateSesSender: build.mutation({
+      query: ({ hid, body }) => ({ url: `${BASE}/sender-mailbox/ses`, method: "PUT", params: { hid }, body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+
+    // { hid }
+    deleteSesSender: build.mutation({
+      query: ({ hid }) => ({ url: `${BASE}/sender-mailbox/ses`, method: "DELETE", params: { hid } }),
       extraOptions: NODE,
     }),
 
@@ -260,6 +366,7 @@ export const createEmailCampaign = ({
   text = "",
   fromName = "",
   fromEmail = "",
+  audienceLabel = "",
   recipientBatchIds,
   attachments = [],
 }) => {
@@ -271,6 +378,7 @@ export const createEmailCampaign = ({
   form.append("text", text);
   form.append("fromName", fromName);
   form.append("fromEmail", fromEmail);
+  if (audienceLabel) form.append("audienceLabel", audienceLabel);
   form.append("recipientBatchIds", JSON.stringify(recipientBatchIds));
   attachments.forEach((file) => form.append("attachments", file));
   return result(e.createEmailCampaign, form);
@@ -279,6 +387,12 @@ export const getEmailCampaigns = ({ page = 1, limit = 20 } = {}) =>
   result(e.getEmailCampaigns, { hid: selectedHid(), page, limit });
 export const getEmailCampaign = ({ campaignId }) =>
   result(e.getEmailCampaign, { hid: selectedHid(), campaignId });
+export const getEmailPerformance = ({ from, to, tz }) =>
+  strict(e.getEmailPerformance, { hid: selectedHid(), from, to, tz });
+export const getCampaignReport = ({ campaignId, tz }) => strict(e.getCampaignReport, { hid: selectedHid(), campaignId, tz });
+export const getSentSummary = ({ from, to }) => strict(e.getSentSummary, { hid: selectedHid(), from, to });
+export const getCampaignMessage = ({ campaignId, recipientId }) =>
+  strict(e.getCampaignMessage, { hid: selectedHid(), campaignId, recipientId });
 export const getCampaignRecipients = ({ campaignId, status = "", page = 1, limit = 50 }) =>
   result(e.getCampaignRecipients, { hid: selectedHid(), campaignId, status, page, limit });
 export const sendEmailCampaign = ({ campaignId }) =>
@@ -294,7 +408,10 @@ const strict = async (endpoint, arg) => {
   const body = error ? error.data : data;
   if (error || body?.success === false) {
     throw Object.assign(
-      new Error(body?.message || body?.result?.message || "Something went wrong. Please try again."),
+      new Error(getApiErrorMessage(
+        error || { data: body },
+        body?.result?.message || "Something went wrong. Please try again.",
+      )),
       { status: typeof error?.status === "number" ? error.status : 200, isApiError: true },
     );
   }
@@ -317,6 +434,10 @@ export const detectSenderMailbox = (email) => strict(e.detectSenderMailbox, { hi
 export const saveSenderMailbox = (body) => strict(e.saveSenderMailbox, { hid: selectedHid(), body });
 export const deleteSenderMailbox = () => strict(e.deleteSenderMailbox, { hid: selectedHid() });
 export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: selectedHid(), to });
+export const startSesSender = (body) => strict(e.startSesSender, { hid: selectedHid(), body });
+export const checkSesSender = () => strict(e.checkSesSender, { hid: selectedHid() });
+export const updateSesSender = (body) => strict(e.updateSesSender, { hid: selectedHid(), body });
+export const deleteSesSender = () => strict(e.deleteSesSender, { hid: selectedHid() });
 
 // Footer + final email; throw with the server's message.
 const hotelNameNow = () => store.getState().userProfile.user?.Profile?.hotelName || "";
@@ -334,6 +455,18 @@ export const renderEmail = ({ html, previewText = "", footer }) =>
 // Retry / resume a campaign that didn't reach everyone; throw with the server's message.
 export const getCampaignDelivery = ({ campaignId }) =>
   strict(e.getCampaignDelivery, { hid: selectedHid(), campaignId });
+export const stopEmailCampaign = ({ campaignId }) =>
+  strict(e.stopEmailCampaign, { hid: selectedHid(), campaignId });
+export const startEmailCampaign = ({ campaignId }) =>
+  strict(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
+// drafts resolve with `result` and throw with the server's message (error.status = HTTP status)
+export const getEmailDrafts = () => strict(e.getEmailDrafts, { hid: selectedHid() });
+export const getEmailDraft = (id) => strict(e.getEmailDraft, { hid: selectedHid(), id });
+export const createEmailDraft = (body) => strict(e.createEmailDraft, { hid: selectedHid(), body });
+export const updateEmailDraft = (id, body) => strict(e.updateEmailDraft, { hid: selectedHid(), id, body });
+export const deleteEmailDraft = (id) => strict(e.deleteEmailDraft, { hid: selectedHid(), id });
+export const deleteEmailCampaign = ({ campaignId }) =>
+  strict(e.deleteEmailCampaign, { hid: selectedHid(), campaignId });
 export const retryEmailCampaign = ({ campaignId }) =>
   strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
 

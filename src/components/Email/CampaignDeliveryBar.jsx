@@ -1,9 +1,12 @@
-import { CircleAlert, Loader2, PauseCircle, RotateCcw } from "lucide-react";
+import { CircleAlert, Loader2, PauseCircle, RefreshCw, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
+import useStaleAfter from "../../hooks/useStaleAfter";
 import { getCampaignDelivery, retryEmailCampaign } from "../../redux/api/emailMarketingApi";
+import CampaignRunControl from "./CampaignRunControl";
 import Button from "../ui/Button";
+import { STALE_WHILE_SENDING_MS } from "./staleTimes";
 
 const n = (value) => (value ?? 0).toLocaleString("en-IN");
 
@@ -12,13 +15,16 @@ const n = (value) => (value ?? 0).toLocaleString("en-IN");
 //  - paused (daily limit reached, mailbox login refused) -> "Resume"
 //  - stuck on "sending" after a server restart -> "Resume"
 // Bounced / invalid addresses are counted but never sent again. People who
-// already got the email never get it twice. While sending it refreshes itself.
+// already got the email never get it twice. It does not refresh itself (polling
+// loaded the server): while sending, a Refresh appears once the count is old.
 // onChanged() reloads the campaign's totals and recipients.
-export default function CampaignDeliveryBar({ campaignId, onChanged }) {
+// refreshSignal: change it to reload the bar (the report's own Refresh).
+export default function CampaignDeliveryBar({ campaignId, onChanged, refreshSignal = 0 }) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [info, setInfo] = useState(null);
   const [retrying, setRetrying] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -30,27 +36,45 @@ export default function CampaignDeliveryBar({ campaignId, onChanged }) {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, refreshSignal]);
 
-  // follow a run in progress: totals and the bar every 5 s
   const sending = info?.status === "sending" && !info?.stuck;
+  const running = sending || (info?.status === "stopping" && !info?.stuck);
+  const { stale, markFresh } = useStaleAfter(STALE_WHILE_SENDING_MS, { enabled: running });
   useEffect(() => {
-    if (!sending) return undefined;
-    const timer = setInterval(() => {
-      load();
-      onChanged?.();
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [sending, load, onChanged]);
+    markFresh();
+  }, [info, markFresh]);
+
+  // one click: this bar, the report and the header (via onChanged)
+  const refreshAll = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([load(), onChanged?.()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   if (!info) return null;
   const { pending, failedRetryable, failedPermanent, status, pauseReason, stuck, canRetry } = info;
 
-  if (sending) {
+  if (running) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-blue-200! bg-blue-50 px-3 py-2.5 text-sm text-blue-800 dark:border-blue-500/30! dark:bg-blue-500/10 dark:text-blue-300">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-200! bg-blue-50 px-3 py-2.5 text-sm text-blue-800 dark:border-blue-500/30! dark:bg-blue-500/10 dark:text-blue-300">
         <Loader2 className="size-4 shrink-0 animate-spin" />
-        Sending… {n(pending)} still to go. This page updates by itself.
+        <span className="flex-1">{status === "stopping" ? "Stopping — finishing emails already in progress." : `Sending… ${n(pending)} still to go.`}</span>
+        {stale && (
+          <button
+            type="button"
+            onClick={refreshAll}
+            disabled={refreshing}
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 font-medium hover:bg-blue-100 disabled:opacity-60 dark:hover:bg-blue-500/20"
+          >
+            <RefreshCw className={`size-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            Refresh
+          </button>
+        )}
+        <CampaignRunControl campaign={{ _id: campaignId, status }} onChanged={() => { load(); onChanged?.(); }} />
       </div>
     );
   }

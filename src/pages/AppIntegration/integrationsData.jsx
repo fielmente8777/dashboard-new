@@ -75,6 +75,7 @@ export const INTEGRATIONS = [
     openLabel: "Open Email marketing",
     features: [
       "Guests see your address, not support@eazotel.com",
+      "Fast sending through Amazon: thousands of emails an hour",
       "Every email shows in your own Sent folder",
       "Replies come straight to your inbox",
       "Works with Gmail, Outlook, Zoho, Hostinger, GoDaddy and others",

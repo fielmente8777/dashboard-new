@@ -18,7 +18,7 @@ import {
   useStartGoogleAdsAuthMutation,
 } from "../../redux/api/integrationsApi";
 import { useConnectWhatsAppMutation, useGetWhatsAppAccountQuery } from "../../redux/api/whatsappApi";
-import { deleteSenderMailbox, emailMarketingApi } from "../../redux/api/emailMarketingApi";
+import { deleteSenderMailbox, deleteSesSender, emailMarketingApi } from "../../redux/api/emailMarketingApi";
 import SenderMailboxDialog from "../../components/Email/SenderMailboxDialog";
 import {
   useDisconnectGbpMutation,
@@ -135,6 +135,8 @@ export const useIntegrations = () => {
     { skip: !mailboxHid, refetchOnMountOrArgChange: true },
   );
   const senderMailbox = mailboxQuery.data?.result?.mailbox || null;
+  // the property's own address verified in Amazon SES (comes first when verified)
+  const senderSes = mailboxQuery.data?.result?.ses || null;
   const mailboxPresets = mailboxQuery.data?.result?.presets || [];
 
   const isConnected = useCallback(
@@ -144,9 +146,9 @@ export const useIntegrations = () => {
         : app.id === "gmb"
           ? gbpLocations.length > 0
           : app.id === "senderMailbox"
-            ? Boolean(senderMailbox)
+            ? Boolean(senderMailbox || senderSes)
             : Boolean(app.statusKey && readPath(integrationStatus, app.statusKey)),
-    [integrationStatus, isGaConnected, gbpLocations.length, senderMailbox],
+    [integrationStatus, isGaConnected, gbpLocations.length, senderMailbox, senderSes],
   );
   const isLocked = (app) =>
     Boolean(app.access && subscription?.appAccess && !subscription.appAccess[app.access]);
@@ -161,7 +163,7 @@ export const useIntegrations = () => {
   const health = {
     exotel: { query: exotel, checks: exotelOn ? exotelChecks(exotel.data) : [] },
     metaWhatsapp: { query: whatsapp, checks: whatsappOn ? whatsappChecks(whatsapp.data) : [] },
-    senderMailbox: { query: mailboxQuery, checks: senderMailboxChecks(senderMailbox) },
+    senderMailbox: { query: mailboxQuery, checks: senderMailboxChecks(senderMailbox, senderSes) },
   };
 
   const loadGaProperties = async (email) => {
@@ -309,7 +311,8 @@ export const useIntegrations = () => {
     setBusyId(app.id);
     try {
       if (app.id === "senderMailbox") {
-        await deleteSenderMailbox();
+        if (senderSes) await deleteSesSender();
+        if (senderMailbox) await deleteSenderMailbox();
         await mailboxQuery.refetch();
       } else if (app.id === "gmb") {
         // every Google account this login connected
@@ -355,6 +358,7 @@ export const useIntegrations = () => {
         open={dialog === "mailbox"}
         onClose={() => setDialog(null)}
         mailbox={senderMailbox}
+        ses={senderSes}
         presets={mailboxPresets}
         onChange={() => mailboxQuery.refetch()}
       />
@@ -389,6 +393,7 @@ export const useIntegrations = () => {
     // opens the Exotel keys form, also to replace keys that are already saved
     editExotelKeys: () => setDialog("exotel"),
     senderMailbox,
+    senderSes,
     // the mailbox dialog: status, Send test, edit the password, disconnect
     manageSenderMailbox: () => setDialog("mailbox"),
     dialogs,

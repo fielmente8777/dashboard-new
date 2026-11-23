@@ -1,17 +1,18 @@
 import { MailOpen, MousePointerClick, RefreshCw, Send, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatNumber, percent } from "../../pages/EmailMarketing/emailUtils.js";
+import useStaleAfter from "../../hooks/useStaleAfter";
 import { getEmailCampaigns } from "../../redux/api/emailMarketingApi";
 import IconButton from "../ui/IconButton";
+import RefreshNotice from "../ui/RefreshNotice";
 import StatCard from "../ui/StatCard";
 import { ErrorState, Skeleton } from "../ui/States";
 import CampaignsList from "./CampaignsList";
+import { STALE_IDLE_MS, STALE_WHILE_SENDING_MS } from "./staleTimes";
 
 // campaigns are loaded in one go so the totals and filters cover all of them
 const CAMPAIGN_LIMIT = 500;
-// while an email is still going out, its numbers are refreshed this often
-const LIVE_REFRESH_MS = 5000;
-const IN_PROGRESS = new Set(["sending", "scheduled"]);
+const IN_PROGRESS = new Set(["sending", "stopping", "scheduled"]);
 
 // Emails sent so far: four headline numbers and the list, where a row opens
 // who got it and who opened / clicked. Used by Email marketing (every email)
@@ -30,6 +31,8 @@ export default function SentEmailsPanel({
   onCount,
   empty = null,
   label = "Emails sent",
+  // false where the page shows its own numbers (Email marketing → Performance)
+  showStats = true,
 }) {
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,13 +64,16 @@ export default function SentEmailsPanel({
     onCount?.(campaigns.length);
   }, [campaigns.length, onCount]);
 
-  // keep the numbers moving while something is still being sent
+  // no auto-refresh (it loaded the server): after a while a line offers Refresh,
+  // sooner while something is still being sent
   const live = campaigns.some((c) => IN_PROGRESS.has(c.status));
+  const { stale, loadedAt, markFresh } = useStaleAfter(live ? STALE_WHILE_SENDING_MS : STALE_IDLE_MS, {
+    enabled: !loading && !failed,
+  });
+  // a successful load replaces `all`: the numbers are fresh again
   useEffect(() => {
-    if (!live) return undefined;
-    const timer = setInterval(() => load({ quiet: true }), LIVE_REFRESH_MS);
-    return () => clearInterval(timer);
-  }, [live, load]);
+    markFresh();
+  }, [all, markFresh]);
 
   const totals = useMemo(
     () =>
@@ -99,8 +105,11 @@ export default function SentEmailsPanel({
 
   if (!campaigns.length) return empty;
 
+  // an open email fills the panel, like Gmail: the numbers step aside
   return (
     <div className="space-y-4">
+      {!openId && showStats && (
+        <>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label={label}
@@ -125,7 +134,7 @@ export default function SentEmailsPanel({
 
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-app-text-muted">
-          {live ? "Updating every few seconds while sending." : "Open one to see who opened and clicked."}
+          {live ? "Sending now — press Refresh to see the latest numbers." : "Open one to see who opened and clicked."}
         </p>
         <IconButton
           icon={RefreshCw}
@@ -134,8 +143,22 @@ export default function SentEmailsPanel({
           className={refreshing ? "animate-spin" : ""}
         />
       </div>
+        </>
+      )}
+
+      {!openId && (
+        <RefreshNotice
+          show={stale}
+          loadedAt={loadedAt}
+          refreshing={refreshing}
+          onRefresh={() => load({ quiet: true })}
+        >
+          {live ? "An email is still being sent." : "New opens and clicks may have come in."}
+        </RefreshNotice>
+      )}
 
       <CampaignsList
+        onChanged={() => load({ quiet: true })}
         campaigns={campaigns}
         loading={false}
         selectedId={openId}

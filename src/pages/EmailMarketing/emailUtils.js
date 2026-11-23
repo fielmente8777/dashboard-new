@@ -55,6 +55,7 @@ export const CAMPAIGN_TONE = {
   draft: "gray",
   scheduled: "blue",
   sending: "amber",
+  stopping: "amber",
   sent: "green",
   paused: "gray",
   failed: "red",

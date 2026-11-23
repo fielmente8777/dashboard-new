@@ -1,4 +1,4 @@
-# Eazotel hotel dashboard (dashboard-new)
+# Eazotel hotel dashboard (dashboard-new)///
 
 The web dashboard hotel owners and their teams use every day: leads, calls, WhatsApp and
 other chats, marketing, SEO and analytics, booking engine and reservations, guest requests,

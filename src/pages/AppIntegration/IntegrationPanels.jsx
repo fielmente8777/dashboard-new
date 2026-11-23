@@ -456,21 +456,65 @@ export const SenderMailboxPanel = ({ app, integrations }) => {
   const { showToast } = useToast();
   const [testing, setTesting] = useState(false);
   const mailbox = integrations.senderMailbox;
+  const ses = integrations.senderSes;
   const checks = integrations.health.senderMailbox?.checks || [];
 
-  if (!mailbox) return <BasicPanel app={app} />;
+  if (!mailbox && !ses) return <BasicPanel app={app} />;
+  const viaAmazon = ses?.status === "verified";
 
   const sendTest = async () => {
     setTesting(true);
     try {
       const result = await testSenderMailbox();
-      showToast({ message: `Test email sent to ${result?.to}. Check its inbox and your Sent folder.`, type: "success", duration: 6000 });
+      showToast({
+        message: viaAmazon ? `Test email sent to ${result?.to} through Amazon.` : `Test email sent to ${result?.to}. Check its inbox and your Sent folder.`,
+        type: "success",
+        duration: 6000,
+      });
     } catch (error) {
       showToast({ message: error.message, type: "error", duration: 8000 });
     } finally {
       setTesting(false);
     }
   };
+
+  if (ses && (viaAmazon || !mailbox)) {
+    return (
+      <div className="space-y-5">
+        <HealthCard
+          checks={checks}
+          description="Amazon checks your domain by itself; the status here is read again every time you open it."
+          actions={{
+            amazon: (
+              <Button size="sm" variant="secondary" onClick={integrations.manageSenderMailbox}>
+                {viaAmazon ? "Manage" : "See DNS records"}
+              </Button>
+            ),
+          }}
+        />
+        <Card
+          title="Amazon sending"
+          actions={
+            <div className="flex gap-2">
+              <Button size="sm" variant="secondary" onClick={integrations.manageSenderMailbox}>
+                Manage
+              </Button>
+              <Button size="sm" loading={testing} disabled={!viaAmazon} onClick={sendTest}>
+                Send test
+              </Button>
+            </div>
+          }
+        >
+          <dl className="grid gap-4 sm:grid-cols-2">
+            <Detail label="Guests see">{ses.displayName ? `${ses.displayName} <${ses.fromEmail}>` : ses.fromEmail}</Detail>
+            <Detail label="Sending through">Amazon SES</Detail>
+            <Detail label={ses.kind === "domain" ? "Domain" : "Address"}>{ses.identity}</Detail>
+            <Detail label="Verified">{viaAmazon ? formatDate(ses.verifiedAt, true) || "Yes" : "Not yet"}</Detail>
+          </dl>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

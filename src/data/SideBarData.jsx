@@ -86,6 +86,7 @@ export const SidebarData = [
     subLinks: [
       { name: "All leads", link: `leads-management/all-leads`, icon: sub(LayoutList) },
       { name: "Meta", link: `leads-management/meta-leads`, icon: brand(FaMeta) },
+      { name: "Google Ads", link: `leads-management/google-ads-leads`, icon: brand(SiGoogleads) },
       { name: "WhatsApp", link: `leads-management/whatsapp`, icon: brand(FaWhatsapp) },
       // { name: "Instagram", link: `leads-management/instagram`, icon: brand(FaInstagram) },
       { name: "Webform", link: `leads-management/webform-leads`, icon: sub(FileSpreadsheet) },

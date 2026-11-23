@@ -17,7 +17,7 @@ export function useCampaignSender() {
   const hotel = useSelector((state) => state.userProfile.user);
   const [sending, setSending] = useState(false);
 
-  const send = async ({ batchIds = [], toEmails = [], subject, html, text, from, attachments, name }) => {
+  const send = async ({ batchIds = [], toEmails = [], subject, html, text, from, attachments, name, audienceLabel }) => {
     setSending(true);
     try {
       const ids = [...batchIds];
@@ -35,6 +35,7 @@ export function useCampaignSender() {
         text,
         fromName: hotel?.Profile?.hotelName,
         fromEmail: from,
+        audienceLabel,
         recipientBatchIds: ids,
         attachments,
       });
