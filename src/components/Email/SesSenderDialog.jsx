@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, CheckCircle2, Clock, Copy, RefreshCw, Send, Server, TriangleAlert, Unplug, Zap } from "lucide-react";
+import { ArrowLeft, Building2, Check, CheckCircle2, Clock, Copy, ExternalLink, RefreshCw, Send, Server, TriangleAlert, Unplug, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
@@ -28,7 +28,9 @@ const STATUS = {
 const domainOf = (value) => (value.includes("@") ? value.split("@").pop() : value).trim().toLowerCase();
 
 // one value with a copy button (DNS name / value)
-const CopyValue = ({ value }) => {
+// `suffix` is shown faint and not copied: DNS panels add the domain to the Name
+// themselves, so pasting the full name gives "…domain.com.domain.com"
+const CopyValue = ({ value, suffix = "" }) => {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -41,7 +43,10 @@ const CopyValue = ({ value }) => {
   };
   return (
     <div className="flex min-w-0 items-center gap-1.5">
-      <code className="min-w-0 flex-1 break-all rounded bg-app-surface-secondary px-1.5 py-1 font-mono text-[11px]">{value}</code>
+      <code className="min-w-0 flex-1 break-all rounded bg-app-surface-secondary px-1.5 py-1 font-mono text-[11px]">
+        {value}
+        {suffix && <span className="text-app-text-muted">{suffix}</span>}
+      </code>
       <button
         type="button"
         onClick={copy}
@@ -54,14 +59,74 @@ const CopyValue = ({ value }) => {
   );
 };
 
+// where the domain's DNS is (gian reads its nameservers): a button that opens
+// that provider's DNS page, and how to add the records there, step by step
+const DnsHelp = ({ provider, domain }) => {
+  if (!provider) return null;
+  const open = provider.url && (
+    <a
+      href={provider.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+    >
+      {provider.managedByEazotel ? "Open in Route 53" : `Open ${provider.name} DNS`}
+      <ExternalLink className="size-3.5" />
+    </a>
+  );
+  return (
+    <div className="space-y-3 rounded-lg bg-app-surface-secondary p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2 text-sm">
+          <Building2 className="size-4 shrink-0 text-blue-500" />
+          <span className="min-w-0">
+            {provider.managedByEazotel ? (
+              <>
+                <span className="font-medium">Eazotel manages {domain}</span>
+                <span className="text-app-text-muted"> (Amazon Route 53). Our team adds these records for you.</span>
+              </>
+            ) : (
+              <>
+                <span className="text-app-text-muted">{domain}&apos;s DNS is at </span>
+                <span className="font-medium">{provider.name}</span>
+              </>
+            )}
+          </span>
+        </div>
+        {open}
+      </div>
+      {provider.steps?.length > 0 && (
+        <ol className="grid gap-1.5 text-xs text-app-text">
+          {provider.steps.map((step, i) => (
+            <li key={step} className="flex gap-2">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-blue-500/15 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                {i + 1}
+              </span>
+              <span className="pt-0.5">{step}</span>
+            </li>
+          ))}
+          <li className="flex gap-2">
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              {provider.steps.length + 1}
+            </span>
+            <span className="pt-0.5">Wait 10-30 minutes, then press “Check records” here.</span>
+          </li>
+        </ol>
+      )}
+    </div>
+  );
+};
+
 // the DNS records the hotel adds at its domain provider
-const RecordsTable = ({ records }) => (
+const hostOf = (name, domain) => (domain && name.endsWith(`.${domain}`) ? name.slice(0, -domain.length - 1) : name);
+
+const RecordsTable = ({ records, domain }) => (
   <div className="overflow-x-auto rounded-lg border border-app-border!">
     <table className="w-full min-w-[34rem] text-left text-xs">
       <thead className="bg-app-surface-secondary text-app-text-muted">
         <tr>
           <th className="px-3 py-2 font-medium">Type</th>
-          <th className="px-3 py-2 font-medium">Name / Host</th>
+          <th className="px-3 py-2 font-medium">Name / Host (copy only the dark part)</th>
           <th className="px-3 py-2 font-medium">Value / Points to</th>
         </tr>
       </thead>
@@ -73,7 +138,7 @@ const RecordsTable = ({ records }) => (
               {!r.required && <span className="mt-0.5 block text-[10px] text-app-text-muted">optional</span>}
             </td>
             <td className="px-3 py-2">
-              <CopyValue value={r.name} />
+              <CopyValue value={hostOf(r.name, domain)} suffix={hostOf(r.name, domain) !== r.name ? `.${domain}` : ""} />
             </td>
             <td className="px-3 py-2">
               <CopyValue value={r.value} />
@@ -123,7 +188,7 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
   useEffect(() => {
     onChangeRef.current = onChange;
   });
-  const pending = Boolean(ses && ses.status !== "verified");
+  const pending = Boolean(ses && (ses.status !== "verified" || (ses.kind === "email" && !ses.signing && ses.records?.length)));
   useEffect(() => {
     if (!open || !pending || editing) return;
     const id = setInterval(async () => {
@@ -178,10 +243,15 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
     try {
       const result = await checkSesSender();
       onChange();
-      const status = result?.ses?.status;
+      const s = result?.ses;
+      const waitingForVia = s?.status === "verified" && s.kind === "email" && !s.signing;
       showToast({
-        message: status === "verified" ? "Verified. Campaigns now go out through Amazon." : "Not verified yet. Amazon can take a few minutes after the records are added.",
-        type: status === "verified" ? "success" : "info",
+        message: waitingForVia
+          ? "Still sending fine. The “via” goes away once Amazon finds the records (a few minutes after adding them)."
+          : s?.status === "verified"
+            ? "Verified. Campaigns now go out through Amazon."
+            : "Not verified yet. Amazon can take a few minutes after the records are added.",
+        type: s?.status === "verified" && !waitingForVia ? "success" : "info",
         duration: 6000,
       });
     } catch (err) {
@@ -327,12 +397,14 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
   const StatusIcon = status.icon;
   const verified = ses.status === "verified";
   const from = ses.displayName ? `${ses.displayName} <${ses.fromEmail}>` : ses.fromEmail;
+  // an address verified by link: Gmail shows "via amazonses.com" until its domain's records are added
+  const showVia = verified && ses.kind === "email" && !ses.signing && ses.records?.length > 0;
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      size={!verified && ses.kind === "domain" ? "lg" : "md"}
+      size={(!verified && ses.kind === "domain") || showVia ? "lg" : "md"}
       title="Send through Amazon (fast)"
       description={ses.kind === "domain" ? `Domain: ${ses.identity}` : `Address: ${ses.identity}`}
     >
@@ -369,13 +441,40 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
         {!verified && ses.kind === "domain" && ses.records?.length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium">Add these records in your domain's DNS</p>
-            <p className="text-xs text-app-text-muted">
-              Open the site where your domain is managed (GoDaddy, Cloudflare, Hostinger, One.com…) → DNS settings → Add
-              record. Some providers add “{ses.identity}” to the name by themselves: then paste only the part before it.
-              Your current email keeps working.
-            </p>
-            <RecordsTable records={ses.records} />
+            {ses.dnsProvider ? (
+              <DnsHelp provider={ses.dnsProvider} domain={ses.domain} />
+            ) : (
+              <p className="text-xs text-app-text-muted">
+                Open the site where your domain is managed (GoDaddy, Cloudflare, Hostinger, One.com…) → DNS settings → Add
+                record. Some providers add “{ses.identity}” to the name by themselves: then paste only the part before it.
+              </p>
+            )}
+            <p className="text-xs text-app-text-muted">Your current email keeps working.</p>
+            <RecordsTable records={ses.records} domain={ses.domain} />
           </div>
+        )}
+
+        {showVia && (
+          <div className="space-y-2 rounded-lg border border-app-border! p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-sm font-medium">Remove “via amazonses.com” (optional)</p>
+              <Badge tone="gray">Not needed to send</Badge>
+            </div>
+            <p className="text-xs text-app-text-muted">
+              Emails already go out from {ses.fromEmail}. Gmail adds “via amazonses.com” next to it because they are signed by
+              Amazon. Add these 3 records where {ses.domain} is managed (GoDaddy, Cloudflare, Hostinger, One.com…) and emails get
+              signed with {ses.domain}: the “via” goes away and inbox delivery gets better. Nothing else changes.
+            </p>
+            <DnsHelp provider={ses.dnsProvider} domain={ses.domain} />
+            <RecordsTable records={ses.records} domain={ses.domain} />
+          </div>
+        )}
+
+        {verified && ses.signing && (
+          <p className="flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400">
+            <CheckCircle2 className="size-4 shrink-0" />
+            Signed with {ses.domain}: no “via amazonses.com” in Gmail.
+          </p>
         )}
 
         {verified && editFrom && (
@@ -414,6 +513,11 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
                 {!editFrom && (
                   <Button variant="secondary" onClick={() => setEditFrom({ fromEmail: ses.fromEmail, displayName: ses.displayName || "" })}>
                     Change From
+                  </Button>
+                )}
+                {showVia && (
+                  <Button variant="secondary" icon={RefreshCw} onClick={checkNow} loading={checking}>
+                    Check records
                   </Button>
                 )}
                 <Button icon={Send} onClick={sendTest} loading={testing}>
