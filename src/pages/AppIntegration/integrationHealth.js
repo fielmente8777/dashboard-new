@@ -175,8 +175,29 @@ export const whatsappChecks = (account) => {
   return checks;
 };
 
-// the hotel's own mailbox for campaign emails (gian sender-mailbox)
-export const senderMailboxChecks = (mailbox) => {
+// the hotel's own mailbox for campaign emails (gian sender-mailbox);
+// ses = its own address in Amazon SES, used instead when verified
+export const senderMailboxChecks = (mailbox, ses = null) => {
+  if (ses) {
+    const where = ses.kind === "domain" ? ses.identity : ses.fromEmail;
+    const amazon =
+      ses.status === "verified"
+        ? { id: "amazon", label: "Amazon sending", status: "ok", detail: `Emails go out fast through Amazon from ${ses.fromEmail}.` }
+        : ses.status === "failed"
+          ? { id: "amazon", label: "Amazon sending", status: "error", detail: ses.lastError || `Amazon could not verify ${where}.` }
+          : {
+              id: "amazon",
+              label: "Amazon sending",
+              status: "warn",
+              detail:
+                ses.kind === "domain"
+                  ? `Waiting for Amazon to verify ${where}. Add the DNS records shown in Manage.`
+                  : `Waiting for the verification link Amazon sent to ${where} to be clicked.`,
+            };
+    // verified: the mail server isn't used, so its checks don't matter
+    if (ses.status === "verified" || !mailbox) return [amazon];
+    return [amazon, ...senderMailboxChecks(mailbox)];
+  }
   if (!mailbox) return [];
   const checks = [
     mailbox.status === "error"

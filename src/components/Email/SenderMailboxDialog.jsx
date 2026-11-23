@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, ChevronDown, Mail, Send, ShieldCheck, TriangleAlert, Unplug } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ChevronDown, ChevronRight, Mail, Send, Server, ShieldCheck, TriangleAlert, Unplug, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
@@ -12,6 +12,7 @@ import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
 import { Field, Input } from "../ui/Field";
 import Switch from "../ui/Switch";
+import SesSenderDialog from "./SesSenderDialog";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -42,8 +43,9 @@ const emptyForm = () => ({
 // the domain's mail records, e.g. villaantilla.com → One.com) and fills in the
 // servers; then only the password is left. gian checks the login before saving.
 //
-// mailbox: the saved one or null; presets: from gian; onChange(mailbox | null)
-function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange }) {
+// mailbox: the saved one or null; presets: from gian; onChange(mailbox | null);
+// onBack: back to the choice between Amazon and the mail server
+function SmtpMailboxDialog({ open, onClose, mailbox, presets = [], onChange, onBack }) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [step, setStep] = useState("email"); // email | details
@@ -223,6 +225,16 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
             )}
           </div>
         </div>
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400"
+          >
+            <Zap className="size-3.5" />
+            Send faster through Amazon instead
+          </button>
+        )}
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <Button variant="ghost" icon={Unplug} onClick={disconnect} className="text-red-500! hover:bg-red-500/10!">
             Disconnect
@@ -252,8 +264,8 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
         description="Guests see your address instead of support@eazotel.com, and every email shows in your own Sent folder."
         footer={
           <>
-            <Button variant="secondary" onClick={onClose} disabled={detecting}>
-              Cancel
+            <Button variant="secondary" icon={onBack ? ArrowLeft : undefined} onClick={onBack || onClose} disabled={detecting}>
+              {onBack ? "Back" : "Cancel"}
             </Button>
             <Button onClick={findProvider} loading={detecting}>
               Continue <ArrowRight className="size-4" />
@@ -412,6 +424,104 @@ function SenderMailboxDialog({ open, onClose, mailbox, presets = [], onChange })
         {/* lets Enter in the password field connect */}
         <button type="submit" hidden aria-hidden="true" tabIndex={-1} />
       </form>
+    </Dialog>
+  );
+}
+
+// one of the two ways, as a big tappable card
+const MethodCard = ({ icon: Icon, tone, title, badge, points, onClick, current }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`group flex w-full items-start gap-3 rounded-xl border p-4 text-left transition hover:border-blue-500! hover:bg-blue-500/5 ${
+      current ? "border-blue-500! bg-blue-500/5" : "border-app-border!"
+    }`}
+  >
+    <span className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${tone}`}>
+      <Icon className="size-5" />
+    </span>
+    <span className="min-w-0 flex-1">
+      <span className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+        {title}
+        {badge && <span className="rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">{badge}</span>}
+        {current && <span className="rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">In use</span>}
+      </span>
+      <span className="mt-1.5 grid gap-1 text-xs text-app-text-muted">
+        {points.map((point) => (
+          <span key={point}>• {point}</span>
+        ))}
+      </span>
+    </span>
+    <ChevronRight className="mt-2 size-4 shrink-0 text-app-text-muted transition group-hover:translate-x-0.5" />
+  </button>
+);
+
+// Send from your own email: the hotel picks how.
+//   Amazon (SES): its domain / address verified in Eazotel's Amazon SES: fast, no "via Eazotel"
+//   Mail server (SMTP): its own mailbox's login: copies in its Sent folder, its provider's limits
+// Only one is used: a verified Amazon address comes first; saving a mail server stops Amazon.
+//
+// mailbox / ses: the saved ones or null (gian sender-mailbox); onChange(): reload
+function SenderMailboxDialog({ open, onClose, mailbox, ses = null, presets = [], onChange }) {
+  const [method, setMethod] = useState("choose"); // choose | ses | smtp
+
+  useEffect(() => {
+    if (open) setMethod(ses ? "ses" : mailbox ? "smtp" : "choose");
+  }, [open, ses, mailbox]);
+
+  if (method === "ses") {
+    return (
+      <SesSenderDialog open={open} onClose={onClose} ses={ses} onChange={() => onChange?.(null)} onBack={() => setMethod("choose")} />
+    );
+  }
+  if (method === "smtp") {
+    return (
+      <SmtpMailboxDialog
+        open={open}
+        onClose={onClose}
+        mailbox={mailbox}
+        presets={presets}
+        onChange={onChange}
+        onBack={() => setMethod("choose")}
+      />
+    );
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title="Send from your own email"
+      description="Guests see your address instead of support@eazotel.com. Choose how your emails go out."
+    >
+      <div className="space-y-3">
+        <MethodCard
+          icon={Zap}
+          tone="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+          title="Through Amazon (fast)"
+          badge="Recommended for big lists"
+          current={ses?.status === "verified"}
+          onClick={() => setMethod("ses")}
+          points={[
+            "Thousands of emails an hour, from your own address",
+            "Verify your domain once (3 DNS records) or one address by a link",
+            "Not for Gmail / Yahoo / Outlook.com addresses",
+          ]}
+        />
+        <MethodCard
+          icon={Server}
+          tone="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+          title="Through your mail server (SMTP)"
+          current={Boolean(mailbox) && ses?.status !== "verified"}
+          onClick={() => setMethod("smtp")}
+          points={[
+            "Log in with your mailbox's email and password",
+            "Every email is saved in your own Sent folder",
+            "Your provider's limits apply (e.g. One.com about 240 an hour, Gmail 500 a day)",
+          ]}
+        />
+        <p className="text-xs text-app-text-muted">Not set up: emails go out from support@eazotel.com as “your hotel via Eazotel”, and replies still come to you.</p>
+      </div>
     </Dialog>
   );
 }

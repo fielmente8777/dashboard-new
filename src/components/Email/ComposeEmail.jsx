@@ -19,8 +19,9 @@ import {
   Type,
   Users,
   X,
+  Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
@@ -34,6 +35,7 @@ import { htmlTemplateImporter } from "./htmlTemplateImporter";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
 import SenderMailboxDialog from "./SenderMailboxDialog";
+import { useDraftAutosave } from "./useDraftAutosave";
 
 const EMPTY_BODIES = new Set(["", "<p><br></p>", "<p></p>", "<br>"]);
 
@@ -180,8 +182,14 @@ const fieldClass =
 // A new email in a Gmail-style window: docked bottom-right, can be minimised
 // to its title bar or opened full screen. With `isBroadcast` it goes to
 // `recipientCount` already-chosen people plus anyone added in "To".
-// onSend({ from, toEmails, subject, html, text, attachments })
+// onSend({ from, toEmails, subject, html, text, attachments }) -> true when it went out
 // onReviewRecipients() - when given, the "N selected people" chip opens a review of them
+//
+// Drafts (Gmail-style), with `draftsEnabled`: saved a moment after each change;
+// the close button keeps the draft, Discard deletes it, sending deletes it.
+//   initialDraft          a saved draft to continue (gian /email-marketing/drafts/:id)
+//   recipientBatchId / recipientLabel   the chosen people, saved with the draft
+//   onDraftsChanged()     a draft was created, deleted or sent: refresh the Drafts list
 function ComposeEmail({
   onClose,
   recipients = [],
@@ -192,26 +200,38 @@ function ComposeEmail({
   defaultFrom = "",
   initialTemplate = null,
   onReviewRecipients,
+  draftsEnabled = false,
+  initialDraft = null,
+  recipientBatchId = null,
+  recipientLabel = "",
+  onDraftsChanged,
 }) {
   const { showToast } = useToast();
   const { confirm } = useConfirm();
-  const [from, setFrom] = useState(defaultFrom);
-  const [chips, setChips] = useState(() => parseEmails(recipients.join(",")));
+  const [from, setFrom] = useState(initialDraft?.fromEmail || defaultFrom);
+  const [chips, setChips] = useState(() =>
+    initialDraft?.toEmails?.length ? initialDraft.toEmails : parseEmails(recipients.join(",")),
+  );
   const [draft, setDraft] = useState("");
-  const [subject, setSubject] = useState(initialTemplate?.subject || "");
-  const [body, setBody] = useState("");
+  const [subject, setSubject] = useState(initialDraft?.subject ?? initialTemplate?.subject ?? "");
+  const [body, setBody] = useState(initialDraft?.bodyHtml || "");
   // what is in the editor right now: Jodit only reports it on blur through
   // `body`, so Send (or Discard) reads this instead of a possibly stale state
-  const bodyRef = useRef("");
+  const bodyRef = useRef(initialDraft?.bodyHtml || "");
   const [view, setView] = useState("normal"); // normal | minimized | full
   const [showFormatting, setShowFormatting] = useState(true);
   const [attachments, setAttachments] = useState([]);
-  const [template, setTemplate] = useState(initialTemplate?.html ? initialTemplate : null);
+  const [template, setTemplate] = useState(
+    initialDraft?.template?.html ? initialDraft.template : initialTemplate?.html ? initialTemplate : null,
+  );
   const [isTemplateOpen, setIsTemplateOpen] = useState(false);
   const [editorKey, setEditorKey] = useState(0);
   // the property's own mailbox: when connected, emails go out from it
   // (gian sendCampaignMail); otherwise from support@eazotel.com "via Eazotel"
   const [mailbox, setMailbox] = useState(null);
+  // or its own address verified in Amazon SES (comes first when verified)
+  const [ses, setSes] = useState(null);
+  const sesOn = ses?.status === "verified";
   const [presets, setPresets] = useState([]);
   const [isMailboxOpen, setIsMailboxOpen] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -220,7 +240,7 @@ function ComposeEmail({
   const [fit, setFit] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   // Mailchimp-style: the inbox preview text, and the property's footer
-  const [previewText, setPreviewText] = useState(initialTemplate?.previewText || "");
+  const [previewText, setPreviewText] = useState(initialDraft?.previewText ?? initialTemplate?.previewText ?? "");
   const [footerName, setFooterName] = useState(null); // null = default footer
   const [isFooterOpen, setIsFooterOpen] = useState(false);
   // the exact email guests get (gian: device-optimized + footer), for the preview
@@ -232,19 +252,67 @@ function ComposeEmail({
   const [testing, setTesting] = useState(false);
   const hotelName = useSelector((state) => state.userProfile.user?.Profile?.hotelName) || "Your hotel";
 
+  // ---- drafts ----
+  // what a draft holds: everything in the window except attachments
+  const draftPayload = () => ({
+    subject,
+    previewText,
+    fromEmail: from.trim(),
+    toEmails: [...new Set([...chips, ...parseEmails(draft)])],
+    recipientBatchId: recipientBatchId || null,
+    recipientCount: recipientBatchId ? recipientCount : 0,
+    recipientLabel: recipientBatchId ? recipientLabel : "",
+    bodyHtml: template ? "" : bodyRef.current,
+    template: template ? { name: template.name || "", subject: template.subject || "", html: template.html } : null,
+  });
+  // an untouched window (or a template picked and nothing else) isn't kept
+  const worthKeeping = (payload) =>
+    Boolean(
+      payload.bodyHtml.replace(/<[^>]*>|&nbsp;/g, "").trim() ||
+        /<img/i.test(payload.bodyHtml) ||
+        (payload.subject.trim() && payload.subject !== (initialTemplate?.subject || "")) ||
+        payload.previewText.trim() ||
+        payload.toEmails.length ||
+        (payload.template && payload.template.html !== initialTemplate?.html),
+    );
+  const drafts = useDraftAutosave({
+    enabled: draftsEnabled,
+    initialId: initialDraft?._id || null,
+    buildPayload: draftPayload,
+    hasContent: worthKeeping,
+    onCreated: onDraftsChanged,
+  });
+  const scheduleDraftSave = drafts.schedule;
+
+  // every change (but not the first render) saves the draft a moment later
+  const firstRender = useRef(true);
   useEffect(() => {
-    let alive = true;
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    scheduleDraftSave();
+  }, [subject, previewText, from, chips, draft, template, scheduleDraftSave]);
+
+  // how this property sends: own mail server, own address in Amazon, or via Eazotel
+  const loadSender = useCallback((alive = { current: true }) => {
     getSenderMailbox()
       .then((result) => {
-        if (!alive) return;
+        if (!alive.current) return;
         setMailbox(result?.mailbox || null);
+        setSes(result?.ses || null);
         setPresets(result?.presets || []);
       })
       .catch(() => {}); // not connected / older server: send through Eazotel as before
-    return () => {
-      alive = false;
-    };
   }, []);
+
+  useEffect(() => {
+    const alive = { current: true };
+    loadSender(alive);
+    return () => {
+      alive.current = false;
+    };
+  }, [loadSender]);
 
   useEffect(() => {
     let alive = true;
@@ -274,10 +342,11 @@ function ComposeEmail({
     };
   }, [template, previewText, renderVersion]);
 
-  // a connected mailbox is the sender
+  // a verified Amazon address, else a connected mailbox, is the sender
   useEffect(() => {
-    if (mailbox?.email) setFrom(mailbox.email);
-  }, [mailbox]);
+    if (sesOn) setFrom(ses.fromEmail);
+    else if (mailbox?.email) setFrom(mailbox.email);
+  }, [mailbox, ses, sesOn]);
 
   const minimized = view === "minimized";
   const full = view === "full";
@@ -302,16 +371,32 @@ function ComposeEmail({
 
   // a draft with something written in it is only thrown away after asking
   const handleDiscard = async () => {
-    const hasDraft =
-      bodyRef.current.replace(/<[^>]*>|&nbsp;/g, "").trim() ||
-      (subject.trim() && subject !== (initialTemplate?.subject || "")) ||
-      attachments.length > 0;
+    const hasDraft = worthKeeping(draftPayload()) || attachments.length > 0 || drafts.hasDraft();
     if (hasDraft) {
-      const confirmed = await confirm("Your message, subject and attachments will be lost.", {
-        title: "Discard this email?",
-        confirmText: "Discard",
-      });
+      const confirmed = await confirm(
+        draftsEnabled
+          ? "This email will be deleted from your drafts. This can't be undone."
+          : "Your message, subject and attachments will be lost.",
+        { title: "Discard this email?", confirmText: "Discard" },
+      );
       if (!confirmed) return;
+    }
+    if (draftsEnabled && (await drafts.discard())) onDraftsChanged?.();
+    onClose();
+  };
+
+  // the close button: with drafts it keeps the email (like Gmail) instead of asking to discard
+  const handleClose = async () => {
+    if (!draftsEnabled) return handleDiscard();
+    await drafts.save();
+    if (drafts.hasDraft()) {
+      showToast({
+        message: attachments.length
+          ? "Saved to Drafts. Attachments aren't kept in drafts: add them again before sending."
+          : "Saved to Drafts.",
+        duration: attachments.length ? 6000 : 3000,
+      });
+      onDraftsChanged?.();
     }
     onClose();
   };
@@ -436,7 +521,7 @@ function ComposeEmail({
 
   const send = async () => {
     if (isSubmitting) return;
-    if (mailbox?.status === "error") {
+    if (!sesOn && mailbox?.status === "error") {
       setIsMailboxOpen(true);
       return fail(`Your mailbox ${mailbox.email} needs to be reconnected before sending.`);
     }
@@ -451,7 +536,9 @@ function ComposeEmail({
     if (!content) return;
     const { html, text } = content;
 
-    await onSend({
+    // no autosave while it goes out; once sent, the draft is deleted
+    drafts.block();
+    const sent = await onSend({
       from: fromEmail,
       toEmails: typedEmails,
       subject: subject.trim(),
@@ -459,6 +546,11 @@ function ComposeEmail({
       text,
       attachments,
     });
+    if (sent === true) {
+      if (draftsEnabled && (await drafts.discard())) onDraftsChanged?.();
+    } else {
+      drafts.unblock();
+    }
   };
 
   // Ctrl/⌘ + Enter sends from anywhere in the window
@@ -519,9 +611,9 @@ function ComposeEmail({
             </button>
             <button
               type="button"
-              aria-label="Close"
-              title="Close"
-              onClick={handleDiscard}
+              aria-label={draftsEnabled ? "Save & close" : "Close"}
+              title={draftsEnabled ? "Save & close" : "Close"}
+              onClick={handleClose}
               disabled={isSubmitting}
               className={headerButton}
             >
@@ -534,7 +626,23 @@ function ComposeEmail({
           <>
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
               <div className="px-4">
-                {mailbox ? (
+                {sesOn ? (
+                  <Row label="From">
+                    <span className="min-w-0 flex-1 truncate text-sm">
+                      {ses.displayName || hotelName}{" "}
+                      <span className="text-app-text-muted">&lt;{ses.fromEmail}&gt;</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsMailboxOpen(true)}
+                      title="Sent from your own address through Amazon SES"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700 hover:bg-amber-500/20 dark:text-amber-400"
+                    >
+                      <Zap className="size-3" />
+                      Amazon
+                    </button>
+                  </Row>
+                ) : mailbox ? (
                   <Row label="From">
                     <span className="min-w-0 flex-1 truncate text-sm">
                       {mailbox.displayName || hotelName}{" "}
@@ -697,6 +805,7 @@ function ComposeEmail({
                       config={{ ...editorConfig, disabled: isSubmitting }}
                       onChange={(value) => {
                         bodyRef.current = value;
+                        scheduleDraftSave();
                       }}
                       onBlur={(value) => {
                         bodyRef.current = value;
@@ -838,12 +947,23 @@ function ComposeEmail({
                 disabled={isSubmitting}
                 className="rounded-full!"
               />
+              {draftsEnabled && drafts.status !== "idle" && (
+                <span
+                  role="status"
+                  title={drafts.status === "error" ? drafts.error : undefined}
+                  className={`ml-auto hidden truncate pl-2 text-[11px] sm:inline ${
+                    drafts.status === "error" ? "text-red-500" : "text-app-text-faint"
+                  }`}
+                >
+                  {drafts.status === "saving" ? "Saving…" : drafts.status === "saved" ? "Draft saved" : "Draft not saved"}
+                </span>
+              )}
               <IconButton
                 icon={Trash2}
                 label="Discard draft"
                 onClick={handleDiscard}
                 disabled={isSubmitting}
-                className="ml-auto rounded-full!"
+                className={`rounded-full! ml-auto ${draftsEnabled && drafts.status !== "idle" ? "sm:ml-1" : ""}`}
               />
             </div>
           </>
@@ -882,10 +1002,12 @@ function ComposeEmail({
         open={isMailboxOpen}
         onClose={() => setIsMailboxOpen(false)}
         mailbox={mailbox}
+        ses={ses}
         presets={presets}
-        onChange={(next) => {
-          setMailbox(next);
-          if (!next) setFrom(defaultFrom || "");
+        onChange={() => {
+          // Amazon / mail server changed: read both again; back to the default Reply-To until it answers
+          setFrom(defaultFrom || "");
+          loadSender();
         }}
       />
 

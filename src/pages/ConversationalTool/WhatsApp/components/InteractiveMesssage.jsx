@@ -291,6 +291,39 @@ const InteractiveMessage = ({ interactive }) => {
     );
   }
 
+  // =========================
+  // 📞 CALL / LINK BUTTON (cta_url) — the AI's "Call us" button is one
+  // =========================
+  if (type === "cta_url") {
+    const url = action?.parameters?.url || "";
+    const isCall = url.startsWith("tel:");
+    const label = action?.parameters?.display_text || (isCall ? "Call" : "Open link");
+
+    return (
+      <div className="bg-gray-100 rounded-xl p-3 max-w-xs w-full">
+        {renderHeader()}
+        {renderBody()}
+
+        <a
+          href={url || undefined}
+          target={isCall ? undefined : "_blank"}
+          rel="noreferrer"
+          className="flex items-center justify-center gap-1.5 border border-green-500 text-green-600 text-sm rounded-lg py-1.5 px-2 hover:bg-green-50 transition"
+        >
+          <span aria-hidden="true">{isCall ? "📞" : "🔗"}</span>
+          {label}
+        </a>
+        {isCall && (
+          <p className="mt-1 text-center text-[11px] text-gray-500">
+            {url.slice(4)}
+          </p>
+        )}
+
+        {renderFooter()}
+      </div>
+    );
+  }
+
   if (type === "list_reply" || type === "button_reply") {
     return null;
   }

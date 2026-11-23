@@ -177,12 +177,28 @@ export const buildResendPayload = (message) => {
     case "image":
     case "video":
     case "document":
-    case "audio":
-      if (!message.media?.id) return null;
-      return {
-        phone,
-        file: { mediaId: message.media.id, mimetype: message.media.mimeType },
-      };
+    case "audio": {
+      const media = message.media || {};
+      if (media.id) {
+        return {
+          phone,
+          file: { mediaId: media.id, mimetype: media.mimeType },
+        };
+      }
+      // hosted media (a quick reply's file): send the same link again.
+      // A blob: URL is a file picked on this device, which is gone by now.
+      if (/^https?:\/\//.test(media.url || "")) {
+        return {
+          phone,
+          file: {
+            mediaUrl: media.url,
+            mimeType: media.mimeType,
+            fileName: media.filename,
+          },
+        };
+      }
+      return null;
+    }
     case "template": {
       const template = message.template?.template;
       if (!template) return null;
