@@ -70,6 +70,19 @@ export const knowledgeBaseApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // { files, knowledgeBase } -> { success, additions, summary, skipped }.
+    // Reads PDF / DOCX / TXT documents and returns what to add to the open
+    // knowledge base (nothing is saved). Can take a minute or two.
+    importKnowledgeDocuments: build.mutation({
+      query: ({ files, knowledgeBase }) => {
+        const form = new FormData();
+        files.forEach((file) => form.append("files", file));
+        form.append("knowledge_base", JSON.stringify(knowledgeBase || {}));
+        return { url: `${KB_URL}/import-documents`, method: "POST", body: form };
+      },
+      extraOptions: NODE,
+    }),
+
     // Creates the knowledge base, or updates it when `id` is given.
     saveKnowledgeBase: build.mutation({
       query: ({ id, ...body }) => ({
@@ -111,4 +124,5 @@ export const {
   useSaveKnowledgeBaseMutation,
   useDeleteKnowledgeBaseMutation,
   useUploadKnowledgeBaseMediaMutation,
+  useImportKnowledgeDocumentsMutation,
 } = knowledgeBaseApi;

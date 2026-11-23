@@ -20,6 +20,7 @@ import { getApiErrorMessage } from "../../../redux/api/baseApi";
 import { CATEGORIES } from "../constants";
 import { exportRules, MAX_IMPORT_RULES, readRulesFile } from "../ruleFiles";
 import AddRuleForm from "./AddRuleForm";
+import ChatAiSettingsCard from "./ChatAiSettingsCard";
 import RuleRow from "./RuleRow";
 
 const chipClassName = (active) =>
@@ -204,14 +205,17 @@ const WHATSAPP_RULES = {
 };
 
 const CustomRulesTab = ({ tenant }) => (
-  <RulesList
-    tenant={tenant}
-    api={WHATSAPP_RULES}
-    fileName="whatsapp"
-    emptyTitle="No custom rules yet"
-    withPriority
-    intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Your rules take precedence over the knowledge base, and High priority rules win when two rules disagree. Turned-off rules stay saved but don't apply."
-  />
+  <div className="space-y-5">
+    <ChatAiSettingsCard tenant={tenant} />
+    <RulesList
+      tenant={tenant}
+      api={WHATSAPP_RULES}
+      fileName="whatsapp"
+      emptyTitle="No custom rules yet"
+      withPriority
+      intro="Rules that shape how your AI replies on WhatsApp and on your website chat: tone, policy, what not to say. Your rules take precedence over the knowledge base, and High priority rules win when two rules disagree. Turned-off rules stay saved but don't apply."
+    />
+  </div>
 );
 
 export default CustomRulesTab;

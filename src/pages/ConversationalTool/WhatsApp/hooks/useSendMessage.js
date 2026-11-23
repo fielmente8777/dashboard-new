@@ -14,6 +14,28 @@ import { useChatCache } from "./useChatCache";
 
 const NO_CREDITS = 402;
 
+// --- one send at a time per chat ---
+// A quick reply goes out as several messages, each waiting for the server.
+// Without this, a second click (another quick reply, a typed message, a
+// second tab of the same hook) would start while the first is still going,
+// and their messages would mix: reply A's text, then reply B's document.
+// Every send to a number waits here for the ones before it to finish, so
+// each request's messages always go out together and in order. Kept outside
+// the hook so it survives re-renders and switching chats.
+const sendQueues = new Map();
+
+const inTurn = (key, task) => {
+  const previous = sendQueues.get(key) || Promise.resolve();
+  // runs after the previous send, whether that one worked or not
+  const run = previous.then(task, task);
+  const tail = run.catch(() => {});
+  sendQueues.set(key, tail);
+  tail.then(() => {
+    if (sendQueues.get(key) === tail) sendQueues.delete(key);
+  });
+  return run;
+};
+
 // Everything that can be sent to the open conversation. Each message shows
 // up in the chat at once (as "sending"), then turns into sent or failed
 // when the server answers.
@@ -85,9 +107,16 @@ export const useSendMessage = (hid, conversation, onSend) => {
       return post(message._id, payload);
     };
 
+    // each request waits its turn (see `inTurn`); keyed by the number, as
+    // that is where the messages actually go
+    const queued =
+      (task) =>
+      (...args) =>
+        inTurn(conversation?.phone || conversationId, () => task(...args));
+
     return {
       // text and / or one file
-      sendText: ({ text, file }) => {
+      sendText: queued(({ text, file }) => {
         const payload = new FormData();
         payload.append("phone", conversation.phone);
         if (text) payload.append("text", text);
@@ -109,11 +138,11 @@ export const useSendMessage = (hid, conversation, onSend) => {
           payload,
           text || file.name,
         );
-      },
+      }),
 
       // an approved template, with the given variable values
       // ({ header, body }) or else its sample ones
-      sendTemplate: (template, values) => {
+      sendTemplate: queued((template, values) => {
         const { body, params, headerParams } = fillTemplate(template, values);
         const language = template.language || "en";
 
@@ -134,10 +163,10 @@ export const useSendMessage = (hid, conversation, onSend) => {
           },
           body || "Template",
         );
-      },
+      }),
 
       // a form (WhatsApp flow). `text` is { header, body, footer, cta }
-      sendFlow: (flow, text) => {
+      sendFlow: queued((flow, text) => {
         const interactive = {
           type: "flow",
           header: text.header ? { type: "text", text: text.header } : undefined,
@@ -159,11 +188,13 @@ export const useSendMessage = (hid, conversation, onSend) => {
           { phone: conversation.phone, interactive },
           text.body,
         );
-      },
+      }),
 
-      // a saved reply: its texts and media, one message each, in order
-      sendQuickReply: async (reply) => {
-        const items = [...reply.items].sort((a, b) => a.order - b.order);
+      // a saved reply: its texts and media, one message each, in order.
+      // The whole reply is one turn in the queue, so nothing else sent to
+      // this chat can land between its messages.
+      sendQuickReply: queued(async (reply) => {
+        const items = [...(reply.items || [])].sort((a, b) => a.order - b.order);
 
         for (const item of items) {
           if (item.type === "text") {
@@ -182,10 +213,12 @@ export const useSendMessage = (hid, conversation, onSend) => {
           }
 
           for (const media of item.media || []) {
+            // this reply's own file, by its own URL: the server sends exactly
+            // this link, and the name shown with it is this file's name
             const file = {
               mediaUrl: media.url,
               mimeType: media.mimeType,
-              filename: media.fileName,
+              fileName: media.fileName,
             };
             const sent = await deliver(
               {
@@ -203,10 +236,10 @@ export const useSendMessage = (hid, conversation, onSend) => {
             if (!sent) return;
           }
         }
-      },
+      }),
 
       // tries a failed message again
-      resend: async (message) => {
+      resend: queued(async (message) => {
         const payload = buildResendPayload(message);
         if (!payload) {
           showToast({
@@ -225,7 +258,7 @@ export const useSendMessage = (hid, conversation, onSend) => {
         if (await post(message._id, retry)) {
           showToast({ message: "Sent to WhatsApp, waiting for delivery" });
         }
-      },
+      }),
     };
   }, [cache, conversation, hid, navigate, onSend, sendMessage, showToast]);
 };

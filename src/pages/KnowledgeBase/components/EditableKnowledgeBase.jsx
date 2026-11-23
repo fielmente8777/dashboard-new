@@ -1,4 +1,4 @@
-import { ArrowLeft, RefreshCw, Save } from "lucide-react";
+import { ArrowLeft, FileUp, RefreshCw, Save } from "lucide-react";
 import { useCallback, useState } from "react";
 import Button from "../../../components/ui/Button";
 import PageShell from "../../../components/ui/PageShell";
@@ -12,6 +12,7 @@ import {
   slugifyKey,
 } from "../utils/kbHelpers";
 import { toSectionTab } from "../utils/sectionConfig";
+import ImportDocumentsDialog from "./ImportDocumentsDialog";
 import KnowledgeBaseSection from "./KnowledgeBaseSection";
 import TabBar from "./TabBar";
 
@@ -29,6 +30,7 @@ const EditableKnowledgeBase = ({
 }) => {
   const { showToast } = useToast();
   const [selectedTab, setSelectedTab] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   // stable, so the memoised editor fields only re-render when their value changes
   const handleChange = useCallback(
@@ -83,19 +85,35 @@ const EditableKnowledgeBase = ({
           : "We generated this from your source. Edit anything below, then publish when it looks right."
       }
       actions={
-        // A saved knowledge base cannot be started over: the account is
-        // limited to one, so it is edited in place or deleted from the list.
-        savedId ? (
-          <Button variant="secondary" icon={ArrowLeft} onClick={onBack}>
-            Back to list
+        <div className="flex flex-wrap gap-2">
+          {/* adds the content of the hotel's documents to this knowledge base */}
+          <Button variant="secondary" icon={FileUp} onClick={() => setImportOpen(true)}>
+            Import documents
           </Button>
-        ) : (
-          <Button variant="secondary" icon={RefreshCw} onClick={onStartOver}>
-            Start over
-          </Button>
-        )
+          {/* A saved knowledge base cannot be started over: the account is
+              limited to one, so it is edited in place or deleted from the list. */}
+          {savedId ? (
+            <Button variant="secondary" icon={ArrowLeft} onClick={onBack}>
+              Back to list
+            </Button>
+          ) : (
+            <Button variant="secondary" icon={RefreshCw} onClick={onStartOver}>
+              Start over
+            </Button>
+          )}
+        </div>
       }
     >
+      <ImportDocumentsDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        kb={kb}
+        setKb={setKb}
+        // the imported content lives under knowledge_base: show that tab
+        onSectionsChanged={(sections) => {
+          if (sections.length && Object.hasOwn(kb, "knowledge_base")) setSelectedTab("knowledge_base");
+        }}
+      />
       <TabBar
         sections={sectionEntries.map(toSectionTab)}
         activeKey={activeEntry?.[0]}

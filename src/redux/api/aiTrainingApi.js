@@ -5,7 +5,7 @@ const FEEDBACK_URL = "/api/v1/ai-feedback";
 const VOICE_URL = "/api/v1/voice-instructions";
 const NODE = { service: "node" };
 
-const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiRule", "AiFeedback", "VoiceRule", "VoiceSettings"] });
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiRule", "AiFeedback", "VoiceRule", "VoiceSettings", "ChatAiSettings"] });
 
 // Every call takes the tenant ({ hid, ndid }) alongside its own fields.
 export const aiTrainingApi = api.injectEndpoints({
@@ -76,6 +76,29 @@ export const aiTrainingApi = api.injectEndpoints({
       invalidatesTags: ["AiFeedback"],
       extraOptions: NODE,
     }),
+    // --- chat AI settings: team hours, "don't know" messages, booking engine ---
+
+    // -> { teamHours: { enabled, timezone, days }, unknownInfoMessage,
+    //      afterHoursMessage, liveAvailability }
+    getChatAiSettings: build.query({
+      query: ({ hid, ndid }) => ({ url: `${RULES_URL}/settings`, params: { hid, ndid } }),
+      transformResponse: (response) => response?.settings || null,
+      providesTags: ["ChatAiSettings"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, ndid, ...settings to change }
+    updateChatAiSettings: build.mutation({
+      query: ({ hid, ndid, ...body }) => ({
+        url: `${RULES_URL}/settings`,
+        method: "PATCH",
+        params: { hid, ndid },
+        body,
+      }),
+      invalidatesTags: ["ChatAiSettings"],
+      extraOptions: NODE,
+    }),
+
     // --- Voice AI: what the phone assistant follows, and its switches ---
 
     getVoiceRules: build.query({
@@ -130,6 +153,8 @@ export const {
   useGetFlaggedRepliesQuery,
   useApproveFlaggedReplyMutation,
   useRejectFlaggedReplyMutation,
+  useGetChatAiSettingsQuery,
+  useUpdateChatAiSettingsMutation,
   useGetVoiceRulesQuery,
   useAddVoiceRuleMutation,
   useUpdateVoiceRuleMutation,
