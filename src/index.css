@@ -22,6 +22,20 @@
 
   --app-navbar: #1e2d52;
 
+  /* states and accents (AI agent builder first). Text tokens stay at least
+     4.5:1 on --app-surface; the -soft ones are backgrounds only. */
+  --app-surface-raised: #fbfcfd;
+  --app-accent: #be185d; /* active tab, selected row edge */
+  --app-accent-soft: rgba(219, 39, 119, 0.09); /* selected row */
+  --app-accent-text: #9d174d;
+  --app-success: #047857;
+  --app-success-soft: rgba(16, 185, 129, 0.12);
+  --app-danger: #b91c1c;
+  --app-danger-soft: rgba(239, 68, 68, 0.1);
+  --app-warning: #a14a07;
+  --app-warning-soft: rgba(245, 158, 11, 0.14);
+  --app-focus: #2563eb;
+
   /* brand colours; the dark theme keeps the stronger originals */
   --brand-primary: #1e2d52;
   --brand-accent: #f0692b;
@@ -111,6 +125,18 @@
   --app-border-strong: #33333f;
 
   --app-navbar: #0d1117;
+
+  --app-surface-raised: #1c1c27;
+  --app-accent: #f472b6;
+  --app-accent-soft: rgba(236, 72, 153, 0.16);
+  --app-accent-text: #f9a8d4;
+  --app-success: #34d399;
+  --app-success-soft: rgba(52, 211, 153, 0.14);
+  --app-danger: #f87171;
+  --app-danger-soft: rgba(248, 113, 113, 0.14);
+  --app-warning: #fbbf24;
+  --app-warning-soft: rgba(251, 191, 36, 0.14);
+  --app-focus: #60a5fa;
 
   --brand-primary: #152547;
   --brand-accent: #fc5f07;
@@ -384,6 +410,17 @@ HEX color codes used: #F1F1F1, #202020, #7E909A, #1C4E80, #A5D8DD, #EA6A47, #009
   --color-app-text-faint: var(--app-text-faint);
   --color-app-border: var(--app-border);
   --color-app-navbar: var(--app-navbar);
+  --color-app-surface-raised: var(--app-surface-raised);
+  --color-app-accent: var(--app-accent);
+  --color-app-accent-soft: var(--app-accent-soft);
+  --color-app-accent-text: var(--app-accent-text);
+  --color-app-success: var(--app-success);
+  --color-app-success-soft: var(--app-success-soft);
+  --color-app-danger: var(--app-danger);
+  --color-app-danger-soft: var(--app-danger-soft);
+  --color-app-warning: var(--app-warning);
+  --color-app-warning-soft: var(--app-warning-soft);
+  --color-app-focus: var(--app-focus);
   --color-seo-track: var(--seo-track);
   --gradient-hero: linear-gradient(
     135deg,
