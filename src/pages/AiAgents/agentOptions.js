@@ -48,44 +48,7 @@ export const GOAL_OPTIONS = [
   },
 ];
 
-export const ACTION_OPTIONS = [
-  {
-    key: "checkAvailability",
-    label: "Check room availability",
-    hint: "Looks up live availability and rates from your booking engine before answering.",
-  },
-  {
-    key: "captureLeadDetails",
-    label: "Save guest details to the lead",
-    hint: "Name, phone, email, dates and guests the guest shares are saved on their lead.",
-  },
-  {
-    key: "handoffToHuman",
-    label: "Hand over to your team",
-    hint: "When a guest asks for a person, is upset, or the AI can't help, it stops and alerts your team.",
-  },
-  {
-    key: "createBooking",
-    label: "Create bookings",
-    hint: "Creates a reservation (with a payment link for online payment) once the guest confirms. Turn on only when your booking engine is connected.",
-    warning: true,
-  },
-];
-
-export const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-// Monday first on screen
-export const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-
-export const TIMEZONE_OPTIONS = [
-  "Asia/Kolkata",
-  "Asia/Dubai",
-  "Asia/Muscat",
-  "Asia/Kathmandu",
-  "Asia/Colombo",
-  "Asia/Singapore",
-  "Europe/London",
-  "America/New_York",
-].map((value) => ({ value, label: value.replace("_", " ") }));
+// Actions and working hours: pages/AiAgents/actions (actionModel.js, scheduleCore.js)
 
 // Badge tones: components/ui/Badge
 export const RUN_STATUS = {
