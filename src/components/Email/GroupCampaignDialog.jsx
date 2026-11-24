@@ -4,12 +4,10 @@ import { useToast } from "../../context/ToastContext";
 import { createAudienceBatch, getAudienceOptions, previewAudience } from "../../redux/api/emailMarketingApi";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
-import { Select } from "../ui/Field";
 import { Skeleton } from "../ui/States";
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-IN");
 const people = (n) => `${fmt(n)} ${n === 1 ? "person" : "people"}`;
-const shortDate = (at) => (at ? new Date(at).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "");
 
 // the whole list, shown above the groups as one more choice
 const EVERYONE = "__everyone__";
@@ -87,8 +85,7 @@ function WhoTick({ checked, onChange, icon: TickIcon, tone, label, sub, count, d
 
 // "Create group email campaign": 1. pick a group (e.g. one per country or
 // language), 2. who in it gets the email: everyone, or only those who opened
-// and / or clicked, 3. (for opened / clicked) which earlier email that is about.
-// Then the compose window opens for that audience.
+// and / or clicked (any earlier email). Then the compose window opens for that audience.
 //
 //   open / onClose
 //   initialGroup   a group chosen when it opens ("Send" on a group)
@@ -101,7 +98,6 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
   const [group, setGroup] = useState("");
   const [everyoneInGroup, setEveryoneInGroup] = useState(true);
   const [engagement, setEngagement] = useState([]); // "opened" | "clicked"
-  const [fromCampaign, setFromCampaign] = useState(""); // "" = any earlier email
   const [preview, setPreview] = useState(null);
   const [counting, setCounting] = useState(false);
   const [preparing, setPreparing] = useState(false);
@@ -113,7 +109,6 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
     setGroup(initialGroup || "");
     setEveryoneInGroup(true);
     setEngagement([]);
-    setFromCampaign("");
     setPreview(null);
     setOptions(null);
     setLoadFailed(false);
@@ -135,9 +130,9 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
       groups: group === EVERYONE ? [] : [group],
       engaged: [],
       engagement: filtered ? engagement : [],
-      engagementCampaignId: filtered && fromCampaign ? fromCampaign : null,
+      engagementCampaignId: null,
     };
-  }, [group, filtered, engagement, fromCampaign]);
+  }, [group, filtered, engagement]);
   const incomplete = !selection || (!everyoneInGroup && !engagement.length);
 
   // the live count, a moment after the last change (only the latest answer counts)
@@ -188,7 +183,6 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
   const groups = options?.newsletter?.groups || [];
   const chosen = group === EVERYONE ? null : groups.find((g) => g.name === group);
   const total = group === EVERYONE ? options?.newsletter?.subscribed : chosen?.subscribed;
-  const campaigns = options?.campaigns || [];
   const count = preview?.count ?? 0;
 
   const status = !group
@@ -311,28 +305,7 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                   count={group === EVERYONE ? null : chosen?.clicked}
                 />
               </div>
-            </Step>
-          )}
-
-          {group && filtered && (
-            <Step
-              number={3}
-              title="Opened or clicked which email?"
-              hint="Any earlier email, or one campaign, e.g. a follow-up to people who opened last week's offer."
-            >
-              <Select
-                aria-label="Earlier email"
-                value={fromCampaign}
-                onChange={(e) => setFromCampaign(e.target.value)}
-                options={[
-                  { value: "", label: "Any earlier email" },
-                  ...campaigns.map((c) => ({
-                    value: c._id,
-                    label: `${c.subject} · ${shortDate(c.sentAt)} · ${fmt(c.opened)} opened, ${fmt(c.clicked)} clicked`,
-                  })),
-                ]}
-              />
-              {!incomplete && !counting && preview && (
+              {filtered && !incomplete && !counting && preview && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400">
                   <Check className="size-3.5" /> {people(count)} in this group match.
                 </p>
