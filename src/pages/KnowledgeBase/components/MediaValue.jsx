@@ -14,10 +14,22 @@ export const MediaValue = ({ value, onChange, mimeType }) => {
     <div className="flex items-center gap-3">
       {mediaKind === "video"
         ? <video src={value} controls preload="metadata" className="h-16 w-28 shrink-0 rounded-lg bg-black" aria-label="Video preview" />
-        : <MediaThumbnail asset={{ mediaKind, thumbnailUrl: mediaKind === "image" ? value : null }} className="size-14 shrink-0 rounded-lg border border-app-border!" />}
+        : (
+          <a href={value} target="_blank" rel="noopener noreferrer" className="shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500" aria-label="Open file in a new tab">
+            <MediaThumbnail asset={{ mediaKind, thumbnailUrl: mediaKind === "image" ? value : null }} className="size-14 shrink-0 rounded-lg border border-app-border!" />
+          </a>
+        )}
 
       <div className="min-w-0 flex-1">
-        <a href={value} target="_blank" rel="noreferrer" className="block truncate text-xs text-primary underline">{value}</a>
+        <a
+          href={value}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={value}
+          className="relative z-10 block cursor-pointer truncate text-xs text-blue-600 hover:underline focus-visible:underline focus-visible:outline-none dark:text-blue-400"
+        >
+          {value}
+        </a>
         <Button
           variant="secondary"
           size="sm"
