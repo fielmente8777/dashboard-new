@@ -2,7 +2,7 @@ import Button from "./Button";
 
 // Sticks to the bottom of the page while a form has unsaved changes.
 // pr-24 keeps the buttons clear of the AI assistant launcher, which is fixed
-// at the bottom right corner (chatbot/ChatbotWidget.jsx: bottom-6 right-6, 56px).
+// at the bottom right corner (chatbot/ChatbotWidget.jsx: bottom-6 right-6, 56px; 48px on phones).
 const SaveBar = ({
   show,
   message = "You have unsaved changes.",

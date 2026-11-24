@@ -6,12 +6,14 @@ import FileInfoCard from "./components/FileInfoCard";
 import ColumnMapping from "./components/ColumnMapping";
 import ImportRules from "./components/ImportRules";
 import { useTenant } from "../../../hooks/useTenant";
+import { useToast } from "../../../context/ToastContext";
 import {
   usePreviewLeadsImportMutation,
   useUploadLeadsImportFileMutation,
 } from "../../../redux/api/leadsApi";
 
 export default function ImportAndConvertLeads() {
+  const { showToast } = useToast();
   const { hid } = useTenant();
   const [uploadFile] = useUploadLeadsImportFileMutation();
   const [previewImport] = usePreviewLeadsImportMutation();
@@ -54,7 +56,7 @@ export default function ImportAndConvertLeads() {
   const handlePreview = async () => {
     try {
       if (!importRules.duplicateBy) {
-        return alert("Please select duplicate detection.");
+        return showToast({ message: "Choose how duplicates are detected first.", type: "warning" });
       }
 
       const result = await previewImport({

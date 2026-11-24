@@ -4,6 +4,7 @@ import BalanceAlertDialog from "../components/BalanceAlert/BalanceAlertDialog";
 import FeatureLock from "../components/SubscriptionLock/FeatureLock";
 import { appForPath, hasApp } from "../config/entitlements";
 import { BASE_PATH, PAGES } from "../routes/paths";
+import { isFullScreenPage } from "../components/chatbot/fullScreenPages";
 import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 import SubscriptionLock from "../components/SubscriptionLock/SubscriptionLock";
@@ -39,6 +40,10 @@ export default function DashboardLayout({ children }) {
           ) : (
             children
           )}
+          {/* room for the AI assistant button at the bottom right (chatbot/ChatbotWidget.jsx):
+              the last row of any page can be scrolled clear of it. Full-screen chat pages
+              don't scroll; there the button docks to the right edge instead. */}
+          {!isFullScreenPage(pathname) && <div aria-hidden="true" className="h-20 sm:h-24" />}
         </div>
       </div>
 

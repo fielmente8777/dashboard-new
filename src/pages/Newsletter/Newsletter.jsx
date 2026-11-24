@@ -1,5 +1,6 @@
-import { Download, FileSpreadsheet, MailPlus, Send, UserPlus } from "lucide-react";
+import { AlertTriangle, Download, FileSpreadsheet, MailPlus, Send, UserPlus } from "lucide-react";
 import { useState } from "react";
+import AudiencePickerDialog from "../../components/Email/AudiencePickerDialog";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import Button from "../../components/ui/Button";
@@ -19,7 +20,6 @@ import GroupsPanel from "./GroupsPanel";
 import ImportDialog from "./ImportDialog";
 import NewsletterOverview from "./NewsletterOverview";
 import NewsletterSettings from "./NewsletterSettings";
-import SendNewsletterDialog from "./SendNewsletterDialog";
 import SubscribersPanel from "./SubscribersPanel";
 import { formatNumber } from "./newsletterUtils";
 
@@ -40,7 +40,6 @@ export default function Newsletter() {
   const [sendGroup, setSendGroup] = useState("");
   // the group the Subscribers tab is showing ("" = everyone)
   const [listGroup, setListGroup] = useState("");
-  const [preparing, setPreparing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [compose, setCompose] = useState(null); // { batchId, count }
   // the newsletters sent so far (Sent newsletters tab)
@@ -57,17 +56,14 @@ export default function Newsletter() {
   // the chosen addresses become one recipient batch, then the compose window opens
   const composeTo = async (emails) => {
     if (!emails.length) return;
-    setPreparing(true);
     try {
       const res = await createManualRecipientBatch({ emails });
       const batchId = res?.doc?.recipientBatchId;
       if (!batchId) throw new Error();
       setChoosingAudience(false);
-      setCompose({ key: Date.now(), batchId, count: res?.doc?.count ?? emails.length, emails, label: choosingAudience ? sendGroup : "" });
+      setCompose({ key: Date.now(), batchId, count: res?.doc?.count ?? emails.length, emails, label: "" });
     } catch {
       showToast({ message: "Could not prepare the recipients. Please try again.", type: "error" });
-    } finally {
-      setPreparing(false);
     }
   };
 
@@ -82,6 +78,8 @@ export default function Newsletter() {
         from,
         attachments,
         name: `${NEWSLETTER_PREFIX}${subject}`,
+        // "Past guests + Opened “Diwali offer”", shown in the Sent list
+        audienceLabel: compose.label || "",
       });
       const count = compose.count + toEmails.length;
       // stays on the same tab, so another group can be sent to straight away
@@ -151,7 +149,6 @@ export default function Newsletter() {
               setSendGroup("");
               setChoosingAudience(true);
             }}
-            disabled={!stats.data?.subscribed}
           >
             Send newsletter
           </Button>
@@ -208,7 +205,6 @@ export default function Newsletter() {
               <Button
                 icon={Send}
                 className="mt-5"
-                disabled={!stats.data?.subscribed}
                 onClick={() => {
                   setSendGroup("");
                   setChoosingAudience(true);
@@ -225,13 +221,26 @@ export default function Newsletter() {
 
       <AddSubscriberDialog open={adding} onClose={() => setAdding(false)} />
       <ImportDialog open={importing} group={importGroup} onClose={() => setImporting(false)} />
-      <SendNewsletterDialog
+      {/* who gets it: any mix of the list, its groups, and people who opened / clicked earlier emails */}
+      <AudiencePickerDialog
         open={choosingAudience}
         onClose={() => setChoosingAudience(false)}
-        onContinue={composeTo}
-        preparing={preparing}
-        group={sendGroup}
-        linksOn={settings.data?.unsubscribeLinks ?? true}
+        initialGroups={sendGroup ? [sendGroup] : []}
+        title="Send a newsletter"
+        description="First pick who gets it. Tick as many as you like: each person gets it once, and people who unsubscribed are left out."
+        onContinue={({ batchId, count, label, emails }) => {
+          setChoosingAudience(false);
+          setCompose({ key: Date.now(), batchId, count, emails, label });
+        }}
+        notice={
+          (settings.data?.unsubscribeLinks ?? true) ? null : (
+            <p className="flex items-start gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+              Unsubscribe links aren&apos;t switched on for your account yet, so add a line telling people how to opt out (for
+              example, reply &quot;unsubscribe&quot;). Contact Eazotel support to switch them on.
+            </p>
+          )
+        }
       />
 
       {compose && (

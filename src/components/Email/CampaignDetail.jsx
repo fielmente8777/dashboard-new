@@ -21,10 +21,18 @@ import {
   RefreshCw,
   Smartphone,
   TriangleAlert,
+  UserPlus,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { campaignStatus, describeSendProblem, formatDate, RECIPIENT_TONE } from "../../pages/EmailMarketing/emailUtils.js";
-import { getCampaignMessage, getCampaignRecipients, getEmailCampaign } from "../../redux/api/emailMarketingApi";
+import { useToast } from "../../context/ToastContext";
+import {
+  createCampaignAudienceBatch,
+  getCampaignMessage,
+  getCampaignRecipients,
+  getEmailCampaign,
+  saveCampaignAudienceToContacts,
+} from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
@@ -409,7 +417,69 @@ function SinglePane({ campaign, campaignId, onChanged }) {
 
 /* ---------------- recipients & results ---------------- */
 
-function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
+// Above the Opened / Clicked list: send the next email to just these people,
+// or keep them in Contacts. gian builds both from the campaign (all pages, not
+// only the 50 shown), so nothing is lost to paging.
+function EngagedActions({ campaignId, group, total, onSendTo }) {
+  const { showToast } = useToast();
+  const [busy, setBusy] = useState(""); // "send" | "contacts" while working
+  const who = `${total.toLocaleString("en-IN")} ${total === 1 ? "person" : "people"}`;
+  const did = group === "clicked" ? "clicked a link in this email" : "opened this email";
+
+  const sendTo = async () => {
+    setBusy("send");
+    try {
+      const doc = (await createCampaignAudienceBatch({ campaignId, group }))?.doc;
+      if (!doc?.recipientBatchId) throw new Error("Could not prepare the recipients. Please try again.");
+      onSendTo({ batchId: doc.recipientBatchId, count: doc.count, label: doc.label });
+    } catch (error) {
+      showToast({ message: error.message, type: "error" });
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const saveContacts = async () => {
+    setBusy("contacts");
+    try {
+      const doc = (await saveCampaignAudienceToContacts({ campaignId, group }))?.doc;
+      const added = doc?.added || 0;
+      const already = doc?.alreadyContacts || 0;
+      showToast({
+        message: added
+          ? `${added.toLocaleString("en-IN")} added to Contacts${already ? `, ${already.toLocaleString("en-IN")} were already there` : ""}.`
+          : "Everyone here is already in your Contacts.",
+        type: "success",
+        duration: 6000,
+      });
+    } catch (error) {
+      showToast({ message: error.message, type: "error" });
+    } finally {
+      setBusy("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-blue-500/20! bg-blue-500/5 p-3 sm:flex-row sm:items-center">
+      <p className="min-w-0 flex-1 text-sm text-app-text">
+        <span className="font-semibold">{who}</span> {did}.
+        <span className="block text-xs text-app-text-muted">Send them your next offer, or keep them in Contacts.</span>
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" size="sm" icon={UserPlus} onClick={saveContacts} loading={busy === "contacts"} disabled={Boolean(busy)}>
+          Save to Contacts
+        </Button>
+        {onSendTo && (
+          <Button size="sm" icon={Send} onClick={sendTo} loading={busy === "send"} disabled={Boolean(busy)}>
+            Send new email to them
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson, onSendTo }) {
   const [recipients, setRecipients] = useState([]);
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState(initialFilter);
@@ -476,6 +546,10 @@ function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
         )}
       </div>
 
+      {(filter === "opened" || filter === "clicked") && !loading && total > 0 && (
+        <EngagedActions campaignId={campaignId} group={filter} total={total} onSendTo={onSendTo} />
+      )}
+
       <RecipientsTable
         recipients={recipients}
         loading={loading}
@@ -506,6 +580,7 @@ function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
 //
 //   position / total, onPrev / onNext   "3 of 13" and the arrows (optional)
 //   onChanged()                         stopped, started or deleted: refresh the list
+//   onSendTo({ batchId, count, label }) open a new email to the people who opened / clicked
 export default function CampaignDetail({
   campaignId,
   onClose,
@@ -516,6 +591,7 @@ export default function CampaignDetail({
   onChanged,
   initialTab = "message",
   onTabChange,
+  onSendTo,
 }) {
   const [campaign, setCampaign] = useState(null);
   // the report sits above the email, so only Message / Recipients are tabs ("report" opens on Message)
@@ -666,7 +742,13 @@ export default function CampaignDetail({
               ) : personId ? (
                 <PersonPane campaign={campaign} campaignId={campaignId} recipientId={personId} onBack={() => setPersonId(null)} />
               ) : (
-                <RecipientsPane key={recipientFilter} campaignId={campaignId} initialFilter={recipientFilter} onOpenPerson={setPersonId} />
+                <RecipientsPane
+                  key={recipientFilter}
+                  campaignId={campaignId}
+                  initialFilter={recipientFilter}
+                  onOpenPerson={setPersonId}
+                  onSendTo={onSendTo}
+                />
               )}
             </div>
           </>

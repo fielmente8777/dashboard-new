@@ -12,19 +12,22 @@ import {
 import { useState } from "react";
 import { FaFacebook } from "react-icons/fa6";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
 import Segmented from "../../components/ui/Segmented";
+import Tabs from "../../components/ui/Tabs";
 import StatCard from "../../components/ui/StatCard";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
 import { useGetMetaPageOverviewQuery } from "../../redux/api/metaApi";
 import { selectHid } from "../../redux/slice/UserSlice";
 import { integrationPath } from "../../routes/paths";
+import CreateReportButton from "./components/CreateReportButton";
 import MetaPerformanceCharts from "./components/MetaPerformanceCharts";
+import MetaReportsPanel from "./components/MetaReportsPanel";
 import MetaTopPosts from "./components/MetaTopPosts";
 
 const PERIODS = [
@@ -161,9 +164,17 @@ const NotConnected = () => {
   );
 };
 
+const TABS = [
+  { value: "insights", label: "Insights" },
+  { value: "reports", label: "Reports" },
+];
+
 const MetaPageInsights = () => {
   const hid = useSelector(selectHid);
   const [period, setPeriod] = useState("28_days");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") === "reports" ? "reports" : "insights";
+  const setTab = (next) => setSearchParams(next === "insights" ? {} : { tab: next }, { replace: true });
   const overview = useGetMetaPageOverviewQuery(
     { hid, period },
     { skip: !hid, refetchOnMountOrArgChange: true },
@@ -181,19 +192,28 @@ const MetaPageInsights = () => {
   return (
     <PageShell
       title="Meta insights"
-      description="Reach, followers and engagement of your Facebook page."
+      description="Reach, followers and engagement of your Facebook page, and PDF reports of your ads and content."
       actions={
-        <Segmented
-          label="Period"
-          options={PERIODS}
-          value={period}
-          onChange={setPeriod}
-          disabled={overview.isFetching}
-        />
+        <>
+          {tab === "insights" && (
+            <Segmented
+              label="Period"
+              options={PERIODS}
+              value={period}
+              onChange={setPeriod}
+              disabled={overview.isFetching}
+            />
+          )}
+          {!notConnected && <CreateReportButton hid={hid} onCreated={() => setTab("reports")} />}
+        </>
       }
     >
+      <Tabs tabs={TABS} value={tab} onChange={setTab} className="mb-4" />
+
       {notConnected ? (
         <NotConnected />
+      ) : tab === "reports" ? (
+        <MetaReportsPanel hid={hid} />
       ) : overview.isError ? (
         <ErrorState
           message={getApiErrorMessage(overview.error, "Could not load the Meta page insights.")}

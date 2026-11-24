@@ -1,6 +1,7 @@
 import { ChevronRight, FileSpreadsheet, FolderOpen, MailPlus, PenLine, Plus, Users } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import * as XLSX from "xlsx";
+import GroupCampaignDialog from "../../components/Email/GroupCampaignDialog";
 import ComposeEmail from "../../components/Email/ComposeEmail";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import DraftsPanel from "../../components/Email/DraftsPanel";
@@ -18,7 +19,6 @@ import { EMAIL_REGEX, formatNumber, normalizeEmail } from "./emailUtils.js";
 import { readSheetFile } from "./readSheetFile.js";
 import { useCampaignSender } from "./useCampaignSender.js";
 import { useRecipientReview } from "../Newsletter/useRecipientReview";
-import { useLazyGetNewsletterAudienceQuery } from "../../redux/api/newsletterApi";
 import GroupsPanel from "../Newsletter/GroupsPanel";
 import ImportDialog from "../Newsletter/ImportDialog";
 
@@ -115,7 +115,8 @@ export function EmailMarketingManagement() {
   const { showToast } = useToast();
   const [view, setView] = useState("sent");
   const [groupImport, setGroupImport] = useState(null); // the group a file is imported into, or null
-  const [loadAudience] = useLazyGetNewsletterAudienceQuery();
+  // "Create group email campaign": null = closed, else the group chosen first ("" = none yet)
+  const [picking, setPicking] = useState(null);
   // the sent email whose details are open
   const [openCampaignId, setOpenCampaignId] = useState(null);
   const [sentCount, setSentCount] = useState(0);
@@ -248,19 +249,6 @@ export function EmailMarketingManagement() {
     }
   };
 
-  // a group's subscribed people become one batch, then the compose window opens
-  const composeToGroup = async (name) => {
-    try {
-      const { emails } = await loadAudience({ tag: name }).unwrap();
-      if (!emails?.length) {
-        showToast({ message: `No one in "${name}" is subscribed.`, type: "error" });
-        return;
-      }
-      await composeToList(emails, name);
-    } catch {
-      showToast({ message: "Could not load the group. Please try again.", type: "error" });
-    }
-  };
 
   const startActions = [
     {
@@ -273,8 +261,8 @@ export function EmailMarketingManagement() {
     {
       icon: FolderOpen,
       title: "A group",
-      description: "Past guests, corporate…",
-      onClick: () => setView("groups"),
+      description: "Everyone, or who opened / clicked",
+      onClick: () => setPicking(""),
     },
     {
       icon: Users,
@@ -313,6 +301,10 @@ export function EmailMarketingManagement() {
             onChange={onExcelPicked}
             className="hidden"
           />
+          <Button variant="secondary" icon={Plus} onClick={() => setPicking("")}>
+            <span className="sm:hidden">Group campaign</span>
+            <span className="hidden sm:inline">Create group email campaign</span>
+          </Button>
           <Button icon={Plus} onClick={() => openCompose()}>
             New email
           </Button>
@@ -335,6 +327,7 @@ export function EmailMarketingManagement() {
           openId={openCampaignId}
           onOpenChange={setOpenCampaignId}
           onCount={setSentCount}
+          onSendTo={({ batchId, count, label }) => setCompose({ key: `batch-${batchId}`, batchId, count, label, template: null })}
           empty={
             <div className="flex flex-col items-center rounded-2xl border border-dashed border-app-border! bg-app-surface px-6 py-12 text-center">
               <span className="flex size-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
@@ -372,12 +365,26 @@ export function EmailMarketingManagement() {
       )}
 
       {view === "groups" && (
-        <GroupsPanel kind="email" onSend={composeToGroup} onImport={(name) => setGroupImport(name)} />
+        <GroupsPanel kind="email" onSend={(name) => setPicking(name)} onImport={(name) => setGroupImport(name)} />
       )}
 
       {view === "templates" && <TemplatesList onUseTemplate={(template) => openCompose(template)} />}
       {view === "quota" && <EmailQuotaPanel />}
       <div className="h-14" aria-hidden="true" />
+
+      <GroupCampaignDialog
+        open={picking !== null}
+        initialGroup={picking || ""}
+        onManageGroups={() => {
+          setPicking(null);
+          setView("groups");
+        }}
+        onClose={() => setPicking(null)}
+        onContinue={({ batchId, count, label, emails }) => {
+          setPicking(null);
+          setCompose({ key: `mix-${batchId}`, batchId, count, label, emails, template: null });
+        }}
+      />
 
       <ImportDialog open={groupImport !== null} group={groupImport || ""} onClose={() => setGroupImport(null)} />
 

@@ -10,6 +10,7 @@ export const CONTACT_SOURCES = [
   { value: "web-form", label: "Webform", tone: "amber" },
   { value: "landing-page", label: "Landing Page", tone: "amber" },
   { value: "Call", label: "Call", tone: "green" },
+  { value: "email-campaign", label: "Email campaign", tone: "sky" },
 ];
 
 export const getSourceTone = (value) =>

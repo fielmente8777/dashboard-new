@@ -7,6 +7,8 @@ const NODE = { service: "node" };
 const BASE = "/api/v1/email-marketing";
 // AI generation can take 20-60s
 const GENERATE_TIMEOUT_MS = 120000;
+// rebuilding a whole uploaded design for phones: up to ~3 minutes
+const MOBILE_TIMEOUT_MS = 200000;
 
 // Email marketing (gian: /api/v1/email-marketing). Every endpoint takes the
 // hid of the selected location; the functions below fill it in.
@@ -171,6 +173,44 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // "Who gets this email?": groups + people who opened / clicked earlier emails, ticked together
+    // { hid } -> { result: { doc: { newsletter: { subscribed, groups: [{ name, subscribed }] }, campaigns: [{ _id, subject, sentAt, opened, clicked }] } } }
+    getAudienceOptions: build.query({
+      query: ({ hid }) => ({ url: `${BASE}/audience/options`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, everyone, groups, engaged: [{ campaignId, group }] } -> { result: { doc: { count, unsubscribed } } }
+    previewAudience: build.mutation({
+      query: ({ hid, ...body }) => ({ url: `${BASE}/audience/preview`, method: "POST", body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    // same body -> { result: { doc: { recipientBatchId, count, label, emails } } }
+    createAudienceBatch: build.mutation({
+      query: ({ hid, ...body }) => ({ url: `${BASE}/audience/batch`, method: "POST", body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    // the people who opened / clicked a sent campaign (gian services/campaignAudience)
+    // { hid, campaignId, group: "opened"|"clicked" } -> { result: { doc: { recipientBatchId, count, label } } }
+    createCampaignAudienceBatch: build.mutation({
+      query: ({ hid, campaignId, group }) => ({
+        url: `${BASE}/campaigns/${campaignId}/audience/batch`,
+        method: "POST",
+        body: { hid, group },
+      }),
+      extraOptions: NODE,
+    }),
+    // same body -> { result: { doc: { total, added, alreadyContacts } } }; refreshes the Contacts page
+    saveCampaignAudienceToContacts: build.mutation({
+      query: ({ hid, campaignId, group }) => ({
+        url: `${BASE}/campaigns/${campaignId}/audience/contacts`,
+        method: "POST",
+        body: { hid, group },
+      }),
+      extraOptions: NODE,
+      invalidatesTags: ["Contact"],
+    }),
+
     // { hid, body: { to: [..up to 5], subject, html, text, fromName, replyTo } }
     // sends the email being written as "[Test] subject"; saves no campaign
     sendTestEmail: build.mutation({
@@ -325,6 +365,28 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // "Help me write" (gian services/emailAi): { hid, body: { action, prompt, bodyHtml, subject } }
+    // -> { result: { doc: { html, subjects } } }
+    aiWriteEmail: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/ai/write`,
+        method: "POST",
+        body: { hid, ...body },
+        timeout: GENERATE_TIMEOUT_MS,
+      }),
+      extraOptions: NODE,
+    }),
+    // "Make it mobile-ready": { hid, html } -> { result: { doc: { html, missing: { links, images }, inputKb } } }
+    // a whole design is rebuilt, which can take a few minutes
+    aiMobileEmail: build.mutation({
+      query: ({ hid, html }) => ({
+        url: `${BASE}/ai/mobile`,
+        method: "POST",
+        body: { hid, html },
+        timeout: MOBILE_TIMEOUT_MS,
+      }),
+      extraOptions: NODE,
+    }),
     // { hid, body: { prompt, tone, brandName, ..., previousTemplate? } }
     // -> { result: { doc: { name, subject, previewText, html, text, prompt } } }
     generateEmailTemplate: build.mutation({
@@ -418,6 +480,9 @@ const strict = async (endpoint, arg) => {
   return body?.result;
 };
 
+// action: write | improve | shorter | longer | formal | friendly | fix | subjects
+export const aiWriteEmail = (body) => strict(e.aiWriteEmail, { hid: selectedHid(), body });
+export const aiMobileEmail = (html) => strict(e.aiMobileEmail, { hid: selectedHid(), html });
 export const generateEmailTemplate = (payload) =>
   strict(e.generateEmailTemplate, { hid: selectedHid(), body: payload });
 export const getEmailTemplates = ({ page = 1, limit = 12, search = "" } = {}) =>
@@ -467,6 +532,16 @@ export const updateEmailDraft = (id, body) => strict(e.updateEmailDraft, { hid: 
 export const deleteEmailDraft = (id) => strict(e.deleteEmailDraft, { hid: selectedHid(), id });
 export const deleteEmailCampaign = ({ campaignId }) =>
   strict(e.deleteEmailCampaign, { hid: selectedHid(), campaignId });
+// selection: { everyone, groups: [names], engaged: [{ campaignId, group: "opened"|"clicked" }],
+//   engagement?: ["opened"|"clicked"] (only the group people who did so), engagementCampaignId?: id|null (null = any email) }
+export const getAudienceOptions = () => strict(e.getAudienceOptions, { hid: selectedHid() });
+export const previewAudience = (selection) => strict(e.previewAudience, { hid: selectedHid(), ...selection });
+export const createAudienceBatch = (selection) => strict(e.createAudienceBatch, { hid: selectedHid(), ...selection });
+// group: "opened" (includes clickers) | "clicked"
+export const createCampaignAudienceBatch = ({ campaignId, group }) =>
+  strict(e.createCampaignAudienceBatch, { hid: selectedHid(), campaignId, group });
+export const saveCampaignAudienceToContacts = ({ campaignId, group }) =>
+  strict(e.saveCampaignAudienceToContacts, { hid: selectedHid(), campaignId, group });
 export const retryEmailCampaign = ({ campaignId }) =>
   strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
 

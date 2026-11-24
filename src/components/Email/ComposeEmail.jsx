@@ -2,7 +2,6 @@ import JoditEditor from "jodit-react";
 import {
   CheckCircle2,
   Expand,
-  FileCode2,
   FileText,
   FlaskConical,
   LayoutTemplate,
@@ -31,11 +30,24 @@ import Dialog from "../ui/Dialog";
 import { EMAIL_REGEX, parseEmails, withPreviewText } from "../../pages/EmailMarketing/emailUtils";
 import { getEmailFooter, getSenderMailbox, renderEmail, sendTestEmail } from "../../redux/api/emailMarketingApi";
 import FooterEditorDialog from "./FooterEditorDialog";
+import ComposeInsertMenu from "./ComposeInsertMenu";
+import HelpMeWritePanel from "./HelpMeWritePanel";
+import HtmlDesignDialog from "./HtmlDesignDialog";
 import { htmlTemplateImporter } from "./htmlTemplateImporter";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
 import SenderMailboxDialog from "./SenderMailboxDialog";
 import { useDraftAutosave } from "./useDraftAutosave";
+
+// gian's attachment upload takes files up to 10 MB each (config/multer)
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+
+// the words of an HTML design, for AI subject lines
+const textOfHtml = (html) => {
+  const box = document.createElement("div");
+  box.innerHTML = String(html || "").replace(/<(style|script|head)[^>]*>[\s\S]*?<\/\1>/gi, "");
+  return (box.textContent || "").replace(/\s+/g, " ").trim();
+};
 
 const EMPTY_BODIES = new Set(["", "<p><br></p>", "<p></p>", "<br>"]);
 
@@ -44,14 +56,16 @@ const CHIP_KEYS = new Set(["Enter", ",", ";", " "]);
 
 // Jodit, made to look like Gmail's body: no frame, formatting bar under the text
 const EDITOR_CSS = `
-.gm-editor .jodit-container:not(.jodit_inline){border:0;border-radius:0;background:transparent;display:flex;flex-direction:column}
-.gm-editor .jodit-workplace{order:1}
-.gm-editor .jodit-toolbar__box:not(:empty){order:2;margin:0 12px 6px;border:1px solid var(--color-app-border,#e5e7eb);border-radius:10px;background:var(--color-app-surface-secondary,#f6f8fc)}
+/* the editor fills the window, so the formatting bar sits at the bottom, right above Send */
+.gm-editor>.jodit-react-container{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.gm-editor .jodit-container:not(.jodit_inline){flex:1 1 auto;border:0;border-radius:0;background:transparent;display:flex;flex-direction:column}
+.gm-editor .jodit-workplace{order:1;flex:1 1 auto}
+/* a long message scrolls under it; the bar stays in view */
+.gm-editor .jodit-toolbar__box:not(:empty){order:2;position:sticky;bottom:0;z-index:2;margin:0 12px 6px;border:1px solid var(--color-app-border,#e5e7eb);border-radius:10px;background:var(--color-app-surface-secondary,#f6f8fc)}
 .gm-editor.gm-no-toolbar .jodit-toolbar__box{display:none}
 .gm-editor .jodit-status-bar{display:none}
 .gm-editor .jodit-wysiwyg{padding:10px 16px!important;font-size:14px;line-height:1.55}
 .gm-editor .jodit-placeholder{padding:10px 16px!important;font-size:14px}
-.gm-editor.gm-full .jodit-workplace{min-height:52vh}
 `;
 
 const formatSize = (bytes) =>
@@ -234,7 +248,15 @@ function ComposeEmail({
   const sesOn = ses?.status === "verified";
   const [presets, setPresets] = useState([]);
   const [isMailboxOpen, setIsMailboxOpen] = useState(false);
+  // a photo being put into the message
   const [importing, setImporting] = useState(false);
+  // "Upload HTML design": the files picked (null = closed)
+  const [designFiles, setDesignFiles] = useState(null);
+  const [isWriteOpen, setIsWriteOpen] = useState(false);
+  const editorRef = useRef(null); // the Jodit instance, to insert at the cursor
+  const attachInputRef = useRef(null);
+  const designInputRef = useRef(null);
+  const photoInputRef = useRef(null);
   // template preview: device, how it measured (fixed-width designs), the big view
   const [device, setDevice] = useState("desktop");
   const [fit, setFit] = useState(null);
@@ -442,28 +464,45 @@ function ComposeEmail({
 
   const fail = (message) => showToast({ message, type: "error", duration: 5000 });
 
-  // a ready-made .html file from the user's computer becomes the template,
-  // shown and sent exactly as designed (Change → can save it to Saved templates).
-  // Pictures embedded in the file are uploaded and linked (htmlTemplateImporter).
-  const importHtmlFile = async (file) => {
+  // a ready-made .html design (checked in HtmlDesignDialog: pictures put online,
+  // phone fit, optional AI rebuild) becomes the template, sent exactly as designed
+  const applyDesign = (picked) => {
+    applyTemplate(picked);
+    setDesignFiles(null);
+    showToast({ message: `Design “${picked.name}” added.`, type: "success" });
+  };
+
+  // text from Help me write / a photo: at the cursor, else at the end
+  const insertIntoEditor = (html) => {
+    const jodit = editorRef.current;
+    if (jodit?.s?.insertHTML) {
+      jodit.s.insertHTML(html);
+      bodyRef.current = jodit.value;
+    } else {
+      bodyRef.current = `${bodyRef.current || ""}${html}`;
+      setBody(bodyRef.current);
+      setEditorKey((k) => k + 1);
+    }
+    scheduleDraftSave();
+  };
+  const replaceBody = (html) => {
+    bodyRef.current = html;
+    setBody(html);
+    setEditorKey((k) => k + 1);
+    scheduleDraftSave();
+  };
+
+  // a photo shown inside the message: uploaded, then linked (never base64,
+  // which makes emails heavy and is blocked by many mail apps)
+  const insertPhoto = async (file) => {
     if (!file || importing) return;
     setImporting(true);
     try {
-      const imported = await htmlTemplateImporter.read(file);
-      applyTemplate({ name: imported.name, subject: imported.subject, html: imported.html });
-      const notes = [];
-      if (imported.hostedImages) notes.push(`${imported.hostedImages} picture(s) uploaded and linked`);
-      if (imported.localImages.length) {
-        notes.push(`${imported.localImages.length} picture(s) point to files on your computer and won't show, e.g. ${imported.localImages[0]}`);
-      }
-      if (imported.tooLongForGmail) notes.push(`it is ${imported.sizeKb} KB, so Gmail may cut it short`);
-      showToast({
-        message: `Template “${file.name}” added${notes.length ? `: ${notes.join("; ")}.` : "."}`,
-        type: imported.localImages.length || imported.tooLongForGmail ? "warning" : "success",
-        duration: notes.length ? 8000 : 4000,
-      });
+      const ready = await htmlTemplateImporter.uploadable(file);
+      const url = await htmlTemplateImporter.upload(ready, 1);
+      insertIntoEditor(`<p><img src="${url}" alt="" style="display:block;max-width:100%;height:auto;border:0"></p>`);
     } catch (error) {
-      fail(error?.message || "Couldn't read that file.");
+      fail(error?.message || "Couldn't upload the photo.");
     } finally {
       setImporting(false);
     }
@@ -755,7 +794,7 @@ function ComposeEmail({
                 </Row>
               </div>
 
-              <div className="flex-1">
+              <div className="flex flex-1 flex-col">
                 {template ? (
                   <div className="m-3 overflow-hidden rounded-lg border border-app-border!">
                     <div className="flex items-center gap-2 border-b border-app-border! bg-app-surface-secondary px-3 py-2">
@@ -798,9 +837,10 @@ function ComposeEmail({
                     />
                   </div>
                 ) : (
-                  <div className={`gm-editor ${showFormatting ? "" : "gm-no-toolbar"} ${full ? "gm-full" : ""}`}>
+                  <div className={`gm-editor flex flex-1 flex-col ${showFormatting ? "" : "gm-no-toolbar"} ${full ? "gm-full" : ""}`}>
                     <JoditEditor
                       key={editorKey}
+                      ref={editorRef}
                       value={body}
                       config={{ ...editorConfig, disabled: isSubmitting }}
                       onChange={(value) => {
@@ -841,6 +881,29 @@ function ComposeEmail({
                 </div>
               )}
             </div>
+
+            {isWriteOpen && (
+              <HelpMeWritePanel
+                getBody={() => bodyRef.current || ""}
+                subject={subject}
+                designMode={Boolean(template)}
+                designText={template ? textOfHtml(template.html) : ""}
+                onReplace={(html) => {
+                  replaceBody(html);
+                  setIsWriteOpen(false);
+                }}
+                onInsert={(html) => {
+                  insertIntoEditor(html);
+                  setIsWriteOpen(false);
+                }}
+                onSubject={(text) => {
+                  setSubject(text);
+                  scheduleDraftSave();
+                  showToast({ message: "Subject updated.", type: "success" });
+                }}
+                onClose={() => setIsWriteOpen(false)}
+              />
+            )}
 
             {isTestOpen && (
               <div className="shrink-0 border-t border-app-border! bg-app-surface-secondary px-4 py-3">
@@ -896,24 +959,48 @@ function ComposeEmail({
                   className={`rounded-full! ${showFormatting ? "bg-app-surface-secondary text-app-text" : ""}`}
                 />
               )}
-              <label
-                className="inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1 rounded-full px-1.5 text-app-text-muted transition hover:bg-app-surface-secondary hover:text-app-text"
+              <button
+                type="button"
+                onClick={() => attachInputRef.current?.click()}
+                disabled={isSubmitting}
+                className="inline-flex h-8 min-w-8 items-center justify-center gap-1 rounded-full px-1.5 text-app-text-muted transition hover:bg-app-surface-secondary hover:text-app-text"
                 title="Attach files"
+                aria-label="Attach files"
               >
                 <Paperclip className="size-4" />
                 {attachments.length > 0 && <span className="text-xs">{attachments.length}</span>}
-                <input
-                  type="file"
-                  multiple
-                  hidden
-                  disabled={isSubmitting}
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    if (files.length) setAttachments((prev) => [...prev, ...files]);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
+              </button>
+              {/* everything that can go into the email, in one pop-up */}
+              <ComposeInsertMenu
+                disabled={isSubmitting}
+                items={[
+                  { key: "files", onClick: () => attachInputRef.current?.click() },
+                  {
+                    key: "photo",
+                    onClick: () => photoInputRef.current?.click(),
+                    disabled: Boolean(template),
+                    busy: importing,
+                    hint: template ? "Not in an HTML design: choose “Edit as text” first" : undefined,
+                  },
+                  { key: "design", onClick: () => designInputRef.current?.click() },
+                  { key: "template", onClick: () => setIsTemplateOpen(true) },
+                  { key: "ai", onClick: () => setIsWriteOpen(true) },
+                ]}
+              />
+              <button
+                type="button"
+                onClick={() => setIsWriteOpen((v) => !v)}
+                disabled={isSubmitting}
+                title="Help me write (AI)"
+                className={`inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium transition ${
+                  isWriteOpen
+                    ? "bg-blue-600 text-white"
+                    : "text-blue-700 hover:bg-blue-500/10 dark:text-blue-300"
+                }`}
+              >
+                <Sparkles className="size-4" />
+                <span className="hidden sm:inline">Help me write</span>
+              </button>
               <IconButton
                 icon={FlaskConical}
                 label="Send a test email"
@@ -921,31 +1008,42 @@ function ComposeEmail({
                 disabled={isSubmitting}
                 className={`rounded-full! ${isTestOpen ? "bg-app-surface-secondary text-app-text" : ""}`}
               />
-              <label
-                className={`inline-flex h-8 min-w-8 items-center justify-center rounded-full px-1.5 text-app-text-muted transition hover:bg-app-surface-secondary hover:text-app-text ${
-                  importing ? "cursor-wait" : "cursor-pointer"
-                }`}
-                title={importing ? "Uploading the template's pictures…" : "Upload HTML template"}
-                aria-label="Upload HTML template"
-              >
-                {importing ? <Loader2 className="size-4 animate-spin" /> : <FileCode2 className="size-4" />}
-                <input
-                  type="file"
-                  accept=".html,.htm,text/html"
-                  hidden
-                  disabled={isSubmitting || importing}
-                  onChange={(e) => {
-                    importHtmlFile(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-              <IconButton
-                icon={Sparkles}
-                label={template ? "Change template" : "Use a template"}
-                onClick={() => setIsTemplateOpen(true)}
+              <input
+                ref={attachInputRef}
+                type="file"
+                multiple
+                hidden
                 disabled={isSubmitting}
-                className="rounded-full!"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  const tooBig = files.filter((f) => f.size > MAX_ATTACHMENT_BYTES);
+                  if (tooBig.length) fail(`${tooBig[0].name} is over 10 MB. Attach smaller files, or share a link instead.`);
+                  const ok = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
+                  if (ok.length) setAttachments((prev) => [...prev, ...ok]);
+                  e.target.value = "";
+                }}
+              />
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => {
+                  insertPhoto(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <input
+                ref={designInputRef}
+                type="file"
+                accept=".html,.htm,text/html,image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length) setDesignFiles(files);
+                  e.target.value = "";
+                }}
               />
               {draftsEnabled && drafts.status !== "idle" && (
                 <span
@@ -1010,6 +1108,8 @@ function ComposeEmail({
           loadSender();
         }}
       />
+
+      <HtmlDesignDialog files={designFiles} onClose={() => setDesignFiles(null)} onUse={applyDesign} />
 
       <AITemplateModal
         isOpen={isTemplateOpen}

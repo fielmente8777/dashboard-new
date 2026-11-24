@@ -20,7 +20,7 @@ const matches = (filter, status) => filter.value === "all" || (filter.match || [
 // by subject, recipient or sender; a row opens that email in place of the list
 // (the Gmail-style reading pane). The page owns which one is open
 // (selectedId / onSelect), so other parts of it can open one too.
-export default function CampaignsList({ campaigns, loading, selectedId, onSelect, onChanged }) {
+export default function CampaignsList({ campaigns, loading, selectedId, onSelect, onChanged, onSendTo }) {
   const [status, setStatus] = useState("all");
   const [search, setSearch] = useState("");
   // the tab an email opens on: "message" from the row, "report" from View report; kept while using the arrows
@@ -63,6 +63,7 @@ export default function CampaignsList({ campaigns, loading, selectedId, onSelect
         onTabChange={setOpenTab}
         onClose={() => onSelect(null)}
         onChanged={onChanged}
+        onSendTo={onSendTo}
         position={index + 1}
         total={index >= 0 ? visible.length : 0}
         onPrev={index > 0 ? () => onSelect(visible[index - 1]._id) : undefined}
