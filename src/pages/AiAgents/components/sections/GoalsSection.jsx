@@ -16,7 +16,7 @@ const GoalsSection = ({ draft, set }) => {
 
   return (
     <Card
-      title={<SectionTitle icon={Target}>Goals & instructions</SectionTitle>}
+      title={<SectionTitle icon={Target}>Skills</SectionTitle>}
       description="What the agent works towards in every conversation."
     >
       <div className="grid gap-2 md:grid-cols-3">

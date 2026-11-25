@@ -1,9 +1,11 @@
-const Card = ({ title, description, actions, className = "", children }) => (
+// Extra props (id, aria-*) go on the <section>.
+const Card = ({ title, description, actions, className = "", children, ...props }) => (
   <section
     className={`rounded-xl border border-app-border! bg-app-surface p-4 sm:p-5 ${className}`}
+    {...props}
   >
     {(title || actions) && (
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      <div className={`${children ? "mb-4" : ""} flex flex-wrap items-start justify-between gap-3`}>
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-app-text">{title}</h2>
           {description && (

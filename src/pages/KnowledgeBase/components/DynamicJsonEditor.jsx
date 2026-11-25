@@ -41,7 +41,7 @@ const getItemSummary = (item, index) => {
 
 // --- a single string / number / boolean ------------------------------------
 
-const PrimitiveField = ({ value, path, onChange }) => {
+const PrimitiveField = ({ value, path, onChange, mimeType }) => {
   if (typeof value === "boolean") {
     return (
       <label className="flex items-center gap-2 text-sm text-app-text">
@@ -56,8 +56,8 @@ const PrimitiveField = ({ value, path, onChange }) => {
     );
   }
 
-  if (isMediaUrl(value)) {
-    return <MediaValue value={value} onChange={(url) => onChange(path, url)} />;
+  if (typeof value === "string" && isMediaUrl(value, mimeType)) {
+    return <MediaValue value={value} mimeType={mimeType} onChange={(url) => onChange(path, url)} />;
   }
 
   const isNumber = typeof value === "number";
@@ -269,6 +269,7 @@ const ObjectField = ({ value, path, onChange, onDelete, existingKeys }) => {
               </div>
               <DynamicJsonEditor
                 value={child}
+                mimeType={/^(url|src|href|file_url|media_url)$/i.test(key) ? (value.mimeType || value.mime_type) : undefined}
                 path={[...path, key]}
                 onChange={onChange}
                 onDelete={onDelete}
@@ -338,6 +339,7 @@ const DynamicJsonEditor = memo(
   // With this, typing in one field only re-renders the fields on its path.
   (prev, next) =>
     prev.value === next.value &&
+    prev.mimeType === next.mimeType &&
     prev.onChange === next.onChange &&
     prev.onDelete === next.onDelete &&
     samePath(prev.path || [], next.path || []) &&

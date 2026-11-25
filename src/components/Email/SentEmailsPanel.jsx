@@ -161,6 +161,9 @@ export default function SentEmailsPanel({
 
       <CampaignsList
         onChanged={() => load({ quiet: true })}
+        onRefresh={() => load({ quiet: true })}
+        refreshing={refreshing}
+        loadedAt={loadedAt}
         campaigns={campaigns}
         loading={false}
         selectedId={openId}

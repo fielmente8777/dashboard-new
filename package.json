@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:media": "node --test \"src/pages/KnowledgeBase/utils/*.test.js\" \"src/pages/Media/components/browse/*.test.js\"",
+    "test:ai-agents": "node --test \"src/pages/AiAgents/actions/*.test.js\""
   },
   "dependencies": {
     "@daypilot/daypilot-lite-react": "^5.10.1",

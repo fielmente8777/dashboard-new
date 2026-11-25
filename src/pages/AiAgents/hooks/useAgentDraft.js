@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useApiAction } from "../../../hooks/useApiAction";
-import { useGetAiAgentQuery, useSaveAiAgentMutation } from "../../../redux/api/aiAgentsApi";
+import { useGetAiAgentQuery, useWriteAiAgentMutation } from "../../../redux/api/aiAgentsApi";
 
-// set a value at "a.b.c" in a copy of `obj`
 const setIn = (obj, path, value) => {
   const keys = path.split(".");
-  const copy = Array.isArray(obj) ? [...obj] : { ...obj };
+  const copy = { ...obj };
   let cursor = copy;
   keys.slice(0, -1).forEach((key) => {
     cursor[key] = Array.isArray(cursor[key]) ? [...cursor[key]] : { ...cursor[key] };
@@ -15,51 +14,50 @@ const setIn = (obj, path, value) => {
   return copy;
 };
 
-// The agent's settings as edited on screen: loads them, keeps the unsaved
-// draft, and saves / discards it.
-//   draft, set("persona.tone", "luxury"), dirty, save(), discard()
+const SUCCESS = {
+  create: "AI agent draft created",
+  save: "Draft saved",
+  publish: "Agent published",
+  pause: "Agent paused",
+  resume: "Agent resumed",
+  "discard-draft": "Restored the published settings",
+};
+
 export const useAgentDraft = ({ channel, hid }) => {
   const run = useApiAction();
-  const query = useGetAiAgentQuery({ channel, hid }, { skip: !hid });
-  const [saveAgent, { isLoading: saving }] = useSaveAiAgentMutation();
-  const [draft, setDraft] = useState(null);
+  const query = useGetAiAgentQuery({ channel, hid }, { refetchOnMountOrArgChange: true, pollingInterval: 60000 });
+  const [writeAgent, { isLoading: saving }] = useWriteAiAgentMutation();
+  const [edits, setEdits] = useState(null);
+  const [lastWrite, setLastWrite] = useState(null);
 
-  const saved = query.data?.config || null;
-  useEffect(() => {
-    if (saved) setDraft(saved);
-  }, [saved]);
+  const fetched = query.currentData;
+  const snapshot = lastWrite && lastWrite.revision > (fetched?.revision ?? -1) ? lastWrite : fetched;
+  const saved = snapshot?.config;
+  const draft = edits?.config ?? saved;
+  const dirty = Boolean(edits && JSON.stringify(draft) !== JSON.stringify(saved));
+  const outdated = dirty && edits.revision !== snapshot.revision;
 
-  const dirty = useMemo(
-    () => Boolean(draft && saved && JSON.stringify(draft) !== JSON.stringify(saved)),
-    [draft, saved],
-  );
+  const set = (path, value) => setEdits((current) => {
+    const config = setIn(current?.config ?? saved, path, value);
+    if (JSON.stringify(config) === JSON.stringify(saved)) return null;
+    return { config, revision: current?.revision ?? snapshot.revision };
+  });
 
-  const set = useCallback((path, value) => setDraft((current) => setIn(current, path, value)), []);
-
-  const save = useCallback(
-    async (overrides) => {
-      const config = overrides ? { ...draft, ...overrides } : draft;
-      const result = await run(saveAgent({ channel, hid, config }), {
-        success: "AI agent saved",
-        error: "Could not save the AI agent.",
-      });
-      if (result?.config) setDraft(result.config);
-      return Boolean(result);
-    },
-    [channel, draft, hid, run, saveAgent],
-  );
-
-  return {
-    query,
-    draft,
-    saved,
-    status: query.data?.status,
-    defaults: query.data?.defaults,
-    model: query.data?.model,
-    dirty,
-    saving,
-    set,
-    save,
-    discard: () => setDraft(saved),
+  // template: only for "create" (a starter template id)
+  const write = async (action, config, template) => {
+    const revision = action === "save" ? edits?.revision : snapshot?.revision;
+    const result = await run(writeAgent({ channel, hid, action, config, revision, template }), {
+      success: SUCCESS[action],
+      error: "Could not update the AI agent.",
+    });
+    if (!result?.config) return;
+    setLastWrite(result);
+    setEdits((current) => {
+      if (action === "save" || !dirty) return null;
+      if (current?.revision === revision) return { ...current, revision: result.revision };
+      return current;
+    });
   };
+
+  return { channel, query, snapshot, draft, dirty, outdated, saving, set, write, save: () => write("save", draft), discard: () => setEdits(null) };
 };

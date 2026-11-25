@@ -163,6 +163,17 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, method: "DELETE", params: { hid } }),
       extraOptions: NODE,
     }),
+    // { hid, campaignId } -> { result: { doc: { wrong: [{ email, name, reason, removed }], otherFailed, total } } }
+    getBadAddresses: build.query({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/bad-addresses`, params: { hid } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    // { hid, campaignId } - puts the campaign's wrong addresses on the do-not-email list
+    removeBadAddresses: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/bad-addresses/remove`, method: "POST", body: { hid } }),
+      extraOptions: NODE,
+    }),
     retryEmailCampaign: build.mutation({
       query: ({ hid, campaignId }) => ({
         url: `${BASE}/campaigns/${campaignId}/retry`,
@@ -542,6 +553,12 @@ export const createCampaignAudienceBatch = ({ campaignId, group }) =>
   strict(e.createCampaignAudienceBatch, { hid: selectedHid(), campaignId, group });
 export const saveCampaignAudienceToContacts = ({ campaignId, group }) =>
   strict(e.saveCampaignAudienceToContacts, { hid: selectedHid(), campaignId, group });
+// a campaign's wrong addresses (bounced / not valid) -> { wrong, otherFailed, total }
+export const getBadAddresses = async ({ campaignId }) =>
+  (await strict(e.getBadAddresses, { hid: selectedHid(), campaignId }))?.doc;
+// takes them off future sends -> { removed, alreadyOff }
+export const removeBadAddresses = async ({ campaignId }) =>
+  (await strict(e.removeBadAddresses, { hid: selectedHid(), campaignId }))?.doc;
 export const retryEmailCampaign = ({ campaignId }) =>
   strict(e.retryEmailCampaign, { hid: selectedHid(), campaignId });
 

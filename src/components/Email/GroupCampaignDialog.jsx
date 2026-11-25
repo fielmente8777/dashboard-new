@@ -1,4 +1,4 @@
-import { ArrowRight, Check, FolderOpen, MailOpen, MousePointerClick, Users } from "lucide-react";
+import { ArrowRight, Check, FolderOpen, MailOpen, MousePointerClick, UserPlus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { createAudienceBatch, getAudienceOptions, previewAudience } from "../../redux/api/emailMarketingApi";
@@ -98,6 +98,8 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
   const [group, setGroup] = useState("");
   const [everyoneInGroup, setEveryoneInGroup] = useState(true);
   const [engagement, setEngagement] = useState([]); // "opened" | "clicked"
+  // with Opened / Clicked: also people added to the group who never got an email yet
+  const [includeNew, setIncludeNew] = useState(true);
   const [preview, setPreview] = useState(null);
   const [counting, setCounting] = useState(false);
   const [preparing, setPreparing] = useState(false);
@@ -109,6 +111,7 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
     setGroup(initialGroup || "");
     setEveryoneInGroup(true);
     setEngagement([]);
+    setIncludeNew(true);
     setPreview(null);
     setOptions(null);
     setLoadFailed(false);
@@ -131,8 +134,9 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
       engaged: [],
       engagement: filtered ? engagement : [],
       engagementCampaignId: null,
+      includeNew: filtered ? includeNew : false,
     };
-  }, [group, filtered, engagement]);
+  }, [group, filtered, engagement, includeNew]);
   const incomplete = !selection || (!everyoneInGroup && !engagement.length);
 
   // the live count, a moment after the last change (only the latest answer counts)
@@ -305,9 +309,33 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                   count={group === EVERYONE ? null : chosen?.clicked}
                 />
               </div>
+              {filtered && (
+                <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-xl border border-app-border! p-3 hover:bg-app-surface-secondary">
+                  <input
+                    type="checkbox"
+                    checked={includeNew}
+                    onChange={(e) => setIncludeNew(e.target.checked)}
+                    className="mt-0.5 size-4 accent-blue-600"
+                  />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-app-text">
+                      <UserPlus className="size-4 text-emerald-600 dark:text-emerald-400" />
+                      Also people added since
+                    </span>
+                    <span className="block text-xs text-app-text-muted">
+                      New addresses in this group that haven&apos;t had an email yet, so they couldn&apos;t open one. Untick to send
+                      only to people who opened or clicked.
+                    </span>
+                  </span>
+                </label>
+              )}
               {filtered && !incomplete && !counting && preview && (
                 <p className="mt-2 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400">
-                  <Check className="size-3.5" /> {people(count)} in this group match.
+                  <Check className="size-3.5" /> {people(count)} in this group match
+                  {includeNew && preview.newMembers != null
+                    ? ` (${fmt(preview.engaged ?? 0)} ${engagement.length === 2 ? "opened or clicked" : engagement[0]}, ${fmt(preview.newMembers)} new)`
+                    : ""}
+                  .
                 </p>
               )}
             </Step>

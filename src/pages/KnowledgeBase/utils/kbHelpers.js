@@ -1,3 +1,4 @@
+import { mediaKindFor } from "../../Media/components/mediaFormat.js";
 export const emptyKb = {
   url: "",
   knowledge_base: {
@@ -110,14 +111,8 @@ export const blankLikeTemplate = (sample) => {
 
 export const MEDIA_ACCEPT = "image/*,video/*,application/pdf";
 
-const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i;
-const MEDIA_EXT_RE =
-  /\.(png|jpe?g|gif|webp|svg|bmp|mp4|webm|mov|avi|pdf)(\?.*)?$/i;
-
-export const isImageUrl = (value) => IMAGE_EXT_RE.test(value || "");
-
-export const isMediaUrl = (value) =>
-  typeof value === "string" && MEDIA_EXT_RE.test(value.trim());
+export const isImageUrl = (value) => mediaKindFor(value) === "image";
+export const isMediaUrl = (value, mimeType) => Boolean(mediaKindFor(value, mimeType));
 
 // --- immutable updates -----------------------------------------------------
 // Both helpers copy only the objects along `path` and reuse everything else,
