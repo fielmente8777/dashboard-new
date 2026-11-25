@@ -46,6 +46,7 @@ import LeadManageCard from "./LeadManageCard";
 import LeadSourceCard from "./LeadSourceCard";
 import LeadStageTrack from "./LeadStageTrack";
 import { toInputValue } from "./leadDetailsUtils";
+import { followUpStageFor, isFollowUpStage } from "../../../data/constant";
 
 // Placeholder in the shape of the page below
 const LeadDetailsLoading = () => (
@@ -123,6 +124,8 @@ const LeadDetails = () => {
   const [lead, setLead] = useState(null);
   // one piece of state per dialog
   const [dialog, setDialog] = useState(null); // "call" | "stageFollowUp" | "convert"
+  // the follow-up round picked in the stage list, waiting for its date
+  const [pendingFollowUp, setPendingFollowUp] = useState(null);
 
   const users = useGetTeamUsersQuery();
   const callConnection = useGetCallConnectionQuery();
@@ -156,7 +159,10 @@ const LeadDetails = () => {
   const saveFollowUp = (value) =>
     handleUpdate(
       value
-        ? { status: "Follow Up", followUpDate: new Date(value).toISOString() }
+        ? {
+            status: followUpStageFor(lead.status),
+            followUpDate: new Date(value).toISOString(),
+          }
         : { followUpDate: null },
       value ? "Follow-up saved" : "Follow-up removed",
     );
@@ -164,7 +170,8 @@ const LeadDetails = () => {
   const handleStageChange = (stage) => {
     // a follow up also needs a date, which the dialog asks for; until it is
     // saved the stage stays as it was (false tells the dropdown)
-    if (stage === "Follow Up") {
+    if (isFollowUpStage(stage)) {
+      setPendingFollowUp(stage);
       setDialog("stageFollowUp");
       return false;
     }
@@ -178,10 +185,14 @@ const LeadDetails = () => {
   };
 
   const handleCall = async (fromNumber, toNumber) => {
-    const started = await run(makeCall({ hid, fromNumber, toNumber }), {
-      success: "Call started. The team member's phone will ring first.",
-      error: "Could not start the call.",
-    });
+    // the lead's name and where it came from go with the call (shown on the Calls page)
+    const started = await run(
+      makeCall({ hid, fromNumber, toNumber, guestName: lead.Name || lead.name || undefined, guestSource: lead.created_from || undefined, leadId: lead._id }),
+      {
+        success: "Call started. The team member's phone will ring first.",
+        error: "Could not start the call.",
+      },
+    );
     if (started) setDialog(null);
   };
 
@@ -379,7 +390,7 @@ const LeadDetails = () => {
         onClose={() => setDialog(null)}
         onSave={(date) => {
           handleUpdate({
-            status: "Follow Up",
+            status: pendingFollowUp || "Follow Up",
             followUpDate: date.toISOString(),
           });
           setDialog(null);

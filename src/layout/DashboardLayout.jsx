@@ -9,6 +9,7 @@ import Navbar from "../components/Navbar/Navbar";
 import Sidebar from "../components/Sidebar/Sidebar";
 import SubscriptionLock from "../components/SubscriptionLock/SubscriptionLock";
 import { useSubscriptionLock } from "../components/SubscriptionLock/useSubscriptionLock";
+import { usePageScroll } from "./usePageScroll";
 
 export default function DashboardLayout({ children }) {
   // an ended or paused subscription shows the renew screen in place of every page
@@ -22,6 +23,8 @@ export default function DashboardLayout({ children }) {
   // the way out of a lock: the plans page always opens
   const onPlans = page === PAGES.PLANS;
   const missingApp = app && !hasApp(subscription, app) ? app : null;
+  // a new page opens at the top; Back returns to where it was
+  const scrollRef = usePageScroll();
 
   return (
     <div className="flex h-dvh overflow-hidden">
@@ -32,7 +35,7 @@ export default function DashboardLayout({ children }) {
           <Navbar />
         </div>
 
-        <div className="flex-1 h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
+        <div ref={scrollRef} className="flex-1 h-full overflow-y-auto overflow-x-hidden scrollbar-hidden">
           {lock.locked && !onPlans ? (
             <SubscriptionLock lock={lock} />
           ) : missingApp ? (

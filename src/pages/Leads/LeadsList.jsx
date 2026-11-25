@@ -18,11 +18,17 @@ import Icon from "../../components/ui/Icon";
 import TablePagination from "../../components/ui/TablePagination";
 import { Input } from "../../components/ui/Field";
 import PageShell from "../../components/ui/PageShell";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
 import { ErrorState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
-import { Sources, Stages } from "../../data/constant";
+import {
+  ALL_FOLLOW_UPS,
+  isFollowUpStage,
+  Sources,
+  Stages,
+} from "../../data/constant";
 import { useApiAction } from "../../hooks/useApiAction";
 import useDebounce from "../../hooks/useDebounce";
 import { useTenant } from "../../hooks/useTenant";
@@ -48,7 +54,11 @@ import { useNewLeadRefresh } from "./hooks/useNewLeadRefresh";
 import { MAX_SELECTED_LEADS, NOTES_FILTERS } from "./leadSources";
 import { exportLeadsToCsv, toApiDate } from "./leadUtils";
 
-const STAGE_OPTIONS = [{ value: "", label: "All stages" }, ...Stages];
+const STAGE_OPTIONS = [
+  { value: "", label: "All stages" },
+  { value: ALL_FOLLOW_UPS, label: "All follow-ups (1, 2, 3)" },
+  ...Stages,
+];
 
 // A leads list page. `source` is one entry of LEAD_SOURCES: it says which
 // leads the page shows and which columns, filters and actions it has.
@@ -141,8 +151,8 @@ const LeadsList = ({ source }) => {
     (lead, stage) => {
       // a follow up also needs a date, which the dialog asks for; until it is
       // saved the stage stays as it was (false tells the dropdown)
-      if (stage === "Follow Up") {
-        setFollowUpLead(lead);
+      if (isFollowUpStage(stage)) {
+        setFollowUpLead({ ...lead, followUpStage: stage });
         return false;
       }
       handleUpdate(lead, { status: stage, followUpDate: null });
@@ -291,6 +301,7 @@ const LeadsList = ({ source }) => {
       description={source.description}
       actions={
         <>
+          {source.key === "all" && <ServiceReportButton part="leads" />}
           {rows.length > 0 && (
             <Button
               variant="secondary"
@@ -470,7 +481,7 @@ const LeadsList = ({ source }) => {
         onClose={() => setFollowUpLead(null)}
         onSave={(date) => {
           handleUpdate(followUpLead, {
-            status: "Follow Up",
+            status: followUpLead.followUpStage || "Follow Up",
             followUpDate: date.toISOString(),
           });
           setFollowUpLead(null);

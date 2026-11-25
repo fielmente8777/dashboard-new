@@ -14,6 +14,45 @@ export const metaReportApi = baseApi
   .enhanceEndpoints({ addTagTypes: ["MetaReports", "MetaReportSettings"] })
   .injectEndpoints({
     endpoints: (build) => ({
+      // { hid, since, until, refresh? } -> { snapshot, alerts, builtAt, cached, stale, error }:
+      // the live Meta pages (Overview, Ads, Content, Leads). gian keeps a copy for 30 minutes;
+      // the first read of a period goes to Meta and can take 10–40 seconds.
+      getMetaLive: build.query({
+        query: ({ hid, since, until, refresh }) => ({
+          url: `${BASE}/live`,
+          params: { hid, since, until, ...(refresh && { refresh: 1 }) },
+        }),
+        // `refresh` is a one-off: the same dates share one cache entry
+        serializeQueryArgs: ({ queryArgs }) => `${queryArgs.hid}:${queryArgs.since}:${queryArgs.until}`,
+        transformResponse: doc,
+        extraOptions: { service: SERVICE },
+      }),
+
+      // { hid, platform: "facebook" | "instagram", after } -> { items, next, note }: 12 posts a page,
+      // newest first, with pictures / video files and the numbers Meta gives (null = not given)
+      getMetaPosts: build.query({
+        query: ({ hid, platform, after }) => ({ url: `${BASE}/posts`, params: { hid, platform, ...(after && { after }) } }),
+        transformResponse: doc,
+        keepUnusedDataFor: 120,
+        extraOptions: { service: SERVICE },
+      }),
+
+      // { hid, since, until, after } -> { items, next, note }: ads that spent, most spend first
+      getMetaCreatives: build.query({
+        query: ({ hid, since, until, after }) => ({ url: `${BASE}/creatives`, params: { hid, since, until, ...(after && { after }) } }),
+        transformResponse: doc,
+        keepUnusedDataFor: 120,
+        extraOptions: { service: SERVICE },
+      }),
+
+      // { hid, adId } -> { kind: "video" | "iframe" | "image" | "none", src, poster, previewLink }
+      getCreativePreview: build.query({
+        query: ({ hid, adId }) => ({ url: `${BASE}/creatives/${adId}/preview`, params: { hid } }),
+        transformResponse: doc,
+        keepUnusedDataFor: 300,
+        extraOptions: { service: SERVICE },
+      }),
+
       // hid -> the property's reports, newest first (without their data)
       getMetaReports: build.query({
         query: (hid) => ({ url: `${BASE}/reports`, params: { hid } }),
@@ -78,6 +117,11 @@ export const metaReportApi = baseApi
   });
 
 export const {
+  useLazyGetMetaPostsQuery,
+  useLazyGetMetaCreativesQuery,
+  useGetCreativePreviewQuery,
+  useGetMetaLiveQuery,
+  useLazyGetMetaLiveQuery,
   useGetMetaReportsQuery,
   useCreateMetaReportMutation,
   useSendMetaReportMutation,

@@ -15,7 +15,7 @@ import {
   useSendMetaReportMutation,
 } from "../../../redux/api/metaReportApi";
 import CreateReportButton from "./CreateReportButton";
-import MonthlyReportSettings from "./MonthlyReportSettings";
+import MetaReportSettings from "./MetaReportSettings";
 
 const inr = (value, currency = "INR") => {
   try {
@@ -129,13 +129,14 @@ const ReportRow = ({ report }) => {
   );
 };
 
-// The Reports tab of Meta insights: monthly report settings, then every report made.
+// The Reports tab of Meta insights: report settings, then every report made (by hand; the
+// monthly email is the dashboard report on the Reports page).
 const MetaReportsPanel = ({ hid }) => {
   const reports = useGetMetaReportsQuery(hid, { skip: !hid, pollingInterval: 0 });
 
   return (
     <div className="space-y-4">
-      <MonthlyReportSettings hid={hid} />
+      <MetaReportSettings hid={hid} />
 
       <Card
         title="Reports"
@@ -156,7 +157,7 @@ const MetaReportsPanel = ({ hid }) => {
           <EmptyState
             icon={FileBarChart}
             title="No reports yet"
-            description="Create one now, or wait for the monthly report on the 1st."
+            description="Create one for any dates with Create report."
             action={<CreateReportButton hid={hid} align="left" />}
           />
         )}

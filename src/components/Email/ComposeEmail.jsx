@@ -33,6 +33,8 @@ import FooterEditorDialog from "./FooterEditorDialog";
 import ComposeInsertMenu from "./ComposeInsertMenu";
 import HelpMeWritePanel from "./HelpMeWritePanel";
 import HtmlDesignDialog from "./HtmlDesignDialog";
+import SuggestionMenu from "../ui/SuggestionMenu";
+import { useSuggestions } from "../ui/useSuggestions";
 import { htmlTemplateImporter } from "./htmlTemplateImporter";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
@@ -71,9 +73,17 @@ const EDITOR_CSS = `
 const formatSize = (bytes) =>
   bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 
-// Gmail's "To": every address becomes a chip; Backspace removes the last one
+// Gmail's "To": every address becomes a chip; Backspace removes the last one. While typing,
+// the hotel's own addresses, team members and saved contacts are suggested (SuggestionMenu).
 function RecipientInput({ chips, onChipsChange, draft, onDraftChange, disabled, placeholder, autoFocus }) {
   const inputRef = useRef(null);
+  const wrapRef = useRef(null);
+  const [focused, setFocused] = useState(false);
+  const suggestions = useSuggestions({ type: "email", query: draft, exclude: chips, open: focused && !disabled });
+  const pick = (s) => {
+    onChipsChange([...new Set([...chips, s.value])]);
+    onDraftChange("");
+  };
 
   const commit = (text) => {
     const found = parseEmails(text);
@@ -82,7 +92,7 @@ function RecipientInput({ chips, onChipsChange, draft, onDraftChange, disabled, 
   };
 
   return (
-    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1" onClick={() => inputRef.current?.focus()}>
+    <div ref={wrapRef} className="flex min-w-0 flex-1 flex-wrap items-center gap-1" onClick={() => inputRef.current?.focus()}>
       {chips.map((email) => {
         const valid = EMAIL_REGEX.test(email);
         return (
@@ -137,7 +147,9 @@ function RecipientInput({ chips, onChipsChange, draft, onDraftChange, disabled, 
             onDraftChange(value);
           }
         }}
+        onFocus={() => setFocused(true)}
         onKeyDown={(e) => {
+          if (suggestions.onKeyDown(e, pick)) return;
           if (CHIP_KEYS.has(e.key) && draft.trim()) {
             e.preventDefault();
             commit(draft);
@@ -149,9 +161,14 @@ function RecipientInput({ chips, onChipsChange, draft, onDraftChange, disabled, 
             onChipsChange(chips.slice(0, -1));
           }
         }}
-        onBlur={() => draft.trim() && commit(draft)}
+        onBlur={() => {
+          setFocused(false);
+          if (draft.trim()) commit(draft);
+        }}
+        autoComplete="off"
         className="min-w-32 flex-1 bg-transparent py-0.5 text-sm text-app-text outline-none placeholder:text-app-text-faint disabled:opacity-60"
       />
+      <SuggestionMenu state={suggestions} anchorRef={wrapRef} onPick={pick} />
     </div>
   );
 }
@@ -271,6 +288,20 @@ function ComposeEmail({
   // "Send test": the email as it is now, to a few addresses, saved nowhere
   const [isTestOpen, setIsTestOpen] = useState(false);
   const [testTo, setTestTo] = useState("");
+  // suggestions for the address being typed in the test box (the last one after a comma)
+  const testWrapRef = useRef(null);
+  const [testFocused, setTestFocused] = useState(false);
+  const testParts = testTo.split(/[,;\s]+/);
+  const testSuggestions = useSuggestions({
+    type: "email",
+    query: testParts[testParts.length - 1] || "",
+    exclude: parseEmails(testTo),
+    open: testFocused,
+  });
+  const pickTest = (sug) => {
+    const done = testParts.slice(0, -1).filter(Boolean);
+    setTestTo([...done, sug.value].join(", ") + ", ");
+  };
   const [testing, setTesting] = useState(false);
   const hotelName = useSelector((state) => state.userProfile.user?.Profile?.hotelName) || "Your hotel";
 
@@ -909,12 +940,17 @@ function ComposeEmail({
               <div className="shrink-0 border-t border-app-border! bg-app-surface-secondary px-4 py-3">
                 <div className="flex items-center gap-2">
                   <FlaskConical className="size-4 shrink-0 text-blue-500" />
+                  <div ref={testWrapRef} className="min-w-0 flex-1">
                   <input
                     type="text"
                     value={testTo}
                     autoFocus
+                    autoComplete="off"
+                    onFocus={() => setTestFocused(true)}
+                    onBlur={() => setTestFocused(false)}
                     onChange={(e) => setTestTo(e.target.value)}
                     onKeyDown={(e) => {
+                      if (testSuggestions.onKeyDown(e, pickTest)) return;
                       if (e.key === "Enter") {
                         e.preventDefault();
                         e.stopPropagation();
@@ -926,8 +962,10 @@ function ComposeEmail({
                     }}
                     placeholder="you@yourhotel.com, colleague@yourhotel.com"
                     disabled={testing}
-                    className="min-w-0 flex-1 rounded-md border border-app-border! bg-app-surface px-2.5 py-1.5 text-sm text-app-text outline-none placeholder:text-app-text-faint focus:border-blue-500!"
+                    className="w-full rounded-md border border-app-border! bg-app-surface px-2.5 py-1.5 text-sm text-app-text outline-none placeholder:text-app-text-faint focus:border-blue-500!"
                   />
+                  <SuggestionMenu state={testSuggestions} anchorRef={testWrapRef} onPick={pickTest} />
+                  </div>
                   <Button size="sm" onClick={sendTest} loading={testing} icon={null}>
                     Send test
                   </Button>

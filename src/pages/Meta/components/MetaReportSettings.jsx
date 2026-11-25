@@ -1,10 +1,12 @@
-import { CalendarClock } from "lucide-react";
+import { Settings2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Button from "../../../components/ui/Button";
 import { Field } from "../../../components/ui/Field";
 import SettingsCard from "../../../components/ui/SettingsCard";
 import { Skeleton } from "../../../components/ui/States";
 import Switch from "../../../components/ui/Switch";
+import { dashboardPath, PAGES } from "../../../routes/paths";
 import TagInput from "../../../components/ui/TagInput";
 import { useToast } from "../../../context/ToastContext";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
@@ -16,10 +18,11 @@ import {
 
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
-// The monthly report: on the first days of each month last month's report goes out by email
-// (PDF attached) and WhatsApp. Empty lists mean "the defaults": the hotel email and the
-// account holder, the hotel phone and the second phone.
-const MonthlyReportSettings = ({ hid }) => {
+// Who gets the Meta report when Send is pressed (email with the PDF, WhatsApp), and which ad
+// accounts it covers. Empty lists mean "the defaults": the hotel email and the account
+// holder, the hotel phone and the second phone. The Meta report is not sent monthly: the
+// monthly email is the dashboard report (Reports page), which holds the Meta slides.
+const MetaReportSettings = ({ hid }) => {
   const { showToast } = useToast();
   const settingsQuery = useGetMetaReportSettingsQuery(hid, { skip: !hid });
   const accountsQuery = useGetMetaReportAdAccountsQuery(hid, { skip: !hid });
@@ -32,7 +35,6 @@ const MonthlyReportSettings = ({ hid }) => {
   useEffect(() => {
     if (saved) {
       setForm({
-        monthly: saved.monthly,
         whatsapp: saved.whatsapp,
         emails: saved.emails ?? [],
         phones: saved.phones ?? [],
@@ -44,14 +46,12 @@ const MonthlyReportSettings = ({ hid }) => {
   if (settingsQuery.isLoading || !form) return <Skeleton className="h-64" />;
 
   const body = {
-    monthly: form.monthly,
     whatsapp: form.whatsapp,
     emails: form.emails.length ? form.emails : null,
     phones: form.phones.length ? form.phones.map((p) => p.replace(/[^\d]/g, "")) : null,
     adAccountIds: form.adAccountIds?.length ? form.adAccountIds : null,
   };
   const dirty =
-    body.monthly !== saved.monthly ||
     body.whatsapp !== saved.whatsapp ||
     !same(body.emails, saved.emails) ||
     !same(body.phones, saved.phones) ||
@@ -76,26 +76,32 @@ const MonthlyReportSettings = ({ hid }) => {
 
   return (
     <SettingsCard
-      icon={CalendarClock}
-      title="Monthly report"
-      description="Last month's report goes out on the 1st of every month at 10 am, by email with the PDF attached and on WhatsApp."
-      actions={<Switch label="Send the monthly report" checked={form.monthly} onChange={(monthly) => setForm({ ...form, monthly })} />}
+      icon={Settings2}
+      title="Report settings"
+      description="Who gets the Meta report when you press Send, and which ad accounts it covers."
       footer={
         <>
-          <span>Only sent while the subscription is active.</span>
+          <span>
+            The monthly email is the full dashboard report, set up in{" "}
+            <Link to={dashboardPath(PAGES.REPORTS)} className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+              Reports
+            </Link>
+            .
+          </span>
           <Button onClick={submit} loading={saving} disabled={!dirty}>
             Save
           </Button>
         </>
       }
     >
-      <div className={`grid gap-5 lg:grid-cols-2 ${form.monthly ? "" : "opacity-60"}`}>
+      <div className="grid gap-5 lg:grid-cols-2">
         <Field
           as="div"
           label="Email to"
           hint={form.emails.length ? "Up to 10 addresses." : `Empty: ${defaults?.emails?.join(", ") || "the hotel email"}`}
         >
           <TagInput
+            suggest="email"
             value={form.emails}
             onChange={(emails) => setForm({ ...form, emails })}
             placeholder={defaults?.emails?.[0] || "name@hotel.com"}
@@ -119,6 +125,7 @@ const MonthlyReportSettings = ({ hid }) => {
           }
         >
           <TagInput
+            suggest="phone"
             value={form.phones}
             onChange={(phones) => setForm({ ...form, phones })}
             placeholder={defaults?.phones?.[0] || "919876543210"}
@@ -162,4 +169,4 @@ const MonthlyReportSettings = ({ hid }) => {
   );
 };
 
-export default MonthlyReportSettings;
+export default MetaReportSettings;

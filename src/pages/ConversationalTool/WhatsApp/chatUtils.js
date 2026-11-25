@@ -29,6 +29,55 @@ export const isWindowClosed = (date) => {
   return Number.isNaN(time) || Date.now() - time >= DAY;
 };
 
+// --- the 24-hour reply window ---
+// It runs from the GUEST's last message (our replies don't extend it). gian
+// saves that as `lastInboundAt`; chats from before it fall back to the last
+// message when the guest sent it, then to the last activity.
+export const WINDOW_MS = DAY;
+// The newer of the two wins: a message that arrives live updates last_message
+// before the list is reloaded with the new `lastInboundAt`.
+export const getWindowStart = (conversation) => {
+  const times = [
+    conversation?.lastInboundAt,
+    conversation?.openedAt,
+    conversation?.last_message?.sender === "contact"
+      ? conversation.last_message.created_at
+      : null,
+  ]
+    .map((value) => (value ? new Date(value).getTime() : NaN))
+    .filter((time) => !Number.isNaN(time));
+  return times.length
+    ? new Date(Math.max(...times)).toISOString()
+    : getLastActivity(conversation || {});
+};
+
+// ms until the window closes (negative once it has closed), or null if unknown
+export const getWindowLeft = (conversation, now = Date.now()) => {
+  const start = new Date(getWindowStart(conversation)).getTime();
+  return Number.isNaN(start) ? null : start + WINDOW_MS - now;
+};
+
+// 3h 12m / 45m / under a minute
+export const formatTimeLeft = (ms) => {
+  const minutes = Math.floor(Math.abs(ms) / 60000);
+  if (minutes < 1) return "under a minute";
+  const hours = Math.floor(minutes / 60);
+  return hours ? `${hours}h ${minutes % 60}m` : `${minutes}m`;
+};
+
+// closing soon = this many hours or less (same as the bell alert in gian)
+export const CLOSING_SOON_MS = 2 * 60 * 60 * 1000;
+
+// { tone, label } for a window: "Closes in 3h 12m", "Closed 2h ago"
+export const describeWindow = (left) => {
+  if (left === null) return { tone: "gray", label: "No guest message yet" };
+  if (left <= 0) return { tone: "red", label: `Closed ${formatTimeLeft(left)} ago` };
+  return {
+    tone: left <= CLOSING_SOON_MS ? "amber" : "green",
+    label: `Closes in ${formatTimeLeft(left)}`,
+  };
+};
+
 // Who the conversation is assigned to. The server saves it as `assigneTo`
 // (sic); a change made here is patched in as `assignee`.
 export const getConversationAssignee = (conversation) =>
@@ -40,14 +89,14 @@ export const isConverted = (conversation) =>
 // the tab a conversation is listed under
 export const getConversationTab = (conversation) => {
   if (isConverted(conversation)) return "converted";
-  return isWindowClosed(getLastActivity(conversation)) ? "inactive" : "active";
+  return isWindowClosed(getWindowStart(conversation)) ? "inactive" : "active";
 };
 
 // A conversation is in "converted" when its stage says so, and in "active" or
 // "inactive" by the 24 hour rule (a converted one is in one of those too).
 export const isInTab = (conversation, tab) => {
   if (tab === "converted") return isConverted(conversation);
-  const closed = isWindowClosed(getLastActivity(conversation));
+  const closed = isWindowClosed(getWindowStart(conversation));
   return tab === "inactive" ? closed : !closed;
 };
 

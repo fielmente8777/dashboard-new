@@ -1,4 +1,4 @@
-import { KeyRound, MailCheck, PhoneCall } from "lucide-react";
+import { KeyRound, MailCheck } from "lucide-react";
 import { FaMeta } from "react-icons/fa6";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { MdOutlineStorefront, MdOutlineTrackChanges } from "react-icons/md";
@@ -91,7 +91,8 @@ export const INTEGRATIONS = [
     slug: "exotel",
     name: "Exotel",
     description: "Call guests from the dashboard and record every call on your Exotel number.",
-    icon: <PhoneCall className="size-6 text-[#2BB673]" />,
+    // the Exotel logo (public/exotel.svg)
+    icon: <img src="/exotel.svg" alt="" className="size-7" />,
     category: "Messaging",
     statusKey: "exotel",
     access: "exotel",

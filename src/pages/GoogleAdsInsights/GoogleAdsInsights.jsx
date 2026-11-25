@@ -1,5 +1,6 @@
-import { ChevronRight, CloudDownload, Info, Loader2, Plug, RefreshCw } from "lucide-react";
-import { useMemo } from "react";
+import { ChevronRight, CloudDownload, Info, Loader2, Plug, Plus, RefreshCw, ShieldAlert } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -7,15 +8,20 @@ import Card from "../../components/ui/Card";
 import DateRangePicker from "../../components/ui/DateRangePicker";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import { integrationPath } from "../../routes/paths";
 import AdPreviews from "./components/AdPreviews";
 import AdsFilters from "./components/AdsFilters";
 import BreakdownCards from "./components/BreakdownCards";
 import BreakdownTable from "./components/BreakdownTable";
+import BudgetDialog from "./components/BudgetDialog";
+import ChangesCard from "./components/ChangesCard";
+import CreateCampaignDialog from "./components/CreateCampaignDialog";
 import KpiGrid from "./components/KpiGrid";
 import PerformanceChart from "./components/PerformanceChart";
 import { ALL, formatDate, hasMetrics, timeAgo } from "./googleAdsUtils";
+import { useAdsManage } from "./hooks/useAdsManage";
 import { useGoogleAds } from "./hooks/useGoogleAds";
 
 const TITLE = "Google Ads";
@@ -115,6 +121,14 @@ const NoActivity = ({ range, paused, noun, lastActivity, lastSync, onSync, synci
 const GoogleAdsInsights = () => {
   const ads = useGoogleAds();
   const { selection, select, summary, campaigns, adGroups, target } = ads;
+  // changing Google Ads: owners and admins, when Google allows it for this account
+  const accountId = selection.account && selection.account !== ALL ? selection.account : null;
+  const manage = useAdsManage(accountId);
+  const [creating, setCreating] = useState(false);
+  const website = useSelector((state) => {
+    const domain = state.userProfile.user?.Profile?.domain;
+    return domain ? (String(domain).startsWith("http") ? domain : `https://${domain}`) : "";
+  });
 
   // names and paused state of what is selected, for the breadcrumb
   const steps = useMemo(() => {
@@ -241,6 +255,12 @@ const GoogleAdsInsights = () => {
         <>
           <DateRangePicker value={ads.range} onChange={ads.setRange} />
           {!noAccounts && syncButton()}
+          {!noAccounts && <ServiceReportButton part="googleAds" />}
+          {manage.canManage && (
+            <Button icon={Plus} onClick={() => setCreating(true)}>
+              New campaign
+            </Button>
+          )}
         </>
       }
     >
@@ -282,6 +302,16 @@ const GoogleAdsInsights = () => {
             )}
           </Card>
 
+          {/* an admin who cannot change this account: say why (Google's answer) */}
+          {manage.isAdmin && !manage.canManage && manage.reason && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-500/40! bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+              <Icon icon={ShieldAlert} className="mt-0.5 shrink-0" />
+              <span>
+                Changes from the dashboard are off for this account: {manage.reason}
+              </span>
+            </div>
+          )}
+
           {metrics()}
 
           {selection.account && (
@@ -296,6 +326,12 @@ const GoogleAdsInsights = () => {
               onOpen={ads.drillInto}
               onSync={ads.sync}
               syncing={ads.syncing}
+              manage={{
+                canManage: manage.canManage,
+                busyId: manage.busyId,
+                onToggle: (row) => manage.toggle(ads.breakdown.level, row),
+                onBudget: manage.setBudgetFor,
+              }}
             />
           )}
 
@@ -307,8 +343,24 @@ const GoogleAdsInsights = () => {
               onSelect={select.ad}
             />
           )}
+
+          {manage.isAdmin && accountId && <ChangesCard accountId={accountId} />}
         </>
       )}
+
+      <BudgetDialog
+        key={manage.budgetFor?.id || "none"}
+        campaign={manage.budgetFor}
+        saving={manage.savingBudget}
+        onSave={manage.saveBudget}
+        onClose={() => manage.setBudgetFor(null)}
+      />
+      <CreateCampaignDialog
+        open={creating}
+        accountId={accountId}
+        website={website}
+        onClose={() => setCreating(false)}
+      />
     </PageShell>
   );
 };

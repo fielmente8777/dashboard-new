@@ -71,7 +71,8 @@ const NotesCard = ({ lead, setLead, callManagement = false }) => {
         : await updateLead(payload).unwrap();
 
       // Controller returns the saved notes (with S3 URLs) as data.notes
-      const savedNotes = response?.data?.notes;
+      // gian answers { result: { notes } } (older code read data.notes)
+      const savedNotes = response?.result?.notes ?? response?.data?.notes;
       if (Array.isArray(savedNotes)) {
         setLead((prev) => ({ ...prev, notes: savedNotes }));
       }

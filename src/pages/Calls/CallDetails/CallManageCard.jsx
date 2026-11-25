@@ -15,6 +15,7 @@ import {
   MasterSegregation,
   Priority,
   Property,
+  isFollowUpStage,
 } from "../../../data/constant";
 import { CALL_STAGES } from "../callUtils";
 
@@ -89,7 +90,7 @@ const CallManageCard = ({
             </Button>
             {/* a "Follow Up" call keeps its date; moving it to another
                 stage is what clears it */}
-            {savedFollowUp && call.stage !== "Follow Up" && (
+            {savedFollowUp && !isFollowUpStage(call.stage) && (
               <Button
                 size="sm"
                 variant="ghost"

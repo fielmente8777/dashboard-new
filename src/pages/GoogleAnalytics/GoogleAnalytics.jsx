@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import { setAnalyticsRange } from "../../components/Analytics/analyticsRange";
 import { MetaItem } from "../../components/Seo/SeoShell";
 import Button from "../../components/ui/Button";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
 import DateRangePicker from "../../components/ui/DateRangePicker";
 import Icon from "../../components/ui/Icon";
 import SelectMenu from "../../components/ui/SelectMenu";
+import Tabs from "../../components/ui/Tabs";
 import { Skeleton } from "../../components/ui/States";
 import { integrationPath } from "../../routes/paths";
 import { metricByKey, METRICS } from "./analyticsUtils";
@@ -14,9 +16,18 @@ import { ChannelsCard, SourcesCard } from "./components/AcquisitionCards";
 import { DevicesCard, LocationsCard, TechnologyCard } from "./components/AudienceCards";
 import { EventsCard, KeyEventsCard, TopPagesCard } from "./components/ContentCards";
 import { AudienceQualityCard, EngagementChart } from "./components/EngagementCards";
+import AnalyticsHighlights from "./components/AnalyticsHighlights";
 import MetricTiles from "./components/MetricTiles";
 import TrafficChart from "./components/TrafficChart";
 import { useAnalyticsOverview } from "./hooks/useAnalyticsOverview";
+
+const VIEWS = [
+  { value: "overview", label: "Overview" },
+  { value: "acquisition", label: "Acquisition" },
+  { value: "engagement", label: "Engagement" },
+  { value: "audience", label: "Audience" },
+  { value: "content", label: "Content & conversions" },
+];
 
 // A titled group of cards, like the report sections of GA4.
 const Section = ({ title, description, children }) => (
@@ -67,6 +78,7 @@ const LoadingLayout = () => (
 const GoogleAnalytics = () => {
   const ga = useAnalyticsOverview();
   const [metricKey, setMetricKey] = useState(METRICS[0].key);
+  const [view, setView] = useState("overview");
   const metric = metricByKey(metricKey);
 
   const meta = !ga.notConnected && !ga.isLoading && (
@@ -112,6 +124,7 @@ const GoogleAnalytics = () => {
               aria-label="Refresh reports"
               title="Refresh reports"
             />
+            {!ga.notConnected && <ServiceReportButton part="analytics" />}
           </div>
         </header>
 
@@ -128,28 +141,41 @@ const GoogleAnalytics = () => {
               onChange={setMetricKey}
             />
 
-            <TrafficChart
-              metric={metric}
-              rows={ga.rows}
-              previousRows={ga.previousRows}
-              rangeLabel={ga.range.label}
-              fetching={ga.isFetching}
-            />
+            {/* one topic at a time, like the Meta page: less scrolling */}
+            <Tabs tabs={VIEWS} value={view} onChange={setView} />
 
+            {view === "overview" && (
+              <>
+                <TrafficChart
+                  metric={metric}
+                  rows={ga.rows}
+                  previousRows={ga.previousRows}
+                  rangeLabel={ga.range.label}
+                  fetching={ga.isFetching}
+                />
+                <AnalyticsHighlights rows={ga.rows} previousRows={ga.previousRows} />
+              </>
+            )}
+
+            {view === "acquisition" && (
             <Section title="Acquisition" description="How visitors find your website">
               <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
                 <ChannelsCard className="xl:col-span-3" />
                 <SourcesCard className="xl:col-span-2" />
               </div>
             </Section>
+            )}
 
+            {view === "engagement" && (
             <Section title="Engagement" description="How long visitors stay and how deep they go">
               <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
                 <EngagementChart rows={ga.rows} className="xl:col-span-2" />
                 <AudienceQualityCard rows={ga.rows} />
               </div>
             </Section>
+            )}
 
+            {view === "audience" && (
             <Section title="Audience" description="Who your visitors are">
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <DevicesCard />
@@ -157,7 +183,9 @@ const GoogleAnalytics = () => {
                 <LocationsCard />
               </div>
             </Section>
+            )}
 
+            {view === "content" && (
             <Section title="Content & conversions" description="What visitors read and do">
               <TopPagesCard />
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -165,6 +193,7 @@ const GoogleAnalytics = () => {
                 <KeyEventsCard />
               </div>
             </Section>
+            )}
           </>
         )}
       </div>

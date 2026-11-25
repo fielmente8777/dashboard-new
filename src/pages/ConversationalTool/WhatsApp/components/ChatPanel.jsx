@@ -10,7 +10,6 @@ import {
   useGetWhatsAppTemplatesQuery,
   useMakeCallMutation,
 } from "../../../../redux/api/callsApi";
-import { useUpdateLeadMutation } from "../../../../redux/api/leadsApi";
 import {
   useDeleteMessagesMutation,
   useGetFlowSessionQuery,
@@ -24,6 +23,7 @@ import {
 import {
   getConversationAssignee,
   getHandling,
+  getWindowStart,
   isWindowClosed,
 } from "../chatUtils";
 import { useChatCache } from "../hooks/useChatCache";
@@ -86,7 +86,6 @@ const ChatPanel = ({
   const [updateFlowSession, { isLoading: isStoppingFlow }] =
     useUpdateFlowSessionMutation();
   const [makeCall, { isLoading: isCalling }] = useMakeCallMutation();
-  const [updateLead] = useUpdateLeadMutation();
 
   const send = useSendMessage(hid, conversation, onSend);
   const saveLead = useConversationLead(hid, conversation);
@@ -98,7 +97,7 @@ const ChatPanel = ({
   });
 
   const messageList = messages.data || NO_MESSAGES;
-  const windowClosed = isWindowClosed(conversation.last_message?.created_at);
+  const windowClosed = isWindowClosed(getWindowStart(conversation));
 
   // with the AI on, only the person who took the chat over may write
   const aiEnabled = Boolean(account.data?.ai?.enabled);
@@ -207,23 +206,17 @@ const ChatPanel = ({
     if (stopped) flowSession.refetch();
   };
 
-  // Assigns the chat, and the same guest's lead in All Leads when that lead
-  // is a separate one (a webform or Meta lead with the same number), so both
-  // pages show the same person.
-  const handleAssign = async (user) => {
-    const fields = {
-      assignee: user.userName,
-      assigneeNumber: user.phone || null,
-      assigneeEmail: user.emailId || null,
-    };
-    const saved = await saveLead(fields, `Assigned to ${user.userName}`);
-    if (!saved) return;
-
-    const linked = await lead.findLead();
-    if (linked && String(linked.conversationId) !== String(conversation._id)) {
-      updateLead({ hid: linked.hId || hid, leadId: linked._id, ...fields });
-    }
-  };
+  // Assigns the chat; gian gives every lead of the guest's number (WhatsApp,
+  // Meta, web form ...) the same assignee, so All Leads shows the same person.
+  const handleAssign = (user) =>
+    saveLead(
+      {
+        assignee: user.userName,
+        assigneeNumber: user.phone || null,
+        assigneeEmail: user.emailId || null,
+      },
+      `Assigned to ${user.userName}`,
+    );
 
   const handleCallClick = () => {
     // without the calling provider, hand the number to the device instead
@@ -232,7 +225,8 @@ const ChatPanel = ({
   };
 
   const handleCall = async (fromNumber, toNumber) => {
-    const started = await run(makeCall({ hid, fromNumber, toNumber }), {
+    // the chat's name goes with the call, so the Calls page shows who was called
+    const started = await run(makeCall({ hid, fromNumber, toNumber, guestName: conversation.name || undefined, guestSource: "whatsapp" }), {
       success: "Call started. The team member's phone will ring first.",
       error: "Could not start the call.",
     });

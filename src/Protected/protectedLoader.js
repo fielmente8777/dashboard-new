@@ -8,7 +8,8 @@ import {
 } from "../redux/slice/UserSlice";
 import { PAGES, ROUTES, dashboardPath } from "../routes/paths";
 import handleLocalStorage from "../utils/handleLocalStorage";
-import { getCookie, removeCookie } from "../utils/handleCookies";
+import { getCookie } from "../utils/handleCookies";
+import { clearSession } from "../utils/session";
 import { resolveHid } from "../utils/resolveLocation";
 
 // Runs before a protected page renders: a signed-out user never sees it, and
@@ -20,8 +21,8 @@ export const protectedLoader = async ({ request, params }) => {
   // The URL belongs to another hotel than the one this session selected.
   const storedHid = handleLocalStorage("hid");
   if (storedHid && params.hid && params.hid !== String(storedHid)) {
-    localStorage.clear();
-    removeCookie("token");
+    // signs out, but keeps this browser's light/dark choice
+    clearSession();
     throw redirect(ROUTES.LOGIN);
   }
 

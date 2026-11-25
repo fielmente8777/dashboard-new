@@ -1,8 +1,8 @@
-import { Stages } from "../../data/constant";
+import { isFollowUpStage, Stages } from "../../data/constant";
 
 // the stages a call can be moved to from the calls table
 export const CALL_STAGES = Stages.filter(
-  (stage) => stage.value === "Closure" || stage.value === "Follow Up",
+  (stage) => stage.value === "Closure" || isFollowUpStage(stage.value),
 );
 
 const OUTGOING = ["outbound-dial", "outbound-api"];

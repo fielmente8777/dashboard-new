@@ -12,8 +12,10 @@ import QuickResponsePopup from "../../components/Popup/QuickResponsePopup";
 import TablePagination from "../../components/ui/TablePagination";
 import Button from "../../components/ui/Button";
 import Dialog from "../../components/ui/Dialog";
+import CustomDropdown from "../../components/ui/Dropdown";
 import { Input } from "../../components/ui/Field";
 import PageShell from "../../components/ui/PageShell";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
 import { EmptyState, ErrorState, Skeleton } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
 import { useConfirm } from "../../context/ConfirmContext";
@@ -34,6 +36,7 @@ import CallsAnalytics from "./CallsAnalytics";
 import { getGuestNumber, isOutgoing } from "./callUtils";
 import CallStats from "./components/CallStats";
 import CallsTable from "./components/CallsTable";
+import { CALL_SOURCE_OPTIONS } from "./components/callSources";
 import FollowUpDialog from "../../components/FollowUpDialog";
 import MakeCallDialog from "./components/MakeCallDialog";
 import RecordingPlayer from "./components/RecordingPlayer";
@@ -57,6 +60,7 @@ const Calls = () => {
 
   const [view, setView] = useState("calls");
   const [searchText, setSearchText] = useState("");
+  const [sources, setSources] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
   const search = useDebounce(searchText.trim(), 400);
@@ -70,7 +74,7 @@ const Calls = () => {
   const connection = useGetCallConnectionQuery();
   const isConnected = connection.data === true;
   const calls = useGetCallsQuery(
-    { hid, page, limit, search },
+    { hid, page, limit, search, source: sources },
     { skip: !hid || !isConnected, refetchOnMountOrArgChange: true },
   );
   const users = useGetTeamUsersQuery();
@@ -126,7 +130,12 @@ const Calls = () => {
     <PageShell
       title="Calls Management"
       description="Every call made and received through your business number."
-      actions={<Tabs tabs={VIEW_TABS} value={view} onChange={setView} />}
+      actions={
+        <>
+          <Tabs tabs={VIEW_TABS} value={view} onChange={setView} />
+          <ServiceReportButton part="calls" />
+        </>
+      }
     >
       {/* both views need calling (Exotel) connected; without it, only say how */}
       {connection.isLoading && (
@@ -178,6 +187,18 @@ const Calls = () => {
                 className="pl-9!"
               />
             </div>
+            <div className="w-full sm:w-60">
+              <CustomDropdown
+                multiple
+                label={sources}
+                options={CALL_SOURCE_OPTIONS}
+                placeholder="All sources"
+                onChange={(value) => {
+                  setSources(value);
+                  setPage(1);
+                }}
+              />
+            </div>
             <span className="text-sm text-app-text-muted">
               {calls.data ? (
                 <>
@@ -227,7 +248,9 @@ const Calls = () => {
               showProperty={hotel?.Profile?.domain === PROPERTY_COLUMN_DOMAIN}
               onOpen={handleOpen}
               onUpdate={handleUpdate}
-              onFollowUp={setFollowUpCall}
+              onFollowUp={(call, stage) =>
+                setFollowUpCall({ ...call, followUpStage: stage })
+              }
               onCallBack={handleCallBack}
               whatsAppCheckingId={whatsApp.checkingId}
               onWhatsApp={(call) =>
@@ -285,7 +308,7 @@ const Calls = () => {
         onClose={() => setFollowUpCall(null)}
         onSave={(date) => {
           handleUpdate(followUpCall, {
-            stage: "Follow Up",
+            stage: followUpCall.followUpStage || "Follow Up",
             followUpDate: date,
           });
           setFollowUpCall(null);

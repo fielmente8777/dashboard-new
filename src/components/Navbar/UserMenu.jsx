@@ -17,6 +17,8 @@ import { PAGES, ROUTES, dashboardPath } from "../../routes/paths";
 import { clearSession } from "../../utils/session";
 import Icon from "../ui/Icon";
 import { BILLING_PORTAL_URL } from "../../config/env";
+import { PLAY_STORE_URL } from "../../config/assets";
+import { FaGooglePlay } from "react-icons/fa6";
 
 const itemClassName =
   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-app-text transition-colors hover:bg-app-surface-secondary";
@@ -158,6 +160,17 @@ const UserMenu = () => {
             <Icon icon={QrCode} className="text-app-text-muted" />
             QR Code
           </Link>
+          <a
+            role="menuitem"
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setIsOpen(false)}
+            className={itemClassName}
+          >
+            <FaGooglePlay className="size-4 text-emerald-500" />
+            Get the Android app
+          </a>
 
           <div className="my-1 h-px bg-app-border" />
 

@@ -58,6 +58,8 @@ const tableRows = (level, items, metrics) => {
       name,
       url,
       paused: Boolean(item.paused),
+      // a campaign's daily budget (in the account's currency)
+      budget: level === "campaign" ? Number(item.budget) || null : null,
       ...NO_METRICS,
       ...byId.get(String(id)),
     };

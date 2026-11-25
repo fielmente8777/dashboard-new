@@ -16,19 +16,21 @@ import {
   MasterSegregation,
   Priority,
   Property,
+  isFollowUpStage,
 } from "../../../data/constant";
 import { timeAgo } from "../../../utils/formateDate";
 import {
   CALL_STAGES,
   formatCallDuration,
   getCallOutcome,
-  getGuestNumber,
   getStaffNumber,
   isOutgoing,
 } from "../callUtils";
 import { useStaffNames } from "../hooks/useStaffNames";
 import CallCardList from "./CallCardList";
 import DirectionTile from "./DirectionTile";
+import GuestName from "./GuestName";
+import SourceBadge from "./SourceBadge";
 
 // cells with their own controls must not open the row
 const stopRowClick = (e) => e.stopPropagation();
@@ -73,9 +75,7 @@ const CallsTable = ({
             <span className="flex items-center gap-3">
               <DirectionTile call={call} />
               <span className="min-w-0 leading-tight">
-                <span className="block font-medium tabular-nums text-app-text">
-                  {call.callerName || getGuestNumber(call) || "—"}
-                </span>
+                <GuestName call={call} />
                 <span className="text-xs text-app-text-faint">
                   {isOutgoing(call) ? "Called by" : "Answered by"}{" "}
                   {staff || "—"}
@@ -86,11 +86,42 @@ const CallsTable = ({
         },
       },
       {
+        key: "source",
+        header: "Source",
+        render: (call) => <SourceBadge call={call} />,
+      },
+      {
         key: "status",
         header: "Outcome",
         render: (call) => {
           const outcome = getCallOutcome(call);
           return <Badge tone={outcome.tone}>{outcome.label}</Badge>;
+        },
+      },
+      // near the start, so nobody has to scroll right to reach them
+      {
+        key: "actions",
+        header: "Actions",
+        className: "w-px whitespace-nowrap",
+        render: (call) => {
+          const checking = whatsAppCheckingId === call.sid;
+          return (
+            <span className="flex items-center gap-0.5" onClick={stopRowClick}>
+              <IconButton
+                icon={checking ? Loader2 : MessageCircle}
+                label="WhatsApp"
+                tone="success"
+                disabled={checking}
+                className={checking ? "[&_svg]:animate-spin" : ""}
+                onClick={() => onWhatsApp(call)}
+              />
+              <IconButton
+                icon={Phone}
+                label="Call back"
+                onClick={() => onCallBack(call)}
+              />
+            </span>
+          );
         },
       },
       {
@@ -140,6 +171,26 @@ const CallsTable = ({
           ) : (
             <span className="text-app-text-faint">—</span>
           ),
+      },
+      {
+        key: "stage",
+        header: "Stage",
+        render: (call) => (
+          <CellSelect
+            id={call.sid}
+            value={call.stage}
+            options={CALL_STAGES}
+            // a follow up also needs a date, which the page asks for; until
+            // it is saved the stage stays as it was (false)
+            onSelect={(stage) => {
+              if (isFollowUpStage(stage)) {
+                onFollowUp(call, stage);
+                return false;
+              }
+              onUpdate(call, { stage, followUpDate: null });
+            }}
+          />
+        ),
       },
       ...(showProperty
         ? [
@@ -196,53 +247,10 @@ const CallsTable = ({
         ),
       },
       {
-        key: "stage",
-        header: "Stage",
-        render: (call) => (
-          <CellSelect
-            id={call.sid}
-            value={call.stage}
-            options={CALL_STAGES}
-            // a follow up also needs a date, which the page asks for; until
-            // it is saved the stage stays as it was (false)
-            onSelect={(stage) => {
-              if (stage === "Follow Up") {
-                onFollowUp(call);
-                return false;
-              }
-              onUpdate(call, { stage, followUpDate: null });
-            }}
-          />
-        ),
-      },
-      {
-        key: "actions",
+        key: "open",
         header: "",
-        className: "w-px whitespace-nowrap",
-        render: (call) => {
-          const checking = whatsAppCheckingId === call.sid;
-          return (
-            <span
-              className="flex items-center justify-end gap-0.5"
-              onClick={stopRowClick}
-            >
-              <IconButton
-                icon={checking ? Loader2 : MessageCircle}
-                label="WhatsApp"
-                tone="success"
-                disabled={checking}
-                className={checking ? "[&_svg]:animate-spin" : ""}
-                onClick={() => onWhatsApp(call)}
-              />
-              <IconButton
-                icon={Phone}
-                label="Call back"
-                onClick={() => onCallBack(call)}
-              />
-              <Icon icon={ChevronRight} tone="faint" className="ml-1" />
-            </span>
-          );
-        },
+        className: "w-px",
+        render: () => <Icon icon={ChevronRight} tone="faint" />,
       },
     ],
     [

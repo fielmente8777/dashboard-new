@@ -18,7 +18,21 @@ export const setSession = (token) => {
   setCookie(TOKEN_KEY, token);
 };
 
-export const clearSession = () => {
+// Choices that belong to this browser, not to the account: they survive
+// signing out, an expired session and switching accounts. (Wiping them made
+// the dashboard fall back to the system's light/dark mode after a refresh.)
+const DEVICE_PREFERENCES = ["eazotel_color_mode"];
+
+// Empties localStorage except the device preferences above.
+export const clearAccountStorage = () => {
+  const kept = DEVICE_PREFERENCES.map((key) => [key, localStorage.getItem(key)]);
   localStorage.clear();
+  kept.forEach(([key, value]) => {
+    if (value !== null) localStorage.setItem(key, value);
+  });
+};
+
+export const clearSession = () => {
+  clearAccountStorage();
   removeCookie(TOKEN_KEY);
 };
