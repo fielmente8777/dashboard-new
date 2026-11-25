@@ -105,7 +105,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
 
   const run = async () => {
     setImporting(true);
-    const total = { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0 };
+    const total = { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0, contactsAdded: 0 };
     try {
       for (let i = 0; i < file.rows.length; i += CHUNK) {
         const part = await importRows({ rows: file.rows.slice(i, i + CHUNK), tags: group.trim() ? [group.trim()] : [] }).unwrap();
@@ -123,7 +123,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
     <Dialog
       open={open}
       title="Import subscribers"
-      description="A CSV or Excel file with an email column. Every other column (name, country, language…) is kept."
+      description="A CSV or Excel file with an email column. Every other column (name, country, language…) is kept, and everyone in it is added to Contacts too."
       onClose={close}
       sheetOnPhone
       footer={
@@ -147,6 +147,12 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
           <ul className="space-y-1 text-app-text-muted">
             <li><strong className="text-app-text">{formatNumber(result.added)}</strong> added</li>
             <li><strong className="text-app-text">{formatNumber(result.updated)}</strong> already on your list (name and tags updated)</li>
+            {result.contactsAdded > 0 && (
+              <li>
+                <strong className="text-app-text">{formatNumber(result.contactsAdded)}</strong> new in Contacts too (the
+                others were already there)
+              </li>
+            )}
             {result.skippedUnsubscribed > 0 && (
               <li>
                 <strong className="text-app-text">{formatNumber(result.skippedUnsubscribed)}</strong> skipped: they had

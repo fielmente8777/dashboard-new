@@ -78,6 +78,24 @@ const Checkbox = ({ label, ...props }) => (
 const SourceBadge = ({ value }) =>
   value ? <Badge tone={getSourceTone(value)}>{getSourceLabel(value)}</Badge> : <span className="text-app-text-faint">—</span>;
 
+// their state on the newsletter list (Newsletters); "—" when they are not on it
+const NewsletterBadge = ({ value }) =>
+  value === "subscribed" ? (
+    <Badge tone="green">Subscribed</Badge>
+  ) : value === "unsubscribed" ? (
+    <Badge tone="red">Unsubscribed</Badge>
+  ) : (
+    <span className="text-app-text-faint">—</span>
+  );
+
+// the newsletter groups an uploaded list put them in, e.g. "Christmas Spain"
+const GroupNames = ({ groups }) =>
+  groups?.length ? (
+    <p className="mt-1 max-w-48 truncate text-xs text-app-text-muted" title={groups.join(", ")}>
+      {groups.join(", ")}
+    </p>
+  ) : null;
+
 const Contacts = () => {
   const { confirm } = useConfirm();
   const run = useApiAction();
@@ -235,6 +253,7 @@ const Contacts = () => {
                       {contact.name || "Unnamed"}
                     </p>
                     {contact.added_from && <SourceBadge value={contact.added_from} />}
+                    {contact.newsletter && <NewsletterBadge value={contact.newsletter} />}
                   </div>
                   <p className="truncate text-xs text-app-text-muted">
                     {[contact.phone, contact.email].filter(Boolean).join(" · ") || "No phone or email"}
@@ -260,6 +279,7 @@ const Contacts = () => {
               <th className="px-3 py-2.5 font-medium">Contact</th>
               <th className="px-3 py-2.5 font-medium">Phone</th>
               <th className="px-3 py-2.5 font-medium">Source</th>
+              <th className="px-3 py-2.5 font-medium">Newsletter</th>
               <th className="px-3 py-2.5 font-medium">Added</th>
               <th className="w-24 py-2.5 pr-4" aria-label="Actions" />
             </tr>
@@ -316,6 +336,10 @@ const Contacts = () => {
                   </td>
                   <td className="px-3 py-3">
                     <SourceBadge value={contact.added_from} />
+                  </td>
+                  <td className="px-3 py-3">
+                    <NewsletterBadge value={contact.newsletter} />
+                    <GroupNames groups={contact.groups} />
                   </td>
                   <td className="whitespace-nowrap px-3 py-3 text-xs text-app-text-muted">
                     {contact.created_at ? formatDate(contact.created_at) : "—"}
