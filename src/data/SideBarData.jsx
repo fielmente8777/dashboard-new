@@ -74,7 +74,7 @@ export const SidebarData = [
     icon: top(MessagesSquare),
     subLinks: [
       { name: "WhatsApp", link: `channel/wa/chat`, icon: brand(FaWhatsapp) },
-      // { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
+      { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
     ],
   },
   {
