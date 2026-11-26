@@ -56,7 +56,8 @@ export default function ComposeInsertMenu({ items, disabled }) {
       {open && (
         <div
           role="menu"
-          className="anim-pop absolute bottom-10 left-0 z-30 w-72 overflow-hidden rounded-xl border border-app-border! bg-app-surface py-1 shadow-xl"
+          // a phone: across the bottom of the screen, above the compose bar (it would run off the right edge)
+          className="anim-pop fixed inset-x-2 bottom-16 z-30 overflow-hidden rounded-xl border border-app-border! bg-app-surface py-1 shadow-xl sm:absolute sm:inset-x-auto sm:bottom-10 sm:left-0 sm:w-72"
         >
           {items.map((item) => {
             const row = ROWS[item.key];

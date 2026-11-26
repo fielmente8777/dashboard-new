@@ -97,7 +97,10 @@ const StartRow = ({ actions }) => (
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold">{action.title}</span>
-              <span className={`block truncate text-xs ${action.primary ? "text-white/80" : "text-app-text-muted"}`}>
+              {/* two short lines on a phone instead of a cut-off one */}
+              <span
+                className={`line-clamp-2 text-xs leading-snug sm:block sm:truncate ${action.primary ? "text-white/80" : "text-app-text-muted"}`}
+              >
                 {action.description}
               </span>
             </span>
@@ -301,11 +304,12 @@ export function EmailMarketingManagement() {
             onChange={onExcelPicked}
             className="hidden"
           />
-          <Button variant="secondary" icon={Plus} onClick={() => setPicking("")}>
-            <span className="sm:hidden">Group campaign</span>
-            <span className="hidden sm:inline">Create group email campaign</span>
+          {/* on a phone the "Send an email to…" tiles below do the same, so these step aside */}
+          <Button variant="secondary" icon={Plus} onClick={() => setPicking("")} className="max-sm:hidden">
+            <span className="hidden lg:inline">Create group email campaign</span>
+            <span className="lg:hidden">Group campaign</span>
           </Button>
-          <Button icon={Plus} onClick={() => openCompose()}>
+          <Button icon={Plus} onClick={() => openCompose()} className="max-sm:hidden">
             New email
           </Button>
         </>

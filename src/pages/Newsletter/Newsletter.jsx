@@ -127,8 +127,17 @@ export default function Newsletter() {
       description="Everyone who signed up for your news and offers, and the emails you send them."
       actions={
         <>
-          <Button variant="secondary" icon={Download} loading={exporting} onClick={exportCsv} disabled={!stats.data?.total}>
-            Export
+          {/* on a phone these three are icons, so all four fit on one line */}
+          <Button
+            variant="secondary"
+            icon={Download}
+            loading={exporting}
+            onClick={exportCsv}
+            disabled={!stats.data?.total}
+            title="Export"
+            className="max-sm:px-2.5"
+          >
+            <span className="max-sm:sr-only">Export</span>
           </Button>
           <Button
             variant="secondary"
@@ -137,11 +146,13 @@ export default function Newsletter() {
               setImportGroup("");
               setImporting(true);
             }}
+            title="Import"
+            className="max-sm:px-2.5"
           >
-            Import
+            <span className="max-sm:sr-only">Import</span>
           </Button>
-          <Button variant="secondary" icon={UserPlus} onClick={() => setAdding(true)}>
-            Add
+          <Button variant="secondary" icon={UserPlus} onClick={() => setAdding(true)} title="Add subscriber" className="max-sm:px-2.5">
+            <span className="max-sm:sr-only">Add</span>
           </Button>
           <Button
             icon={Send}

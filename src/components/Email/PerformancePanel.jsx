@@ -54,7 +54,9 @@ export default function PerformancePanel({ reloadSignal = 0, onOpenCampaign }) {
   }, [load, reloadSignal]);
 
   const now = data?.current;
-  const before = data?.previous;
+  // no earlier period in the answer: compare with zeros instead of failing
+  const before = data?.previous || { sent: 0, failed: 0, delivered: 0, opened: 0, clicked: 0, unsubscribed: 0 };
+  const buckets = data?.buckets || [];
   // reached = accepted by the guest's mail server (sent) out of everything tried
   const tried = (x) => (x ? x.sent + x.failed : 0);
 
@@ -152,11 +154,14 @@ export default function PerformancePanel({ reloadSignal = 0, onOpenCampaign }) {
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="rounded-xl border border-app-border! px-4 py-3">
           <h3 className="text-sm font-semibold text-app-text">Emails sent per {data?.unit === "hour" ? "hour" : "day"}</h3>
-          <p className="text-xs text-app-text-muted">Hover a bar for sent, opened and clicked</p>
+          <p className="text-xs text-app-text-muted">
+            <span className="sm:hidden">Tap</span>
+            <span className="hidden sm:inline">Hover</span> a bar for sent, opened and clicked
+          </p>
           {data ? (
-            data.buckets.some((b) => b.sent) ? (
+            buckets.some((b) => b.sent) ? (
               <BarChart
-                buckets={data.buckets}
+                buckets={buckets}
                 unit={data.unit}
                 value={(b) => b.sent}
                 describe={(b) => `${b.sent} sent, ${b.opened} opened, ${b.clicked} clicked`}

@@ -134,7 +134,9 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
   }, [load, reloadSignal]);
 
   const periodLabel = (range?.label || PERIODS.find((p) => p.value === period).label).toLowerCase();
-  const max = Math.max(0, ...(data?.senders || []).map((s) => s.sent));
+  const senders = data?.senders || [];
+  const sentBy = data?.sentBy || [];
+  const max = Math.max(0, ...senders.map((s) => s.sent));
 
   const body = failed ? (
     <p className="flex items-center gap-2 px-4 py-3 text-sm text-red-600">
@@ -145,19 +147,19 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
       <Skeleton className="h-10 rounded-lg" />
       <Skeleton className="h-10 rounded-lg" />
     </div>
-  ) : !data?.senders.length ? (
+  ) : !senders.length ? (
     <p className="px-4 py-6 text-center text-sm text-app-text-muted">No emails were sent {periodLabel}.</p>
   ) : (
     <>
       <ul className="divide-y divide-app-border">
-        {data.senders.map((s) => (
+        {senders.map((s) => (
           <SenderRow key={`${s.via}|${s.email || s.provider || s.source}`} sender={s} max={max} onOpenCampaign={onOpenCampaign} />
         ))}
       </ul>
-      {data.sentBy.length > 0 && (
+      {sentBy.length > 0 && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-app-border! px-4 py-2.5 text-xs text-app-text-muted">
           <span className="font-medium">Sent from the dashboard by:</span>
-          {data.sentBy.map((p) => (
+          {sentBy.map((p) => (
             <span key={p.login || "unknown"}>
               <span className="text-app-text">{p.login || "not recorded"}</span> · {formatNumber(p.sent)} in {p.campaigns}{" "}
               email{p.campaigns === 1 ? "" : "s"}
@@ -189,7 +191,7 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
             {loading && !data
               ? "Counting…"
               : data
-                ? `${formatNumber(data.total.sent)} sent ${periodLabel}${data.total.failed ? `, ${formatNumber(data.total.failed)} failed` : ""} · ${formatNumber(data.total.campaigns)} email${data.total.campaigns === 1 ? "" : "s"}`
+                ? `${formatNumber(data.total?.sent)} sent ${periodLabel}${data.total?.failed ? `, ${formatNumber(data.total.failed)} failed` : ""} · ${formatNumber(data.total?.campaigns)} email${data.total?.campaigns === 1 ? "" : "s"}`
                 : ""}
           </p>
         </div>

@@ -37,6 +37,9 @@ export default function EmailPreviewFrame({
   );
 }
 
+// an email taller than this is cut (nothing real is; a runaway layout would be)
+const MAX_PREVIEW_HEIGHT = 20000;
+
 // the screen widths (CSS px) emails are laid out at: iPhone 15 / Pixel & Galaxy
 const PREVIEW_WIDTHS = { desktop: 700, ios: 390, android: 412, mobile: 390 };
 const PHONE_FRAME = {
@@ -81,6 +84,7 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
   const [boxWidth, setBoxWidth] = useState(0);
   const [content, setContent] = useState({ width: PREVIEW_WIDTHS[device], height: 600 });
   const baseWidth = PREVIEW_WIDTHS[device];
+  const growth = useRef({ delta: 0, repeats: 0 });
 
   // the width it is drawn at: the device's, or the design's own when wider
   const measure = useCallback(() => {
@@ -88,12 +92,22 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
     if (!doc?.documentElement) return;
     const width = Math.max(baseWidth, doc.documentElement.scrollWidth, doc.body?.scrollWidth || 0);
     // the body's own height: the page's would never shrink below the frame
-    const height = Math.max(doc.body?.scrollHeight || 0, 200);
-    setContent((current) => (current.width === width && current.height === height ? current : { width, height }));
+    const measured = Math.min(MAX_PREVIEW_HEIGHT, Math.max(doc.body?.scrollHeight || 0, 200));
+    setContent((current) => {
+      // a design sized by its window ("height: 100vh") grows by the same step each time the
+      // frame grows: stop following it instead of growing until the tab runs out of memory
+      const delta = measured - current.height;
+      const g = growth.current;
+      g.repeats = delta > 2 && Math.abs(delta - g.delta) <= 2 ? g.repeats + 1 : 0;
+      g.delta = delta;
+      const height = g.repeats >= 3 ? current.height : measured;
+      return current.width === width && current.height === height ? current : { width, height };
+    });
   }, [baseWidth]);
 
   // a new device or email: start from the device width again
   useEffect(() => {
+    growth.current = { delta: 0, repeats: 0 };
     setContent({ width: baseWidth, height: 600 });
   }, [baseWidth, srcDoc]);
 
@@ -126,7 +140,8 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
   // phone: its own screen width (smaller when the box is narrow); desktop: the whole box
   const phone = PHONE_FRAME[device];
   const frameExtra = phone ? phone.border * 2 : 0;
-  const screenWidth = phone ? Math.min(baseWidth, boxWidth - 32 - frameExtra) : boxWidth - 32;
+  // never below zero (the box is 0 wide until it is first measured)
+  const screenWidth = Math.max(0, phone ? Math.min(baseWidth, boxWidth - 32 - frameExtra) : boxWidth - 32);
   // the phone itself shrinks to fit the box; a too-wide design shrinks inside it, as mail apps do
   const phoneScale = phone && screenWidth > 0 ? screenWidth / baseWidth : 1;
   const scale = screenWidth > 0 ? Math.min(1, screenWidth / content.width) : 1;

@@ -69,6 +69,8 @@ export function BarChart({ buckets, unit, value, tooltip, describe, className = 
               key={b.key}
               onMouseEnter={() => setHover(i)}
               onFocus={() => setHover(i)}
+              // phones have no hover: a tap shows the bar's numbers, a second tap hides them
+              onClick={() => setHover((current) => (current === i ? null : i))}
               tabIndex={0}
               aria-label={`${bucketLabel(b.key, unit, true)}: ${describe(b)}`}
               className="flex h-full flex-1 items-end outline-none"
@@ -94,7 +96,14 @@ export function BarChart({ buckets, unit, value, tooltip, describe, className = 
 
       {active && (
         <div
-          className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] leading-snug text-white shadow-lg dark:bg-slate-700"
+          // near either edge it opens inwards, so it stays on a narrow screen
+          className={`pointer-events-none absolute top-0 z-10 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] leading-snug text-white shadow-lg dark:bg-slate-700 ${
+            (hover + 0.5) / buckets.length < 0.3
+              ? "-translate-x-4"
+              : (hover + 0.5) / buckets.length > 0.7
+                ? "-translate-x-[calc(100%-1rem)]"
+                : "-translate-x-1/2"
+          }`}
           style={{ left: `calc(2.75rem + (100% - 2.75rem) * ${(hover + 0.5) / buckets.length})` }}
         >
           <p className="text-white/70">{bucketLabel(active.key, unit, true)}</p>
