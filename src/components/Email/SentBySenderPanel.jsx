@@ -49,10 +49,16 @@ function SenderRow({ sender, max, onOpenCampaign }) {
           {unknown ? "?" : title[0]}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className={`truncate text-sm font-medium ${unknown ? "text-app-text-muted" : "text-app-text"}`}>{title}</span>
-            {sender.email && sender.name && <span className="truncate text-xs text-app-text-muted">&lt;{sender.email}&gt;</span>}
-            {via && <Badge tone={via.tone}>{via.label}</Badge>}
+          <span className={`block truncate text-sm font-medium ${unknown ? "text-app-text-muted" : "text-app-text"}`} title={title}>
+            {title}
+          </span>
+          {sender.email && sender.name && (
+            <span className="block truncate text-xs text-app-text-muted" title={sender.email}>
+              {sender.email}
+            </span>
+          )}
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 empty:hidden">
+            {via && <Badge tone={via.tone} className="text-[11px]">{via.label}</Badge>}
             {sender.source === "amazon-id" && (
               <span className="text-[11px] text-app-text-faint" title="Worked out from Amazon's message ID (sent before senders were recorded)">
                 from Amazon's ID
@@ -64,7 +70,7 @@ function SenderRow({ sender, max, onOpenCampaign }) {
               </span>
             )}
           </span>
-          <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-app-surface-secondary">
+          <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-app-surface-secondary">
             <span className="block h-full rounded-full bg-[var(--chart-1)]" style={{ width: `${share}%` }} />
           </span>
         </span>
@@ -78,7 +84,7 @@ function SenderRow({ sender, max, onOpenCampaign }) {
       </button>
 
       {open && (
-        <ul className="border-t border-app-border! bg-app-surface-secondary/50 py-1 pl-14 pr-4">
+        <ul className="border-t border-app-border! bg-app-surface-secondary/50 py-1 pl-4 pr-3 sm:pl-14 sm:pr-4">
           {sender.campaigns.map((c) => (
             <li key={c._id}>
               <button
@@ -134,7 +140,9 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
   }, [load, reloadSignal]);
 
   const periodLabel = (range?.label || PERIODS.find((p) => p.value === period).label).toLowerCase();
-  const max = Math.max(0, ...(data?.senders || []).map((s) => s.sent));
+  const senders = data?.senders || [];
+  const sentBy = data?.sentBy || [];
+  const max = Math.max(0, ...senders.map((s) => s.sent));
 
   const body = failed ? (
     <p className="flex items-center gap-2 px-4 py-3 text-sm text-red-600">
@@ -145,19 +153,19 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
       <Skeleton className="h-10 rounded-lg" />
       <Skeleton className="h-10 rounded-lg" />
     </div>
-  ) : !data?.senders.length ? (
+  ) : !senders.length ? (
     <p className="px-4 py-6 text-center text-sm text-app-text-muted">No emails were sent {periodLabel}.</p>
   ) : (
     <>
       <ul className="divide-y divide-app-border">
-        {data.senders.map((s) => (
+        {senders.map((s) => (
           <SenderRow key={`${s.via}|${s.email || s.provider || s.source}`} sender={s} max={max} onOpenCampaign={onOpenCampaign} />
         ))}
       </ul>
-      {data.sentBy.length > 0 && (
+      {sentBy.length > 0 && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-app-border! px-4 py-2.5 text-xs text-app-text-muted">
           <span className="font-medium">Sent from the dashboard by:</span>
-          {data.sentBy.map((p) => (
+          {sentBy.map((p) => (
             <span key={p.login || "unknown"}>
               <span className="text-app-text">{p.login || "not recorded"}</span> · {formatNumber(p.sent)} in {p.campaigns}{" "}
               email{p.campaigns === 1 ? "" : "s"}
@@ -183,13 +191,13 @@ export default function SentBySenderPanel({ range = null, reloadSignal = 0, onOp
   return (
     <section className="overflow-hidden rounded-xl border border-app-border! bg-app-surface">
       <div className="flex flex-wrap items-center gap-2 border-b border-app-border! px-3 py-2.5 sm:px-4">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[12rem] flex-1">
           <h3 className="text-sm font-semibold text-app-text">Emails sent, by sender</h3>
           <p className="text-xs text-app-text-muted">
             {loading && !data
               ? "Counting…"
               : data
-                ? `${formatNumber(data.total.sent)} sent ${periodLabel}${data.total.failed ? `, ${formatNumber(data.total.failed)} failed` : ""} · ${formatNumber(data.total.campaigns)} email${data.total.campaigns === 1 ? "" : "s"}`
+                ? `${formatNumber(data.total?.sent)} sent ${periodLabel}${data.total?.failed ? `, ${formatNumber(data.total.failed)} failed` : ""} · ${formatNumber(data.total?.campaigns)} email${data.total?.campaigns === 1 ? "" : "s"}`
                 : ""}
           </p>
         </div>

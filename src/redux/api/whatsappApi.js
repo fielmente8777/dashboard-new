@@ -50,6 +50,16 @@ export const whatsappApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // the chats whose 24-hour reply window is open or closed in the last day,
+    // closing soonest first: [{ _id, name, phone, status, assignee,
+    // followUpDate, unread, lastMessage, openedAt, closesAt }]
+    getReplyWindows: build.query({
+      query: (hid) => ({ url: "/api/v1/whatsapp/reply-windows", params: { hid } }),
+      transformResponse: (response) => response?.result?.docs || [],
+      providesTags: ["WhatsAppConversation"],
+      extraOptions: NODE,
+    }),
+
     getMessages: build.query({
       query: (conversationId) =>
         `/api/v1/whatsapp/conversations/${conversationId}/messages`,
@@ -224,6 +234,7 @@ export const {
   useGetWhatsAppAccountQuery,
   useGetConversationsQuery,
   useLazyGetConversationsQuery,
+  useGetReplyWindowsQuery,
   useGetMessagesQuery,
   useSendMessageMutation,
   useDeleteMessagesMutation,

@@ -1,6 +1,7 @@
 import Card from "../../../components/ui/Card";
 import Detail from "../../../components/ui/Detail";
 import { formatDateTime, isOutgoing } from "../callUtils";
+import SourceBadge from "../components/SourceBadge";
 
 // The facts about a call that are only looked up now and then: the numbers,
 // who answered, the cost and the times.
@@ -21,7 +22,10 @@ const CallInfoCard = ({ call }) => {
         <Detail label="Answered by">
           {call.duration > 0 ? call.answeredBy : ""}
         </Detail>
-        <Detail label="Caller name">{call.callerName}</Detail>
+        <Detail label="Guest name">{call.guest?.name || call.callerName}</Detail>
+        <Detail label="Source">
+          <SourceBadge call={call} withLabel />
+        </Detail>
         <Detail label="Lead status">{call.leadStatus}</Detail>
         <Detail label="Price">
           {call.price !== undefined && call.price !== null && `₹${call.price}`}

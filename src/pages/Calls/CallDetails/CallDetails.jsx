@@ -41,6 +41,7 @@ import CallHeader from "./CallHeader";
 import CallInfoCard from "./CallInfoCard";
 import CallJourneyCard from "./CallJourneyCard";
 import CallManageCard from "./CallManageCard";
+import { followUpStageFor, isFollowUpStage } from "../../../data/constant";
 
 // the property field is only used by this one account (as on the calls list)
 const PROPERTY_COLUMN_DOMAIN = "stayxp";
@@ -119,6 +120,8 @@ const CallDetails = () => {
 
   // NotesCard edits the call in place, so it needs its own copy
   const [call, setCall] = useState(null);
+  // the follow-up round picked in the stage list, waiting for its date
+  const [pendingFollowUp, setPendingFollowUp] = useState(null);
   const [updateCall, { isLoading: isSaving }] = useUpdateCallMutation();
   const [makeCall] = useMakeCallMutation();
   const whatsApp = useLeadWhatsApp(hid);
@@ -143,15 +146,19 @@ const CallDetails = () => {
   const saveFollowUp = (value) =>
     handleUpdate(
       value
-        ? { followUpDate: new Date(value).toISOString(), stage: "Follow Up" }
+        ? {
+            followUpDate: new Date(value).toISOString(),
+            stage: pendingFollowUp || followUpStageFor(call.stage),
+          }
         : { followUpDate: null },
       value ? "Follow-up saved" : "Follow-up removed",
     );
 
   const handleStageChange = (stage) => {
     // a follow up needs a date: the follow-up box below asks for it
-    if (stage === "Follow Up") {
-      showToast({ message: "Pick the follow-up date below and save it." });
+    if (isFollowUpStage(stage)) {
+      setPendingFollowUp(stage);
+      showToast({ message: "Please select the follow-up date and time below, so you get an alert, then save it." });
       return false; // the stage stays as it was until the date is saved
     }
     // only a "Follow Up" call has a follow-up date
@@ -168,7 +175,7 @@ const CallDetails = () => {
       variant: "primary",
     });
     if (!confirmed) return;
-    run(makeCall({ hid, fromNumber: teamNumber, toNumber: guestNumber }), {
+    run(makeCall({ hid, fromNumber: teamNumber, toNumber: guestNumber, guestName: call.guest?.name || call.guestName || undefined, guestSource: call.guest?.source || call.guestSource || undefined }), {
       success: "Call started. Your phone will ring first.",
       error: "Could not start the call.",
     });
@@ -238,7 +245,7 @@ const CallDetails = () => {
                 {
                   _id: call.sid,
                   hId: call.hid,
-                  Name: call.callerName,
+                  Name: (call.guest?.name || call.callerName),
                   Contact: getGuestNumber(call),
                 },
                 { linkLead: false },
@@ -303,6 +310,7 @@ const CallDetails = () => {
                 onUpdate={(changes) => handleUpdate(changes)}
                 onStageChange={handleStageChange}
                 onSaveFollowUp={saveFollowUp}
+                pendingFollowUp={pendingFollowUp}
               />
               <CallInfoCard call={call} />
             </div>

@@ -1,25 +1,45 @@
-import { FileSpreadsheet, Upload } from "lucide-react";
+import { FileSpreadsheet, Link2, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../components/ui/Button";
 import Dialog from "../../components/ui/Dialog";
 import { Field, Input } from "../../components/ui/Field";
 import FileDropZone from "../../components/ui/FileDropZone";
+import Segmented from "../../components/ui/Segmented";
 import { useToast } from "../../context/ToastContext";
-import { newsletterError, useGetNewsletterGroupsQuery, useImportSubscribersMutation } from "../../redux/api/newsletterApi";
+import {
+  newsletterError,
+  useFetchSheetLinkMutation,
+  useGetNewsletterGroupsQuery,
+  useImportSubscribersMutation,
+} from "../../redux/api/newsletterApi";
 import { formatNumber, readSubscriberFile } from "./newsletterUtils";
 
 // the server takes up to 10,000 rows a call; bigger files go in parts
 const CHUNK = 10_000;
 const ACCEPT = ".csv,.xlsx,.xls";
+const FROM = [
+  { value: "file", label: "File" },
+  { value: "link", label: "Link (Google Sheet, CSV…)" },
+];
 
-// Upload a CSV / Excel list: pick the file, see what was found, put it in a group (e.g.
-// "Past guests"), confirm consent, import. Every other column of the
+// base64 from the server -> a File, so a link is read exactly like an upload
+const toFile = ({ base64, fileName }) => {
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  return new File([bytes], fileName);
+};
+
+// Upload a CSV / Excel list, or give a link (Google Sheet, a CSV / Excel link, Drive, Dropbox,
+// OneDrive): see what was found, put it in a group (e.g. "Past guests"), confirm consent, import.
+// Opened from a group (Groups tab / email marketing "Add people") it adds to that group. Every other column of the
 // file (country, language, ...) is kept on each person.
 //   group - start with this group filled in (from the Groups tab)
 export default function ImportDialog({ open, onClose, group: initialGroup = "" }) {
   const { showToast } = useToast();
   const [importRows] = useImportSubscribersMutation();
   const [file, setFile] = useState(null); // { name, rows, valid, invalid, hasNames }
+  const [from, setFrom] = useState("file");
+  const [link, setLink] = useState("");
+  const [fetchLink] = useFetchSheetLinkMutation();
   const [reading, setReading] = useState(false);
   const [group, setGroup] = useState(initialGroup);
   const groups = useGetNewsletterGroupsQuery(undefined, { skip: !open });
@@ -33,10 +53,33 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
 
   const close = () => {
     setFile(null);
+    setLink("");
+    setFrom("file");
     setGroup("");
     setConsent(false);
     setResult(null);
     onClose();
+  };
+
+  const readLink = async () => {
+    if (!/^https?:\/\//i.test(link.trim())) {
+      showToast({ message: "Paste the full link, starting with https://", type: "error" });
+      return;
+    }
+    setReading(true);
+    try {
+      const got = await fetchLink({ url: link.trim() }).unwrap();
+      const read = await readSubscriberFile(toFile(got));
+      if (!read.valid) {
+        showToast({ message: "No email addresses were found in that sheet.", type: "error" });
+        return;
+      }
+      setFile({ name: got.fileName, ...read });
+    } catch (error) {
+      showToast({ message: newsletterError(error, "Could not read the sheet from that link."), type: "error" });
+    } finally {
+      setReading(false);
+    }
   };
 
   const pick = async ([picked]) => {
@@ -62,7 +105,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
 
   const run = async () => {
     setImporting(true);
-    const total = { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0 };
+    const total = { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0, contactsAdded: 0 };
     try {
       for (let i = 0; i < file.rows.length; i += CHUNK) {
         const part = await importRows({ rows: file.rows.slice(i, i + CHUNK), tags: group.trim() ? [group.trim()] : [] }).unwrap();
@@ -80,7 +123,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
     <Dialog
       open={open}
       title="Import subscribers"
-      description="A CSV or Excel file with an email column. Every other column (name, country, language…) is kept."
+      description="A CSV or Excel file with an email column. Every other column (name, country, language…) is kept, and everyone in it is added to Contacts too."
       onClose={close}
       sheetOnPhone
       footer={
@@ -104,6 +147,12 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
           <ul className="space-y-1 text-app-text-muted">
             <li><strong className="text-app-text">{formatNumber(result.added)}</strong> added</li>
             <li><strong className="text-app-text">{formatNumber(result.updated)}</strong> already on your list (name and tags updated)</li>
+            {result.contactsAdded > 0 && (
+              <li>
+                <strong className="text-app-text">{formatNumber(result.contactsAdded)}</strong> new in Contacts too (the
+                others were already there)
+              </li>
+            )}
             {result.skippedUnsubscribed > 0 && (
               <li>
                 <strong className="text-app-text">{formatNumber(result.skippedUnsubscribed)}</strong> skipped: they had
@@ -120,6 +169,45 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
         </div>
       ) : (
         <div className="space-y-4">
+          <Segmented
+            label="Import from"
+            options={FROM}
+            value={from}
+            onChange={(next) => {
+              setFrom(next);
+              setFile(null);
+            }}
+          />
+
+          {from === "link" ? (
+            <div className="space-y-2">
+              <Field
+                label="Link to the sheet"
+                hint="Google Sheets: Share → General access → “Anyone with the link” (Viewer). Every tab is read. Also works with a CSV / Excel link, Google Drive, Dropbox or OneDrive."
+              >
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="https://docs.google.com/spreadsheets/d/…"
+                    onKeyDown={(e) => e.key === "Enter" && link.trim() && readLink()}
+                  />
+                  <Button variant="secondary" icon={Link2} loading={reading} disabled={!link.trim()} onClick={readLink}>
+                    Get the sheet
+                  </Button>
+                </div>
+              </Field>
+              {file && (
+                <p className="rounded-lg bg-app-surface-secondary px-3 py-2 text-xs text-app-text-muted">
+                  <span className="font-medium text-app-text">{file.name}</span>: {formatNumber(file.valid)} email
+                  {file.valid === 1 ? "" : "s"}
+                  {file.hasNames ? " with names" : ""}
+                  {file.invalid ? ` · ${formatNumber(file.invalid)} not valid (skipped)` : ""}
+                </p>
+              )}
+            </div>
+          ) : (
           <FileDropZone accept={ACCEPT} disabled={reading} onFiles={pick}>
             <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-app-border! px-4 py-8 text-center hover:border-blue-500!">
               <FileSpreadsheet className="size-7 text-app-text-muted" aria-hidden />
@@ -140,6 +228,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
               )}
             </div>
           </FileDropZone>
+          )}
 
           {file?.columns?.length > 0 && (
             <p className="text-xs text-app-text-muted">
@@ -172,7 +261,8 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-0.5 size-4 accent-blue-600"
             />
-            Everyone in this file agreed to get emails from us. People who unsubscribed before stay unsubscribed.
+            Everyone in this {from === "link" ? "sheet" : "file"} agreed to get emails from us. People who unsubscribed before stay
+            unsubscribed.
           </label>
         </div>
       )}

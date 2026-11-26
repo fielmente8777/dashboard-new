@@ -13,7 +13,7 @@ import Icon from "../../../../components/ui/Icon";
 import IconButton from "../../../../components/ui/IconButton";
 import {
   getConversationAssignee,
-  getLastActivity,
+  getWindowStart,
   isWindowClosed,
 } from "../chatUtils";
 import ContactAvatar from "./ContactAvatar";
@@ -53,7 +53,7 @@ const ChatHeader = ({
   }
 
   const assignee = getConversationAssignee(conversation);
-  const open = !isWindowClosed(getLastActivity(conversation));
+  const open = !isWindowClosed(getWindowStart(conversation));
 
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b border-app-border! bg-app-surface px-3 sm:px-4">

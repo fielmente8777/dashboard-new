@@ -6,6 +6,7 @@ import {
   toFollowUpValue,
 } from "../../../components/followUp";
 import FollowUpFields from "../../../components/FollowUpFields";
+import FollowUpReminderNote from "../../../components/FollowUpReminderNote";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import CustomDropdown from "../../../components/ui/Dropdown";
@@ -15,6 +16,7 @@ import {
   MasterSegregation,
   Priority,
   Property,
+  isFollowUpStage,
 } from "../../../data/constant";
 import { CALL_STAGES } from "../callUtils";
 
@@ -30,6 +32,7 @@ const CallManageCard = ({
   onUpdate,
   onStageChange,
   onSaveFollowUp,
+  pendingFollowUp,
 }) => {
   const [followUp, setFollowUp] = useState(() =>
     splitFollowUp(savedFollowUp),
@@ -73,6 +76,7 @@ const CallManageCard = ({
           <p className="mb-2 text-xs font-medium text-app-text-muted">
             Follow up on
           </p>
+          {pendingFollowUp && <FollowUpReminderNote stage={pendingFollowUp} className="mb-3" />}
           <FollowUpFields value={followUp} onChange={setFollowUp} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button
@@ -89,7 +93,7 @@ const CallManageCard = ({
             </Button>
             {/* a "Follow Up" call keeps its date; moving it to another
                 stage is what clears it */}
-            {savedFollowUp && call.stage !== "Follow Up" && (
+            {savedFollowUp && !isFollowUpStage(call.stage) && (
               <Button
                 size="sm"
                 variant="ghost"

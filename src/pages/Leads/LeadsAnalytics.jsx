@@ -42,6 +42,8 @@ const STAGE_COLORS = {
   Contacted: CHART_COLORS[1],
   Converted: CHART_COLORS[2],
   "Follow Up": CHART_COLORS[3],
+  "Follow Up 2": CHART_COLORS[3],
+  "Follow Up 3": CHART_COLORS[3],
   Qualified: CHART_COLORS[4],
   "Turn Away": CHART_COLORS[5],
   "Dead Lead": CHART_COLORS[6],

@@ -42,6 +42,29 @@ export const analyticsApi = api.injectEndpoints({
       cities: r?.cities || [],
     })),
 
+    // Google Search Console: the top searches (up to 10) that showed the
+    // website, for the GA property's linked site. { propertyId, range } ->
+    // { errorCode, message, queries: [{ keyword, clicks, impressions, ctr, position }] }
+    // Expected failures (not set up, no access) come back with an errorCode.
+    getSearchQueries: build.query({
+      query: ({ propertyId, range }) => ({
+        url: `/google/analytics-search-queries/${propertyId}`,
+        params: { startDate: range.start, endDate: range.end },
+      }),
+      transformResponse: (r) => ({
+        errorCode: r?.error_code || null,
+        message: r?.message || null,
+        queries: r?.topQueries || [],
+      }),
+      // "not set up" is answered with a 404 that still carries the code
+      transformErrorResponse: (error) => ({
+        errorCode: error?.data?.error_code || "API_ERROR",
+        message: error?.data?.message || null,
+      }),
+      providesTags: ["Analytics"],
+      extraOptions: OPEN,
+    }),
+
     // the Google Analytics properties the connected Google account can read
     getAnalyticsProperties: build.query({
       query: (email) => ({ url: "/google/properties", params: { email } }),
@@ -69,6 +92,7 @@ export const {
   useGetConversionsQuery,
   useGetDeviceAnalyticsQuery,
   useGetGeoAnalyticsQuery,
+  useGetSearchQueriesQuery,
   useGetAnalyticsPropertiesQuery,
   useLazyGetAnalyticsPropertiesQuery,
   useSaveAnalyticsPropertyMutation,

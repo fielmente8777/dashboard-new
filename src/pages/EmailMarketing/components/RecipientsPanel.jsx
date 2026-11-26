@@ -119,9 +119,25 @@ const RecipientsPanel = ({ onCompose, clearSignal }) => {
         : await createLeadRecipientBatch({ leadIds: selectedIds });
       const batchId = res?.doc?.recipientBatchId;
       if (!batchId) throw new Error();
+      // say who was left out (no email, not a valid address, the same address twice)
+      const skipped = res?.doc?.skipped;
+      const left = (skipped?.noEmail || 0) + (skipped?.invalid || 0);
+      if (left > 0) {
+        showToast({
+          message: `${res.doc.count} with an email will get it. Left out: ${[
+            skipped.noEmail && `${skipped.noEmail} without an email`,
+            skipped.invalid && `${skipped.invalid} not a valid address`,
+          ]
+            .filter(Boolean)
+            .join(", ")}.`,
+        });
+      }
       onCompose({ batchId, count: res?.doc?.count ?? selectedCount });
-    } catch {
-      showToast({ message: "Could not prepare the recipients. Please try again.", type: "error" });
+    } catch (error) {
+      showToast({
+        message: error?.message && !/^\s*$/.test(error.message) ? error.message : "Could not prepare the recipients. Please try again.",
+        type: "error",
+      });
     } finally {
       setPreparing(false);
     }

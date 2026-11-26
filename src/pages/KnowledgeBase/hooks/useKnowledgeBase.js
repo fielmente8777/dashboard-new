@@ -175,6 +175,7 @@ export const useKnowledgeBase = () => {
 
     // show what the server actually stored
     if (doc?._id) openSaved(doc, active.sourceUrl);
+    return Boolean(doc?._id); // the editor publishes its imported images only after a successful save
   };
 
   return {

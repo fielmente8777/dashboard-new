@@ -278,7 +278,11 @@ export const Stages = [
   { label: "Dead Lead", value: "Dead Lead" },
   { label: "Date Sold Out", value: "Date Sold Out" },
   { label: "Duplicate", value: "Duplicate" },
-  { label: "Follow up", value: "Follow Up" },
+  // three follow-up rounds; "Follow Up" (round 1) keeps its old value so every
+  // lead already in follow up stays there
+  { label: "Follow up 1", value: "Follow Up" },
+  { label: "Follow up 2", value: "Follow Up 2" },
+  { label: "Follow up 3", value: "Follow Up 3" },
   { label: "Not Respond", value: "Not Respond" },
   { label: "Qualified", value: "Qualified" },
   { label: "Not Qualified", value: "Not Qualified" },
@@ -286,6 +290,20 @@ export const Stages = [
   { label: "Closure", value: "Closure" },
   { label: "Hot", value: "Hot" },
 ];
+
+// The follow-up rounds, in order. Each needs a follow-up date.
+export const FOLLOW_UP_STAGES = ["Follow Up", "Follow Up 2", "Follow Up 3"];
+// for a stage filter that means "any follow-up round" (the API takes "a,b,c")
+export const ALL_FOLLOW_UPS = FOLLOW_UP_STAGES.join(",");
+export const isFollowUpStage = (stage) => FOLLOW_UP_STAGES.includes(stage);
+// the stage a new follow-up date puts a lead in: its own round if it is in one, else round 1
+export const followUpStageFor = (current) =>
+  isFollowUpStage(current) ? current : FOLLOW_UP_STAGES[0];
+// the round after this one (round 3 stays round 3)
+export const nextFollowUpStage = (current) => {
+  const index = FOLLOW_UP_STAGES.indexOf(current);
+  return FOLLOW_UP_STAGES[Math.min(index + 1, FOLLOW_UP_STAGES.length - 1)];
+};
 
 export const Property = [
   {
@@ -490,3 +508,7 @@ export const TEMPLATE_FILTER = [
   { label: "Marketing", value: "MARKETING" },
   { label: "Authentication", value: "AUTHENTICATION" },
 ];
+
+// a stage's name as shown ("Follow Up" -> "Follow up 1"); unknown ones as they are
+export const stageLabel = (value) =>
+  Stages.find((stage) => stage.value === value)?.label || value;

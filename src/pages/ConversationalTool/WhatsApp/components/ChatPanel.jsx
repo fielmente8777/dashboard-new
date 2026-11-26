@@ -10,7 +10,6 @@ import {
   useGetWhatsAppTemplatesQuery,
   useMakeCallMutation,
 } from "../../../../redux/api/callsApi";
-import { useUpdateLeadMutation } from "../../../../redux/api/leadsApi";
 import {
   useDeleteMessagesMutation,
   useGetFlowSessionQuery,
@@ -24,15 +23,18 @@ import {
 import {
   getConversationAssignee,
   getHandling,
+  getWindowStart,
   isWindowClosed,
 } from "../chatUtils";
 import { useChatCache } from "../hooks/useChatCache";
 import { useConversationLead } from "../hooks/useConversationLead";
 import { useOpenConversationLead } from "../hooks/useOpenConversationLead";
 import { useSendMessage } from "../hooks/useSendMessage";
+import AssignPrompt from "./AssignPrompt";
 import ChatHeader from "./ChatHeader";
 import Composer from "./Composer";
 import MessageList from "./MessageList";
+import WindowClosingBar from "./WindowClosingBar";
 
 const NO_MESSAGES = [];
 
@@ -62,7 +64,8 @@ const ChatPanel = ({
   const { confirm } = useConfirm();
   const run = useApiAction();
   const cache = useChatCache(hid);
-  const userEmail = useSelector((state) => state.userProfile.authUser?.emailId);
+  const authUser = useSelector((state) => state.userProfile.authUser);
+  const userEmail = authUser?.emailId;
 
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [isCallOpen, setIsCallOpen] = useState(false);
@@ -86,7 +89,6 @@ const ChatPanel = ({
   const [updateFlowSession, { isLoading: isStoppingFlow }] =
     useUpdateFlowSessionMutation();
   const [makeCall, { isLoading: isCalling }] = useMakeCallMutation();
-  const [updateLead] = useUpdateLeadMutation();
 
   const send = useSendMessage(hid, conversation, onSend);
   const saveLead = useConversationLead(hid, conversation);
@@ -98,7 +100,7 @@ const ChatPanel = ({
   });
 
   const messageList = messages.data || NO_MESSAGES;
-  const windowClosed = isWindowClosed(conversation.last_message?.created_at);
+  const windowClosed = isWindowClosed(getWindowStart(conversation));
 
   // with the AI on, only the person who took the chat over may write
   const aiEnabled = Boolean(account.data?.ai?.enabled);
@@ -207,23 +209,28 @@ const ChatPanel = ({
     if (stopped) flowSession.refetch();
   };
 
-  // Assigns the chat, and the same guest's lead in All Leads when that lead
-  // is a separate one (a webform or Meta lead with the same number), so both
-  // pages show the same person.
-  const handleAssign = async (user) => {
-    const fields = {
-      assignee: user.userName,
-      assigneeNumber: user.phone || null,
-      assigneeEmail: user.emailId || null,
-    };
-    const saved = await saveLead(fields, `Assigned to ${user.userName}`);
-    if (!saved) return;
+  // Assigns the chat; gian gives every lead of the guest's number (WhatsApp,
+  // Meta, web form ...) the same assignee, so All Leads shows the same person.
+  const handleAssign = (user) =>
+    saveLead(
+      {
+        assignee: user.userName,
+        assigneeNumber: user.phone || null,
+        assigneeEmail: user.emailId || null,
+      },
+      `Assigned to ${user.userName}`,
+    );
 
-    const linked = await lead.findLead();
-    if (linked && String(linked.conversationId) !== String(conversation._id)) {
-      updateLead({ hid: linked.hId || hid, leadId: linked._id, ...fields });
-    }
-  };
+  // the signed-in person as a team member, for "Assign to me"
+  const me = useMemo(() => {
+    if (!userEmail) return null;
+    const member = (users.data || []).find(
+      (user) => String(user.emailId).toLowerCase() === String(userEmail).toLowerCase(),
+    );
+    if (member) return member;
+    const name = authUser?.userName || authUser?.displayName;
+    return name ? { userName: name, emailId: userEmail, phone: authUser?.phone } : null;
+  }, [users.data, userEmail, authUser]);
 
   const handleCallClick = () => {
     // without the calling provider, hand the number to the device instead
@@ -232,7 +239,8 @@ const ChatPanel = ({
   };
 
   const handleCall = async (fromNumber, toNumber) => {
-    const started = await run(makeCall({ hid, fromNumber, toNumber }), {
+    // the chat's name goes with the call, so the Calls page shows who was called
+    const started = await run(makeCall({ hid, fromNumber, toNumber, guestName: conversation.name || undefined, guestSource: "whatsapp" }), {
       success: "Call started. The team member's phone will ring first.",
       error: "Could not start the call.",
     });
@@ -313,6 +321,8 @@ const ChatPanel = ({
         onClearSelection={() => setSelectedKeys([])}
       />
 
+      <AssignPrompt conversation={conversation} me={me} onAssign={handleAssign} />
+
       {messages.isError ? (
         <div className="min-h-0 flex-1 p-4">
           <ErrorState
@@ -332,6 +342,7 @@ const ChatPanel = ({
         />
       )}
 
+      <WindowClosingBar conversation={conversation} />
       {renderFooter()}
 
       <CallLeadDialog

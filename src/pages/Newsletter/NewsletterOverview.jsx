@@ -1,3 +1,5 @@
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { CHART_COLORS, axisProps, gridProps, tooltipProps } from "../../components/Charts/chartTheme";
 import StatCard from "../../components/ui/StatCard";
@@ -6,6 +8,8 @@ import { SOURCE_LABELS, formatNumber, monthLabel } from "./newsletterUtils";
 
 // The four numbers, 12 months of joins and leaves, and where subscribers came from.
 export default function NewsletterOverview({ stats, loading }) {
+  // on a phone the two charts fold away, so the list below is not a long scroll down
+  const [showCharts, setShowCharts] = useState(false);
   if (loading || !stats) {
     return (
       <div className="space-y-4">
@@ -20,7 +24,7 @@ export default function NewsletterOverview({ stats, loading }) {
   }
 
   const rate = stats.total ? Math.round((stats.unsubscribed / stats.total) * 1000) / 10 : 0;
-  const chart = stats.months.map((m) => ({ ...m, label: monthLabel(m.month) }));
+  const chart = (stats.months || []).map((m) => ({ ...m, label: monthLabel(m.month) }));
   const hasHistory = chart.some((m) => m.subscribed || m.unsubscribed);
   const sources = Object.entries(stats.bySource || {})
     .filter(([source]) => source !== "campaign")
@@ -51,7 +55,17 @@ export default function NewsletterOverview({ stats, loading }) {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <button
+        type="button"
+        onClick={() => setShowCharts((v) => !v)}
+        aria-expanded={showCharts}
+        className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-app-border! bg-app-surface py-2 text-xs font-medium text-app-text-muted sm:hidden"
+      >
+        {showCharts ? "Hide growth and sources" : "Show growth and sources"}
+        <ChevronDown className={`size-3.5 transition ${showCharts ? "rotate-180" : ""}`} />
+      </button>
+
+      <div className={`gap-4 lg:grid-cols-3 ${showCharts ? "grid" : "hidden sm:grid"}`}>
         <section className="rounded-xl border border-app-border! bg-app-surface p-4 lg:col-span-2">
           <h2 className="text-sm font-semibold text-app-text">Growth, last 12 months</h2>
           <p className="mb-3 text-xs text-app-text-muted">People who joined and who left, each month.</p>

@@ -1,8 +1,10 @@
 import React from "react";
+import { useToast } from "../../context/ToastContext";
 
 const Feedback = () => {
+  const { showToast } = useToast();
   const handleNotifyClick = () => {
-    alert("Thanks for registering with us");
+    showToast({ message: "Thanks for registering with us", type: "success" });
   };
   return (
     <div className="flex flex-col justify-center items-center h-[80vh] bg-gradient-to-r from-blue-500 to-purple-600 text-white">

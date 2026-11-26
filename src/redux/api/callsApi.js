@@ -22,11 +22,18 @@ export const callsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { hid, page, limit, search? } -> { calls, total }
+    // { hid, page, limit, search?, source? } -> { calls, total }
+    // `source`: where the guests came from, e.g. ["whatsapp", "meta"] (pages/Calls/components/callSources.js)
     getCalls: build.query({
-      query: ({ hid, page, limit, search }) => ({
+      query: ({ hid, page, limit, search, source }) => ({
         url: "/api/v1/call/getall",
-        params: { hid, page, limit, search: search || undefined },
+        params: {
+          hid,
+          page,
+          limit,
+          search: search || undefined,
+          source: source?.length ? source.join(",") : undefined,
+        },
       }),
       transformResponse: (response) => ({
         calls: response?.result?.docs?.calls || [],
@@ -43,7 +50,16 @@ export const callsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { hid, fromNumber, toNumber } - rings `fromNumber` first, then connects it to `toNumber`
+    // { hid, phone, name } - the name of a caller found nowhere else (rang the Exotel number
+    // directly); every call of that number shows it from now on
+    saveGuestName: build.mutation({
+      query: ({ hid, phone, name }) => ({ url: "/api/v1/call/guest-name", method: "PUT", params: { hid }, body: { phone, name } }),
+      invalidatesTags: ["Call"],
+      extraOptions: NODE,
+    }),
+
+    // { hid, fromNumber, toNumber, guestName?, guestSource?, leadId? } - rings `fromNumber`
+    // first, then connects it to `toNumber`; the guest's name and source stay with the call
     makeCall: build.mutation({
       query: ({ hid, ...body }) => ({
         url: "/api/v1/call/auth/make-call",
@@ -95,6 +111,7 @@ export const {
   useGetCallsQuery,
   useImportCallsMutation,
   useMakeCallMutation,
+  useSaveGuestNameMutation,
   useUpdateCallMutation,
   useGetCallAnalyticsQuery,
   useGetWhatsAppTemplatesQuery,

@@ -23,6 +23,8 @@ const STAGE_TONES = {
   Open: "blue",
   Contacted: "sky",
   "Follow Up": "amber",
+  "Follow Up 2": "amber",
+  "Follow Up 3": "amber",
   "Quotation Provided": "purple",
   Potential: "purple",
   Converted: "green",

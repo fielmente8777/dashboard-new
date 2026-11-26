@@ -32,7 +32,8 @@ const TYPES = {
 const POSITIONS = {
   "top-left": "top-5 left-5 items-start",
   "bottom-left": "bottom-5 left-5 items-start",
-  "bottom-right": "bottom-5 right-5 items-end",
+  // above the AI assistant button (chatbot/ChatbotWidget.jsx), never on top of it
+  "bottom-right": "bottom-20 right-4 items-end sm:bottom-24 sm:right-5",
 };
 
 // Shows a short message from anywhere:

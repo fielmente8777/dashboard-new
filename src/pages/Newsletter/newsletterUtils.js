@@ -43,7 +43,11 @@ export const SOURCE_OPTIONS = [
 ];
 
 const day = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" });
-export const formatDate = (value) => (value ? day.format(new Date(value)) : "—");
+// a missing or unreadable date shows "—" (format() throws on an invalid date and took the list down)
+export const formatDate = (value) => {
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? day.format(date) : "—";
+};
 export const formatNumber = (n) => Number(n || 0).toLocaleString("en-IN");
 
 // "2026-11" -> "Nov"

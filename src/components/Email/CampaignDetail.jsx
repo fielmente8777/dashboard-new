@@ -21,10 +21,18 @@ import {
   RefreshCw,
   Smartphone,
   TriangleAlert,
+  UserPlus,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { campaignStatus, describeSendProblem, formatDate, RECIPIENT_TONE } from "../../pages/EmailMarketing/emailUtils.js";
-import { getCampaignMessage, getCampaignRecipients, getEmailCampaign } from "../../redux/api/emailMarketingApi";
+import { useToast } from "../../context/ToastContext";
+import {
+  createCampaignAudienceBatch,
+  getCampaignMessage,
+  getCampaignRecipients,
+  getEmailCampaign,
+  saveCampaignAudienceToContacts,
+} from "../../redux/api/emailMarketingApi";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import IconButton from "../ui/IconButton";
@@ -128,9 +136,9 @@ function SenderHeader({ from, toLine, toFull, date, by, extra }) {
 
   return (
     <div className="rounded-xl border border-app-border! bg-app-surface">
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex items-start gap-3 p-3 sm:p-4">
         <span
-          className={`flex size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold uppercase text-white ${
+          className={`flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-full text-base font-semibold uppercase text-white ${
             unknown ? "bg-slate-400" : avatarColor(name)
           }`}
           aria-hidden
@@ -139,18 +147,23 @@ function SenderHeader({ from, toLine, toFull, date, by, extra }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className={`text-[15px] font-semibold ${unknown ? "text-app-text-muted" : "text-app-text"}`}>{name}</span>
+            <span className={`min-w-0 break-words text-[15px] font-semibold ${unknown ? "text-app-text-muted" : "text-app-text"}`}>{name}</span>
             {via && <Badge tone={via.tone}>{via.label}</Badge>}
           </div>
           {!unknown && from.email && <p className="truncate text-sm text-app-text-muted">{from.email}</p>}
+          {/* phones: the date under the name, so the name keeps the width */}
+          <p className="mt-1 flex items-center gap-1 text-xs text-app-text-muted sm:hidden">
+            <CalendarClock className="size-3.5 shrink-0" />
+            {mailFullDate(date)}
+          </p>
         </div>
-        <p className="flex shrink-0 items-center gap-1 text-right text-xs text-app-text-muted">
+        <p className="hidden shrink-0 items-center gap-1 text-right text-xs text-app-text-muted sm:flex">
           <CalendarClock className="size-3.5 shrink-0" />
           {mailFullDate(date)}
         </p>
       </div>
 
-      <div className="grid gap-x-6 gap-y-3 border-t border-app-border! px-4 py-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-x-6 gap-y-3 border-t border-app-border! px-3 py-3 sm:grid-cols-2 sm:px-4 xl:grid-cols-4">
         <EnvelopeRow icon={Users} label="To">
           <span className={showAll ? "" : "line-clamp-2"}>{showAll ? toFull : toLine}</span>
           {toFull && toFull !== toLine && (
@@ -176,7 +189,7 @@ function SenderHeader({ from, toLine, toFull, date, by, extra }) {
 
       {showNote && note && (
         <p
-          className={`flex items-start gap-1.5 border-t border-app-border! px-4 py-2 text-xs ${
+          className={`flex items-start gap-1.5 border-t border-app-border! px-3 py-2 text-xs sm:px-4 ${
             unknown ? "bg-amber-500/5 text-amber-700 dark:text-amber-400" : "text-app-text-muted"
           }`}
         >
@@ -212,7 +225,7 @@ function BodyBlock({ html, attachments = [] }) {
   const [phone, setPhone] = useState(false);
   return (
     <div className="overflow-hidden rounded-xl border border-app-border!">
-      <div className="flex items-center gap-2 border-b border-app-border! bg-app-surface px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-app-border! bg-app-surface px-3 py-2 sm:px-4 sm:py-2.5">
         <Eye className="size-4 text-app-text-muted" />
         <p className="text-sm font-semibold text-app-text">Email</p>
         <span
@@ -221,13 +234,13 @@ function BodyBlock({ html, attachments = [] }) {
         >
           <Info className="size-3.5" /> as guests see it
         </span>
-        <span className="ml-auto">
+        <span className="ml-auto hidden sm:block">
           <DeviceSwitch phone={phone} onChange={setPhone} />
         </span>
       </div>
 
       {/* desktop: on white like Gmail; phone: in a phone, on grey */}
-      <div className={phone ? "bg-slate-100 px-3 py-6 sm:py-8 dark:bg-slate-900/50" : "bg-white"}>
+      <div className={phone ? "bg-slate-100 px-2 py-4 sm:px-3 sm:py-8 dark:bg-slate-900/50" : "bg-white"}>
         <MailBody html={html} phone={phone} />
       </div>
 
@@ -409,7 +422,69 @@ function SinglePane({ campaign, campaignId, onChanged }) {
 
 /* ---------------- recipients & results ---------------- */
 
-function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
+// Above the Opened / Clicked list: send the next email to just these people,
+// or keep them in Contacts. gian builds both from the campaign (all pages, not
+// only the 50 shown), so nothing is lost to paging.
+function EngagedActions({ campaignId, group, total, onSendTo }) {
+  const { showToast } = useToast();
+  const [busy, setBusy] = useState(""); // "send" | "contacts" while working
+  const who = `${total.toLocaleString("en-IN")} ${total === 1 ? "person" : "people"}`;
+  const did = group === "clicked" ? "clicked a link in this email" : "opened this email";
+
+  const sendTo = async () => {
+    setBusy("send");
+    try {
+      const doc = (await createCampaignAudienceBatch({ campaignId, group }))?.doc;
+      if (!doc?.recipientBatchId) throw new Error("Could not prepare the recipients. Please try again.");
+      onSendTo({ batchId: doc.recipientBatchId, count: doc.count, label: doc.label });
+    } catch (error) {
+      showToast({ message: error.message, type: "error" });
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const saveContacts = async () => {
+    setBusy("contacts");
+    try {
+      const doc = (await saveCampaignAudienceToContacts({ campaignId, group }))?.doc;
+      const added = doc?.added || 0;
+      const already = doc?.alreadyContacts || 0;
+      showToast({
+        message: added
+          ? `${added.toLocaleString("en-IN")} added to Contacts${already ? `, ${already.toLocaleString("en-IN")} were already there` : ""}.`
+          : "Everyone here is already in your Contacts.",
+        type: "success",
+        duration: 6000,
+      });
+    } catch (error) {
+      showToast({ message: error.message, type: "error" });
+    } finally {
+      setBusy("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-blue-500/20! bg-blue-500/5 p-3 sm:flex-row sm:items-center">
+      <p className="min-w-0 flex-1 text-sm text-app-text">
+        <span className="font-semibold">{who}</span> {did}.
+        <span className="block text-xs text-app-text-muted">Send them your next offer, or keep them in Contacts.</span>
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" size="sm" icon={UserPlus} onClick={saveContacts} loading={busy === "contacts"} disabled={Boolean(busy)}>
+          Save to Contacts
+        </Button>
+        {onSendTo && (
+          <Button size="sm" icon={Send} onClick={sendTo} loading={busy === "send"} disabled={Boolean(busy)}>
+            Send new email to them
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson, onSendTo }) {
   const [recipients, setRecipients] = useState([]);
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState(initialFilter);
@@ -476,6 +551,10 @@ function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
         )}
       </div>
 
+      {(filter === "opened" || filter === "clicked") && !loading && total > 0 && (
+        <EngagedActions campaignId={campaignId} group={filter} total={total} onSendTo={onSendTo} />
+      )}
+
       <RecipientsTable
         recipients={recipients}
         loading={loading}
@@ -506,6 +585,7 @@ function RecipientsPane({ campaignId, initialFilter = "", onOpenPerson }) {
 //
 //   position / total, onPrev / onNext   "3 of 13" and the arrows (optional)
 //   onChanged()                         stopped, started or deleted: refresh the list
+//   onSendTo({ batchId, count, label }) open a new email to the people who opened / clicked
 export default function CampaignDetail({
   campaignId,
   onClose,
@@ -516,6 +596,7 @@ export default function CampaignDetail({
   onChanged,
   initialTab = "message",
   onTabChange,
+  onSendTo,
 }) {
   const [campaign, setCampaign] = useState(null);
   // the report sits above the email, so only Message / Recipients are tabs ("report" opens on Message)
@@ -604,7 +685,7 @@ export default function CampaignDetail({
         )}
       </div>
 
-      <div className="px-4 py-5 sm:px-8">
+      <div className="px-3 py-4 sm:px-8 sm:py-5">
         {/* subject, like Gmail: big, with its label */}
         <div className="flex flex-wrap items-center gap-2">
           {campaign ? (
@@ -666,7 +747,13 @@ export default function CampaignDetail({
               ) : personId ? (
                 <PersonPane campaign={campaign} campaignId={campaignId} recipientId={personId} onBack={() => setPersonId(null)} />
               ) : (
-                <RecipientsPane key={recipientFilter} campaignId={campaignId} initialFilter={recipientFilter} onOpenPerson={setPersonId} />
+                <RecipientsPane
+                  key={recipientFilter}
+                  campaignId={campaignId}
+                  initialFilter={recipientFilter}
+                  onOpenPerson={setPersonId}
+                  onSendTo={onSendTo}
+                />
               )}
             </div>
           </>

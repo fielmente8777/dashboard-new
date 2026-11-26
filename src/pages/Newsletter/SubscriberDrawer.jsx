@@ -104,8 +104,13 @@ export default function SubscriberDrawer({ subscriber, onClose, knownTags }) {
           </Row>
           <Row label="Joined from">{SOURCE_LABELS[subscriber.source] || subscriber.source}</Row>
           <Row label="Joined on">{formatDate(subscriber.subscribedAt)}</Row>
-          {subscriber.unsubscribedAt && <Row label="Unsubscribed on">{formatDate(subscriber.unsubscribedAt)}</Row>}
-          {subscriber.unsubscribeReason && <Row label="Why">{subscriber.unsubscribeReason}</Row>}
+          {/* only while unsubscribed: a resubscribed person keeps no old "why" */}
+          {subscriber.status === "unsubscribed" && subscriber.unsubscribedAt && (
+            <Row label="Unsubscribed on">{formatDate(subscriber.unsubscribedAt)}</Row>
+          )}
+          {subscriber.status === "unsubscribed" && subscriber.unsubscribeReason && (
+            <Row label="Why">{subscriber.unsubscribeReason}</Row>
+          )}
         </dl>
       </div>
     </Drawer>

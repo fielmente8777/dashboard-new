@@ -17,11 +17,13 @@ import {
   CALL_STAGES,
   formatCallDuration,
   getCallOutcome,
-  getGuestNumber,
   getStaffNumber,
   isOutgoing,
 } from "../callUtils";
 import DirectionTile from "./DirectionTile";
+import GuestName from "./GuestName";
+import SourceBadge from "./SourceBadge";
+import { isFollowUpStage } from "../../../data/constant";
 
 const stop = (e) => e.stopPropagation();
 
@@ -86,9 +88,12 @@ const CallCardList = ({
             <div className="flex items-start gap-3">
               <DirectionTile call={call} size="size-10" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold tabular-nums text-app-text">
-                  {call.callerName || getGuestNumber(call) || "—"}
-                </p>
+                <div className="flex min-w-0 items-start gap-2">
+                  <GuestName call={call} className="flex-1" />
+                  <span className="mt-0.5 shrink-0">
+                    <SourceBadge call={call} />
+                  </span>
+                </div>
                 <p className="truncate text-xs text-app-text-muted">
                   {isOutgoing(call) ? "Called by" : "Answered by"}{" "}
                   {staffName(getStaffNumber(call)) || "—"}
@@ -123,8 +128,8 @@ const CallCardList = ({
                 options={CALL_STAGES}
                 // until the date is saved the stage stays as it was (false)
                 onSelect={(stage) => {
-                  if (stage === "Follow Up") {
-                    onFollowUp(call);
+                  if (isFollowUpStage(stage)) {
+                    onFollowUp(call, stage);
                     return false;
                   }
                   onUpdate(call, { stage, followUpDate: null });

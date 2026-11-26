@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "../../components/ui/Button";
 import Dialog from "../../components/ui/Dialog";
 import { Field, Input } from "../../components/ui/Field";
+import SuggestionMenu from "../../components/ui/SuggestionMenu";
+import { useSuggestions } from "../../components/ui/useSuggestions";
 import TagInput from "../../components/ui/TagInput";
 import { useToast } from "../../context/ToastContext";
 import { newsletterError, useAddSubscriberMutation } from "../../redux/api/newsletterApi";
@@ -12,6 +14,17 @@ export default function AddSubscriberDialog({ open, onClose }) {
   const { showToast } = useToast();
   const [add, { isLoading }] = useAddSubscriberMutation();
   const [email, setEmail] = useState("");
+  // suggestions from saved contacts and leads while the address is typed
+  const emailWrapRef = useRef(null);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const suggestions = useSuggestions({ type: "email", query: email, open: emailFocused });
+  const pick = (s) => {
+    setEmail(s.value);
+    setError("");
+    // a contact's or lead's name fills the name box when it is still empty
+    if (["contact", "lead"].includes(s.source) && s.label) setName((n) => n || s.label);
+    setEmailFocused(false);
+  };
   const [name, setName] = useState("");
   const [tags, setTags] = useState([]);
   const [consent, setConsent] = useState(false);
@@ -59,17 +72,24 @@ export default function AddSubscriberDialog({ open, onClose }) {
     >
       <form id="add-subscriber" onSubmit={submit} className="space-y-4">
         <Field label="Email" error={error}>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError("");
-            }}
-            autoFocus
-            required
-            placeholder="guest@example.com"
-          />
+          <div ref={emailWrapRef}>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
+              onKeyDown={(e) => suggestions.onKeyDown(e, pick)}
+              autoComplete="off"
+              autoFocus
+              required
+              placeholder="guest@example.com"
+            />
+          </div>
+          <SuggestionMenu state={suggestions} anchorRef={emailWrapRef} onPick={pick} />
         </Field>
         <Field label="Name">
           <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder="Optional" />

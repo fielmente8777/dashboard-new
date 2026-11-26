@@ -2,10 +2,12 @@ import {
   AtSign,
   BarChart3,
   CircleCheck,
+  CircleCheckBig,
   Clock,
   CornerUpLeft,
   Loader2,
   MailOpen,
+  MailX,
   MousePointerClick,
   Newspaper,
   Paperclip,
@@ -19,7 +21,7 @@ import { formatNumber, percent } from "../../pages/EmailMarketing/emailUtils.js"
 import Button from "../ui/Button";
 import CampaignDeleteButton from "./CampaignDeleteButton";
 import CampaignRunControl from "./CampaignRunControl";
-import { mailDate, recipientsSummary } from "./mailFormat";
+import { recipientsSummary, sentWhen } from "./mailFormat";
 
 // newsletters are campaigns named "Newsletter: …" (pages/Newsletter)
 const isNewsletter = (c) => String(c.name || "").startsWith("Newsletter: ");
@@ -66,7 +68,7 @@ function Metric({ value, label, share, barClass, muted }) {
       <p className={`text-sm font-semibold tabular-nums ${muted ? "text-app-text-faint" : "text-app-text"}`}>{value}</p>
       <p className="truncate text-[11px] text-app-text-muted">{label}</p>
       {share !== undefined && (
-        <div className="mt-1 h-1 overflow-hidden rounded-full bg-app-surface-secondary">
+        <div className="mt-1 h-1 overflow-hidden rounded-full bg-app-border/70 lg:bg-app-surface-secondary">
           <div className={`h-full rounded-full ${barClass}`} style={{ width: `${Math.min(100, share)}%` }} />
         </div>
       )}
@@ -74,10 +76,16 @@ function Metric({ value, label, share, barClass, muted }) {
   );
 }
 
-// columns: icon · campaign · audience · delivered · opens · clicks · sent · actions
-const GRID = "lg:grid lg:grid-cols-[2.5rem_minmax(0,1fr)_7.5rem_6.5rem_6.5rem_6.5rem_5.5rem_12rem] lg:items-center lg:gap-4";
+// columns: select · icon · campaign · audience · delivered · opens · clicks · sent · actions
+const GRID = "lg:grid lg:grid-cols-[1.25rem_2.5rem_minmax(0,1fr)_7.5rem_6.5rem_6.5rem_6.5rem_6.5rem_12rem] lg:items-center lg:gap-4";
+
+// a campaign still going out can't be deleted
+const canDelete = (c) => !["sending", "stopping"].includes(c.status);
+// when it went out: a scheduled one at its time, the rest when created
+const sentTime = (c) => (c.status === "scheduled" && c.scheduledAt ? c.scheduledAt : c.createdAt);
 
 const HEADS = [
+  { label: "", icon: null, select: true },
   { label: "", icon: null },
   { label: "Campaign", icon: null },
   { label: "Audience", icon: Users },
@@ -97,19 +105,51 @@ const HEADS = [
 //   onOpen(campaign, tab)  open it in the reading pane (the report is at its top)
 //   onChanged()         a run was stopped / started
 //   onDeleted(c)        it was deleted
-export default function SentMailList({ campaigns, loading, onOpen, onChanged, onDeleted, emptyMessage }) {
+//   selected (Set of ids)  onToggle(c)  onToggleAll()   choose several to delete
+//   onBadAddresses(c)   open the list of its wrong addresses
+//   now                 the time the "x min ago" labels count from
+export default function SentMailList({
+  campaigns,
+  loading,
+  onOpen,
+  onChanged,
+  onDeleted,
+  emptyMessage,
+  selected = new Set(),
+  onToggle,
+  onToggleAll,
+  onBadAddresses,
+  now = Date.now(),
+}) {
+  const deletable = campaigns.filter(canDelete);
+  const allOn = deletable.length > 0 && deletable.every((c) => selected.has(c._id));
   return (
     <div className="overflow-hidden rounded-xl border border-app-border! bg-app-surface">
       <div
         className={`hidden border-b border-app-border! bg-app-surface-secondary px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-app-text-muted ${GRID}`}
         role="row"
       >
-        {HEADS.map(({ label, icon: HeadIcon, right }, i) => (
-          <span key={i} role="columnheader" className={`flex items-center gap-1.5 ${right ? "justify-end" : ""}`}>
-            {HeadIcon && <HeadIcon className="size-3.5" />}
-            {label}
-          </span>
-        ))}
+        {HEADS.map(({ label, icon: HeadIcon, right, select }, i) =>
+          select ? (
+            <span key={i} role="columnheader" className="flex items-center">
+              {onToggleAll && (
+                <input
+                  type="checkbox"
+                  aria-label="Select all"
+                  checked={allOn}
+                  disabled={!deletable.length}
+                  onChange={onToggleAll}
+                  className="size-4 cursor-pointer accent-blue-600"
+                />
+              )}
+            </span>
+          ) : (
+            <span key={i} role="columnheader" className={`flex items-center gap-1.5 ${right ? "justify-end" : ""}`}>
+              {HeadIcon && <HeadIcon className="size-3.5" />}
+              {label}
+            </span>
+          ),
+        )}
       </div>
 
       {loading && (
@@ -134,6 +174,20 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
             const notSent = !sent && !failed;
             const from = c.sentFrom?.email;
             const audience = c.audienceLabel || (isNewsletter(c) ? "Newsletter" : "");
+            const when = sentWhen(sentTime(c), now);
+            const checkbox = onToggle && (
+              <input
+                type="checkbox"
+                aria-label={`Select ${c.subject || c.name || "email"}`}
+                checked={selected.has(c._id)}
+                disabled={!canDelete(c)}
+                title={canDelete(c) ? undefined : "Still sending: stop it before deleting"}
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                onChange={() => onToggle(c)}
+                className="size-4 cursor-pointer accent-blue-600 disabled:cursor-not-allowed"
+              />
+            );
             return (
               <li key={c._id}>
                 <div
@@ -141,8 +195,11 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
                   tabIndex={0}
                   onClick={() => onOpen(c, "message")}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(c, "message"))}
-                  className={`group cursor-pointer px-4 py-3.5 transition hover:bg-app-surface-secondary/70 focus-visible:bg-app-surface-secondary focus-visible:outline-none ${GRID}`}
+                  className={`group cursor-pointer px-3 py-3.5 transition sm:px-4 hover:bg-app-surface-secondary/70 focus-visible:bg-app-surface-secondary focus-visible:outline-none ${GRID}`}
                 >
+                  {/* select (desktop column) */}
+                  <span className="hidden items-center lg:flex">{checkbox}</span>
+
                   {/* icon + campaign (on phones these two share the first line) */}
                   <span
                     className={`hidden size-10 items-center justify-center rounded-xl lg:flex ${kind.tone}`}
@@ -153,33 +210,41 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
                   </span>
 
                   <div className="flex min-w-0 gap-3">
-                    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl lg:hidden ${kind.tone}`} aria-hidden>
+                    {checkbox && <span className="flex items-center lg:hidden">{checkbox}</span>}
+                    <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl lg:hidden ${kind.tone}`} aria-hidden>
                       <KindIcon className="size-[18px]" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-app-text" title={c.subject}>
+                      {/* phones: the subject gets two lines and the status goes under it */}
+                      <div className="flex min-w-0 items-start gap-2 lg:items-center">
+                        <p className="line-clamp-2 text-sm font-semibold leading-snug text-app-text lg:truncate" title={c.subject}>
                           {c.subject || c.name || "(no subject)"}
                         </p>
-                        <StatusChip campaign={c} />
+                        <span className="hidden lg:inline-flex">
+                          <StatusChip campaign={c} />
+                        </span>
                       </div>
-                      <p className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-app-text-muted">
+                      <p className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-app-text-muted">
+                        <span className="lg:hidden">
+                          <StatusChip campaign={c} />
+                        </span>
                         <span className="inline-flex min-w-0 items-center gap-1 lg:hidden">
                           <Clock className="size-3.5 shrink-0" />
-                          {mailDate(c.createdAt)}
+                          {when.main}
+                          {when.sub && !when.sub.startsWith("Today") ? `, ${when.sub}` : ""}
                         </span>
                         <span className="inline-flex min-w-0 items-center gap-1 lg:hidden">
                           <Users className="size-3.5 shrink-0" />
                           {formatNumber(c.recipientCount)}
                         </span>
                         {from ? (
-                          <span className="inline-flex min-w-0 items-center gap-1" title="The address guests saw in From">
+                          <span className="inline-flex w-full min-w-0 items-center gap-1 lg:w-auto" title="The address guests saw in From">
                             <AtSign className="size-3.5 shrink-0" />
                             <span className="truncate">{from}</span>
                           </span>
                         ) : (
                           c.fromEmail && (
-                            <span className="inline-flex min-w-0 items-center gap-1" title="Replies went here (the sender of older emails wasn't saved)">
+                            <span className="inline-flex w-full min-w-0 items-center gap-1 lg:w-auto" title="Replies went here (the sender of older emails wasn't saved)">
                               <CornerUpLeft className="size-3.5 shrink-0" />
                               <span className="truncate">{c.fromEmail}</span>
                             </span>
@@ -193,9 +258,39 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
                         )}
                       </p>
                       {failed > 0 && (
-                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-red-500">
-                          <TriangleAlert className="size-3.5" />
-                          {formatNumber(failed)} failed — open Recipients to see why
+                        <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-red-500">
+                          <span className="inline-flex items-center gap-1">
+                            <TriangleAlert className="size-3.5" />
+                            {formatNumber(failed)} failed
+                          </span>
+                          {c.badAddresses?.removed > 0 ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onBadAddresses?.(c);
+                              }}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              title="These addresses won't be emailed again. Click to see them."
+                              className="inline-flex items-center gap-1 font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                            >
+                              <CircleCheckBig className="size-3.5" />
+                              {formatNumber(c.badAddresses.removed)} wrong address{c.badAddresses.removed === 1 ? "" : "es"} removed
+                            </button>
+                          ) : onBadAddresses && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onBadAddresses(c);
+                              }}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 rounded-md border border-red-500/30! px-1.5 py-0.5 font-medium hover:bg-red-500/10"
+                            >
+                              <MailX className="size-3.5" />
+                              Remove wrong addresses
+                            </button>
+                          )}
                         </p>
                       )}
                       {c.status === "paused" && (
@@ -218,20 +313,20 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
                   </div>
 
                   {/* numbers: a 3-column strip on phones, three columns on desktop */}
-                  <div className="mt-3 grid grid-cols-3 gap-3 pl-[3.25rem] lg:contents">
+                  <div className="mt-3 grid grid-cols-3 gap-3 rounded-lg bg-app-surface-secondary/60 px-3 py-2.5 lg:contents">
                     {sending ? (
                       <Metric
                         value={formatNumber(sent)}
                         label={`of ${formatNumber(c.recipientCount)} sent`}
                         share={percent(sent, c.recipientCount)}
-                        barClass="bg-amber-500"
+                        barClass="bg-[var(--chart-1)]"
                       />
                     ) : (
                       <Metric
                         value={notSent ? "—" : `${percent(sent, tried)}%`}
                         label={notSent ? `0 of ${formatNumber(c.recipientCount)}` : `${formatNumber(sent)} reached`}
                         share={notSent ? undefined : percent(sent, tried)}
-                        barClass="bg-emerald-500"
+                        barClass="bg-[var(--chart-1)]"
                         muted={notSent}
                       />
                     )}
@@ -239,29 +334,27 @@ export default function SentMailList({ campaigns, loading, onOpen, onChanged, on
                       value={sent ? `${percent(c.stats?.opened, sent)}%` : "—"}
                       label={sent ? `${formatNumber(c.stats?.opened)} opened` : "Opens"}
                       share={sent ? percent(c.stats?.opened, sent) : undefined}
-                      barClass="bg-violet-500"
+                      barClass="bg-[var(--chart-2)]"
                       muted={!sent}
                     />
                     <Metric
                       value={sent ? `${percent(c.stats?.clicked, sent)}%` : "—"}
                       label={sent ? `${formatNumber(c.stats?.clicked)} clicked` : "Clicks"}
                       share={sent ? percent(c.stats?.clicked, sent) : undefined}
-                      barClass="bg-sky-500"
+                      barClass="bg-[var(--chart-3)]"
                       muted={!sent}
                     />
                   </div>
 
-                  {/* date (desktop column) */}
-                  <p
-                    className="hidden text-xs tabular-nums text-app-text-muted lg:block"
-                    title={new Date(c.createdAt).toLocaleString("en-IN")}
-                  >
-                    {mailDate(c.createdAt)}
+                  {/* date and time (desktop column) */}
+                  <p className="hidden leading-tight lg:block" title={when.title}>
+                    <span className="block text-xs font-medium tabular-nums text-app-text">{when.main}</span>
+                    <span className="block text-[11px] tabular-nums text-app-text-muted">{when.sub}</span>
                   </p>
 
                   {/* actions */}
                   <div
-                    className="mt-3 flex items-center justify-end gap-1.5 lg:mt-0"
+                    className="mt-2.5 flex items-center justify-end gap-1.5 lg:mt-0"
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                   >

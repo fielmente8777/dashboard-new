@@ -55,6 +55,7 @@ export const SERVICE_LABELS = {
   chatbot: "AI Chatbot",
   knowledge_base: "Knowledge base (embeddings)",
   knowledge_base_extraction: "Knowledge base generation",
+  knowledge_base_media: "Knowledge base media (image analysis)",
   voice_input: "Voice input",
   whatsapp_ai: "WhatsApp AI replies",
   website_chatbot: "Website chatbot (Eazbot)",
