@@ -67,6 +67,9 @@ export const formatTimeLeft = (ms) => {
 
 // closing soon = this many hours or less (same as the bell alert in gian)
 export const CLOSING_SOON_MS = 2 * 60 * 60 * 1000;
+// last call = this many minutes or less: gian also sends a per-chat alert then
+// (replyWindows.ts, WA_WINDOW_LAST_CALL_MINUTES)
+export const LAST_CALL_MS = 30 * 60 * 1000;
 
 // { tone, label } for a window: "Closes in 3h 12m", "Closed 2h ago"
 export const describeWindow = (left) => {

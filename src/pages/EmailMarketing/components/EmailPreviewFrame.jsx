@@ -120,7 +120,8 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
   useEffect(() => {
     const box = boxRef.current;
     if (!box) return undefined;
-    const observer = new ResizeObserver(([entry]) => setBoxWidth(entry.contentRect.width));
+    // the whole box, padding included: the gutter is taken off once, below
+    const observer = new ResizeObserver(([entry]) => setBoxWidth(entry.target.clientWidth));
     observer.observe(box);
     return () => observer.disconnect();
   }, []);
@@ -137,11 +138,13 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
   };
   useEffect(() => () => frameRef.current?.__observer?.disconnect(), []);
 
+  // the striped gutter round the email: thinner when the box itself is phone-narrow
+  const gutter = boxWidth && boxWidth < 480 ? 8 : 16;
   // phone: its own screen width (smaller when the box is narrow); desktop: the whole box
   const phone = PHONE_FRAME[device];
   const frameExtra = phone ? phone.border * 2 : 0;
   // never below zero (the box is 0 wide until it is first measured)
-  const screenWidth = Math.max(0, phone ? Math.min(baseWidth, boxWidth - 32 - frameExtra) : boxWidth - 32);
+  const screenWidth = Math.max(0, phone ? Math.min(baseWidth, boxWidth - gutter * 2 - frameExtra) : boxWidth - gutter * 2);
   // the phone itself shrinks to fit the box; a too-wide design shrinks inside it, as mail apps do
   const phoneScale = phone && screenWidth > 0 ? screenWidth / baseWidth : 1;
   const scale = screenWidth > 0 ? Math.min(1, screenWidth / content.width) : 1;
@@ -150,7 +153,8 @@ export function FittedEmailPreview({ html, device = "desktop", className = "", o
   return (
     <div
       ref={boxRef}
-      className={`overflow-y-auto overflow-x-hidden bg-[repeating-linear-gradient(45deg,#eef0f3_0,#eef0f3_6px,#e6e9ee_6px,#e6e9ee_12px)] p-4 dark:bg-[repeating-linear-gradient(45deg,#1b1f27_0,#1b1f27_6px,#171a21_6px,#171a21_12px)] ${className}`}
+      className={`overflow-y-auto overflow-x-hidden bg-[repeating-linear-gradient(45deg,#eef0f3_0,#eef0f3_6px,#e6e9ee_6px,#e6e9ee_12px)] dark:bg-[repeating-linear-gradient(45deg,#1b1f27_0,#1b1f27_6px,#171a21_6px,#171a21_12px)] ${className}`}
+      style={{ padding: gutter }}
     >
       <div
         className={`relative mx-auto overflow-hidden bg-white shadow-[0_6px_24px_rgba(0,0,0,0.18)] ring-1 ring-black/5 ${

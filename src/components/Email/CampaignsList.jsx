@@ -200,12 +200,13 @@ export default function CampaignsList({ campaigns, loading, selectedId, onSelect
               </Button>
             </div>
           )}
-          <div className="relative w-full lg:w-80">
+          <div className="relative min-w-0 flex-1 lg:w-80 lg:flex-none">
             <Icon icon={Search} size="sm" tone="faint" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search subject, recipient or sender"
+              placeholder="Search emails"
+              title="Search by subject, recipient or sender"
               aria-label="Search sent emails"
               className="pl-9"
             />

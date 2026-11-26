@@ -158,7 +158,7 @@ const CallDetails = () => {
     // a follow up needs a date: the follow-up box below asks for it
     if (isFollowUpStage(stage)) {
       setPendingFollowUp(stage);
-      showToast({ message: "Pick the follow-up date below and save it." });
+      showToast({ message: "Please select the follow-up date and time below, so you get an alert, then save it." });
       return false; // the stage stays as it was until the date is saved
     }
     // only a "Follow Up" call has a follow-up date
@@ -310,6 +310,7 @@ const CallDetails = () => {
                 onUpdate={(changes) => handleUpdate(changes)}
                 onStageChange={handleStageChange}
                 onSaveFollowUp={saveFollowUp}
+                pendingFollowUp={pendingFollowUp}
               />
               <CallInfoCard call={call} />
             </div>

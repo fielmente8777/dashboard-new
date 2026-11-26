@@ -8,7 +8,7 @@ import RefreshNotice from "../ui/RefreshNotice";
 import { Skeleton } from "../ui/States";
 import { STALE_IDLE_MS } from "./staleTimes";
 import { bucketLabel, fmtPct, pct, TIME_ZONE } from "./analyticsFormat";
-import { BarChart, Delta, Kpi } from "./analyticsParts";
+import { Delta, Kpi, TrendChart } from "./analyticsParts";
 import CampaignDeliveryBar from "./CampaignDeliveryBar";
 
 const LIVE = ["sending", "stopping"];
@@ -115,7 +115,7 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
   if (!data) {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-[104px] rounded-xl" />
           ))}
@@ -160,7 +160,7 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
         onChanged={() => Promise.all([load(), onChanged?.()])}
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Kpi
           icon={Send}
           tone="bg-blue-500/10 text-blue-600 dark:text-blue-400"
@@ -209,25 +209,21 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="flex flex-col rounded-xl border border-app-border! bg-app-surface px-4 py-3">
-          <h3 className="text-sm font-semibold text-app-text">Opens per {data.unit === "hour" ? "hour" : "day"}</h3>
+        <div className="flex min-w-0 flex-col rounded-xl border border-app-border! bg-app-surface px-3 py-3 sm:px-4">
+          <h3 className="text-sm font-semibold text-app-text">Opens and clicks, per {data.unit === "hour" ? "hour" : "day"}</h3>
           <p className="text-xs text-app-text-muted">
             {peak
               ? `People opening it for the first time · most on ${bucketLabel(peak.key, data.unit, true)} (${formatNumber(peak.opened)})`
-              : "People opening it for the first time · hover a bar for opens and clicks"}
+              : "People opening it for the first time"}
           </p>
           {data.buckets.some((b) => b.opened || b.clicked) ? (
-            <BarChart
+            <TrendChart
               buckets={data.buckets}
               unit={data.unit}
-              className="h-52 lg:h-auto lg:min-h-52 lg:flex-1"
-              value={(b) => b.opened}
-              describe={(b) => `${b.opened} opened, ${b.clicked} clicked`}
-              tooltip={(b) => (
-                <>
-                  <b>{formatNumber(b.opened)} opened</b> · {formatNumber(b.clicked)} clicked
-                </>
-              )}
+              series={[
+                { key: "opened", label: "Opened", color: "var(--chart-2)" },
+                { key: "clicked", label: "Clicked", color: "var(--chart-3)" },
+              ]}
             />
           ) : (
             <p className="flex h-52 items-center justify-center text-sm text-app-text-muted">No opens yet.</p>

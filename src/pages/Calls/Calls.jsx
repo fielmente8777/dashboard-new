@@ -305,6 +305,7 @@ const Calls = () => {
 
       <FollowUpDialog
         open={Boolean(followUpCall)}
+        stage={followUpCall?.followUpStage}
         onClose={() => setFollowUpCall(null)}
         onSave={(date) => {
           handleUpdate(followUpCall, {

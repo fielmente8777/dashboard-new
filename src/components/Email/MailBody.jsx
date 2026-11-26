@@ -6,11 +6,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // Like Gmail: room around the email, and plain text in Gmail's own font and size.
 //  - `defaults` go first, so an email's own fonts and colours still win
 //  - `frame` goes last and wins over the email's "body{padding:0!important}":
-//    the room around it (`pad` px), and a height that follows the content
+//    the room around it (`pad` px, 6-8 px when the frame is phone-narrow, as mail
+//    apps do), and a height that follows the content
 const HEAD_OPEN = /<head(\s[^>]*)?>/i;
 const buildDoc = (html, pad) => {
   const defaults = `<base target="_blank"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#202124;word-wrap:break-word}img{max-width:100%;height:auto}</style>`;
-  const frame = `<style>html,html body{margin:0!important;background:#fff;height:auto!important;min-height:0!important}html body{padding:${pad}px ${pad + 4}px!important;overflow:hidden!important;box-sizing:border-box}html body::after{content:"";display:table;clear:both}</style>`;
+  const frame = `<style>html,html body{margin:0!important;background:#fff;height:auto!important;min-height:0!important}html body{padding:${pad}px ${pad + 4}px!important;overflow:hidden!important;box-sizing:border-box}html body::after{content:"";display:table;clear:both}@media (max-width:520px){html body{padding:8px 6px!important}}</style>`;
   const source = String(html || "");
   if (HEAD_OPEN.test(source)) {
     const withDefaults = source.replace(HEAD_OPEN, (m) => `${m}${defaults}`);

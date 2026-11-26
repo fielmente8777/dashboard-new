@@ -6,6 +6,7 @@ import {
   toFollowUpValue,
 } from "../../../components/followUp";
 import FollowUpFields from "../../../components/FollowUpFields";
+import FollowUpReminderNote from "../../../components/FollowUpReminderNote";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import CustomDropdown from "../../../components/ui/Dropdown";
@@ -31,6 +32,7 @@ const CallManageCard = ({
   onUpdate,
   onStageChange,
   onSaveFollowUp,
+  pendingFollowUp,
 }) => {
   const [followUp, setFollowUp] = useState(() =>
     splitFollowUp(savedFollowUp),
@@ -74,6 +76,7 @@ const CallManageCard = ({
           <p className="mb-2 text-xs font-medium text-app-text-muted">
             Follow up on
           </p>
+          {pendingFollowUp && <FollowUpReminderNote stage={pendingFollowUp} className="mb-3" />}
           <FollowUpFields value={followUp} onChange={setFollowUp} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button

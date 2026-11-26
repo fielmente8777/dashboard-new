@@ -477,6 +477,7 @@ const LeadsList = ({ source }) => {
 
       <FollowUpDialog
         open={Boolean(followUpLead)}
+        stage={followUpLead?.followUpStage}
         description="Pick the date and time to follow up with this lead."
         onClose={() => setFollowUpLead(null)}
         onSave={(date) => {

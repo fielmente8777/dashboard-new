@@ -1,7 +1,7 @@
 import { CircleCheck, MailOpen, MousePointerClick, RefreshCw, Send, TriangleAlert, UserX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fmtPct, pct, TIME_ZONE } from "./analyticsFormat";
-import { BarChart, Delta, Kpi } from "./analyticsParts";
+import { Delta, Kpi, TrendChart } from "./analyticsParts";
 import { formatNumber } from "../../pages/EmailMarketing/emailUtils.js";
 import { getEmailPerformance } from "../../redux/api/emailMarketingApi";
 import IconButton from "../ui/IconButton";
@@ -63,7 +63,7 @@ export default function PerformancePanel({ reloadSignal = 0, onOpenCampaign }) {
   return (
     <section className="rounded-xl border border-app-border! bg-app-surface p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[12rem] flex-1">
           <h2 className="text-base font-semibold text-app-text">Performance</h2>
           <p className="text-xs text-app-text-muted">
             Every email sent {range.label}, compared with {period.compare}. Opens and clicks count until now.
@@ -93,7 +93,7 @@ export default function PerformancePanel({ reloadSignal = 0, onOpenCampaign }) {
         </p>
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
         {!now
           ? [0, 1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-[104px] rounded-xl" />)
           : (
@@ -152,24 +152,21 @@ export default function PerformancePanel({ reloadSignal = 0, onOpenCampaign }) {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="rounded-xl border border-app-border! px-4 py-3">
-          <h3 className="text-sm font-semibold text-app-text">Emails sent per {data?.unit === "hour" ? "hour" : "day"}</h3>
+        <div className="min-w-0 rounded-xl border border-app-border! px-3 py-3 sm:px-4">
+          <h3 className="text-sm font-semibold text-app-text">Sent and opened, per {data?.unit === "hour" ? "hour" : "day"}</h3>
           <p className="text-xs text-app-text-muted">
             <span className="sm:hidden">Tap</span>
-            <span className="hidden sm:inline">Hover</span> a bar for sent, opened and clicked
+            <span className="hidden sm:inline">Point at</span> the chart for that {data?.unit === "hour" ? "hour" : "day"}'s numbers
           </p>
           {data ? (
             buckets.some((b) => b.sent) ? (
-              <BarChart
+              <TrendChart
                 buckets={buckets}
                 unit={data.unit}
-                value={(b) => b.sent}
-                describe={(b) => `${b.sent} sent, ${b.opened} opened, ${b.clicked} clicked`}
-                tooltip={(b) => (
-                  <>
-                    <b>{formatNumber(b.sent)} sent</b> · {formatNumber(b.opened)} opened · {formatNumber(b.clicked)} clicked
-                  </>
-                )}
+                series={[
+                  { key: "sent", label: "Sent", color: "var(--chart-1)" },
+                  { key: "opened", label: "Opened", color: "var(--chart-2)" },
+                ]}
               />
             ) : (
               <p className="flex h-52 items-center justify-center text-sm text-app-text-muted">No emails sent {range.label}.</p>

@@ -30,9 +30,11 @@ import { useChatCache } from "../hooks/useChatCache";
 import { useConversationLead } from "../hooks/useConversationLead";
 import { useOpenConversationLead } from "../hooks/useOpenConversationLead";
 import { useSendMessage } from "../hooks/useSendMessage";
+import AssignPrompt from "./AssignPrompt";
 import ChatHeader from "./ChatHeader";
 import Composer from "./Composer";
 import MessageList from "./MessageList";
+import WindowClosingBar from "./WindowClosingBar";
 
 const NO_MESSAGES = [];
 
@@ -62,7 +64,8 @@ const ChatPanel = ({
   const { confirm } = useConfirm();
   const run = useApiAction();
   const cache = useChatCache(hid);
-  const userEmail = useSelector((state) => state.userProfile.authUser?.emailId);
+  const authUser = useSelector((state) => state.userProfile.authUser);
+  const userEmail = authUser?.emailId;
 
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [isCallOpen, setIsCallOpen] = useState(false);
@@ -218,6 +221,17 @@ const ChatPanel = ({
       `Assigned to ${user.userName}`,
     );
 
+  // the signed-in person as a team member, for "Assign to me"
+  const me = useMemo(() => {
+    if (!userEmail) return null;
+    const member = (users.data || []).find(
+      (user) => String(user.emailId).toLowerCase() === String(userEmail).toLowerCase(),
+    );
+    if (member) return member;
+    const name = authUser?.userName || authUser?.displayName;
+    return name ? { userName: name, emailId: userEmail, phone: authUser?.phone } : null;
+  }, [users.data, userEmail, authUser]);
+
   const handleCallClick = () => {
     // without the calling provider, hand the number to the device instead
     if (canCall) setIsCallOpen(true);
@@ -307,6 +321,8 @@ const ChatPanel = ({
         onClearSelection={() => setSelectedKeys([])}
       />
 
+      <AssignPrompt conversation={conversation} me={me} onAssign={handleAssign} />
+
       {messages.isError ? (
         <div className="min-h-0 flex-1 p-4">
           <ErrorState
@@ -326,6 +342,7 @@ const ChatPanel = ({
         />
       )}
 
+      <WindowClosingBar conversation={conversation} />
       {renderFooter()}
 
       <CallLeadDialog

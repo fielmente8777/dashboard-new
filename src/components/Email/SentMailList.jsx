@@ -68,7 +68,7 @@ function Metric({ value, label, share, barClass, muted }) {
       <p className={`text-sm font-semibold tabular-nums ${muted ? "text-app-text-faint" : "text-app-text"}`}>{value}</p>
       <p className="truncate text-[11px] text-app-text-muted">{label}</p>
       {share !== undefined && (
-        <div className="mt-1 h-1 overflow-hidden rounded-full bg-app-surface-secondary">
+        <div className="mt-1 h-1 overflow-hidden rounded-full bg-app-border/70 lg:bg-app-surface-secondary">
           <div className={`h-full rounded-full ${barClass}`} style={{ width: `${Math.min(100, share)}%` }} />
         </div>
       )}
@@ -195,7 +195,7 @@ export default function SentMailList({
                   tabIndex={0}
                   onClick={() => onOpen(c, "message")}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(c, "message"))}
-                  className={`group cursor-pointer px-4 py-3.5 transition hover:bg-app-surface-secondary/70 focus-visible:bg-app-surface-secondary focus-visible:outline-none ${GRID}`}
+                  className={`group cursor-pointer px-3 py-3.5 transition sm:px-4 hover:bg-app-surface-secondary/70 focus-visible:bg-app-surface-secondary focus-visible:outline-none ${GRID}`}
                 >
                   {/* select (desktop column) */}
                   <span className="hidden items-center lg:flex">{checkbox}</span>
@@ -211,17 +211,23 @@ export default function SentMailList({
 
                   <div className="flex min-w-0 gap-3">
                     {checkbox && <span className="flex items-center lg:hidden">{checkbox}</span>}
-                    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl lg:hidden ${kind.tone}`} aria-hidden>
+                    <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl lg:hidden ${kind.tone}`} aria-hidden>
                       <KindIcon className="size-[18px]" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-sm font-semibold text-app-text" title={c.subject}>
+                      {/* phones: the subject gets two lines and the status goes under it */}
+                      <div className="flex min-w-0 items-start gap-2 lg:items-center">
+                        <p className="line-clamp-2 text-sm font-semibold leading-snug text-app-text lg:truncate" title={c.subject}>
                           {c.subject || c.name || "(no subject)"}
                         </p>
-                        <StatusChip campaign={c} />
+                        <span className="hidden lg:inline-flex">
+                          <StatusChip campaign={c} />
+                        </span>
                       </div>
-                      <p className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-app-text-muted">
+                      <p className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-app-text-muted">
+                        <span className="lg:hidden">
+                          <StatusChip campaign={c} />
+                        </span>
                         <span className="inline-flex min-w-0 items-center gap-1 lg:hidden">
                           <Clock className="size-3.5 shrink-0" />
                           {when.main}
@@ -232,13 +238,13 @@ export default function SentMailList({
                           {formatNumber(c.recipientCount)}
                         </span>
                         {from ? (
-                          <span className="inline-flex min-w-0 items-center gap-1" title="The address guests saw in From">
+                          <span className="inline-flex w-full min-w-0 items-center gap-1 lg:w-auto" title="The address guests saw in From">
                             <AtSign className="size-3.5 shrink-0" />
                             <span className="truncate">{from}</span>
                           </span>
                         ) : (
                           c.fromEmail && (
-                            <span className="inline-flex min-w-0 items-center gap-1" title="Replies went here (the sender of older emails wasn't saved)">
+                            <span className="inline-flex w-full min-w-0 items-center gap-1 lg:w-auto" title="Replies went here (the sender of older emails wasn't saved)">
                               <CornerUpLeft className="size-3.5 shrink-0" />
                               <span className="truncate">{c.fromEmail}</span>
                             </span>
@@ -307,20 +313,20 @@ export default function SentMailList({
                   </div>
 
                   {/* numbers: a 3-column strip on phones, three columns on desktop */}
-                  <div className="mt-3 grid grid-cols-3 gap-3 pl-[3.25rem] lg:contents">
+                  <div className="mt-3 grid grid-cols-3 gap-3 rounded-lg bg-app-surface-secondary/60 px-3 py-2.5 lg:contents">
                     {sending ? (
                       <Metric
                         value={formatNumber(sent)}
                         label={`of ${formatNumber(c.recipientCount)} sent`}
                         share={percent(sent, c.recipientCount)}
-                        barClass="bg-amber-500"
+                        barClass="bg-[var(--chart-1)]"
                       />
                     ) : (
                       <Metric
                         value={notSent ? "—" : `${percent(sent, tried)}%`}
                         label={notSent ? `0 of ${formatNumber(c.recipientCount)}` : `${formatNumber(sent)} reached`}
                         share={notSent ? undefined : percent(sent, tried)}
-                        barClass="bg-emerald-500"
+                        barClass="bg-[var(--chart-1)]"
                         muted={notSent}
                       />
                     )}
@@ -328,14 +334,14 @@ export default function SentMailList({
                       value={sent ? `${percent(c.stats?.opened, sent)}%` : "—"}
                       label={sent ? `${formatNumber(c.stats?.opened)} opened` : "Opens"}
                       share={sent ? percent(c.stats?.opened, sent) : undefined}
-                      barClass="bg-violet-500"
+                      barClass="bg-[var(--chart-2)]"
                       muted={!sent}
                     />
                     <Metric
                       value={sent ? `${percent(c.stats?.clicked, sent)}%` : "—"}
                       label={sent ? `${formatNumber(c.stats?.clicked)} clicked` : "Clicks"}
                       share={sent ? percent(c.stats?.clicked, sent) : undefined}
-                      barClass="bg-sky-500"
+                      barClass="bg-[var(--chart-3)]"
                       muted={!sent}
                     />
                   </div>
@@ -348,7 +354,7 @@ export default function SentMailList({
 
                   {/* actions */}
                   <div
-                    className="mt-3 flex items-center justify-end gap-1.5 lg:mt-0"
+                    className="mt-2.5 flex items-center justify-end gap-1.5 lg:mt-0"
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                   >

@@ -10,13 +10,14 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   getFollowUpError,
   splitFollowUp,
   toFollowUpValue,
 } from "../../../../components/followUp";
 import FollowUpFields from "../../../../components/FollowUpFields";
+import FollowUpReminderNote from "../../../../components/FollowUpReminderNote";
 import Badge from "../../../../components/ui/Badge";
 import Button from "../../../../components/ui/Button";
 import CustomDropdown from "../../../../components/ui/Dropdown";
@@ -116,10 +117,15 @@ const ProfilePanel = ({
   };
 
   // "Follow Up" needs a date first; any other stage clears the follow-up
+  const followUpRef = useRef(null);
   const changeStage = (status) => {
     if (isFollowUpStage(status)) {
       setPendingFollowUp(status);
       setFollowUpOpen(true);
+      // bring the date fields (and the "select a date and time" note) into view
+      requestAnimationFrame(() =>
+        followUpRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+      );
       return false;
     }
     saveLead({ status, followUpDate: null }, "Stage updated");
@@ -137,6 +143,7 @@ const ProfilePanel = ({
     );
     if (saved) {
       setFollowUpOpen(false);
+      setPendingFollowUp(null);
       if (!value) setFollowUp({ date: "", time: "" });
     }
   };
@@ -314,7 +321,14 @@ const ProfilePanel = ({
           </Field>
         </div>
 
-        <div className="rounded-lg border border-dashed border-app-border! bg-app-surface-secondary/50 p-3">
+        <div
+          ref={followUpRef}
+          className={`scroll-mt-4 rounded-lg border border-dashed p-3 ${
+            pendingFollowUp
+              ? "border-blue-500/40! bg-blue-500/5"
+              : "border-app-border! bg-app-surface-secondary/50"
+          }`}
+        >
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-medium text-app-text-muted">Follow up on</p>
             {!followUpOpen && (
@@ -335,6 +349,9 @@ const ProfilePanel = ({
             </p>
           ) : (
             <>
+              {pendingFollowUp && (
+                <FollowUpReminderNote stage={pendingFollowUp} className="mt-2" />
+              )}
               <div className="mt-2">
                 <FollowUpFields value={followUp} onChange={setFollowUp} />
               </div>
@@ -363,7 +380,10 @@ const ProfilePanel = ({
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setFollowUpOpen(false)}
+                  onClick={() => {
+                    setFollowUpOpen(false);
+                    setPendingFollowUp(null);
+                  }}
                 >
                   Cancel
                 </Button>

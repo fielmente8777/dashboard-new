@@ -386,6 +386,7 @@ const LeadDetails = () => {
 
       <FollowUpDialog
         open={dialog === "stageFollowUp"}
+        stage={pendingFollowUp}
         description="Pick the date and time to follow up with this lead."
         onClose={() => setDialog(null)}
         onSave={(date) => {
