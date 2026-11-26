@@ -1,4 +1,4 @@
-import { Check, CircleAlert, CircleDashed, Folder, Pencil, Plus, Puzzle, Sparkles, Trash2, Workflow } from "lucide-react";
+import { Check, CircleAlert, CircleDashed, Folder, Pencil, Plus, Puzzle, Settings2, Sparkles, Target, Trash2, Workflow } from "lucide-react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
@@ -31,8 +31,34 @@ const ConnectionChip = ({ action }) => {
   );
 };
 
+// Which skills use the action, and whether it waits for one ("Only with skills")
+export const SkillUse = ({ action, skills = [], onOpenSkills }) => {
+  if (!skills.length && !action.draft.onlyWithSkills) return null;
+  const anyOn = skills.some((s) => s.enabled);
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-1 text-xs text-app-text-muted">
+      <Target className="size-3 shrink-0" aria-hidden="true" />
+      {skills.length ? (
+        <>
+          <span>Used by</span>
+          {skills.map((s) => (
+            <button key={s.key} type="button" onClick={() => onOpenSkills?.(s.key)} className={`rounded-full px-2 py-0.5 font-medium hover:underline ${s.enabled ? "bg-app-accent-soft text-app-accent-text" : "bg-app-surface-secondary text-app-text-muted"}`} title={s.enabled ? "Skill is on" : "Skill is off"}>
+              {s.name}{!s.enabled && " (off)"}
+            </button>
+          ))}
+        </>
+      ) : (
+        <span>No skill uses it yet</span>
+      )}
+      {action.draft.onlyWithSkills && (
+        <Badge tone={anyOn ? "purple" : "amber"}>{anyOn ? "Only with skills" : "Only with skills · not used now"}</Badge>
+      )}
+    </p>
+  );
+};
+
 // One custom API action: name + method, the tool name the agent sees, URL, status
-const ApiActionRow = ({ action, onEdit, onToggle, onDelete }) => {
+const ApiActionRow = ({ action, skills, onOpenSkills, onEdit, onToggle, onDelete }) => {
   const http = action.draft.executor?.http || {};
   return (
     <li className="flex flex-wrap items-center gap-3 rounded-xl border border-app-border! bg-app-surface p-3 sm:flex-nowrap">
@@ -45,6 +71,7 @@ const ApiActionRow = ({ action, onEdit, onToggle, onDelete }) => {
         </p>
         <p className="truncate font-mono text-xs text-app-text-muted" title={action.toolName}>{action.toolName || action.key}</p>
         <p className="truncate font-mono text-xs text-app-text-muted" title={http.url}>{http.url}</p>
+        <SkillUse action={action} skills={skills} onOpenSkills={onOpenSkills} />
       </div>
       <div className="flex w-full shrink-0 items-center justify-end gap-1.5 sm:w-auto">
         <IconButton icon={Pencil} label={`Edit ${action.draft.name}`} onClick={() => onEdit(action)} />
@@ -57,12 +84,19 @@ const ApiActionRow = ({ action, onEdit, onToggle, onDelete }) => {
 };
 
 // A business action (Simple actions, n8n, built-in handlers with your settings)
-const BusinessRow = ({ action, onOpen, onToggle }) => (
+// or a predefined (system) action
+const BusinessRow = ({ action, skills, onOpenSkills, onOpen, onToggle, system = false }) => (
   <li className="flex items-center gap-3 rounded-xl border border-app-border! bg-app-surface p-3">
-    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-app-surface-secondary text-app-text-muted" aria-hidden="true"><Workflow className="size-4" /></span>
+    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-app-surface-secondary text-app-text-muted" aria-hidden="true">{system ? <Settings2 className="size-4" /> : <Workflow className="size-4" />}</span>
     <div className="min-w-0 flex-1">
-      <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-app-text">{action.draft.name}{action.status === "draft" && <Badge tone="purple">Not published</Badge>}</p>
-      <p className="truncate text-xs text-app-text-muted">{action.draft.description}</p>
+      <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-app-text">
+        {action.draft.name}
+        {system && <span className="font-mono text-xs font-normal text-app-text-muted">{action.toolName || action.key}</span>}
+        {action.draft.requiresConfirmation && <Badge tone="sky">Asks the guest first</Badge>}
+        {action.status === "draft" && <Badge tone="purple">Not published</Badge>}
+      </p>
+      <p className="truncate text-xs text-app-text-muted" title={action.draft.description}>{action.draft.description}</p>
+      <SkillUse action={action} skills={skills} onOpenSkills={onOpenSkills} />
     </div>
     <IconButton icon={Pencil} label={`Edit ${action.draft.name}`} onClick={() => onOpen(action.id)} />
     <Switch label={`${action.draft.enabled ? "Turn off" : "Turn on"} ${action.draft.name}`} checked={Boolean(action.draft.enabled)} onChange={(enabled) => onToggle(action, enabled)} />
@@ -71,7 +105,7 @@ const BusinessRow = ({ action, onOpen, onToggle }) => (
 
 // The Actions tab's home (AiSensy-style): business actions, custom API actions
 // grouped into intents, and the built-in system actions.
-const ActionsOverview = ({ actions, unpublished, onAddApi, onEditApi, onOpen, onNewBusiness, onCreateWithAi, onToggle, onDelete }) => {
+const ActionsOverview = ({ actions, usedBySkills = {}, unpublished, onAddApi, onEditApi, onOpen, onOpenSkills, onNewBusiness, onCreateWithAi, onToggle, onDelete }) => {
   const { business, intents, system } = groupActions(actions);
 
   return (
@@ -84,7 +118,7 @@ const ActionsOverview = ({ actions, unpublished, onAddApi, onEditApi, onOpen, on
       <section aria-labelledby="business-actions" className="border-b border-app-border! pb-4">
         <div id="business-actions"><SectionLabel>Business actions</SectionLabel></div>
         {business.length ? (
-          <ul className="space-y-2">{business.map((a) => <BusinessRow key={a.id} action={a} onOpen={onOpen} onToggle={onToggle} />)}</ul>
+          <ul className="space-y-2">{business.map((a) => <BusinessRow key={a.id} action={a} skills={usedBySkills[a.key]} onOpenSkills={onOpenSkills} onOpen={onOpen} onToggle={onToggle} />)}</ul>
         ) : (
           <p className="text-sm text-app-text-muted">No actions yet. Tell your team, reply with a template or save lead details, no API needed.</p>
         )}
@@ -101,7 +135,7 @@ const ActionsOverview = ({ actions, unpublished, onAddApi, onEditApi, onOpen, on
                 {group ? group.toUpperCase() : "NO INTENT GROUP"}
                 <span className="font-sans font-normal text-app-text-muted">{items.length} action{items.length > 1 ? "s" : ""}</span>
               </p>
-              <ul className="space-y-2">{items.map((a) => <ApiActionRow key={a.id} action={a} onEdit={onEditApi} onToggle={onToggle} onDelete={onDelete} />)}</ul>
+              <ul className="space-y-2">{items.map((a) => <ApiActionRow key={a.id} action={a} skills={usedBySkills[a.key]} onOpenSkills={onOpenSkills} onEdit={onEditApi} onToggle={onToggle} onDelete={onDelete} />)}</ul>
             </div>
           ))}
           <button type="button" onClick={onAddApi} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-app-accent/40! bg-app-accent-soft/40 py-4 text-sm font-semibold text-app-accent-text transition hover:bg-app-accent-soft focus-visible:outline-2 focus-visible:outline-app-focus">
@@ -111,19 +145,13 @@ const ActionsOverview = ({ actions, unpublished, onAddApi, onEditApi, onOpen, on
       </section>
 
       <section aria-labelledby="system-actions" className="pt-4">
-        <div id="system-actions"><SectionLabel>System actions</SectionLabel></div>
-        <ul className="flex flex-wrap gap-2">
+        <div id="system-actions"><SectionLabel note="ready to use, no setup needed">Predefined actions</SectionLabel></div>
+        <ul className="space-y-2">
           {system.map((a) => (
-            <li key={a.id}>
-              <button type="button" onClick={() => onOpen(a.id)} title={a.draft.description} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs transition focus-visible:outline-2 focus-visible:outline-app-focus ${a.draft.enabled ? "bg-app-accent-soft text-app-accent-text hover:opacity-90" : "bg-app-surface-secondary text-app-text-muted line-through decoration-1 hover:text-app-text"}`}>
-                <span className={`size-1.5 rounded-full ${a.draft.enabled ? "bg-app-success" : "bg-app-text-muted"}`} aria-hidden="true" />
-                {a.key}
-                <span className="sr-only">{a.draft.enabled ? " (on)" : " (off)"}</span>
-              </button>
-            </li>
+            <BusinessRow key={a.id} system action={a} skills={usedBySkills[a.key]} onOpenSkills={onOpenSkills} onOpen={onOpen} onToggle={onToggle} />
           ))}
         </ul>
-        <p className="mt-2 text-xs text-app-text-muted">Built in: available to the agent while switched on. Click one to change its settings.</p>
+        <p className="mt-2 text-xs text-app-text-muted">Built in: the agent can use one while it is switched on. Link them to skills in the Skills tab so the agent knows when to use them.</p>
       </section>
     </Card>
   );

@@ -25,6 +25,7 @@ import { PAGES, dashboardPath } from "../../../routes/paths";
 import ActionEditor from "./ActionEditor";
 import ActionList from "./ActionList";
 import ActionSidePanel from "./ActionSidePanel";
+import ActionSkillsCard from "./ActionSkillsCard";
 import { TAB_OF_FIELD, blankAction, keyFromName, toForm, toPayload, validateAction } from "./actionModel";
 import CreateWithAiDialog from "./CreateWithAiDialog";
 import SimpleEditor from "./SimpleEditor";
@@ -395,6 +396,22 @@ const ActionsTab = ({ channel, hid, agentHours }) => {
   if (query.isError) return <ErrorState message="Could not load the actions." onRetry={query.refetch} />;
   if (!data) return <Skeleton className="h-96" />;
 
+  // "Skills" card above the editor. Set on the form directly: in Simple mode
+  // set() would turn the action into an Advanced one.
+  const skillsCard = form && (
+    <ActionSkillsCard
+      isNew={isNew}
+      isHandoff={(view?.key || form.executor?.handlerKey) === "handoff_to_human"}
+      usedBy={view ? data.usedBySkills?.[view.key] || [] : []}
+      onlyWithSkills={form.onlyWithSkills}
+      onChange={(value) => setForm((f) => ({ ...f, onlyWithSkills: value }))}
+      onOpenSkill={async (skillKey) => {
+        if (!(await guard())) return;
+        setParams((p) => { p.set("tab", "skills"); p.delete("action"); p.set("skill", skillKey); return p; });
+      }}
+    />
+  );
+
   const meta = {
     isNew,
     isBuiltIn,
@@ -431,7 +448,8 @@ const ActionsTab = ({ channel, hid, agentHours }) => {
       />
       {form && mode === "simple" ? (
         <>
-          <div className={`min-w-0 ${hasSimpleSidePanel({ isBuiltIn, readOnly }) ? "" : "2xl:col-span-2"}`}>
+          <div className={`min-w-0 space-y-3 ${hasSimpleSidePanel({ isBuiltIn, readOnly }) ? "" : "2xl:col-span-2"}`}>
+          {skillsCard}
           <SimpleEditor
             copy={copy}
             lang={lang}
@@ -483,6 +501,8 @@ const ActionsTab = ({ channel, hid, agentHours }) => {
         </>
       ) : form ? (
         <>
+          <div className="min-w-0 space-y-3">
+          {skillsCard}
           <ActionEditor
             form={form}
             set={set}
@@ -502,6 +522,7 @@ const ActionsTab = ({ channel, hid, agentHours }) => {
             onDuplicate={() => view && duplicate(view)}
             onExport={() => view && exportOne(view)}
           />
+          </div>
           <div className={UNDER_EDITOR}>
             <ActionSidePanel form={form} actionId={isNew ? null : view?.id} channel={channel} hid={hid} runNonce={runNonce} />
           </div>

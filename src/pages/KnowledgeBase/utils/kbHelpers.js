@@ -109,7 +109,7 @@ export const blankLikeTemplate = (sample) => {
 // whose path ends in an image/video/pdf extension is shown with a thumbnail
 // and a Replace button instead of a text box.
 
-export const MEDIA_ACCEPT = "image/*,video/*,application/pdf";
+export { KB_MEDIA_ACCEPT as MEDIA_ACCEPT } from "./kbMediaLimits";
 
 export const isImageUrl = (value) => mediaKindFor(value) === "image";
 export const isMediaUrl = (value, mimeType) => Boolean(mediaKindFor(value, mimeType));

@@ -17,7 +17,7 @@ const SetupChecklist = ({ agent, onTest, onPublish, canPublish }) => {
       key: "skills",
       title: "Give it a job",
       hint: config.template ? "Started from a template. Fine-tune its skills any time." : "Pick goals and write what the agent should do.",
-      done: Boolean(config.template || config.behaviour.instructions),
+      done: Boolean(config.template || config.mainGoal || config.behaviour.instructions),
       action: <Button variant="ghost" size="sm" onClick={() => openTab("skills")}>Skills</Button>,
     },
     {

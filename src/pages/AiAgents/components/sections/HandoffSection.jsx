@@ -30,6 +30,19 @@ const HandoffSection = ({ draft, set }) => {
         />
       </Field>
 
+      <Field
+        label="When it doesn't know"
+        className="mt-4"
+        hint="What it says instead of guessing. It adapts this to the guest's language."
+      >
+        <Textarea
+          rows={2}
+          maxLength={1000}
+          value={draft.behaviour.fallbackMessage}
+          onChange={(e) => set("behaviour.fallbackMessage", e.target.value)}
+        />
+      </Field>
+
       <Field label="Message on handover" className="mt-4">
         <Textarea
           rows={2}
@@ -41,15 +54,15 @@ const HandoffSection = ({ draft, set }) => {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <Field
-          label="AI stays quiet for (hours)"
-          hint="After a handover or a reply from your team."
+          label="Hand back to the AI after (hours)"
+          hint="0 = the AI takes the chat back on the guest's next message. Otherwise it waits this many hours after a handover or a reply from your team, then handles intents normally again."
         >
           <Input
             type="number"
-            min={1}
+            min={0}
             max={168}
             value={handoff.pauseHours}
-            onChange={(e) => set("handoff.pauseHours", number(e.target.value, 12))}
+            onChange={(e) => set("handoff.pauseHours", number(e.target.value, 0))}
           />
         </Field>
         <Field label="Max AI replies per chat" hint="0 = no limit. Stops endless loops.">

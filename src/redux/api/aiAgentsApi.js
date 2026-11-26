@@ -2,7 +2,7 @@ import { baseApi } from "./baseApi";
 
 const NODE = { service: "node" };
 
-const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiAgent", "AiAgentActivity", "AiAgentActions", "AiAgentAvailability"] });
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["AiAgent", "AiAgentActivity", "AiAgentActions", "AiAgentAvailability", "AiAgentSkills"] });
 
 const result = (response) => response?.result ?? null;
 const actionsUrl = (channel, path = "") => `/api/v1/ai-agents/${channel}/actions${path}`;
@@ -10,6 +10,14 @@ const actionsUrl = (channel, path = "") => `/api/v1/ai-agents/${channel}/actions
 const actionTags = (channel, hid) => [
   { type: "AiAgentActions", id: `${hid}:${channel}` },
   { type: "AiAgentAvailability", id: `${hid}:${channel}` },
+  { type: "AiAgent", id: `${hid}:${channel}` },
+  { type: "AiAgentSkills", id: `${hid}:${channel}` },
+];
+const skillsUrl = (channel, path = "") => `/api/v1/ai-agents/${channel}/skills${path}`;
+// a skill change also changes "unpublished changes" and the Actions tab's "Used by skills"
+const skillTags = (channel, hid) => [
+  { type: "AiAgentSkills", id: `${hid}:${channel}` },
+  { type: "AiAgentActions", id: `${hid}:${channel}` },
   { type: "AiAgent", id: `${hid}:${channel}` },
 ];
 
@@ -66,11 +74,20 @@ export const aiAgentsApi = api.injectEndpoints({
     }),
 
     getAiAgentActivity: build.query({
-      query: ({ channel, hid, limit = 50, outcome }) => ({
+      query: ({ channel, hid, limit = 50, outcome, intent }) => ({
         url: `/api/v1/ai-agents/${channel}/activity`,
-        params: { hid, limit, ...(outcome && outcome !== "all" ? { outcome } : {}) },
+        params: { hid, limit, ...(outcome && outcome !== "all" ? { outcome } : {}), ...(intent && intent !== "all" ? { intent } : {}) },
       }),
       transformResponse: (response) => response?.result || { runs: [], last7Days: {} },
+      providesTags: (result, error, { channel, hid }) => [{ type: "AiAgentActivity", id: `${hid}:${channel}` }],
+      extraOptions: NODE,
+    }),
+
+    // intent catalogue + 7-day detection stats (gian: GET /ai-agents/:channel/intents)
+    // -> { groups, intents: [{ key, group, description, workflow, workflowLabel, canDisable }], workflows, stats, model }
+    getAiAgentIntents: build.query({
+      query: ({ channel, hid }) => ({ url: `/api/v1/ai-agents/${channel}/intents`, params: { hid } }),
+      transformResponse: result,
       providesTags: (result, error, { channel, hid }) => [{ type: "AiAgentActivity", id: `${hid}:${channel}` }],
       extraOptions: NODE,
     }),
@@ -178,6 +195,103 @@ export const aiAgentsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- skills (gian: /api/v1/ai-agents/:channel/skills) ---
+
+    // -> { skills: [view], counts, size: { used, budget }, limits }
+    getAiAgentSkills: build.query({
+      query: ({ channel, hid }) => ({ url: skillsUrl(channel), params: { hid } }),
+      transformResponse: result,
+      providesTags: (r, e, { channel, hid }) => [{ type: "AiAgentSkills", id: `${hid}:${channel}` }],
+      extraOptions: NODE,
+    }),
+
+    // create (no id) or update; { skill, updatedAt?, aiGenerated? } -> view
+    saveAiAgentSkill: build.mutation({
+      query: ({ channel, hid, id, skill, updatedAt, aiGenerated }) => ({
+        url: skillsUrl(channel, id ? `/${id}` : ""),
+        method: id ? "PUT" : "POST",
+        params: { hid },
+        body: id ? { skill, updatedAt } : { skill, aiGenerated },
+      }),
+      transformResponse: result,
+      invalidatesTags: (r, e, { channel, hid }) => (r ? skillTags(channel, hid) : []),
+      extraOptions: NODE,
+    }),
+
+    // optimistic, like actions
+    toggleAiAgentSkill: build.mutation({
+      query: ({ channel, hid, id, enabled }) => ({ url: skillsUrl(channel, `/${id}/toggle`), method: "POST", params: { hid }, body: { enabled } }),
+      transformResponse: result,
+      async onQueryStarted({ channel, hid, id, enabled }, { dispatch, queryFulfilled }) {
+        const patch = dispatch(
+          aiAgentsApi.util.updateQueryData("getAiAgentSkills", { channel, hid }, (draft) => {
+            const skill = draft?.skills?.find((s) => s.id === id);
+            if (!skill || skill.draft.enabled === enabled) return;
+            skill.draft.enabled = enabled;
+            draft.counts.enabled += enabled ? 1 : -1;
+            draft.size.used += enabled ? skill.size : -skill.size;
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
+      invalidatesTags: (r, e, { channel, hid }) => (r ? skillTags(channel, hid) : []),
+      extraOptions: NODE,
+    }),
+
+    resetAiAgentSkill: build.mutation({
+      query: ({ channel, hid, id }) => ({ url: skillsUrl(channel, `/${id}/reset`), method: "POST", params: { hid } }),
+      transformResponse: result,
+      invalidatesTags: (r, e, { channel, hid }) => (r ? skillTags(channel, hid) : []),
+      extraOptions: NODE,
+    }),
+
+    deleteAiAgentSkill: build.mutation({
+      query: ({ channel, hid, id }) => ({ url: skillsUrl(channel, `/${id}`), method: "DELETE", params: { hid } }),
+      transformResponse: result,
+      invalidatesTags: (r, e, { channel, hid }) => (r ? skillTags(channel, hid) : []),
+      extraOptions: NODE,
+    }),
+
+    // optimistic: the list shows the new order at once
+    reorderAiAgentSkills: build.mutation({
+      query: ({ channel, hid, ids }) => ({ url: skillsUrl(channel, "/reorder"), method: "POST", params: { hid }, body: { ids } }),
+      transformResponse: result,
+      async onQueryStarted({ channel, hid, ids }, { dispatch, queryFulfilled }) {
+        const patch = dispatch(
+          aiAgentsApi.util.updateQueryData("getAiAgentSkills", { channel, hid }, (draft) => {
+            if (!draft?.skills) return;
+            const byId = new Map(draft.skills.map((s) => [s.id, s]));
+            draft.skills = ids.map((id) => byId.get(id)).filter(Boolean);
+          }),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
+      invalidatesTags: (r, e, { channel, hid }) => (r ? skillTags(channel, hid) : []),
+      extraOptions: NODE,
+    }),
+
+    // { description } -> { draft, chargedCredits }. A draft only: nothing is saved.
+    generateAiAgentSkill: build.mutation({
+      query: ({ channel, hid, description }) => ({ url: skillsUrl(channel, "/generate"), method: "POST", params: { hid }, body: { description } }),
+      transformResponse: result,
+      extraOptions: NODE,
+    }),
+
+    // { config? } -> { parts: [{ id, type, title, chars, tokens, text }], totalChars, totalTokens, tools, skills }
+    previewAiAgentPrompt: build.mutation({
+      query: ({ channel, hid, config }) => ({ url: `/api/v1/ai-agents/${channel}/prompt-preview`, method: "POST", params: { hid }, body: { config } }),
+      transformResponse: result,
+      extraOptions: NODE,
+    }),
+
     // open now / next opening per action, in the hotel's time zone
     getAiAgentActionsAvailability: build.query({
       query: ({ channel, hid }) => ({ url: actionsUrl(channel, "/availability"), params: { hid } }),
@@ -193,6 +307,7 @@ export const {
   useWriteAiAgentMutation,
   useTestAiAgentMutation,
   useGetAiAgentActivityQuery,
+  useGetAiAgentIntentsQuery,
   useGetAiAgentActionsQuery,
   useSaveAiAgentActionMutation,
   useToggleAiAgentActionMutation,
@@ -206,5 +321,13 @@ export const {
   useImportAiAgentActionsMutation,
   useGetAiAgentActionsAvailabilityQuery,
   useGetAiAgentTemplatesQuery,
+  useGetAiAgentSkillsQuery,
+  useSaveAiAgentSkillMutation,
+  useToggleAiAgentSkillMutation,
+  useResetAiAgentSkillMutation,
+  useDeleteAiAgentSkillMutation,
+  useReorderAiAgentSkillsMutation,
+  useGenerateAiAgentSkillMutation,
+  usePreviewAiAgentPromptMutation,
   useTrainAiAgentFromWebsiteMutation,
 } = aiAgentsApi;

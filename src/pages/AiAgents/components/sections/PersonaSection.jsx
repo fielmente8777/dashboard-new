@@ -1,6 +1,6 @@
 import { UserRound } from "lucide-react";
 import Card from "../../../../components/ui/Card";
-import { Field, Input, Select } from "../../../../components/ui/Field";
+import { Field, Input, Select, Textarea } from "../../../../components/ui/Field";
 import Segmented from "../../../../components/ui/Segmented";
 import Switch from "../../../../components/ui/Switch";
 import ChoiceCard from "../ChoiceCard";
@@ -95,6 +95,20 @@ const PersonaSection = ({ draft, set }) => {
             English gets English, Hindi gets Hindi, Hinglish gets Hinglish.
           </p>
         )}
+      </Field>
+
+      <Field
+        label="Welcome message (optional)"
+        className="mt-4"
+        hint="Sent once, before the first AI reply in a new chat. Leave empty to skip."
+      >
+        <Textarea
+          rows={2}
+          maxLength={1000}
+          value={draft.behaviour.welcomeMessage}
+          onChange={(e) => set("behaviour.welcomeMessage", e.target.value)}
+          placeholder="Hi! 👋 Thanks for reaching out to us."
+        />
       </Field>
     </Card>
   );

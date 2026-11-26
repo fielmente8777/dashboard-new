@@ -3,6 +3,11 @@ import Button from "../../../components/ui/Button";
 import { useMediaPicker } from "../hooks/useMediaPicker";
 import { MediaThumbnail } from "../../Media/components/MediaPreview";
 import { mediaKindFor } from "../../Media/components/mediaFormat";
+import { KB_MEDIA_HELP_TEXT } from "../utils/kbMediaLimits";
+
+const LimitsHint = () => (
+  <p className="mt-1 text-xs text-app-text-muted">{KB_MEDIA_HELP_TEXT}</p>
+);
 
 // An already-uploaded media value: thumbnail (or a file icon for videos and
 // PDFs), its URL and a Replace button that uploads a new file over it.
@@ -39,6 +44,7 @@ export const MediaValue = ({ value, onChange, mimeType }) => {
         >
           {picker.uploading ? "Uploading..." : "Replace"}
         </Button>
+        <LimitsHint />
       </div>
 
       {picker.input}
@@ -52,7 +58,7 @@ export const AddMediaButton = ({ onAdd }) => {
   const picker = useMediaPicker(onAdd);
 
   return (
-    <>
+    <div className="flex flex-col items-start">
       <Button
         variant="dashed"
         icon={ImageIcon}
@@ -61,7 +67,8 @@ export const AddMediaButton = ({ onAdd }) => {
       >
         {picker.uploading ? "Uploading..." : "Add media"}
       </Button>
+      <LimitsHint />
       {picker.input}
-    </>
+    </div>
   );
 };

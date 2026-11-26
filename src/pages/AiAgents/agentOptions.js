@@ -30,23 +30,7 @@ export const LANGUAGE_OPTIONS = [
   "Spanish",
 ].map((value) => ({ value, label: value }));
 
-export const GOAL_OPTIONS = [
-  {
-    value: "answer_questions",
-    label: "Answer questions",
-    hint: "Rooms, amenities, policies, location, from your knowledge base.",
-  },
-  {
-    value: "capture_leads",
-    label: "Collect lead details",
-    hint: "Asks interested guests for their name, phone, dates and guests.",
-  },
-  {
-    value: "drive_bookings",
-    label: "Drive bookings",
-    hint: "Checks availability and guides the guest towards booking.",
-  },
-];
+// Goals are skills now: pages/AiAgents/skills (built-ins in gian skills/builtinSkills.ts)
 
 // Actions and working hours: pages/AiAgents/actions (actionModel.js, scheduleCore.js)
 

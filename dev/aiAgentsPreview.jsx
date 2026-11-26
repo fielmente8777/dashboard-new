@@ -47,6 +47,20 @@ const config = {
   persona: { name: "Aria", role: "Guest assistant who answers questions and helps guests plan their stay", tone: "friendly", replyLength: "short", useEmojis: true, languageMode: "auto", language: "English" },
   behaviour: { goals: ["answer_questions", "capture_leads"], instructions: "Mention the rooftop pool when guests ask about facilities.", welcomeMessage: "", fallbackMessage: "Let me check that with our team and get back to you shortly." },
   knowledge: { useQuickReplies: true, useCustomRules: true },
+  mainGoal: "Get more direct bookings and keep guests happy.",
+  promptLayout: [
+    { id: "role_safety", type: "fixed", enabled: true },
+    { id: "style", type: "built", enabled: true },
+    { id: "r_budget01", type: "custom", enabled: true, title: "Always ask budget first", text: "Before suggesting any room, ask the guest's budget per night. If they don't say, suggest the cheapest room first.", whenSkill: "sell_rooms" },
+    { id: "skills", type: "built", enabled: true },
+    { id: "actions", type: "built", enabled: true },
+    { id: "channel_instructions", type: "built", enabled: true },
+    { id: "ai_training", type: "built", enabled: true },
+    { id: "knowledge", type: "built", enabled: true },
+    { id: "quick_replies", type: "built", enabled: true },
+    { id: "website", type: "built", enabled: false },
+    { id: "reminder", type: "fixed", enabled: true },
+  ],
   actions: { checkAvailability: true, createBooking: false, captureLeadDetails: true, handoffToHuman: true },
   schedule: { mode: "custom", timezone: TZ, days: [0, 1, 2, 3, 4, 5, 6].map((day) => ({ day, enabled: true, from: "09:00", to: "22:00" })) },
   workingHours,
@@ -165,8 +179,37 @@ actions.find((a) => a.key === "book_spa_slot").draft.intentGroup = "spa_bookings
 actions.find((a) => a.key === "book_spa_slot").lastTest = { live: false, ok: true, status: null, error: null, at: "2026-11-22T12:00:00Z" };
 const toolNameOf = (a) => (a.draft.intentGroup ? `${a.draft.intentGroup}__${a.key}` : a.key);
 actions = actions.map((a, i) => ({ ...a, position: i, toolName: toolNameOf(a) }));
+// --- skills -----------------------------------------------------------------
+const skill = (i, key, draft, extra = {}) => ({ id: `6760bb0000000000000000${String(i).padStart(2, "0")}`, key, isBuiltIn: true, builtInKey: key, position: i, status: "published", version: 1, updatedAt: "2026-11-23T08:00:00Z", ...extra, draft, size: [draft.name, draft.goal, ...draft.triggers, ...draft.steps, ...draft.donts, ...draft.example.map((t) => t.text)].join("\n").length });
+let skills = [
+  skill(0, "sell_rooms", { name: "Sell rooms & upsell", summary: "Guides guests to book, offers extras", goal: "Help the guest pick a room and book directly with us.", triggers: ["Room available hai?", "Price for 2 nights"], steps: ["Ask how many guests and which dates.", "Run @check_room_availability", "Suggest 2 rooms that fit the budget.", "After the guest picks a room, offer one extra, like breakfast or spa."], donts: ["Never promise a discount.", "Never push more than one extra."], example: [{ role: "guest", text: "Room for 2 this weekend?" }, { role: "assistant", text: "Yes! Is your budget under Rs 5,000?" }, { role: "guest", text: "Yes, under 5000" }, { role: "assistant", text: "Great, the Deluxe at Rs 4,500 fits. Shall I book it?" }], actionKeys: ["check_room_availability", "create_booking", "book_spa_slot"], enabled: true }, { status: "draft" }),
+  skill(1, "collect_guest_details", { name: "Collect guest details", summary: "Asks name, phone and dates politely", goal: "Turn interested guests into leads the team can follow up.", triggers: ["Planning a trip in December"], steps: ["When the guest shows interest, ask for their name, phone, dates and guests, one at a time.", "Run @save_lead_details as soon as they share any of these."], donts: [], example: [], actionKeys: ["save_lead_details"], enabled: true }),
+  skill(2, "handle_complaints", { name: "Handle complaints", summary: "Stays calm, says sorry, tells your team", goal: "Calm an unhappy guest and get the team involved quickly.", triggers: ["The room was dirty"], steps: ["Say sorry in one short line.", "Run @handoff_to_human so your team can take over."], donts: ["Never argue with the guest."], example: [], actionKeys: ["handoff_to_human"], enabled: true }),
+  skill(3, "answer_questions", { name: "Answer guest questions", summary: "Timings, policies, facilities", goal: "Answer guest questions accurately from the knowledge base.", triggers: ["What time is check-in?"], steps: ["Find the answer in the knowledge base.", "Answer briefly and offer one next step."], donts: [], example: [], actionKeys: [], enabled: true }),
+  skill(4, "follow_up", { name: "Follow up", summary: "Nudges guests who stopped replying", goal: "Bring back guests who went quiet.", triggers: [], steps: ["If the guest asked about dates and went quiet, send one friendly reminder."], donts: ["Never send more than one reminder."], example: [], actionKeys: [], enabled: false }, { isBuiltIn: false, builtInKey: null }),
+  skill(5, "pool_timing_tip", { name: "Pool timing tip", summary: "Always mention pool hours", goal: "Guests know the pool hours.", triggers: ["Pool?"], steps: ["Mention the pool is open 7am to 9pm."], donts: [], example: [], actionKeys: [], enabled: false }, { isBuiltIn: false, builtInKey: null, status: "draft", version: 0 }),
+];
+const skillList = () => {
+  const on = skills.filter((s) => s.draft.enabled);
+  return { skills, counts: { all: skills.length, enabled: on.length, custom: skills.filter((s) => !s.isBuiltIn).length, unpublished: skills.filter((s) => s.status === "draft").length }, size: { used: on.reduce((n, s) => n + s.size, 0), budget: 4000 } };
+};
+const usedBySkills = () => {
+  const map = {};
+  skills.forEach((s) => s.draft.actionKeys.forEach((k) => (map[k] ||= []).push({ key: s.key, name: s.draft.name, enabled: s.draft.enabled })));
+  return map;
+};
+const promptPreview = () => {
+  const parts = config.promptLayout.filter((b) => b.type === "fixed" || b.enabled).map((b) => {
+    const text = b.type === "custom" ? `# HOTEL RULE: ${b.title}\n${b.text}` : `# ${b.id.toUpperCase()}\n(sample text for ${b.id})`.padEnd(b.id === "knowledge" ? 4200 : 400, ".");
+    return { id: b.id, type: b.type, title: b.title || b.id.replace(/_/g, " "), chars: text.length, tokens: Math.ceil(text.length / 4), text };
+  });
+  const totalChars = parts.reduce((n, p) => n + p.chars, 0);
+  return { parts, totalChars, totalTokens: Math.ceil(totalChars / 4), tools: ["check_room_availability", "save_lead_details", "handoff_to_human"], skills: skills.filter((s) => s.draft.enabled).map((s) => s.key) };
+};
+
 const list = () => ({
   actions,
+  usedBySkills: usedBySkills(),
   counts: { all: actions.length, enabled: actions.filter((a) => a.draft.enabled).length, custom: actions.filter((a) => !a.isBuiltIn).length, unpublished: actions.filter((a) => a.status === "draft").length },
   builtInHandlers: actions.filter((a) => a.isBuiltIn).map((a) => ({ key: a.key, name: a.draft.name, description: a.draft.description, inputs: a.draft.inputs, riskLevel: a.draft.riskLevel })),
   liveTestHandlers: ["notify_team", "check_room_availability", "send_quick_reply"],
@@ -204,6 +247,20 @@ window.fetch = async (input, init = {}) => {
     const root = String(data.url).replace(/\/$/, "");
     return ok({ url: data.url, pages: [data.url, `${root}/rooms`, `${root}/dining`], propertyName: "Aroha Palms", summary: "Boutique beach resort in Candolim, Goa, a 3 minute walk from the beach.", welcomeMessage: "Welcome to Aroha Palms, Goa! How can I help you plan your stay?", facts: waConfig.knowledge.website.facts.concat(["Airport transfers from Goa airport on request.", "Pets are not allowed."]), template: "room_sales", chargedCredits: 2.4 });
   }
+  if (path.endsWith("/prompt-preview")) return ok(promptPreview());
+  if (path.endsWith("/skills") && method === "GET") return ok(skillList());
+  if (path.endsWith("/skills/generate")) return ok({ draft: { name: "Budget first", summary: "Asks the budget, then suggests rooms", goal: "Suggest rooms that fit the guest's budget.", triggers: ["Sasta room hai?", "Budget room for 2"], steps: ["Ask the guest's budget per night.", "Run @check_room_availability", "Suggest the cheapest room that fits.", "At the end, offer the spa."], donts: ["Never push a room above the budget."], example: [], actionKeys: ["check_room_availability"], enabled: false }, chargedCredits: 2 });
+  if (path.endsWith("/skills/reorder")) { skills = data.ids.map((id) => skills.find((s) => s.id === id)); return ok(skillList()); }
+  if (path.endsWith("/skills") && method === "POST") {
+    const created = skill(skills.length, data.skill.name.toLowerCase().replace(/[^a-z0-9]+/g, "_"), data.skill, { isBuiltIn: false, builtInKey: null, status: "draft", version: 0 });
+    skills.push(created);
+    return ok(created);
+  }
+  const skillId = path.match(/\/skills\/([^/]+)/)?.[1];
+  const found = skills.find((s) => s.id === skillId);
+  if (found && path.endsWith("/toggle")) { found.draft = { ...found.draft, enabled: data.enabled }; found.status = "draft"; return ok(found); }
+  if (found && method === "PUT") { Object.assign(found, skill(found.position, found.key, data.skill, { ...found, status: "draft", updatedAt: new Date().toISOString() })); return ok(found); }
+  if (found && method === "DELETE") { skills = skills.filter((s) => s !== found); return ok({ id: found.id }); }
   if (path.endsWith("/actions/availability")) return ok(availability());
   if (path.endsWith("/actions/generate/estimate")) return ok({ chargingEnabled: true, estimatedCredits: 6 });
   if (path.endsWith("/actions/generate") && data.shape === "simple") {

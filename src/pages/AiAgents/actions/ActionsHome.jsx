@@ -5,7 +5,7 @@ import Button from "../../../components/ui/Button";
 import { ErrorState, Skeleton } from "../../../components/ui/States";
 import { useConfirm } from "../../../context/ConfirmContext";
 import { useToast } from "../../../context/ToastContext";
-import { useDeleteAiAgentActionMutation, useGetAiAgentActionsQuery, useToggleAiAgentActionMutation } from "../../../redux/api/aiAgentsApi";
+import { useDeleteAiAgentActionMutation, useGetAiAgentActionsQuery, useGetAiAgentSkillsQuery, useToggleAiAgentActionMutation } from "../../../redux/api/aiAgentsApi";
 import { getApiErrorMessage } from "../../../redux/api/baseApi";
 import ActionsOverview from "./ActionsOverview";
 import ActionsTab from "./ActionsTab";
@@ -20,10 +20,19 @@ const ActionsHome = ({ channel, hid, agentHours }) => {
   const { showToast } = useToast();
   const query = useGetAiAgentActionsQuery({ channel, hid }, { refetchOnMountOrArgChange: true });
   const [toggleAction] = useToggleAiAgentActionMutation();
+  const { data: skillsData } = useGetAiAgentSkillsQuery({ channel, hid });
   const [deleteAction] = useDeleteAiAgentActionMutation();
   const [dialog, setDialog] = useState(null); // { action } | { action: null } (new)
 
   const openEditor = (id) => setParams((p) => { p.set("action", id); return p; });
+  // a skill chip on a row opens that skill in the Skills tab
+  const openSkill = (skillKey) => setParams((p) => {
+    const skill = skillsData?.skills?.find((s) => s.key === skillKey);
+    p.set("tab", "skills");
+    p.delete("action");
+    if (skill) p.set("skill", skill.id);
+    return p;
+  });
 
   if (params.get("action")) {
     return (
@@ -47,10 +56,12 @@ const ActionsHome = ({ channel, hid, agentHours }) => {
   };
 
   const remove = async (action) => {
-    if (!(await confirm(`Delete "${action.draft.name}"? This can't be undone, and the agent stops using it straight away.`, { title: "Delete action", confirmText: "Delete", variant: "danger" }))) return;
+    const usedBy = (data.usedBySkills?.[action.key] || []).map((s) => s.name);
+    const skillsNote = usedBy.length ? ` It is also removed from these skills: ${usedBy.join(", ")}.` : "";
+    if (!(await confirm(`Delete "${action.draft.name}"? This can't be undone, and the agent stops using it straight away.${skillsNote}`, { title: "Delete action", confirmText: "Delete", variant: "danger" }))) return;
     try {
       await deleteAction({ channel, hid, id: action.id }).unwrap();
-      showToast({ message: "Action deleted." });
+      showToast({ message: usedBy.length ? `Action deleted and removed from ${usedBy.length} skill${usedBy.length > 1 ? "s" : ""}.` : "Action deleted." });
     } catch (error) {
       showToast({ message: getApiErrorMessage(error, "Could not delete the action."), type: "error" });
     }
@@ -60,6 +71,8 @@ const ActionsHome = ({ channel, hid, agentHours }) => {
     <>
       <ActionsOverview
         actions={data.actions}
+        usedBySkills={data.usedBySkills || {}}
+        onOpenSkills={openSkill}
         unpublished={data.counts?.unpublished || 0}
         onAddApi={() => setDialog({ action: null })}
         onEditApi={(action) => setDialog({ action })}

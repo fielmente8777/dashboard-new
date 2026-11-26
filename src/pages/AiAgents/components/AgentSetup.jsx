@@ -1,20 +1,26 @@
-import { BookOpen, Clock3, ShieldCheck, Smartphone, Target, UserRound, Zap } from "lucide-react";
+import { BookOpen, Clock3, ListOrdered, Route, ShieldCheck, Smartphone, Target, UserRound, Zap } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import ActionsHome from "../actions/ActionsHome";
+import IntentsTab from "../intents/IntentsTab";
 import WorkingHoursTab from "../actions/WorkingHoursTab";
-import GoalsSection from "./sections/GoalsSection";
+import PromptRulesTab from "../prompt/PromptRulesTab";
+import SkillsTab from "../skills/SkillsTab";
 import HandoffSection from "./sections/HandoffSection";
 import KnowledgeSection from "./sections/KnowledgeSection";
 import PersonaSection from "./sections/PersonaSection";
 import WhatsAppSection from "./sections/WhatsAppSection";
 
 // The builder's tabs, kept in the URL (?tab=skills) so a link opens the
-// right one. "Skills" is the old "Goals & instructions" (same settings).
+// right one. "Skills" replaced "Goals & instructions"; its channel
+// instructions moved to "Prompt & Rules", the welcome message to Personality
+// and the fallback reply to Handover & Safety.
 // WhatsApp agents get one more tab (test numbers, reply buttons).
 const BASE_TABS = [
   { value: "personality", label: "Personality", icon: UserRound },
   { value: "skills", label: "Skills", icon: Target },
+  { value: "intents", label: "Intents", icon: Route },
+  { value: "prompt-rules", label: "Prompt & Rules", icon: ListOrdered },
   { value: "knowledge", label: "Knowledge", icon: BookOpen },
   { value: "actions", label: "Actions", icon: Zap },
   { value: "working-hours", label: "Working Hours", icon: Clock3 },
@@ -31,6 +37,8 @@ const REDIRECTS = {
   "memory-context": "knowledge",
   schedule: "working-hours",
   handoff: "handover-safety",
+  prompt: "prompt-rules",
+  rules: "prompt-rules",
 };
 
 const savedTimeFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
@@ -47,7 +55,12 @@ const AgentSetup = ({ agent, hid, channel }) => {
     if (requested !== tab) setParams((p) => { p.set("tab", tab); return p; }, { replace: true });
   }, [requested, tab, setParams]);
 
-  const open = (value) => setParams((p) => { p.set("tab", value); if (value !== "actions") p.delete("action"); return p; });
+  const open = (value) => setParams((p) => {
+    p.set("tab", value);
+    if (value !== "actions") p.delete("action");
+    if (value !== "skills") p.delete("skill");
+    return p;
+  });
 
   // arrow keys, Home and End move between tabs
   const onKeyDown = (e) => {
@@ -63,7 +76,9 @@ const AgentSetup = ({ agent, hid, channel }) => {
   const panel = (() => {
     const props = { draft: agent.draft, set: agent.set };
     switch (tab) {
-      case "skills": return <GoalsSection {...props} />;
+      case "skills": return <SkillsTab agent={agent} channel={channel} hid={hid} />;
+      case "intents": return <IntentsTab agent={agent} channel={channel} hid={hid} />;
+      case "prompt-rules": return <PromptRulesTab agent={agent} channel={channel} hid={hid} />;
       case "knowledge": return <KnowledgeSection {...props} channel={channel} hid={hid} />;
       case "whatsapp": return <WhatsAppSection {...props} />;
       case "actions": return <ActionsHome channel={channel} hid={hid} agentHours={agent.draft.workingHours} />;
@@ -72,7 +87,8 @@ const AgentSetup = ({ agent, hid, channel }) => {
       default: return <PersonaSection {...props} />;
     }
   })();
-  // actions save themselves; the other tabs edit the agent draft
+  // actions save themselves; the other tabs edit the agent draft (skills save
+  // themselves too, but the main goal next to them is part of the draft)
   const editsAgentDraft = tab !== "actions";
 
   return (
