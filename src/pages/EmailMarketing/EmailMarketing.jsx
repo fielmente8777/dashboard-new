@@ -7,6 +7,9 @@ import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import DraftsPanel from "../../components/Email/DraftsPanel";
 import PerformancePanel from "../../components/Email/PerformancePanel";
 import EmailQuotaPanel from "../../components/Email/EmailQuotaPanel";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
+import SenderHealthPanel from "../../components/Email/SenderHealthPanel";
+import WrongEmailsPanel from "./components/WrongEmailsPanel.jsx";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
 import Tabs from "../../components/ui/Tabs";
@@ -245,6 +248,14 @@ export function EmailMarketingManagement() {
       if (!batchId) throw new Error();
       setExcelEmails(null);
       setCompose({ key: Date.now(), batchId, count: res?.doc?.count ?? emails.length, template: null, emails, label });
+      // the server leaves out addresses that would only bounce (no such domain, "gmial.com")
+      const dropped = res?.doc?.undeliverableCount || 0;
+      if (dropped)
+        showToast({
+          message: `${dropped.toLocaleString("en-IN")} ${dropped === 1 ? "address was" : "addresses were"} left out: ${dropped === 1 ? "its" : "their"} domain can't receive email.`,
+          type: "info",
+          duration: 6000,
+        });
     } catch {
       showToast({ message: "Could not prepare the recipients. Please try again.", type: "error" });
     } finally {
@@ -288,7 +299,9 @@ export function EmailMarketingManagement() {
     { value: "groups", label: "Groups" },
     { value: "leads", label: "Leads" },
     { value: "templates", label: "Templates" },
-    { value: "quota", label: "Email quota" },
+    // "quota" kept as the value: old links (?tab=quota) still open it
+    { value: "quota", label: "Sender health" },
+    { value: "wrong", label: "Wrong emails" },
   ];
 
   return (
@@ -312,6 +325,7 @@ export function EmailMarketingManagement() {
           <Button icon={Plus} onClick={() => openCompose()} className="max-sm:hidden">
             New email
           </Button>
+          <ServiceReportButton part="emailMarketing" />
         </>
       }
     >
@@ -369,11 +383,17 @@ export function EmailMarketingManagement() {
       )}
 
       {view === "groups" && (
-        <GroupsPanel kind="email" onSend={(name) => setPicking(name)} onImport={(name) => setGroupImport(name)} />
+        <GroupsPanel kind="email" onSend={(names) => setPicking(names)} onImport={(name) => setGroupImport(name)} />
       )}
 
       {view === "templates" && <TemplatesList onUseTemplate={(template) => openCompose(template)} />}
-      {view === "quota" && <EmailQuotaPanel />}
+      {view === "quota" && (
+        <div className="space-y-8">
+          <SenderHealthPanel />
+          <EmailQuotaPanel />
+        </div>
+      )}
+      {view === "wrong" && <WrongEmailsPanel />}
       <div className="h-14" aria-hidden="true" />
 
       <GroupCampaignDialog

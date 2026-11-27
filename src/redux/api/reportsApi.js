@@ -14,6 +14,8 @@ const docs = (response) => response?.result?.docs ?? [];
 export const REPORT_PARTS = [
   { key: "leads", label: "Leads & conversions", hint: "Enquiries by source, stage and month; WhatsApp chats" },
   { key: "calls", label: "Calls", hint: "Answered and missed calls on the tracked number" },
+  { key: "emailMarketing", label: "Email marketing", hint: "Campaigns, opens, clicks, bounces and the email list" },
+  { key: "whatsappMarketing", label: "WhatsApp marketing", hint: "Campaigns, delivered, read, failures and cost" },
   { key: "meta", label: "Meta (Facebook & Instagram)", hint: "Ads, the page, Instagram and Meta leads" },
   { key: "googleAds", label: "Google Ads", hint: "Campaigns, cost, clicks and conversions" },
   { key: "analytics", label: "Google Analytics", hint: "Website visits, channels, pages and visitors" },

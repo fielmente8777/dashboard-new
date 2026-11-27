@@ -24,7 +24,7 @@ const DEFAULT_PRESET = PRESETS[0];
 // "Download report" on a service page (Leads, Calls, Google Ads, Google Analytics, Website
 // SEO): that service's own PDF for the dates picked, in the same look as the full report.
 // It is kept under Reports › Saved reports; service reports are never sent monthly.
-//   part - "leads" | "calls" | "googleAds" | "analytics" | "searchConsole"
+//   part - "leads" | "calls" | "emailMarketing" | "whatsappMarketing" | "googleAds" | "analytics" | "searchConsole"
 const ServiceReportButton = ({ part, label = "Download report", size = "md", align = "right", variant = "secondary" }) => {
   const hid = useSelector(selectHid);
   const { showToast } = useToast();

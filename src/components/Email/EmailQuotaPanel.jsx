@@ -98,18 +98,18 @@ export default function EmailQuotaPanel() {
   useEffect(() => {
     if (fulfilledTimeStamp) markFresh();
   }, [fulfilledTimeStamp, markFresh]);
-  if (!hid) return <ErrorState message="Select a hotel to view its email quota." />;
+  if (!hid) return <ErrorState message="Select a hotel to view its sending limits." />;
   const data = currentData?.result;
   if (!data && error) {
-    return <ErrorState message={getApiErrorMessage(error, "Couldn't load email quota.")} onRetry={refetch} />;
+    return <ErrorState message={getApiErrorMessage(error, "Couldn't load the sending limits.")} onRetry={refetch} />;
   }
   if (!data) return <LoadingState label="Loading the mail server's replies…" />;
 
   return (
-    <section className="space-y-5" aria-label="Email quota">
+    <section className="space-y-5" aria-label="Sending limits">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-app-text">Email sending & server replies</h2>
+          <h2 className="text-lg font-semibold text-app-text">Sending limits & server replies</h2>
           <p className="mt-1 text-sm text-app-text-muted">
             What the mail server actually answered for this hotel's emails. Providers don't share how much allowance is
             left, so their replies are the real signal of a limit.

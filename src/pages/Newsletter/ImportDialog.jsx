@@ -14,8 +14,11 @@ import {
 } from "../../redux/api/newsletterApi";
 import { formatNumber, readSubscriberFile } from "./newsletterUtils";
 
-// the server takes up to 10,000 rows a call; bigger files go in parts
-const CHUNK = 10_000;
+// 200 rows a call, one after the other (like the console's imports): each call checks its
+// addresses quickly, the server never gets one huge request, and the bar shows the progress
+const CHUNK = 200;
+const RETRIES = 3;
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const ACCEPT = ".csv,.xlsx,.xls";
 const FROM = [
   { value: "file", label: "File" },
@@ -50,6 +53,8 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
   const [consent, setConsent] = useState(false);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState(null);
+  // rows sent so far, while importing (and where to go on after a part failed)
+  const [progress, setProgress] = useState(null);
 
   const close = () => {
     setFile(null);
@@ -58,6 +63,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
     setGroup("");
     setConsent(false);
     setResult(null);
+    setProgress(null);
     onClose();
   };
 
@@ -75,6 +81,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
         return;
       }
       setFile({ name: got.fileName, ...read });
+      setProgress(null);
     } catch (error) {
       showToast({ message: newsletterError(error, "Could not read the sheet from that link."), type: "error" });
     } finally {
@@ -96,6 +103,7 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
         return;
       }
       setFile({ name: picked.name, ...read });
+      setProgress(null);
     } catch {
       showToast({ message: "Could not read that file.", type: "error" });
     } finally {
@@ -105,15 +113,37 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
 
   const run = async () => {
     setImporting(true);
-    const total = { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0, contactsAdded: 0 };
+    // continuing after a failed part: the counts so far are kept
+    const total = progress?.total || { added: 0, updated: 0, skippedUnsubscribed: 0, invalid: 0, duplicatesInFile: 0, contactsAdded: 0, undeliverable: 0, corrected: 0 };
+    // addresses the server left out because they can't receive email (first 50 shown)
+    const undeliverableList = progress?.undeliverableList || [];
+    const tags = group.trim() ? [group.trim()] : [];
+    let i = progress?.done || 0;
     try {
-      for (let i = 0; i < file.rows.length; i += CHUNK) {
-        const part = await importRows({ rows: file.rows.slice(i, i + CHUNK), tags: group.trim() ? [group.trim()] : [] }).unwrap();
+      for (; i < file.rows.length; i += CHUNK) {
+        setProgress({ done: i, of: file.rows.length, total, undeliverableList });
+        let part = null;
+        for (let attempt = 0; !part; attempt += 1) {
+          try {
+            part = await importRows({ rows: file.rows.slice(i, i + CHUNK), tags }).unwrap();
+          } catch (error) {
+            // busy or a dropped connection: wait and try the same part again
+            if (attempt + 1 >= RETRIES) throw error;
+            await wait(1500 * (attempt + 1));
+          }
+        }
         for (const key of Object.keys(total)) total[key] += part[key] || 0;
+        if (undeliverableList.length < 50) undeliverableList.push(...(part.undeliverableList || []).slice(0, 50 - undeliverableList.length));
       }
-      setResult(total);
+      setProgress(null);
+      setResult({ ...total, undeliverableList });
     } catch (error) {
-      showToast({ message: newsletterError(error, "The import stopped. Please try again."), type: "error" });
+      // keep what went in: Import again goes on from this part
+      setProgress({ done: i, of: file.rows.length, total, undeliverableList, stopped: true });
+      showToast({
+        message: `${newsletterError(error, "The import stopped.")} ${formatNumber(i)} of ${formatNumber(file.rows.length)} rows are in. Press Import to go on from there.`,
+        type: "error",
+      });
     } finally {
       setImporting(false);
     }
@@ -133,12 +163,28 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
           <>
             <Button variant="secondary" onClick={close}>Cancel</Button>
             <Button icon={Upload} loading={importing} disabled={!file || !consent} onClick={run}>
-              Import {file ? formatNumber(file.valid) : ""}
+              {progress?.stopped ? "Go on importing" : `Import ${file ? formatNumber(file.valid) : ""}`}
             </Button>
           </>
         )
       }
     >
+      {progress && !result && (
+        <div className="mb-4 space-y-1.5" role="status">
+          <div className="flex justify-between text-xs text-app-text-muted">
+            <span>{progress.stopped ? "Stopped" : "Importing and checking each address…"}</span>
+            <span className="tabular-nums">
+              {formatNumber(progress.done)} of {formatNumber(progress.of)}
+            </span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-app-surface-secondary">
+            <div
+              className={`h-full rounded-full transition-all ${progress.stopped ? "bg-amber-500" : "bg-blue-600"}`}
+              style={{ width: `${Math.round((progress.done / Math.max(progress.of, 1)) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
       {result ? (
         <div className="space-y-2 text-sm">
           <p className="font-medium text-app-text">
@@ -157,6 +203,20 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
               <li>
                 <strong className="text-app-text">{formatNumber(result.skippedUnsubscribed)}</strong> skipped: they had
                 unsubscribed, so they stay unsubscribed
+              </li>
+            )}
+            {result.corrected > 0 && (
+              <li>
+                <strong className="text-app-text">{formatNumber(result.corrected)}</strong> saved without accents, spaces or symbols
+                (as written they weren&apos;t valid; cleaned they are)
+              </li>
+            )}
+            {result.undeliverable > 0 && (
+              <li>
+                <strong className="text-app-text">{formatNumber(result.undeliverable)}</strong> left out: they can&apos;t receive
+                email (bounced before, the domain doesn&apos;t exist, or mistyped), so they would only bounce. They are on Email
+                marketing → Wrong emails
+                <UndeliverableList items={result.undeliverableList} />
               </li>
             )}
             {result.invalid + result.duplicatesInFile > 0 && (
@@ -269,3 +329,26 @@ export default function ImportDialog({ open, onClose, group: initialGroup = "" }
     </Dialog>
   );
 }
+
+/** the addresses left out, with the likely right spelling */
+const UndeliverableList = ({ items }) =>
+  items?.length ? (
+    <ul className="mt-1 max-h-32 space-y-0.5 overflow-y-auto rounded-lg bg-app-surface-secondary p-2 text-xs">
+      {items.map((p) => (
+        <li key={p.email} className="break-all">
+          {p.email}
+          <span className="text-app-text-faint">
+            {" "}
+            ·{" "}
+            {p.verdict === "typo"
+              ? `did you mean ${p.suggestion}?`
+              : p.verdict === "no_domain"
+                ? "domain has no email"
+                : p.verdict === "bounced"
+                  ? p.reason || "bounced before"
+                  : "not an email address"}
+          </span>
+        </li>
+      ))}
+    </ul>
+  ) : null;

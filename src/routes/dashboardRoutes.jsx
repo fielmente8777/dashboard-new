@@ -138,6 +138,7 @@ export const dashboardRoutes = [
   { path: PAGES.CMS_TERMS, lazy: page(() => import("../pages/CMS/Tandc")) },
   { path: PAGES.CMS_CANCELLATION, lazy: page(() => import("../pages/CMS/Cancellationrefund")) },
   { path: PAGES.NEWSLETTER, lazy: page(() => import("../pages/Newsletter/Newsletter")) },
+  { path: PAGES.TRADE_DIRECTORY, lazy: page(() => import("../pages/TradeDirectory/TradeDirectory")) },
 
   // AI
   { path: PAGES.KNOWLEDGE_BASE, lazy: page(() => import("../pages/KnowledgeBase/KnowledgeBase")) },

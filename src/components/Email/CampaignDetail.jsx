@@ -22,6 +22,12 @@ import {
   Smartphone,
   TriangleAlert,
   UserPlus,
+  Ban,
+  CloudOff,
+  MailX,
+  ShieldAlert,
+  UserX,
+  X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { campaignStatus, describeSendProblem, formatDate, RECIPIENT_TONE } from "../../pages/EmailMarketing/emailUtils.js";
@@ -73,8 +79,18 @@ const FILTERS = [
     icon: TriangleAlert,
     tone: "text-red-500",
   },
+  // from Amazon's report (emails sent through Amazon)
+  { value: "delivered", label: "Delivered", icon: CircleCheck, tone: "text-emerald-600 dark:text-emerald-400" },
+  { value: "not_opened", label: "Not opened", icon: MailX, tone: "text-slate-500" },
+  { value: "hard_bounced", label: "Hard bounces", icon: Ban, tone: "text-red-500" },
+  { value: "soft_bounced", label: "Soft bounces", icon: CloudOff, tone: "text-amber-500" },
+  { value: "complained", label: "Spam complaints", icon: ShieldAlert, tone: "text-red-500" },
+  { value: "unsubscribed", label: "Unsubscribed", icon: UserX, tone: "text-amber-500" },
   { value: "pending", label: "Pending", icon: Clock, tone: "text-slate-500" },
 ];
+
+/** the filter's name, for "Showing: Hard bounces" */
+const filterLabel = (value) => FILTERS.find((f) => f.value === value)?.label || "Everyone";
 
 const PAGE_SIZE = 50;
 
@@ -709,6 +725,25 @@ export default function CampaignDetail({
                   campaign={campaign}
                   campaignId={campaignId}
                   onChanged={loadCampaign}
+                  renderRecipients={(filter, onClose) => (
+                    <div className="rounded-xl border border-app-border! bg-app-surface p-3 sm:p-4">
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold text-app-text">Showing: {filterLabel(filter)}</h3>
+                        <IconButton icon={X} label="Close the list" onClick={onClose} />
+                      </div>
+                      <RecipientsPane
+                        key={filter}
+                        campaignId={campaignId}
+                        initialFilter={filter}
+                        onOpenPerson={(id) => {
+                          setPersonId(id);
+                          setTab("recipients");
+                          requestAnimationFrame(() => tabsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+                        }}
+                        onSendTo={onSendTo}
+                      />
+                    </div>
+                  )}
                   onShowRecipients={(filter) => {
                     setRecipientFilter(filter);
                     setPersonId(null);

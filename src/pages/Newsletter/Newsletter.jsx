@@ -37,7 +37,7 @@ export default function Newsletter() {
   const [importing, setImporting] = useState(false);
   const [importGroup, setImportGroup] = useState("");
   const [choosingAudience, setChoosingAudience] = useState(false);
-  const [sendGroup, setSendGroup] = useState("");
+  const [sendGroup, setSendGroup] = useState([]); // the group(s) "Send" was pressed for
   // the group the Subscribers tab is showing ("" = everyone)
   const [listGroup, setListGroup] = useState("");
   const [exporting, setExporting] = useState(false);
@@ -157,7 +157,7 @@ export default function Newsletter() {
           <Button
             icon={Send}
             onClick={() => {
-              setSendGroup("");
+              setSendGroup([]);
               setChoosingAudience(true);
             }}
           >
@@ -185,8 +185,8 @@ export default function Newsletter() {
       )}
       {view === "groups" && (
         <GroupsPanel
-          onSend={(name) => {
-            setSendGroup(name);
+          onSend={(names) => {
+            setSendGroup(names);
             setChoosingAudience(true);
           }}
           onImport={(name) => {
@@ -217,7 +217,7 @@ export default function Newsletter() {
                 icon={Send}
                 className="mt-5"
                 onClick={() => {
-                  setSendGroup("");
+                  setSendGroup([]);
                   setChoosingAudience(true);
                 }}
               >
@@ -236,7 +236,7 @@ export default function Newsletter() {
       <AudiencePickerDialog
         open={choosingAudience}
         onClose={() => setChoosingAudience(false)}
-        initialGroups={sendGroup ? [sendGroup] : []}
+        initialGroups={sendGroup}
         title="Send a newsletter"
         description="First pick who gets it. Tick as many as you like: each person gets it once, and people who unsubscribed are left out."
         onContinue={({ batchId, count, label, emails }) => {
