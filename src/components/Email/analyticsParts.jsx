@@ -25,9 +25,17 @@ export function Delta({ now, before, points = false, goodWhenUp = true }) {
 }
 
 // a headline number: label and icon, the number, then its change and a note on their own lines
-export function Kpi({ icon: KpiIcon, tone, label, value, caption, delta, title }) {
+// onClick: the card is a button (e.g. shows the people behind the number); active: it is the one shown
+export function Kpi({ icon: KpiIcon, tone, label, value, caption, delta, title, onClick, active = false }) {
+  const Box = onClick ? "button" : "div";
   return (
-    <div className="flex min-w-0 flex-col rounded-xl border border-app-border! bg-app-surface p-3 sm:p-4" title={title}>
+    <Box
+      {...(onClick ? { type: "button", onClick, "aria-pressed": active } : {})}
+      className={`flex min-w-0 flex-col rounded-xl border bg-app-surface p-3 text-left sm:p-4 ${
+        active ? "border-blue-500! ring-2 ring-blue-500/30" : "border-app-border!"
+      } ${onClick ? "cursor-pointer transition hover:border-blue-400! hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-app-focus" : ""}`}
+      title={title}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="truncate text-xs font-medium text-app-text-muted">{label}</p>
         <span className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${tone}`} aria-hidden>
@@ -43,7 +51,7 @@ export function Kpi({ icon: KpiIcon, tone, label, value, caption, delta, title }
           </p>
         )}
       </div>
-    </div>
+    </Box>
   );
 }
 

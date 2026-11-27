@@ -1,8 +1,9 @@
-import { ArrowRight, CircleCheck, MailOpen, MousePointerClick, Send, TriangleAlert, UserX } from "lucide-react";
+import { ArrowRight, Ban, CircleCheck, CloudDownload, CloudOff, Loader2, MailOpen, MailX, MousePointerClick, Send, ShieldAlert, TriangleAlert, UserX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { describeSendProblem, formatDate, formatNumber } from "../../pages/EmailMarketing/emailUtils.js";
 import useStaleAfter from "../../hooks/useStaleAfter";
-import { getCampaignReport } from "../../redux/api/emailMarketingApi";
+import { getCampaignReport, startAmazonSync } from "../../redux/api/emailMarketingApi";
+import { useToast } from "../../context/ToastContext";
 import Button from "../ui/Button";
 import RefreshNotice from "../ui/RefreshNotice";
 import { Skeleton } from "../ui/States";
@@ -47,9 +48,17 @@ function FunnelStep({ label, value, of, note, onShow }) {
 //   campaign             the campaign (status, for following a send in progress)
 //   onShowRecipients(f)  open Recipients with filter f ("opened", "clicked", "failed")
 //   onChanged()          retried / resumed: reload the campaign
-export default function CampaignReport({ campaign, campaignId, onShowRecipients, onChanged }) {
+//   renderRecipients(filter, onClose)  the people behind a card, shown right under the cards
+export default function CampaignReport({ campaign, campaignId, onShowRecipients, onChanged, renderRecipients }) {
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState("");
+  const { showToast } = useToast();
+  // the card whose people are listed under the cards ("" = none)
+  const [shown, setShown] = useState("");
+  const show = (filter) => {
+    if (!renderRecipients) return onShowRecipients?.(filter);
+    setShown((current) => (current === filter ? "" : filter));
+  };
 
   const load = useCallback(async () => {
     try {
@@ -63,6 +72,26 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
   useEffect(() => {
     load();
   }, [load]);
+
+  // getting the results from Amazon: reload every 5 s until it is done
+  const syncing = data?.amazon?.sync?.status === "running";
+  useEffect(() => {
+    if (!syncing) return undefined;
+    const timer = setInterval(load, 5000);
+    return () => clearInterval(timer);
+  }, [syncing, load]);
+  const [startingSync, setStartingSync] = useState(false);
+  const getFromAmazon = async () => {
+    setStartingSync(true);
+    try {
+      await startAmazonSync({ campaignId });
+      await load();
+    } catch (error) {
+      showToast({ message: error?.message || "Couldn't reach Amazon. Please try again.", type: "error" });
+    } finally {
+      setStartingSync(false);
+    }
+  };
 
   // No auto-refresh (it loaded the server). While it is going out the delivery
   // bar offers Refresh; once sent, opens and clicks still come in, so a line
@@ -160,6 +189,35 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
         onChanged={() => Promise.all([load(), onChanged?.()])}
       />
 
+      {t.viaAmazon > 0 ? (
+        <div className="flex flex-wrap items-center gap-2 text-xs text-app-text-muted">
+          <CloudDownload className="size-3.5 shrink-0" aria-hidden />
+          {syncing ? (
+            <span className="flex items-center gap-1.5">
+              <Loader2 className="size-3.5 animate-spin" aria-hidden />
+              Getting each email&apos;s result from Amazon: {formatNumber(data.amazon.sync.checked)} of {formatNumber(data.amazon.sync.total)}…
+            </span>
+          ) : (
+            <span>
+              Delivery, bounces and spam complaints come from Amazon
+              {data.amazon?.sync?.finishedAt ? ` · last checked ${formatDate(data.amazon.sync.finishedAt, true)}` : ""}.
+            </span>
+          )}
+          {!syncing && (
+            <button type="button" onClick={getFromAmazon} disabled={startingSync} className="font-medium text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400">
+              {startingSync ? "Starting…" : "Get latest from Amazon"}
+            </button>
+          )}
+        </div>
+      ) : (
+        t.sent > 0 && (
+          <p className="text-xs text-app-text-muted">
+            Sent from your own mailbox: bounces and spam complaints go back to that inbox, so they can&apos;t be counted here. Send through Amazon (Sender
+            settings) to track everything.
+          </p>
+        )
+      )}
+
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Kpi
           icon={Send}
@@ -167,14 +225,22 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           label="Emails sent"
           value={formatNumber(t.sent)}
           caption={`of ${formatNumber(t.recipients)} recipients`}
+          onClick={() => show("sent")}
+          active={shown === "sent"}
         />
         <Kpi
           icon={CircleCheck}
           tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
           label="Delivered"
-          value={fmtPct(pct(t.sent, tried))}
-          title="Accepted by the guests' mail servers, out of every email tried. Amazon also confirms each delivery; a hotel's own mail server does not."
-          caption={t.delivered ? `${formatNumber(t.delivered)} confirmed` : `${formatNumber(t.sent)} accepted`}
+          value={fmtPct(t.viaAmazon ? pct(t.delivered, tried) : pct(t.sent, tried))}
+          title={
+            t.viaAmazon
+              ? "Confirmed by the guest's mail server (Amazon's report), out of every email tried."
+              : "Accepted by your mailbox for sending, out of every email tried. Your own mail server doesn't report deliveries."
+          }
+          caption={t.viaAmazon ? `${formatNumber(t.delivered)} confirmed` : `${formatNumber(t.sent)} accepted`}
+          onClick={() => show(t.viaAmazon ? "delivered" : "sent")}
+          active={shown === "delivered"}
         />
         <Kpi
           icon={MailOpen}
@@ -183,6 +249,8 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           value={fmtPct(openRate)}
           delta={vsAverage(openRate, avgOpen)}
           caption={`${formatNumber(t.opened)} people${avg ? ` · avg ${fmtPct(avgOpen)}` : ""}`}
+          onClick={() => show("opened")}
+          active={shown === "opened"}
         />
         <Kpi
           icon={MousePointerClick}
@@ -191,6 +259,8 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           value={fmtPct(clickRate)}
           delta={vsAverage(clickRate, avgClick)}
           caption={`${formatNumber(t.clicked)} people${avg ? ` · avg ${fmtPct(avgClick)}` : ""}`}
+          onClick={() => show("clicked")}
+          active={shown === "clicked"}
         />
         <Kpi
           icon={TriangleAlert}
@@ -198,6 +268,8 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           label="Failed"
           value={formatNumber(t.failed)}
           caption={tried ? `${fmtPct(pct(t.failed, tried))} of tried` : ""}
+          onClick={() => show("failed")}
+          active={shown === "failed"}
         />
         <Kpi
           icon={UserX}
@@ -205,8 +277,55 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           label="Unsubscribed"
           value={formatNumber(t.unsubscribed)}
           caption={t.unsubscribed ? `${fmtPct(pct(t.unsubscribed, t.recipients))} of recipients` : ""}
+          onClick={() => show("unsubscribed")}
+          active={shown === "unsubscribed"}
         />
+        {t.viaAmazon > 0 && (
+          <>
+            <Kpi
+              icon={Ban}
+              tone="bg-red-500/10 text-red-600 dark:text-red-400"
+              label="Hard bounces"
+              value={formatNumber(t.hardBounced)}
+              title="The address doesn't exist or can't receive email. They are on your do-not-email list now and never emailed again. Amazon's limit: under 5% bounces."
+              caption={tried ? `${fmtPct(pct(t.hardBounced, tried))} of tried${pct(t.hardBounced, tried) >= 5 ? " · too high" : ""}` : ""}
+              onClick={() => show("hard_bounced")}
+              active={shown === "hard_bounced"}
+            />
+            <Kpi
+              icon={CloudOff}
+              tone="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+              label="Soft bounces"
+              value={formatNumber(t.softBounced)}
+              title="A temporary problem (mailbox full, server busy). Amazon tried again; most arrive later."
+              caption="mailbox full, server busy"
+              onClick={() => show("soft_bounced")}
+              active={shown === "soft_bounced"}
+            />
+            <Kpi
+              icon={ShieldAlert}
+              tone="bg-rose-500/10 text-rose-600 dark:text-rose-400"
+              label="Spam complaints"
+              value={formatNumber(t.complained)}
+              title="Guests who pressed 'Report spam'. They are unsubscribed for good. Amazon's limit: under 0.1%."
+              caption={t.delivered ? `${fmtPct(pct(t.complained, t.delivered))} of delivered` : ""}
+              onClick={() => show("complained")}
+              active={shown === "complained"}
+            />
+            <Kpi
+              icon={MailX}
+              tone="bg-slate-500/10 text-slate-600 dark:text-slate-300"
+              label="Not opened"
+              value={formatNumber(t.notOpened)}
+              caption={t.sent ? `${fmtPct(pct(t.notOpened, t.sent))} of sent` : ""}
+              onClick={() => show("not_opened")}
+              active={shown === "not_opened"}
+            />
+          </>
+        )}
       </div>
+
+      {shown && renderRecipients?.(shown, () => setShown(""))}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col rounded-xl border border-app-border! bg-app-surface px-3 py-3 sm:px-4">
@@ -237,16 +356,34 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
             <ul className="mt-3 space-y-3">
               <FunnelStep label="Sent" value={t.sent} of={t.sent} />
               {t.delivered > 0 && <FunnelStep label="Delivered (confirmed)" value={t.delivered} of={t.sent} />}
-              <FunnelStep label="Opened" value={t.opened} of={t.sent} onShow={() => onShowRecipients("opened")} />
+              <FunnelStep label="Opened" value={t.opened} of={t.sent} onShow={() => show("opened")} />
               <FunnelStep
                 label="Clicked"
                 value={t.clicked}
                 of={t.sent}
                 note={t.opened ? `${fmtPct(pct(t.clicked, t.opened))} of those who opened` : ""}
-                onShow={() => onShowRecipients("clicked")}
+                onShow={() => show("clicked")}
               />
             </ul>
           </div>
+
+          {data.providers?.length > 0 && (
+            <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
+              <h3 className="text-sm font-semibold text-app-text">By mailbox provider</h3>
+              <p className="text-xs text-app-text-muted">Where Amazon could tell (company mailboxes are not named)</p>
+              <ul className="mt-2 space-y-1.5 text-sm">
+                {data.providers.map((p) => (
+                  <li key={p.provider} className="flex items-center justify-between gap-2">
+                    <span className="truncate text-app-text">{p.provider}</span>
+                    <span className="shrink-0 text-xs tabular-nums text-app-text-muted">
+                      {formatNumber(p.sent)} sent · {fmtPct(pct(p.opened, p.sent))} opened
+                      {p.bounced ? <span className="text-red-600 dark:text-red-400"> · {formatNumber(p.bounced)} bounced</span> : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {t.failed > 0 && (
             <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
@@ -254,7 +391,7 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
                 <h3 className="text-sm font-semibold text-app-text">Why {formatNumber(t.failed)} failed</h3>
                 <button
                   type="button"
-                  onClick={() => onShowRecipients("failed")}
+                  onClick={() => show("failed")}
                   className="inline-flex items-center gap-0.5 text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400"
                 >
                   See who <ArrowRight className="size-3" />

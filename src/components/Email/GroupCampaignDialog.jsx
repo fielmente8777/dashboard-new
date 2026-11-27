@@ -1,9 +1,11 @@
-import { ArrowRight, Check, FolderOpen, MailOpen, MousePointerClick, UserPlus, Users } from "lucide-react";
+import { ArrowRight, BookUser, Check, FolderOpen, MailOpen, MousePointerClick, UserPlus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "../../context/ToastContext";
-import { createAudienceBatch, getAudienceOptions, previewAudience } from "../../redux/api/emailMarketingApi";
+import { createAudienceBatch, createTradeRecipientBatch, getAudienceOptions, previewAudience } from "../../redux/api/emailMarketingApi";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
+import Segmented from "../ui/Segmented";
+import TradeAudiencePicker from "./TradeAudiencePicker";
 import { Skeleton } from "../ui/States";
 
 const fmt = (n) => Number(n || 0).toLocaleString("en-IN");
@@ -32,7 +34,7 @@ function GroupCard({ selected, onSelect, icon: CardIcon, name, total, opened, cl
   return (
     <button
       type="button"
-      role="radio"
+      role="checkbox"
       aria-checked={selected}
       onClick={onSelect}
       className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
@@ -40,11 +42,11 @@ function GroupCard({ selected, onSelect, icon: CardIcon, name, total, opened, cl
       }`}
     >
       <span
-        className={`flex size-4 shrink-0 items-center justify-center rounded-full border ${
+        className={`flex size-4 shrink-0 items-center justify-center rounded border ${
           selected ? "border-blue-600! bg-blue-600" : "border-app-border!"
         }`}
       >
-        {selected && <span className="size-1.5 rounded-full bg-white" />}
+        {selected && <Check className="size-3 text-white" />}
       </span>
       <CardIcon className="size-4 shrink-0 text-app-text-muted" aria-hidden />
       <span className="min-w-0 flex-1">
@@ -88,14 +90,17 @@ function WhoTick({ checked, onChange, icon: TickIcon, tone, label, sub, count, d
 // and / or clicked (any earlier email). Then the compose window opens for that audience.
 //
 //   open / onClose
-//   initialGroup   a group chosen when it opens ("Send" on a group)
-//   onContinue({ batchId, count, label, emails })
+//   initialGroup   the group(s) chosen when it opens ("Send" on a group, or several ticked on Groups)
+//   onContinue({ batchId, count, label, emails })   one of the hotel's groups
+//   onContinue({ batchId, count, label })   Trade Directory partners (travel agents, yoga…): gian
+//                makes the batch from the shared data; the addresses never reach the browser
 //   onManageGroups()  "make a group" link when there are none
-export default function GroupCampaignDialog({ open, onClose, onContinue, initialGroup = "", onManageGroups }) {
+export default function GroupCampaignDialog({ open, onClose, onContinue, initialGroup = "", initialSource = "groups", onManageGroups }) {
   const { showToast } = useToast();
   const [options, setOptions] = useState(null);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [group, setGroup] = useState("");
+  // the ticked groups (several at once: everyone in any of them gets the email once), or [EVERYONE]
+  const [picked, setPicked] = useState([]);
   const [everyoneInGroup, setEveryoneInGroup] = useState(true);
   const [engagement, setEngagement] = useState([]); // "opened" | "clicked"
   // with Opened / Clicked: also people added to the group who never got an email yet
@@ -103,12 +108,17 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
   const [preview, setPreview] = useState(null);
   const [counting, setCounting] = useState(false);
   const [preparing, setPreparing] = useState(false);
+  // "groups" = the hotel's own email groups; "trade" = Trade Directory partners
+  const [source, setSource] = useState("groups");
+  const [trade, setTrade] = useState(null);
   const askId = useRef(0);
 
   // fresh every time it opens
   useEffect(() => {
     if (!open) return;
-    setGroup(initialGroup || "");
+    setPicked((Array.isArray(initialGroup) ? initialGroup : [initialGroup]).filter(Boolean));
+    setSource(initialSource);
+    setTrade(null);
     setEveryoneInGroup(true);
     setEngagement([]);
     setIncludeNew(true);
@@ -120,23 +130,24 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
         const doc = res?.doc || { newsletter: { subscribed: 0, groups: [] }, campaigns: [] };
         setOptions(doc);
         // only one group: choose it straight away
-        if (!initialGroup && doc.newsletter.groups.length === 1) setGroup(doc.newsletter.groups[0].name);
+        if (!initialGroup?.length && doc.newsletter.groups.length === 1) setPicked([doc.newsletter.groups[0].name]);
       })
       .catch(() => setLoadFailed(true));
-  }, [open, initialGroup]);
+  }, [open, initialGroup, initialSource]);
 
   const filtered = !everyoneInGroup && engagement.length > 0;
+  const everyoneOnList = picked.includes(EVERYONE);
   const selection = useMemo(() => {
-    if (!group) return null;
+    if (!picked.length) return null;
     return {
-      everyone: group === EVERYONE,
-      groups: group === EVERYONE ? [] : [group],
+      everyone: everyoneOnList,
+      groups: everyoneOnList ? [] : picked,
       engaged: [],
       engagement: filtered ? engagement : [],
       engagementCampaignId: null,
       includeNew: filtered ? includeNew : false,
     };
-  }, [group, filtered, engagement, includeNew]);
+  }, [picked, everyoneOnList, filtered, engagement, includeNew]);
   const incomplete = !selection || (!everyoneInGroup && !engagement.length);
 
   // the live count, a moment after the last change (only the latest answer counts)
@@ -173,6 +184,18 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
 
   const proceed = async () => {
     setPreparing(true);
+    if (source === "trade") {
+      try {
+        const doc = await createTradeRecipientBatch({ pool: trade.pool, segments: trade.segments });
+        if (!doc?.recipientBatchId) throw new Error("Could not prepare the partners. Please try again.");
+        onContinue({ batchId: doc.recipientBatchId, count: doc.count, label: doc.label });
+      } catch (error) {
+        showToast({ message: error.message, type: "error" });
+      } finally {
+        setPreparing(false);
+      }
+      return;
+    }
     try {
       const doc = (await createAudienceBatch(selection))?.doc;
       if (!doc?.recipientBatchId) throw new Error("Could not prepare the recipients. Please try again.");
@@ -185,45 +208,73 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
   };
 
   const groups = options?.newsletter?.groups || [];
-  const chosen = group === EVERYONE ? null : groups.find((g) => g.name === group);
-  const total = group === EVERYONE ? options?.newsletter?.subscribed : chosen?.subscribed;
+  const chosen = everyoneOnList ? [] : groups.filter((g) => picked.includes(g.name));
+  // before the server's count: the groups added up (someone in two groups is counted twice here, once in the send)
+  const sum = (key) => chosen.reduce((n, g) => n + (g[key] || 0), 0);
+  const total = everyoneOnList ? options?.newsletter?.subscribed : sum("subscribed");
   const count = preview?.count ?? 0;
+  const pickedLabel = everyoneOnList ? "your list" : chosen.length === 1 ? `“${chosen[0].name}”` : `${chosen.length} groups`;
+  /** tick / untick a group; "Everyone" and single groups exclude each other */
+  const togglePick = (name) =>
+    setPicked((now) => {
+      if (name === EVERYONE) return now.includes(EVERYONE) ? [] : [EVERYONE];
+      const rest = now.filter((n) => n !== EVERYONE);
+      return rest.includes(name) ? rest.filter((n) => n !== name) : [...rest, name];
+    });
 
-  const status = !group
-    ? "Choose a group."
+  const groupStatus = !picked.length
+    ? "Choose one or more groups."
     : incomplete
       ? "Tick who in the group gets it."
       : counting
         ? "Counting…"
         : `${people(count)} will get this email${preview?.unsubscribed ? ` · ${fmt(preview.unsubscribed)} unsubscribed left out` : ""}`;
+  const isTrade = source === "trade";
+  const status = isTrade ? (trade ? `${fmt(trade.count)} ${trade.count === 1 ? "partner" : "partners"} will get this email` : "Choose the partners.") : groupStatus;
+  const warn = !isTrade && !incomplete && !counting && count === 0;
+  const blocked = isTrade ? !trade : incomplete || counting || count === 0;
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
       title="Create group email campaign"
-      description="Choose a group, then who in it gets the email. Each person gets it once; unsubscribed people are always left out."
+      description={
+        isTrade
+          ? "Email travel agents, MICE, wedding planners, yoga and other trade partners. Pick one or more categories."
+          : "Choose one or more groups, then who in them gets the email. Each person gets it once, even if they are in several groups; unsubscribed people are always left out."
+      }
       size="lg"
       sheetOnPhone
       footer={
         <>
           <span
-            className={`mr-auto min-w-0 self-center truncate text-xs ${
-              !incomplete && !counting && count === 0 ? "text-amber-600 dark:text-amber-400" : "text-app-text-muted"
-            }`}
+            className={`mr-auto min-w-0 self-center truncate text-xs ${warn ? "text-amber-600 dark:text-amber-400" : "text-app-text-muted"}`}
           >
-            {!incomplete && !counting && count === 0 ? "No one matches. Try another choice." : status}
+            {warn ? "No one matches. Try another choice." : status}
           </span>
           <Button variant="secondary" onClick={onClose} disabled={preparing}>
             Cancel
           </Button>
-          <Button icon={ArrowRight} onClick={proceed} loading={preparing} disabled={incomplete || counting || count === 0}>
+          <Button icon={ArrowRight} onClick={proceed} loading={preparing} disabled={blocked}>
             Next: write the email
           </Button>
         </>
       }
     >
-      {loadFailed ? (
+      <Segmented
+        label="Send to"
+        value={source}
+        onChange={setSource}
+        className="mb-5"
+        options={[
+          { value: "groups", label: <span className="flex items-center gap-1.5"><FolderOpen className="size-4" aria-hidden />Your groups</span> },
+          { value: "trade", label: <span className="flex items-center gap-1.5"><BookUser className="size-4" aria-hidden />Trade partners</span> },
+        ]}
+      />
+      {isTrade ? (
+        <TradeAudiencePicker onChange={setTrade} />
+      ) : loadFailed ? (
         <p className="text-sm text-red-600 dark:text-red-400">Could not load your groups. Close and try again.</p>
       ) : !options ? (
         <div className="space-y-3">
@@ -233,14 +284,14 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
         </div>
       ) : (
         <div className="space-y-6">
-          <Step number={1} title="Choose a group" hint="Who is this campaign for?">
+          <Step number={1} title="Choose groups" hint="Tick one or more. Someone in two groups gets the email once.">
             {groups.length ? (
-              <div role="radiogroup" aria-label="Group" className="grid gap-2 sm:grid-cols-2">
+              <div role="group" aria-label="Groups" className="grid gap-2 sm:grid-cols-2">
                 {groups.map((g) => (
                   <GroupCard
                     key={g.name}
-                    selected={group === g.name}
-                    onSelect={() => setGroup(g.name)}
+                    selected={picked.includes(g.name)}
+                    onSelect={() => togglePick(g.name)}
                     icon={FolderOpen}
                     name={g.name}
                     total={g.subscribed}
@@ -250,8 +301,8 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                 ))}
                 {options.newsletter.subscribed > 0 && (
                   <GroupCard
-                    selected={group === EVERYONE}
-                    onSelect={() => setGroup(EVERYONE)}
+                    selected={everyoneOnList}
+                    onSelect={() => togglePick(EVERYONE)}
                     icon={Users}
                     name="Everyone on your list"
                     total={options.newsletter.subscribed}
@@ -274,10 +325,10 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
             )}
           </Step>
 
-          {group && (
+          {picked.length > 0 && (
             <Step
               number={2}
-              title={`Who in ${group === EVERYONE ? "your list" : `“${group}”`} gets it?`}
+              title={`Who in ${pickedLabel} gets it?`}
               hint="Everyone, or only the people who opened or clicked. Tick both Opened and Clicked to include anyone who did either."
             >
               <div className="space-y-2">
@@ -286,7 +337,7 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                   onChange={tickEveryone}
                   icon={Users}
                   tone="text-blue-600 dark:text-blue-400"
-                  label="Everyone in the group"
+                  label={chosen.length > 1 ? "Everyone in these groups" : "Everyone in the group"}
                   sub="All subscribed people, whether they opened before or not"
                   count={total}
                 />
@@ -297,7 +348,7 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                   tone="text-violet-600 dark:text-violet-400"
                   label="Only people who opened"
                   sub="Opened an earlier email (this includes those who clicked)"
-                  count={group === EVERYONE ? null : chosen?.opened}
+                  count={everyoneOnList ? null : sum("opened")}
                 />
                 <WhoTick
                   checked={engagement.includes("clicked")}
@@ -306,7 +357,7 @@ export default function GroupCampaignDialog({ open, onClose, onContinue, initial
                   tone="text-sky-600 dark:text-sky-400"
                   label="Only people who clicked"
                   sub="Clicked a link or button in an earlier email"
-                  count={group === EVERYONE ? null : chosen?.clicked}
+                  count={everyoneOnList ? null : sum("clicked")}
                 />
               </div>
               {filtered && (

@@ -1,10 +1,11 @@
-import { ArrowLeft, Building2, Check, CheckCircle2, Clock, Copy, ExternalLink, RefreshCw, Send, Server, TriangleAlert, Unplug, Zap } from "lucide-react";
+import { ArrowLeft, Building2, Check, CheckCircle2, Clock, Copy, ExternalLink, Mail, RefreshCw, Send, Server, TriangleAlert, Unplug, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import {
   checkSesSender,
   deleteSesSender,
+  sendSesRecordsEmail,
   startSesSender,
   testSenderMailbox,
   updateSesSender,
@@ -14,7 +15,7 @@ import { STALE_SES_CHECK_MS } from "./staleTimes";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
-import { Field, Input } from "../ui/Field";
+import { Field, Input, Textarea } from "../ui/Field";
 import RefreshNotice from "../ui/RefreshNotice";
 import Segmented from "../ui/Segmented";
 
@@ -122,36 +123,183 @@ const DnsHelp = ({ provider, domain }) => {
 // the DNS records the hotel adds at its domain provider
 const hostOf = (name, domain) => (domain && name.endsWith(`.${domain}`) ? name.slice(0, -domain.length - 1) : name);
 
-const RecordsTable = ({ records, domain }) => (
-  <div className="overflow-x-auto rounded-lg border border-app-border!">
-    <table className="w-full min-w-[34rem] text-left text-xs">
-      <thead className="bg-app-surface-secondary text-app-text-muted">
-        <tr>
-          <th className="px-3 py-2 font-medium">Type</th>
-          <th className="px-3 py-2 font-medium">Name / Host (copy only the dark part)</th>
-          <th className="px-3 py-2 font-medium">Value / Points to</th>
-        </tr>
-      </thead>
-      <tbody>
-        {records.map((r) => (
-          <tr key={r.name + r.value} className="border-t border-app-border! align-top">
-            <td className="px-3 py-2">
-              <span className="font-semibold">{r.type}</span>
-              {!r.required && <span className="mt-0.5 block text-[10px] text-app-text-muted">optional</span>}
-            </td>
-            <td className="px-3 py-2">
-              <CopyValue value={hostOf(r.name, domain)} suffix={hostOf(r.name, domain) !== r.name ? `.${domain}` : ""} />
-            </td>
-            <td className="px-3 py-2">
-              <CopyValue value={r.value} />
-              <p className="mt-1 text-[11px] text-app-text-muted">{r.purpose}</p>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+// what public DNS shows for each record (gian: recordChecks, same order as records)
+const CHECK = {
+  found: { tone: "green", label: "Added" },
+  missing: { tone: "amber", label: "Not found yet" },
+  wrong: { tone: "red", label: "Wrong value" },
+  doubled: { tone: "red", label: "Domain typed twice" },
+  proxied: { tone: "red", label: "Proxy is on" },
+};
+
+const RecordsTable = ({ records, domain, checks = [] }) => {
+  const problems = checks.filter((c) => ["wrong", "doubled", "proxied"].includes(c?.state));
+  return (
+    <div className="space-y-2">
+      {problems.length > 0 && (
+        <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">
+          <TriangleAlert className="mt-px size-4 shrink-0" />
+          <span>
+            {problems.length === 1
+              ? "1 record was added but Amazon can't use it: "
+              : `${problems.length} records were added but Amazon can't use them: `}
+            {[...new Set(problems.map((p) => p.hint))].join(" ")}
+          </span>
+        </p>
+      )}
+      <div className="overflow-x-auto rounded-lg border border-app-border!">
+        <table className="w-full min-w-[34rem] text-left text-xs">
+          <thead className="bg-app-surface-secondary text-app-text-muted">
+            <tr>
+              <th className="px-3 py-2 font-medium">Type</th>
+              <th className="px-3 py-2 font-medium">Name / Host (copy only the dark part)</th>
+              <th className="px-3 py-2 font-medium">Value / Points to</th>
+              {checks.length > 0 && <th className="px-3 py-2 font-medium">In DNS now</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {records.map((r, i) => {
+              const check = checks[i];
+              const state = check && CHECK[check.state];
+              return (
+                <tr key={r.name + r.value} className="border-t border-app-border! align-top">
+                  <td className="px-3 py-2">
+                    <span className="font-semibold">{r.type}</span>
+                    {!r.required && <span className="mt-0.5 block text-[10px] text-app-text-muted">optional</span>}
+                  </td>
+                  <td className="px-3 py-2">
+                    <CopyValue value={hostOf(r.name, domain)} suffix={hostOf(r.name, domain) !== r.name ? `.${domain}` : ""} />
+                  </td>
+                  <td className="px-3 py-2">
+                    <CopyValue value={r.value} />
+                    <p className="mt-1 text-[11px] text-app-text-muted">{r.purpose}</p>
+                  </td>
+                  {checks.length > 0 && (
+                    <td className="px-3 py-2">
+                      {state && (
+                        <span title={check.hint}>
+                          <Badge tone={state.tone}>{state.label}</Badge>
+                        </span>
+                      )}
+                      {check?.seen && check.state === "wrong" && (
+                        <p className="mt-1 break-all text-[10px] text-app-text-muted">Now: {check.seen}</p>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const splitEmails = (value) =>
+  value
+    .split(/[,;\s]+/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+// "Email records to IT team": Eazotel (support@eazotel.com, not the hotel's account)
+// sends the records, where the domain's DNS is and how to add them there, and what
+// DNS shows for each one now. They also go out by themselves when the domain /
+// address is added; this sends them (again) to whoever actually adds them.
+const RecordsEmailPanel = ({ ses, onSent }) => {
+  const { showToast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ to: "", cc: "", note: "" });
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+  if (ses.dnsProvider?.managedByEazotel) return null;
+  const last = ses.recordsMail;
+  const where = ses.dnsProvider?.name;
+
+  const send = async () => {
+    setError("");
+    const to = splitEmails(form.to);
+    const cc = splitEmails(form.cc);
+    if (!to.length) return setError("Enter the email of whoever manages your domain (IT team, web designer).");
+    const bad = [...to, ...cc].find((x) => !EMAIL_REGEX.test(x));
+    if (bad) return setError(`"${bad}" is not a valid email address.`);
+    setSending(true);
+    try {
+      const result = await sendSesRecordsEmail({ to, cc, note: form.note.trim() });
+      const sentTo = result?.recordsMail?.to?.join(", ") || to.join(", ");
+      showToast({ message: `Records emailed to ${sentTo}. You're copied.`, type: "success", duration: 6000 });
+      setOpen(false);
+      setForm({ to: "", cc: "", note: "" });
+      onSent?.();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 rounded-lg border border-blue-200! bg-blue-50/60 p-3 dark:border-blue-500/30! dark:bg-blue-500/5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="min-w-0 flex-1 text-xs">
+          <p className="text-sm font-medium">Someone else manages your domain?</p>
+          <p className="text-app-text-muted">
+            Eazotel emails them these records, where they go{where ? ` (${where})` : ""} and how to add them there, step by step,
+            from support@eazotel.com. You get a copy.
+          </p>
+          {last?.lastSentAt && (
+            <p className="mt-1 text-app-text-muted">
+              {last.lastAuto ? "Sent automatically" : "Last sent"} to {last.lastTo.join(", ")} on{" "}
+              {new Date(last.lastSentAt).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.
+            </p>
+          )}
+        </div>
+        {!open && (
+          <Button size="sm" icon={Mail} onClick={() => setOpen(true)}>
+            {last?.lastSentAt ? "Email records again" : "Email records to IT team"}
+          </Button>
+        )}
+      </div>
+      {open && (
+        <div className="space-y-3">
+          <Field label="Send to" hint="Your IT team or web designer. Separate several addresses with commas (up to 3).">
+            <Input
+              autoFocus
+              value={form.to}
+              placeholder="it@yourhotel.com"
+              onChange={(e) => setForm((f) => ({ ...f, to: e.target.value }))}
+            />
+          </Field>
+          <Field label="Copy (optional)">
+            <Input value={form.cc} placeholder="manager@yourhotel.com" onChange={(e) => setForm((f) => ({ ...f, cc: e.target.value }))} />
+          </Field>
+          <Field label="Message (optional)" hint="Shown at the top of the email, as you write it.">
+            <Textarea
+              rows={2}
+              value={form.note}
+              placeholder="Hi, please add these today."
+              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+            />
+          </Field>
+          {error && (
+            <p className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-600 dark:bg-red-500/10 dark:text-red-400">
+              <TriangleAlert className="mt-px size-4 shrink-0" />
+              {error}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setOpen(false)} disabled={sending}>
+              Cancel
+            </Button>
+            <Button size="sm" icon={Send} onClick={send} loading={sending}>
+              Send records
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Sends campaigns and newsletters through Eazotel's Amazon SES from the hotel's
 // own address: fast (thousands an hour), no "via Eazotel".
@@ -213,15 +361,19 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
       setEditing(false);
       onChange();
       const s = result?.ses;
+      // in the same step gian emails the DNS records (from Eazotel) to the sending address, you copied
+      const mailed = result?.recordsMail?.sent
+        ? ` We also emailed the DNS records to ${result.recordsMail.to.join(", ")}: forward it to your IT team.`
+        : "";
       showToast({
         message:
-          s?.status === "verified"
+          (s?.status === "verified"
             ? `Verified. Campaigns now go out from ${s.fromEmail}.`
             : form.kind === "domain"
               ? "Added. Now add the DNS records shown."
-              : `Amazon sent a verification link to ${fromEmail}.`,
+              : `Amazon sent a verification link to ${fromEmail}.`) + mailed,
         type: "success",
-        duration: 6000,
+        duration: 9000,
       });
     } catch (err) {
       setError(err.message);
@@ -449,7 +601,8 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
               </p>
             )}
             <p className="text-xs text-app-text-muted">Your current email keeps working.</p>
-            <RecordsTable records={ses.records} domain={ses.domain} />
+            <RecordsTable records={ses.records} domain={ses.domain} checks={ses.recordChecks} />
+            <RecordsEmailPanel ses={ses} onSent={onChange} />
           </div>
         )}
 
@@ -465,7 +618,8 @@ function SesSenderDialog({ open, onClose, ses, onChange, onBack }) {
               signed with {ses.domain}: the “via” goes away and inbox delivery gets better. Nothing else changes.
             </p>
             <DnsHelp provider={ses.dnsProvider} domain={ses.domain} />
-            <RecordsTable records={ses.records} domain={ses.domain} />
+            <RecordsTable records={ses.records} domain={ses.domain} checks={ses.recordChecks} />
+            <RecordsEmailPanel ses={ses} onSent={onChange} />
           </div>
         )}
 

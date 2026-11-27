@@ -18,6 +18,7 @@ import Button from "../../components/ui/Button";
 import { Input } from "../../components/ui/Field";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
+import ServiceReportButton from "../../components/reports/ServiceReportButton";
 import Card from "../../components/ui/Card";
 import { EmptyState, ErrorState } from "../../components/ui/States";
 import Tabs from "../../components/ui/Tabs";
@@ -238,6 +239,7 @@ const WhatsappBroadcasting = () => {
       description="Broadcast offers and updates to your guests, then see who got and read them."
       actions={
         <>
+          <ServiceReportButton part="whatsappMarketing" />
           {/* Import file input */}
           <input
             ref={fileInputRef}

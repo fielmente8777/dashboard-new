@@ -204,13 +204,29 @@ export const whatsappApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
-    // { hid, source? } -> how many contacts a campaign would reach
+    // { hid, source?, sources?: string[] } -> how many contacts with a phone number a campaign
+    // would reach (every source, or only the chosen ones)
     getCampaignAudience: build.query({
-      query: ({ hid, source }) => ({
+      query: ({ hid, source, sources }) => ({
         url: "/api/v1/whatsapp/campaign/users",
-        params: { hid, source: source || undefined },
+        params: { hid, source: source || undefined, sources: sources?.length ? sources.join(",") : undefined },
       }),
       transformResponse: (response) => response?.result?.totalUsers || 0,
+      extraOptions: NODE,
+    }),
+    // Trade Directory partners with a mobile: { hid, pool, segments? } -> { reachable, capped }
+    getTradeWhatsappAudience: build.query({
+      query: ({ hid, ...body }) => ({ url: "/api/v1/whatsapp/campaign/trade-preview", method: "POST", params: { hid }, body }),
+      transformResponse: (response) => response?.result?.doc || { reachable: 0, capped: false },
+      extraOptions: NODE,
+    }),
+    // hid -> { total, sources: [{ source, count }] }: every source that has contacts with a phone
+    getCampaignSources: build.query({
+      query: (hid) => ({ url: "/api/v1/whatsapp/campaign/users", params: { hid, withSources: 1 } }),
+      transformResponse: (response) => ({
+        total: response?.result?.totalUsers || 0,
+        sources: response?.result?.sources || [],
+      }),
       extraOptions: NODE,
     }),
 
@@ -249,5 +265,7 @@ export const {
   useSaveQuickReplyMutation,
   useDeleteQuickReplyMutation,
   useGetCampaignAudienceQuery,
+  useGetCampaignSourcesQuery,
+  useGetTradeWhatsappAudienceQuery,
   useCreateWhatsAppLeadMutation,
 } = whatsappApi;

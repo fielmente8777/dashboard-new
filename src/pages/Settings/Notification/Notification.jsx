@@ -5,6 +5,7 @@ import SaveBar from "../../../components/ui/SaveBar";
 import { integrationPath } from "../../../routes/paths";
 import SettingsCard from "../../../components/ui/SettingsCard";
 import { ErrorState, Skeleton } from "../../../components/ui/States";
+import AddRecipients from "./components/AddRecipients";
 import AlertMatrix from "./components/AlertMatrix";
 import CallFollowUp from "./components/CallFollowUp";
 import ChannelSummary from "./components/ChannelSummary";
@@ -61,11 +62,12 @@ const Notification = () => {
           <span>
             {whatsApp.available && whatsAppOff && whatsApp.connected
               ? "WhatsApp alerts are off. Turn them on above to choose who gets them."
-              : "Only team members with a phone number or email address can be chosen."}
+              : "Choose team members, the hotel's own email and phone, or add anyone else below."}
           </span>
         }
       >
         <AlertMatrix channels={channels} config={n.draft.config} onChange={n.setSource} />
+        <AddRecipients phones={whatsApp.available} onAdd={n.addRecipient} />
       </SettingsCard>
 
       {/* calls only reach us through Exotel: without it there is nothing to

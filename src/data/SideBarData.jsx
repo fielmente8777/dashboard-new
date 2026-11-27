@@ -1,4 +1,5 @@
 import {
+  BookUser,
   BadgePercent,
   BedDouble,
   BookOpen,
@@ -102,6 +103,12 @@ export const SidebarData = [
     section: "Engage",
     link: `contacts`,
     icon: top(Contact),
+  },
+  {
+    name: "Trade Directory",
+    section: "Engage",
+    link: `trade-directory`,
+    icon: top(BookUser),
   },
   {
     name: "Marketing",

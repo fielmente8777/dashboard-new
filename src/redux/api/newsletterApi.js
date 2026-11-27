@@ -112,6 +112,21 @@ export const newsletterApi = baseApi
         extraOptions: APP,
       }),
 
+      // { groups: [names] } -> { total, counts: { good, unsubscribed, bounced, cant_receive, risky },
+      //   rows: [{ email, name, groups, state, reason, suggestion }], partial }
+      checkNewsletterGroups: build.mutation({
+        query: (body) => ({ url: `${BASE}/groups/check`, method: "POST", body }),
+        transformResponse: data,
+        extraOptions: APP,
+      }),
+      // { groups, states? } -> { removed }: bounced / can't-receive members go on the do-not-email list
+      cleanNewsletterGroups: build.mutation({
+        query: (body) => ({ url: `${BASE}/groups/clean`, method: "POST", body }),
+        transformResponse: data,
+        invalidatesTags: ["NewsletterList", "NewsletterStats", "NewsletterTags"],
+        extraOptions: APP,
+      }),
+
       // { url } -> { fileName, base64, size }: a CSV / Excel / Google Sheet from a link, downloaded by
       // the server and then read here exactly like an uploaded file
       fetchSheetLink: build.mutation({
@@ -158,6 +173,8 @@ export const {
   useEditSubscriberMutation,
   useBulkSubscribersMutation,
   useImportSubscribersMutation,
+  useCheckNewsletterGroupsMutation,
+  useCleanNewsletterGroupsMutation,
   useFetchSheetLinkMutation,
   useLazyGetNewsletterAudienceQuery,
   useGetNewsletterSettingsQuery,

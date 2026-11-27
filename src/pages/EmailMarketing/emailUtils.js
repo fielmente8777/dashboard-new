@@ -108,6 +108,21 @@ export const deliveredCount = (stats = {}) => stats?.delivered || stats?.sent ||
 // address syntax") in plain words: what went wrong and what to do. First match wins.
 const SEND_PROBLEMS = [
   {
+    test: /suppressed sending to this address due to email validation|address quality confidence/i,
+    title: "Amazon judged the address invalid",
+    hint: "Amazon's address checks say it almost certainly doesn't exist, so it wasn't sent. It's now on your do-not-email list.",
+  },
+  {
+    test: /5\.4\.1.*access denied|RecipientNotFound|5\.1\.10/i,
+    title: "The company's mail server doesn't know this address",
+    hint: "Usually a Microsoft 365 mailbox that doesn't exist (any more). It's now on your do-not-email list.",
+  },
+  {
+    test: /mistyped email provider/i,
+    title: "Mistyped email provider",
+    hint: "Like gmial.com instead of gmail.com. Fix it in your list; it was not sent.",
+  },
+  {
     test: /5\.1\.3|bad recipient address|address syntax|invalid (email|address|recipient)|malformed/i,
     title: "Email address is not valid",
     hint: "Check it for typos, spaces or accented letters (é, ñ, ç).",

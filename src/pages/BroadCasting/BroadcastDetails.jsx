@@ -61,6 +61,8 @@ const BroadcastDetails = () => {
         [
           campaign.templateName && `Template: ${campaign.templateName}`,
           campaign.createdAt && `Created ${formatDateTime(campaign.createdAt)}`,
+          campaign.status === "in-progress" && campaign.estimatedFinishAt && `Finishes about ${formatDateTime(campaign.estimatedFinishAt)}`,
+          campaign.waves > 1 && `Sent over ${campaign.waves} days (Meta limit)`,
         ]
           .filter(Boolean)
           .join(" · ")
@@ -96,6 +98,18 @@ const BroadcastDetails = () => {
         </>
       ) : (
         <>
+          {campaign?.errorMessage && (
+            <p
+              className={`rounded-lg px-3 py-2.5 text-sm ${
+                campaign.status === "stopped"
+                  ? "bg-red-500/10 text-red-700 dark:text-red-400"
+                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+              }`}
+            >
+              {campaign.status === "stopped" ? "Stopped: " : ""}
+              {campaign.errorMessage}
+            </p>
+          )}
           {campaign && <CampaignStats campaign={campaign} />}
           <RecipientsTable
             tabs={details.tabs}

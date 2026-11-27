@@ -35,6 +35,15 @@ export const broadcastApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // hid -> { dailyLimit (-1 = unlimited), usedToday, perMinute, maxRecipients, activeCampaigns,
+    // maxActiveCampaigns }: Meta's 24-hour limit for this number and the pace gian sends at
+    getCampaignLimits: build.query({
+      query: (hid) => ({ url: "/api/v1/whatsapp/campaign/limits", params: { hid } }),
+      transformResponse: (response) => response?.result || null,
+      providesTags: ["WhatsAppCampaign"],
+      extraOptions: NODE,
+    }),
+
     // { hid, campaignName, template: {...}, source? }
     createCampaign: build.mutation({
       query: ({ hid, ...body }) => ({
@@ -67,5 +76,6 @@ export const {
   useGetCampaignsQuery,
   useGetCampaignDetailsQuery,
   useCreateCampaignMutation,
+  useGetCampaignLimitsQuery,
   useResendCampaignRecipientMutation,
 } = broadcastApi;

@@ -1,4 +1,3 @@
-import { cleanEmails } from "../../pages/EmailMarketing/emailUtils";
 import { request, run, selectedHid } from "../request";
 import store from "../Store";
 import { baseApi, getApiErrorMessage } from "./baseApi";
@@ -52,6 +51,13 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // { emails } -> { checked, ok, undeliverable, risky, problems: [{ email, verdict, suggestion }] }
+    // verdict: typo | no_domain | syntax (will bounce), disposable | unknown (kept)
+    checkEmails: build.mutation({
+      query: (body) => ({ url: `${BASE}/check-emails`, method: "POST", body }),
+      extraOptions: NODE,
+    }),
+
     // --- campaigns ---
     // FormData: hid, name, subject, html, text, fromName, fromEmail,
     // recipientBatchIds (JSON), attachments
@@ -90,6 +96,25 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
       keepUnusedDataFor: 0,
     }),
+    // deliverability: Amazon's result of each email, sender health, wrong addresses
+    startAmazonSync: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/amazon-sync`, method: "POST", params: { hid } }),
+      extraOptions: NODE,
+    }),
+    getSenderHealth: build.query({
+      query: ({ hid, fresh }) => ({ url: `${BASE}/sender-health`, params: { hid, ...(fresh && { fresh: 1 }) } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    getWrongEmails: build.query({
+      query: ({ page, limit, search, kind }) => ({ url: `${BASE}/wrong-emails`, params: { page, limit, ...(search && { search }), ...(kind && { kind }) } }),
+      extraOptions: NODE,
+      keepUnusedDataFor: 0,
+    }),
+    deleteWrongEmails: build.mutation({
+      query: (body) => ({ url: `${BASE}/wrong-emails/delete`, method: "POST", body }),
+      extraOptions: NODE,
+    }),
     getSentSummary: build.query({
       query: ({ hid, from, to }) => ({ url: `${BASE}/sent-summary`, params: { hid, from, to } }),
       extraOptions: NODE,
@@ -102,9 +127,9 @@ export const emailMarketingApi = baseApi.injectEndpoints({
 
     // { hid, campaignId, status, page, limit }
     getCampaignRecipients: build.query({
-      query: ({ hid, campaignId, status, page, limit }) => ({
+      query: ({ hid, campaignId, status, page, limit, search }) => ({
         url: `${BASE}/campaigns/${campaignId}/recipients`,
-        params: { hid, page, limit, ...(status && { status }) },
+        params: { hid, page, limit, ...(status && { status }), ...(search && { search }) },
       }),
       extraOptions: NODE,
     }),
@@ -194,6 +219,17 @@ export const emailMarketingApi = baseApi.injectEndpoints({
     // { hid, everyone, groups, engaged: [{ campaignId, group }] } -> { result: { doc: { count, unsubscribed } } }
     previewAudience: build.mutation({
       query: ({ hid, ...body }) => ({ url: `${BASE}/audience/preview`, method: "POST", body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    // Trade Directory partners (gian reads them; addresses never come back):
+    // { hid, pool: mine | directory | both, segments?, ids? } -> { doc: { reachable, capped } }
+    previewTradeAudience: build.mutation({
+      query: ({ hid, ...body }) => ({ url: `${BASE}/trade/preview`, method: "POST", body: { hid, ...body } }),
+      extraOptions: NODE,
+    }),
+    // same body -> { doc: { recipientBatchId, count, label } }
+    createTradeRecipientBatch: build.mutation({
+      query: ({ hid, ...body }) => ({ url: `${BASE}/recipient-batches/trade`, method: "POST", body: { hid, ...body } }),
       extraOptions: NODE,
     }),
     // same body -> { result: { doc: { recipientBatchId, count, label, emails } } }
@@ -326,6 +362,19 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // Eazotel (support@eazotel.com) emails the DNS records, where to add them and how, to the hotel's IT team
+    // { hid, body: { to: string[], cc?: string[], note? } } -> { result: { recordsMail: { sent, to, cc }, ses } }
+    sendSesRecordsEmail: build.mutation({
+      query: ({ hid, body }) => ({
+        url: `${BASE}/sender-mailbox/ses/records-email`,
+        method: "POST",
+        params: { hid },
+        body: { hid, ...body },
+        timeout: 60000,
+      }),
+      extraOptions: NODE,
+    }),
+
     // { hid, body: { fromEmail?, displayName? } }
     updateSesSender: build.mutation({
       query: ({ hid, body }) => ({ url: `${BASE}/sender-mailbox/ses`, method: "PUT", params: { hid }, body: { hid, ...body } }),
@@ -429,8 +478,15 @@ export const createLeadRecipientBatch = ({ leadIds }) =>
 export const createLeadRecipientBatchFromFilter = ({ search = "" }) =>
   result(e.createLeadRecipientBatchFromFilter, { hid: selectedHid(), search });
 // Last check before the server: accents removed, invalid addresses never sent
+// can these addresses receive email? -> { checked, ok, undeliverable, risky, problems }
+export const checkEmails = (emails) => strict(e.checkEmails, { emails });
 export const createManualRecipientBatch = ({ emails }) =>
-  result(e.createManualRecipientBatch, { hid: selectedHid(), emails: cleanEmails(emails).valid });
+  // sent as typed: the server checks each address like that first and only cleans it (accents,
+  // spaces, <>) when that fails, then drops what can't receive email (Wrong emails)
+  result(e.createManualRecipientBatch, {
+    hid: selectedHid(),
+    emails: [...new Set((emails || []).map((v) => String(v ?? "").trim()).filter(Boolean))],
+  });
 
 export const createEmailCampaign = ({
   name,
@@ -466,8 +522,16 @@ export const getCampaignReport = ({ campaignId, tz }) => strict(e.getCampaignRep
 export const getSentSummary = ({ from, to }) => strict(e.getSentSummary, { hid: selectedHid(), from, to });
 export const getCampaignMessage = ({ campaignId, recipientId }) =>
   strict(e.getCampaignMessage, { hid: selectedHid(), campaignId, recipientId });
-export const getCampaignRecipients = ({ campaignId, status = "", page = 1, limit = 50 }) =>
-  result(e.getCampaignRecipients, { hid: selectedHid(), campaignId, status, page, limit });
+export const getCampaignRecipients = ({ campaignId, status = "", page = 1, limit = 50, search = "" }) =>
+  result(e.getCampaignRecipients, { hid: selectedHid(), campaignId, status, page, limit, search });
+// get Amazon's result of every email of a campaign -> { started, amazonSync }
+export const startAmazonSync = ({ campaignId }) => strict(e.startAmazonSync, { hid: selectedHid(), campaignId });
+// Amazon's 30-day numbers for this property's sender -> { level, rates, totals, daily, advice, dkim, … }
+export const getSenderHealth = ({ fresh = false } = {}) => strict(e.getSenderHealth, { hid: selectedHid(), fresh });
+// the hotel's wrong addresses -> { items, total, page, pages, counts }
+export const getWrongEmails = ({ page = 1, limit = 50, search = "", kind = "" } = {}) => strict(e.getWrongEmails, { page, limit, search, kind });
+// { ids } | { all: true, kind } -> { deleted, contactsRemoved }
+export const deleteWrongEmails = (body) => strict(e.deleteWrongEmails, body);
 export const sendEmailCampaign = ({ campaignId }) =>
   result(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
 
@@ -513,6 +577,7 @@ export const testSenderMailbox = (to) => strict(e.testSenderMailbox, { hid: sele
 export const startSesSender = (body) => strict(e.startSesSender, { hid: selectedHid(), body });
 export const checkSesSender = () => strict(e.checkSesSender, { hid: selectedHid() });
 export const updateSesSender = (body) => strict(e.updateSesSender, { hid: selectedHid(), body });
+export const sendSesRecordsEmail = (body) => strict(e.sendSesRecordsEmail, { hid: selectedHid(), body });
 export const deleteSesSender = () => strict(e.deleteSesSender, { hid: selectedHid() });
 
 // Footer + final email; throw with the server's message.
@@ -548,6 +613,11 @@ export const deleteEmailCampaign = ({ campaignId }) =>
 export const getAudienceOptions = () => strict(e.getAudienceOptions, { hid: selectedHid() });
 export const previewAudience = (selection) => strict(e.previewAudience, { hid: selectedHid(), ...selection });
 export const createAudienceBatch = (selection) => strict(e.createAudienceBatch, { hid: selectedHid(), ...selection });
+// Trade Directory partners: { pool, segments?, ids? }
+export const previewTradeAudience = async (selection) =>
+  (await strict(e.previewTradeAudience, { hid: selectedHid(), ...selection }))?.doc;
+export const createTradeRecipientBatch = async (selection) =>
+  (await strict(e.createTradeRecipientBatch, { hid: selectedHid(), ...selection }))?.doc;
 // group: "opened" (includes clickers) | "clicked"
 export const createCampaignAudienceBatch = ({ campaignId, group }) =>
   strict(e.createCampaignAudienceBatch, { hid: selectedHid(), campaignId, group });

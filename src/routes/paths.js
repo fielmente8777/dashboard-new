@@ -123,6 +123,7 @@ export const PAGES = {
   CMS_TERMS: "cms/terms-and-conditions",
   CMS_CANCELLATION: "cms/cancellation-and-refund-policy",
   NEWSLETTER: "newsletter",
+  TRADE_DIRECTORY: "trade-directory",
 
   // AI
   KNOWLEDGE_BASE: "knowledge-base",
