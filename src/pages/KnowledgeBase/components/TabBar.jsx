@@ -39,10 +39,11 @@ const TabBar = ({
   return (
     <div
       role="tablist"
-      className={`flex flex-wrap items-center gap-1 ${
+      // phones: one row that scrolls sideways; wider screens wrap
+      className={`hide-scrollbar flex flex-nowrap items-center gap-1 overflow-x-auto sm:flex-wrap sm:overflow-visible ${
         size === "md"
           ? "border-b border-app-border! pb-2"
-          : "mb-4"
+          : "mb-4 rounded-xl bg-app-surface-secondary p-1"
       }`}
     >
       {/* EXISTING SECTION TABS */}
@@ -57,7 +58,7 @@ const TabBar = ({
             role="tab"
             aria-selected={active}
             onClick={() => onSelect(key)}
-            className={`flex items-center gap-1.5 rounded-lg font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg font-medium transition-colors ${
               classNames.base
             } ${
               active
@@ -84,7 +85,7 @@ const TabBar = ({
           role="tab"
           aria-selected={mediaActive}
           onClick={onMediaSelect}
-          className={`flex items-center gap-1.5 rounded-lg font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg font-medium transition-colors ${
             classNames.base
           } ${
             mediaActive

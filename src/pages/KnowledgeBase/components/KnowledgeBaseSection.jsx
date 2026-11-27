@@ -11,13 +11,13 @@ const KnowledgeBaseSection = ({ sectionKey, value, onChange, onDelete }) => {
 
   return (
     <section
-      className={`rounded-xl border p-4 sm:p-5 ${
+      className={`rounded-2xl border p-3 shadow-sm sm:p-6 ${
         isAlert
           ? "border-amber-500/40! bg-amber-500/5"
           : "border-app-border! bg-app-surface"
       }`}
     >
-      <div className="mb-4 flex items-center gap-2.5">
+      <div className="mb-4 flex items-center gap-2.5 border-b border-app-border! pb-3 sm:mb-5 sm:pb-4">
         <span
           className={`flex size-8 items-center justify-center rounded-lg ${
             isAlert ? "bg-amber-500/15 text-amber-500" : iconClassName

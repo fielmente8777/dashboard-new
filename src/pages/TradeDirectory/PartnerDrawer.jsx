@@ -5,6 +5,9 @@ import Drawer from "../../components/ui/Drawer";
 import { formatNumber, relativeDate } from "./tradeUtils";
 import { useTradeCategories } from "./useTradeCategories";
 
+/** hotels may correct contacts of Eazotel's directory (off: only Eazotel's team edits them) */
+const DIRECTORY_EDIT = false;
+
 const Row = ({ icon: Icon, children }) => (
   <div className="flex items-start gap-2 text-sm text-app-text">
     <Icon className="mt-0.5 size-4 shrink-0 text-app-text-muted" aria-hidden />
@@ -89,9 +92,13 @@ const PartnerDrawer = ({ partner: p, onClose, onReach, onEdit, onRemove, busy })
             Call through Eazotel (coming soon)
           </Button>
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="ghost" icon={Pencil} onClick={onEdit}>
-              {p.masked ? "Edit details" : "Edit contact"}
-            </Button>
+            {/* Eazotel's directory: only Eazotel's team edits it for now (TRADE_DIRECTORY_CLIENT_EDIT on
+                gian-new). Set DIRECTORY_EDIT to true to bring "Edit details" back. */}
+            {(!p.masked || DIRECTORY_EDIT) && (
+              <Button variant="ghost" icon={Pencil} onClick={onEdit}>
+                {p.masked ? "Edit details" : "Edit contact"}
+              </Button>
+            )}
             {p.hiddenByMe ? (
               <Button variant="ghost" icon={Eye} loading={busy} onClick={onRemove}>
                 Show again
@@ -108,7 +115,10 @@ const PartnerDrawer = ({ partner: p, onClose, onReach, onEdit, onRemove, busy })
           </div>
           {p.masked && (
             <p className="text-xs text-app-text-muted">
-              Hiding only removes it from your list. Edits are saved for every hotel and checked by Eazotel&apos;s team.
+              Hiding only removes it from your list.
+              {DIRECTORY_EDIT
+                ? " Edits are saved for every hotel and checked by Eazotel's team."
+                : " Something wrong in this contact? Tell Eazotel's team and we'll correct it."}
             </p>
           )}
         </div>
