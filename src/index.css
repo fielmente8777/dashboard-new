@@ -901,3 +901,46 @@ html.dark select option {
 .fd-calendar .fd-group-cell {
   pointer-events: none;
 }
+
+/* ---- AI assistant launcher (components/chatbot/ChatbotWidget.jsx) ----
+   ai-fab-glow     a soft ring that breathes out of the button every few seconds
+   ai-fab-twinkle  the sparkle icon turns and grows a little now and then
+   ai-fab-shine    a light sweep across the "Ask Eazotel AI" label
+   Pages leave room for the button at their bottom (PageShell pb), so the last row of a
+   page can always be scrolled clear of it; while scrolling down it slides out of the way. */
+@keyframes ai-fab-glow {
+  0% { box-shadow: 0 0 0 0 rgb(99 102 241 / 0.45); }
+  70% { box-shadow: 0 0 0 14px rgb(99 102 241 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(99 102 241 / 0); }
+}
+@keyframes ai-fab-twinkle {
+  0%, 82%, 100% { transform: rotate(0) scale(1); }
+  88% { transform: rotate(-14deg) scale(1.15); }
+  94% { transform: rotate(10deg) scale(1.05); }
+}
+@keyframes ai-fab-shine {
+  0% { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(220%); }
+}
+.ai-fab-glow {
+  animation: ai-fab-glow 2.8s ease-out infinite;
+}
+.ai-fab-twinkle {
+  animation: ai-fab-twinkle 4s ease-in-out infinite;
+}
+.ai-fab-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: ai-fab-shine 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-fab-glow,
+  .ai-fab-twinkle,
+  .ai-fab-shine::after {
+    animation: none;
+  }
+}

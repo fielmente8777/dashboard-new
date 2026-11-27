@@ -3,7 +3,7 @@ import { baseApi } from "./baseApi";
 const NODE = { service: "node" };
 const BASE = "/api/v1/google-ads";
 
-const api = baseApi.enhanceEndpoints({ addTagTypes: ["GoogleAds"] });
+const api = baseApi.enhanceEndpoints({ addTagTypes: ["GoogleAds", "GoogleAdsChanges"] });
 
 // Google's status, saved as its name or its number (2 enabled, 3 paused,
 // 4 removed).
@@ -90,6 +90,52 @@ export const googleAdsApi = api.injectEndpoints({
       extraOptions: NODE,
     }),
 
+    // --- changes to Google Ads (owners and admins; gian: googleAdsManage.controller.ts) ---
+
+    // accountId -> { canManage, isAdmin, reason } (Google checks without changing anything)
+    getAdsAccess: build.query({
+      query: (accountId) => ({ url: `${BASE}/manage/access`, params: { accountId } }),
+      transformResponse: (response) => response?.result?.doc || { canManage: false },
+      keepUnusedDataFor: 600,
+      extraOptions: NODE,
+    }),
+
+    // { accountId, level: "campaign" | "adgroup" | "ad", ids, status: "ENABLED" | "PAUSED" }
+    setAdsStatus: build.mutation({
+      query: (body) => ({ url: `${BASE}/manage/status`, method: "POST", body }),
+      invalidatesTags: ["GoogleAds", "GoogleAdsChanges"],
+      extraOptions: NODE,
+    }),
+
+    // { accountId, campaignId, dailyBudget }
+    setAdsBudget: build.mutation({
+      query: (body) => ({ url: `${BASE}/manage/budget`, method: "POST", body }),
+      invalidatesTags: ["GoogleAds", "GoogleAdsChanges"],
+      extraOptions: NODE,
+    }),
+
+    // { accountId, q } -> [{ id, name, type, country }]
+    searchAdsLocations: build.query({
+      query: ({ accountId, q }) => ({ url: `${BASE}/manage/locations`, params: { accountId, q } }),
+      transformResponse: (response) => response?.result?.docs || [],
+      extraOptions: NODE,
+    }),
+
+    // { campaign, validateOnly } -> { campaignId, validated }; created PAUSED
+    createAdsCampaign: build.mutation({
+      query: (body) => ({ url: `${BASE}/manage/campaigns`, method: "POST", body }),
+      invalidatesTags: (result, error, arg) => (arg.validateOnly ? [] : ["GoogleAds", "GoogleAdsChanges"]),
+      extraOptions: NODE,
+    }),
+
+    // accountId -> the latest changes made from the dashboard
+    getAdsChanges: build.query({
+      query: (accountId) => ({ url: `${BASE}/manage/changes`, params: { accountId, limit: 20 } }),
+      transformResponse: (response) => response?.result?.docs || [],
+      providesTags: ["GoogleAdsChanges"],
+      extraOptions: NODE,
+    }),
+
     // Pulls the last 90 days from Google into our database (slow).
     // { accountId?, campaignId?, range }
     syncGoogleAds: build.mutation({
@@ -117,4 +163,10 @@ export const {
   useGetAdsDevicesQuery,
   useGetAdsBreakdownQuery,
   useSyncGoogleAdsMutation,
+  useGetAdsAccessQuery,
+  useSetAdsStatusMutation,
+  useSetAdsBudgetMutation,
+  useLazySearchAdsLocationsQuery,
+  useCreateAdsCampaignMutation,
+  useGetAdsChangesQuery,
 } = googleAdsApi;

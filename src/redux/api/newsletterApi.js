@@ -112,6 +112,14 @@ export const newsletterApi = baseApi
         extraOptions: APP,
       }),
 
+      // { url } -> { fileName, base64, size }: a CSV / Excel / Google Sheet from a link, downloaded by
+      // the server and then read here exactly like an uploaded file
+      fetchSheetLink: build.mutation({
+        query: (body) => ({ url: `${BASE}/subscribers/sheet-link`, method: "POST", body }),
+        transformResponse: data,
+        extraOptions: APP,
+      }),
+
       // { tag? } -> { emails, count }: who a newsletter goes to
       getNewsletterAudience: build.query({
         query: (params) => ({ url: `${BASE}/audience`, params }),
@@ -150,6 +158,7 @@ export const {
   useEditSubscriberMutation,
   useBulkSubscribersMutation,
   useImportSubscribersMutation,
+  useFetchSheetLinkMutation,
   useLazyGetNewsletterAudienceQuery,
   useGetNewsletterSettingsQuery,
   useSaveNewsletterSettingsMutation,

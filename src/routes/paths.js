@@ -35,6 +35,7 @@ export const PAGES = {
 
   // Live chat
   CHAT_WHATSAPP: "channel/wa/chat",
+  CHAT_WHATSAPP_WINDOWS: "channel/wa/reply-windows",
   CHAT_INSTAGRAM: "channel/ig/chat",
   CHAT_FACEBOOK: "channel/fb/chat",
   CHAT_EAZBOT: "channel/eb/chat",
@@ -82,6 +83,8 @@ export const PAGES = {
   INSIGHTS_LEADS: "insights-analytics/leads-analytics",
   ANALYTICS_REPORTING: "analytics-and-reporting",
   META_INSIGHTS: "meta-insights",
+  // the dashboard report: PDF, email, monthly
+  REPORTS: "reports",
   META_LEADS: "meta/leads",
   GMB_OVERVIEW: "gmb/overview",
   GMB_KEYWORDS: "gmb/keywords",
@@ -156,7 +159,6 @@ export const PAGES = {
 
   // Placeholders
   FEEDBACK: "feedback",
-  REPORTS: "reports",
   ANALYTICS: "analytics",
   HELP: "help",
 };

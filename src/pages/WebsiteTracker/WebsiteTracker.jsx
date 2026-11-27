@@ -1,8 +1,10 @@
 import React from "react";
 import { Skeleton } from "../../components/ui/States";
+import { useToast } from "../../context/ToastContext";
 import { useGetVisitorsQuery } from "../../redux/api/websiteTrackerApi";
 
 const WebsiteTracker = () => {
+  const { showToast } = useToast();
   const { data: visitors = [], isFetching: loading } = useGetVisitorsQuery(
     { skip: 0, limit: 100 },
     { refetchOnMountOrArgChange: true },
@@ -68,7 +70,7 @@ const WebsiteTracker = () => {
                   <td className="px-6 py-3 flex gap-2">
                     <button
                       onClick={() =>
-                        alert(`Viewing details for NDID: ${visitor.ndid}`)
+                        showToast({ message: `Visitor ${visitor.ndid}`, type: "info" })
                       }
                       className="px-3 py-1 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-xs font-semibold"
                     >

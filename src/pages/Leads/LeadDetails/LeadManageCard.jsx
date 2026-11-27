@@ -10,7 +10,7 @@ import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import CustomDropdown from "../../../components/ui/Dropdown";
 import { Field } from "../../../components/ui/Field";
-import { Stages, TurnAwayCode } from "../../../data/constant";
+import { isFollowUpStage, Stages, TurnAwayCode } from "../../../data/constant";
 
 // The controls to work a lead: who has it, its stage, why it was turned
 // away, and when to follow up. `savedFollowUp` is the saved follow-up as a
@@ -87,7 +87,7 @@ const LeadManageCard = ({
             </Button>
             {/* a "Follow Up" lead keeps its date; moving it to another
                 stage is what clears it */}
-            {savedFollowUp && lead.status !== "Follow Up" && (
+            {savedFollowUp && !isFollowUpStage(lead.status) && (
               <Button
                 size="sm"
                 variant="ghost"

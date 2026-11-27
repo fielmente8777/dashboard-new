@@ -123,6 +123,8 @@ const STAGE_TONES = {
   Qualified: "purple",
   "Quotation Provided": "purple",
   "Follow Up": "amber",
+  "Follow Up 2": "amber",
+  "Follow Up 3": "amber",
   Potential: "amber",
   Converted: "green",
   "Not Respond": "gray",

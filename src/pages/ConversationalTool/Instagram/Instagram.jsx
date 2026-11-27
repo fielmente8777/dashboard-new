@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import FlowBuilder from "../../../components/WhatsappFlow/FlowBuilder";
 import axios from "axios";
 import { API_URLS } from "../../../config/env";
+import { useToast } from "../../../context/ToastContext";
 
 const Instagram = () => {
+  const { showToast } = useToast();
 
   const [number, setNumber] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,7 @@ const Instagram = () => {
 
     } catch (err) {
       console.error("Call error:", err);
-      alert("Call failed");
+      showToast({ message: "The call could not be started.", type: "error" });
     } finally {
       setLoading(false);
     }

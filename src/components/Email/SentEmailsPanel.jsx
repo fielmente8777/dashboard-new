@@ -23,6 +23,7 @@ const IN_PROGRESS = new Set(["sending", "stopping", "scheduled"]);
 //   openId / onOpenChange          the campaign whose details are open
 //   onCount(n)                     how many there are, for a tab badge
 //   empty                          shown when there are none yet
+//   onSendTo({ batchId, count, label })  new email to a campaign's openers / clickers
 export default function SentEmailsPanel({
   filter,
   reloadSignal = 0,
@@ -33,6 +34,7 @@ export default function SentEmailsPanel({
   label = "Emails sent",
   // false where the page shows its own numbers (Email marketing → Performance)
   showStats = true,
+  onSendTo,
 }) {
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -159,10 +161,14 @@ export default function SentEmailsPanel({
 
       <CampaignsList
         onChanged={() => load({ quiet: true })}
+        onRefresh={() => load({ quiet: true })}
+        refreshing={refreshing}
+        loadedAt={loadedAt}
         campaigns={campaigns}
         loading={false}
         selectedId={openId}
         onSelect={(id) => onOpenChange?.(id)}
+        onSendTo={onSendTo}
       />
     </div>
   );

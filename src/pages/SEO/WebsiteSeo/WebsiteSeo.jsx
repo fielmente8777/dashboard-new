@@ -14,6 +14,7 @@ import WebsiteKeywordTable from "./components/WebsiteKeywordTable";
 import WebsiteSetup from "./components/WebsiteSetup";
 import { useWebsiteSeo } from "./hooks/useWebsiteSeo";
 import { COUNTRIES, NOT_RANKED, ORGANIC_BANDS, organicBand, websiteHref } from "./websiteSeoUtils";
+import ServiceReportButton from "../../../components/reports/ServiceReportButton";
 
 const BANDS = [...ORGANIC_BANDS, NOT_RANKED];
 
@@ -99,6 +100,7 @@ const WebsiteSeo = () => {
       actions={
         <>
           <CreditsButton />
+          <ServiceReportButton part="searchConsole" label="Search Console report" />
           {website && (
             <>
               <SelectMenu

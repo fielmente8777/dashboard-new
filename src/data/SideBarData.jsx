@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   CalendarDays,
   ChartNoAxesCombined,
+  FileBarChart,
   CircleHelp,
   ClipboardList,
   Coins,
@@ -17,6 +18,7 @@ import {
   Eye,
   FileSpreadsheet,
   FileText,
+  Hourglass,
   Globe,
   Hotel,
   Image,
@@ -43,7 +45,7 @@ import {
 } from "lucide-react";
 import { createElement } from "react";
 import { FaInstagram, FaMeta, FaWhatsapp } from "react-icons/fa6";
-import { SiGoogleads, SiGoogleanalytics } from "react-icons/si";
+import { SiGoogleads, SiGoogleanalytics, SiGooglesearchconsole } from "react-icons/si";
 import { SOCIAL_PORTAL_URL } from "../config/env";
 
 // Every icon is drawn in the text colour, so the menu reads as one set.
@@ -75,6 +77,8 @@ export const SidebarData = [
     subLinks: [
       { name: "WhatsApp", link: `channel/wa/chat`, icon: brand(FaWhatsapp) },
       { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
+      { name: "Reply windows", link: `channel/wa/reply-windows`, icon: sub(Hourglass) },
+      // { name: "Instagram", link: `channel/ig/chat`, icon: brand(FaInstagram) },
     ],
   },
   {
@@ -135,6 +139,13 @@ export const SidebarData = [
     icon: top(PhoneCall),
   },
   {
+    // the whole-dashboard report (PDF, email, monthly): every plan has it
+    name: "Reports",
+    section: "Grow",
+    link: `reports`,
+    icon: top(FileBarChart),
+  },
+  {
     name: "Insights",
     section: "Grow",
     link: `insights`,
@@ -145,6 +156,12 @@ export const SidebarData = [
         link: `insights-analytics/google-analytics`,
         access: "Google Analytics",
         icon: brand(SiGoogleanalytics),
+      },
+      {
+        name: "Search Console",
+        link: `insights-analytics/google-console`,
+        access: "Google Analytics",
+        icon: brand(SiGooglesearchconsole),
       },
       {
         name: "Google Ads",

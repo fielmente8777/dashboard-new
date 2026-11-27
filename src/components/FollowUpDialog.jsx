@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { getFollowUpError, splitFollowUp, toFollowUpValue } from "./followUp";
 import FollowUpFields from "./FollowUpFields";
+import FollowUpReminderNote from "./FollowUpReminderNote";
 import Button from "./ui/Button";
 import Dialog from "./ui/Dialog";
 
 // Asks when to follow up (on a call, a lead, ...). onSave gets a Date.
 // The stage only becomes "Follow Up" through onSave, so it can't be set
-// without a date; the time is optional.
+// without a date; the time is optional. `stage` is the round being set
+// ("Follow Up 2"), named in the "select a date and time" note.
 const FollowUpDialog = ({
   open,
+  stage,
   onSave,
   onClose,
   description = "Pick the day to follow up. Add a time if you need one.",
@@ -29,6 +32,7 @@ const FollowUpDialog = ({
       description={description}
       sheetOnPhone
     >
+      <FollowUpReminderNote stage={stage} className="mb-4" />
       <FollowUpFields inline value={value} onChange={setValue} />
 
       <div className="mt-5 flex justify-end gap-2">

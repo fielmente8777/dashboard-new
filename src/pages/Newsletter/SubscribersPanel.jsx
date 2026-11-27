@@ -165,11 +165,12 @@ export default function SubscribersPanel({ onSendTo, onAdd, onImport, onRetry, g
           />
         </div>
         <Segmented options={STATUS_OPTIONS} value={status} onChange={setStatus} label="Status" />
-        <div className="w-40">
+        {/* a phone: the two lists share a line */}
+        <div className="min-w-0 flex-1 sm:w-40 sm:flex-none">
           <Select options={SOURCE_OPTIONS} value={source} onChange={(e) => setSource(e.target.value)} aria-label="Source" />
         </div>
         {tagOptions.length > 1 && (
-          <div className="w-40">
+          <div className="min-w-0 flex-1 sm:w-40 sm:flex-none">
             <Select options={tagOptions} value={tag} onChange={(e) => setTag(e.target.value)} aria-label="Group" />
           </div>
         )}
@@ -194,6 +195,8 @@ export default function SubscribersPanel({ onSendTo, onAdd, onImport, onRetry, g
       {picked.length > 0 && (
         <div className="anim-fade flex flex-wrap items-center gap-2 rounded-xl border border-blue-500/30! bg-blue-500/5 px-3 py-2">
           <span className="mr-auto text-sm font-medium text-app-text">{formatNumber(picked.length)} selected</span>
+          {/* a phone: one row that scrolls sideways instead of four rows of buttons */}
+          <div className="hide-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 max-sm:w-[calc(100%+1.5rem)] sm:contents">
           <Button
             size="sm"
             variant="secondary"
@@ -213,11 +216,70 @@ export default function SubscribersPanel({ onSendTo, onAdd, onImport, onRetry, g
           </Button>
           <Button size="sm" variant="danger" icon={Trash2} onClick={() => setConfirmDelete(true)}>Delete</Button>
           <Button size="sm" variant="ghost" onClick={() => setSelected(new Map())}>Cancel</Button>
+          </div>
         </div>
       )}
 
-      {/* table */}
-      <div className="overflow-x-auto rounded-xl border border-app-border! bg-app-surface">
+      {/* a phone: one card per person instead of the wide table */}
+      <div className="overflow-hidden rounded-xl border border-app-border! bg-app-surface sm:hidden">
+        <div className="flex items-center gap-3 border-b border-app-border! bg-app-surface-secondary px-3 py-2 text-xs text-app-text-muted">
+          <Checkbox label="Select every row on this page" checked={allOnPage} indeterminate={!allOnPage && someOnPage} onChange={togglePage} />
+          Select all on this page
+        </div>
+        {list.isLoading ? (
+          <div className="space-y-2 p-3">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Skeleton key={i} className="h-14" />
+            ))}
+          </div>
+        ) : rows.length === 0 ? (
+          <p className="px-4 py-10 text-center text-sm text-app-text-muted">No subscriber matches these filters.</p>
+        ) : (
+          <ul className={`divide-y divide-app-border ${list.isFetching ? "opacity-60" : ""}`}>
+            {rows.map((row) => {
+              const rowTags = row.tags || [];
+              return (
+                <li
+                  key={row.id}
+                  onClick={() => setOpenId(row.id)}
+                  className={`flex cursor-pointer items-start gap-3 px-3 py-3 ${selected.has(row.id) ? "bg-blue-500/5" : ""}`}
+                >
+                  <span className="pt-0.5">
+                    <Checkbox label={`Select ${row.email}`} checked={selected.has(row.id)} onChange={(on) => toggle(row, on)} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-app-text">{row.name || row.email}</p>
+                        {row.name && <p className="truncate text-xs text-app-text-muted">{row.email}</p>}
+                      </div>
+                      {row.status === "subscribed" ? (
+                        <Badge tone="green">Subscribed</Badge>
+                      ) : (
+                        <Badge tone={row.unsubscribedBy === "subscriber" ? "red" : "amber"}>
+                          {row.unsubscribedBy === "subscriber" ? "Opted out" : "Unsubscribed"}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px] text-app-text-muted">
+                      <span>{SOURCE_LABELS[row.source] || row.source}</span>
+                      <span aria-hidden>·</span>
+                      <span>{formatDate(row.subscribedAt)}</span>
+                      {rowTags.slice(0, 2).map((t) => (
+                        <Badge key={t} tone="blue">{t}</Badge>
+                      ))}
+                      {rowTags.length > 2 && <Badge>+{rowTags.length - 2}</Badge>}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      {/* table (tablet and desktop) */}
+      <div className="hidden overflow-x-auto rounded-xl border border-app-border! bg-app-surface sm:block">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-app-surface-secondary text-xs uppercase tracking-wide text-app-text-muted">
             <tr>
@@ -280,10 +342,10 @@ export default function SubscribersPanel({ onSendTo, onAdd, onImport, onRetry, g
                   <td className="whitespace-nowrap px-4 py-3 text-app-text-muted">{SOURCE_LABELS[row.source] || row.source}</td>
                   <td className="px-4 py-3">
                     <div className="flex max-w-56 flex-wrap gap-1">
-                      {row.tags.slice(0, 3).map((t) => (
+                      {(row.tags || []).slice(0, 3).map((t) => (
                         <Badge key={t} tone="blue">{t}</Badge>
                       ))}
-                      {row.tags.length > 3 && <Badge>+{row.tags.length - 3}</Badge>}
+                      {(row.tags || []).length > 3 && <Badge>+{row.tags.length - 3}</Badge>}
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-app-text-muted">{formatDate(row.subscribedAt)}</td>

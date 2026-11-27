@@ -12,7 +12,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import useDebounce from "../../hooks/useDebounce";
 import SendCampaignPopup from "../../components/Popup/SendCampaignPopup";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
@@ -29,13 +30,12 @@ import { useApiAction } from "../../hooks/useApiAction";
 import { getApiErrorMessage } from "../../redux/api/baseApi";
 import {
   useDeleteContactMutation,
+  useGetContactStatsQuery,
   useGetContactsQuery,
 } from "../../redux/api/contactsApi";
 import { formatDate } from "../../utils/formateDate";
 import ContactFormDialog from "./components/ContactFormDialog";
 import { PAGE_SIZE, getSourceLabel, getSourceTone } from "./constants";
-
-const DAY = 86_400_000;
 
 const initials = (name) =>
   String(name || "?")
@@ -78,59 +78,50 @@ const Checkbox = ({ label, ...props }) => (
 const SourceBadge = ({ value }) =>
   value ? <Badge tone={getSourceTone(value)}>{getSourceLabel(value)}</Badge> : <span className="text-app-text-faint">—</span>;
 
+// their state on the newsletter list (Newsletters); "—" when they are not on it
+const NewsletterBadge = ({ value }) =>
+  value === "subscribed" ? (
+    <Badge tone="green">Subscribed</Badge>
+  ) : value === "unsubscribed" ? (
+    <Badge tone="red">Unsubscribed</Badge>
+  ) : (
+    <span className="text-app-text-faint">—</span>
+  );
+
+// the newsletter groups an uploaded list put them in, e.g. "Christmas Spain"
+const GroupNames = ({ groups }) =>
+  groups?.length ? (
+    <p className="mt-1 max-w-48 truncate text-xs text-app-text-muted" title={groups.join(", ")}>
+      {groups.join(", ")}
+    </p>
+  ) : null;
+
 const Contacts = () => {
   const { confirm } = useConfirm();
   const run = useApiAction();
-  const contacts = useGetContactsQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
   const [deleteContact] = useDeleteContactMutation();
 
   const [search, setSearch] = useState("");
   const [source, setSource] = useState("");
   const [page, setPage] = useState(1);
+  // the server pages, searches and filters (lakhs of contacts never come down at once)
+  const term = useDebounce(search.trim(), 350);
+  const contacts = useGetContactsQuery(
+    { page, limit: PAGE_SIZE, search: term, source },
+    { refetchOnMountOrArgChange: true },
+  );
+  const statsQuery = useGetContactStatsQuery(false, { refetchOnMountOrArgChange: true });
   const [selectedIds, setSelectedIds] = useState([]);
   const [campaignOpen, setCampaignOpen] = useState(false);
   // { contact } while the add / edit dialog is open (contact: null = new)
   const [editing, setEditing] = useState(null);
 
-  const all = useMemo(() => contacts.data || [], [contacts.data]);
-
-  // headline numbers for the whole list, whatever is filtered
-  const stats = useMemo(() => {
-    const since = Date.now() - 30 * DAY;
-    return {
-      total: all.length,
-      withPhone: all.filter((c) => String(c.phone || "").trim()).length,
-      withEmail: all.filter((c) => String(c.email || "").trim()).length,
-      recent: all.filter((c) => c.created_at && new Date(c.created_at).getTime() >= since).length,
-    };
-  }, [all]);
-
-  // the sources present, most contacts first
-  const sources = useMemo(() => {
-    const counts = new Map();
-    all.forEach((c) => c.added_from && counts.set(c.added_from, (counts.get(c.added_from) || 0) + 1));
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  }, [all]);
-
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return all.filter(
-      (contact) =>
-        (!source || contact.added_from === source) &&
-        (!term ||
-          [contact.name, contact.phone, contact.email].some((value) =>
-            String(value || "").toLowerCase().includes(term),
-          )),
-    );
-  }, [all, search, source]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  // stays in range when a search or a delete shortens the list
-  const currentPage = Math.min(page, totalPages);
-  const firstIndex = (currentPage - 1) * PAGE_SIZE;
-  const pageRows = filtered.slice(firstIndex, firstIndex + PAGE_SIZE);
+  const stats = statsQuery.data || { total: 0, withPhone: 0, withEmail: 0, recent: 0, sources: [] };
+  // the source chips, most contacts first ("other" = no source saved)
+  const sources = stats.sources.map(({ source: value, count }) => [value, count]);
+  const pagination = contacts.data?.pagination || { total: 0, pages: 1 };
+  const pageRows = contacts.data?.docs || [];
+  const currentPage = page;
   const pageIds = pageRows.map((contact) => contact._id);
   const isPageSelected =
     pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
@@ -163,8 +154,9 @@ const Contacts = () => {
   };
 
   const openContact = (contact) => setEditing({ contact });
-  const filtering = Boolean(search.trim() || source);
+  const filtering = Boolean(term || source);
   const loading = contacts.isLoading;
+  const statsLoading = statsQuery.isLoading;
 
   const rowActions = (contact) => (
     <div className="flex items-center justify-end gap-0.5">
@@ -261,6 +253,7 @@ const Contacts = () => {
                       {contact.name || "Unnamed"}
                     </p>
                     {contact.added_from && <SourceBadge value={contact.added_from} />}
+                    {contact.newsletter && <NewsletterBadge value={contact.newsletter} />}
                   </div>
                   <p className="truncate text-xs text-app-text-muted">
                     {[contact.phone, contact.email].filter(Boolean).join(" · ") || "No phone or email"}
@@ -286,6 +279,7 @@ const Contacts = () => {
               <th className="px-3 py-2.5 font-medium">Contact</th>
               <th className="px-3 py-2.5 font-medium">Phone</th>
               <th className="px-3 py-2.5 font-medium">Source</th>
+              <th className="px-3 py-2.5 font-medium">Newsletter</th>
               <th className="px-3 py-2.5 font-medium">Added</th>
               <th className="w-24 py-2.5 pr-4" aria-label="Actions" />
             </tr>
@@ -343,6 +337,10 @@ const Contacts = () => {
                   <td className="px-3 py-3">
                     <SourceBadge value={contact.added_from} />
                   </td>
+                  <td className="px-3 py-3">
+                    <NewsletterBadge value={contact.newsletter} />
+                    <GroupNames groups={contact.groups} />
+                  </td>
                   <td className="whitespace-nowrap px-3 py-3 text-xs text-app-text-muted">
                     {contact.created_at ? formatDate(contact.created_at) : "—"}
                   </td>
@@ -376,10 +374,10 @@ const Contacts = () => {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard label="Contacts" icon={Users} value={loading ? "…" : stats.total.toLocaleString("en-IN")} />
-            <StatCard label="With phone" icon={Phone} value={loading ? "…" : stats.withPhone.toLocaleString("en-IN")} />
-            <StatCard label="With email" icon={Mail} value={loading ? "…" : stats.withEmail.toLocaleString("en-IN")} />
-            <StatCard label="New in 30 days" icon={Sparkles} value={loading ? "…" : stats.recent.toLocaleString("en-IN")} />
+            <StatCard label="Contacts" icon={Users} value={statsLoading ? "…" : stats.total.toLocaleString("en-IN")} />
+            <StatCard label="With phone" icon={Phone} value={statsLoading ? "…" : stats.withPhone.toLocaleString("en-IN")} />
+            <StatCard label="With email" icon={Mail} value={statsLoading ? "…" : stats.withEmail.toLocaleString("en-IN")} />
+            <StatCard label="New in 30 days" icon={Sparkles} value={statsLoading ? "…" : stats.recent.toLocaleString("en-IN")} />
           </div>
 
           <section className="overflow-hidden rounded-xl border border-app-border! bg-app-surface">
@@ -405,9 +403,11 @@ const Contacts = () => {
                   />
                 </div>
                 <p className="text-xs text-app-text-muted">
-                  {filtering
-                    ? `${filtered.length.toLocaleString("en-IN")} of ${all.length.toLocaleString("en-IN")} contacts`
-                    : `${all.length.toLocaleString("en-IN")} contacts`}
+                  {contacts.isFetching && !loading
+                    ? "Loading…"
+                    : filtering
+                      ? `${pagination.total.toLocaleString("en-IN")}${pagination.capped ? "+" : ""} of ${stats.total.toLocaleString("en-IN")} contacts`
+                      : `${pagination.total.toLocaleString("en-IN")} contacts`}
                 </p>
               </div>
 
@@ -421,7 +421,7 @@ const Contacts = () => {
                     }}
                     className="shrink-0"
                   >
-                    All <span className="tabular-nums opacity-70">{all.length}</span>
+                    All <span className="tabular-nums opacity-70">{stats.total.toLocaleString("en-IN")}</span>
                   </Chip>
                   {sources.map(([value, count]) => (
                     <Chip
@@ -433,7 +433,8 @@ const Contacts = () => {
                       }}
                       className="shrink-0 whitespace-nowrap"
                     >
-                      {getSourceLabel(value)} <span className="tabular-nums opacity-70">{count}</span>
+                      {value === "other" ? "Other" : getSourceLabel(value)}{" "}
+                      <span className="tabular-nums opacity-70">{count.toLocaleString("en-IN")}</span>
                     </Chip>
                   ))}
                 </div>
@@ -461,11 +462,11 @@ const Contacts = () => {
             {list()}
           </section>
 
-          {filtered.length > PAGE_SIZE && (
+          {pagination.total > PAGE_SIZE && (
             <TablePagination
               page={currentPage}
               limit={PAGE_SIZE}
-              total={filtered.length}
+              total={pagination.total}
               itemLabel="contacts"
               onPageChange={setPage}
             />

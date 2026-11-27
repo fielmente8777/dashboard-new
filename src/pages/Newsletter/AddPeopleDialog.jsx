@@ -18,7 +18,7 @@ import { formatNumber, peopleSourceLabel } from "./newsletterUtils";
 const FROM_OPTIONS = [
   { value: "leads", label: "Leads" },
   { value: "contacts", label: "Contacts" },
-  { value: "file", label: "A file" },
+  { value: "file", label: "File or link" },
 ];
 
 // Fills a group from anywhere in the dashboard: Leads (by source: website form, WhatsApp, Meta,
@@ -48,10 +48,10 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
 
   const list = useMemo(() => (from === "file" ? [] : sources.data?.[from] || []), [sources.data, from]);
   const usable = list.filter((s) => s.withEmail > 0);
-  const count = (picked.length ? usable.filter((s) => picked.includes(s.source)) : usable).reduce(
-    (n, s) => n + s.withEmail,
-    0,
-  );
+  const chosen = picked.length ? list.filter((s) => picked.includes(s.source)) : list;
+  const count = chosen.reduce((n, s) => n + s.withEmail, 0);
+  // in the chosen sources but without an email: never added
+  const noEmail = chosen.reduce((n, s) => n + Math.max((s.total || 0) - (s.withEmail || 0), 0), 0);
 
   const toggle = (source) =>
     setPicked((now) => (now.includes(source) ? now.filter((s) => s !== source) : [...now, source]));
@@ -71,7 +71,7 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
     <>
       <Button variant="secondary" onClick={onClose}>Cancel</Button>
       <Button icon={FileSpreadsheet} disabled={!group.trim()} onClick={() => onImportFile(group.trim())}>
-        Choose a file
+        Next: file or link
       </Button>
     </>
   ) : (
@@ -87,7 +87,7 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
     <Dialog
       open={open}
       title="Add people to a group"
-      description="From your leads, your contacts or a file. Only people with an email address are added."
+      description="From your leads, your contacts, a file or a link. Only people with an email address are added."
       onClose={onClose}
       sheetOnPhone
       footer={footer}
@@ -98,6 +98,11 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
           <ul className="space-y-1 text-app-text-muted">
             <li><strong className="text-app-text">{formatNumber(result.added)}</strong> new on your newsletter list</li>
             <li><strong className="text-app-text">{formatNumber(result.updated)}</strong> already on the list, now also in this group</li>
+            {noEmail > 0 && (
+              <li>
+                <strong className="text-app-text">{formatNumber(noEmail)}</strong> left out: no email address
+              </li>
+            )}
             {result.skippedUnsubscribed > 0 && (
               <li>
                 <strong className="text-app-text">{formatNumber(result.skippedUnsubscribed)}</strong> skipped: they had
@@ -144,7 +149,7 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
           {from === "file" ? (
             <p className="flex items-start gap-2 text-sm text-app-text-muted">
               <FileSpreadsheet className="mt-0.5 size-4 shrink-0" aria-hidden />
-              A CSV or Excel file with an email column. Every other column (name, city, company…) is kept.
+              A CSV or Excel file, or a link to one (Google Sheet, CSV / Excel link, Drive, Dropbox, OneDrive), with an email column. Every other column (name, city, company…) is kept.
             </p>
           ) : (
             <Field
@@ -164,12 +169,30 @@ export default function AddPeopleDialog({ open, onClose, group: initialGroup = "
                   {usable.map((s) => (
                     <Chip key={s.source} selected={picked.includes(s.source)} onClick={() => toggle(s.source)}>
                       {peopleSourceLabel(s.source)}
-                      <span className="tabular-nums opacity-70">{formatNumber(s.withEmail)}</span>
+                      <span
+                        className="tabular-nums opacity-70"
+                        title={`${formatNumber(s.withEmail)} of ${formatNumber(s.total)} have an email address`}
+                      >
+                        {formatNumber(s.withEmail)}
+                        {s.total > s.withEmail ? ` of ${formatNumber(s.total)}` : ""}
+                      </span>
                     </Chip>
                   ))}
                 </div>
               )}
             </Field>
+          )}
+
+          {from !== "file" && usable.length > 0 && (
+            <p className="rounded-lg bg-app-surface-secondary px-3 py-2 text-xs text-app-text-muted">
+              <strong className="text-app-text">{formatNumber(count)}</strong> with an email will be added.
+              {noEmail > 0 && (
+                <>
+                  {" "}
+                  <strong className="text-app-text">{formatNumber(noEmail)}</strong> without an email {noEmail === 1 ? "is" : "are"} left out.
+                </>
+              )}
+            </p>
           )}
 
           {from !== "file" && usable.length > 0 && (

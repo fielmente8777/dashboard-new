@@ -47,6 +47,8 @@ export const dashboardRoutes = [
 
   // Live chat
   { path: PAGES.CHAT_WHATSAPP, lazy: page(() => import("../pages/ConversationalTool/WhatsApp/WhatsApp")) },
+  // WhatsApp chats whose 24-hour reply window is closing
+  { path: PAGES.CHAT_WHATSAPP_WINDOWS, lazy: page(() => import("../pages/ConversationalTool/WhatsApp/ReplyWindows")) },
   // Instagram DMs (the old placeholder, with the WhatsApp call test, is still in Instagram/Instagram.jsx)
   { path: PAGES.CHAT_INSTAGRAM, lazy: page(() => import("../pages/ConversationalTool/InstagramDM/InstagramDM")) },
   { path: PAGES.CHAT_FACEBOOK, lazy: page(() => import("../pages/ConversationalTool/Facebook/Facebook")) },
@@ -87,6 +89,8 @@ export const dashboardRoutes = [
   { path: PAGES.SEO_LOCAL, lazy: page(() => import("../pages/SEO/LocalSeo/LocalSeo")) },
   { path: PAGES.SEO_WEBSITE, lazy: page(() => import("../pages/SEO/WebsiteSeo/WebsiteSeo")) },
   { path: PAGES.INSIGHTS_GOOGLE_ANALYTICS, lazy: page(() => import("../pages/GoogleAnalytics/GoogleAnalytics")) },
+  // Google Search Console: searches, clicks and position on Google
+  { path: PAGES.INSIGHTS_GOOGLE_CONSOLE, lazy: page(() => import("../pages/SearchConsole/SearchConsole")) },
   { path: PAGES.INSIGHTS_META_ADS, lazy: page(() => import("../pages/Feedback/Feedback")) },
   { path: PAGES.INSIGHTS_GOOGLE_CONSOLE, lazy: page(() => import("../pages/Feedback/Feedback")) },
   { path: PAGES.INSIGHTS_GMB, lazy: page(() => import("../pages/Feedback/Feedback")) },
@@ -95,6 +99,7 @@ export const dashboardRoutes = [
   { path: PAGES.INSIGHTS_LEADS, lazy: page(() => import("../pages/Feedback/Feedback")) },
   { path: PAGES.ANALYTICS_REPORTING, lazy: page(() => import("../pages/Analytics/AnalyticsReporting")) },
   { path: PAGES.META_INSIGHTS, lazy: page(() => import("../pages/Meta/MetaPageInsights")) },
+  { path: PAGES.REPORTS, lazy: page(() => import("../pages/Reports/Reports")) },
   { path: PAGES.META_LEADS, lazy: leadsList(LEAD_SOURCES.meta) },
   { path: PAGES.GMB_OVERVIEW, lazy: page(() => import("../pages/Gmb/Overview")) },
   { path: PAGES.GMB_KEYWORDS, lazy: page(() => import("../pages/Gmb/Keyword")) },
@@ -169,7 +174,6 @@ export const dashboardRoutes = [
 
   // Placeholders
   { path: PAGES.FEEDBACK, lazy: page(() => import("../pages/Feedback/Feedback")) },
-  { path: PAGES.REPORTS, lazy: page(() => import("../pages/Feedback/Feedback")) },
   { path: PAGES.ANALYTICS, lazy: page(() => import("../pages/Feedback/Feedback")) },
   { path: PAGES.HELP, lazy: page(() => import("../pages/Feedback/Feedback")) },
 ];

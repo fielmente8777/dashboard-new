@@ -1,10 +1,11 @@
-import { ChevronRight, CloudDownload } from "lucide-react";
+import { ChevronRight, CloudDownload, Loader2, PencilLine } from "lucide-react";
 import Button from "../../../components/ui/Button";
 import Badge from "../../../components/ui/Badge";
 import Card from "../../../components/ui/Card";
 import DataTable from "../../../components/ui/DataTable";
 import Icon from "../../../components/ui/Icon";
 import { ErrorState } from "../../../components/ui/States";
+import Switch from "../../../components/ui/Switch";
 import {
   formatCompact,
   formatCurrency,
@@ -27,7 +28,28 @@ const num = (header, key, format) => ({
     row[key] ? format(row[key]) : <span className="text-app-text-faint">—</span>,
 });
 
-const columns = (level, selectedId) => [
+const stop = (e) => e.stopPropagation();
+
+// manage: { canManage, busyId, onToggle(row), onBudget(row) } — owners and admins
+const columns = (level, selectedId, manage) => [
+  ...(manage?.canManage
+    ? [
+        {
+          key: "on",
+          header: "On",
+          className: "w-12",
+          render: (row) => (
+            <span onClick={stop} className="inline-flex items-center" title={row.paused ? "Paused: switch on" : "Running: pause"}>
+              {manage.busyId === row.id ? (
+                <Icon icon={Loader2} size="sm" className="animate-spin text-app-text-muted" />
+              ) : (
+                <Switch checked={!row.paused} onChange={() => manage.onToggle(row)} label={row.paused ? `Switch on ${row.name}` : `Pause ${row.name}`} />
+              )}
+            </span>
+          ),
+        },
+      ]
+    : []),
   {
     key: "name",
     header: TITLES[level].noun,
@@ -45,6 +67,31 @@ const columns = (level, selectedId) => [
       </span>
     ),
   },
+  ...(level === "campaign"
+    ? [
+        {
+          key: "budget",
+          header: "Budget / day",
+          className: "whitespace-nowrap text-right tabular-nums",
+          render: (row) => (
+            <span className="inline-flex items-center justify-end gap-1" onClick={manage?.canManage ? stop : undefined}>
+              {row.budget ? formatCurrency(row.budget) : <span className="text-app-text-faint">—</span>}
+              {manage?.canManage && (
+                <button
+                  type="button"
+                  onClick={() => manage.onBudget(row)}
+                  aria-label={`Change the budget of ${row.name}`}
+                  title="Change daily budget"
+                  className="rounded-md p-1 text-app-text-muted hover:bg-app-surface-secondary hover:text-app-text"
+                >
+                  <Icon icon={PencilLine} size="xs" />
+                </button>
+              )}
+            </span>
+          ),
+        },
+      ]
+    : []),
   num("Impr.", "impressions", formatCompact),
   num("Clicks", "clicks", formatNumber),
   num("CTR", "ctr", formatPercent),
@@ -56,7 +103,13 @@ const columns = (level, selectedId) => [
     key: "lastActivity",
     header: "Last active",
     className: "whitespace-nowrap text-right text-xs text-app-text-muted",
-    render: (row) => (row.lastActivity ? formatDate(row.lastActivity) : "Never"),
+    // only what has been synced is known: an older campaign may have run before that
+    render: (row) =>
+      row.lastActivity ? (
+        formatDate(row.lastActivity)
+      ) : (
+        <span title="No spend in the data synced so far (a sync pulls the last 90 days)">Not in synced data</span>
+      ),
   },
   ...(level === "ad"
     ? []
@@ -72,7 +125,7 @@ const columns = (level, selectedId) => [
 
 // The children of what is selected, with their numbers for the date range.
 // A row opens that campaign / ad group / ad.
-const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen, onSync, syncing }) => {
+const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen, onSync, syncing, manage, actions }) => {
   const { level, rows, loading, fetching, error, refetch, levelSynced } = breakdown;
   const showSyncHint = !loading && !error && rows.length > 0 && !levelSynced;
   const { title, empty } = TITLES[level];
@@ -81,6 +134,7 @@ const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen, onSync, sync
   return (
     <Card
       title={scopeName ? `${title} in ${scopeName}` : title}
+      actions={actions}
       description={
         rows.length
           ? `${rows.length} ${rows.length === 1 ? TITLES[level].noun : `${TITLES[level].noun}s`}, ${active} with activity in this period · highest spend first`
@@ -106,7 +160,7 @@ const BreakdownTable = ({ breakdown, scopeName, selectedId, onOpen, onSync, sync
       ) : (
         <div className={`transition-opacity ${fetching && !loading ? "opacity-60" : ""}`}>
           <DataTable
-            columns={columns(level, selectedId)}
+            columns={columns(level, selectedId, manage)}
             rows={rows}
             rowKey={(row) => row.id}
             onRowClick={onOpen}

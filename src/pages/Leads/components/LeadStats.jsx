@@ -1,3 +1,4 @@
+import { ALL_FOLLOW_UPS } from "../../../data/constant";
 import {
   BellRing,
   CircleCheckBig,
@@ -33,7 +34,7 @@ const CARDS = [
     ring: "ring-sky-500/50",
   },
   {
-    stage: "Follow Up",
+    stage: ALL_FOLLOW_UPS,
     label: "Follow up",
     icon: BellRing,
     tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
@@ -106,7 +107,7 @@ const LeadStats = ({ filters, stage, onStageChange }) => {
     useStageCount(filters, ""),
     useStageCount(filters, "Open"),
     useStageCount(filters, "Contacted"),
-    useStageCount(filters, "Follow Up"),
+    useStageCount(filters, ALL_FOLLOW_UPS),
     useStageCount(filters, "Converted"),
   ];
   const total = counts[0].count || 0;

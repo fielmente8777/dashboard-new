@@ -1,3 +1,4 @@
+import GetAppLink from "./GetAppLink";
 import { Settings, Store } from "lucide-react";
 import { createElement, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -111,6 +112,8 @@ const SidebarNav = ({ collapsed, onExpand }) => {
           EazStore
           <span className="ml-auto text-[11px] font-normal text-white/80">Apps &amp; services</span>
         </button>
+        {/* the Android app on Google Play */}
+        <GetAppLink collapsed={collapsed} />
         <SidebarNavItem item={settingsItem} collapsed={collapsed} isActive={isActive} />
       </div>
     </>

@@ -13,22 +13,21 @@ import {
   Smartphone,
 } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import { Field, Input } from "../../components/ui/Field";
 import Icon from "../../components/ui/Icon";
 import PageShell from "../../components/ui/PageShell";
-import { LOGO_ON_LIGHT_URL } from "../../config/assets";
 import { GRM_SITE_URL } from "../../config/env";
 import { useToast } from "../../context/ToastContext";
 import { hasTenant, useTenant } from "../../hooks/useTenant";
 import { selectCurrentLocation } from "../../redux/slice/UserSlice";
-import { CARD_COLORS, renderPrintCard } from "./printCard";
+import { defaultCardContent, readCardDesign, saveCardDesign } from "./cardDesign";
+import CardEditor from "./CardEditor";
+import { CARD_DESIGNS, CARD_PALETTES, renderPrintCard } from "./printCard";
 
-// on screen, inside the preview card
-const PREVIEW_QR_SIZE = 184;
 // for downloads: large enough to print sharply
 const PRINT_QR_SIZE = 1024;
 
@@ -87,13 +86,6 @@ const isHttpUrl = (value) => {
   }
 };
 
-const hostnameOf = (value) => {
-  try {
-    return new URL(value).hostname.replace(/^www\./, "");
-  } catch {
-    return value;
-  }
-};
 
 const downloadDataUrl = (dataUrl, fileName) => {
   const link = document.createElement("a");
@@ -150,53 +142,6 @@ const LinkTypePicker = ({ value, onChange }) => (
   </div>
 );
 
-// What the printed card looks like. Always light, like the paper it goes on;
-// the same layout is drawn for download in printCard.js.
-const PrintCardPreview = ({ hotelName, headline, caption, children }) => (
-  <div
-    style={{ backgroundColor: "#fff", color: CARD_COLORS.navy }}
-    className="mx-auto w-full max-w-[300px] overflow-hidden rounded-2xl shadow-[0_12px_40px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5"
-  >
-    <div
-      style={{
-        backgroundColor: CARD_COLORS.navy,
-        borderBottom: `3px solid ${CARD_COLORS.accent}`,
-      }}
-      className="px-5 py-4 text-center text-white"
-    >
-      <p className="text-[11px] text-white/70">Welcome to</p>
-      <p className="truncate text-lg font-bold capitalize leading-tight">
-        {hotelName}
-      </p>
-    </div>
-
-    <div className="px-5 pb-4 pt-5 text-center">
-      <p className="text-base font-bold leading-snug">{headline}</p>
-      <p style={{ color: CARD_COLORS.text }} className="mt-0.5 truncate text-xs">
-        {caption}
-      </p>
-
-      <div
-        style={{ borderColor: CARD_COLORS.accent }}
-        className="mx-auto mt-4 flex aspect-square w-full max-w-[212px] items-center justify-center rounded-2xl border-[3px] p-[11px]"
-      >
-        {children}
-      </div>
-
-      <p style={{ color: CARD_COLORS.text }} className="mt-3 text-[11px]">
-        Point your phone camera at the code
-      </p>
-    </div>
-
-    <div
-      style={{ borderColor: CARD_COLORS.rule, color: CARD_COLORS.faint }}
-      className="mx-5 flex items-center justify-center gap-1.5 border-t py-3 text-[10px] font-medium"
-    >
-      Powered by
-      <img src={LOGO_ON_LIGHT_URL} alt="Eazotel" className="h-3 w-auto" />
-    </div>
-  </div>
-);
 
 // QR code for the hotel's guest request (GRM) page, or for any other link.
 const Settings = () => {
@@ -212,6 +157,10 @@ const Settings = () => {
   const [qrLink, setQrLink] = useState("");
   const [copied, setCopied] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
+  // the card: design, colours and texts the team changed (kept per location)
+  const [card, setCard] = useState(() => readCardDesign(tenant.hid));
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [thumbs, setThumbs] = useState({});
 
   const hotelName = currentLocation?.local || accountName || "Your hotel";
   const grmLink = hasTenant(tenant)
@@ -221,17 +170,69 @@ const Settings = () => {
   const nextLink = linkType === "grm" ? grmLink : customLink;
   const canGenerate = linkType === "grm" ? Boolean(grmLink) : isHttpUrl(customLink);
 
-  // the card's wording follows the link the code opens
   const isGrmLink = Boolean(qrLink) && qrLink.startsWith(GRM_SITE_URL);
-  const headline = isGrmLink ? "Scan to request services" : "Scan to open";
-  const caption = isGrmLink
-    ? "Housekeeping, room service, amenities & more"
-    : hostnameOf(qrLink);
+  // the card's words start from the link the code opens; typed ones replace them
+  const defaults = useMemo(() => defaultCardContent(qrLink, hotelName), [qrLink, hotelName]);
+  const content = useMemo(
+    () => ({ ...defaults, ...(card.overrides[qrLink] || {}) }),
+    [defaults, card.overrides, qrLink],
+  );
+  const palette = CARD_PALETTES.find((p) => p.key === card.palette) || CARD_PALETTES[0];
 
-  // show the code generated last time for this hotel location
+  // show the code generated last time for this hotel location, with its card
   useEffect(() => {
     setQrLink(readSavedLink(tenant.hid));
+    setCard(readCardDesign(tenant.hid));
   }, [tenant.hid]);
+
+  const updateCard = (change) =>
+    setCard((current) => {
+      const next = { ...current, ...change };
+      saveCardDesign(tenant.hid, next);
+      return next;
+    });
+  const setText = (key, value) =>
+    updateCard({
+      overrides: {
+        ...card.overrides,
+        [qrLink]: { ...(card.overrides[qrLink] || {}), [key]: value },
+      },
+    });
+  const resetText = () => {
+    const rest = { ...card.overrides };
+    delete rest[qrLink];
+    updateCard({ overrides: rest });
+  };
+
+  // the preview and the three design pictures, drawn by the same code as the
+  // download (so what you see is what you print); a short pause while typing
+  const contentKey = JSON.stringify(content);
+  useEffect(() => {
+    if (!qrLink) return undefined;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      const qrCanvas = printQrRef.current?.querySelector("canvas");
+      if (!qrCanvas) return;
+      try {
+        const main = await renderPrintCard({ qrCanvas, content, palette, design: card.design, scale: 0.5 });
+        const small = {};
+        for (const d of CARD_DESIGNS) {
+          small[d.key] = await renderPrintCard({ qrCanvas, content, palette, design: d.key, scale: 0.18 });
+        }
+        if (!cancelled) {
+          setPreviewUrl(main);
+          setThumbs(small);
+        }
+      } catch {
+        // the preview stays as it was
+      }
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [qrLink, contentKey, palette.key, card.design]);
 
   const saveLink = (link) => {
     setQrLink(link);
@@ -272,19 +273,21 @@ const Settings = () => {
     downloadDataUrl(canvas.toDataURL("image/png"), `qr-${slugify(hotelName)}.png`);
   };
 
-  const handleDownloadCard = async () => {
+  // the chosen design, or every design (`all`)
+  const handleDownloadCard = async (all = false) => {
     const qrCanvas = printQrCanvas();
     if (!qrCanvas) return;
 
     setIsRendering(true);
     try {
-      const dataUrl = await renderPrintCard({
-        qrCanvas,
-        hotelName,
-        headline,
-        caption,
-      });
-      downloadDataUrl(dataUrl, `qr-card-${slugify(hotelName)}.png`);
+      const designs = all ? CARD_DESIGNS.map((d) => d.key) : [card.design];
+      const name = slugify(content.title || hotelName);
+      for (const design of designs) {
+        const dataUrl = await renderPrintCard({ qrCanvas, content, palette, design });
+        downloadDataUrl(dataUrl, `qr-card-${name}-${design}.png`);
+        // browsers drop downloads started in the same instant
+        if (all) await new Promise((resolve) => setTimeout(resolve, 400));
+      }
     } catch {
       showToast({ message: "Could not create the print card.", type: "error" });
     } finally {
@@ -354,7 +357,22 @@ const Settings = () => {
             </form>
           </Card>
 
-          <Card title="How it works" className="order-3 min-w-0 lg:order-none lg:col-start-1">
+          {qrLink && (
+            <CardEditor
+              className="order-3 min-w-0 lg:order-none lg:col-start-1"
+              content={content}
+              defaults={defaults}
+              design={card.design}
+              palette={card.palette}
+              thumbs={thumbs}
+              onText={setText}
+              onDesign={(design) => updateCard({ design })}
+              onPalette={(key) => updateCard({ palette: key })}
+              onResetText={resetText}
+            />
+          )}
+
+          <Card title="How it works" className="order-4 min-w-0 lg:order-none lg:col-start-1">
             <ol className="grid gap-4 sm:grid-cols-3">
               {STEPS.map((step, index) => (
                 <li key={step.title} className="flex gap-3 sm:flex-col">
@@ -380,7 +398,7 @@ const Settings = () => {
         <Card
           title="Preview"
           description={qrLink ? "This is the card you download and print." : undefined}
-          className="order-2 min-w-0 lg:sticky lg:top-4 lg:order-none lg:col-start-2 lg:row-span-2 lg:row-start-1"
+          className="order-2 min-w-0 lg:sticky lg:top-4 lg:order-none lg:col-start-2 lg:row-span-3 lg:row-start-1"
           actions={
             qrLink && (
               <Button
@@ -397,19 +415,15 @@ const Settings = () => {
           {qrLink ? (
             <>
               <div className="rounded-xl bg-app-bg px-2 py-4 sm:px-4 sm:py-6">
-                <PrintCardPreview
-                  hotelName={hotelName}
-                  headline={headline}
-                  caption={caption}
-                >
-                  <QRCodeCanvas
-                    value={qrLink}
-                    size={PREVIEW_QR_SIZE}
-                    fgColor={CARD_COLORS.navy}
-                    // shrinks with the card on narrow phones
-                    style={{ width: "100%", height: "auto", maxWidth: PREVIEW_QR_SIZE }}
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt="The print card"
+                    className="mx-auto w-full max-w-[300px] rounded-2xl shadow-[0_12px_40px_-12px_rgba(15,23,42,0.35)] ring-1 ring-black/5"
                   />
-                </PrintCardPreview>
+                ) : (
+                  <div className="mx-auto aspect-[12/17] w-full max-w-[300px] animate-pulse rounded-2xl bg-app-surface-secondary" />
+                )}
               </div>
 
               {/* the code used for downloads, drawn large off screen */}
@@ -418,7 +432,7 @@ const Settings = () => {
                   value={qrLink}
                   size={PRINT_QR_SIZE}
                   marginSize={4}
-                  fgColor={CARD_COLORS.navy}
+                  fgColor={palette.primary}
                 />
               </div>
 
@@ -462,11 +476,19 @@ const Settings = () => {
                 size="lg"
                 icon={Printer}
                 loading={isRendering}
-                onClick={handleDownloadCard}
+                onClick={() => handleDownloadCard(false)}
                 className="mt-3 w-full whitespace-nowrap"
               >
                 Download print card
               </Button>
+              <button
+                type="button"
+                disabled={isRendering}
+                onClick={() => handleDownloadCard(true)}
+                className="mt-1.5 w-full text-center text-xs font-medium text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400"
+              >
+                Download all {CARD_DESIGNS.length} designs
+              </button>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <Button
                   variant="secondary"

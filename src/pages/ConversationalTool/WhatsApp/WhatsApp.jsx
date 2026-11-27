@@ -284,6 +284,7 @@ const WhatsApp = () => {
               conversation={openConversation}
               hid={hid}
               knownLeadId={leadLinks[openConversation._id]}
+              canCall={Boolean(integration.data?.exotel)}
               lastActive={
                 openMessages.data?.at(-1)?.createdAt ||
                 openConversation.last_message?.created_at

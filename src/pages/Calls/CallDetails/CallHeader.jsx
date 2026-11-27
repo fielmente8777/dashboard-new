@@ -37,9 +37,9 @@ const CallHeader = ({ call, checkingWhatsApp, onWhatsApp, onCallBack }) => {
           </span>
           <div className="min-w-0">
             <h1 className="truncate text-xl font-semibold tabular-nums text-app-text">
-              {call.callerName || guest || "Unknown caller"}
+              {(call.guest?.name || call.callerName) || guest || "Unknown caller"}
             </h1>
-            {call.callerName && guest && (
+            {(call.guest?.name || call.callerName) && guest && (
               <p className="text-sm tabular-nums text-app-text-muted">{guest}</p>
             )}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">

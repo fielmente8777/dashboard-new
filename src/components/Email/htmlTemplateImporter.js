@@ -7,8 +7,13 @@ import { uploadImageToServer } from "../../redux/api/uploadApi";
 // mail apps clip or block such emails. Each embedded picture is uploaded to our
 // image store once and the file then links to it instead.
 //
-//   const { html, name, subject, hostedImages, sizeKb } = await htmlTemplateImporter.read(file);
+//   const { html, name, subject, hostedImages, sizeKb } = await htmlTemplateImporter.read(file, pictures);
 // throws an Error with a message to show.
+//
+// Pictures that point at the user's computer ("images/hero.jpg") can't be seen
+// by guests. When those picture files are picked too (with the .html, or later
+// with linkLocalImages), they are uploaded and the design links to them.
+// mobileCheck() lists what will look wrong on a phone.
 export class HtmlTemplateImporter {
   static MAX_FILE_BYTES = 30 * 1024 * 1024; // what we are willing to read at all
   static MAX_HTML_BYTES = 2 * 1024 * 1024; // what is left once pictures are links
@@ -17,7 +22,7 @@ export class HtmlTemplateImporter {
   // data:image/...;base64,... inside src="", url(...) or srcset
   static DATA_URI = /data:image\/(png|jpe?g|gif|webp|svg\+xml|bmp);base64,([A-Za-z0-9+/=\s]+)/gi;
 
-  async read(file) {
+  async read(file, pictures = []) {
     if (!file) throw new Error("Choose a file.");
     if (!/\.html?$/i.test(file.name) && file.type !== "text/html") throw new Error("Choose an .html file.");
     if (file.size > HtmlTemplateImporter.MAX_FILE_BYTES) throw new Error("That file is over 30 MB.");
@@ -27,6 +32,12 @@ export class HtmlTemplateImporter {
 
     const { html: linked, count } = await this.hostEmbeddedImages(html);
     html = linked;
+    let fromComputer = 0;
+    if (pictures.length) {
+      const result = await this.linkLocalImages(html, pictures);
+      html = result.html;
+      fromComputer = result.linked;
+    }
 
     const bytes = new Blob([html]).size;
     if (bytes > HtmlTemplateImporter.MAX_HTML_BYTES) {
@@ -38,7 +49,7 @@ export class HtmlTemplateImporter {
       html,
       name: file.name.replace(/\.html?$/i, ""),
       subject: title || "",
-      hostedImages: count,
+      hostedImages: count + fromComputer,
       sizeKb: Math.round(bytes / 1024),
       tooLongForGmail: bytes > HtmlTemplateImporter.CLIP_BYTES,
       localImages: this.localImagePaths(html),
@@ -145,14 +156,91 @@ export class HtmlTemplateImporter {
     return url;
   }
 
+  // every picture reference: <img src>, background="", CSS url(...)
+  static PICTURE_REFS = [
+    /<img[^>]+src\s*=\s*["']([^"']+)["']/gi,
+    /\sbackground\s*=\s*["']([^"']+)["']/gi,
+    /url\(\s*["']?([^"')]+?)["']?\s*\)/gi,
+  ];
+
+  isLocal(src) {
+    const value = String(src || "").trim();
+    return Boolean(value) && !/^(https?:|cid:|data:|mailto:|#)/i.test(value) && !value.startsWith("//") && !value.startsWith("{{");
+  }
+
   // pictures pointing at the user's own computer: guests can't see them
   localImagePaths(html) {
     const paths = [];
-    for (const match of html.matchAll(/<img[^>]+src\s*=\s*["']([^"']+)["']/gi)) {
-      const src = match[1].trim();
-      if (!/^(https?:|cid:|data:)/i.test(src) && !src.startsWith("//") && !src.startsWith("{{")) paths.push(src);
+    for (const pattern of HtmlTemplateImporter.PICTURE_REFS) {
+      for (const match of html.matchAll(pattern)) {
+        const src = match[1].trim();
+        if (this.isLocal(src) && /\.(png|jpe?g|gif|webp|svg|bmp)(\?.*)?$/i.test(src)) paths.push(src);
+      }
     }
     return [...new Set(paths)];
+  }
+
+  // "images/Hero%20Photo.JPG?v=2" -> "hero photo.jpg"
+  baseName(path) {
+    let name = String(path || "").split(/[?#]/)[0].split(/[\\/]/).pop() || "";
+    try {
+      name = decodeURIComponent(name);
+    } catch {
+      // keep it as written
+    }
+    return name.trim().toLowerCase();
+  }
+
+  // uploads the picked picture files that the design points to (matched by
+  // file name) and swaps each local path for its link
+  async linkLocalImages(html, files) {
+    const paths = this.localImagePaths(html);
+    const byName = new Map();
+    for (const file of files) {
+      if (/^image\//.test(file.type) || /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(file.name)) byName.set(this.baseName(file.name), file);
+    }
+    const wanted = paths.filter((p) => byName.has(this.baseName(p)));
+    if (!wanted.length) return { html, linked: 0, missing: paths };
+
+    const urls = new Map(); // file name -> hosted link
+    let number = 0;
+    const queue = [...new Set(wanted.map((p) => this.baseName(p)))];
+    const worker = async () => {
+      while (queue.length) {
+        const name = queue.shift();
+        number += 1;
+        const file = await this.uploadable(byName.get(name));
+        urls.set(name, await this.upload(file, number));
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(3, queue.length) }, worker));
+
+    let out = html;
+    for (const path of wanted) {
+      const url = urls.get(this.baseName(path));
+      if (url) out = out.split(path).join(url);
+    }
+    return { html: out, linked: urls.size, missing: this.localImagePaths(out) };
+  }
+
+  // what will look wrong on a phone; [] = looks fine (the send-time fix still runs)
+  mobileCheck(html) {
+    const issues = [];
+    const widths = [
+      ...[...html.matchAll(/\swidth\s*=\s*["']?(\d{3,4})/gi)].map((m) => Number(m[1])),
+      ...[...html.matchAll(/(?:^|[;"'\s])(?:min-)?width\s*:\s*(\d{3,4})px/gi)].map((m) => Number(m[1])),
+    ];
+    const widest = Math.max(0, ...widths);
+    if (widest > 700) issues.push(`It is laid out ${widest}px wide, built for a computer screen (emails are 600px).`);
+    if (/display\s*:\s*(flex|grid)|position\s*:\s*(absolute|fixed)/i.test(html)) {
+      issues.push("It uses website layout (flex / grid / positioned boxes) that most mail apps ignore.");
+    }
+    if (/<link[^>]+rel\s*=\s*["']?stylesheet/i.test(html)) issues.push("Its styling comes from a separate file that mail apps won't load.");
+    if (/<script[\s>]/i.test(html)) issues.push("It has scripts, which mail apps remove.");
+    if (!/<meta[^>]+name\s*=\s*["']?viewport/i.test(html) && !/@media/i.test(html)) {
+      issues.push("It has no phone layout (no viewport or @media rules).");
+    }
+    return issues;
   }
 }
 

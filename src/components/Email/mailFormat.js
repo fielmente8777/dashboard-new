@@ -14,6 +14,27 @@ export const mailDate = (value) => {
   return date.toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "2-digit" });
 };
 
+// When a campaign went out, for the Sent column: { main, sub, title }
+//   today        "12 min ago" · "Today, 3:45 pm"   ("Just now" under a minute)
+//   this year    "24 Nov"     · "3:45 pm"
+//   older        "24 Nov 2025" · "3:45 pm"
+export const sentWhen = (value, now = Date.now()) => {
+  if (!value) return { main: "—", sub: "", title: "" };
+  const date = new Date(value);
+  const time = date.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+  const title = date.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const today = new Date(now);
+  if (date.toDateString() === today.toDateString()) {
+    const minutes = Math.max(0, Math.floor((now - date.getTime()) / 60000));
+    const main =
+      minutes < 1 ? "Just now" : minutes < 60 ? `${minutes} min ago` : `${Math.floor(minutes / 60)} h ago`;
+    return { main, sub: `Today, ${time}`, title };
+  }
+  const sameYear = date.getFullYear() === today.getFullYear();
+  const main = date.toLocaleDateString("en-IN", { day: "numeric", month: "short", ...(sameYear ? {} : { year: "numeric" }) });
+  return { main, sub: time, title };
+};
+
 // the full date in the open message: "Thu, 20 Nov 2026, 3:45 pm (2 hours ago)"
 export const mailFullDate = (value) => {
   if (!value) return "";
