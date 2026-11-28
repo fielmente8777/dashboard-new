@@ -86,12 +86,16 @@ export default function GroupCheckDialog({ groups, onClose }) {
       { title: "Remove addresses that would fail", confirmText: "Remove" },
     );
     if (!ok) return;
+    // the addresses shown here as bad: the server checks only these again (seconds, not the whole list)
+    const emails = (data?.rows || []).filter((r) => (r.state === "bounced" || r.state === "cant_receive") && !r.onDoNotEmail).map((r) => r.email);
     try {
-      const { removed } = await clean({ groups, states: ["bounced", "cant_receive"] }).unwrap();
+      const { removed } = await clean({ groups, states: ["bounced", "cant_receive"], emails }).unwrap();
       showToast({ message: `${formatNumber(removed)} taken off your list`, type: "success" });
       await run(groups);
     } catch (error) {
-      showToast({ message: newsletterError(error), type: "error" });
+      showToast({ message: newsletterError(error, "Couldn't remove them. Please try again."), type: "error", duration: 8000 });
+      // the answer can be lost after the server finished: show what the list is now
+      recheck();
     }
   };
 

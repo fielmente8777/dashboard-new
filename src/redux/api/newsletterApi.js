@@ -218,5 +218,16 @@ export async function downloadSubscribersCsv(filter = {}) {
 }
 
 // The server's message (gian-new's `error.message`), for toasts.
-export const newsletterError = (error, fallback = "Something went wrong. Please try again.") =>
-  error?.data?.error?.message || fallback;
+// The server's own words when it gave any: a newsletter error ({ error: { message } }), else the
+// text of an unexpected failure (gian's error handler answers { responseMessage }), so a failure
+// can be traced instead of every one reading "Something went wrong".
+export const newsletterError = (error, fallback = "Something went wrong. Please try again.") => {
+  const data = error?.data;
+  if (data?.error?.message) return data.error.message;
+  if (error?.status === "FETCH_ERROR") return "Couldn't reach the server, or it stopped answering. Please try again.";
+  // a gateway page (HTML) instead of an answer: RTK keeps the real status in originalStatus
+  const status = error?.originalStatus ?? error?.status;
+  if ([502, 503, 504, 524].includes(status)) return "The server took too long to answer. Please try again in a minute.";
+  const detail = typeof data?.responseMessage === "string" ? data.responseMessage.trim().slice(0, 160) : "";
+  return detail ? `${fallback} (${detail})` : fallback;
+};
