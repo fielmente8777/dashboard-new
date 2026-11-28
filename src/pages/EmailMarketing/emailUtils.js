@@ -61,9 +61,12 @@ export const CAMPAIGN_TONE = {
   failed: "red",
 };
 
+// words that read better than the raw status ("scheduled" = the Undo minutes before it starts)
+const CAMPAIGN_LABEL = { scheduled: "Starts soon", stopping: "Pausing" };
+
 export const campaignStatus = (status) => ({
   tone: CAMPAIGN_TONE[status] || "gray",
-  label: status ? status[0].toUpperCase() + status.slice(1) : "Unknown",
+  label: CAMPAIGN_LABEL[status] || (status ? status[0].toUpperCase() + status.slice(1) : "Unknown"),
 });
 
 // share of `part` in `whole`, as a whole percentage

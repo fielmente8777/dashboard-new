@@ -1,4 +1,4 @@
-import { CircleAlert, Loader2, PauseCircle, RefreshCw, RotateCcw } from "lucide-react";
+import { CircleAlert, CircleCheck, Loader2, PauseCircle, RefreshCw, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
@@ -79,7 +79,22 @@ export default function CampaignDeliveryBar({ campaignId, onChanged, refreshSign
     );
   }
 
-  if (!canRetry && !failedPermanent) return null;
+  // Finished, nothing to send again. Bad addresses are normal on any list; this is not an
+  // error (it used to be a red "All reachable recipients got this email" box), just what
+  // happened to them.
+  if (!canRetry) {
+    if (!failedPermanent) return null;
+    return (
+      <div className="flex items-start gap-2 rounded-lg border border-emerald-200! bg-emerald-50 px-3 py-2.5 text-sm text-emerald-900 dark:border-emerald-500/30! dark:bg-emerald-500/10 dark:text-emerald-200">
+        <CircleCheck className="mt-0.5 size-4 shrink-0" />
+        <p className="leading-snug">
+          <span className="font-medium">Finished sending.</span> {n(failedPermanent)}{" "}
+          {failedPermanent === 1 ? "address doesn't exist or can't receive email" : "addresses don't exist or can't receive email"}. They
+          are on your do-not-email list now, so no campaign will email them again.
+        </p>
+      </div>
+    );
+  }
 
   const total = pending + failedRetryable;
   const label = failedRetryable && !pending ? "Retry failed" : "Resume sending";
@@ -122,29 +137,25 @@ export default function CampaignDeliveryBar({ campaignId, onChanged, refreshSign
     >
       <Icon className="size-4 shrink-0" />
       <div className="min-w-0 flex-1 leading-snug">
-        {canRetry ? (
-          <p className="font-medium">
-            {[
-              failedRetryable && `${n(failedRetryable)} failed`,
-              pending && `${n(pending)} not sent yet`,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-        ) : (
-          <p className="font-medium">All reachable recipients got this email.</p>
-        )}
+        <p className="font-medium">
+          {[
+            failedRetryable && `${n(failedRetryable)} failed`,
+            pending && `${n(pending)} not sent yet`,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
         {stuck && <p className="text-xs opacity-80">Sending was interrupted. Resume to continue where it stopped.</p>}
         {pauseReason && !stuck && <p className="text-xs opacity-80">{pauseReason}</p>}
         {failedPermanent > 0 && (
-          <p className="text-xs opacity-80">{n(failedPermanent)} bounced or invalid address(es) won't be retried.</p>
+          <p className="text-xs opacity-80">
+            {n(failedPermanent)} bad {failedPermanent === 1 ? "address is" : "addresses are"} on your do-not-email list and won&apos;t be emailed.
+          </p>
         )}
       </div>
-      {canRetry && (
-        <Button size="sm" icon={RotateCcw} onClick={retry} loading={retrying}>
-          {label} ({n(total)})
-        </Button>
-      )}
+      <Button size="sm" icon={RotateCcw} onClick={retry} loading={retrying}>
+        {label} ({n(total)})
+      </Button>
     </div>
   );
 }

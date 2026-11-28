@@ -53,11 +53,14 @@ import MailBody from "./MailBody";
 import { avatarColor, mailFullDate, recipientsSummary, SENDER_VIA, senderNote, sentBy } from "./mailFormat";
 
 // the filters above the table, with their icon and colour
+// (server names: "went_out" = everyone it went out to, bounces included; "sent" = went out and
+// did not bounce, shown as Delivered; "delivered" = confirmed by Amazon or opened)
 const FILTERS = [
   { value: "", label: "All", icon: Inbox },
+  { value: "went_out", label: "Sent", icon: Send, tone: "text-blue-600 dark:text-blue-400" },
   {
     value: "sent",
-    label: "Sent",
+    label: "Delivered",
     icon: CircleCheck,
     tone: "text-emerald-600 dark:text-emerald-400",
   },
@@ -75,14 +78,16 @@ const FILTERS = [
   },
   {
     value: "failed",
-    label: "Failed",
+    label: "Didn't get it",
     icon: TriangleAlert,
     tone: "text-red-500",
   },
   // from Amazon's report (emails sent through Amazon)
-  { value: "delivered", label: "Delivered", icon: CircleCheck, tone: "text-emerald-600 dark:text-emerald-400" },
+  { value: "delivered", label: "Confirmed", icon: CircleCheck, tone: "text-emerald-600 dark:text-emerald-400" },
   { value: "not_opened", label: "Not opened", icon: MailX, tone: "text-slate-500" },
-  { value: "hard_bounced", label: "Hard bounces", icon: Ban, tone: "text-red-500" },
+  { value: "hard_bounced", label: "Bounced", icon: Ban, tone: "text-red-500" },
+  { value: "skipped", label: "Bad address, not sent", icon: MailX, tone: "text-slate-500" },
+  { value: "send_error", label: "Couldn't send", icon: TriangleAlert, tone: "text-amber-500" },
   { value: "soft_bounced", label: "Soft bounces", icon: CloudOff, tone: "text-amber-500" },
   { value: "complained", label: "Spam complaints", icon: ShieldAlert, tone: "text-red-500" },
   { value: "unsubscribed", label: "Unsubscribed", icon: UserX, tone: "text-amber-500" },

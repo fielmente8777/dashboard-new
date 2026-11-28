@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import AiPausedNotice from "../AiCredits/AiPausedNotice";
 import { useAiAccess } from "../AiCredits/useAiAccess";
 import { FittedEmailPreview } from "../../pages/EmailMarketing/components/EmailPreviewFrame";
-import { aiMobileEmail } from "../../redux/api/emailMarketingApi";
+import { aiMobileEmail, createEmailTemplate, updateEmailTemplate } from "../../redux/api/emailMarketingApi";
 import Button from "../ui/Button";
 import Dialog from "../ui/Dialog";
 import { htmlTemplateImporter } from "./htmlTemplateImporter";
@@ -34,10 +34,19 @@ function Check({ ok, children, action }) {
 //  - whether it will fit a phone, with "Make it mobile-ready with AI",
 //    which rebuilds the layout (1–3 minutes) and can be undone.
 //
+//  - saved by itself to Email marketing → Templates (whole, styles included) as
+//    soon as it is read, and updated after the AI rebuild or added pictures. The
+//    server keeps one template per design, so uploading it again adds no copy.
+//    (Before, an uploaded design was used for one email only.)
+//
 //   files     the File[] chosen (null = closed)
 //   onUse({ name, subject, html })
 export default function HtmlDesignDialog({ files, onClose, onUse }) {
   const aiAccess = useAiAccess();
+  const [templateId, setTemplateId] = useState(null); // the template this design is saved as
+  const [savedHtml, setSavedHtml] = useState(""); // the html the template has now
+  const [saveState, setSaveState] = useState(""); // "" | "saving" | "saved" | "failed"
+  const saving = useRef(false);
   const [design, setDesign] = useState(null); // what htmlTemplateImporter.read gives back
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(""); // "" | "reading" | "pictures" | "ai"
@@ -54,6 +63,9 @@ export default function HtmlDesignDialog({ files, onClose, onUse }) {
     const html = files.find(isHtmlFile);
     setDesign(null);
     setError("");
+    setTemplateId(null);
+    setSavedHtml("");
+    setSaveState("");
     setBeforeAi(null);
     setAiNote(null);
     setDevice("ios");
@@ -131,6 +143,38 @@ export default function HtmlDesignDialog({ files, onClose, onUse }) {
   const lostSomething = aiNote && (aiNote.missing.links.length || aiNote.missing.images.length);
   const working = Boolean(busy);
 
+  // auto-save: a moment after the design is read or changed (not while the AI or an upload
+  // is working); one save at a time, a failed one is tried again on the next change
+  const saveDesign = async (d) => {
+    if (!d?.html || saving.current) return;
+    saving.current = true;
+    setSaveState("saving");
+    const fields = { name: d.name || "Uploaded design", subject: d.subject || "", html: d.html };
+    try {
+      const result = templateId ? await updateEmailTemplate(templateId, fields) : await createEmailTemplate({ ...fields, source: "manual" });
+      if (result?.doc?._id) setTemplateId(result.doc._id);
+      setSavedHtml(d.html);
+      setSaveState("saved");
+    } catch {
+      setSaveState("failed");
+    } finally {
+      saving.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (!design?.html || working || design.html === savedHtml) return undefined;
+    const timer = setTimeout(() => saveDesign(design), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [design, working, savedHtml, templateId]);
+
+  // "Use this design" before the auto-save had its turn: save it now too
+  const pickDesign = () => {
+    if (design.html !== savedHtml) void saveDesign(design);
+    onUse({ name: design.name, subject: design.subject, html: design.html });
+  };
+
   return (
     <Dialog
       open={open}
@@ -140,12 +184,26 @@ export default function HtmlDesignDialog({ files, onClose, onUse }) {
       size="xl"
       footer={
         <>
+          {/* auto-save status, on the left of the buttons */}
+          <span className="mr-auto flex items-center gap-1.5 text-xs text-app-text-muted" aria-live="polite">
+            {saveState === "saving" && (
+              <>
+                <Loader2 className="size-3.5 animate-spin" /> Saving to your templates…
+              </>
+            )}
+            {saveState === "saved" && (
+              <>
+                <CheckCircle2 className="size-3.5 text-emerald-600 dark:text-emerald-400" /> Saved to your templates
+              </>
+            )}
+            {saveState === "failed" && <span className="text-amber-600 dark:text-amber-400">Couldn&apos;t save to your templates</span>}
+          </span>
           <Button variant="secondary" onClick={onClose} disabled={working}>
             Cancel
           </Button>
           <Button
             disabled={!design || working}
-            onClick={() => onUse({ name: design.name, subject: design.subject, html: design.html })}
+            onClick={pickDesign}
           >
             Use this design
           </Button>

@@ -126,6 +126,20 @@ export const newsletterApi = baseApi
         invalidatesTags: ["NewsletterList", "NewsletterStats", "NewsletterTags"],
         extraOptions: APP,
       }),
+      // { groups } ([] = whole list) -> { job, plan }: Amazon's paid "does this mailbox still
+      // exist" check of the good addresses not proven lately (US$0.01 each), in the background
+      startMailboxCheck: build.mutation({
+        query: (body) => ({ url: `${BASE}/groups/mailbox-check`, method: "POST", body }),
+        transformResponse: data,
+        extraOptions: APP,
+      }),
+      // -> { job }: the latest run, polled while it runs
+      getMailboxCheck: build.query({
+        query: () => `${BASE}/groups/mailbox-check`,
+        transformResponse: data,
+        keepUnusedDataFor: 0,
+        extraOptions: APP,
+      }),
 
       // { url } -> { fileName, base64, size }: a CSV / Excel / Google Sheet from a link, downloaded by
       // the server and then read here exactly like an uploaded file
@@ -175,6 +189,8 @@ export const {
   useImportSubscribersMutation,
   useCheckNewsletterGroupsMutation,
   useCleanNewsletterGroupsMutation,
+  useStartMailboxCheckMutation,
+  useGetMailboxCheckQuery,
   useFetchSheetLinkMutation,
   useLazyGetNewsletterAudienceQuery,
   useGetNewsletterSettingsQuery,

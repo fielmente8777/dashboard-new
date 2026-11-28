@@ -183,6 +183,16 @@ export const emailMarketingApi = baseApi.injectEndpoints({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/stop`, method: "POST", body: { hid } }),
       extraOptions: NODE,
     }),
+    // the minutes before a new campaign starts: cancel it -> { result: { restore } } (the compose
+    // window's content, to open again), or start it at once
+    undoEmailCampaign: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/undo`, method: "POST", body: { hid } }),
+      extraOptions: NODE,
+    }),
+    sendEmailCampaignNow: build.mutation({
+      query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}/send-now`, method: "POST", body: { hid } }),
+      extraOptions: NODE,
+    }),
     // { hid, campaignId } - removes the campaign with its recipients (409 while it is still sending)
     deleteEmailCampaign: build.mutation({
       query: ({ hid, campaignId }) => ({ url: `${BASE}/campaigns/${campaignId}`, method: "DELETE", params: { hid } }),
@@ -600,6 +610,9 @@ export const stopEmailCampaign = ({ campaignId }) =>
   strict(e.stopEmailCampaign, { hid: selectedHid(), campaignId });
 export const startEmailCampaign = ({ campaignId }) =>
   strict(e.sendEmailCampaign, { hid: selectedHid(), campaignId });
+// -> { restore }: the email as it was in the compose window
+export const undoEmailCampaign = ({ campaignId }) => strict(e.undoEmailCampaign, { hid: selectedHid(), campaignId });
+export const sendEmailCampaignNow = ({ campaignId }) => strict(e.sendEmailCampaignNow, { hid: selectedHid(), campaignId });
 // drafts resolve with `result` and throw with the server's message (error.status = HTTP status)
 export const getEmailDrafts = () => strict(e.getEmailDrafts, { hid: selectedHid() });
 export const getEmailDraft = (id) => strict(e.getEmailDraft, { hid: selectedHid(), id });

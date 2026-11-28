@@ -359,7 +359,7 @@ export default function SentMailList({
                     onKeyDown={(e) => e.stopPropagation()}
                   >
                     <CampaignRunControl campaign={c} onChanged={onChanged} />
-                    {!["sending", "stopping", "paused"].includes(c.status) && (
+                    {!["sending", "stopping", "paused", "scheduled"].includes(c.status) && (
                       <Button size="sm" variant="secondary" icon={BarChart3} onClick={() => onOpen(c, "report")}>
                         View report
                       </Button>

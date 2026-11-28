@@ -37,7 +37,7 @@ export default function GroupsPanel({ onSend, onImport, kind = "newsletter" }) {
   const [addTo, setAddTo] = useState(null); // the group people are added to ("" = choose), or null
   const [reviewing, setReviewing] = useState(null); // the group whose people are being reviewed
   const [ticked, setTicked] = useState([]); // groups ticked for one email / one check together
-  const [checking, setChecking] = useState(null); // group names being checked, or null
+  const [checking, setChecking] = useState(null); // group names being checked ([] = whole list), or null
   const tick = (name) => setTicked((now) => (now.includes(name) ? now.filter((n) => n !== name) : [...now, name]));
 
   if (groups.isError) {
@@ -87,9 +87,15 @@ export default function GroupsPanel({ onSend, onImport, kind = "newsletter" }) {
             Eazbot and more), or from a file.
           </p>
         </div>
-        <Button icon={UserPlus} onClick={() => setAddTo("")}>
-          Add people
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {/* everyone on the list, in or out of a group: a clean list + unsubscribed + bad emails */}
+          <Button variant="secondary" icon={ShieldCheck} onClick={() => setChecking([])}>
+            Clean whole list
+          </Button>
+          <Button icon={UserPlus} onClick={() => setAddTo("")}>
+            Add people
+          </Button>
+        </div>
       </div>
 
       {list.length === 0 ? (

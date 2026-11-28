@@ -3,6 +3,8 @@ import { useCallback, useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import GroupCampaignDialog from "../../components/Email/GroupCampaignDialog";
 import ComposeEmail from "../../components/Email/ComposeEmail";
+import UndoSendBar from "../../components/Email/UndoSendBar";
+import { composeFromRestore, useOnUndone } from "../../components/Email/undoSend";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import DraftsPanel from "../../components/Email/DraftsPanel";
 import PerformancePanel from "../../components/Email/PerformancePanel";
@@ -144,6 +146,14 @@ export function EmailMarketingManagement() {
 
   /* compose / send */
   const [compose, setCompose] = useState(null); // { batchId, count, template, label }
+  // a campaign just sent, in its few minutes before it starts: { campaignId, scheduledAt, count, label }
+  const [queued, setQueued] = useState(null);
+  // Undo (the bar or a campaign's card): nothing was sent, the email opens again as it was
+  useOnUndone((restore) => {
+    setQueued(null);
+    setCompose(composeFromRestore(restore));
+    setReloadSent((n) => n + 1);
+  });
   const { send, sending, defaultFrom } = useCampaignSender();
   // the "N selected people" chip in the email reviews who gets it (groups and imported lists)
   const review = useRecipientReview(compose, setCompose);
@@ -175,9 +185,9 @@ export function EmailMarketingManagement() {
 
   // After sending, the page stays where it was, so the next group can go out
   // straight away; the toast links to the email's numbers.
-  const handleSend = async ({ toEmails, subject, html, text, from, attachments }) => {
+  const handleSend = async ({ toEmails, subject, html, text, from, attachments, restore }) => {
     try {
-      const campaignId = await send({
+      const { campaignId, scheduledAt } = await send({
         batchIds: compose?.batchId ? [compose.batchId] : [],
         toEmails,
         subject,
@@ -187,23 +197,29 @@ export function EmailMarketingManagement() {
         attachments,
         // "Past guests", "selected leads"… shown in the Sent list
         audienceLabel: compose?.label || "",
+        restore,
       });
 
       const count = (compose?.count || 0) + toEmails.length;
-      const to = compose?.label ? ` (${compose.label})` : "";
-      showToast({
-        message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}${to}.`,
-        duration: 6000,
-        action: campaignId
-          ? {
-              label: "View",
-              onClick: () => {
-                setView("sent");
-                setOpenCampaignId(campaignId);
-              },
-            }
-          : undefined,
-      });
+      if (scheduledAt) {
+        // waits a few minutes first: the bar offers Undo / Send now
+        setQueued({ campaignId, scheduledAt, count, label: compose?.label || "" });
+      } else {
+        const to = compose?.label ? ` (${compose.label})` : "";
+        showToast({
+          message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}${to}.`,
+          duration: 6000,
+          action: campaignId
+            ? {
+                label: "View",
+                onClick: () => {
+                  setView("sent");
+                  setOpenCampaignId(campaignId);
+                },
+              }
+            : undefined,
+        });
+      }
       setCompose(null);
       setClearSignal((n) => n + 1);
       setReloadSent((n) => n + 1);
@@ -438,6 +454,13 @@ export function EmailMarketingManagement() {
         />
       )}
       {review.dialog}
+      <UndoSendBar
+        queued={queued}
+        onDone={() => {
+          setQueued(null);
+          setReloadSent((n) => n + 1);
+        }}
+      />
     </PageShell>
   );
 }

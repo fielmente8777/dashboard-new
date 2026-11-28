@@ -615,6 +615,8 @@ function ComposeEmail({
       html,
       text,
       attachments,
+      // everything in this window, so "Undo" (in the minutes before it starts) can open it again
+      restore: draftPayload(),
     });
     if (sent === true) {
       if (draftsEnabled && (await drafts.discard())) onDraftsChanged?.();

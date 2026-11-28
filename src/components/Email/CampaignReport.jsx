@@ -1,4 +1,18 @@
-import { ArrowRight, Ban, CircleCheck, CloudDownload, CloudOff, Loader2, MailOpen, MailX, MousePointerClick, Send, ShieldAlert, TriangleAlert, UserX } from "lucide-react";
+import {
+  ArrowRight,
+  Ban,
+  CircleCheck,
+  CloudDownload,
+  CloudOff,
+  Loader2,
+  MailOpen,
+  MailX,
+  MousePointerClick,
+  Send,
+  ShieldAlert,
+  TriangleAlert,
+  UserX,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { describeSendProblem, formatDate, formatNumber } from "../../pages/EmailMarketing/emailUtils.js";
 import useStaleAfter from "../../hooks/useStaleAfter";
@@ -13,6 +27,31 @@ import { Delta, Kpi, TrendChart } from "./analyticsParts";
 import CampaignDeliveryBar from "./CampaignDeliveryBar";
 
 const LIVE = ["sending", "stopping"];
+
+// Amazon's mailbox-provider names, as people know them ("FrenchTelecom" is Orange's mail)
+const PROVIDER_NAMES = {
+  frenchtelecom: "Orange",
+  orange: "Orange",
+  icloud: "iCloud",
+  aol: "AOL",
+  laposte: "La Poste",
+  hotmail: "Outlook / Hotmail",
+  outlook: "Outlook / Hotmail",
+  sfr: "SFR",
+  gmx: "GMX",
+  webde: "WEB.DE",
+  tonline: "T-Online",
+  mailru: "Mail.ru",
+  yandex: "Yandex",
+  zoho: "Zoho",
+  comcast: "Comcast",
+};
+const providerName = (raw) =>
+  PROVIDER_NAMES[
+    String(raw || "")
+      .toLowerCase()
+      .replace(/[^a-z]/g, "")
+  ] || raw;
 
 // one step of "From sent to click": a bar as wide as its share of the emails sent
 function FunnelStep({ label, value, of, note, onShow }) {
@@ -87,7 +126,10 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
       await startAmazonSync({ campaignId });
       await load();
     } catch (error) {
-      showToast({ message: error?.message || "Couldn't reach Amazon. Please try again.", type: "error" });
+      showToast({
+        message: error?.message || "Couldn't reach Amazon. Please try again.",
+        type: "error",
+      });
     } finally {
       setStartingSync(false);
     }
@@ -99,7 +141,9 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
   const live = LIVE.includes(campaign?.status);
   const [refreshing, setRefreshing] = useState(false);
   const [barSignal, setBarSignal] = useState(0);
-  const { stale, loadedAt, markFresh } = useStaleAfter(STALE_IDLE_MS, { enabled: Boolean(data) && !live });
+  const { stale, loadedAt, markFresh } = useStaleAfter(STALE_IDLE_MS, {
+    enabled: Boolean(data) && !live,
+  });
   useEffect(() => {
     markFresh();
   }, [data, markFresh]);
@@ -156,23 +200,30 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
 
   const t = data.totals;
   const avg = data.average;
-  const tried = t.sent + t.failed;
+  // "failed" mixes three things the hotel must not confuse (older servers: only hard bounces known)
+  const bounced = t.bounced ?? t.hardBounced ?? 0; // went out, the address doesn't exist
+  const skipped = t.skipped ?? 0; // never sent: a known bad address
+  const sendErrors = t.sendErrors ?? Math.max(0, t.failed - bounced - skipped); // refused while sending
+  // everything that really went out (t.sent = went out and did not bounce)
+  const wentOut = t.sent + bounced;
+  const deliveredRate = pct(t.sent, wentOut);
+  const bounceRate = pct(bounced, wentOut);
   const openRate = pct(t.opened, t.sent);
   const clickRate = pct(t.clicked, t.sent);
   const avgOpen = avg ? pct(avg.opened, avg.sent) : null;
   const avgClick = avg ? pct(avg.clicked, avg.sent) : null;
   const vsAverage = (now, before) => (avg ? <Delta now={now} before={before} points /> : null);
+  const unchecked = t.amazonUnchecked || 0;
 
   return (
-    <div className="space-y-4">
+    // room at the bottom so the last card scrolls clear of the floating assistant button
+    <div className="space-y-4 pb-20">
       <p className="text-xs text-app-text-muted">
         {data.firstSentAt ? (
           <>
             Went out {formatDate(data.firstSentAt, true)} to {formatNumber(t.recipients)} {t.recipients === 1 ? "person" : "people"}
             {t.pending > 0 && <> · {formatNumber(t.pending)} still to go</>}.{" "}
-            {avg
-              ? "▲ / ▼ compare with your emails of the 90 days before it."
-              : "No emails in the 90 days before it to compare with."}
+            {avg ? "▲ / ▼ compare with your emails of the 90 days before it." : "No emails in the 90 days before it to compare with."}
           </>
         ) : (
           <>Nothing has gone out yet. The numbers appear here as soon as it starts sending.</>
@@ -183,11 +234,7 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
         New opens and clicks may have come in.
       </RefreshNotice>
 
-      <CampaignDeliveryBar
-        campaignId={campaignId}
-        refreshSignal={barSignal}
-        onChanged={() => Promise.all([load(), onChanged?.()])}
-      />
+      <CampaignDeliveryBar campaignId={campaignId} refreshSignal={barSignal} onChanged={() => Promise.all([load(), onChanged?.()])} />
 
       {t.viaAmazon > 0 ? (
         <div className="flex flex-wrap items-center gap-2 text-xs text-app-text-muted">
@@ -199,12 +246,19 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
             </span>
           ) : (
             <span>
-              Delivery, bounces and spam complaints come from Amazon
+              Bounces and spam complaints come from Amazon
               {data.amazon?.sync?.finishedAt ? ` · last checked ${formatDate(data.amazon.sync.finishedAt, true)}` : ""}.
+              {unchecked > 0 &&
+                ` Amazon is still being asked about ${formatNumber(unchecked)} ${unchecked === 1 ? "email" : "emails"}, so late bounces can still come in.`}
             </span>
           )}
           {!syncing && (
-            <button type="button" onClick={getFromAmazon} disabled={startingSync} className="font-medium text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400">
+            <button
+              type="button"
+              onClick={getFromAmazon}
+              disabled={startingSync}
+              className="font-medium text-blue-600 hover:underline disabled:opacity-50 dark:text-blue-400"
+            >
               {startingSync ? "Starting…" : "Get latest from Amazon"}
             </button>
           )}
@@ -218,29 +272,33 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
         )
       )}
 
+      {/* Row 1: what happened to the email. Row 2: the details. The numbers add up:
+          recipients = sent + bad addresses not sent + unsubscribed before sending (+ still to go);
+          sent = delivered + bounced. */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Kpi
           icon={Send}
           tone="bg-blue-500/10 text-blue-600 dark:text-blue-400"
           label="Emails sent"
-          value={formatNumber(t.sent)}
+          value={formatNumber(wentOut)}
+          title="Emails that went out. Bad addresses found before sending were not sent at all."
           caption={`of ${formatNumber(t.recipients)} recipients`}
-          onClick={() => show("sent")}
-          active={shown === "sent"}
+          onClick={() => show("went_out")}
+          active={shown === "went_out"}
         />
         <Kpi
           icon={CircleCheck}
           tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
           label="Delivered"
-          value={fmtPct(t.viaAmazon ? pct(t.delivered, tried) : pct(t.sent, tried))}
+          value={fmtPct(deliveredRate)}
           title={
             t.viaAmazon
-              ? "Confirmed by the guest's mail server (Amazon's report), out of every email tried."
-              : "Accepted by your mailbox for sending, out of every email tried. Your own mail server doesn't report deliveries."
+              ? "Went out and did not bounce, out of every email sent."
+              : "Accepted by your mail server, out of every email sent. Bounces go back to your own inbox, so they can't be counted here."
           }
-          caption={t.viaAmazon ? `${formatNumber(t.delivered)} confirmed` : `${formatNumber(t.sent)} accepted`}
-          onClick={() => show(t.viaAmazon ? "delivered" : "sent")}
-          active={shown === "delivered"}
+          caption={`${formatNumber(t.sent)} ${t.sent === 1 ? "email" : "emails"}`}
+          onClick={() => show("sent")}
+          active={shown === "sent"}
         />
         <Kpi
           icon={MailOpen}
@@ -263,13 +321,14 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           active={shown === "clicked"}
         />
         <Kpi
-          icon={TriangleAlert}
+          icon={Ban}
           tone="bg-red-500/10 text-red-600 dark:text-red-400"
-          label="Failed"
-          value={formatNumber(t.failed)}
-          caption={tried ? `${fmtPct(pct(t.failed, tried))} of tried` : ""}
-          onClick={() => show("failed")}
-          active={shown === "failed"}
+          label="Bounced"
+          value={formatNumber(bounced)}
+          title="The address doesn't exist or can't receive email. These are on your do-not-email list now and never emailed again. Keep bounces under 5%."
+          caption={t.viaAmazon ? (wentOut ? `${fmtPct(bounceRate)} of sent${bounceRate >= 5 ? " · too high" : ""}` : "") : "go back to your own inbox"}
+          onClick={() => show("hard_bounced")}
+          active={shown === "hard_bounced"}
         />
         <Kpi
           icon={UserX}
@@ -280,18 +339,21 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           onClick={() => show("unsubscribed")}
           active={shown === "unsubscribed"}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <Kpi
+          icon={MailX}
+          tone="bg-slate-500/10 text-slate-600 dark:text-slate-300"
+          label="Bad address, not sent"
+          value={formatNumber(skipped)}
+          title="Found before sending (bounced before, the domain takes no email, not an email address), so it was never sent. On your do-not-email list."
+          caption={skipped ? "skipped before sending" : "none found"}
+          onClick={skipped ? () => show("skipped") : undefined}
+          active={shown === "skipped"}
+        />
         {t.viaAmazon > 0 && (
           <>
-            <Kpi
-              icon={Ban}
-              tone="bg-red-500/10 text-red-600 dark:text-red-400"
-              label="Hard bounces"
-              value={formatNumber(t.hardBounced)}
-              title="The address doesn't exist or can't receive email. They are on your do-not-email list now and never emailed again. Amazon's limit: under 5% bounces."
-              caption={tried ? `${fmtPct(pct(t.hardBounced, tried))} of tried${pct(t.hardBounced, tried) >= 5 ? " · too high" : ""}` : ""}
-              onClick={() => show("hard_bounced")}
-              active={shown === "hard_bounced"}
-            />
             <Kpi
               icon={CloudOff}
               tone="bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -307,26 +369,40 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
               tone="bg-rose-500/10 text-rose-600 dark:text-rose-400"
               label="Spam complaints"
               value={formatNumber(t.complained)}
-              title="Guests who pressed 'Report spam'. They are unsubscribed for good. Amazon's limit: under 0.1%."
-              caption={t.delivered ? `${fmtPct(pct(t.complained, t.delivered))} of delivered` : ""}
+              title="Guests who pressed 'Report spam'. They are unsubscribed for good. Keep complaints under 0.1%."
+              caption={t.sent ? `${fmtPct(pct(t.complained, t.sent))} of delivered` : ""}
               onClick={() => show("complained")}
               active={shown === "complained"}
             />
-            <Kpi
-              icon={MailX}
-              tone="bg-slate-500/10 text-slate-600 dark:text-slate-300"
-              label="Not opened"
-              value={formatNumber(t.notOpened)}
-              caption={t.sent ? `${fmtPct(pct(t.notOpened, t.sent))} of sent` : ""}
-              onClick={() => show("not_opened")}
-              active={shown === "not_opened"}
-            />
           </>
+        )}
+        <Kpi
+          icon={MailX}
+          tone="bg-slate-500/10 text-slate-600 dark:text-slate-300"
+          label="Not opened"
+          value={formatNumber(t.notOpened)}
+          caption={t.sent ? `${fmtPct(pct(t.notOpened, t.sent))} of delivered` : ""}
+          onClick={() => show("not_opened")}
+          active={shown === "not_opened"}
+        />
+        {sendErrors > 0 && (
+          <Kpi
+            icon={TriangleAlert}
+            tone="bg-amber-500/10 text-amber-600 dark:text-amber-400"
+            label="Couldn't send"
+            value={formatNumber(sendErrors)}
+            title="The mail server refused these while sending (a limit, a login problem). See the reasons below; they can be sent again."
+            caption="see why below"
+            onClick={() => show("send_error")}
+            active={shown === "send_error"}
+          />
         )}
       </div>
 
       {shown && renderRecipients?.(shown, () => setShown(""))}
 
+      {/* Row 1: the chart and the funnel, about the same height. Row 2: providers and why some
+          didn't get it, side by side. (One tall side column left a big empty box under the chart.) */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col rounded-xl border border-app-border! bg-app-surface px-3 py-3 sm:px-4">
           <h3 className="text-sm font-semibold text-app-text">Opens and clicks, per {data.unit === "hour" ? "hour" : "day"}</h3>
@@ -349,46 +425,64 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
           )}
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
-            <h3 className="text-sm font-semibold text-app-text">From sent to click</h3>
-            <p className="text-xs text-app-text-muted">Share of the emails that went out</p>
-            <ul className="mt-3 space-y-3">
-              <FunnelStep label="Sent" value={t.sent} of={t.sent} />
-              {t.delivered > 0 && <FunnelStep label="Delivered (confirmed)" value={t.delivered} of={t.sent} />}
-              <FunnelStep label="Opened" value={t.opened} of={t.sent} onShow={() => show("opened")} />
-              <FunnelStep
-                label="Clicked"
-                value={t.clicked}
-                of={t.sent}
-                note={t.opened ? `${fmtPct(pct(t.clicked, t.opened))} of those who opened` : ""}
-                onShow={() => show("clicked")}
-              />
-            </ul>
-          </div>
+        <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
+          <h3 className="text-sm font-semibold text-app-text">From sent to click</h3>
+          <p className="text-xs text-app-text-muted">Share of the emails that went out</p>
+          <ul className="mt-3 space-y-3">
+            <FunnelStep label="Sent" value={wentOut} of={wentOut} />
+            <FunnelStep label="Delivered" value={t.sent} of={wentOut} note={bounced ? `${formatNumber(bounced)} bounced` : ""} />
+            <FunnelStep label="Opened" value={t.opened} of={wentOut} onShow={() => show("opened")} />
+            <FunnelStep
+              label="Clicked"
+              value={t.clicked}
+              of={wentOut}
+              note={t.opened ? `${fmtPct(pct(t.clicked, t.opened))} of those who opened` : ""}
+              onShow={() => show("clicked")}
+            />
+          </ul>
+        </div>
+      </div>
 
+      {(data.providers?.length > 0 || t.failed > 0) && (
+        <div className={`grid items-start gap-4 ${data.providers?.length > 0 && t.failed > 0 ? "lg:grid-cols-2" : ""}`}>
           {data.providers?.length > 0 && (
             <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
               <h3 className="text-sm font-semibold text-app-text">By mailbox provider</h3>
               <p className="text-xs text-app-text-muted">Where Amazon could tell (company mailboxes are not named)</p>
-              <ul className="mt-2 space-y-1.5 text-sm">
-                {data.providers.map((p) => (
-                  <li key={p.provider} className="flex items-center justify-between gap-2">
-                    <span className="truncate text-app-text">{p.provider}</span>
-                    <span className="shrink-0 text-xs tabular-nums text-app-text-muted">
-                      {formatNumber(p.sent)} sent · {fmtPct(pct(p.opened, p.sent))} opened
-                      {p.bounced ? <span className="text-red-600 dark:text-red-400"> · {formatNumber(p.bounced)} bounced</span> : null}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {/* a table, so long numbers never run off the card's edge */}
+              <table className="mt-2 w-full text-sm">
+                <thead>
+                  <tr className="text-[11px] text-app-text-muted">
+                    <th className="py-1 text-left font-normal">Provider</th>
+                    <th className="py-1 pl-2 text-right font-normal">Sent</th>
+                    <th className="py-1 pl-2 text-right font-normal">Opened</th>
+                    <th className="py-1 pl-2 text-right font-normal">Bounced</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.providers.map((p) => (
+                    <tr key={p.provider} className="border-t border-app-border">
+                      <td className="max-w-0 truncate py-1.5 text-app-text" title={providerName(p.provider)}>
+                        {providerName(p.provider)}
+                      </td>
+                      <td className="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-app-text">{formatNumber(p.sent)}</td>
+                      <td className="whitespace-nowrap py-1.5 pl-2 text-right tabular-nums text-app-text-muted">{fmtPct(pct(p.opened, p.sent))}</td>
+                      <td
+                        className={`whitespace-nowrap py-1.5 pl-2 text-right tabular-nums ${p.bounced ? "text-red-600 dark:text-red-400" : "text-app-text-muted"}`}
+                      >
+                        {p.bounced ? formatNumber(p.bounced) : "–"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
           {t.failed > 0 && (
             <div className="rounded-xl border border-app-border! bg-app-surface px-4 py-3">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-app-text">Why {formatNumber(t.failed)} failed</h3>
+                <h3 className="text-sm font-semibold text-app-text">Why {formatNumber(t.failed)} didn&apos;t get it</h3>
                 <button
                   type="button"
                   onClick={() => show("failed")}
@@ -412,7 +506,7 @@ export default function CampaignReport({ campaign, campaignId, onShowRecipients,
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

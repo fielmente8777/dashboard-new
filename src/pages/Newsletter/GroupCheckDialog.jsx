@@ -1,5 +1,5 @@
 import { Ban, CircleCheck, Download, FileSpreadsheet, MailX, ShieldAlert, Trash2, UserX } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "../../components/ui/Button";
 import Chip from "../../components/ui/Chip";
 import Dialog from "../../components/ui/Dialog";
@@ -8,6 +8,7 @@ import { Skeleton } from "../../components/ui/States";
 import { useConfirm } from "../../context/ConfirmContext";
 import { useToast } from "../../context/ToastContext";
 import { newsletterError, useCheckNewsletterGroupsMutation, useCleanNewsletterGroupsMutation } from "../../redux/api/newsletterApi";
+import MailboxCheckPanel from "./MailboxCheckPanel";
 import { formatNumber } from "./newsletterUtils";
 
 // what each member is, in words
@@ -20,13 +21,18 @@ const STATES = [
 ];
 const LABEL = Object.fromEntries(STATES.map((s) => [s.value, s.label]));
 const SHOWN = 200;
+// can't be emailed: the "Bad emails" sheet
+const BAD = ["bounced", "cant_receive", "risky"];
 
 /**
- * Check & export a group (or several): every member as good, bounced before (at any Eazotel
- * hotel, or blocked by Amazon), can't receive email, risky or unsubscribed, so the hotel sees
- * before sending what would fail. "Remove" puts the bounced and can't-receive ones on the
- * do-not-email list; "Export" downloads the clean list (or the whole report) as Excel / CSV.
- *   groups  the group names, null = closed
+ * Check & export a group (or several, or the whole list): every member as good, bounced before
+ * (at any Eazotel hotel, or blocked by Amazon), can't receive email, risky or unsubscribed, so
+ * the hotel sees before sending what would fail. "Remove" puts the bounced and can't-receive
+ * ones on the do-not-email list. "Download" gives one Excel file with three sheets: Subscribed
+ * (the clean list: only people who can be emailed), Unsubscribed (people who left), and Bad
+ * emails (bounced, can't receive, throwaway inboxes, with why). The CSV is the clean list only.
+ * A bad address taken off earlier is listed as a bad email, not as an unsubscribe.
+ *   groups  the group names; [] = the whole list; null = closed
  */
 export default function GroupCheckDialog({ groups, onClose }) {
   const { showToast } = useToast();
@@ -35,8 +41,10 @@ export default function GroupCheckDialog({ groups, onClose }) {
   const [clean, { isLoading: cleaning }] = useCleanNewsletterGroupsMutation();
   const [data, setData] = useState(null);
   const [filter, setFilter] = useState("");
-  const open = Array.isArray(groups) && groups.length > 0;
-  const key = open ? groups.join("|") : "";
+  const open = Array.isArray(groups);
+  const everyone = open && groups.length === 0;
+  // "#" so the whole list ([]) still has a key to check by
+  const key = open ? `#${groups.join("|")}` : "";
 
   const run = async (names) => {
     setData(null);
@@ -47,16 +55,30 @@ export default function GroupCheckDialog({ groups, onClose }) {
     }
   };
 
+  // the group names behind the key ([] = whole list)
+  const names = useMemo(() => (key ? key.slice(1).split("|").filter(Boolean) : []), [key]);
+
   useEffect(() => {
     if (!key) return;
     setFilter("");
-    run(key.split("|"));
+    run(names);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
+  // after a mailbox check: the same groups again, without clearing what is on screen first
+  const recheck = useCallback(async () => {
+    try {
+      setData(await check({ groups: names }).unwrap());
+    } catch {
+      // the old result stays; the toast already said how the mailbox check ended
+    }
+  }, [check, names]);
+
   const rows = useMemo(() => (data?.rows || []).filter((r) => !filter || r.state === filter), [data, filter]);
-  const bad = (data?.counts?.bounced || 0) + (data?.counts?.cant_receive || 0);
-  const title = groups?.length === 1 ? `Check “${groups[0]}”` : `Check ${groups?.length || 0} groups`;
+  // bad addresses still on the list (the ones taken off before are skipped by campaigns already)
+  const bad = Math.max(0, (data?.counts?.bounced || 0) + (data?.counts?.cant_receive || 0) - (data?.alreadyRemoved || 0));
+  const title = everyone ? "Check your whole list" : groups?.length === 1 ? `Check “${groups[0]}”` : `Check ${groups?.length || 0} groups`;
+  const fileBase = `${(everyone ? "email-list" : groups?.length === 1 ? groups[0] : "groups").replace(/[^\w-]+/g, "-")}-${new Date().toISOString().slice(0, 10)}`;
 
   const removeBad = async () => {
     const ok = await confirm(
@@ -73,32 +95,61 @@ export default function GroupCheckDialog({ groups, onClose }) {
     }
   };
 
-  /** downloads the members (only the good ones, or all with their state) */
-  const exportList = async (format, onlyGood) => {
+  /** one Excel file: Subscribed (clean) · Unsubscribed · Bad emails */
+  const downloadExcel = async () => {
     const XLSX = await import("xlsx");
-    const list = (data?.rows || []).filter((r) => !onlyGood || r.state === "good");
-    const sheet = XLSX.utils.json_to_sheet(
-      list.map((r) =>
-        onlyGood
-          ? { Email: r.email, Name: r.name || "", Groups: r.groups.join(", ") }
-          : { Email: r.email, Name: r.name || "", Groups: r.groups.join(", "), Status: LABEL[r.state], Why: r.reason || "", "Did you mean": r.suggestion || "" },
-      ),
+    const all = data?.rows || [];
+    const good = all.filter((r) => r.state === "good");
+    const left = all.filter((r) => r.state === "unsubscribed");
+    const wrong = all.filter((r) => BAD.includes(r.state));
+    // an empty sheet still says why it is empty
+    const sheet = (rows, empty) => XLSX.utils.json_to_sheet(rows.length ? rows : [empty]);
+    const book = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      book,
+      sheet(good.map((r) => ({ Email: r.email, Name: r.name || "", Groups: r.groups.join(", ") })), { Email: "No one here can be emailed" }),
+      "Subscribed (clean)",
     );
-    const name = `${(groups.length === 1 ? groups[0] : "groups").replace(/[^\w-]+/g, "-")}-${onlyGood ? "clean" : "checked"}-${new Date().toISOString().slice(0, 10)}`;
-    if (format === "csv") {
-      const blob = new Blob(["﻿", XLSX.utils.sheet_to_csv(sheet)], { type: "text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = Object.assign(document.createElement("a"), { href: url, download: `${name}.csv` });
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    } else {
-      const book = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(book, sheet, onlyGood ? "Clean list" : "Checked list");
-      XLSX.writeFile(book, `${name}.xlsx`);
-    }
-    showToast({ message: `${formatNumber(list.length)} addresses exported`, type: "success" });
+    XLSX.utils.book_append_sheet(
+      book,
+      sheet(left.map((r) => ({ Email: r.email, Name: r.name || "", Groups: r.groups.join(", "), Why: r.reason || "" })), { Email: "No one unsubscribed" }),
+      "Unsubscribed",
+    );
+    XLSX.utils.book_append_sheet(
+      book,
+      sheet(
+        wrong.map((r) => ({
+          Email: r.email,
+          Name: r.name || "",
+          Groups: r.groups.join(", "),
+          Problem: LABEL[r.state],
+          Why: r.reason || "",
+          "Did you mean": r.suggestion || "",
+          "Off your list": r.onDoNotEmail ? "Yes" : "Not yet",
+        })),
+        { Email: "No bad emails" },
+      ),
+      "Bad emails",
+    );
+    XLSX.writeFile(book, `${fileBase}.xlsx`);
+    showToast({
+      message: `Downloaded: ${formatNumber(good.length)} subscribed, ${formatNumber(left.length)} unsubscribed, ${formatNumber(wrong.length)} bad`,
+      type: "success",
+    });
+  };
+
+  /** only the people who can be emailed, as CSV (for other email tools) */
+  const downloadCsv = async () => {
+    const XLSX = await import("xlsx");
+    const list = (data?.rows || []).filter((r) => r.state === "good");
+    const csv = XLSX.utils.sheet_to_csv(XLSX.utils.json_to_sheet(list.map((r) => ({ Email: r.email, Name: r.name || "", Groups: r.groups.join(", ") }))));
+    const url = URL.createObjectURL(new Blob(["﻿", csv], { type: "text/csv;charset=utf-8" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: `${fileBase}-subscribed.csv` });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    showToast({ message: `${formatNumber(list.length)} subscribed addresses downloaded`, type: "success" });
   };
 
   return (
@@ -111,14 +162,18 @@ export default function GroupCheckDialog({ groups, onClose }) {
       description="Every address checked before you send: who already bounced (at any hotel), whose domain can't receive email, and who unsubscribed."
       footer={
         <div className="flex w-full flex-wrap items-center gap-2">
-          <Button variant="secondary" size="sm" icon={FileSpreadsheet} disabled={!data} onClick={() => exportList("xlsx", true)}>
-            Export clean list (Excel)
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={FileSpreadsheet}
+            disabled={!data}
+            onClick={downloadExcel}
+            title="One Excel file with three sheets: Subscribed (clean), Unsubscribed, Bad emails"
+          >
+            Download list (Excel)
           </Button>
-          <Button variant="secondary" size="sm" icon={Download} disabled={!data} onClick={() => exportList("csv", true)}>
-            CSV
-          </Button>
-          <Button variant="ghost" size="sm" disabled={!data} onClick={() => exportList("xlsx", false)}>
-            Full report
+          <Button variant="ghost" size="sm" icon={Download} disabled={!data} onClick={downloadCsv} title="Only the people who can be emailed">
+            Subscribed only (CSV)
           </Button>
           <Button className="ml-auto" onClick={onClose}>
             Done
@@ -149,10 +204,14 @@ export default function GroupCheckDialog({ groups, onClose }) {
             </Notice>
           ) : (
             <Notice tone="info" icon={CircleCheck} title="No address would bounce">
-              {formatNumber(data.counts.good)} good to send{data.counts.unsubscribed ? `, ${formatNumber(data.counts.unsubscribed)} unsubscribed (never emailed)` : ""}.
+              {formatNumber(data.counts.good)} good to send
+              {data.counts.unsubscribed ? `, ${formatNumber(data.counts.unsubscribed)} unsubscribed` : ""}
+              {data.alreadyRemoved ? `, ${formatNumber(data.alreadyRemoved)} bad addresses already taken off` : ""}. Campaigns never email the
+              unsubscribed or bad ones.
             </Notice>
           )}
           {data.partial && <p className="text-xs text-amber-600">The address check was busy: only unsubscribes are shown. Check again in a minute.</p>}
+          {!data.partial && <MailboxCheckPanel groups={names} mailbox={data.mailbox} onFinished={recheck} />}
 
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:flex-wrap" role="group" aria-label="Show">
             <Chip className="shrink-0" selected={!filter} onClick={() => setFilter("")}>
@@ -180,14 +239,17 @@ export default function GroupCheckDialog({ groups, onClose }) {
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs text-app-text-muted">{s.label}</span>
+                  <span className="shrink-0 text-right text-xs text-app-text-muted">
+                    {s.label}
+                    {r.onDoNotEmail && r.state !== "unsubscribed" && <span className="block">already off your list</span>}
+                  </span>
                 </li>
               );
             })}
             {!rows.length && <li className="px-3 py-6 text-center text-sm text-app-text-muted">No one here.</li>}
           </ul>
           {rows.length > SHOWN && (
-            <p className="text-xs text-app-text-muted">Showing {SHOWN} of {formatNumber(rows.length)}. The export has all of them.</p>
+            <p className="text-xs text-app-text-muted">Showing {SHOWN} of {formatNumber(rows.length)}. The download has all of them.</p>
           )}
         </div>
       ) : null}

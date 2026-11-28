@@ -2,6 +2,8 @@ import { AlertTriangle, Download, FileSpreadsheet, MailPlus, Send, UserPlus } fr
 import { useState } from "react";
 import AudiencePickerDialog from "../../components/Email/AudiencePickerDialog";
 import ComposeEmail from "../../components/Email/ComposeEmail";
+import UndoSendBar from "../../components/Email/UndoSendBar";
+import { composeFromRestore, useOnUndone } from "../../components/Email/undoSend";
 import SentEmailsPanel from "../../components/Email/SentEmailsPanel";
 import Button from "../../components/ui/Button";
 import PageShell from "../../components/ui/PageShell";
@@ -42,9 +44,17 @@ export default function Newsletter() {
   const [listGroup, setListGroup] = useState("");
   const [exporting, setExporting] = useState(false);
   const [compose, setCompose] = useState(null); // { batchId, count }
+  // a newsletter just sent, in its few minutes before it starts: { campaignId, scheduledAt, count, label }
+  const [queued, setQueued] = useState(null);
   // the newsletters sent so far (Sent newsletters tab)
   const [sentCount, setSentCount] = useState(0);
   const [reloadSent, setReloadSent] = useState(0);
+  // Undo (the bar or a campaign's card): nothing was sent, the newsletter opens again as it was
+  useOnUndone((restore) => {
+    setQueued(null);
+    setCompose(composeFromRestore(restore));
+    setReloadSent((n) => n + 1);
+  });
   const [openCampaignId, setOpenCampaignId] = useState(null);
 
   const stats = useGetNewsletterStatsQuery();
@@ -67,9 +77,9 @@ export default function Newsletter() {
     }
   };
 
-  const handleSend = async ({ toEmails, subject, html, text, from, attachments }) => {
+  const handleSend = async ({ toEmails, subject, html, text, from, attachments, restore }) => {
     try {
-      const campaignId = await send({
+      const { campaignId, scheduledAt } = await send({
         batchIds: [compose.batchId],
         toEmails,
         subject,
@@ -80,22 +90,28 @@ export default function Newsletter() {
         name: `${NEWSLETTER_PREFIX}${subject}`,
         // "Past guests + Opened “Diwali offer”", shown in the Sent list
         audienceLabel: compose.label || "",
+        restore,
       });
       const count = compose.count + toEmails.length;
-      // stays on the same tab, so another group can be sent to straight away
-      showToast({
-        message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}${compose.label ? ` (${compose.label})` : ""}.`,
-        duration: 6000,
-        action: campaignId
-          ? {
-              label: "View",
-              onClick: () => {
-                setView("sent");
-                setOpenCampaignId(campaignId);
-              },
-            }
-          : undefined,
-      });
+      if (scheduledAt) {
+        // waits a few minutes first: the bar offers Undo / Send now
+        setQueued({ campaignId, scheduledAt, count, label: compose.label || "" });
+      } else {
+        // stays on the same tab, so another group can be sent to straight away
+        showToast({
+          message: `Sending to ${formatNumber(count)} ${count === 1 ? "person" : "people"}${compose.label ? ` (${compose.label})` : ""}.`,
+          duration: 6000,
+          action: campaignId
+            ? {
+                label: "View",
+                onClick: () => {
+                  setView("sent");
+                  setOpenCampaignId(campaignId);
+                },
+              }
+            : undefined,
+        });
+      }
       setCompose(null);
       setReloadSent((n) => n + 1);
     } catch (error) {
@@ -264,9 +280,20 @@ export default function Newsletter() {
           isSubmitting={sending}
           defaultFrom={defaultFrom}
           onReviewRecipients={review.canReview ? review.openReview : undefined}
+          // kept with the email so Undo can bring back the same people
+          recipientBatchId={compose.batchId || null}
+          recipientLabel={compose.label || ""}
+          initialDraft={compose.draft || null}
         />
       )}
       {review.dialog}
+      <UndoSendBar
+        queued={queued}
+        onDone={() => {
+          setQueued(null);
+          setReloadSent((n) => n + 1);
+        }}
+      />
     </PageShell>
   );
 }

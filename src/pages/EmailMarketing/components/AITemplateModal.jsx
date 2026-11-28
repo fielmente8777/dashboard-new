@@ -338,9 +338,31 @@ export default function AITemplateModal({
     }
   };
 
+  // Auto-save: a moment after a new AI version, a version switch, or a name / subject edit, the
+  // template is saved (created the first time, then updated), so nothing is lost when the
+  // window is closed. One save at a time; a failed save is tried again on the next change.
+  const lastAutoSave = useRef("");
+  useEffect(() => {
+    if (!isOpen || !current || busy || !hasUnsavedChanges) return undefined;
+    const snapshot = makeSnapshot(name, subject, current.html);
+    if (snapshot === lastAutoSave.current) return undefined;
+    const timer = setTimeout(async () => {
+      lastAutoSave.current = snapshot;
+      const doc = await saveCurrent();
+      if (doc) setNotice("Saved to your templates automatically.");
+    }, 1200);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, current, busy, hasUnsavedChanges, name, subject]);
+
   // "Save template" — stays open in compose mode, closes on the Templates page
+  // (already auto-saved and unchanged: just closes)
   const handleSave = async () => {
     if (!current || isSaving) return;
+    if (!hasUnsavedChanges && !isComposeMode) {
+      onClose?.();
+      return;
+    }
 
     const wasSaved = Boolean(savedId);
     const doc = await saveCurrent();
@@ -901,9 +923,11 @@ export default function AITemplateModal({
                 <FiSave size={15} />
                 {isSaving
                   ? "Saving…"
-                  : savedId
-                    ? "Update template"
-                    : "Save template"}
+                  : !hasUnsavedChanges
+                    ? "Done"
+                    : savedId
+                      ? "Update template"
+                      : "Save template"}
               </button>
             )}
 

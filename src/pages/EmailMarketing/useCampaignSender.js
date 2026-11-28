@@ -10,14 +10,17 @@ import {
 // so every email - offers, newsletters - shows on Email marketing → Campaigns with its opens
 // and clicks. Used by Email marketing and Newsletter.
 //
-//   send({ batchIds, toEmails, subject, html, text, from, attachments, name })
+//   send({ batchIds, toEmails, subject, html, text, from, attachments, name, restore })
 // batchIds: recipient batches already made; toEmails: addresses typed into "To" (sent as
-// their own batch). Resolves with the new campaign's id; throws with a message to show.
+// their own batch); restore: the compose window's content, kept by the server so Undo can
+// open it again. Resolves with { campaignId, scheduledAt }: scheduledAt is when it starts
+// (a new campaign waits a few minutes so it can be undone; null = it started at once).
+// Throws with a message to show.
 export function useCampaignSender() {
   const hotel = useSelector((state) => state.userProfile.user);
   const [sending, setSending] = useState(false);
 
-  const send = async ({ batchIds = [], toEmails = [], subject, html, text, from, attachments, name, audienceLabel }) => {
+  const send = async ({ batchIds = [], toEmails = [], subject, html, text, from, attachments, name, audienceLabel, restore }) => {
     setSending(true);
     try {
       const ids = [...batchIds];
@@ -38,12 +41,13 @@ export function useCampaignSender() {
         audienceLabel,
         recipientBatchIds: ids,
         attachments,
+        restore,
       });
       const campaignId = campaignRes?.doc?.campaign?._id;
       if (!campaignId) throw new Error("Could not create the campaign.");
 
-      await sendEmailCampaign({ campaignId });
-      return campaignId;
+      const started = await sendEmailCampaign({ campaignId });
+      return { campaignId, scheduledAt: started?.doc?.scheduledAt || null };
     } finally {
       setSending(false);
     }

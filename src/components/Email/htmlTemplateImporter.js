@@ -22,6 +22,15 @@ export class HtmlTemplateImporter {
   // data:image/...;base64,... inside src="", url(...) or srcset
   static DATA_URI = /data:image\/(png|jpe?g|gif|webp|svg\+xml|bmp);base64,([A-Za-z0-9+/=\s]+)/gi;
 
+  // The <title> is HTML: "Hôtel &amp; Thalasso", "H&ocirc;tel". A subject is plain text, so the
+  // codes become the characters they stand for (guests saw "&amp;" in their inbox before).
+  // The browser's own parser does it; tags inside the title are dropped.
+  static plainText(value) {
+    if (!value) return "";
+    const text = new DOMParser().parseFromString(`<body>${value}</body>`, "text/html").body.textContent || "";
+    return text.replace(/\s+/g, " ").trim();
+  }
+
   async read(file, pictures = []) {
     if (!file) throw new Error("Choose a file.");
     if (!/\.html?$/i.test(file.name) && file.type !== "text/html") throw new Error("Choose an .html file.");
@@ -44,7 +53,7 @@ export class HtmlTemplateImporter {
       throw new Error(`Even without its pictures the HTML is ${Math.round(bytes / 1024)} KB. Keep it under 2 MB.`);
     }
 
-    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/\s+/g, " ").trim();
+    const title = HtmlTemplateImporter.plainText(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]);
     return {
       html,
       name: file.name.replace(/\.html?$/i, ""),
